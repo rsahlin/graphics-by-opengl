@@ -1,0 +1,150 @@
+package com.nucleus.mmi;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.nucleus.geometry.Vertex2D;
+import com.nucleus.mmi.PointerData.PointerAction;
+import com.nucleus.transform.Vector2D;
+
+/**
+ * Process incoming pointer based events (for instance touch or mouse) and turn into easier to handle MMI actions.
+ * 
+ * @author Richard Sahlin
+ *
+ */
+public class PointerInputProcessor implements PointerListener {
+
+    public final static int MAX_POINTERS = 5;
+
+    /**
+     * Pointer motion data, one for each supported pointer.
+     */
+    PointerMotionData[] pointerMotionData = new PointerMotionData[MAX_POINTERS];
+
+    List<MMIEventListener> mmiListeners = new ArrayList<MMIEventListener>();
+
+    private int pointerCount;
+    /**
+     * If a movement is less than this then don't count. Use to filter out too small movements.
+     */
+    private float moveThreshold = 3;
+
+    @Override
+    public void pointerEvent(PointerAction action, long timestamp, int pointer, float[] position) {
+        if (pointer >= MAX_POINTERS) {
+            return;
+        }
+        MMIPointerEvent event = null;
+        PointerData pointerData = new PointerData(action, timestamp, pointer, position);
+        switch (action) {
+        case MOVE:
+            addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.MOVE, pointer,
+                    pointerMotionData[pointer]), pointerData);
+            // More than one pointer is or has been active.
+            if (pointerCount == 2 && pointer == 1) {
+                processTwoPointers();
+            }
+            break;
+        case DOWN:
+            pointerCount++;
+            pointerMotionData[pointer] = new PointerMotionData();
+            addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ACTIVE, pointer,
+                    pointerMotionData[pointer]), pointerData);
+            break;
+        case UP:
+            pointerCount--;
+            addAndSend(
+                    new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.INACTIVE, pointer,
+                            pointerMotionData[pointer]), pointerData);
+            break;
+        default:
+            throw new IllegalArgumentException();
+        }
+    }
+
+    private void addAndSend(MMIPointerEvent event, PointerData pointerData) {
+        pointerMotionData[pointerData.pointer].add(pointerData);
+        sendToListeners(event);
+    }
+
+    private void processTwoPointers() {
+        PointerMotionData pointer1 = pointerMotionData[PointerData.POINTER_1];
+        PointerMotionData pointer2 = pointerMotionData[PointerData.POINTER_2];
+        // Find point between the 2 points.
+        float[] middle = Vertex2D.middle(pointer1.getFirstPosition(), pointer2.getFirstPosition());
+        float[] toMiddle = new float[2];
+        // Fetch touch movement as 2D vectors
+        Vector2D vector1 = getDeltaAsVector(pointer1, 1);
+        Vector2D vector2 = getDeltaAsVector(pointer2, 1);
+        // Check if movement from or towards middle.
+        if (vector1 != null && vector2 != null) {
+            if (vector1.vector[Vector2D.MAGNITUDE] > moveThreshold ||
+                    vector2.vector[Vector2D.MAGNITUDE] > moveThreshold) {
+                Vertex2D.getDistance(middle, pointer1.getCurrentPosition(), toMiddle);
+                Vector2D center1 = new Vector2D(toMiddle);
+                Vertex2D.getDistance(middle, pointer2.getCurrentPosition(), toMiddle);
+                Vector2D center2 = new Vector2D(toMiddle);
+                float angle1 = (float) Math.acos(vector1.dot(center1)) * 57.2957795f;
+                float angle2 = (float) Math.acos(vector2.dot(center2)) * 57.2957795f;
+                if ((angle1 > 135 && angle2 > 135) || (angle1 < 45 && angle2 < 45)) {
+                    zoom(pointer1, pointer2, vector1, vector2, center1, center2);
+                }
+                // If one touch is very small then count the other.
+
+            }
+        }
+
+    }
+
+    private void zoom(PointerMotionData pointer1, PointerMotionData pointer2, Vector2D vector1, Vector2D vector2,
+            Vector2D center1, Vector2D center2) {
+        // Zoom movement
+        // System.out.println("DOT1 " + vector1.dot(center1) + ", DOT2: " + vector2.dot(center2) +
+        // " LENGTH: "
+        // + (vector1.vector[Vector2D.MAGNITUDE] + vector2.vector[Vector2D.MAGNITUDE]));
+        sendToListeners(new MMIPointerEvent(pointer1, pointer2, vector1, vector2, vector1.dot(center1),
+                vector2.dot(center2)));
+
+    }
+
+    /**
+     * Internal method to fetch the pointer motion delta as 2D vector
+     * 
+     * @param motionData
+     * @param count Number of prior pointer values to include in delta.
+     * @return Pointer delta values as Vector2D, or null if only 1 pointer data.
+     */
+    private Vector2D getDeltaAsVector(PointerMotionData motionData, int count) {
+        float[] delta = motionData.getDelta(count);
+        if (delta == null || (delta[0] == 0 && delta[1] == 0)) {
+            return null;
+        }
+        return new Vector2D(delta);
+    }
+
+    /**
+     * Adds the listener, it will now get MMIEvents
+     * 
+     * @param listener
+     */
+    public void addMMIListener(MMIEventListener listener) {
+        mmiListeners.add(listener);
+    }
+
+    /**
+     * Sends the event to listeners, if event is specified. If null, nothing is done.
+     * 
+     * @param event
+     */
+    private void sendToListeners(MMIPointerEvent event) {
+        if (event == null) {
+            return;
+        }
+        for (MMIEventListener listener : mmiListeners) {
+            listener.inputEvent(event);
+        }
+
+    }
+
+}
