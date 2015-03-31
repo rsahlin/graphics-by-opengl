@@ -60,8 +60,9 @@ public class AndroidSurfaceView extends GLSurfaceView {
                 inputProcessor.pointerEvent(PointerAction.MOVE, event.getEventTime(), finger,
                         new float[] { event.getX(i), event.getY(i) });
                 break;
+            case MotionEvent.ACTION_CANCEL:
+            	break;
             default:
-                throw new IllegalArgumentException("Not implemented:" + event.getAction());
             }
         }
         requestRender();
