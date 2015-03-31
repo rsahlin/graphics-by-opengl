@@ -1,17 +1,50 @@
 package com.nucleus.geometry;
 
+import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLES20Wrapper.GLES20;
 import com.nucleus.texturing.Texture2D;
 
 /**
  * This is the smallest renderable self contained unit, it has surface (vertice and triangle) information, attribute
  * data and material.
+ * One mesh shall be possible to render with no more than one drawcall.
  * 
  * @author Richard Sahlin
  *
  */
 public class Mesh {
 
+    public final static int MAX_TEXTURE_COUNT = 1;
     private final static String NULL_PARAMETER_STR = "Null parameter";
+    /**
+     * Set the BLEND_EQUATION_RGB index in blendModes to this value to turn off alpha.
+     */
+    public final static int NO_ALPHA = -1;
+
+    /**
+     * Index to the RGB blend equation, set this to 0 to turn off alpha for a mesh
+     */
+    public final static int BLEND_EQUATION_RGB = 0;
+    /**
+     * Index to the alpha blend equation
+     */
+    public final static int BLEND_EQUATION_ALPHA = 1;
+    /**
+     * Index to the source RGB blend function
+     */
+    public final static int SOURCE_RGB = 2;
+    /**
+     * Index to the destination RGB blend function
+     */
+    public final static int DESTINATION_RGB = 3;
+    /**
+     * Index to the source Alpha blend function
+     */
+    public final static int SOURCE_ALPHA = 4;
+    /**
+     * Index to the destination Alpha blend function
+     */
+    public final static int DESTINATION_ALPHA = 5;
 
     /**
      * One or more generic attribute arrays, read by the program specified in the material.
@@ -22,7 +55,15 @@ public class Mesh {
     /**
      * Currently only supports single texture
      */
-    protected Texture2D[] texture = new Texture2D[1];
+    protected Texture2D[] texture = new Texture2D[MAX_TEXTURE_COUNT];
+
+    /**
+     * Array with values for blend equation separate (blend equation RGB, blend equation Alpha, src RGB, dst RGB, src
+     * Alpha, dst Alpha
+     */
+    protected final int[] blendModes = new int[] { GLES20.GL_FUNC_ADD, GLES20.GL_FUNC_ADD,
+            GLES20.GL_SRC_ALPHA,
+            GLES20.GL_ONE_MINUS_SRC_ALPHA, GLES20.GL_SRC_ALPHA, GLES20.GL_DST_ALPHA };
 
     /**
      * Uniform vectors, used when rendering this Mesh depending on what ShaderProgram is used.
@@ -91,6 +132,17 @@ public class Mesh {
     }
 
     /**
+     * Sets the texture into this mesh as the specified texture index.
+     * The texture object must have a valid texture name, the texture will be active when the mesh is rendered.
+     * 
+     * @param texture
+     * @param index
+     */
+    public void setTexture(Texture2D texture, int index) {
+        this.texture[index] = texture;
+    }
+
+    /**
      * Returns the buffer, at the specified index, containing vertices and attribute data
      * 
      * @param index Index into the vertex/attribute buffer to return
@@ -146,6 +198,34 @@ public class Mesh {
      */
     public void setUniformVectors(float[] uniformVectors) {
         this.uniformVectors = uniformVectors;
+    }
+
+    /**
+     * Returns the separate blend modes:
+     * blend equation RGB, blend equation Alpha, source RGB, destination RGB, source Alpha, destination Alpha
+     * Use BLEND_EQUATION_RGB, BLEND_EQUATION_ALPHA, SOURCE_RGB, SOURCE_ALPHA, DESTINATION_RGB, DESTINATION_ALPHA to
+     * access the values.
+     * 
+     * @return Array with values for separate alpha blend equation and function
+     */
+    public int[] getBlendModes() {
+        return blendModes;
+    }
+
+    /**
+     * Sets the separate blend equation/function for this mesh.
+     * 
+     * @param gles
+     */
+    public void setBlendModeSeparate(GLES20Wrapper gles) {
+        if (blendModes[BLEND_EQUATION_RGB] == NO_ALPHA) {
+            gles.glDisable(GLES20.GL_BLEND);
+        } else {
+            gles.glEnable(GLES20.GL_BLEND);
+            gles.glBlendEquationSeparate(blendModes[BLEND_EQUATION_RGB], blendModes[BLEND_EQUATION_ALPHA]);
+            gles.glBlendFuncSeparate(blendModes[SOURCE_RGB], blendModes[DESTINATION_RGB], blendModes[SOURCE_ALPHA],
+                    blendModes[SOURCE_RGB]);
+        }
     }
 
 }

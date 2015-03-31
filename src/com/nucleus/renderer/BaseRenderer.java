@@ -126,25 +126,16 @@ public abstract class BaseRenderer {
         ElementBuffer indices = mesh.getElementBuffer();
         gles.glUseProgram(program.getProgram());
 
-        if (mesh.getTexture(0) != null) {
-            int textureID = mesh.getTexture(Texture2D.TEXTURE_0).getName();
+        Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
+        if (texture != null) {
+            int textureID = texture.getName();
             gles.glActiveTexture(GLES20.GL_TEXTURE0);
             gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
+            texture.setValues(gles);
         }
-
+        mesh.setBlendModeSeparate(gles);
         program.bindAttributes(gles, this, mesh);
         program.bindUniforms(gles, this, mesh);
-
-        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
-                GLES20.GL_NEAREST);
-        gles.glTexParameteri(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MAG_FILTER,
-                GLES20.GL_NEAREST);
-
-        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
-                GLES20.GL_REPEAT);
-        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
-                GLES20.GL_REPEAT);
 
         if (indices == null) {
             gles.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.getVerticeCount());

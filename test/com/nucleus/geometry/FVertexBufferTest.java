@@ -35,7 +35,7 @@ public class FVertexBufferTest {
         }
         VertexBuffer vb = new VertexBuffer(TRIANGLE_COUNT, SIZE_PER_VERTEX, GLES20.GL_FLOAT,
                 DATA_SIZE32);
-        vb.setPositionAndUV(data, 0, 0, TRIANGLE_COUNT * 3);
+        vb.setPosition(data, 0, 0, TRIANGLE_COUNT * 3);
         // First 5 values should be followed by empty data (SIZE_PER_VERTEX - 5)
         // For now assume FloatBuffer since this is the only type currently supported.0
         float[] getBuffer = new float[5];

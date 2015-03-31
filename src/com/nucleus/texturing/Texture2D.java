@@ -1,5 +1,6 @@
 package com.nucleus.texturing;
 
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLES20Wrapper.GLES20;
 
 /**
@@ -35,6 +36,14 @@ public class Texture2D {
      * It is up to the caller to allocate and release texture names.
      */
     protected int name;
+    /**
+     * Width of texture in pixels
+     */
+    protected int width;
+    /**
+     * Height of texture in pixels
+     */
+    protected int height;
 
     /**
      * min filter, mag filter, wrap s and wrap t parameters
@@ -42,8 +51,23 @@ public class Texture2D {
     protected final int[] parameters = new int[] { GLES20.GL_LINEAR, GLES20.GL_LINEAR, GLES20.GL_TEXTURE_WRAP_S,
             GLES20.GL_TEXTURE_WRAP_T };
 
-    public Texture2D(int name) {
+    /**
+     * Texture parameter values.
+     */
+    protected final int[] values = new int[] { GLES20.GL_NEAREST, GLES20.GL_NEAREST, GLES20.GL_CLAMP_TO_EDGE,
+            GLES20.GL_CLAMP_TO_EDGE };
+
+    /**
+     * Creates a texture reference with name, width and height.
+     * 
+     * @param name
+     * @param width
+     * @param height
+     */
+    public Texture2D(int name, int width, int height) {
         this.name = name;
+        this.width = width;
+        this.height = height;
     }
 
     /**
@@ -53,6 +77,53 @@ public class Texture2D {
      */
     public int getName() {
         return name;
+    }
+
+    /**
+     * Returns the texture parameter values, min and mag filter, wrap s and t.
+     * 
+     * @return The texture parameter values
+     */
+    public int[] getValues() {
+        return values;
+    }
+
+    /**
+     * Returns the width, in pixels, of the texture
+     * 
+     * @return
+     */
+    public int getWidth() {
+        return width;
+    }
+
+    /**
+     * Returns the height, pixels, of the texture
+     * 
+     * @return
+     */
+    public int getHeight() {
+        return height;
+    }
+
+    /**
+     * Sets the texture parameter values for this texture to OpenGL, call this to set the correct texture parameters
+     * when rendering.
+     * 
+     * @param gles
+     */
+    public void setValues(GLES20Wrapper gles) {
+
+        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
+                values[Texture2D.MIN_FILTER_INDEX]);
+        gles.glTexParameteri(GLES20.GL_TEXTURE_2D,
+                GLES20.GL_TEXTURE_MAG_FILTER,
+                values[Texture2D.MAG_FILTER_INDEX]);
+        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
+                values[Texture2D.WRAP_S_INDEX]);
+        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
+                values[Texture2D.WRAP_T_INDEX]);
+
     }
 
 }

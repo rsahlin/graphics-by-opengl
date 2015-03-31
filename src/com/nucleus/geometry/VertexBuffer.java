@@ -82,7 +82,7 @@ public class VertexBuffer {
     }
 
     /**
-     * Sets position and texture uv data from the source array.
+     * Sets position data from the source array.
      * After each triangle copied, the vertice stride is used to step in the destination buffer.
      * This method is not efficient for a large number of triangles.
      * 
@@ -92,14 +92,12 @@ public class VertexBuffer {
      * @param destOffset Offset in destination vertex buffer, in floats, where data is stored - normally 0.
      * @param triangleCount Number of triangles to store.
      */
-    public void setPositionAndUV(float[] verticeData, int sourceOffset, int destOffset, int verticeCount) {
+    public void setPosition(float[] verticeData, int sourceOffset, int destOffset, int verticeCount) {
 
         for (int i = 0; i < verticeCount; i++) {
             vertices.position(destOffset);
             vertices.put(verticeData, sourceOffset, 3);
-            vertices.position(destOffset + uvOffset);
-            vertices.put(verticeData, sourceOffset + 3, 2);
-            sourceOffset += 5;
+            sourceOffset += 3;
             destOffset += verticeStride;
         }
     }
@@ -157,9 +155,11 @@ public class VertexBuffer {
      * 
      * @param array
      * @param sourcePos
+     * @param destPos Position into floatbuffer where values are put
      * @param length
      */
-    public void setArray(float[] array, int sourcePos, int length) {
+    public void setArray(float[] array, int sourcePos, int destPos, int length) {
+    	vertices.position(sourcePos);
         vertices.put(array, sourcePos, length);
     }
 

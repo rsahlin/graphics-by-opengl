@@ -624,6 +624,13 @@ public abstract class GLES20Wrapper {
     public abstract void glDisable(int cap);
 
     /**
+     * Abstraction for glEnable()
+     * 
+     * @param cap
+     */
+    public abstract void glEnable(int cap);
+
+    /**
      * Abstraction for glTexImage2D()
      * 
      * @param target
@@ -638,5 +645,23 @@ public abstract class GLES20Wrapper {
      */
     public abstract void glTexImage2D(int target, int level, int internalformat, int width, int height, int border,
             int format, int type, Buffer pixels);
+
+    /**
+     * Abstraction for glBlendEquationSeparate
+     * 
+     * @param modeRGB
+     * @param modeAlpha
+     */
+    public abstract void glBlendEquationSeparate(int modeRGB, int modeAlpha);
+
+    /**
+     * Abstraction for glBlendFuncSeparate
+     * 
+     * @param srcRGB
+     * @param dstRGB
+     * @param srcAlpha
+     * @param dstAlpha
+     */
+    public abstract void glBlendFuncSeparate(int srcRGB, int dstRGB, int srcAlpha, int dstAlpha);
 
 }
