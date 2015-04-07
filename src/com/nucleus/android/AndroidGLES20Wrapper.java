@@ -52,6 +52,7 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
         android.opengl.GLES20.glGetProgramiv(program, pname, params, offset);
     }
 
+    @Override
     public void glGetActiveAttrib(int program, int index, int bufsize, int[] length, int lengthOffset, int[] size,
             int sizeOffset, int[] type, int typeOffset, byte[] name, int nameOffset) {
         android.opengl.GLES20.glGetActiveAttrib(program, index, bufsize, length, lengthOffset, size, sizeOffset, type,
@@ -183,6 +184,21 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glDrawElements(int mode, int count, int type, Buffer indices) {
         android.opengl.GLES20.glDrawElements(mode, count, type, indices);
+    }
+
+    @Override
+    public void glBlendEquationSeparate(int modeRGB, int modeAlpha) {
+        android.opengl.GLES20.glBlendEquationSeparate(modeRGB, modeAlpha);
+    }
+
+    @Override
+    public void glBlendFuncSeparate(int srcRGB, int dstRGB, int srcAlpha, int dstAlpha) {
+        android.opengl.GLES20.glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+    }
+
+    @Override
+    public void glEnable(int cap) {
+        android.opengl.GLES20.glEnable(cap);
     }
 
 }
