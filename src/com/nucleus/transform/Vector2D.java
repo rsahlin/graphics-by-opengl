@@ -24,6 +24,16 @@ public final class Vector2D {
      * @param y
      */
     public Vector2D(float x, float y) {
+        setNormalized(x, y);
+    }
+
+    /**
+     * Sets x and y as normalized direction and magnitude.
+     * 
+     * @param x Size of vector x axis
+     * @param y Size of vector y axis
+     */
+    public void setNormalized(float x, float y) {
         float length = length(x, y);
         vector[X_AXIS] = x / length;
         vector[Y_AXIS] = y / length;
