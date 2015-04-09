@@ -156,7 +156,7 @@ public abstract class BaseRenderer {
             int textureID = texture.getName();
             gles.glActiveTexture(GLES20.GL_TEXTURE0);
             gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
-            texture.setValues(gles);
+            texture.setTexParameters(gles);
         }
         mesh.setBlendModeSeparate(gles);
         program.bindAttributes(gles, this, mesh);

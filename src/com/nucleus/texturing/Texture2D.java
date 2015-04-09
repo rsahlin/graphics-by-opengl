@@ -46,12 +46,6 @@ public class Texture2D {
     protected int height;
 
     /**
-     * min filter, mag filter, wrap s and wrap t parameters
-     */
-    protected final int[] parameters = new int[] { GLES20.GL_LINEAR, GLES20.GL_LINEAR, GLES20.GL_TEXTURE_WRAP_S,
-            GLES20.GL_TEXTURE_WRAP_T };
-
-    /**
      * Texture parameter values.
      */
     protected final int[] values = new int[] { GLES20.GL_NEAREST, GLES20.GL_NEAREST, GLES20.GL_CLAMP_TO_EDGE,
@@ -68,6 +62,22 @@ public class Texture2D {
         this.name = name;
         this.width = width;
         this.height = height;
+    }
+
+    /**
+     * Sets the values for the texture parameters
+     * Call setTexParameters to set the values to GL.
+     * 
+     * @param minFilter The texture minification filter
+     * @param magFilter The texture magnification filter
+     * @param wrapS Texture wrap s
+     * @param wrapT Texture wrap t
+     */
+    public void setValues(int minFilter, int magFilter, int wrapS, int wrapT) {
+        values[MIN_FILTER_INDEX] = minFilter;
+        values[MAG_FILTER_INDEX] = magFilter;
+        values[WRAP_S_INDEX] = wrapS;
+        values[WRAP_T_INDEX] = wrapT;
     }
 
     /**
@@ -112,18 +122,16 @@ public class Texture2D {
      * 
      * @param gles
      */
-    public void setValues(GLES20Wrapper gles) {
+    public void setTexParameters(GLES20Wrapper gles) {
 
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
                 values[Texture2D.MIN_FILTER_INDEX]);
-        gles.glTexParameteri(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MAG_FILTER,
+        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
                 values[Texture2D.MAG_FILTER_INDEX]);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
                 values[Texture2D.WRAP_S_INDEX]);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
                 values[Texture2D.WRAP_T_INDEX]);
-
     }
 
 }
