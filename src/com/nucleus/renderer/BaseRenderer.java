@@ -38,6 +38,17 @@ public abstract class BaseRenderer {
      */
     protected int height;
 
+    protected GLInfo glInfo;
+    /**
+     * Set to true when init is called
+     */
+    private boolean initialized = false;
+    /**
+     * Set to true when context is created, if set again it means context was
+     * lost and re-created.
+     */
+    protected boolean contextCreated = false;
+
     /**
      * Creates a new renderer using the specified GLES20Wrapper
      * 
@@ -65,8 +76,22 @@ public abstract class BaseRenderer {
      * If this method is called again - it means that the GL context has been lost and is re-created, all textures,
      * objects and buffers must be recreated.
      * 
+     * @param width Width of display in pixels
+     * @param height Height of display in pixels
      */
-    public abstract void GLContextCreated();
+    public abstract void GLContextCreated(int width, int height);
+
+    /**
+     * Call this first time when the context is created, before calling GLContextCreated()
+     * Initialize parameters that do not need to be updated when context is re-created.
+     */
+    public void init() {
+        if (initialized) {
+            return;
+        }
+        initialized = true;
+        glInfo = new GLInfo(gles);
+    }
 
     /**
      * Signals the start of a frame, implement if needed in subclasses.
@@ -153,6 +178,16 @@ public abstract class BaseRenderer {
      */
     public ViewFrustum getViewFrustum() {
         return viewFrustum;
+    }
+
+    /**
+     * Returns true if this renderer has been initialized by calling init() when
+     * the context is created.
+     * 
+     * @return
+     */
+    public boolean isInitialized() {
+        return initialized;
     }
 
 }
