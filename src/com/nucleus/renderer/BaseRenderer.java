@@ -7,11 +7,13 @@ import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.VertexBuffer;
+import com.nucleus.matrix.MatrixEngine;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLES20Wrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
 
 /**
@@ -26,9 +28,13 @@ import com.nucleus.texturing.Texture2D;
 public abstract class BaseRenderer {
 
     public final static String NULL_GLESWRAPPER_ERROR = "GLES wrapper is null";
+    public final static String NULL_IMAGEFACTORY_ERROR = "ImageFactory is null";
+    public final static String NULL_MATRIXENGINE_ERROR = "MatrixEngine is null";
 
     protected ViewFrustum viewFrustum = new ViewFrustum();
     protected GLES20Wrapper gles;
+    protected ImageFactory imageFactory;
+    protected MatrixEngine matrixEngine;
     /**
      * Implementations shall set the width of the target display
      */
@@ -55,20 +61,20 @@ public abstract class BaseRenderer {
      * @param gles
      * @throws IllegalArgumentException If gles is null
      */
-    protected BaseRenderer(GLES20Wrapper gles) {
+    protected BaseRenderer(GLES20Wrapper gles, ImageFactory imageFactory, MatrixEngine matrixEngine) {
         if (gles == null) {
             throw new IllegalArgumentException(NULL_GLESWRAPPER_ERROR);
         }
+        if (imageFactory == null) {
+            throw new IllegalArgumentException(NULL_IMAGEFACTORY_ERROR);
+        }
+        if (matrixEngine == null) {
+            throw new IllegalArgumentException(NULL_MATRIXENGINE_ERROR);
+        }
         this.gles = gles;
+        this.imageFactory = imageFactory;
+        this.matrixEngine = matrixEngine;
     }
-
-    /**
-     * Sets the projection matrix to be used by the renderer based on the setting in the viewFrustum
-     * 
-     * @param viewFrustum
-     * 
-     */
-    public abstract void setProjectionMatrix(ViewFrustum viewFrustum);
 
     /**
      * Called when the GL context is created for a render surface, GL is now active and can be used to create objects,
@@ -79,7 +85,10 @@ public abstract class BaseRenderer {
      * @param width Width of display in pixels
      * @param height Height of display in pixels
      */
-    public abstract void GLContextCreated(int width, int height);
+    public void GLContextCreated(int width, int height) {
+        this.width = width;
+        this.height = height;
+    }
 
     /**
      * Call this first time when the context is created, before calling GLContextCreated()
@@ -120,7 +129,7 @@ public abstract class BaseRenderer {
         int[] viewport = viewFrustum.getViewPort();
         gles.glViewport(viewport[ViewFrustum.VIEWPORT_X], viewport[ViewFrustum.VIEWPORT_Y],
                 viewport[ViewFrustum.VIEWPORT_WIDTH], viewport[ViewFrustum.VIEWPORT_HEIGHT]);
-        setProjectionMatrix(viewFrustum);
+        matrixEngine.setProjectionMatrix(viewFrustum);
     }
 
     /**
