@@ -8,6 +8,23 @@ package com.nucleus.resource;
  */
 public class ResourceBias {
 
+    public enum RESOLUTION {
+        TWO_FORTY(240),
+        THREE_TWENTY(320),
+        FOUR_EIGHTY(480),
+        FIVE_FORTY(540),
+        SEVEN_TWENTY(720),
+        HD(1080),
+        ULTRA_HD(2160);
+
+        public final int lines;
+
+        private RESOLUTION(int lines) {
+            this.lines = lines;
+        }
+
+    }
+
     /**
      * Returns the scale factor for a given width/height compared to the base height.
      * Width and height will be checked for landscape orientation (width > height) and swapped
