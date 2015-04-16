@@ -19,8 +19,15 @@ public class AndroidImageFactory implements ImageFactory {
             throw new IOException("Could not load " + name);
         }
         if (scaleX != 1 || scaleY != 1) {
-            Bitmap copy = Bitmap.createScaledBitmap(b, (int) (b.getWidth() * scaleX), (int) (b.getHeight() * scaleY),
-                    true);
+            int width = (int) (b.getWidth() * scaleX + 0.5f);
+            int height = (int) (b.getHeight() * scaleY + 0.5f);
+            if (height == 0) {
+                height = 1;
+            }
+            if (width == 0) {
+                width = 1;
+            }
+            Bitmap copy = Bitmap.createScaledBitmap(b, width, height, true);
             b = copy;
         }
 
@@ -28,5 +35,4 @@ public class AndroidImageFactory implements ImageFactory {
         b.copyPixelsToBuffer(image.getBuffer().position(0));
         return image;
     }
-
 }
