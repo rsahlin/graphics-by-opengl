@@ -69,6 +69,10 @@ public class Mesh {
      * Uniform vectors, used when rendering this Mesh depending on what ShaderProgram is used.
      */
     protected float[] uniformVectors;
+    /**
+     * Uniform matrices, used when rendering this Mesh depending on what ShaderProgram is used.
+     */
+    protected float[] uniformMatrices;
 
     /**
      * Creates a new Mesh that can be rendered using drawElements()
@@ -198,6 +202,26 @@ public class Mesh {
      */
     public void setUniformVectors(float[] uniformVectors) {
         this.uniformVectors = uniformVectors;
+    }
+
+    /**
+     * Returns one or more defined uniform matrices used when rendering.
+     * 
+     * @return
+     */
+    public float[] getUniformMatrices() {
+        return uniformMatrices;
+    }
+
+    /**
+     * Sets a reference to an array with float values that can be used by when rendering this Mesh.
+     * Note that the use of uniforms is depending on the shader program used.
+     * 
+     * @param uniformMatrices Values to reference in this class, note that values are NOT copied.
+     * 
+     */
+    public void setUniformMatrices(float[] uniformMatrices) {
+        this.uniformMatrices = uniformMatrices;
     }
 
     /**

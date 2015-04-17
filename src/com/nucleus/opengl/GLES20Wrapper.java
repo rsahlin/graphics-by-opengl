@@ -581,6 +581,10 @@ public abstract class GLES20Wrapper {
      */
     public abstract void glUniform4fv(int location, int count, float[] v, int offset);
 
+    public abstract void glUniform3fv(int location, int count, float[] v, int offset);
+
+    public abstract void glUniform2fv(int location, int count, float[] v, int offset);
+
     /**
      * Abstraction for glTexParemeterf()
      * 

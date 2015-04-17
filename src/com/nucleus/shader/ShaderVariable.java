@@ -1,5 +1,7 @@
 package com.nucleus.shader;
 
+import com.nucleus.opengl.GLES20Wrapper.GLES20;
+
 /**
  * Data for an active shader variable, this can be either attribute or uniform variables.
  * 
@@ -7,6 +9,8 @@ package com.nucleus.shader;
  *
  */
 public class ShaderVariable {
+
+    private final static String ILLEGAL_DATATYPE_ERROR = "Illegal datatype: ";
 
     /**
      * The different types of active variables - either uniform or attribute.
@@ -108,6 +112,32 @@ public class ShaderVariable {
      */
     public int getLocation() {
         return location;
+    }
+
+    /**
+     * Utility method that returns the total number of floats that this variable occupies.
+     * This is needed when allocating the client (Java) side of the variable.
+     * 
+     * @return Number of floats that this variable needs (size * datatype in floats)
+     */
+    public int getSizeInFloats() {
+        switch (dataType) {
+        case GLES20.GL_FLOAT:
+            return size;
+        case GLES20.GL_FLOAT_VEC2:
+            return 2 * size;
+        case GLES20.GL_FLOAT_VEC3:
+            return 3 * size;
+        case GLES20.GL_FLOAT_VEC4:
+            return 4 * size;
+        case GLES20.GL_FLOAT_MAT2:
+            return 4 * size;
+        case GLES20.GL_FLOAT_MAT3:
+            return 9 * size;
+        case GLES20.GL_FLOAT_MAT4:
+            return 16 * size;
+        }
+        throw new IllegalArgumentException(ILLEGAL_DATATYPE_ERROR + dataType);
     }
 
 }

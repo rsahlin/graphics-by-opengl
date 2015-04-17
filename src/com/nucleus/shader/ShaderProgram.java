@@ -96,8 +96,6 @@ public abstract class ShaderProgram {
 
     protected ShaderVariable[] shaderVariables;
 
-    protected float[] uniformMatrices;
-
     private AttribNameMapping attribNameMapping = null;
 
     /**
@@ -237,7 +235,6 @@ public abstract class ShaderProgram {
         shaderVariables = new ShaderVariable[getVariableCount()];
         fetchActiveVariables(gles, VariableType.ATTRIBUTE, attribInfo, shaderVariables);
         fetchActiveVariables(gles, VariableType.UNIFORM, uniformInfo, shaderVariables);
-
     }
 
     /**
@@ -276,7 +273,7 @@ public abstract class ShaderProgram {
             ShaderVariable variable = new ShaderVariable(type, nameBuffer, written, NAME_LENGTH_OFFSET, SIZE_OFFSET,
                     TYPE_OFFSET);
             setVariableLocation(gles, program, type, variable);
-            storeShaderVariable(gles, variable);
+            addShaderVariable(variable);
         }
     }
 
@@ -377,7 +374,7 @@ public abstract class ShaderProgram {
 
     /**
      * Utility method to return the name of a shader variable, this will remove unwanted characters such as array
-     * declaration.
+     * declaration or '.' field access eg 'struct.field' will become 'struct'
      * 
      * @param variable
      * @return Name of variable, without array declaration.
@@ -388,10 +385,23 @@ public abstract class ShaderProgram {
             int end = name.indexOf("[");
             name = name.substring(0, end);
         }
-        return name;
+        int dot = name.indexOf(".");
+        if (dot == -1) {
+            return name;
+        }
+        if (dot == 0) {
+            return name.substring(1);
+        }
+        return name.substring(0, dot);
     }
 
-    public void storeShaderVariable(GLES20Wrapper gles, ShaderVariable variable) {
+    /**
+     * Stores the shader variable in this program, if variable is of unmapped type, for instance Sampler, then it is
+     * skipped. Also skip variables that are defined in code but not used in shader.
+     * 
+     * @param variable
+     */
+    public void addShaderVariable(ShaderVariable variable) {
         // If variable type is is unMappedTypes then skip.
         if (unMappedTypes.contains(variable.getDataType())) {
             return;
