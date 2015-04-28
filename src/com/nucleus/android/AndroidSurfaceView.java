@@ -19,6 +19,7 @@ public class AndroidSurfaceView extends GLSurfaceView {
         this.inputProcessor = inputProcessor;
     }
 
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         int count = event.getPointerCount();
         for (int i = 0; i < count; i++) {
@@ -34,9 +35,6 @@ public class AndroidSurfaceView extends GLSurfaceView {
             case MotionEvent.ACTION_DOWN:
                 // We must implement code in both ACTION_DOWN and ACTION_POINTER_DOWN, ACTION_DOWN is called for first
                 // pointer
-                // Log.d("FractalSurfaceView",
-                // "DOWN " + finger + ", " + actionFinger + ", i:" + i + "at: " + event.getX(i) + ", "
-                // + event.getY(i));
                 inputProcessor.pointerEvent(PointerAction.DOWN, event.getEventTime(), finger,
                         new float[] { event.getX(i), event.getY(i) });
                 break;
@@ -48,20 +46,15 @@ public class AndroidSurfaceView extends GLSurfaceView {
                 }
             case MotionEvent.ACTION_UP:
                 // We must implement code in both ACTION_UP and ACTION_POINTER_UP, ACTION_UP is called for first pointer
-                // Log.d("FractalSurfaceView",
-                // "UP " + finger + ", " + actionFinger + ", i:" + i + "at: " + event.getX(i) + ", "
-                // + event.getY(i));
                 inputProcessor.pointerEvent(PointerAction.UP, event.getEventTime(), finger, new float[] {
                         event.getX(i), event.getY(i) });
                 break;
             case MotionEvent.ACTION_MOVE:
-                // Log.d("FractalSurfaceView", "MOVE index " + finger + ", " + actionFinger + ", i: " + i + ", count: "
-                // + event.getPointerCount());
                 inputProcessor.pointerEvent(PointerAction.MOVE, event.getEventTime(), finger,
                         new float[] { event.getX(i), event.getY(i) });
                 break;
             case MotionEvent.ACTION_CANCEL:
-            	break;
+                break;
             default:
             }
         }

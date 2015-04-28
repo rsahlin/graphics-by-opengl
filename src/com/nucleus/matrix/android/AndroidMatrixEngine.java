@@ -3,9 +3,8 @@ package com.nucleus.matrix.android;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import com.nucleus.android.AndroidRenderer;
 import com.nucleus.camera.ViewFrustum;
-import com.nucleus.matrix.MatrixEngine;
+import com.nucleus.renderer.BaseRenderer.MatrixEngine;
 
 /**
  * Android implementation of Matrix functions.
@@ -14,6 +13,8 @@ import com.nucleus.matrix.MatrixEngine;
  *
  */
 public class AndroidMatrixEngine implements MatrixEngine {
+
+    public final static String ANDROID_MATRIXENGINE_TAG = "AndroidMatrixEngine";
 
     @Override
     public void setProjectionMatrix(ViewFrustum viewFrustum) {
@@ -27,7 +28,7 @@ public class AndroidMatrixEngine implements MatrixEngine {
                     projection[ViewFrustum.FAR_INDEX]);
             break;
         default:
-            Log.e(AndroidRenderer.ANDROID_RENDERER_TAG, "Illegal projection: " + viewFrustum.getProjectionType());
+            Log.e(ANDROID_MATRIXENGINE_TAG, "Illegal projection: " + viewFrustum.getProjectionType());
         }
 
     }

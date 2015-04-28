@@ -23,6 +23,7 @@ public class AndroidRenderer implements Renderer {
      * Creates a new Android renderer using the specified BaseRenderer implementation
      * 
      * @param renderer
+     * @param appListener Call when each frame shall be drawn.
      * @throws IllegalArgumentException If renderer is null.
      */
     public AndroidRenderer(BaseRenderer renderer) {
@@ -40,8 +41,7 @@ public class AndroidRenderer implements Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        renderer.beginFrame();
-        renderer.render();
+        float deltaTime = renderer.beginFrame();
         renderer.endFrame();
     }
 
