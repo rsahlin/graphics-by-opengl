@@ -1,6 +1,5 @@
 package com.nucleus.opengl;
 
-
 /**
  * Common rendering functions in a platform agnostic manner.
  * 

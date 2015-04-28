@@ -13,7 +13,6 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLES20Wrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
-import com.nucleus.renderer.BaseRenderer;
 import com.nucleus.shader.ShaderVariable.VariableType;
 
 /**
@@ -114,22 +113,21 @@ public abstract class ShaderProgram {
     /**
      * Set the attribute pointer(s) using the data in the vertexbuffer, this shall make the necessary calls to
      * set the pointers for used attributes, enable pointers as needed.
-     * This will make the actual connection betewen the attribute data in the vertex buffer and the shander.
+     * This will make the actual connection between the attribute data in the vertex buffer and the shader.
      * 
      * @param gles
-     * @param renderer
      * @param mesh
      */
-    public abstract void bindAttributes(GLES20Wrapper gles, BaseRenderer renderer, Mesh mesh) throws GLException;
+    public abstract void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException;
 
     /**
      * Sets the uniforms needed by the program, this will make the binding between the shader and uniforms
      * 
      * @param gles
-     * @param renderer
+     * @param modelviewMatrix The matrix to use for the MVP matrix
      * @param mesh
      */
-    public abstract void bindUniforms(GLES20Wrapper gles, BaseRenderer renderer, Mesh mesh) throws GLException;
+    public abstract void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, Mesh mesh) throws GLException;
 
     /**
      * Returns the number of defined attribute + uniform variables in the program.
@@ -148,6 +146,14 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Create the programs for the shader program implementation
+     * 
+     * @param gles The GLES20 wrapper to use when compiling and linking program.
+     * @throws RuntimeException If there is an error reading shader sources or compiling/linking program.
+     */
+    public abstract void createProgram(GLES20Wrapper gles);
+
+    /**
      * Utility method to automatically load, compile and link the specified vertex and fragment shaders.
      * Vertex shader, fragment shader and program objects will be created.
      * If program compiles succesfully then the program info is fetched.
@@ -159,7 +165,7 @@ public abstract class ShaderProgram {
      * @throws IOException If there is an error reading from stream
      * @throws GLException if there is an error setting or compiling shader sources or linking the program.
      */
-    public int prepareProgram(GLES20Wrapper gles, InputStream vertexStream, InputStream fragmentStream)
+    protected int createProgram(GLES20Wrapper gles, InputStream vertexStream, InputStream fragmentStream)
             throws IOException, GLException {
 
         vertexShader = gles.glCreateShader(GLES20.GL_VERTEX_SHADER);
@@ -431,6 +437,50 @@ public abstract class ShaderProgram {
             gles.glVertexAttribPointer(v.getLocation(), buffer.getComponentCount(), buffer.getDataType(), false,
                     buffer.getByteStride(), buffer.getBuffer().position(0));
 
+        }
+    }
+
+    /**
+     * Utility method to create the vertex and shader program using the specified shader names.
+     * The shaders will be loaded, compiled and linked.
+     * 
+     * @param gles
+     * @param vertexShader Name of vertex shader to load, compile and link
+     * @param fragmentShader Name of fragment shader to load, compile and link
+     */
+    protected void createProgram(GLES20Wrapper gles, String vertexShader, String fragmentShader) {
+        ClassLoader classLoader = getClass().getClassLoader();
+        try {
+            createProgram(gles,
+                    classLoader.getResourceAsStream(vertexShader),
+                    classLoader.getResourceAsStream(fragmentShader));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (GLException e) {
+            throw new RuntimeException(e.toString());
+        }
+    }
+
+    /**
+     * Sets one of more vector float uniforms for the specified variable, supports VEC2, VEC3 and VEC4 types
+     * 
+     * @param gles
+     * @param variable Shader variable to set uniform data for, datatype and size is read.
+     * @param uniform One ore more float vectors to set.
+     * @param offset Offset into uniform array where data starts.
+     */
+    protected final void setVectorUniform(GLES20Wrapper gles, ShaderVariable variable, float[] uniform, int offset) {
+
+        switch (variable.getDataType()) {
+        case GLES20.GL_FLOAT_VEC2:
+            gles.glUniform2fv(variable.getLocation(), variable.getSize(), uniform, offset);
+            break;
+        case GLES20.GL_FLOAT_VEC3:
+            gles.glUniform3fv(variable.getLocation(), variable.getSize(), uniform, offset);
+            break;
+        case GLES20.GL_FLOAT_VEC4:
+            gles.glUniform4fv(variable.getLocation(), variable.getSize(), uniform, offset);
+            break;
         }
 
     }

@@ -25,6 +25,7 @@ public class PointerMotionData {
      */
     void add(PointerData data) {
         pointerMovement.add(data);
+
     }
 
     /**
@@ -68,6 +69,7 @@ public class PointerMotionData {
 
     /**
      * Returns the position where the pointer action started, ie the first pressed position in this action.
+     * NOTE! This is a reference to the values. Do not modify!
      * 
      * @return The first position in the touch action, ie the first active position.
      */
@@ -77,6 +79,7 @@ public class PointerMotionData {
 
     /**
      * Returns the latest position
+     * NOTE! This is a reference to the values. Do not modify!
      * 
      * @return
      */
@@ -86,6 +89,7 @@ public class PointerMotionData {
 
     /**
      * Returns the latest pointer data.
+     * NOTE! This is a reference to the values. Do not modify!
      * 
      * @return The last received (newest) pointer data
      */
@@ -95,6 +99,7 @@ public class PointerMotionData {
 
     /**
      * Returns the first (oldest) pointer data, this is the first pointer down action.
+     * NOTE! This is a reference to the values. Do not modify!
      * 
      * @return The originating pointer down action.
      */

@@ -1,6 +1,7 @@
 package com.nucleus.mmi;
 
-import com.nucleus.transform.Vector2D;
+import com.nucleus.vecmath.VecMath;
+import com.nucleus.vecmath.Vector2D;
 
 public class MMIPointerEvent {
 
@@ -58,8 +59,8 @@ public class MMIPointerEvent {
         pointerData = pointer1;
         zoom = new Vector2D();
         float value = (dot1 + dot2) / 2;
-        zoom.vector[Vector2D.X_AXIS] = value;
-        zoom.vector[Vector2D.Y_AXIS] = value;
+        zoom.vector[VecMath.X] = value;
+        zoom.vector[VecMath.Y] = value;
         zoom.vector[Vector2D.MAGNITUDE] = -(delta1.vector[Vector2D.MAGNITUDE] + delta2.vector[Vector2D.MAGNITUDE]);
     }
 

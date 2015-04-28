@@ -21,17 +21,13 @@ public class VertexBuffer {
     private final static String ILLEGAL_DATATYPE_STR = "Illegal datatype: ";
 
     /**
-     * Number of floats to next set of vertice data
+     * Number of floats to next set of attribute data
      */
-    private int verticeStride;
+    private int attribFloatSize;
     /**
-     * Number of bytes to next vertice variable.
+     * Number of bytes to next attrib variable.
      */
-    private int verticeByteStride;
-    /**
-     * Float offset for uv
-     */
-    private int uvOffset;
+    private int attribByteStride;
     private FloatBuffer vertices;
     private int verticeCount;
     /**
@@ -49,7 +45,7 @@ public class VertexBuffer {
      * 
      * @param verticeCount Number of vertices to allocate storage for
      * @param components Number of components for each vertex, 3 for x,y,z
-     * @param sizePerVertex Size in floats to allocate for each vertex, normal usecase for x,y,z + texture uv is 5
+     * @param sizePerVertex Size in floats to allocate for each vertex, eg 3 if xyz is specified
      * @param type The datatype GLES20.GL_FLOAT
      * @throws IllegalArgumentException If type is not GLES20.GL_FLOAT
      */
@@ -76,9 +72,8 @@ public class VertexBuffer {
         this.verticeCount = verticeCount;
         vertices = ByteBuffer.allocateDirect(verticeCount * sizePerVertex * dataSize)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
-        verticeByteStride = sizePerVertex * dataSize;
-        verticeStride = sizePerVertex;
-        uvOffset = 3;
+        attribByteStride = sizePerVertex * dataSize;
+        attribFloatSize = sizePerVertex;
     }
 
     /**
@@ -98,7 +93,7 @@ public class VertexBuffer {
             vertices.position(destOffset);
             vertices.put(verticeData, sourceOffset, 3);
             sourceOffset += 3;
-            destOffset += verticeStride;
+            destOffset += attribFloatSize;
         }
     }
 
@@ -146,7 +141,7 @@ public class VertexBuffer {
      * @return Number of bytes between consecutive variables
      */
     public int getByteStride() {
-        return verticeByteStride;
+        return attribByteStride;
     }
 
     /**
@@ -159,7 +154,7 @@ public class VertexBuffer {
      * @param length
      */
     public void setArray(float[] array, int sourcePos, int destPos, int length) {
-    	vertices.position(sourcePos);
+        vertices.position(sourcePos);
         vertices.put(array, sourcePos, length);
     }
 

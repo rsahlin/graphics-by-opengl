@@ -1,6 +1,7 @@
 package com.nucleus.mmi;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -10,6 +11,7 @@ import org.junit.Test;
 
 import com.nucleus.mmi.MMIPointerEvent.Action;
 import com.nucleus.mmi.PointerData.PointerAction;
+import com.nucleus.vecmath.Vector2D;
 
 public class FPointerInputProcessorTest implements MMIEventListener {
 
@@ -213,6 +215,58 @@ public class FPointerInputProcessorTest implements MMIEventListener {
         Assert.assertEquals(com.nucleus.mmi.MMIPointerEvent.Action.MOVE, event.getAction());
         event = pointerEvents.get(4);
         Assert.assertEquals(com.nucleus.mmi.MMIPointerEvent.Action.ZOOM, event.getAction());
+
+    }
+
+    @Test
+    public void testActionZoomOutValues() {
+
+        int LOOPCOUNT = 100;
+        int x1 = 100;
+        int y1 = 100;
+        int x2 = 200;
+        int y2 = 100;
+        float deltaX1 = -5;
+        float deltaX2 = 5;
+        PointerInputProcessor processor = new PointerInputProcessor();
+        processor.addMMIListener(this);
+
+        processor.pointerEvent(PointerAction.DOWN, System.currentTimeMillis(), PointerData.POINTER_1, new float[] { x1,
+                y1 });
+        processor.pointerEvent(PointerAction.DOWN, System.currentTimeMillis(), PointerData.POINTER_2, new float[] { x2,
+                y2 });
+
+        float[] data = new float[] { x1, y1, x2, y2, deltaX1, 0, deltaX2, 0 };
+        createEvents(processor, PointerAction.MOVE, data, 100);
+        int size = pointerEvents.size();
+        Assert.assertEquals(LOOPCOUNT * 3 + 2, size);
+        Iterator<MMIPointerEvent> iterator = pointerEvents.iterator();
+        int found = 0;
+        while (found < LOOPCOUNT && iterator.hasNext()) {
+            MMIPointerEvent event = iterator.next();
+            if (event.getAction() == Action.ZOOM) {
+                found++;
+                Vector2D zoom = event.getZoom();
+                Assert.assertEquals(deltaX1 - deltaX2, zoom.vector[Vector2D.MAGNITUDE], 0f);
+                Assert.assertNotNull(zoom);
+            }
+        }
+        Assert.assertEquals(LOOPCOUNT, found);
+    }
+
+    /**
+     * Array containing data for start and movement.
+     * 
+     * @param values startX1, startY1, start X2, startY2, deltaX1, deltaY1, deltaX2, deltaY2
+     */
+    private void createEvents(PointerInputProcessor processor, PointerAction action, float[] values, int count) {
+
+        for (int i = 1; i < count + 1; i++) {
+            float[] pos1 = new float[] { values[0] + values[4] * i, values[1] + values[5] * i };
+            float[] pos2 = new float[] { values[2] + values[6] * i, values[3] + values[7] * i };
+            processor.pointerEvent(action, i, PointerData.POINTER_1, pos1);
+            processor.pointerEvent(action, i, PointerData.POINTER_2, pos2);
+        }
 
     }
 

@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.nucleus.geometry.Vertex2D;
 import com.nucleus.mmi.PointerData.PointerAction;
-import com.nucleus.transform.Vector2D;
+import com.nucleus.vecmath.Vector2D;
 
 /**
  * Process incoming pointer based events (for instance touch or mouse) and turn into easier to handle MMI actions.
@@ -24,7 +24,7 @@ public class PointerInputProcessor implements PointerListener {
 
     List<MMIEventListener> mmiListeners = new ArrayList<MMIEventListener>();
 
-    private int pointerCount;
+    private int pointerCount = 0;
     /**
      * If a movement is less than this then don't count. Use to filter out too small movements.
      */
@@ -54,9 +54,8 @@ public class PointerInputProcessor implements PointerListener {
             break;
         case UP:
             pointerCount--;
-            addAndSend(
-                    new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.INACTIVE, pointer,
-                            pointerMotionData[pointer]), pointerData);
+            addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.INACTIVE, pointer,
+                    pointerMotionData[pointer]), pointerData);
             break;
         default:
             throw new IllegalArgumentException();
@@ -79,12 +78,16 @@ public class PointerInputProcessor implements PointerListener {
         Vector2D vector2 = getDeltaAsVector(pointer2, 1);
         // Check if movement from or towards middle.
         if (vector1 != null && vector2 != null) {
+            System.out.println("Twopointer delta1: " + vector1.vector[Vector2D.MAGNITUDE] + " pos: "
+                    + pointer1.getCurrentPosition()[0] + ", " + pointer1.getCurrentPosition()[1]);
             if (vector1.vector[Vector2D.MAGNITUDE] > moveThreshold ||
                     vector2.vector[Vector2D.MAGNITUDE] > moveThreshold) {
+
                 Vertex2D.getDistance(middle, pointer1.getCurrentPosition(), toMiddle);
                 Vector2D center1 = new Vector2D(toMiddle);
                 Vertex2D.getDistance(middle, pointer2.getCurrentPosition(), toMiddle);
                 Vector2D center2 = new Vector2D(toMiddle);
+
                 float angle1 = (float) Math.acos(vector1.dot(center1)) * 57.2957795f;
                 float angle2 = (float) Math.acos(vector2.dot(center2)) * 57.2957795f;
                 if ((angle1 > 135 && angle2 > 135) || (angle1 < 45 && angle2 < 45)) {
@@ -146,5 +149,4 @@ public class PointerInputProcessor implements PointerListener {
         }
 
     }
-
 }
