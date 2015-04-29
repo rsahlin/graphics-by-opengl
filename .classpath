@@ -6,6 +6,5 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/graphics-by-opengl"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
-	<classpathentry kind="src" path="/logic-engine"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
