@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.TimeKeeper;
+import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
@@ -238,6 +239,7 @@ public class BaseRenderer {
 
     /**
      * Renders one mesh, material is used to fetch program and set attributes/uniforms.
+     * If the attributeupdater is set in the mesh it is called to update buffers.
      * If texture exists in mesh it is made active and used.
      * If mesh contains an index buffer it is used and glDrawElements is called, otherwise
      * drawArrays is called.
@@ -247,7 +249,10 @@ public class BaseRenderer {
      * @throws GLException If there is an error in GL while drawing this mesh.
      */
     protected void renderMesh(Mesh mesh, float[] mvpMatrix) throws GLException {
-
+        AttributeUpdater updater = mesh.getAttributeUpdater();
+        if (updater != null) {
+            updater.setAttributes();
+        }
         Material material = mesh.getMaterial();
         ShaderProgram program = material.getProgram();
         VertexBuffer vertices = mesh.getVerticeBuffer(0);

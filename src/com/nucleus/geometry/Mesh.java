@@ -8,6 +8,7 @@ import com.nucleus.texturing.Texture2D;
  * This is the smallest renderable self contained unit, it has surface (vertice and triangle) information, attribute
  * data and material.
  * One mesh shall be possible to render with no more than one drawcall.
+ * Before rendering is done the generic attribute buffers must be set/updated.
  * 
  * @author Richard Sahlin
  *
@@ -73,6 +74,12 @@ public class Mesh {
      * Uniform matrices, used when rendering this Mesh depending on what ShaderProgram is used.
      */
     protected float[] uniformMatrices;
+
+    /**
+     * Optional updater for attributes, use this when dynamic mesh is needed. ie when the generic attribute data must be
+     * updated each frame.
+     */
+    protected AttributeUpdater attributeUpdater;
 
     /**
      * Creates a new Mesh that can be rendered using drawElements()
@@ -250,6 +257,27 @@ public class Mesh {
             gles.glBlendFuncSeparate(blendModes[SOURCE_RGB], blendModes[DESTINATION_RGB], blendModes[SOURCE_ALPHA],
                     blendModes[SOURCE_RGB]);
         }
+    }
+
+    /**
+     * Sets the attribute updater for this mesh, use this for meshes where the attribute data must be updated each
+     * frame.
+     * This method shall copy data, as needed, into the VertexBuffer arrays that are used when the mesh is rendered.
+     * What data to copy is implementation specific.
+     * 
+     * @param attributeUpdater Callback to set data into the generic vertex arrays, or null to remove.
+     */
+    public void setAttributeUpdater(AttributeUpdater attributeUpdater) {
+        this.attributeUpdater = attributeUpdater;
+    }
+
+    /**
+     * Returns the attribute updater.
+     * 
+     * @return The attribute updater or null if none is set.
+     */
+    public AttributeUpdater getAttributeUpdater() {
+        return attributeUpdater;
     }
 
 }
