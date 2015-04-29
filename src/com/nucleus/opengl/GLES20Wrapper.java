@@ -572,6 +572,14 @@ public abstract class GLES20Wrapper {
     public abstract String glGetString(int name);
 
     /**
+     * Abstraction for glGetIntegerv()
+     * 
+     * @param pname
+     * @param params
+     */
+    public abstract void glGetIntegerv(int pname, int[] params, int offset);
+
+    /**
      * Abstraction for glUniform4fv()
      * 
      * @param location

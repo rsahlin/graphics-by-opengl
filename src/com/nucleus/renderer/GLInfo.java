@@ -18,6 +18,7 @@ public class GLInfo {
     private String version;
     private String shadingLanguageVersion;
     private String[] extensions;
+    private int maxTextureSize;
 
     /**
      * Fetches info from GLES and stores in this class.
@@ -37,8 +38,12 @@ public class GLInfo {
                 extensions[--count] = st.nextToken();
             }
         }
+        int[] param = new int[1];
+        gles.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, param, 0);
+        maxTextureSize = param[0];
         System.out.println("GLInfo:\n" + "GLES Version: " + version + " with shading language "
                 + shadingLanguageVersion + "\n" + vendor + " " + renderer);
+
     }
 
     /**
