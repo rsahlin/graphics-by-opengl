@@ -47,13 +47,17 @@ public class PointerInputProcessor implements PointerListener {
             }
             break;
         case DOWN:
-            pointerCount++;
+            pointerCount = pointer + 1;
             pointerMotionData[pointer] = new PointerMotionData();
             addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ACTIVE, pointer,
                     pointerMotionData[pointer]), pointerData);
             break;
         case UP:
             pointerCount--;
+            if (pointerCount < 0) {
+                System.out.println("PointerInputProcessor: ERROR: pointerCount= " + pointerCount);
+            }
+            System.out.println("PointerInputProcessor: pointerCount= " + pointerCount);
             addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.INACTIVE, pointer,
                     pointerMotionData[pointer]), pointerData);
             break;
