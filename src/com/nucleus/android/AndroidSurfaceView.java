@@ -27,33 +27,28 @@ public class AndroidSurfaceView extends GLSurfaceView {
             int actionFinger = event.getActionIndex();
             switch (event.getActionMasked()) {
             case MotionEvent.ACTION_POINTER_DOWN:
-                // ACTION_POINTER_DOWN is called for all pointers in case of multi touch since it record new current
-                // touch position for already down pointers - ignore the first fingers.
-                if (finger != actionFinger) {
-                    break;
-                }
+                // Recording down for multi touch - all pointers will be re-sent when a new finger goes down.
+                inputProcessor.pointerEvent(PointerAction.DOWN, event.getEventTime(), finger,
+                        new float[] { event.getX(i), event.getY(i) });
+                break;
             case MotionEvent.ACTION_DOWN:
-                // We must implement code in both ACTION_DOWN and ACTION_POINTER_DOWN, ACTION_DOWN is called for first
-                // pointer
                 inputProcessor.pointerEvent(PointerAction.DOWN, event.getEventTime(), finger,
                         new float[] { event.getX(i), event.getY(i) });
                 break;
             case MotionEvent.ACTION_POINTER_UP:
-                // ACTION_POINTER_UP is called for all pointers in case of multi touch since it record new current
-                // touch position for already down pointers - ignore the first fingers.
-                if (finger != actionFinger) {
-                    break;
+                if (finger == 0) {
+                    inputProcessor.pointerEvent(PointerAction.UP, event.getEventTime(), actionFinger, new float[] {
+                            event.getX(i), event.getY(i) });
                 }
+                break;
             case MotionEvent.ACTION_UP:
-                // We must implement code in both ACTION_UP and ACTION_POINTER_UP, ACTION_UP is called for first pointer
+            case MotionEvent.ACTION_CANCEL:
                 inputProcessor.pointerEvent(PointerAction.UP, event.getEventTime(), finger, new float[] {
                         event.getX(i), event.getY(i) });
                 break;
             case MotionEvent.ACTION_MOVE:
                 inputProcessor.pointerEvent(PointerAction.MOVE, event.getEventTime(), finger,
                         new float[] { event.getX(i), event.getY(i) });
-                break;
-            case MotionEvent.ACTION_CANCEL:
                 break;
             default:
             }
