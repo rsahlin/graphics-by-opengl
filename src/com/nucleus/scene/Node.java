@@ -38,6 +38,15 @@ public class Node {
     }
 
     /**
+     * Sets the mesh to be rendered with this node
+     * 
+     * @param mesh
+     */
+    public void setMesh(Mesh mesh) {
+        this.mesh = mesh;
+    }
+
+    /**
      * Returns the transform for this node.
      * 
      * @return
