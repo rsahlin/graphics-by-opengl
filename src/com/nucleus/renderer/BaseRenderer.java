@@ -251,7 +251,7 @@ public class BaseRenderer {
     protected void renderMesh(Mesh mesh, float[] mvpMatrix) throws GLException {
         AttributeUpdater updater = mesh.getAttributeUpdater();
         if (updater != null) {
-            updater.setAttributes();
+            updater.setAttributeData();
         }
         Material material = mesh.getMaterial();
         ShaderProgram program = material.getProgram();

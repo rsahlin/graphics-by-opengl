@@ -485,4 +485,20 @@ public abstract class ShaderProgram {
 
     }
 
+    /**
+     * Internal method to create the arrays needed for uniform vector and matrix storage.
+     * The arrays will be set into the mesh.
+     * 
+     * @param mesh The mesh to set vector and matrix uniform data arrays into.
+     * @param vectors Shader variable for the uniform vectors
+     * @param matrices Shader variable for the uniform matrices
+     */
+    protected void setUniformArrays(Mesh mesh, ShaderVariable vectors, ShaderVariable matrices) {
+
+        float[] uniformVectors = new float[vectors.getSizeInFloats()];
+        mesh.setUniformVectors(uniformVectors);
+        float[] uniformMatrices = new float[matrices.getSizeInFloats()];
+        mesh.setUniformMatrices(uniformMatrices);
+    }
+
 }

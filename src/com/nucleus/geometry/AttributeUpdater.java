@@ -13,5 +13,13 @@ public interface AttributeUpdater {
      * What data and what to copy is implementation specific and depends on the shader program used
      * to render the mesh.
      */
-    public Mesh setAttributes();
+    public void setAttributeData();
+
+    /**
+     * Returns the generic attribute data as an array reference
+     * 
+     * @return The array containing the attribute data, any changes done here shall be reflected when
+     * setAttributeData() is called.
+     */
+    public float[] getAttributeData();
 }
