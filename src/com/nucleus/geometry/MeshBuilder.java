@@ -68,23 +68,24 @@ public class MeshBuilder {
      * @param width
      * @param height
      * @param z The Z position
+     * @param anchorX X axis anchor offet, 0 will be left centered (assuming x axis is increasing to the right)
+     * @param anchorY Y axis anchor offet, 0 will be top centered, (assuming y axis is increasing downwards)
      * @param vertexStride, number of floats to add from one vertex to the next. Usually 3 to allow XYZ storage,
      * increase if padding (eg for UV) is needed.
      * @return array containing 4 vertices for a quad with the specified size, the size of the array will be
      * vertexStride * 4
      */
-    public static float[] buildQuadPositionsIndexed(float width, float height, float z, int vertexStride) {
+    public static float[] buildQuadPositionsIndexed(float width, float height, float z, float anchorX, float anchorY,
+            int vertexStride) {
 
         float[] quadPositions = new float[vertexStride * 4];
 
-        float halfWidth = width / 2;
-        float halfHeight = height / 2;
-        com.nucleus.geometry.MeshBuilder.setPosition(-halfWidth, -halfHeight, z, quadPositions, 0);
-        com.nucleus.geometry.MeshBuilder.setPosition(halfWidth, -halfHeight, z, quadPositions,
+        com.nucleus.geometry.MeshBuilder.setPosition(-anchorX, -anchorY, z, quadPositions, 0);
+        com.nucleus.geometry.MeshBuilder.setPosition(width - anchorX, -anchorY, z, quadPositions,
                 vertexStride);
-        com.nucleus.geometry.MeshBuilder.setPosition(halfWidth, halfHeight, z, quadPositions,
+        com.nucleus.geometry.MeshBuilder.setPosition(width - anchorX, height - anchorY, z, quadPositions,
                 vertexStride * 2);
-        com.nucleus.geometry.MeshBuilder.setPosition(-halfWidth, halfHeight, z, quadPositions,
+        com.nucleus.geometry.MeshBuilder.setPosition(-anchorX, height - anchorY, z, quadPositions,
                 vertexStride * 3);
         return quadPositions;
     }
@@ -129,7 +130,33 @@ public class MeshBuilder {
         Material material = new Material(program);
         Mesh mesh = new Mesh(indices, attributes, material, null);
         return mesh;
+    }
 
+    /**
+     * Used by tiled objects to set the UV position to 1 or 0 so it can be multiplied by a fraction size to get
+     * correct UV for a specific frame.
+     * This method is chosen to move as much processing as possible to the GPU - the UV of each sprite could be
+     * calculated at runtime but that would give a higher CPU impact when a large number of sprites are animated.
+     * 
+     * @param attributeData Array with attribute data where UV is stored.
+     * @param offset Offset into attribute array
+     * @param uIndex Index to U in attribute data
+     * @param vIndex Index to V in attribute data
+     * @param stride Added to get to next vertex.
+     */
+    public static void prepareTiledUV(float[] attributeData, int offset, int uIndex, int vIndex, int stride) {
+        int index = offset;
+        attributeData[index + uIndex] = 0;
+        attributeData[index + vIndex] = 0;
+        index += stride;
+        attributeData[index + uIndex] = 1;
+        attributeData[index + vIndex] = 0;
+        index += stride;
+        attributeData[index + uIndex] = 1;
+        attributeData[index + vIndex] = 1;
+        index += stride;
+        attributeData[index + uIndex] = 0;
+        attributeData[index + vIndex] = 1;
     }
 
 }
