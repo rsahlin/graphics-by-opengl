@@ -234,7 +234,21 @@ public class BaseRenderer {
         float[] modelMatrix = node.getTransform().getMatrix();
         float[] mvp = new float[16];
         Matrix.mul4(viewMatrix, modelMatrix, mvp);
-        renderMesh(node.getMesh(), mvp);
+        renderMeshes(node.getMeshes(), mvp);
+    }
+
+    /**
+     * Renders a list of meshes, this is the same as iterating the list and calling
+     * renderMesh() on each mesh.
+     * 
+     * @param mesh The mesh to be rendered.
+     * @param mvpMatrix accumulated matrix for this mesh, this will be sent to uniform.
+     * @throws GLException If there is an error in GL while drawing this mesh.
+     */
+    protected void renderMeshes(ArrayList<Mesh> meshes, float[] mvpMatrix) throws GLException {
+        for (Mesh mesh : meshes) {
+            renderMesh(mesh, mvpMatrix);
+        }
     }
 
     /**
@@ -244,7 +258,7 @@ public class BaseRenderer {
      * If mesh contains an index buffer it is used and glDrawElements is called, otherwise
      * drawArrays is called.
      * 
-     * @param mesh The mesh to be rendere.
+     * @param mesh The mesh to be rendered.
      * @param mvpMatrix accumulated matrix for this mesh, this will be sent to uniform.
      * @throws GLException If there is an error in GL while drawing this mesh.
      */

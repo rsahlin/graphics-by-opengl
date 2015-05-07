@@ -1,5 +1,7 @@
 package com.nucleus.scene;
 
+import java.util.ArrayList;
+
 import com.nucleus.geometry.Mesh;
 import com.nucleus.vecmath.Transform;
 
@@ -16,7 +18,8 @@ public class Node {
      * Optional projection for the node, this will affect all child nodes.
      */
     float[] projection;
-    Mesh mesh;
+    ArrayList<Mesh> meshes = new ArrayList<Mesh>();
+    ArrayList<Node> children = new ArrayList<Node>();
 
     /**
      * Constructs a new Node with the specified mesh.
@@ -25,25 +28,35 @@ public class Node {
      * @param mesh Containing the vertices, variables, program, textures to be rendered.
      */
     public Node(Mesh mesh) {
-        this.mesh = mesh;
+        meshes.add(mesh);
     }
 
     /**
-     * Retuns the mesh for this node.
+     * Retuns the meshes for this node.
      * 
-     * @return
+     * @return List of added meshes
      */
-    public Mesh getMesh() {
-        return mesh;
+    public ArrayList<Mesh> getMeshes() {
+        return meshes;
     }
 
     /**
-     * Sets the mesh to be rendered with this node
+     * Adds a mesh to be rendered with this node.
      * 
      * @param mesh
      */
-    public void setMesh(Mesh mesh) {
-        this.mesh = mesh;
+    public void addMesh(Mesh mesh) {
+        meshes.add(mesh);
+    }
+
+    /**
+     * Removes the mesh from this node, if present.
+     * If many meshes are added this method may have a performance impact.
+     * 
+     * @param mesh The mesh to remove from this Node.
+     */
+    public void removeMesh(Mesh mesh) {
+        meshes.remove(mesh);
     }
 
     /**
@@ -72,6 +85,36 @@ public class Node {
      */
     public void setProjection(float[] projection) {
         this.projection = projection;
+    }
+
+    /**
+     * Adds a child at the end of the list of children.
+     * 
+     * @param child The child to add to this node.
+     */
+    public void addChild(Node child) {
+        children.add(child);
+    }
+
+    /**
+     * Insert a child at the specified index
+     * 
+     * @param index
+     * @param child
+     * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index > size())
+     */
+    public void addChild(int index, Node child) {
+        children.add(index, child);
+    }
+
+    /**
+     * Removes the child from this node if it is present.
+     * 
+     * @param child The child to remove from this node.
+     * @return True if the child was present in the list of children.
+     */
+    public boolean removeChild(Node child) {
+        return children.remove(child);
     }
 
 }
