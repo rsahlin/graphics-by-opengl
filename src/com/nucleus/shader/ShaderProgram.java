@@ -56,6 +56,7 @@ public abstract class ShaderProgram {
     public final static String LINK_PROGRAM_ERROR = "Error linking program: ";
     public final static String BIND_ATTRIBUTE_ERROR = "Error binding attribute: ";
     public final static String VARIABLE_LOCATION_ERROR = "Could not get shader variable location: ";
+    public final static String NULL_VARIABLES_ERROR = "ShaderVariables are null, program not created? Must call fetchProgramInfo()";
 
     /**
      * Index into array where active (attribute or uniform) variable is stored, used when
@@ -146,7 +147,8 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Create the programs for the shader program implementation
+     * Create the programs for the shader program implementation.
+     * This method must be called before the program is used, or the other methods are called.
      * 
      * @param gles The GLES20 wrapper to use when compiling and linking program.
      * @throws RuntimeException If there is an error reading shader sources or compiling/linking program.
@@ -231,7 +233,7 @@ public abstract class ShaderProgram {
      * @param gles
      * @throws GLException If attribute or uniform locations could not be found.
      */
-    public void fetchProgramInfo(GLES20Wrapper gles) throws GLException {
+    protected void fetchProgramInfo(GLES20Wrapper gles) throws GLException {
         int[] attribInfo = new int[2];
         int[] uniformInfo = new int[2];
         gles.glGetProgramiv(program, GLES20.GL_ACTIVE_ATTRIBUTES, attribInfo, ACTIVE_COUNT_OFFSET);
@@ -369,12 +371,16 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Returns the shader varaible for the specified index, use this to map indexes to variables.
+     * Returns the shader variable for the specified index, use this to map indexes to variables.
      * 
      * @param index
      * @return
+     * @throws IllegalArgumentException If shader variables are null, the program has probably not been created.
      */
     public ShaderVariable getShaderVariable(int index) {
+        if (shaderVariables == null) {
+            throw new IllegalArgumentException(NULL_VARIABLES_ERROR);
+        }
         return shaderVariables[index];
     }
 
@@ -406,8 +412,12 @@ public abstract class ShaderProgram {
      * skipped. Also skip variables that are defined in code but not used in shader.
      * 
      * @param variable
+     * @throws IllegalArgumentException If shader variables are null, the program has probably not been created.
      */
-    public void addShaderVariable(ShaderVariable variable) {
+    protected void addShaderVariable(ShaderVariable variable) {
+        if (shaderVariables == null) {
+            throw new IllegalArgumentException(NULL_VARIABLES_ERROR);
+        }
         // If variable type is is unMappedTypes then skip.
         if (unMappedTypes.contains(variable.getDataType())) {
             return;
