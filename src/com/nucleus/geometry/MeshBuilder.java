@@ -95,15 +95,15 @@ public class MeshBuilder {
      * index the vertices.
      * Vertex buffer will have storage for XYZ + UV.
      * 
-     * @program The program to use when rendering the mesh
+     * @param mesh The mesh to build the buffers in, this is the mesh that can be rendered.
+     * @param The program to use when rendering the mesh
      * @param spriteCount Number of sprites to build, this is NOT the vertex count.
      * @param quadPositions Array with x,y,z - this is set for each tile. Must contain data for 4 vertices.
      * @param attribute2Size Size per vertex for attribute buffer 2, this may be 0
      * 
-     * @return The mesh that can be rendered.
      * @throws IllegalArgumentException if type is not GLES20.GL_FLOAT
      */
-    public static Mesh buildQuadMeshIndexed(ShaderProgram program, int quadCount, float[] quadPositions,
+    public static void buildQuadMeshIndexed(Mesh mesh, ShaderProgram program, int quadCount, float[] quadPositions,
             int attribute2Size) {
         int attributeBuffers = 1;
         if (attribute2Size > 0) {
@@ -128,8 +128,7 @@ public class MeshBuilder {
 
         attributes[0].setPosition(vertices, 0, 0, quadCount * INDEXED_QUAD_VERTICES);
         Material material = new Material(program);
-        Mesh mesh = new Mesh(indices, attributes, material, null);
-        return mesh;
+        mesh.setupIndexed(indices, attributes, material, null);
     }
 
     /**
