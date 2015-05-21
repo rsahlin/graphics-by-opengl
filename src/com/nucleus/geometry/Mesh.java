@@ -1,5 +1,6 @@
 package com.nucleus.geometry;
 
+import com.nucleus.io.BaseReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLES20Wrapper.GLES20;
 import com.nucleus.texturing.Texture2D;
@@ -13,7 +14,7 @@ import com.nucleus.texturing.Texture2D;
  * @author Richard Sahlin
  *
  */
-public class Mesh {
+public class Mesh extends BaseReference {
 
     public final static int MAX_TEXTURE_COUNT = 1;
     private final static String NULL_PARAMETER_STR = "Null parameter";
@@ -78,8 +79,16 @@ public class Mesh {
     /**
      * Optional updater for attributes, use this when dynamic mesh is needed. ie when the generic attribute data must be
      * updated each frame.
+     * TODO Maybe move this to the node?
      */
     protected AttributeUpdater attributeUpdater;
+
+    /**
+     * Creates a new empty mesh, the attribute/index buffers must be prepared before rendering can take place.
+     */
+    public Mesh() {
+        super();
+    }
 
     /**
      * Creates a new Mesh that can be rendered using drawElements()
@@ -91,7 +100,7 @@ public class Mesh {
      * @throws IllegalArgumentException If vertices, indices or material is null.
      */
     public Mesh(ElementBuffer indices, VertexBuffer[] vertices, Material material, Texture2D texture) {
-        init(indices, vertices, material, texture);
+        setupIndexed(indices, vertices, material, texture);
     }
 
     /**
@@ -103,11 +112,11 @@ public class Mesh {
      * @throws IllegalArgumentException If vertices or material is null.
      */
     public Mesh(VertexBuffer[] vertices, Material material, Texture2D texture) {
-        init(vertices, material, texture);
+        setupVertices(vertices, material, texture);
     }
 
     /**
-     * Internal method to init this class.
+     * Setup the buffers needed for indexed (elements) rendering using glDrawElements()
      * 
      * @param indices Buffer with element data for vertices to be drawn.
      * @param vertices One or more buffers with vertice/attribute data
@@ -115,23 +124,23 @@ public class Mesh {
      * @param texture Texture to set or null
      * @throws IllegalArgumentException If vertices or material is null.
      */
-    private void init(ElementBuffer indices, VertexBuffer[] vertices, Material material, Texture2D texture) {
+    public void setupIndexed(ElementBuffer indices, VertexBuffer[] vertices, Material material, Texture2D texture) {
         if (indices == null) {
             throw new IllegalArgumentException(NULL_PARAMETER_STR);
         }
         this.indices = indices;
-        init(vertices, material, texture);
+        setupVertices(vertices, material, texture);
     }
 
     /**
-     * Internal method to init this class.
+     * Setup the buffers needed for drawing using only the vertices (no indexed buffer)
      * 
      * @param vertices One or more buffers with vertice/attribute data
      * @param material The material to use when rendering this mesh.
      * @param texture Texture to set or null
      * @throws IllegalArgumentException If vertices or material is null.
      */
-    private void init(VertexBuffer[] vertices, Material material, Texture2D texture) {
+    public void setupVertices(VertexBuffer[] vertices, Material material, Texture2D texture) {
         if (vertices == null || material == null) {
             throw new IllegalArgumentException(NULL_PARAMETER_STR);
         }
