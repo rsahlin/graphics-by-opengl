@@ -46,7 +46,7 @@ public class TextureUtils {
      * Sets the active texture, binds texName and calls glTexImage2D on the images in the array where
      * mip-map level will be same as the image index.
      * 
-     * @param gles GLES20Wrapper for gles functions
+     * @param gles GLES20Wrapper for GL calls
      * @param texture Texture unit number (active texture)
      * @param texName Name of texture object
      * @param textureImages Array with one or more images to send to GL. If more than
@@ -78,7 +78,7 @@ public class TextureUtils {
      * Return the texture type for the specified format.
      * 
      * @param format
-     * @return
+     * @return GL datatype for the specified format, eg GL_UNSIGNED_BYTE, GL_UNSIGNED_SHORT_5_6_5
      * @throws IllegalArgumentException If format is not one of: GL_RGB, GL_RGBA, GL_RGB565, GL_RGBA4, GL_RGB5_A1
      */
     public static int getTypeFromFormat(int format) {
