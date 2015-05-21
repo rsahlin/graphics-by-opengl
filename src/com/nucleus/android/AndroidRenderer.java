@@ -42,6 +42,7 @@ public class AndroidRenderer implements Renderer {
     @Override
     public void onDrawFrame(GL10 gl) {
         float deltaTime = renderer.beginFrame();
+        renderer.updateFrame(deltaTime);
         renderer.endFrame();
     }
 
