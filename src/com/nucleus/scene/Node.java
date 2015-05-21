@@ -3,6 +3,7 @@ package com.nucleus.scene;
 import java.util.ArrayList;
 
 import com.nucleus.geometry.Mesh;
+import com.nucleus.io.Reference;
 import com.nucleus.vecmath.Transform;
 
 /**
@@ -11,7 +12,7 @@ import com.nucleus.vecmath.Transform;
  * @author Richard Sahlin
  *
  */
-public class Node {
+public class Node implements Reference {
 
     final Transform transform = new Transform();
     /**
@@ -20,6 +21,23 @@ public class Node {
     float[] projection;
     ArrayList<Mesh> meshes = new ArrayList<Mesh>();
     ArrayList<Node> children = new ArrayList<Node>();
+    String id;
+
+    /**
+     * Creates an empty node, add children and meshes as needed.
+     */
+    public Node() {
+    }
+
+    /**
+     * Creates an empty node with unique (for the scene) Id.
+     * The uniqueness of the id is NOT checked.
+     * 
+     * @param id
+     */
+    public Node(String id) {
+        this.id = id;
+    }
 
     /**
      * Constructs a new Node with the specified mesh.
@@ -115,6 +133,61 @@ public class Node {
      */
     public boolean removeChild(Node child) {
         return children.remove(child);
+    }
+
+    /**
+     * Returns the list of children for this node.
+     * Any modifications done to the returned list will be reflected here.
+     * 
+     * @return The list of children.
+     */
+    public ArrayList<Node> getChildren() {
+        return children;
+    }
+
+    /**
+     * Sets the id of this Node, what this id means is up to the user.
+     * The id is not checked for uniqueness, ie 2 nodes can exist with the same id.
+     * 
+     * @param id
+     */
+    @Override
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    /**
+     * Returns the id of this node, or null if none is set.
+     * 
+     * @return
+     */
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Returns the first matching node by id.
+     * 
+     * @param id Id of node to return
+     * @return First instance of node with matching id, or null if none found
+     */
+    public Node getNodeById(String id) {
+        if (id.equals(this.id)) {
+            return this;
+        }
+        for (Node child : children) {
+            Node result = child.getNodeById(id);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return "Node '" + id + "', " + meshes.size() + " meshes, " + children.size() + " children";
     }
 
 }
