@@ -1,6 +1,8 @@
 package com.nucleus.renderer;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.TimeKeeper;
@@ -13,14 +15,10 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLES20Wrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
-import com.nucleus.resource.ResourceBias;
-import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.Node;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.texturing.Image;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.TextureUtils;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -33,6 +31,8 @@ import com.nucleus.vecmath.Matrix;
  * @author Richard Sahlin
  */
 public class BaseRenderer {
+
+    public final static String NOT_INITIALIZED_ERROR = "Not initialized, must call init()";
 
     public interface RenderContextListener {
         /**
@@ -84,12 +84,18 @@ public class BaseRenderer {
     }
 
     protected final static String BASE_RENDERER_TAG = "BaseRenderer";
+    private final static int MIN_STACKELEMENTS = 100;
 
-    public final static String NULL_GLESWRAPPER_ERROR = "GLES wrapper is null";
-    public final static String NULL_IMAGEFACTORY_ERROR = "ImageFactory is null";
-    public final static String NULL_MATRIXENGINE_ERROR = "MatrixEngine is null";
+    private final static String NULL_GLESWRAPPER_ERROR = "GLES wrapper is null";
+    private final static String NULL_IMAGEFACTORY_ERROR = "ImageFactory is null";
+    private final static String NULL_MATRIXENGINE_ERROR = "MatrixEngine is null";
 
     protected ViewFrustum viewFrustum = new ViewFrustum();
+    protected Deque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
+    /**
+     * The current matrix
+     */
+    protected float[] mvpMatrix = Matrix.createMatrix();
 
     protected GLES20Wrapper gles;
     protected ImageFactory imageFactory;
@@ -99,14 +105,7 @@ public class BaseRenderer {
 
     private TimeKeeper timeKeeper = new TimeKeeper(30);
 
-    /**
-     * Implementations shall set the width of the target display
-     */
-    protected int width;
-    /**
-     * Implementations shall set the height of the target display
-     */
-    protected int height;
+    protected Window window = Window.getInstance();
 
     protected GLInfo glInfo;
     /**
@@ -150,8 +149,7 @@ public class BaseRenderer {
      * @param height Height of display in pixels
      */
     public void GLContextCreated(int width, int height) {
-        this.width = width;
-        this.height = height;
+        window.setDimension(width, height);
         for (RenderContextListener listener : contextListeners) {
             listener.contextCreated(width, height);
         }
@@ -180,8 +178,25 @@ public class BaseRenderer {
         if (timeKeeper.getSampleDuration() > 3) {
             System.out.println(BASE_RENDERER_TAG + ": Average FPS: " + timeKeeper.sampleFPS());
         }
-        for (FrameListener listener : frameListeners) {
-            listener.processFrame(deltaTime);
+        // For now always set the viewport
+        // TODO: Add dirty flag in viewport and only set when updated.
+        int[] viewport = viewFrustum.getViewPort();
+        gles.glViewport(viewport[ViewFrustum.VIEWPORT_X], viewport[ViewFrustum.VIEWPORT_Y],
+                viewport[ViewFrustum.VIEWPORT_WIDTH], viewport[ViewFrustum.VIEWPORT_HEIGHT]);
+        matrixEngine.setProjectionMatrix(viewFrustum);
+
+        mvpMatrix = getViewFrustum().getProjectionMatrix();
+
+        try {
+            // TODO Add render setting with clear flags, depth test, cull face etc.
+            gles.glClearColor(0, 0f, 0.4f, 1.0f);
+            gles.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+            gles.glDisable(GLES20.GL_DEPTH_TEST);
+            gles.glDisable(GLES20.GL_CULL_FACE);
+            GLUtils.handleError(gles, "Error");
+
+        } catch (GLException e) {
+            throw new RuntimeException(e);
         }
         return deltaTime;
     }
@@ -196,45 +211,32 @@ public class BaseRenderer {
     }
 
     /**
-     * The main render method, all drawing shall take place here.
-     * Call this method when a new frame shall be produced by GL
-     * Note that implementations shall not swap buffer in this method, this method shall ONLY render to the currently
-     * attached framebuffer.
+     * Call registered FrameListeners to signal that one updated frame shall be produced
+     * This shall be called by the thread driving rendering.
      */
-    public void render() {
-        // For now always set the viewport
-        // TODO: Add dirty flag in viewport and only set when updated.
-        int[] viewport = viewFrustum.getViewPort();
-        gles.glViewport(viewport[ViewFrustum.VIEWPORT_X], viewport[ViewFrustum.VIEWPORT_Y],
-                viewport[ViewFrustum.VIEWPORT_WIDTH], viewport[ViewFrustum.VIEWPORT_HEIGHT]);
-        matrixEngine.setProjectionMatrix(viewFrustum);
-
-        try {
-            // TODO Add render setting with clear flags, depth test, cull face etc.
-            gles.glClearColor(0, 0f, 0.4f, 1.0f);
-            gles.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-            gles.glDisable(GLES20.GL_DEPTH_TEST);
-            gles.glDisable(GLES20.GL_CULL_FACE);
-            GLUtils.handleError(gles, "Error");
-
-        } catch (GLException e) {
-            throw new RuntimeException(e);
+    public void updateFrame(float deltaTime) {
+        for (FrameListener listener : frameListeners) {
+            listener.processFrame(deltaTime);
         }
 
     }
 
     /**
-     * Renders the node
+     * Renders the node using the current mvp matrix, will call children recursively.
      * 
      * @param node The node to be rendered
      * @throws GLException If there is an error in GL while drawing this node.
      */
     public void render(Node node) throws GLException {
-        float[] viewMatrix = getViewFrustum().getProjectionMatrix();
         float[] modelMatrix = node.getTransform().getMatrix();
-        float[] mvp = new float[16];
-        Matrix.mul4(viewMatrix, modelMatrix, mvp);
+        float[] mvp = Matrix.createMatrix();
+        Matrix.mul4(mvpMatrix, modelMatrix, mvp);
         renderMeshes(node.getMeshes(), mvp);
+        pushMatrix(mvp);
+        for (Node n : node.getChildren()) {
+            render(n);
+        }
+        popMatrix();
     }
 
     /**
@@ -278,7 +280,7 @@ public class BaseRenderer {
             int textureID = texture.getName();
             gles.glActiveTexture(GLES20.GL_TEXTURE0);
             gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
-            texture.setTexParameters(gles);
+            texture.uploadTexParameters(gles);
         }
         mesh.setBlendModeSeparate(gles);
         program.bindAttributes(gles, mesh);
@@ -312,84 +314,8 @@ public class BaseRenderer {
         return initialized;
     }
 
-    /**
-     * Returns the width in pixels of the display
-     * 
-     * @return
-     */
-    public int getWidth() {
-        return width;
-    }
-
-    /**
-     * Returns the height in pixels of the display
-     * 
-     * @return
-     */
-    public int getHeight() {
-        return height;
-    }
-
     public void createProgram(ShaderProgram program) {
         program.createProgram(gles);
-    }
-
-    /**
-     * Creates a texture for the specified image, the texture will be scaled according to target resolution (for the
-     * image) and current height of screen.
-     * 
-     * @param imageName
-     * @param levels Number of MIP-MAP levels to create, will use scaled version of image.
-     * @param targetResolution
-     * @return
-     */
-    public Texture2D createTexture(String imageName, int levels, RESOLUTION targetResolution) {
-        int[] textures = new int[1];
-        gles.glGenTextures(1, textures, 0);
-
-        int textureID = textures[0];
-
-        Image[] textureImg = TextureUtils.loadTextureMIPMAP(imageFactory, imageName,
-                ResourceBias.getScaleFactorLandscape(width, height, targetResolution.lines), levels);
-
-        try {
-            uploadTextures(GLES20.GL_TEXTURE0, textureID, textureImg);
-        } catch (GLException e) {
-            throw new IllegalArgumentException(e);
-        }
-        return new Texture2D(textureID, textureImg[0].getWidth(), textureImg[0].getHeight());
-
-    }
-
-    /**
-     * Sets the active texture, binds texName and calls glTexImage2D on the images in the array where
-     * mip-map level will be same as the image index.
-     * 
-     * @param texture Texture unit number (active texture)
-     * @param texName Name of texture object
-     * @param textureImages Array with one or more images to send to GL. If more than
-     * one image is specified then multiple mip-map levels will be set.
-     * Level 0 shall be at index 0
-     * @throws GLException If there is an error uploading the textures.
-     */
-    public void uploadTextures(int texture, int texName, Image[] textureImages) throws GLException {
-        gles.glActiveTexture(texture);
-        gles.glBindTexture(GLES20.GL_TEXTURE_2D, texName);
-        int level = 0;
-        for (Image textureImg : textureImages) {
-            if (textureImg != null) {
-                gles.glTexImage2D(GLES20.GL_TEXTURE_2D, level, textureImg.getFormat().getFormat(),
-                        textureImg.getWidth(),
-                        textureImg
-                                .getHeight(), 0, textureImg.getFormat().getFormat(), GLES20.GL_UNSIGNED_BYTE,
-                        textureImg
-                                .getBuffer()
-                                .position(0));
-                GLUtils.handleError(gles, "texImage2D");
-            }
-            level++;
-        }
-
     }
 
     /**
@@ -415,6 +341,53 @@ public class BaseRenderer {
             return;
         }
         frameListeners.add(listener);
+    }
+
+    /**
+     * Returns the GLES20Wrapper.
+     * BEWARE - do not use unless you really know what you are doing!!!!
+     * 
+     * @return The GLES wrapper for GLES functions.
+     * @throws IllegalStateException If init() has not been called.
+     */
+    public GLES20Wrapper getGLES() {
+        if (!initialized) {
+            throw new IllegalStateException(NOT_INITIALIZED_ERROR);
+        }
+        return gles;
+    }
+
+    /**
+     * Returns the ImageFactory to be used with this renderer when loading image resources.
+     * 
+     * @return
+     */
+    public ImageFactory getImageFactory() {
+        if (!initialized) {
+            throw new IllegalStateException(NOT_INITIALIZED_ERROR);
+        }
+        return imageFactory;
+
+    }
+
+    /**
+     * Internal method to handle matrix stack, push a matrix on the stack
+     * 
+     * @param matrix
+     */
+    protected void pushMatrix(float[] matrix) {
+        matrixStack.push(matrix);
+        mvpMatrix = matrix;
+    }
+
+    /**
+     * Internal method to handle matrix stack - pops the latest matrix off the stack
+     * 
+     * @return
+     */
+    protected float[] popMatrix() {
+        mvpMatrix = matrixStack.pop();
+        return mvpMatrix;
     }
 
 }
