@@ -22,4 +22,9 @@ public interface AttributeUpdater {
      * setAttributeData() is called.
      */
     public float[] getAttributeData();
+
+    /**
+     * Release all resources allocated by the implementing class, call this when this object shall not be used anymore.
+     */
+    public void destroy();
 }
