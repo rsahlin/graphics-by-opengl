@@ -1,5 +1,6 @@
 package com.nucleus.texturing;
 
+import com.nucleus.io.BaseReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLES20Wrapper.GLES20;
 
@@ -10,26 +11,9 @@ import com.nucleus.opengl.GLES20Wrapper.GLES20;
  * @author Richard Sahlin
  *
  */
-public class Texture2D {
+public class Texture2D extends BaseReference {
 
     public final static int TEXTURE_0 = 0;
-
-    /**
-     * Index into parameters where min filter value is
-     */
-    public final static int MIN_FILTER_INDEX = 0;
-    /**
-     * Index into parameters where mag filter value is
-     */
-    public final static int MAG_FILTER_INDEX = 1;
-    /**
-     * Index into parameters where wrap s value is
-     */
-    public final static int WRAP_S_INDEX = 2;
-    /**
-     * Index into parameters where wrap t value is
-     */
-    public final static int WRAP_T_INDEX = 3;
 
     /**
      * The texture name, this is a loose reference to the allocated texture name.
@@ -48,8 +32,7 @@ public class Texture2D {
     /**
      * Texture parameter values.
      */
-    protected final int[] values = new int[] { GLES20.GL_NEAREST, GLES20.GL_NEAREST, GLES20.GL_CLAMP_TO_EDGE,
-            GLES20.GL_CLAMP_TO_EDGE };
+    protected TextureParameter textureParameters = new TextureParameter();
 
     /**
      * Creates a texture reference with name, width and height.
@@ -65,19 +48,12 @@ public class Texture2D {
     }
 
     /**
-     * Sets the values for the texture parameters
-     * Call setTexParameters to set the values to GL.
+     * Returns the texture parameters to use with this texture.
      * 
-     * @param minFilter The texture minification filter
-     * @param magFilter The texture magnification filter
-     * @param wrapS Texture wrap s
-     * @param wrapT Texture wrap t
+     * @return
      */
-    public void setValues(int minFilter, int magFilter, int wrapS, int wrapT) {
-        values[MIN_FILTER_INDEX] = minFilter;
-        values[MAG_FILTER_INDEX] = magFilter;
-        values[WRAP_S_INDEX] = wrapS;
-        values[WRAP_T_INDEX] = wrapT;
+    public TextureParameter getTexParams() {
+        return textureParameters;
     }
 
     /**
@@ -87,15 +63,6 @@ public class Texture2D {
      */
     public int getName() {
         return name;
-    }
-
-    /**
-     * Returns the texture parameter values, min and mag filter, wrap s and t.
-     * 
-     * @return The texture parameter values
-     */
-    public int[] getValues() {
-        return values;
     }
 
     /**
@@ -122,16 +89,17 @@ public class Texture2D {
      * 
      * @param gles
      */
-    public void setTexParameters(GLES20Wrapper gles) {
+    public void uploadTexParameters(GLES20Wrapper gles) {
 
+        int[] values = textureParameters.values;
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
-                values[Texture2D.MIN_FILTER_INDEX]);
+                values[TextureParameter.MIN_FILTER]);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
-                values[Texture2D.MAG_FILTER_INDEX]);
+                values[TextureParameter.MAG_FILTER]);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
-                values[Texture2D.WRAP_S_INDEX]);
+                values[TextureParameter.WRAP_S]);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
-                values[Texture2D.WRAP_T_INDEX]);
+                values[TextureParameter.WRAP_T]);
     }
 
 }
