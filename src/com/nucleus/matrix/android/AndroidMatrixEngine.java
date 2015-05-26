@@ -4,7 +4,7 @@ import android.opengl.Matrix;
 import android.util.Log;
 
 import com.nucleus.camera.ViewFrustum;
-import com.nucleus.renderer.BaseRenderer.MatrixEngine;
+import com.nucleus.renderer.NucleusRenderer.MatrixEngine;
 
 /**
  * Android implementation of Matrix functions.

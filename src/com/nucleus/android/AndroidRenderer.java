@@ -5,7 +5,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.GLSurfaceView.Renderer;
 
-import com.nucleus.renderer.BaseRenderer;
+import com.nucleus.renderer.NucleusRenderer;
 
 /**
  * Base implementation for Android renderer used with GLSurfaceView
@@ -16,8 +16,8 @@ import com.nucleus.renderer.BaseRenderer;
 public class AndroidRenderer implements Renderer {
 
     public final static String ANDROID_RENDERER_TAG = "AndroidRenderer";
-    private final static String NULL_RENDERER_ERROR = "BaseRenderer is null";
-    BaseRenderer renderer;
+    private final static String NULL_RENDERER_ERROR = "NucleusRenderer is null";
+    NucleusRenderer renderer;
 
     /**
      * Creates a new Android renderer using the specified BaseRenderer implementation
@@ -26,7 +26,7 @@ public class AndroidRenderer implements Renderer {
      * @param appListener Call when each frame shall be drawn.
      * @throws IllegalArgumentException If renderer is null.
      */
-    public AndroidRenderer(BaseRenderer renderer) {
+    public AndroidRenderer(NucleusRenderer renderer) {
         if (renderer == null) {
             throw new IllegalArgumentException(NULL_RENDERER_ERROR);
         }
