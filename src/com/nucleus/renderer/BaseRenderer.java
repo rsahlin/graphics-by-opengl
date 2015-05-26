@@ -30,58 +30,9 @@ import com.nucleus.vecmath.Matrix;
  * 
  * @author Richard Sahlin
  */
-public class BaseRenderer {
+class BaseRenderer implements NucleusRenderer {
 
     public final static String NOT_INITIALIZED_ERROR = "Not initialized, must call init()";
-
-    public interface RenderContextListener {
-        /**
-         * Called when the rendering context is create and ready to be used. Can also be called if
-         * context is lost and re-created.
-         * When this method is called clients must assume that all objects are lost (textures/programs) and
-         * recreate them.
-         * 
-         * @param width Width of display in pixels.
-         * @param height Height of display in pixels.
-         */
-        public void contextCreated(int width, int height);
-    }
-
-    /**
-     * Used to drive processing from the render, use this when you need the rendering to drive behavior or other
-     * calculations.
-     * 
-     * @author Richard Sahlin
-     *
-     */
-    public interface FrameListener {
-        /**
-         * Called when a new frame shall be processed (by the logic)
-         * Update objects position, behavior, animation etc based on the deltaTime.
-         * This method will be called by the beginFrame() method, ie before rendering takes place.
-         * 
-         * @param deltaTime
-         */
-        public void processFrame(float deltaTime);
-    }
-
-    /**
-     * Matrix functions that may be accelerated on target platform.
-     * 
-     * @author Richard Sahlin
-     *
-     */
-    public interface MatrixEngine {
-
-        /**
-         * Sets the projection matrix to be used by the renderer based on the setting in the viewFrustum
-         * 
-         * @param viewFrustum
-         * 
-         */
-        public abstract void setProjectionMatrix(ViewFrustum viewFrustum);
-
-    }
 
     protected final static String BASE_RENDERER_TAG = "BaseRenderer";
     private final static int MIN_STACKELEMENTS = 100;
@@ -123,6 +74,8 @@ public class BaseRenderer {
      * 
      * @param gles
      * @throws IllegalArgumentException If gles is null
+     * TODO Remove parameters from constructor and move to setter methods, this is in order for injection to be more
+     * straightforward
      */
     public BaseRenderer(GLES20Wrapper gles, ImageFactory imageFactory, MatrixEngine matrixEngine) {
         if (gles == null) {
@@ -148,6 +101,7 @@ public class BaseRenderer {
      * @param width Width of display in pixels
      * @param height Height of display in pixels
      */
+    @Override
     public void GLContextCreated(int width, int height) {
         window.setDimension(width, height);
         for (RenderContextListener listener : contextListeners) {
@@ -159,6 +113,7 @@ public class BaseRenderer {
      * Call this first time when the context is created, before calling GLContextCreated()
      * Initialize parameters that do not need to be updated when context is re-created.
      */
+    @Override
     public void init() {
         if (initialized) {
             return;
@@ -173,6 +128,7 @@ public class BaseRenderer {
      * 
      * @return Number of seconds since last call to beginFrame
      */
+    @Override
     public float beginFrame() {
         float deltaTime = timeKeeper.update();
         if (timeKeeper.getSampleDuration() > 3) {
@@ -206,6 +162,7 @@ public class BaseRenderer {
      * EGL.swapBuffers() if needed
      * This shall be called by the thread driving rendering.
      */
+    @Override
     public void endFrame() {
 
     }
@@ -214,6 +171,7 @@ public class BaseRenderer {
      * Call registered FrameListeners to signal that one updated frame shall be produced
      * This shall be called by the thread driving rendering.
      */
+    @Override
     public void updateFrame(float deltaTime) {
         for (FrameListener listener : frameListeners) {
             listener.processFrame(deltaTime);
@@ -227,6 +185,7 @@ public class BaseRenderer {
      * @param node The node to be rendered
      * @throws GLException If there is an error in GL while drawing this node.
      */
+    @Override
     public void render(Node node) throws GLException {
         float[] modelMatrix = node.getTransform().getMatrix();
         float[] mvp = Matrix.createMatrix();
@@ -300,6 +259,7 @@ public class BaseRenderer {
      * 
      * @return
      */
+    @Override
     public ViewFrustum getViewFrustum() {
         return viewFrustum;
     }
@@ -310,10 +270,12 @@ public class BaseRenderer {
      * 
      * @return
      */
+    @Override
     public boolean isInitialized() {
         return initialized;
     }
 
+    @Override
     public void createProgram(ShaderProgram program) {
         program.createProgram(gles);
     }
@@ -323,6 +285,7 @@ public class BaseRenderer {
      * 
      * @param listener Listener to get callback when render context is created.
      */
+    @Override
     public void addContextListener(RenderContextListener listener) {
         if (contextListeners.contains(listener)) {
             return;
@@ -336,6 +299,7 @@ public class BaseRenderer {
      * 
      * @param listener The listener to get callback before a frame is rendered.
      */
+    @Override
     public void addFrameListener(FrameListener listener) {
         if (frameListeners.contains(listener)) {
             return;
@@ -350,6 +314,7 @@ public class BaseRenderer {
      * @return The GLES wrapper for GLES functions.
      * @throws IllegalStateException If init() has not been called.
      */
+    @Override
     public GLES20Wrapper getGLES() {
         if (!initialized) {
             throw new IllegalStateException(NOT_INITIALIZED_ERROR);
@@ -362,6 +327,7 @@ public class BaseRenderer {
      * 
      * @return
      */
+    @Override
     public ImageFactory getImageFactory() {
         if (!initialized) {
             throw new IllegalStateException(NOT_INITIALIZED_ERROR);
@@ -388,6 +354,11 @@ public class BaseRenderer {
     protected float[] popMatrix() {
         mvpMatrix = matrixStack.pop();
         return mvpMatrix;
+    }
+
+    @Override
+    public void setImageFactory(ImageFactory imageFactory) {
+        this.imageFactory = imageFactory;
     }
 
 }
