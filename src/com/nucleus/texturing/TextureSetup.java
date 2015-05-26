@@ -1,19 +1,45 @@
 package com.nucleus.texturing;
 
+import com.nucleus.io.DataSetup;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 
 /**
  * The data needed to create a new Texture, use this object with serialization or file loading.
+ * This class can be used with serialization to decouple io from implementation
  * 
  * @author Richard Sahlin
  *
  */
-public class TextureSetup {
+public class TextureSetup extends DataSetup {
 
-    public TextureSetup(String source, RESOLUTION resolution, int levels) {
-        sourceName = source;
-        targetResolution = resolution;
-        this.levels = levels;
+    /**
+     * Provides the mapping between serialized data and the data in this class.
+     * 
+     * @author Richard Sahlin
+     *
+     */
+    public enum TextureMapping implements Indexer {
+        SOURCENAME(0),
+        TARGET_RESOLUTION(1),
+        LEVELS(2);
+
+        private final int index;
+
+        private TextureMapping(int index) {
+            this.index = index;
+        }
+
+        @Override
+        public int getIndex() {
+            return index;
+        }
+    }
+
+    /**
+     * Default constructor, use importData() to fill this class with data.
+     */
+    public TextureSetup() {
+        super();
     }
 
     String sourceName;
@@ -63,6 +89,14 @@ public class TextureSetup {
      */
     public int getLevels() {
         return levels;
+    }
+
+    @Override
+    public int importData(String[] data, int offset) {
+        sourceName = getString(data, offset, TextureMapping.SOURCENAME);
+        levels = getInt(data, offset, TextureMapping.LEVELS);
+        targetResolution = RESOLUTION.valueOf(getString(data, offset, TextureMapping.TARGET_RESOLUTION));
+        return TextureMapping.values().length;
     }
 
 }
