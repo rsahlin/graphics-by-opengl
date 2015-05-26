@@ -1,5 +1,6 @@
 package com.nucleus.texturing;
 
+import com.nucleus.io.DataSetup;
 import com.nucleus.opengl.GLES20Wrapper.GLES20;
 
 /**
@@ -9,7 +10,7 @@ import com.nucleus.opengl.GLES20Wrapper.GLES20;
  * @author Richard Sahlin
  *
  */
-public class TextureParameter {
+public class TextureParameter extends DataSetup {
 
     public enum Name {
         NEAREST(GLES20.GL_NEAREST),
@@ -38,6 +39,25 @@ public class TextureParameter {
         }
     }
 
+    public enum TextureParameterMapping implements Indexer {
+        MIN_FILTER(0),
+        MAG_FILTER(1),
+        WRAP_S(2),
+        WRAP_T(3);
+
+        private final int index;
+
+        private TextureParameterMapping(int index) {
+            this.index = index;
+        }
+
+        @Override
+        public int getIndex() {
+            return index;
+        }
+
+    }
+
     /**
      * Index into parameters where min filter value is
      */
@@ -62,25 +82,16 @@ public class TextureParameter {
             GLES20.GL_CLAMP_TO_EDGE };
 
     /**
-     * Creates a texture parameter from the String array, the array shall contain the texture parameter values
-     * as defined by Names enum
-     * 
-     * @param parameters String names matched to Name enum
-     */
-    public TextureParameter(String[] parameters) {
-        setValues(parameters);
-    }
-
-    /**
      * Sets the texture parameter values from the String array, use values from the Name enum, eg "CLAMP" for GL_CLAMP
      * 
      * @param parameters
+     * @param offset Offset into parameters where values are read.
      */
-    public void setValues(String[] parameters) {
-        values[MIN_FILTER] = Name.valueOf(parameters[MIN_FILTER]).value;
-        values[MAG_FILTER] = Name.valueOf(parameters[MAG_FILTER]).value;
-        values[WRAP_S] = Name.valueOf(parameters[WRAP_S]).value;
-        values[WRAP_T] = Name.valueOf(parameters[WRAP_T]).value;
+    public void setValues(String[] parameters, int offset) {
+        values[MIN_FILTER] = Name.valueOf(getString(parameters, offset, TextureParameterMapping.MIN_FILTER)).value;
+        values[MAG_FILTER] = Name.valueOf(getString(parameters, offset, TextureParameterMapping.MAG_FILTER)).value;
+        values[WRAP_S] = Name.valueOf(getString(parameters, offset, TextureParameterMapping.WRAP_S)).value;
+        values[WRAP_T] = Name.valueOf(getString(parameters, offset, TextureParameterMapping.WRAP_T)).value;
     }
 
     /**
@@ -102,6 +113,13 @@ public class TextureParameter {
      * Default constructor, creates default texture parameters
      */
     public TextureParameter() {
+        super();
+    }
+
+    @Override
+    public int importData(String[] data, int offset) {
+        setValues(data, offset);
+        return TextureParameterMapping.values().length;
     }
 
 }
