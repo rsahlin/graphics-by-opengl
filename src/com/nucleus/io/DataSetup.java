@@ -9,7 +9,7 @@ package com.nucleus.io;
  * @author Richard Sahlin
  *
  */
-public abstract class DataSetup extends BaseReference implements DataImporter {
+public abstract class DataSetup extends BaseReference implements DataImporter, DataExporter {
 
     public interface Indexer {
         public int getIndex();

@@ -122,4 +122,10 @@ public class TextureParameter extends DataSetup {
         return TextureParameterMapping.values().length;
     }
 
+    @Override
+    public String exportDataAsString() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

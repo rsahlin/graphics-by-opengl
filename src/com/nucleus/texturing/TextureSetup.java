@@ -42,6 +42,13 @@ public class TextureSetup extends DataSetup {
         super();
     }
 
+    public TextureSetup(String sourceName, RESOLUTION targetResolution, int levels) {
+        super();
+        this.sourceName = sourceName;
+        this.targetResolution = targetResolution;
+        this.levels = levels;
+    }
+
     String sourceName;
     int levels;
     RESOLUTION targetResolution;
@@ -97,6 +104,12 @@ public class TextureSetup extends DataSetup {
         levels = getInt(data, offset, TextureMapping.LEVELS);
         targetResolution = RESOLUTION.valueOf(getString(data, offset, TextureMapping.TARGET_RESOLUTION));
         return TextureMapping.values().length;
+    }
+
+    @Override
+    public String exportDataAsString() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
