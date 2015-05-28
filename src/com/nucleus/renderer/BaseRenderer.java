@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Deque;
 
 import com.nucleus.camera.ViewFrustum;
-import com.nucleus.common.TimeKeeper;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
@@ -15,6 +14,7 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLES20Wrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.Node;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
@@ -54,7 +54,7 @@ class BaseRenderer implements NucleusRenderer {
     private ArrayList<RenderContextListener> contextListeners = new ArrayList<RenderContextListener>();
     private ArrayList<FrameListener> frameListeners = new ArrayList<BaseRenderer.FrameListener>();
 
-    private TimeKeeper timeKeeper = new TimeKeeper(30);
+    private FrameSampler timeKeeper = new FrameSampler(30);
 
     protected Window window = Window.getInstance();
 

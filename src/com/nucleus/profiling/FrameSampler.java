@@ -1,4 +1,4 @@
-package com.nucleus.common;
+package com.nucleus.profiling;
 
 /**
  * Utility class for keeping track of delta times, normally used to calculate the delta time from one frame to the next.
@@ -6,7 +6,7 @@ package com.nucleus.common;
  * @author Richard Sahlin
  *
  */
-public class TimeKeeper {
+public class FrameSampler {
 
     public final static int DEFAULT_MIN_FPS = 30;
 
@@ -19,7 +19,7 @@ public class TimeKeeper {
     private int frames;
     private long sampleStart;
 
-    public TimeKeeper(int minFPS) {
+    public FrameSampler(int minFPS) {
         this.minFPS = minFPS;
     }
 
@@ -76,6 +76,18 @@ public class TimeKeeper {
             return 0;
         }
         return (int) (currentTime - sampleStart) / 1000;
+    }
+
+    /**
+     * Sets the min fps value, a value of 20 means that the delta-time, as returned by getDelta(), will never go above
+     * 50 milliseconds (1/20 s).
+     * Use this to limit the lowest fps for animations/logic - note that slowdown will occur of the client platform
+     * cannot provide a fps that is higher.
+     * 
+     * @param fps Min fps, the value of getDelta() will be larger than (1/fps)
+     */
+    public void setMinFPS(int fps) {
+
     }
 
 }
