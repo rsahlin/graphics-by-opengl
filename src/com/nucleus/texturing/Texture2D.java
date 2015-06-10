@@ -3,10 +3,11 @@ package com.nucleus.texturing;
 import com.nucleus.io.BaseReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLES20Wrapper.GLES20;
+import com.nucleus.resource.ResourceBias.RESOLUTION;
 
 /**
- * Texture object and Sampler info, this class holds the texture object ID, texture parameters but should
- * NOT keep the texture data.
+ * Texture object and Sampler info, this class holds the texture object ID, texture parameters and a reference to the
+ * Image sources to the texture. This is needed so that the system can remove unused texture sources (bitmaps)
  * 
  * @author Richard Sahlin
  *
@@ -14,6 +15,17 @@ import com.nucleus.opengl.GLES20Wrapper.GLES20;
 public class Texture2D extends BaseReference {
 
     public final static int TEXTURE_0 = 0;
+
+    /**
+     * Texture sources, one for each used mip-map level
+     */
+    Image[] images;
+
+    /**
+     * This is the originating asset target resolution - the actual assets used may be scaled if the system
+     * has a lower resolution.
+     */
+    RESOLUTION targetResolution;
 
     /**
      * The texture name, this is a loose reference to the allocated texture name.
@@ -28,23 +40,44 @@ public class Texture2D extends BaseReference {
      * Height of texture in pixels
      */
     protected int height;
-
     /**
      * Texture parameter values.
      */
     protected TextureParameter textureParameters = new TextureParameter();
 
     /**
+     * Default constructor
+     */
+    protected Texture2D() {
+        super();
+    }
+
+    /**
      * Creates a texture reference with name, width and height.
      * 
-     * @param name
-     * @param width
-     * @param height
+     * @param name Texture object name (OpenGL)
+     * @param images One or more texture sources for mipmapping, if 3 are provided then 3 mipmap levels are used.
+     * @param targetResolution The originating texture source resolution, not that the actual provided sources may be
+     * scaled if the platform has lower resolution.
      */
-    public Texture2D(int name, int width, int height) {
+    protected Texture2D(int name, Image[] images, RESOLUTION targetResolution) {
+        setup(name, images, targetResolution);
+    }
+
+    /**
+     * Sets the texture object name (for GL), the images (buffers) to use and the resolution of textures.
+     * The texture(s) will not be uploaded to GL.
+     * 
+     * @param name
+     * @param images
+     * @param targetResolution
+     */
+    protected void setup(int name, Image[] images, RESOLUTION targetResolution) {
         this.name = name;
-        this.width = width;
-        this.height = height;
+        this.images = images;
+        this.targetResolution = targetResolution;
+        this.width = images[0].width;
+        this.height = images[0].height;
     }
 
     /**
