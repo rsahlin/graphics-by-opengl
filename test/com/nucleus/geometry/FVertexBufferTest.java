@@ -16,9 +16,8 @@ public class FVertexBufferTest {
 
     @Test
     public void testCreateVertexBuffer() {
-        VertexBuffer vb = new VertexBuffer(TRIANGLE_COUNT, SIZE_PER_VERTEX, GLES20.GL_FLOAT,
-                DATA_SIZE32);
-        Assert.assertEquals(TRIANGLE_COUNT * COMPONENT_COUNT, vb.getVerticeCount());
+        VertexBuffer vb = new VertexBuffer(TRIANGLE_COUNT * 3, COMPONENT_COUNT, SIZE_PER_VERTEX, GLES20.GL_FLOAT);
+        Assert.assertEquals(TRIANGLE_COUNT * 3, vb.getVerticeCount());
         Assert.assertEquals(COMPONENT_COUNT, vb.getComponentCount());
         Assert.assertEquals(GLES20.GL_FLOAT, vb.getDataType());
         Assert.assertEquals(SIZE_PER_VERTEX * DATA_SIZE32, vb.getByteStride());
@@ -29,24 +28,23 @@ public class FVertexBufferTest {
     public void testPutPositionUV() {
 
         // Allocate data for xyz + uv
-        float[] data = new float[TRIANGLE_COUNT * 3 * 5];
+        float[] data = new float[TRIANGLE_COUNT * COMPONENT_COUNT];
         for (int i = 0; i < data.length; i++) {
             data[i] = i;
         }
-        VertexBuffer vb = new VertexBuffer(TRIANGLE_COUNT, SIZE_PER_VERTEX, GLES20.GL_FLOAT,
-                DATA_SIZE32);
-        vb.setPosition(data, 0, 0, TRIANGLE_COUNT * 3);
+        VertexBuffer vb = new VertexBuffer(TRIANGLE_COUNT, COMPONENT_COUNT, SIZE_PER_VERTEX, GLES20.GL_FLOAT);
+        vb.setPosition(data, 0, 0, TRIANGLE_COUNT);
         // First 5 values should be followed by empty data (SIZE_PER_VERTEX - 5)
         // For now assume FloatBuffer since this is the only type currently supported.0
-        float[] getBuffer = new float[5];
+        float[] getBuffer = new float[3];
         int position = 0;
-        for (int i = 0; i < TRIANGLE_COUNT * COMPONENT_COUNT; i++) {
+        for (int i = 0; i < TRIANGLE_COUNT; i++) {
             FloatBuffer buffer = (FloatBuffer) vb.getBuffer();
             buffer.position(position);
             buffer.get(getBuffer);
             position += SIZE_PER_VERTEX;
             Assert.assertArrayEquals(new float[] {
-                    i * 5, i * 5 + 1, i * 5 + 2, i * 5 + 3, i * 5 + 4 }, getBuffer, 0);
+                    i * COMPONENT_COUNT, i * COMPONENT_COUNT + 1, i * COMPONENT_COUNT + 2 }, getBuffer, 0);
         }
 
     }
