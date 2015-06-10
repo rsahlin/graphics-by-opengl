@@ -62,8 +62,8 @@ public class MeshBuilder {
     /**
      * Builds a buffer containing the 4 vertices for XYZ components, to be indexed when drawing, ie drawn using
      * drawElements().
-     * The vertices will be centered in the middle of width / height, x will go from -(width / 2) to (width / 2)
-     * y will go from -(height / 2) to (height / 2)
+     * The vertices will be centered using anchorX and anchorY, a value of 0 will be left/top aligned.
+     * A value of 1/width will be centered horizontally.
      * 
      * @param width
      * @param height
