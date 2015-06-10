@@ -59,6 +59,13 @@ public class TextureParameter extends DataSetup {
     }
 
     /**
+     * Default constructor
+     */
+    public TextureParameter() {
+        super();
+    }
+
+    /**
      * Index into parameters where min filter value is
      */
     public final static int MIN_FILTER = 0;
@@ -110,10 +117,21 @@ public class TextureParameter extends DataSetup {
     }
 
     /**
-     * Default constructor, creates default texture parameters
+     * Returns the string (name) for a texture parameter value, eg 9728 will return NEAREST
+     * Can be used when exporting to texture format for readability
+     * 
+     * @param value The texture parameter value
+     * @return The string name of the value or null.
      */
-    public TextureParameter() {
-        super();
+    public String valueToString(int value) {
+
+        for (Name n : Name.values()) {
+            if (n.value == value) {
+                return n.toString();
+            }
+        }
+        return null;
+
     }
 
     @Override
@@ -124,8 +142,7 @@ public class TextureParameter extends DataSetup {
 
     @Override
     public String exportDataAsString() {
-        // TODO Auto-generated method stub
-        return null;
+        return valueToString(values[MIN_FILTER]) + DEFAULT_DELIMITER + valueToString(values[MAG_FILTER])
+                + DEFAULT_DELIMITER + valueToString(values[WRAP_S]) + DEFAULT_DELIMITER + valueToString(values[WRAP_T]);
     }
-
 }
