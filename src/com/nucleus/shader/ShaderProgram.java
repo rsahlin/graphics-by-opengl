@@ -14,6 +14,7 @@ import com.nucleus.opengl.GLES20Wrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.shader.ShaderVariable.VariableType;
+import com.nucleus.texturing.TiledTexture2D;
 
 /**
  * This class handles loading, compiling and linking of OpenGL ES shader programs.
@@ -509,6 +510,20 @@ public abstract class ShaderProgram {
         mesh.setUniformVectors(uniformVectors);
         float[] uniformMatrices = new float[matrices.getSizeInFloats()];
         mesh.setUniformMatrices(uniformMatrices);
+    }
+
+    /**
+     * Sets UV fraction for the tiled texture + number of frames in x.
+     * Use this for programs that use tiled texture behavior.
+     * 
+     * @param texture
+     * @param destination Will store 1 / framesx, 1 / framesy, framesex, beginning at offset
+     * @param offset
+     */
+    protected void setTextureUniforms(TiledTexture2D texture, float[] destination, int offset) {
+        destination[offset++] = 1f / texture.getFramesX();
+        destination[offset++] = 1f / texture.getFramesY();
+        destination[offset++] = texture.getFramesX();
     }
 
 }
