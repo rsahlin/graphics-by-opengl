@@ -8,7 +8,7 @@ package com.nucleus.renderer;
  */
 public class Window {
 
-    protected static Window window = null;
+    private static Window window = null;
 
     int width;
     int height;
@@ -19,6 +19,11 @@ public class Window {
     private Window() {
     }
 
+    /**
+     * Returns the Window instance, this will always be the same.
+     * 
+     * @return Window instance (singleton)
+     */
     public static Window getInstance() {
         if (window == null) {
             window = new Window();
