@@ -1,6 +1,7 @@
 package com.nucleus.texturing;
 
 import com.nucleus.io.DataSetup;
+import com.nucleus.io.ExternalReference;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 
 /**
@@ -35,20 +36,6 @@ public class TextureSetup extends DataSetup {
         }
     }
 
-    /**
-     * Default constructor, use importData() to fill this class with data.
-     */
-    public TextureSetup() {
-        super();
-    }
-
-    public TextureSetup(String sourceName, RESOLUTION targetResolution, int levels) {
-        super();
-        this.sourceName = sourceName;
-        this.targetResolution = targetResolution;
-        this.levels = levels;
-    }
-
     String sourceName;
     int levels;
     RESOLUTION targetResolution;
@@ -62,9 +49,70 @@ public class TextureSetup extends DataSetup {
     TextureParameter texParams = new TextureParameter();
 
     /**
-     * Return the name of the image that is the source of this texture.
+     * Default constructor, used when importing data.
+     * You must fill this class with data, either by calling a setup method or importing data.
+     */
+    public TextureSetup() {
+        super();
+    }
+
+    /**
+     * Creates a new texture setup with the external reference and based on the data in the texture.
+     * This is the same as creating the class then calling {@link #setup(ExternalReference, Texture2D)}
      * 
-     * @return
+     * @param externalRef
+     * @param texture
+     */
+    public TextureSetup(ExternalReference externalRef, Texture2D texture) {
+        super();
+        setup(externalRef, texture);
+    }
+
+    /**
+     * Creates a texture setup with name of source, target resolution and levels.
+     * This is the same as creating the class then calling {@link #setup(ExternalReference, RESOLUTION, int)}
+     * 
+     * @param externalRef The texture source name, ie the image/data that shall be used for the texture.
+     * @param targetResolution
+     * @param levels
+     */
+    public TextureSetup(ExternalReference externalRef, RESOLUTION targetResolution, int levels) {
+        super();
+        setup(externalRef, targetResolution, levels);
+    }
+
+    /**
+     * Sets setup data from an existing texture and sourceName
+     * 
+     * @param externalRef The external source for the texture (image)
+     * @param texture
+     */
+    public void setup(ExternalReference externalRef, Texture2D texture) {
+        this.levels = texture.images.length;
+        this.targetResolution = texture.targetResolution;
+        this.texParams = texture.textureParameters;
+        this.sourceName = externalRef.getSourceName();
+        setId(texture.getId());
+    }
+
+    /**
+     * Sets texture setup with name of source, target resolution and levels.
+     * 
+     * @param externalRef The texture source name, ie the image/data that shall be used for the texture.
+     * @param targetResolution
+     * @param levels
+     */
+    public void setup(ExternalReference externalRef, RESOLUTION targetResolution, int levels) {
+        this.sourceName = externalRef.getSourceName();
+        this.targetResolution = targetResolution;
+        this.levels = levels;
+    }
+
+    /**
+     * Return the name of the image that is the source of this texture, normally a file such as 'image.png' or
+     * a compressed texture file.
+     * 
+     * @return The name of the external resource (file) containing the texture data.
      */
     public String getSourceName() {
         return sourceName;
@@ -108,8 +156,8 @@ public class TextureSetup extends DataSetup {
 
     @Override
     public String exportDataAsString() {
-        // TODO Auto-generated method stub
-        return null;
+        String d = DEFAULT_DELIMITER;
+        return sourceName + d + toString(levels) + d + targetResolution;
     }
 
 }
