@@ -16,6 +16,22 @@ public abstract class DataSetup extends BaseReference implements DataImporter, D
     }
 
     /**
+     * Default constructor
+     */
+    public DataSetup() {
+        super();
+    }
+
+    /**
+     * Constructs a new DataSetup with base reference id
+     * 
+     * @param id
+     */
+    public DataSetup(String id) {
+        super(id);
+    }
+
+    /**
      * Internal utility method to fetch String from data array.
      * 
      * @param data Array containing String data
@@ -51,4 +67,23 @@ public abstract class DataSetup extends BaseReference implements DataImporter, D
         return Float.parseFloat(data[offset + index.getIndex()]);
     }
 
+    /**
+     * Internal utility method, returns an int as a String
+     * 
+     * @param number
+     * @return Integer.toString(number)
+     */
+    protected String toString(int number) {
+        return Integer.toString(number);
+    }
+
+    /**
+     * Internal utility method, returns a float as a String
+     * 
+     * @param number
+     * @return Float.toString(number);
+     */
+    protected String toString(float number) {
+        return Float.toString(number);
+    }
 }

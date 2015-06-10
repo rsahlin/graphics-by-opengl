@@ -9,6 +9,11 @@ package com.nucleus.io;
  */
 public interface DataExporter {
 
+    /**
+     * The default delimiter used when exporting data. Eg 1,2,3,4,5
+     */
+    public final static String DEFAULT_DELIMITER = ",";
+
     public String exportDataAsString();
 
 }
