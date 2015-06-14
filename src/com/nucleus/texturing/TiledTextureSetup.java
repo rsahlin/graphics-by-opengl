@@ -16,14 +16,14 @@ public class TiledTextureSetup extends TextureSetup {
      * @author Richard Sahlin
      *
      */
-    public enum TiledMapping implements DataIndexer {
+    public enum TiledTextureMapping implements DataIndexer {
         FRAMES_X(0, DataType.INT),
         FRAMES_Y(1, DataType.INT);
 
         private final int index;
         private final DataType type;
 
-        private TiledMapping(int index, DataType type) {
+        private TiledTextureMapping(int index, DataType type) {
             this.index = index;
             this.type = type;
         }
@@ -65,9 +65,9 @@ public class TiledTextureSetup extends TextureSetup {
     public int importData(String[] data, int offset) {
         int read = super.importData(data, offset);
         offset += read;
-        framesX = getInt(data, offset, TiledMapping.FRAMES_X);
-        framesY = getInt(data, offset, TiledMapping.FRAMES_Y);
-        return read + TiledMapping.values().length;
+        framesX = getInt(data, offset, TiledTextureMapping.FRAMES_X);
+        framesY = getInt(data, offset, TiledTextureMapping.FRAMES_Y);
+        return read + TiledTextureMapping.values().length;
     }
 
     @Override

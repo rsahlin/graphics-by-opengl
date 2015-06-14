@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.nucleus.texturing.TextureSetup.TextureMapping;
-import com.nucleus.texturing.TiledTextureSetup.TiledMapping;
+import com.nucleus.texturing.TiledTextureSetup.TiledTextureMapping;
 import com.nucleus.utils.DataSerializeUtils;
 
 public class FTiledTextureSetupTest extends FTextureSetupTest {
@@ -13,7 +13,7 @@ public class FTiledTextureSetupTest extends FTextureSetupTest {
     @Test
     public void testImportData() {
 
-        String[] data = DataSerializeUtils.createDefaultData(TextureMapping.values(), TiledMapping.values());
+        String[] data = DataSerializeUtils.createDefaultData(TextureMapping.values(), TiledTextureMapping.values());
         TiledTextureSetup setup = createSetup(data);
         assertImportData(data, setup);
     }
@@ -26,8 +26,8 @@ public class FTiledTextureSetupTest extends FTextureSetupTest {
 
     protected void assertImportData(String[] expected, TiledTextureSetup actual) {
         int offset = super.assertImportData(expected, actual);
-        Assert.assertEquals(expected[offset + TiledMapping.FRAMES_X.getIndex()], Integer.toString(actual.getFramesX()));
-        Assert.assertEquals(expected[offset + TiledMapping.FRAMES_Y.getIndex()], Integer.toString(actual.getFramesY()));
+        Assert.assertEquals(expected[offset + TiledTextureMapping.FRAMES_X.getIndex()], Integer.toString(actual.getFramesX()));
+        Assert.assertEquals(expected[offset + TiledTextureMapping.FRAMES_Y.getIndex()], Integer.toString(actual.getFramesY()));
     }
 
 }

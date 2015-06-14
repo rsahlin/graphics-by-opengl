@@ -12,7 +12,6 @@ public class FTextureParameterTest {
 
     @Test
     public void testImportData() {
-
         String[] data = DataSerializeUtils.createDefaultData(TextureParameterMapping.values());
         TextureParameter setup = createSetup(data);
         assertImportData(data, setup);
