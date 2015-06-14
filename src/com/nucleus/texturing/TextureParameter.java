@@ -2,6 +2,7 @@ package com.nucleus.texturing;
 
 import com.nucleus.io.DataSetup;
 import com.nucleus.opengl.GLES20Wrapper.GLES20;
+import com.nucleus.types.DataType;
 
 /**
  * Info for the texture parameters, GL MIN and MAG filter, S and T wrap modes.
@@ -39,21 +40,28 @@ public class TextureParameter extends DataSetup {
         }
     }
 
-    public enum TextureParameterMapping implements Indexer {
-        MIN_FILTER(0),
-        MAG_FILTER(1),
-        WRAP_S(2),
-        WRAP_T(3);
+    public enum TextureParameterMapping implements DataIndexer {
+        MIN_FILTER(0, DataType.TEXTURE_PARAMETER),
+        MAG_FILTER(1, DataType.TEXTURE_PARAMETER),
+        WRAP_S(2, DataType.TEXTURE_PARAMETER),
+        WRAP_T(3, DataType.TEXTURE_PARAMETER);
 
         private final int index;
+        private final DataType type;
 
-        private TextureParameterMapping(int index) {
+        private TextureParameterMapping(int index, DataType type) {
             this.index = index;
+            this.type = type;
         }
 
         @Override
         public int getIndex() {
             return index;
+        }
+
+        @Override
+        public DataType getType() {
+            return type;
         }
 
     }
@@ -120,10 +128,10 @@ public class TextureParameter extends DataSetup {
      * Returns the string (name) for a texture parameter value, eg 9728 will return NEAREST
      * Can be used when exporting to texture format for readability
      * 
-     * @param value The texture parameter value
+     * @param value The texture parameter value, ie the GL value.
      * @return The string name of the value or null.
      */
-    public String valueToString(int value) {
+    public static String valueToString(int value) {
 
         for (Name n : Name.values()) {
             if (n.value == value) {
@@ -134,6 +142,16 @@ public class TextureParameter extends DataSetup {
 
     }
 
+    /**
+     * Returns the String value for the specified parameter
+     * 
+     * @param name
+     * @return
+     */
+    public String getValueAsString(TextureParameterMapping name) {
+        return valueToString(values[name.getIndex()]);
+    }
+
     @Override
     public int importData(String[] data, int offset) {
         setValues(data, offset);
@@ -142,7 +160,9 @@ public class TextureParameter extends DataSetup {
 
     @Override
     public String exportDataAsString() {
-        return valueToString(values[MIN_FILTER]) + DEFAULT_DELIMITER + valueToString(values[MAG_FILTER])
-                + DEFAULT_DELIMITER + valueToString(values[WRAP_S]) + DEFAULT_DELIMITER + valueToString(values[WRAP_T]);
+        return getValueAsString(TextureParameterMapping.MIN_FILTER) + DEFAULT_DELIMITER
+                + getValueAsString(TextureParameterMapping.MAG_FILTER)
+                + DEFAULT_DELIMITER + getValueAsString(TextureParameterMapping.WRAP_S) + DEFAULT_DELIMITER
+                + getValueAsString(TextureParameterMapping.WRAP_T);
     }
 }

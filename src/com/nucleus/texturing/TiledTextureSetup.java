@@ -1,5 +1,7 @@
 package com.nucleus.texturing;
 
+import com.nucleus.types.DataType;
+
 /**
  * Setup for a tiled texture, adds number of frames horizontally and vertically.
  * 
@@ -14,19 +16,26 @@ public class TiledTextureSetup extends TextureSetup {
      * @author Richard Sahlin
      *
      */
-    public enum TiledMapping implements Indexer {
-        FRAMES_X(0),
-        FRAMES_Y(1);
+    public enum TiledMapping implements DataIndexer {
+        FRAMES_X(0, DataType.INT),
+        FRAMES_Y(1, DataType.INT);
 
         private final int index;
+        private final DataType type;
 
-        private TiledMapping(int index) {
+        private TiledMapping(int index, DataType type) {
             this.index = index;
+            this.type = type;
         }
 
         @Override
         public int getIndex() {
             return index;
+        }
+
+        @Override
+        public DataType getType() {
+            return type;
         }
 
     }

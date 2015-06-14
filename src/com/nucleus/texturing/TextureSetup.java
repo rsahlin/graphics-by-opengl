@@ -3,6 +3,7 @@ package com.nucleus.texturing;
 import com.nucleus.io.DataSetup;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
+import com.nucleus.types.DataType;
 
 /**
  * The data needed to create a new Texture, use this object with serialization or file loading.
@@ -19,20 +20,27 @@ public class TextureSetup extends DataSetup {
      * @author Richard Sahlin
      *
      */
-    public enum TextureMapping implements Indexer {
-        SOURCENAME(0),
-        TARGET_RESOLUTION(1),
-        LEVELS(2);
+    public enum TextureMapping implements DataIndexer {
+        SOURCENAME(0, DataType.STRING),
+        TARGET_RESOLUTION(1, DataType.RESOLUTION),
+        LEVELS(2, DataType.INT);
 
         private final int index;
+        private final DataType type;
 
-        private TextureMapping(int index) {
+        private TextureMapping(int index, DataType type) {
             this.index = index;
+            this.type = type;
         }
 
         @Override
         public int getIndex() {
             return index;
+        }
+
+        @Override
+        public DataType getType() {
+            return type;
         }
     }
 
@@ -149,15 +157,15 @@ public class TextureSetup extends DataSetup {
     @Override
     public int importData(String[] data, int offset) {
         sourceName = getString(data, offset, TextureMapping.SOURCENAME);
-        levels = getInt(data, offset, TextureMapping.LEVELS);
         targetResolution = RESOLUTION.valueOf(getString(data, offset, TextureMapping.TARGET_RESOLUTION));
+        levels = getInt(data, offset, TextureMapping.LEVELS);
         return TextureMapping.values().length;
     }
 
     @Override
     public String exportDataAsString() {
         String d = DEFAULT_DELIMITER;
-        return sourceName + d + toString(levels) + d + targetResolution;
+        return sourceName + d + targetResolution + d + toString(levels);
     }
 
 }

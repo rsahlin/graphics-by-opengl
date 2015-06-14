@@ -1,5 +1,7 @@
 package com.nucleus.io;
 
+import com.nucleus.types.DataType;
+
 /**
  * Base class for holding setup data for a data class, this is to remove serialization from the implementing classes.
  * For instance the geometry classes in Nucleus.
@@ -11,8 +13,10 @@ package com.nucleus.io;
  */
 public abstract class DataSetup extends BaseReference implements DataImporter, DataExporter {
 
-    public interface Indexer {
+    public interface DataIndexer {
         public int getIndex();
+
+        public DataType getType();
     }
 
     /**
@@ -39,7 +43,7 @@ public abstract class DataSetup extends BaseReference implements DataImporter, D
      * @param index Index to add to offset for String to return.
      * @return The string at offset + index
      */
-    protected String getString(String[] data, int offset, Indexer index) {
+    protected String getString(String[] data, int offset, DataIndexer index) {
         return data[offset + index.getIndex()];
     }
 
@@ -51,8 +55,19 @@ public abstract class DataSetup extends BaseReference implements DataImporter, D
      * @param index Index to add to offset for int to return.
      * @return parseInt() of value at offset + index
      */
-    protected int getInt(String[] data, int offset, Indexer index) {
+    protected int getInt(String[] data, int offset, DataIndexer index) {
         return Integer.parseInt(data[offset + index.getIndex()]);
+    }
+
+    /**
+     * Utility method to set the int value as String at the index
+     * 
+     * @param value
+     * @param data
+     * @param index
+     */
+    protected void setInt(int value, String[] data, DataIndexer index) {
+        data[index.getIndex()] = Integer.toString(value);
     }
 
     /**
@@ -63,7 +78,7 @@ public abstract class DataSetup extends BaseReference implements DataImporter, D
      * @param index Index to add to offset for int to return.
      * @return parseFloat() of value at offset + index
      */
-    protected float getFloat(String[] data, int offset, Indexer index) {
+    protected float getFloat(String[] data, int offset, DataIndexer index) {
         return Float.parseFloat(data[offset + index.getIndex()]);
     }
 
