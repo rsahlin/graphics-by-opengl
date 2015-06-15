@@ -118,6 +118,10 @@ public class DataSerializeUtils {
         Assert.assertEquals(Integer.toString(expected), actual[type.getIndex()]);
     }
 
+    public static void assertDataAsString(float expected, String[] actual, DataIndexer type) {
+        Assert.assertEquals(Float.toString(expected), actual[type.getIndex()]);
+    }
+
     public static void assertDataAsString(RESOLUTION expected, String[] actual, DataIndexer type) {
         Assert.assertEquals(expected.toString(), actual[type.getIndex()]);
     }
