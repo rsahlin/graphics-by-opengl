@@ -118,8 +118,16 @@ public class DataSerializeUtils {
         Assert.assertEquals(Integer.toString(expected), actual[type.getIndex()]);
     }
 
+    public static void assertDataAsString(int expected, String[] actual, DataIndexer type, int offset) {
+        Assert.assertEquals(Integer.toString(expected), actual[type.getIndex() + offset]);
+    }
+
     public static void assertDataAsString(float expected, String[] actual, DataIndexer type) {
         Assert.assertEquals(Float.toString(expected), actual[type.getIndex()]);
+    }
+
+    public static void assertDataAsString(float expected, String[] actual, DataIndexer type, int offset) {
+        Assert.assertEquals(Float.toString(expected), actual[type.getIndex() + offset]);
     }
 
     public static void assertDataAsString(RESOLUTION expected, String[] actual, DataIndexer type) {
@@ -128,6 +136,10 @@ public class DataSerializeUtils {
 
     public static void assertDataAsString(String expected, String[] actual, DataIndexer type) {
         Assert.assertEquals(expected, actual[type.getIndex()]);
+    }
+
+    public static void assertDataAsString(String expected, String[] actual, DataIndexer type, int offset) {
+        Assert.assertEquals(expected, actual[type.getIndex() + offset]);
     }
 
 }

@@ -38,12 +38,13 @@ public class FTextureSetupTest {
      * 
      * @param expected
      * @param actual
+     * @param Number of values asserted
      */
-    protected void assertExportData(TextureSetup expected, String[] actual) {
-        Assert.assertEquals(actual.length, TextureMapping.values().length);
+    protected int assertExportData(TextureSetup expected, String[] actual) {
         DataSerializeUtils.assertDataAsString(expected.getSourceName(), actual, TextureMapping.SOURCENAME);
         DataSerializeUtils.assertDataAsString(expected.getResolution(), actual, TextureMapping.TARGET_RESOLUTION);
         DataSerializeUtils.assertDataAsString(expected.getLevels(), actual, TextureMapping.LEVELS);
+        return TextureMapping.values().length;
     }
 
     /**
