@@ -40,6 +40,7 @@ public class FTextureParameterTest {
      * @param actual
      */
     protected void assertExportData(TextureParameter expected, String[] actual) {
+        Assert.assertEquals(actual.length, TextureParameterMapping.values().length);
         DataSerializeUtils.assertDataAsString(expected.getValueAsString(TextureParameterMapping.MAG_FILTER), actual,
                 TextureParameterMapping.MAG_FILTER);
         DataSerializeUtils.assertDataAsString(expected.getValueAsString(TextureParameterMapping.MIN_FILTER), actual,
@@ -58,6 +59,7 @@ public class FTextureParameterTest {
      * @return number of values asserted
      */
     protected int assertImportData(String[] expected, TextureParameter actual) {
+        Assert.assertEquals(expected.length, TextureParameterMapping.values().length);
         int[] values = actual.values;
         Assert.assertEquals(expected[TextureParameterMapping.MAG_FILTER.getIndex()],
                 TextureParameter.valueToString(values[TextureParameter.MAG_FILTER]));
