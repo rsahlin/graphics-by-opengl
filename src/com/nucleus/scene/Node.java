@@ -185,6 +185,22 @@ public class Node implements Reference {
         return null;
     }
 
+    /**
+     * Returns the mesh by the given id from this Node, if a mesh with matching id is not present in the list of meshes
+     * then null is returned.
+     * 
+     * @param id
+     * @return The mesh with matching id or null
+     */
+    public Mesh getMeshById(String id) {
+        for (Mesh m : meshes) {
+            if (id.equals(m.getId())) {
+                return m;
+            }
+        }
+        return null;
+    }
+
     @Override
     public String toString() {
         return "Node '" + id + "', " + meshes.size() + " meshes, " + children.size() + " children";
