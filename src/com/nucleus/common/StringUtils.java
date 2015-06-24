@@ -10,10 +10,13 @@ public class StringUtils {
     /**
      * Returns the string as a String[], delimetered by ','
      * 
-     * @param str
-     * @return
+     * @param str The string to return as array.
+     * @return Array of Strings split by default delimiter, or null if str is null.
      */
     public static String[] getStringArray(String str) {
+        if (str == null) {
+            return null;
+        }
         ArrayList<String> resultList = getArrayList(str, DEFAULT_DELIMITER);
         String[] result = new String[resultList.size()];
         int index = 0;
@@ -21,6 +24,40 @@ public class StringUtils {
             result[index++] = s;
         }
         return result;
+    }
+
+    /**
+     * Returns the String array as a String delimietred by ','
+     * 
+     * @param strArray
+     * @return
+     */
+    public static String getString(String[] strArray) {
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < strArray.length; i++) {
+            if (i > 0) {
+                result.append(DEFAULT_DELIMITER);
+            }
+            result.append(strArray[i]);
+        }
+        return result.toString();
+    }
+
+    /**
+     * Converts the int array to a String with values delimetered by ','
+     * 
+     * @param intArray
+     * @return The int array as a String with values delimitered by ','
+     */
+    public static String getString(int[] intArray) {
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < intArray.length; i++) {
+            if (i > 0) {
+                result.append(DEFAULT_DELIMITER);
+            }
+            result.append(Integer.toString(intArray[i]));
+        }
+        return result.toString();
     }
 
     public static ArrayList<String> getArrayList(String str, String delimiter) {
@@ -32,7 +69,16 @@ public class StringUtils {
         return resultList;
     }
 
+    /**
+     * Converts the String to an array of float, using ',' as delimiter for array items.
+     * 
+     * @param str The string containing floats to convert to float array.
+     * @return Array of float or null if str is null.
+     */
     public static float[] getFloatArray(String str) {
+        if (str == null) {
+            return null;
+        }
         ArrayList<String> resultList = getArrayList(str, DEFAULT_DELIMITER);
         float[] result = new float[resultList.size()];
         int index = 0;
@@ -42,7 +88,16 @@ public class StringUtils {
         return result;
     }
 
+    /**
+     * Converts the String to an array of int, using ',' as delimiter for array items.
+     * 
+     * @param str The string containing integers to convert to int array.
+     * @return Array of int or null if str is null.
+     */
     public static int[] getIntArray(String str) {
+        if (str == null) {
+            return null;
+        }
         ArrayList<String> resultList = getArrayList(str, DEFAULT_DELIMITER);
         int[] result = new int[resultList.size()];
         int index = 0;
@@ -52,7 +107,16 @@ public class StringUtils {
         return result;
     }
 
+    /**
+     * Converts the String to an array of short, using ',' as delimiter for array items.
+     * 
+     * @param str The string containing shorts to convert to short array.
+     * @return Array of short or null if str is null.
+     */
     public static short[] getShortArray(String str) {
+        if (str == null) {
+            return null;
+        }
         ArrayList<String> resultList = getArrayList(str, DEFAULT_DELIMITER);
         short[] result = new short[resultList.size()];
         int index = 0;
