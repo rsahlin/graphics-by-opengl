@@ -1,5 +1,6 @@
 package com.nucleus.io;
 
+import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.types.DataType;
 
 /**
@@ -101,4 +102,42 @@ public abstract class DataSetup extends BaseReference implements DataImporter, D
     protected String toString(float number) {
         return Float.toString(number);
     }
+
+    /**
+     * Sets the value as a String at the index corresponding to the dataindexer, use this when exporting data.
+     * 
+     * @param data Destination array
+     * @param type The index where value is stored
+     * @param value Store this value in data as String.
+     */
+    protected void setData(String[] data, DataIndexer type, int value) {
+        data[type.getIndex()] = Integer.toString(value);
+    }
+
+    /**
+     * Sets the value as a String at the index corresponding to the dataindexer, use this when exporting data.
+     * 
+     * @param data Destination array
+     * @param type The index where value is stored
+     * @param value Store this value in data as String.
+     */
+    protected void setData(String[] data, DataIndexer type, String value) {
+        data[type.getIndex()] = value;
+    }
+
+    /**
+     * Sets the value as a String at the index corresponding to the dataindexer, use this when exporting data.
+     * 
+     * @param data Destination array
+     * @param type The index where value is stored
+     * @param value Store this value in data as String.
+     */
+    protected void setData(String[] data, DataIndexer type, float value) {
+        data[type.getIndex()] = Float.toString(value);
+    }
+
+    protected void setData(String[] data, DataIndexer type, RESOLUTION value) {
+        data[type.getIndex()] = value.toString();
+    }
+
 }
