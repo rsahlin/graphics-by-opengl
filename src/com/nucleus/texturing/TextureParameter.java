@@ -1,5 +1,6 @@
 package com.nucleus.texturing;
 
+import com.nucleus.common.StringUtils;
 import com.nucleus.io.DataSetup;
 import com.nucleus.opengl.GLES20Wrapper.GLES20;
 import com.nucleus.types.DataType;
@@ -160,9 +161,12 @@ public class TextureParameter extends DataSetup {
 
     @Override
     public String exportDataAsString() {
-        return getValueAsString(TextureParameterMapping.MIN_FILTER) + DEFAULT_DELIMITER
-                + getValueAsString(TextureParameterMapping.MAG_FILTER)
-                + DEFAULT_DELIMITER + getValueAsString(TextureParameterMapping.WRAP_S) + DEFAULT_DELIMITER
-                + getValueAsString(TextureParameterMapping.WRAP_T);
+        String[] strArray = new String[TextureParameterMapping.values().length];
+        setData(strArray, TextureParameterMapping.MIN_FILTER, getValueAsString(TextureParameterMapping.MIN_FILTER));
+        setData(strArray, TextureParameterMapping.MAG_FILTER, getValueAsString(TextureParameterMapping.MAG_FILTER));
+        setData(strArray, TextureParameterMapping.WRAP_S, getValueAsString(TextureParameterMapping.WRAP_S));
+        setData(strArray, TextureParameterMapping.WRAP_T, getValueAsString(TextureParameterMapping.WRAP_T));
+
+        return StringUtils.getString(strArray);
     }
 }

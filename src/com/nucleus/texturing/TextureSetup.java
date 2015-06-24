@@ -1,5 +1,6 @@
 package com.nucleus.texturing;
 
+import com.nucleus.common.StringUtils;
 import com.nucleus.io.DataSetup;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
@@ -164,8 +165,11 @@ public class TextureSetup extends DataSetup {
 
     @Override
     public String exportDataAsString() {
-        String d = DEFAULT_DELIMITER;
-        return sourceName + d + targetResolution + d + toString(levels);
+        String[] strArray = new String[TextureMapping.values().length];
+        setData(strArray, TextureMapping.SOURCENAME, sourceName);
+        setData(strArray, TextureMapping.TARGET_RESOLUTION, targetResolution);
+        setData(strArray, TextureMapping.LEVELS, levels);
+        return StringUtils.getString(strArray);
     }
 
 }

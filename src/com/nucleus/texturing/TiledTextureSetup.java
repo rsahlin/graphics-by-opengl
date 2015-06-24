@@ -1,5 +1,6 @@
 package com.nucleus.texturing;
 
+import com.nucleus.common.StringUtils;
 import com.nucleus.types.DataType;
 
 /**
@@ -72,8 +73,10 @@ public class TiledTextureSetup extends TextureSetup {
 
     @Override
     public String exportDataAsString() {
-        return super.exportDataAsString() + DEFAULT_DELIMITER +
-                toString(framesX) + DEFAULT_DELIMITER + toString(framesY);
+        String[] strArray = new String[TiledTextureMapping.values().length];
+        setData(strArray, TiledTextureMapping.FRAMES_X, framesX);
+        setData(strArray, TiledTextureMapping.FRAMES_Y, framesY);
+        return super.exportDataAsString() + DEFAULT_DELIMITER + StringUtils.getString(strArray);
     }
 
 }
