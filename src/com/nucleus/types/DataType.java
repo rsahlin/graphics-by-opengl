@@ -12,12 +12,8 @@ public enum DataType {
     FLOAT(1, 4),
     SHORT(2, 2),
     STRING(3, 0),
-    INT_ARRAY(4, 4),
-    FLOAT_ARRAY(5, 4),
-    SHORT_ARRAY(6, 2),
-    STRING_ARRAY(7, 0),
-    RESOLUTION(8, 0),
-    TEXTURE_PARAMETER(9, 0);
+    RESOLUTION(4, 0),
+    TEXTURE_PARAMETER(5, 0);
 
     private final int type;
     private final int size;
