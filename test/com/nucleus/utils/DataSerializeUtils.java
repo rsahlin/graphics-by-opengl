@@ -2,6 +2,7 @@ package com.nucleus.utils;
 
 import org.junit.Assert;
 
+import com.nucleus.common.StringUtils;
 import com.nucleus.io.DataSetup.DataIndexer;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.texturing.TextureParameter;
@@ -35,22 +36,14 @@ public class DataSerializeUtils {
         switch (type) {
         case FLOAT:
             return Float.toString(index);
-        case FLOAT_ARRAY:
-            throw new IllegalArgumentException("Not implemented");
         case INT:
             return Integer.toString(index);
-        case INT_ARRAY:
-            throw new IllegalArgumentException("Not implemented");
         case RESOLUTION:
             return RESOLUTION.HD.toString();
         case SHORT:
             return Short.toString((short) index);
-        case SHORT_ARRAY:
-            throw new IllegalArgumentException("Not implemented");
         case STRING:
             return Integer.toString(index);
-        case STRING_ARRAY:
-            throw new IllegalArgumentException("Not implemented");
         case TEXTURE_PARAMETER:
             switch (index) {
             case TextureParameter.MIN_FILTER:
@@ -112,6 +105,14 @@ public class DataSerializeUtils {
         createDefaultData(base, data, 0);
         createDefaultData(types, data, base.length);
         return data;
+    }
+
+    public static void assertDataAsString(int[] expected, String[] actual, DataIndexer type) {
+        int[] intArray = StringUtils.getIntArray(actual[type.getIndex()]);
+    }
+
+    public static void assertDataAsString(String[] expected, String[] actual, DataIndexer type) {
+        String[] strArray = StringUtils.getStringArray(actual[type.getIndex()]);
     }
 
     public static void assertDataAsString(int expected, String[] actual, DataIndexer type) {
