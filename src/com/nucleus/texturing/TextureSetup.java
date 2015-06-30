@@ -165,11 +165,16 @@ public class TextureSetup extends DataSetup {
 
     @Override
     public String exportDataAsString() {
+        return StringUtils.getString(exportDataAsStringArray());
+    }
+
+    @Override
+    public String[] exportDataAsStringArray() {
         String[] strArray = new String[TextureMapping.values().length];
         setData(strArray, TextureMapping.SOURCENAME, sourceName);
         setData(strArray, TextureMapping.TARGET_RESOLUTION, targetResolution);
         setData(strArray, TextureMapping.LEVELS, levels);
-        return StringUtils.getString(strArray);
+        return strArray;
     }
 
 }
