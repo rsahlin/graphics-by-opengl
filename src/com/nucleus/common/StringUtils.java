@@ -27,18 +27,31 @@ public class StringUtils {
     }
 
     /**
-     * Returns the String array as a String delimietred by ','
+     * Returns the String array as a String delimitered by ','
+     * Same as calling {@link #getString(String[], int, int)} with offset 0 and count = length
      * 
      * @param strArray
-     * @return
+     * @return The resulting String
      */
     public static String getString(String[] strArray) {
+        return getString(strArray, 0, strArray.length);
+    }
+
+    /**
+     * Returns the String array, beginning with array offset, as one String delimitered by ','
+     * 
+     * @param strArray
+     * @param offset The first array to include
+     * @param count Number of arrays to copy. Must be <= strArray.length - offset
+     * @return The resulting String
+     */
+    public static String getString(String[] strArray, int offset, int count) {
         StringBuffer result = new StringBuffer();
-        for (int i = 0; i < strArray.length; i++) {
+        for (int i = 0; i < count; i++) {
             if (i > 0) {
                 result.append(DEFAULT_DELIMITER);
             }
-            result.append(strArray[i]);
+            result.append(strArray[offset++]);
         }
         return result.toString();
     }
@@ -56,6 +69,23 @@ public class StringUtils {
                 result.append(DEFAULT_DELIMITER);
             }
             result.append(Integer.toString(intArray[i]));
+        }
+        return result.toString();
+    }
+
+    /**
+     * Converts the float array to a String with values delimetered by ','
+     * 
+     * @param floatArray
+     * @return The float array as a String with values delimitered by ','
+     */
+    public static String getString(float[] floatArray) {
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < floatArray.length; i++) {
+            if (i > 0) {
+                result.append(DEFAULT_DELIMITER);
+            }
+            result.append(Float.toString(floatArray[i]));
         }
         return result.toString();
     }
