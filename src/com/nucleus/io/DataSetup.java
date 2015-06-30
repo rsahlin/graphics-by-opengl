@@ -1,5 +1,6 @@
 package com.nucleus.io;
 
+import com.nucleus.common.StringUtils;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.types.DataType;
 
@@ -115,6 +116,30 @@ public abstract class DataSetup extends BaseReference implements DataImporter, D
     }
 
     /**
+     * Sets the value as String at the index from type, use this when exporting data.
+     * 
+     * @param data
+     * @param type
+     * @param value
+     */
+    protected void setData(String[] data, DataIndexer type, int[] value) {
+        data[type.getIndex()] = StringUtils.getString(value);
+
+    }
+
+    /**
+     * Sets the value as String at the index from type, use this when exporting data.
+     * 
+     * @param data
+     * @param type
+     * @param value
+     */
+    protected void setData(String[] data, DataIndexer type, float[] value) {
+        data[type.getIndex()] = StringUtils.getString(value);
+
+    }
+
+    /**
      * Sets the value as a String at the index corresponding to the dataindexer, use this when exporting data.
      * 
      * @param data Destination array
@@ -136,6 +161,13 @@ public abstract class DataSetup extends BaseReference implements DataImporter, D
         data[type.getIndex()] = Float.toString(value);
     }
 
+    /**
+     * Sets the value as a RESOLUTION enum at the index of the type, use this when exporting data.
+     * 
+     * @param data
+     * @param type
+     * @param value
+     */
     protected void setData(String[] data, DataIndexer type, RESOLUTION value) {
         data[type.getIndex()] = value.toString();
     }
