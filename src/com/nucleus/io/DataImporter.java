@@ -16,7 +16,8 @@ public interface DataImporter {
      * 
      * @param data String array with the data to import, implementing classes shall make the mapping.
      * @param offset The starting offset in the data offset for the current data to import
-     * @int The number of elements consumed, this is used when subclasses call super.importData() to know size of data
+     * @return The number of elements consumed, this is used when subclasses call super.importData() to know size of
+     * data
      * in superclass.
      */
     public int importData(String[] data, int offset);
