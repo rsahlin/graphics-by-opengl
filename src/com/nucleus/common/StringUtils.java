@@ -125,4 +125,21 @@ public class StringUtils {
         }
         return result;
     }
+
+    /**
+     * Creates a new String array combining the array and the string, the string is put last.
+     * 
+     * @param array
+     * @param str
+     * @return The resulting array, combining array and str where str is put last.
+     */
+    public static String[] append(String[] array, String str) {
+        String[] result = new String[array.length + 1];
+        for (int i = 0; i < array.length; i++) {
+            result[i] = array[i];
+        }
+        result[array.length] = str;
+        return result;
+    }
+
 }
