@@ -35,10 +35,9 @@ public class FTiledTextureSetupTest extends FTextureSetupTest {
 
     protected int assertImportData(String[] expected, TiledTextureSetup actual) {
         int offset = super.assertImportData(expected, actual);
-        Assert.assertEquals(expected[offset + TiledTextureMapping.FRAMES_X.getIndex()],
-                Integer.toString(actual.getFramesX()));
-        Assert.assertEquals(expected[offset + TiledTextureMapping.FRAMES_Y.getIndex()],
-                Integer.toString(actual.getFramesY()));
+        Assert.assertEquals(expected.length, TiledTextureMapping.values().length + offset);
+        DataSerializeUtils.assertString(expected, TiledTextureMapping.FRAMES_X, actual.getFramesX(), offset);
+        DataSerializeUtils.assertString(expected, TiledTextureMapping.FRAMES_Y, actual.getFramesY(), offset);
         return offset + TiledTextureMapping.values().length;
     }
 
@@ -50,6 +49,7 @@ public class FTiledTextureSetupTest extends FTextureSetupTest {
      */
     protected int assertExportData(TiledTextureSetup expected, String[] actual) {
         int offset = super.assertExportData(expected, actual);
+        Assert.assertEquals(actual.length, TiledTextureMapping.values().length + offset);
         DataSerializeUtils.assertDataAsString(expected.getFramesX(), actual,
                 TiledTextureSetup.TiledTextureMapping.FRAMES_X, offset);
         DataSerializeUtils.assertDataAsString(expected.getFramesY(), actual,

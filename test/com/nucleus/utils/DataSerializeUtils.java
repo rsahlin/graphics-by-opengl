@@ -143,4 +143,43 @@ public class DataSerializeUtils {
         Assert.assertEquals(expected, actual[type.getIndex() + offset]);
     }
 
+    /**
+     * Asserts that the actual values is the same as the String at the specified index.
+     * Use this for instance when checking imported data
+     * 
+     * @param expected Array with expected values
+     * @param index The index to check
+     * @param actual The actual value
+     * @param offset Offset into expected array
+     */
+    public static void assertString(String[] expected, DataIndexer index, int actual, int offset) {
+        Assert.assertEquals(expected[index.getIndex() + offset], Integer.toString(actual));
+    }
+
+    /**
+     * Asserts that the actual values is the same as the String at the specified index.
+     * Use this for instance when checking imported data
+     * 
+     * @param expected Array with expected values
+     * @param index The index to check
+     * @param actual The actual value
+     * @param offset Offset into expected array
+     */
+    public static void assertString(String[] expected, DataIndexer index, float actual, int offset) {
+        Assert.assertEquals(expected[index.getIndex() + offset], Float.toString(actual));
+    }
+
+    /**
+     * Asserts that the actual values is the same as the String at the specified index.
+     * Use this for instance when checking imported data
+     * 
+     * @param expected Array with expected values
+     * @param index The index to check
+     * @param actual The actual value
+     * @param offset Offset into expected array
+     */
+    public static void assertString(String[] expected, DataIndexer index, String actual, int offset) {
+        Assert.assertEquals(expected[index.getIndex() + offset], actual);
+    }
+
 }

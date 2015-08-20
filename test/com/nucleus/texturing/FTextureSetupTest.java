@@ -1,6 +1,5 @@
 package com.nucleus.texturing;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.nucleus.common.StringUtils;
@@ -55,9 +54,9 @@ public class FTextureSetupTest {
      * @return number of values asserted
      */
     protected int assertImportData(String[] expected, TextureSetup actual) {
-        Assert.assertEquals(expected[TextureMapping.SOURCENAME.getIndex()], actual.getSourceName());
-        Assert.assertEquals(expected[TextureMapping.TARGET_RESOLUTION.getIndex()], actual.getResolution().toString());
-        Assert.assertEquals(expected[TextureMapping.LEVELS.getIndex()], Integer.toString(actual.getLevels()));
+        DataSerializeUtils.assertString(expected, TextureMapping.SOURCENAME, actual.getSourceName(), 0);
+        DataSerializeUtils.assertString(expected, TextureMapping.TARGET_RESOLUTION, actual.getResolution().name(), 0);
+        DataSerializeUtils.assertString(expected, TextureMapping.LEVELS, actual.getLevels(), 0);
         return TextureMapping.values().length;
     }
 

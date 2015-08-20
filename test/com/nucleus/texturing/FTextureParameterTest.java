@@ -60,15 +60,14 @@ public class FTextureParameterTest {
      */
     protected int assertImportData(String[] expected, TextureParameter actual) {
         Assert.assertEquals(expected.length, TextureParameterMapping.values().length);
-        int[] values = actual.values;
-        Assert.assertEquals(expected[TextureParameterMapping.MAG_FILTER.getIndex()],
-                TextureParameter.valueToString(values[TextureParameter.MAG_FILTER]));
-        Assert.assertEquals(expected[TextureParameterMapping.MIN_FILTER.getIndex()],
-                TextureParameter.valueToString(values[TextureParameter.MIN_FILTER]));
-        Assert.assertEquals(expected[TextureParameterMapping.WRAP_S.getIndex()],
-                TextureParameter.valueToString(values[TextureParameter.WRAP_S]));
-        Assert.assertEquals(expected[TextureParameterMapping.WRAP_T.getIndex()],
-                TextureParameter.valueToString(values[TextureParameter.WRAP_T]));
+        DataSerializeUtils.assertString(expected, TextureParameterMapping.MAG_FILTER,
+                actual.getValueAsString(TextureParameterMapping.MAG_FILTER), 0);
+        DataSerializeUtils.assertString(expected, TextureParameterMapping.MIN_FILTER,
+                actual.getValueAsString(TextureParameterMapping.MIN_FILTER), 0);
+        DataSerializeUtils.assertString(expected, TextureParameterMapping.WRAP_S,
+                actual.getValueAsString(TextureParameterMapping.WRAP_S), 0);
+        DataSerializeUtils.assertString(expected, TextureParameterMapping.WRAP_T,
+                actual.getValueAsString(TextureParameterMapping.WRAP_T), 0);
         return TextureMapping.values().length;
     }
 }
