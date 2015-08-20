@@ -13,24 +13,19 @@ public class FTextureParameterTest {
     @Test
     public void testImportData() {
         String[] data = DataSerializeUtils.createDefaultData(TextureParameterMapping.values());
-        TextureParameter setup = createSetup(data);
+        TextureParameter setup = (TextureParameter) DataSerializeUtils.createSetup(data,
+                new TextureParameter());
         assertImportData(data, setup);
     }
 
     @Test
     public void testExportDataAsString() {
         String[] data = DataSerializeUtils.createDefaultData(TextureParameterMapping.values());
-        TextureParameter setup = createSetup(data);
-
+        TextureParameter setup = (TextureParameter) DataSerializeUtils.createSetup(data,
+                new TextureParameter());
         String[] result = StringUtils.getStringArray(setup.exportDataAsString());
         assertExportData(setup, result);
 
-    }
-
-    private TextureParameter createSetup(String[] data) {
-        TextureParameter setup = new TextureParameter();
-        setup.importData(data, 0);
-        return setup;
     }
 
     /**

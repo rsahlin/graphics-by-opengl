@@ -14,7 +14,7 @@ public class FTiledTextureSetupTest extends FTextureSetupTest {
     @Test
     public void testImportData() {
         String[] data = DataSerializeUtils.createDefaultData(TextureMapping.values(), TiledTextureMapping.values());
-        TiledTextureSetup setup = createSetup(data);
+        TiledTextureSetup setup = (TiledTextureSetup) DataSerializeUtils.createSetup(data, new TiledTextureSetup());
         assertImportData(data, setup);
     }
 
@@ -22,15 +22,9 @@ public class FTiledTextureSetupTest extends FTextureSetupTest {
     @Test
     public void testExportDataAsString() {
         String[] data = DataSerializeUtils.createDefaultData(TextureMapping.values(), TiledTextureMapping.values());
-        TiledTextureSetup setup = createSetup(data);
+        TiledTextureSetup setup = (TiledTextureSetup) DataSerializeUtils.createSetup(data, new TiledTextureSetup());
         String[] result = StringUtils.getStringArray(setup.exportDataAsString());
         assertExportData(setup, result);
-    }
-
-    private TiledTextureSetup createSetup(String[] data) {
-        TiledTextureSetup setup = new TiledTextureSetup();
-        setup.importData(data, 0);
-        return setup;
     }
 
     protected int assertImportData(String[] expected, TiledTextureSetup actual) {

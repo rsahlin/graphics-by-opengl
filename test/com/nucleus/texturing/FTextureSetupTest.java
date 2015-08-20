@@ -12,24 +12,17 @@ public class FTextureSetupTest {
     public void testImportData() {
 
         String[] data = DataSerializeUtils.createDefaultData(TextureMapping.values());
-        TextureSetup setup = createSetup(data);
+        TextureSetup setup = (TextureSetup) DataSerializeUtils.createSetup(data, new TextureSetup());
         assertImportData(data, setup);
     }
 
     @Test
     public void testExportDataAsString() {
         String[] data = DataSerializeUtils.createDefaultData(TextureMapping.values());
-        TextureSetup setup = createSetup(data);
-
+        TextureSetup setup = (TextureSetup) DataSerializeUtils.createSetup(data, new TextureSetup());
         String[] result = StringUtils.getStringArray(setup.exportDataAsString());
         assertExportData(setup, result);
 
-    }
-
-    private TextureSetup createSetup(String[] data) {
-        TextureSetup setup = new TextureSetup();
-        setup.importData(data, 0);
-        return setup;
     }
 
     /**

@@ -3,6 +3,7 @@ package com.nucleus.utils;
 import org.junit.Assert;
 
 import com.nucleus.common.StringUtils;
+import com.nucleus.io.DataSetup;
 import com.nucleus.io.DataSetup.DataIndexer;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.texturing.TextureParameter;
@@ -180,6 +181,44 @@ public class DataSerializeUtils {
      */
     public static void assertString(String[] expected, DataIndexer index, String actual, int offset) {
         Assert.assertEquals(expected[index.getIndex() + offset], actual);
+    }
+
+    /**
+     * Asserts that the actual values is the same as the String at the specified index.
+     * Use this for instance when checking imported data
+     * 
+     * @param expected Array with expected values
+     * @param index The index to check
+     * @param actual The actual value
+     * @param offset Offset into expected array
+     */
+    public static void assertString(String[] expected, DataIndexer index, int[] actual, int offset) {
+        Assert.assertEquals(expected[index.getIndex() + offset], StringUtils.getString(actual));
+    }
+
+    /**
+     * Asserts that the actual values is the same as the String at the specified index.
+     * Use this for instance when checking imported data
+     * 
+     * @param expected Array with expected values
+     * @param index The index to check
+     * @param actual The actual value
+     * @param offset Offset into expected array
+     */
+    public static void assertString(String[] expected, DataIndexer index, String[] actual, int offset) {
+        Assert.assertEquals(expected[index.getIndex() + offset], StringUtils.getString(actual));
+    }
+
+    /**
+     * Helper method to import setup class
+     * 
+     * @param data
+     * @param setup The class to import data into
+     * @return
+     */
+    public static DataSetup createSetup(String[] data, DataSetup setup) {
+        setup.importData(data, 0);
+        return setup;
     }
 
 }
