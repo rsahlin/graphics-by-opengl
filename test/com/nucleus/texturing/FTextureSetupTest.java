@@ -8,17 +8,16 @@ import com.nucleus.utils.DataSerializeUtils;
 
 public class FTextureSetupTest {
 
+    private final static String[] data = DataSerializeUtils.createDefaultData(TextureMapping.values());
+
     @Test
     public void testImportData() {
-
-        String[] data = DataSerializeUtils.createDefaultData(TextureMapping.values());
         TextureSetup setup = (TextureSetup) DataSerializeUtils.createSetup(data, new TextureSetup());
         assertImportData(data, setup);
     }
 
     @Test
     public void testExportDataAsString() {
-        String[] data = DataSerializeUtils.createDefaultData(TextureMapping.values());
         TextureSetup setup = (TextureSetup) DataSerializeUtils.createSetup(data, new TextureSetup());
         String[] result = StringUtils.getStringArray(setup.exportDataAsString());
         assertExportData(setup, result);

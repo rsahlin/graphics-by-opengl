@@ -10,9 +10,10 @@ import com.nucleus.utils.DataSerializeUtils;
 
 public class FTextureParameterTest {
 
+    private final static String[] data = DataSerializeUtils.createDefaultData(TextureParameterMapping.values());
+
     @Test
     public void testImportData() {
-        String[] data = DataSerializeUtils.createDefaultData(TextureParameterMapping.values());
         TextureParameter setup = (TextureParameter) DataSerializeUtils.createSetup(data,
                 new TextureParameter());
         assertImportData(data, setup);
@@ -20,7 +21,6 @@ public class FTextureParameterTest {
 
     @Test
     public void testExportDataAsString() {
-        String[] data = DataSerializeUtils.createDefaultData(TextureParameterMapping.values());
         TextureParameter setup = (TextureParameter) DataSerializeUtils.createSetup(data,
                 new TextureParameter());
         String[] result = StringUtils.getStringArray(setup.exportDataAsString());

@@ -10,10 +10,12 @@ import com.nucleus.utils.DataSerializeUtils;
 
 public class FTiledTextureSetupTest extends FTextureSetupTest {
 
+    private final static String[] data = DataSerializeUtils.createDefaultData(TextureMapping.values(),
+            TiledTextureMapping.values());
+
     @Override
     @Test
     public void testImportData() {
-        String[] data = DataSerializeUtils.createDefaultData(TextureMapping.values(), TiledTextureMapping.values());
         TiledTextureSetup setup = (TiledTextureSetup) DataSerializeUtils.createSetup(data, new TiledTextureSetup());
         assertImportData(data, setup);
     }
@@ -21,7 +23,6 @@ public class FTiledTextureSetupTest extends FTextureSetupTest {
     @Override
     @Test
     public void testExportDataAsString() {
-        String[] data = DataSerializeUtils.createDefaultData(TextureMapping.values(), TiledTextureMapping.values());
         TiledTextureSetup setup = (TiledTextureSetup) DataSerializeUtils.createSetup(data, new TiledTextureSetup());
         String[] result = StringUtils.getStringArray(setup.exportDataAsString());
         assertExportData(setup, result);
