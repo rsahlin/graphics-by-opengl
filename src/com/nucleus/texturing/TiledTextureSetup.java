@@ -1,6 +1,7 @@
 package com.nucleus.texturing;
 
 import com.nucleus.common.StringUtils;
+import com.nucleus.io.ExternalReference;
 import com.nucleus.types.DataType;
 
 /**
@@ -43,6 +44,24 @@ public class TiledTextureSetup extends TextureSetup {
 
     int framesX;
     int framesY;
+
+    /**
+     * Default constructor
+     */
+    public TiledTextureSetup() {
+    }
+
+    /**
+     * Creates a new setup with external reference and tiledtexture.
+     * 
+     * @param externalRef
+     * @param texture
+     */
+    public TiledTextureSetup(ExternalReference externalRef, TiledTexture2D texture) {
+        super(externalRef, texture);
+        framesX = texture.getFramesX();
+        framesY = texture.getFramesY();
+    }
 
     /**
      * Returns the number of frames horizontally
