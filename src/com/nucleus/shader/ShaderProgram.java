@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.VertexBuffer;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.opengl.GLES20Wrapper;
@@ -440,9 +441,8 @@ public abstract class ShaderProgram {
     protected void setAttributePointers(GLES20Wrapper gles, Mesh mesh, ShaderVariable[] variables) throws GLException {
 
         VertexBuffer buffer;
-        int index = 0;
         for (ShaderVariable v : variables) {
-            buffer = mesh.getVerticeBuffer(index);
+            buffer = mesh.getVerticeBuffer(BufferIndex.VERTICES);
             gles.glEnableVertexAttribArray(v.getLocation());
             GLUtils.handleError(gles, "glEnableVertexAttribArray ");
             gles.glVertexAttribPointer(v.getLocation(), buffer.getComponentCount(), buffer.getDataType(), false,

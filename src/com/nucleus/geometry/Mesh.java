@@ -16,6 +16,27 @@ import com.nucleus.texturing.Texture2D;
  */
 public class Mesh extends BaseReference {
 
+    /**
+     * For the different Vertice/Attribute buffers
+     */
+    public enum BufferIndex {
+        /**
+         * Vertex storage buffer
+         */
+        VERTICES(0),
+        /**
+         * Attribute buffer storage
+         */
+        ATTRIBUTES(1);
+
+        public final int index;
+
+        private BufferIndex(int index) {
+            this.index = index;
+        }
+
+    }
+
     public final static int MAX_TEXTURE_COUNT = 1;
     private final static String NULL_PARAMETER_STR = "Null parameter";
     /**
@@ -165,11 +186,11 @@ public class Mesh extends BaseReference {
     /**
      * Returns the buffer, at the specified index, containing vertices and attribute data
      * 
-     * @param index Index into the vertex/attribute buffer to return
+     * @param buffer Index into the vertex/attribute buffer to return
      * @return The vertexbuffer
      */
-    public VertexBuffer getVerticeBuffer(int index) {
-        return attributes[index];
+    public VertexBuffer getVerticeBuffer(BufferIndex buffer) {
+        return attributes[buffer.index];
     }
 
     /**
