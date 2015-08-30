@@ -81,6 +81,17 @@ public class TiledTextureSetup extends TextureSetup {
         return framesY;
     }
 
+    /**
+     * Sets the number of frames in this tiled texture for the x and y axis.
+     * 
+     * @param x Number of frames on the x axis.
+     * @param y Number of frames on the y axis.
+     */
+    public void setFrames(int x, int y) {
+        framesX = x;
+        framesY = y;
+    }
+
     @Override
     public int importData(String[] data, int offset) {
         int read = super.importData(data, offset);
