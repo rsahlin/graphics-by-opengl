@@ -33,11 +33,17 @@ public interface NucleusRenderer {
         /**
          * Called when a new frame shall be processed (by the logic)
          * Update objects position, behavior, animation etc based on the deltaTime.
-         * This method will be called by the beginFrame() method, ie before rendering takes place.
+         * Do not update any GL data to keep this thread-safe for GL.
          * 
-         * @param deltaTime
+         * @param deltaTime Time, in seconds, since last frame
          */
         public void processFrame(float deltaTime);
+
+        /**
+         * Called after {@link #processFrame(float)} and before rendering to GL.
+         * Implementations must update GL data that has changed during the call to {@link #processFrame(float)}
+         */
+        public void updateGLData();
     }
 
     /**
@@ -76,12 +82,35 @@ public interface NucleusRenderer {
     public void init();
 
     /**
+     * Sets the scene node to be rendered when {@link #renderScene()} is called
+     * 
+     * @param scene The scene to be rendered.
+     */
+    public void setScene(Node scene);
+
+    /**
+     * Returns the current scene to be rendered. Take care when updating this in order not to break ongoing rendering.
+     * 
+     * @return
+     */
+    public Node getScene();
+
+    /**
      * Signals the start of a frame, implement if needed in subclasses.
-     * This shall be called by the thread driving rendering.
+     * This shall be called by the thread driving rendering and will call {@link FrameListener#updateGLData()} to copy
+     * GL data from sprites.
+     * Do not perform rendering or time consuming tasks in this method.
      * 
      * @return Number of seconds since last call to beginFrame
      */
     public float beginFrame();
+
+    /**
+     * Renders the scene, this will recursively draw all nodes in the scene.
+     * 
+     * @throws GLException If there is a GL error when rendering.
+     */
+    public void renderScene() throws GLException;
 
     /**
      * Signals the end of a frame - rendering is considered to be finished and implementations should call
@@ -91,18 +120,20 @@ public interface NucleusRenderer {
     public void endFrame();
 
     /**
-     * Call registered FrameListeners to signal that one updated frame shall be produced
-     * This shall be called by the thread driving rendering.
-     */
-    public void updateFrame(float deltaTime);
-
-    /**
      * Renders the node using the current mvp matrix, will call children recursively.
      * 
      * @param node The node to be rendered
      * @throws GLException If there is an error in GL while drawing this node.
      */
     public void render(Node node) throws GLException;
+
+    /**
+     * Call {@link FrameListener#processFrame(float)} for registered FrameListeners to signal that one updated frame
+     * shall be produced
+     * This method may be called from a separate thread from the one doing the rendering.
+     * Implementations must take this into consideration.
+     */
+    public void processFrame();
 
     /**
      * Returns the view frustum

@@ -56,10 +56,12 @@ class BaseRenderer implements NucleusRenderer {
     private ArrayList<FrameListener> frameListeners = new ArrayList<BaseRenderer.FrameListener>();
 
     private FrameSampler timeKeeper = new FrameSampler(30);
+    private float deltaTime;
 
     protected Window window = Window.getInstance();
 
     protected GLInfo glInfo;
+    private Node scene;
     /**
      * Set to true when init is called
      */
@@ -93,15 +95,6 @@ class BaseRenderer implements NucleusRenderer {
         this.matrixEngine = matrixEngine;
     }
 
-    /**
-     * Called when the GL context is created for a render surface, GL is now active and can be used to create objects,
-     * textures and buffers.
-     * If this method is called again - it means that the GL context has been lost and is re-created, all textures,
-     * objects and buffers must be recreated.
-     * 
-     * @param width Width of display in pixels
-     * @param height Height of display in pixels
-     */
     @Override
     public void GLContextCreated(int width, int height) {
         window.setDimension(width, height);
@@ -110,10 +103,6 @@ class BaseRenderer implements NucleusRenderer {
         }
     }
 
-    /**
-     * Call this first time when the context is created, before calling GLContextCreated()
-     * Initialize parameters that do not need to be updated when context is re-created.
-     */
     @Override
     public void init() {
         if (initialized) {
@@ -123,15 +112,12 @@ class BaseRenderer implements NucleusRenderer {
         glInfo = new GLInfo(gles);
     }
 
-    /**
-     * Signals the start of a frame, implement if needed in subclasses.
-     * This shall be called by the thread driving rendering.
-     * 
-     * @return Number of seconds since last call to beginFrame
-     */
     @Override
     public float beginFrame() {
-        float deltaTime = timeKeeper.update();
+        for (FrameListener listener : frameListeners) {
+            listener.updateGLData();
+        }
+        deltaTime = timeKeeper.update();
         if (timeKeeper.getSampleDuration() > 3) {
             System.out.println(BASE_RENDERER_TAG + ": Average FPS: " + timeKeeper.sampleFPS());
         }
@@ -158,34 +144,10 @@ class BaseRenderer implements NucleusRenderer {
         return deltaTime;
     }
 
-    /**
-     * Signals the end of a frame - rendering is considered to be finished and implementations should call
-     * EGL.swapBuffers() if needed
-     * This shall be called by the thread driving rendering.
-     */
     @Override
     public void endFrame() {
-
     }
 
-    /**
-     * Call registered FrameListeners to signal that one updated frame shall be produced
-     * This shall be called by the thread driving rendering.
-     */
-    @Override
-    public void updateFrame(float deltaTime) {
-        for (FrameListener listener : frameListeners) {
-            listener.processFrame(deltaTime);
-        }
-
-    }
-
-    /**
-     * Renders the node using the current mvp matrix, will call children recursively.
-     * 
-     * @param node The node to be rendered
-     * @throws GLException If there is an error in GL while drawing this node.
-     */
     @Override
     public void render(Node node) throws GLException {
         float[] modelMatrix = node.getTransform().getMatrix();
@@ -199,14 +161,6 @@ class BaseRenderer implements NucleusRenderer {
         popMatrix();
     }
 
-    /**
-     * Renders a list of meshes, this is the same as iterating the list and calling
-     * renderMesh() on each mesh.
-     * 
-     * @param mesh The mesh to be rendered.
-     * @param mvpMatrix accumulated matrix for this mesh, this will be sent to uniform.
-     * @throws GLException If there is an error in GL while drawing this mesh.
-     */
     protected void renderMeshes(ArrayList<Mesh> meshes, float[] mvpMatrix) throws GLException {
         for (Mesh mesh : meshes) {
             renderMesh(mesh, mvpMatrix);
@@ -255,22 +209,11 @@ class BaseRenderer implements NucleusRenderer {
         GLUtils.handleError(gles, "glDrawArrays ");
     }
 
-    /**
-     * Returns the view frustum
-     * 
-     * @return
-     */
     @Override
     public ViewFrustum getViewFrustum() {
         return viewFrustum;
     }
 
-    /**
-     * Returns true if this renderer has been initialized by calling init() when
-     * the context is created.
-     * 
-     * @return
-     */
     @Override
     public boolean isInitialized() {
         return initialized;
@@ -281,11 +224,6 @@ class BaseRenderer implements NucleusRenderer {
         program.createProgram(gles);
     }
 
-    /**
-     * Adds a listener for render context created, if listener is already added nothing is done.
-     * 
-     * @param listener Listener to get callback when render context is created.
-     */
     @Override
     public void addContextListener(RenderContextListener listener) {
         if (contextListeners.contains(listener)) {
@@ -294,12 +232,6 @@ class BaseRenderer implements NucleusRenderer {
         contextListeners.add(listener);
     }
 
-    /**
-     * Adds a listener for frame callback, this will be called when beginFrame() is called.
-     * Use this when behavior needs to be driven by rendering.
-     * 
-     * @param listener The listener to get callback before a frame is rendered.
-     */
     @Override
     public void addFrameListener(FrameListener listener) {
         if (frameListeners.contains(listener)) {
@@ -308,13 +240,6 @@ class BaseRenderer implements NucleusRenderer {
         frameListeners.add(listener);
     }
 
-    /**
-     * Returns the GLES20Wrapper.
-     * BEWARE - do not use unless you really know what you are doing!!!!
-     * 
-     * @return The GLES wrapper for GLES functions.
-     * @throws IllegalStateException If init() has not been called.
-     */
     @Override
     public GLES20Wrapper getGLES() {
         if (!initialized) {
@@ -323,11 +248,6 @@ class BaseRenderer implements NucleusRenderer {
         return gles;
     }
 
-    /**
-     * Returns the ImageFactory to be used with this renderer when loading image resources.
-     * 
-     * @return
-     */
     @Override
     public ImageFactory getImageFactory() {
         if (!initialized) {
@@ -360,6 +280,28 @@ class BaseRenderer implements NucleusRenderer {
     @Override
     public void setImageFactory(ImageFactory imageFactory) {
         this.imageFactory = imageFactory;
+    }
+
+    @Override
+    public void setScene(Node scene) {
+        this.scene = scene;
+    }
+
+    @Override
+    public void renderScene() throws GLException {
+        render(scene);
+    }
+
+    @Override
+    public Node getScene() {
+        return scene;
+    }
+
+    @Override
+    public void processFrame() {
+        for (FrameListener listener : frameListeners) {
+            listener.processFrame(deltaTime);
+        }
     }
 
 }
