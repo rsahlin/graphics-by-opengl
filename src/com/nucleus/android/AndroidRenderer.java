@@ -5,7 +5,9 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.GLSurfaceView.Renderer;
 
+import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.ProcessFrameRunnable;
 
 /**
  * Base implementation for Android renderer used with GLSurfaceView
@@ -18,6 +20,8 @@ public class AndroidRenderer implements Renderer {
     public final static String ANDROID_RENDERER_TAG = "AndroidRenderer";
     private final static String NULL_RENDERER_ERROR = "NucleusRenderer is null";
     NucleusRenderer renderer;
+    ProcessFrameRunnable frameRunnable;
+    Thread runnableThread;
 
     /**
      * Creates a new Android renderer using the specified BaseRenderer implementation
@@ -31,6 +35,15 @@ public class AndroidRenderer implements Renderer {
             throw new IllegalArgumentException(NULL_RENDERER_ERROR);
         }
         this.renderer = renderer;
+        frameRunnable = new ProcessFrameRunnable(renderer);
+        if (Runtime.getRuntime().availableProcessors() > 1) {
+            System.out.println("Started extra process for logic processing, number of processors: "
+                    + Runtime.getRuntime().availableProcessors());
+            runnableThread = new Thread(frameRunnable);
+        } else {
+            System.out.println("Running everything on one thread.");
+        }
+
     }
 
     @Override
@@ -41,8 +54,23 @@ public class AndroidRenderer implements Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        float deltaTime = renderer.beginFrame();
-        renderer.updateFrame(deltaTime);
+        renderer.beginFrame();
+        try {
+            if (runnableThread != null) {
+                if (!runnableThread.isAlive()) {
+                    runnableThread.start();
+                } else {
+                    synchronized (frameRunnable) {
+                        frameRunnable.notify();
+                    }
+                }
+            } else {
+                renderer.processFrame();
+            }
+            renderer.renderScene();
+        } catch (GLException e) {
+            throw new RuntimeException(e);
+        }
         renderer.endFrame();
     }
 
