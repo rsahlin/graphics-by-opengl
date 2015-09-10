@@ -13,4 +13,6 @@ hs_err_pid*
 /bin/
 /gen/
 /target/
+/.settings/
+
 
