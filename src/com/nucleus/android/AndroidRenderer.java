@@ -22,6 +22,15 @@ public class AndroidRenderer implements Renderer {
     NucleusRenderer renderer;
     ProcessFrameRunnable frameRunnable;
     Thread runnableThread;
+    /**
+     * Set to true to trigger a call to context created next time onDrawFrame is called
+     */
+    private volatile boolean contextCreated = false;
+    /**
+     * Set to true to exit from onDrawFrame directly - for instance when an error has occured.
+     */
+    private volatile boolean noUpdates = false;
+    private volatile int width, height;
 
     /**
      * Creates a new Android renderer using the specified BaseRenderer implementation
@@ -48,35 +57,61 @@ public class AndroidRenderer implements Renderer {
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        renderer.getViewFrustum().setViewPort(0, 0, width, height);
-        renderer.GLContextCreated(width, height);
+    	try {
+    		this.width = width;
+    		this.height = height;
+    		contextCreated = true;
+    	} catch (Throwable t) {
+    		handleThrowable(t);
+    	}
     }
 
+    private void handleThrowable(Throwable t) {
+		noUpdates = true;
+		BaseActivity.handleThrowable(t);
+    }
+    
     @Override
     public void onDrawFrame(GL10 gl) {
-        renderer.beginFrame();
-        try {
-            if (runnableThread != null) {
-                if (!runnableThread.isAlive()) {
-                    runnableThread.start();
-                } else {
-                    synchronized (frameRunnable) {
-                        frameRunnable.notify();
+    	if (noUpdates) {
+    		return;
+    	}
+    	try {
+    		if (contextCreated) {
+    			contextCreated = false;
+                renderer.getViewFrustum().setViewPort(0, 0, width, height);
+                renderer.GLContextCreated(width, height);
+    		}
+    		renderer.beginFrame();
+            try {
+                if (runnableThread != null) {
+                    if (!runnableThread.isAlive()) {
+                        runnableThread.start();
+                    } else {
+                        synchronized (frameRunnable) {
+                            frameRunnable.notify();
+                        }
                     }
+                } else {
+                    renderer.processFrame();
                 }
-            } else {
-                renderer.processFrame();
+                renderer.renderScene();
+            } catch (GLException e) {
+                throw new RuntimeException(e);
             }
-            renderer.renderScene();
-        } catch (GLException e) {
-            throw new RuntimeException(e);
-        }
-        renderer.endFrame();
+            renderer.endFrame();
+    	} catch (Throwable t) {
+    		handleThrowable(t);;
+    	}
     }
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        renderer.init();
+    	try	 {
+            renderer.init();
+    	} catch (Throwable t) {
+    		handleThrowable(t);
+    	}
     }
 
 }
