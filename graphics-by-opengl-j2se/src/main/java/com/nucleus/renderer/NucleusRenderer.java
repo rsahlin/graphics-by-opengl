@@ -10,6 +10,9 @@ import com.nucleus.texturing.ImageFactory;
 public interface NucleusRenderer {
 
     public interface RenderContextListener {
+
+        public final static String INVALID_CONTEXT_DIMENSION = "Illegal size of context: ";
+
         /**
          * Called when the rendering context is created and ready to be used. Can also be called if
          * context is lost and re-created.
@@ -18,6 +21,7 @@ public interface NucleusRenderer {
          * 
          * @param width Width of display in pixels.
          * @param height Height of display in pixels.
+         * @throws IllegalArgumentException If width or height <= 0
          */
         public void contextCreated(int width, int height);
     }
@@ -106,7 +110,8 @@ public interface NucleusRenderer {
     public float beginFrame();
 
     /**
-     * Renders the scene, this will recursively draw all nodes in the scene.
+     * Renders the current scene, as set with {@link #setScene(Node)} Uses the current mvp matrix, will call children
+     * recursively.
      * 
      * @throws GLException If there is a GL error when rendering.
      */
