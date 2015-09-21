@@ -1,7 +1,7 @@
 package com.nucleus.texturing;
 
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLES20Wrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias;

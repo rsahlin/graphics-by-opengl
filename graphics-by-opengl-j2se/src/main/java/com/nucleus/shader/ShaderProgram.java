@@ -11,7 +11,7 @@ import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.VertexBuffer;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLES20Wrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -54,7 +54,7 @@ public abstract class ShaderProgram {
 
     public final static String SHADER_SOURCE_ERROR = "Error setting shader source: ";
     public final static String COMPILE_SHADER_ERROR = "Error compiling shader: ";
-    public final static String CREATE_SHADER_ERROR = "Error creating shader object - No current context? ";
+    public final static String CREATE_SHADER_ERROR = "Error creating shader object, shader is null";
     public final static String LINK_PROGRAM_ERROR = "Error linking program: ";
     public final static String BIND_ATTRIBUTE_ERROR = "Error binding attribute: ";
     public final static String VARIABLE_LOCATION_ERROR = "Could not get shader variable location: ";

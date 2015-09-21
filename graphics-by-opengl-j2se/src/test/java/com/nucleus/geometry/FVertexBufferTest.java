@@ -5,7 +5,7 @@ import java.nio.FloatBuffer;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.nucleus.opengl.GLES20Wrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 
 public class FVertexBufferTest {
 

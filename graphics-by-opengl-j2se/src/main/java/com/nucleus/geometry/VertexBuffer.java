@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import com.nucleus.opengl.GLES20Wrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /**
  * Create and hold data for OpenGL vertex arrays, this can for instance be the vertice position, texture coordinates,

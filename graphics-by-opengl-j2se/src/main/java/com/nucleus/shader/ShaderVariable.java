@@ -1,6 +1,6 @@
 package com.nucleus.shader;
 
-import com.nucleus.opengl.GLES20Wrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /**
  * Data for an active shader variable, this can be either attribute or uniform variables.

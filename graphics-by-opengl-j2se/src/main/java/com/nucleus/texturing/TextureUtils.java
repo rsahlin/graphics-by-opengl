@@ -3,7 +3,7 @@ package com.nucleus.texturing;
 import java.io.IOException;
 
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLES20Wrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 

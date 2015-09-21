@@ -12,7 +12,7 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.VertexBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLES20Wrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
@@ -97,6 +97,9 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void GLContextCreated(int width, int height) {
+        if (width <= 0 || height <= 0) {
+            throw new IllegalArgumentException(RenderContextListener.INVALID_CONTEXT_DIMENSION);
+        }
         window.setDimension(width, height);
         for (RenderContextListener listener : contextListeners) {
             listener.contextCreated(width, height);
@@ -132,7 +135,7 @@ class BaseRenderer implements NucleusRenderer {
 
         try {
             // TODO Add render setting with clear flags, depth test, cull face etc.
-            gles.glClearColor(0, 0f, 0.4f, 1.0f);
+            gles.glClearColor(0.6f, 0.5f, 0.4f, 1.0f);
             gles.glClear(GLES20.GL_COLOR_BUFFER_BIT);
             gles.glDisable(GLES20.GL_DEPTH_TEST);
             gles.glDisable(GLES20.GL_CULL_FACE);

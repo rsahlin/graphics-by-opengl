@@ -2,7 +2,7 @@ package com.nucleus.texturing;
 
 import com.nucleus.common.StringUtils;
 import com.nucleus.io.DataSetup;
-import com.nucleus.opengl.GLES20Wrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.types.DataType;
 
 /**

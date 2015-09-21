@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 import com.nucleus.geometry.ElementBuffer.Mode;
 import com.nucleus.geometry.ElementBuffer.Type;
-import com.nucleus.opengl.GLES20Wrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.shader.ShaderProgram;
 
 /**

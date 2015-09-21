@@ -3,7 +3,7 @@ package com.nucleus.shader;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.nucleus.opengl.GLES20Wrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.shader.ShaderVariable.VariableType;
 
 public class FShaderVariableTest {

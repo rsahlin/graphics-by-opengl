@@ -3,7 +3,7 @@ package com.nucleus.renderer;
 import java.util.StringTokenizer;
 
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLES20Wrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /**
  * Info about the GL ES renderer in the system.
