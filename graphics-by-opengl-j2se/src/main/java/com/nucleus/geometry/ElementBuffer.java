@@ -109,6 +109,7 @@ public class ElementBuffer {
             break;
         }
         indices = ByteBuffer.allocateDirect(count * size).order(ByteOrder.nativeOrder());
+        System.out.println("Allocated element buffer with " + count * size + " bytes, limit() " + indices.limit());
     }
 
     /**
