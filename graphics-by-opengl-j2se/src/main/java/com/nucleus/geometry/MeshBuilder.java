@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 
 import com.nucleus.geometry.ElementBuffer.Mode;
 import com.nucleus.geometry.ElementBuffer.Type;
+import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.shader.ShaderProgram;
 
@@ -110,7 +111,8 @@ public class MeshBuilder {
             attributeBuffers = 2;
         }
         VertexBuffer[] attributes = new VertexBuffer[attributeBuffers];
-        attributes[0] = new VertexBuffer(quadCount * INDEXED_QUAD_VERTICES, XYZ_COMPONENTS, XYZ_COMPONENTS,
+        attributes[BufferIndex.VERTICES.index] = new VertexBuffer(quadCount * INDEXED_QUAD_VERTICES, XYZ_COMPONENTS,
+                XYZ_COMPONENTS,
                 GLES20.GL_FLOAT);
         if (attributeBuffers > 1) {
             attributes[1] = new VertexBuffer(quadCount * INDEXED_QUAD_VERTICES, 4, attribute2Size, GLES20.GL_FLOAT);
@@ -126,7 +128,7 @@ public class MeshBuilder {
             destPos += quadPositions.length;
         }
 
-        attributes[0].setPosition(vertices, 0, 0, quadCount * INDEXED_QUAD_VERTICES);
+        attributes[BufferIndex.VERTICES.index].setPosition(vertices, 0, 0, quadCount * INDEXED_QUAD_VERTICES);
         Material material = new Material(program);
         mesh.setupIndexed(indices, attributes, material, null);
     }
