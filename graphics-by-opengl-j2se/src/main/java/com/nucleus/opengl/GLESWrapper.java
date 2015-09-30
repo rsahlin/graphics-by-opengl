@@ -14,6 +14,9 @@ public abstract class GLESWrapper {
         };
     }
 
+    /**
+     * TODO Rename to GL
+     */
     public abstract class GLES20 {
         public static final int GL_ACTIVE_TEXTURE = 0x84E0;
         public static final int GL_DEPTH_BUFFER_BIT = 0x00000100;

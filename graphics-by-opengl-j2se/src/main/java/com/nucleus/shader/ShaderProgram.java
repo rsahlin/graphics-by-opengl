@@ -118,6 +118,10 @@ public abstract class ShaderProgram {
      * set the pointers for used attributes, enable pointers as needed.
      * This will make the actual connection between the attribute data in the vertex buffer and the shader.
      * 
+     * TODO Move this method to NucleusRenderer, or similar class that has knowledge of GLES implementation, DO NOT
+     * spread GLES20 wrapper across the implementation, doing so will make it very hard to update to newer versions of
+     * GLES
+     * 
      * @param gles
      * @param mesh
      */
@@ -125,6 +129,10 @@ public abstract class ShaderProgram {
 
     /**
      * Sets the uniforms needed by the program, this will make the binding between the shader and uniforms
+     * 
+     * TODO Move this method to NucleusRenderer, or similar class that has knowledge of GLES implementation, DO NOT
+     * spread GLES20 wrapper across the implementation, doing so will make it very hard to update to newer versions of
+     * GLES
      * 
      * @param gles
      * @param modelviewMatrix The matrix to use for the MVP matrix
