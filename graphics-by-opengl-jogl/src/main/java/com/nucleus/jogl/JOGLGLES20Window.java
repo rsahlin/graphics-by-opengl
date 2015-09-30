@@ -18,6 +18,14 @@ public class JOGLGLES20Window extends JOGLGLEWindow {
     }
 
     @Override
+    public void display(GLAutoDrawable drawable) {
+        if (glesWrapper != null) {
+            ((JOGLGLES20Wrapper) glesWrapper).freeNames();
+        }
+        super.display(drawable);
+    }
+
+    @Override
     public void dispose(GLAutoDrawable drawable) {
         System.out.println("dispose()");
         System.exit(0);
