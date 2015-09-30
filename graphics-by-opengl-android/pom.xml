@@ -13,22 +13,19 @@
     <plugin>
      <groupId>com.jayway.maven.plugins.android.generation2</groupId>
      <artifactId>android-maven-plugin</artifactId>
-     <version>3.9.0-rc.1</version>
-               <configuration>
-                    <sdk>
-                        <platform>22</platform>
-                    </sdk>
-                    <deleteConflictingFiles>true</deleteConflictingFiles>
-                    <undeployBeforeDeploy>true</undeployBeforeDeploy>
-                </configuration>
+     <version>4.0.0-rc.2</version>
+	     <configuration>
+	          <sdk>
+	              <platform>9</platform>
+	          </sdk>
+	          <deleteConflictingFiles>true</deleteConflictingFiles>
+	          <undeployBeforeDeploy>true</undeployBeforeDeploy>
+	      </configuration>
      <extensions>true</extensions>
      </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
         </configuration>
       </plugin>
     </plugins>
@@ -42,7 +39,7 @@
   <dependency>
    <groupId>com.google.android</groupId>
    <artifactId>android</artifactId>
-   <version>2.2.1</version>
+   <version>4.1.1.4</version>
    <scope>provided</scope>
   </dependency>
   </dependencies>
