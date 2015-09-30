@@ -72,7 +72,6 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, Buffer ptr) {
         android.opengl.GLES20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
-
     }
 
     @Override
@@ -197,6 +196,11 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
+    public void glDrawElements(int mode, int count, int type, int offset) {
+        android.opengl.GLES20.glDrawElements(mode, count, type, offset);
+    }
+
+    @Override
     public void glBlendEquationSeparate(int modeRGB, int modeAlpha) {
         android.opengl.GLES20.glBlendEquationSeparate(modeRGB, modeAlpha);
     }
@@ -214,6 +218,31 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glGetIntegerv(int pname, int[] params, int offset) {
         android.opengl.GLES20.glGetIntegerv(pname, params, offset);
+    }
+
+    @Override
+    public void glGenBuffers(int n, int[] buffers, int offset) {
+        android.opengl.GLES20.glGenBuffers(n, buffers, offset);
+    }
+
+    @Override
+    public void glBindBuffer(int target, int buffer) {
+        android.opengl.GLES20.glBindBuffer(target, buffer);
+    }
+
+    @Override
+    public void glBufferData(int target, int size, Buffer data, int usage) {
+        android.opengl.GLES20.glBufferData(target, size, data, usage);
+    }
+
+    @Override
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, int offset) {
+        android.opengl.GLES20.glVertexAttribPointer(index, size, type, normalized, stride, offset);
+    }
+
+    @Override
+    public void glDeleteBuffers(int n, int[] buffers, int offset) {
+        android.opengl.GLES20.glDeleteBuffers(n, buffers, offset);
     }
 
 }

@@ -3,6 +3,9 @@ package com.nucleus.opengl;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
 
+import com.nucleus.geometry.VertexBuffer;
+import com.nucleus.shader.ShaderVariable;
+
 /**
  * Abstraction for OpenGL GLES 2.X, this is used for platform independent usage of GLES functions.
  * Use this to make it possible to develop OpenGL (ES) software regardless of target platform GL bindings.
@@ -58,6 +61,42 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @return
      */
     public abstract int glCreateProgram();
+
+    /**
+     * Abstraction for glGenBuffers()
+     * 
+     * @param n Number of buffer names to create
+     * @param buffers Storage for buffer names
+     * @param offset Offset into buffers where names are put
+     */
+    public abstract void glGenBuffers(int n, int[] buffers, int offset);
+
+    /**
+     * Abstraction for glDeleteBuffers()
+     * 
+     * @param n
+     * @param names
+     * @param offset
+     */
+    public abstract void glDeleteBuffers(int n, int[] buffers, int offset);
+
+    /**
+     * Abstraction for glBindBuffer()
+     * 
+     * @param target
+     * @param buffer
+     */
+    public abstract void glBindBuffer(int target, int buffer);
+
+    /**
+     * Abstraction for glBufferData()
+     * 
+     * @param target
+     * @param size
+     * @param data
+     * @param usage
+     */
+    public abstract void glBufferData(int target, int size, Buffer data, int usage);
 
     /**
      * Abstraction for glGetShaderiv()
@@ -162,6 +201,54 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             Buffer ptr);
 
     /**
+     * Abstraction for glVertexAttribPointer()
+     * 
+     * @param index
+     * @param size
+     * @param type
+     * @param normalized
+     * @param stride
+     * @param offset
+     */
+    public abstract void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride,
+            int offset);
+
+    /**
+     * Sets the vertex attrib pointers for the specified buffer, this call will set all attribute pointers
+     * for the specified buffer.
+     * If buffer has named object allocated then VBO is used, otherwise glVertexAttribPointer is called
+     * with the java.nio.Buffer.
+     * 
+     * @param buffer
+     * @param target
+     * @param position Position in buffer where the data for this attribute is.
+     * @param attrib Array of attributes to set
+     * @param offsets Offsets into the buffer where the data is for the different attributes
+     */
+    public void glVertexAttribPointer(VertexBuffer buffer, int target, ShaderVariable[] attribs, int[] offsets) {
+        if (buffer.getBufferName() > 0) {
+            glBindBuffer(target, buffer.getBufferName());
+            glBufferData(target, buffer.getSizeInBytes(), buffer.getBuffer().position(0),
+                    GLES20.GL_STATIC_DRAW);
+            int index = 0;
+            for (ShaderVariable a : attribs) {
+                glEnableVertexAttribArray(a.getLocation());
+                glVertexAttribPointer(a.getLocation(), buffer.getComponentCount(), buffer.getDataType(), false,
+                        buffer.getByteStride(), offsets[index++]);
+            }
+            glBindBuffer(target, 0);
+
+        } else {
+            int index = 0;
+            for (ShaderVariable a : attribs) {
+                glEnableVertexAttribArray(a.getLocation());
+                glVertexAttribPointer(a.getLocation(), buffer.getComponentCount(), buffer.getDataType(), false,
+                        buffer.getByteStride(), buffer.getBuffer().position(offsets[index++]));
+            }
+        }
+    }
+
+    /**
      * Abstraction for glEnableVertexAttribArray()
      * 
      * @param index
@@ -198,6 +285,16 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param indices
      */
     public abstract void glDrawElements(int mode, int count, int type, Buffer indices);
+
+    /**
+     * Abstraction for glDrawElements()
+     * 
+     * @param mode
+     * @param count
+     * @param type
+     * @param offset
+     */
+    public abstract void glDrawElements(int mode, int count, int type, int offset);
 
     /**
      * Abstraction for glBindAttribLocation()

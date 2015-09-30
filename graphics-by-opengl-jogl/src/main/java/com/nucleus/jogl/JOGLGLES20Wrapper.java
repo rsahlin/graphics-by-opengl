@@ -3,6 +3,7 @@ package com.nucleus.jogl;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2ES2;
@@ -31,8 +32,16 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
      */
     private ByteBuffer buffer = ByteBuffer.allocate(INFO_BUFFERSIZE);
 
+    /**
+     * Not used buffer object names
+     */
+    private ArrayList<int[]> bufferNames = new ArrayList<int[]>();
+    /**
+     * Used buffer object names
+     */
+    private ArrayList<int[]> usedBufferNames = new ArrayList<int[]>();
+
     GL2ES2 gles;
-    private int[] tempVBO = new int[] { -1 };
 
     /**
      * Creates a new instance of the GLES20 wrapper for JOGL
@@ -45,7 +54,34 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
             throw new IllegalArgumentException(GLES_NULL);
         }
         this.gles = gles;
-        gles.glGenBuffers(1, tempVBO, 0);
+    }
+
+    /**
+     * Gets an unused buffer object name, if one does not exist it is allocated.
+     * 
+     * @return
+     */
+    protected int[] getName() {
+        if (bufferNames.size() > 0) {
+            int[] used = bufferNames.remove(bufferNames.size() - 1);
+            usedBufferNames.add(used);
+            return used;
+        } else {
+            int[] names = new int[1];
+            gles.glGenBuffers(1, names, 0);
+            usedBufferNames.add(names);
+            System.out.println("Allocated 1 buffer object name: " + names[0]);
+            return names;
+        }
+    }
+
+    /**
+     * Moves all used buffer names to the unused buffer name list.
+     */
+    protected void freeNames() {
+        while (!usedBufferNames.isEmpty()) {
+            bufferNames.add(usedBufferNames.remove(usedBufferNames.size() - 1));
+        }
     }
 
     @Override
@@ -131,9 +167,12 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, Buffer ptr) {
-        gles.glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, tempVBO[0]);
-        int numBytes = buffer.limit();
-        gles.glBufferData(GL2ES2.GL_ARRAY_BUFFER, numBytes, ptr.position(0), GL.GL_STATIC_DRAW);
+        // This method should not be called on JOGL - future versions of GL will move to named buffer objects.
+        int[] names = getName();
+        // int offset = ptr.position();
+        gles.glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, names[0]);
+        int numBytes = ptr.capacity() * 4;
+        gles.glBufferData(GL2ES2.GL_ARRAY_BUFFER, numBytes, ptr, GL.GL_STATIC_DRAW);
         gles.glVertexAttribPointer(index, size, type, normalized, stride, 0);
     }
 
@@ -157,10 +196,21 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glDrawElements(int mode, int count, int type, Buffer indices) {
-        gles.glBindBuffer(GL2ES2.GL_ELEMENT_ARRAY_BUFFER, tempVBO[0]);
-        int numBytes = indices.limit();
-        gles.glBufferData(GL2ES2.GL_ELEMENT_ARRAY_BUFFER, numBytes, indices.position(0), GL.GL_STATIC_DRAW);
-        gles.glDrawElements(mode, count, type, 0);
+        // This method should not be called on JOGL - future versions of GL will move to named buffer objects.
+        int offset = indices.position();
+        int[] names = getName();
+        gles.glBindBuffer(GL2ES2.GL_ELEMENT_ARRAY_BUFFER, names[0]);
+        int numBytes = count;
+        if (type == GLES20.GL_UNSIGNED_SHORT) {
+            numBytes = count * 2;
+        }
+        gles.glBufferData(GL2ES2.GL_ELEMENT_ARRAY_BUFFER, numBytes, indices, GL.GL_STATIC_DRAW);
+        gles.glDrawElements(mode, count, type, offset);
+    }
+
+    @Override
+    public void glDrawElements(int mode, int count, int type, int offset) {
+        gles.glDrawElements(mode, count, type, offset);
     }
 
     @Override
@@ -272,6 +322,8 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glTexImage2D(int target, int level, int internalformat, int width, int height, int border, int format,
             int type, Buffer pixels) {
+        // gles.glPixelStorei(GLESWrapper.GLES20.GL_UNPACK_ALIGNMENT, 4);
+        // gles.glPixelStorei(GLESWrapper.GLES20.GL_PACK_ALIGNMENT, 4);
         gles.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
 
     }
@@ -285,6 +337,32 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glBlendFuncSeparate(int srcRGB, int dstRGB, int srcAlpha, int dstAlpha) {
         gles.glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+
+    }
+
+    @Override
+    public void glGenBuffers(int n, int[] buffers, int offset) {
+        gles.glGenBuffers(n, buffers, offset);
+    }
+
+    @Override
+    public void glBindBuffer(int target, int buffer) {
+        gles.glBindBuffer(target, buffer);
+    }
+
+    @Override
+    public void glBufferData(int target, int size, Buffer data, int usage) {
+        gles.glBufferData(target, size, data, usage);
+    }
+
+    @Override
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, int offset) {
+        gles.glVertexAttribPointer(index, size, type, normalized, stride, offset);
+    }
+
+    @Override
+    public void glDeleteBuffers(int n, int[] buffers, int offset) {
+        gles.glDeleteBuffers(n, buffers, offset);
 
     }
 
