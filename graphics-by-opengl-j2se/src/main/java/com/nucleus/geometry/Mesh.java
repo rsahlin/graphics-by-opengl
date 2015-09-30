@@ -16,6 +16,9 @@ import com.nucleus.texturing.Texture2D;
  */
 public class Mesh extends BaseReference {
 
+    private final static String NULL_NAMES = "Buffer names is null";
+    private final static String NOT_ENOUGH_NAMES = "Not enough buffer names";
+
     /**
      * For the different Vertice/Attribute buffers
      */
@@ -74,6 +77,7 @@ public class Mesh extends BaseReference {
      */
     protected VertexBuffer[] attributes;
     protected ElementBuffer indices;
+
     protected Material material;
     /**
      * Currently only supports single texture
@@ -194,7 +198,16 @@ public class Mesh extends BaseReference {
     }
 
     /**
-     * Returns the optoional element buffer, this is used when drawing using indexed vertices
+     * Returns the attribute/vertice buffers.
+     * 
+     * @return
+     */
+    public VertexBuffer[] getVerticeBuffers() {
+        return attributes;
+    }
+
+    /**
+     * Returns the optional element buffer, this is used when drawing using indexed vertices
      * 
      * @return
      */
@@ -310,4 +323,45 @@ public class Mesh extends BaseReference {
         return attributeUpdater;
     }
 
+    /**
+     * Sets the named object buffers for this mesh, the number of names allocated for this
+     * mesh must match {@link #getBufferNameCount()} The named objects will be set in the buffers contained in this
+     * mesh.
+     * Name at offset will be put in the first vertice buffer, the second in the following vertice buffer if allocated.
+     * The last name will be put in the elementbuffer if one is allocated.
+     * 
+     * @param count Number of names
+     * @param names Array with allocated buffer names
+     * @param offset Offset into array to buffer names
+     * @throws IllegalArgumentException If names is null, or there is not enough names.
+     */
+    public void setBufferNames(int count, int[] names, int offset) {
+        if (names == null) {
+            throw new IllegalArgumentException(NULL_NAMES);
+        }
+        if (names.length < offset + count) {
+            throw new IllegalArgumentException(NOT_ENOUGH_NAMES);
+        }
+        if (indices != null) {
+            indices.setBufferName(names[offset++]);
+        }
+        for (VertexBuffer b : attributes) {
+            b.setBufferName(names[offset++]);
+        }
+    }
+
+    /**
+     * Returns the number of buffer object names that are needed for this mesh.
+     * Usage of buffer objects is recommended over passing java.nio.Buffers directly to
+     * {@link GLES20Wrapper#glVertexAttribPointer(int, int, int, boolean, int, java.nio.Buffer)}
+     * 
+     * @return
+     */
+    public int getBufferNameCount() {
+        int count = attributes.length;
+        if (indices != null) {
+            count++;
+        }
+        return count;
+    }
 }
