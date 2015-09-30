@@ -1,5 +1,6 @@
 package com.nucleus.renderer;
 
+import java.nio.Buffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -206,7 +207,13 @@ class BaseRenderer implements NucleusRenderer {
         if (indices == null) {
             gles.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.getVerticeCount());
         } else {
-            gles.glDrawElements(indices.getMode().mode, indices.getCount(), indices.getType().type, indices.getBuffer());
+            if (indices.getBufferName() > 0) {
+                gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
+                gles.glDrawElements(indices.getMode().mode, indices.getCount(), indices.getType().type, 0);
+            } else {
+                gles.glDrawElements(indices.getMode().mode, indices.getCount(), indices.getType().type,
+                        indices.getBuffer().position(0));
+            }
         }
 
         GLUtils.handleError(gles, "glDrawArrays ");
@@ -305,6 +312,26 @@ class BaseRenderer implements NucleusRenderer {
         for (FrameListener listener : frameListeners) {
             listener.processFrame(deltaTime);
         }
+    }
+
+    @Override
+    public void genBuffers(int count, int[] names, int offset) {
+        gles.glGenBuffers(count, names, offset);
+    }
+
+    @Override
+    public void deleteBuffers(int count, int[] names, int offset) {
+        gles.glDeleteBuffers(count, names, offset);
+    }
+
+    @Override
+    public void bindBuffer(int target, int buffer) {
+        gles.glBindBuffer(target, buffer);
+    }
+
+    @Override
+    public void bufferData(int target, int size, Buffer data, int usage) {
+        gles.glBufferData(target, size, data, usage);
     }
 
 }

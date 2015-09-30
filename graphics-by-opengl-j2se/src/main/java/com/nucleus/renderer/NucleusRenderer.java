@@ -1,5 +1,7 @@
 package com.nucleus.renderer;
 
+import java.nio.Buffer;
+
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
@@ -177,6 +179,7 @@ public interface NucleusRenderer {
      * @return The GLES wrapper for GLES functions.
      * @throws IllegalStateException If init() has not been called.
      */
+    @Deprecated
     public GLES20Wrapper getGLES();
 
     /**
@@ -201,5 +204,45 @@ public interface NucleusRenderer {
      * @throws RuntimeException If there is an error loading,compiling or linking the program.
      */
     public void createProgram(ShaderProgram program);
+
+    /**
+     * Generate GL named object buffers
+     * 
+     * @param count Number of named buffers to create
+     * @param names Destination for buffer names
+     * @param offset Offset into names
+     */
+    public void genBuffers(int count, int[] names, int offset);
+
+    /**
+     * Deletes the named object buffers generated with a call to {@link #genBuffers(int, int[], int)}
+     * 
+     * @param count Number of buffer names to delete
+     * @param names Named buffers to delete
+     * @param offset Offset into names
+     */
+    public void deleteBuffers(int count, int[] names, int offset);
+
+    /**
+     * Binds the named buffer to the specified target.
+     * see OpenGL.glBindBuffer()
+     * 
+     * @param target
+     * @param buffer
+     */
+    public void bindBuffer(int target, int buffer);
+
+    /**
+     * create and initialize a buffer object's data store, from OpenGL.glBufferData()
+     * 
+     * @param target Specifies the target buffer object. The symbolic constant must be GL_ARRAY_BUFFER or
+     * GL_ELEMENT_ARRAY_BUFFER.
+     * @param size Specifies the size in bytes of the buffer object's new data store.
+     * @param data Specifies a pointer to data that will be copied into the data store for initialization, or NULL if no
+     * data is to be copied.
+     * @param usage Specifies the expected usage pattern of the data store. The symbolic constant must be
+     * GL_STREAM_DRAW, GL_STATIC_DRAW, or GL_DYNAMIC_DRAW.
+     */
+    public void bufferData(int target, int size, Buffer data, int usage);
 
 }
