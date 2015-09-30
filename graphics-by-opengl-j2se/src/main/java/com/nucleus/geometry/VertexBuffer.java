@@ -16,7 +16,7 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
  * @author Richard Sahlin
  *
  */
-public class VertexBuffer {
+public class VertexBuffer extends BufferObject {
 
     private final static String ILLEGAL_DATATYPE_STR = "Illegal datatype: ";
 
@@ -70,10 +70,13 @@ public class VertexBuffer {
         this.components = components;
         this.type = type;
         this.verticeCount = verticeCount;
-        vertices = ByteBuffer.allocateDirect(verticeCount * sizePerVertex * dataSize)
+        sizeInBytes = verticeCount * sizePerVertex * dataSize;
+        vertices = ByteBuffer.allocateDirect(sizeInBytes)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         attribByteStride = sizePerVertex * dataSize;
         attribFloatSize = sizePerVertex;
+        System.out
+                .println("Allocated atrribute buffer with " + sizeInBytes + " bytes, capacity() " + vertices.capacity());
     }
 
     /**

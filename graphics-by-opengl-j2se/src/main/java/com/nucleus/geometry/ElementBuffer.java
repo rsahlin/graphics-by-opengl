@@ -10,7 +10,7 @@ import java.nio.ByteOrder;
  * @author Richard Sahlin
  *
  */
-public class ElementBuffer {
+public class ElementBuffer extends BufferObject {
 
     private final static String NULL_TYPE_STR = "Type is null";
 
@@ -108,8 +108,10 @@ public class ElementBuffer {
             size = 2;
             break;
         }
-        indices = ByteBuffer.allocateDirect(count * size).order(ByteOrder.nativeOrder());
-        System.out.println("Allocated element buffer with " + count * size + " bytes, limit() " + indices.limit());
+        sizeInBytes = count * size;
+        indices = ByteBuffer.allocateDirect(sizeInBytes).order(ByteOrder.nativeOrder());
+        System.out
+                .println("Allocated element buffer with " + sizeInBytes);
     }
 
     /**
