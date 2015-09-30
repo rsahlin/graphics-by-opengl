@@ -28,7 +28,11 @@ public class PointerData {
         /**
          * Pointer move action, keep track of the UP/DOWN action to know if this is a pressed move (eg touch move).
          */
-        MOVE(2);
+        MOVE(2),
+        /**
+         * Zoom action from the input device - note that not all input devices can support this.
+         */
+        ZOOM(3);
 
         private int action;
 
