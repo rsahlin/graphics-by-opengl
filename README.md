@@ -1,4 +1,4 @@
-# graphics-by-opengl
+#graphics-by-opengl
 A Java based API for graphics using OpenGLES.
 Core functions for graphics rendering in a platform agnostic way using OpenGLES.
 This API is intended as a low level API, using it requires OpenGL knowledge.
@@ -12,10 +12,11 @@ This can greatly reduce development times since starting and debugging a J2SE ap
 
 When importing the project use either the eclipse project files or the pom file. I use Eclipse, though a Maven base IDE _should_ work.
 
-#graphics-by-opengl-j2se contains all APIs and implementation that is not platform specific 
+graphics-by-opengl-j2se contains all APIs and implementation that is not platform specific 
 - the majority of functionality and code should be here.
 
-#graphics-by-opengl-jogl and #graphics-by-opengl-android
+graphics-by-opengl-jogl and 
+graphics-by-opengl-android
 contains JOGL and Android implementations.
 
 
