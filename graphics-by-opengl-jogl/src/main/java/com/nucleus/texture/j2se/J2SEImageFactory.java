@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 import javax.imageio.ImageIO;
 
@@ -68,18 +69,31 @@ public class J2SEImageFactory implements ImageFactory {
         Buffer buff = destination.getBuffer();
         destination.getBuffer().position(0);
         if (buff instanceof ByteBuffer) {
-            ByteBuffer bytes = (ByteBuffer) buff;
-            bytes.asIntBuffer().put(source.getData());
+            copyPixels(source.getData(), ((ByteBuffer) buff).asIntBuffer());
         } else {
             throw new IllegalArgumentException("Not implemented");
+        }
+    }
+
+    private void copyPixels(int[] source, IntBuffer destination) {
+        for (int pixel : source) {
+            destination.put(pixel);
+        }
+    }
+
+    private void copyPixels(byte[] source, IntBuffer destination) {
+        int length = source.length;
+        for (int index = 0; index < length;) {
+            int pixel = (source[index++] & 0xff) | ((source[index++] & 0xff) << 8) | ((source[index++] & 0xff) << 16)
+                    | ((source[index++] & 0xff) << 24);
+            destination.put(pixel);
         }
     }
 
     public void copyPixels(DataBufferByte source, Image destination) {
         Buffer buff = destination.getBuffer();
         if (buff instanceof ByteBuffer) {
-            ByteBuffer bytes = (ByteBuffer) buff;
-            bytes.put(source.getData());
+            copyPixels(source.getData(), ((ByteBuffer) buff).asIntBuffer());
         } else {
             throw new IllegalArgumentException("Not implemented");
         }
