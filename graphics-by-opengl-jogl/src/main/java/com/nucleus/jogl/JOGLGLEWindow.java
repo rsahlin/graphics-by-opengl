@@ -3,6 +3,8 @@ package com.nucleus.jogl;
 import java.awt.Frame;
 
 import com.jogamp.nativewindow.util.Dimension;
+import com.jogamp.newt.event.MouseEvent;
+import com.jogamp.newt.event.MouseListener;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilities;
@@ -11,6 +13,7 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.Animator;
 import com.nucleus.CoreApp;
+import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 
@@ -22,7 +25,7 @@ import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
  * has GL access. This is normally done in the {@link #display(GLAutoDrawable)} method.
  *
  */
-public abstract class JOGLGLEWindow implements GLEventListener {
+public abstract class JOGLGLEWindow implements GLEventListener, MouseListener {
 
     private int SCREEN_ID = 0;
     private Dimension windowSize;
@@ -65,6 +68,7 @@ public abstract class JOGLGLEWindow implements GLEventListener {
         glWindow.setFullscreen(fullscreen);
         glWindow.setPointerVisible(mouseVisible);
         glWindow.confinePointer(mouseConfined);
+        glWindow.addMouseListener(this);
         GLProfile.initSingleton();
         Animator animator = new Animator();
         animator.add(glWindow);
@@ -171,4 +175,71 @@ public abstract class JOGLGLEWindow implements GLEventListener {
         coreApp.drawFrame();
     }
 
+    protected void handleMouseEvent(MouseEvent e, PointerAction action) {
+        int[] xpos = e.getAllX();
+        int[] ypos = e.getAllY();
+        int count = e.getPointerCount();
+        for (int i = 0; i < count; i++) {
+            short id = e.getPointerId(i);
+            switch (action) {
+            case DOWN:
+                // Recording down for multi touch - all pointers will be re-sent when a new finger goes down.
+                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN, e.getWhen(), id,
+                        new float[] { xpos[i], ypos[i] });
+                break;
+            case UP:
+                coreApp.getInputProcessor().pointerEvent(PointerAction.UP, e.getWhen(), id, new float[] {
+                        xpos[i], ypos[i] });
+                break;
+            case MOVE:
+                coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, e.getWhen(), id, new float[] {
+                        xpos[i], ypos[i] });
+            default:
+            }
+        }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        System.out.println("Pressed");
+        handleMouseEvent(e, PointerAction.DOWN);
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        handleMouseEvent(e, PointerAction.UP);
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        handleMouseEvent(e, PointerAction.MOVE);
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseEvent e) {
+        coreApp.getInputProcessor().pointerEvent(PointerAction., e.getWhen(), id, new float[] {
+            xpos[i], ypos[i] });
+    }
 }
