@@ -223,7 +223,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param target
      * @param position Position in buffer where the data for this attribute is.
      * @param attrib Array of attributes to set
-     * @param offsets Offsets into the buffer where the data is for the different attributes
+     * @param offsets Offset, in number of floats, into the buffer where the data is for the different attributes
      */
     public void glVertexAttribPointer(VertexBuffer buffer, int target, ShaderVariable[] attribs, int[] offsets) {
         if (buffer.getBufferName() > 0) {
@@ -234,7 +234,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             for (ShaderVariable a : attribs) {
                 glEnableVertexAttribArray(a.getLocation());
                 glVertexAttribPointer(a.getLocation(), buffer.getComponentCount(), buffer.getDataType(), false,
-                        buffer.getByteStride(), offsets[index++]);
+                        buffer.getByteStride(), offsets[index++] * 4);
             }
             glBindBuffer(target, 0);
 

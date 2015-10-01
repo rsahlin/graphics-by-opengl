@@ -322,8 +322,6 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glTexImage2D(int target, int level, int internalformat, int width, int height, int border, int format,
             int type, Buffer pixels) {
-        // gles.glPixelStorei(GLESWrapper.GLES20.GL_UNPACK_ALIGNMENT, 4);
-        // gles.glPixelStorei(GLESWrapper.GLES20.GL_PACK_ALIGNMENT, 4);
         gles.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
 
     }

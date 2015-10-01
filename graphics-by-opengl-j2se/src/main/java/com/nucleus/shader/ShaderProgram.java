@@ -454,7 +454,7 @@ public abstract class ShaderProgram {
             gles.glEnableVertexAttribArray(v.getLocation());
             GLUtils.handleError(gles, "glEnableVertexAttribArray ");
             gles.glVertexAttribPointer(v.getLocation(), buffer.getComponentCount(), buffer.getDataType(), false,
-                    buffer.getByteStride(), buffer.getBuffer().position(0));
+                    buffer.getByteStride(), buffer.getBuffer());
 
         }
     }
