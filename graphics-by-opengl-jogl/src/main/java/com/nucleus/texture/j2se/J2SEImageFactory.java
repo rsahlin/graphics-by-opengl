@@ -3,12 +3,10 @@ package com.nucleus.texture.j2se;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferInt;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
 import javax.imageio.ImageIO;
 
@@ -19,7 +17,6 @@ import com.nucleus.texturing.ImageFactory;
 public class J2SEImageFactory implements ImageFactory {
 
     public J2SEImageFactory() {
-        // TODO Auto-generated constructor stub
     }
 
     @Override
@@ -30,71 +27,105 @@ public class J2SEImageFactory implements ImageFactory {
         try {
             stream = classLoader.getResourceAsStream(name);
             img = ImageIO.read(stream);
+            if (scaleX != 1 || scaleY != 1) {
+                img = createScaledImage(img, (int) (scaleX * img.getWidth()), (int) (scaleY * img.getHeight()),
+                        BufferedImage.TYPE_4BYTE_ABGR);
+            } else if (img.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
+                img = createImage(img, BufferedImage.TYPE_4BYTE_ABGR);
+            }
         } finally {
             if (stream != null) {
                 stream.close();
             }
         }
-        DataBuffer buffer = img.getRaster().getDataBuffer();
         Image image = new Image(img.getWidth(), img.getHeight(), ImageFormat.RGBA);
-        copyPixels(buffer, image);
+        copyPixels(img, image);
 
         return image;
     }
 
     /**
-     * Copies the data from a {@link DataBuffer} source to the destination, all source data will be copied.
+     * Creates a scaled copy of the image
      * 
      * @param source
-     * @param destination
+     * @param width Width of scaled image
+     * @param height Height of scaled image
+     * @param type The type of image to return {@link BufferedImage#TYPE_INT_ARGB} or similar
+     * @return Scaled copy of the source image
      */
-    public void copyPixels(DataBuffer source, Image destination) {
-        if (source instanceof DataBufferInt) {
-            copyPixels((DataBufferInt) source, destination);
-        } else if (source instanceof DataBufferByte) {
-            copyPixels((DataBufferByte) source, destination);
-        } else {
-            throw new IllegalArgumentException("Not implemented support for " + source);
+    public BufferedImage createScaledImage(BufferedImage source, int width, int height, int type) {
+        BufferedImage scaled = new BufferedImage(width, height, type);
+
+        while (!scaled.createGraphics().drawImage(source, 0, 0, width, height, null)) {
+            System.out.println("waiting");
         }
+        return scaled;
     }
 
     /**
-     * Copies pixel data from the int databuffer to the destination.
+     * Creates an image of specified type from the source, use this when the source type is not as desired.
+     * 
+     * @param source The source image
+     * @param type destination image type
+     * @return Copy of source image of specified type
+     */
+    public BufferedImage createImage(BufferedImage source, int type) {
+        BufferedImage copy = new BufferedImage(source.getWidth(), source.getHeight(), type);
+        while (!copy.createGraphics().drawImage(source, 0, 0, null)) {
+            System.out.println("waiting");
+        }
+        return copy;
+    }
+
+    /**
+     * Copies pixel data from the buffere image to the destination.
      * This will copy all of the data (image)
      * 
      * @param source
      * @param destination
      */
-    public void copyPixels(DataBufferInt source, Image destination) {
+    public void copyPixels(BufferedImage source, Image destination) {
+        int type = source.getType();
         Buffer buff = destination.getBuffer();
         destination.getBuffer().position(0);
         if (buff instanceof ByteBuffer) {
-            copyPixels(source.getData(), ((ByteBuffer) buff).asIntBuffer());
+            copyPixels(source.getData().getDataBuffer(), type, (ByteBuffer) buff);
         } else {
             throw new IllegalArgumentException("Not implemented");
         }
     }
 
-    private void copyPixels(int[] source, IntBuffer destination) {
-        for (int pixel : source) {
-            destination.put(pixel);
-        }
-    }
-
-    private void copyPixels(byte[] source, IntBuffer destination) {
-        int length = source.length;
-        for (int index = 0; index < length;) {
-            int pixel = (source[index++] & 0xff) | ((source[index++] & 0xff) << 8) | ((source[index++] & 0xff) << 16)
-                    | ((source[index++] & 0xff) << 24);
-            destination.put(pixel);
-        }
-    }
-
-    public void copyPixels(DataBufferByte source, Image destination) {
-        Buffer buff = destination.getBuffer();
-        if (buff instanceof ByteBuffer) {
-            copyPixels(source.getData(), ((ByteBuffer) buff).asIntBuffer());
+    /**
+     * Internal method, copies pixels from the DataBuffer source to the destination.
+     * Pixels are of the specified type.
+     * 
+     * @param source Source pixels
+     * @param type The source type
+     * @param destination Destination, destination shall be RGBA
+     */
+    private void copyPixels(DataBuffer source, int type, ByteBuffer destination) {
+        if (source instanceof DataBufferByte) {
+            copyPixels(((DataBufferByte) source).getData(), type, destination);
         } else {
+            throw new IllegalArgumentException("Not implemented");
+        }
+    }
+
+    private void copyPixels(byte[] source, int type, ByteBuffer destination) {
+
+        byte[] rgba = new byte[4];
+        switch (type) {
+        case BufferedImage.TYPE_4BYTE_ABGR:
+            int length = source.length;
+            for (int index = 0; index < length;) {
+                rgba[3] = source[index++];
+                rgba[2] = source[index++];
+                rgba[1] = source[index++];
+                rgba[0] = source[index++];
+                destination.put(rgba, 0, 4);
+            }
+            break;
+        default:
             throw new IllegalArgumentException("Not implemented");
         }
     }
