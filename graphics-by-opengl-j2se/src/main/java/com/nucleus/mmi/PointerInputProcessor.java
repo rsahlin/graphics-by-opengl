@@ -61,6 +61,12 @@ public class PointerInputProcessor implements PointerListener {
             addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.INACTIVE, pointer,
                     pointerMotionData[pointer]), pointerData);
             break;
+        case ZOOM:
+            MMIPointerEvent zoom = new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ZOOM, pointer,
+                    pointerMotionData[pointer]);
+            zoom.setZoom(position[0], position[1]);
+            sendToListeners(zoom);
+            break;
         default:
             throw new IllegalArgumentException();
         }

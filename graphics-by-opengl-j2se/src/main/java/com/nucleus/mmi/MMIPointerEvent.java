@@ -64,6 +64,13 @@ public class MMIPointerEvent {
         zoom.vector[Vector2D.MAGNITUDE] = -(delta1.vector[Vector2D.MAGNITUDE] + delta2.vector[Vector2D.MAGNITUDE]);
     }
 
+    public void setZoom(float x, float y) {
+        zoom = new Vector2D();
+        zoom.vector[VecMath.X] = x;
+        zoom.vector[VecMath.Y] = y;
+        zoom.vector[Vector2D.MAGNITUDE] = (float) Math.sqrt(x * x + y * y);
+    }
+
     /**
      * Returns the zoom value - only valid if action is ZOOM.
      * 

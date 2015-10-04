@@ -13,9 +13,11 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.Animator;
 import com.nucleus.CoreApp;
+import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.renderer.Window;
 
 /**
  * 
@@ -27,7 +29,11 @@ import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
  */
 public abstract class JOGLGLEWindow implements GLEventListener, MouseListener {
 
-    private int SCREEN_ID = 0;
+    /**
+     * A zoom on the wheel equals 1 / 100 screen height
+     */
+    private final static float ZOOM_FACTOR = 0.01f;
+
     private Dimension windowSize;
     private boolean undecorated = false;
     private boolean alwaysOnTop = false;
@@ -239,5 +245,8 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener {
 
     @Override
     public void mouseWheelMoved(MouseEvent e) {
+        float factor = Window.getInstance().getHeight() * ZOOM_FACTOR;
+        coreApp.getInputProcessor().pointerEvent(PointerAction.ZOOM, e.getWhen(), PointerData.POINTER_1, new float[] {
+                e.getRotation()[1] * factor, e.getRotation()[1] * factor });
     }
 }
