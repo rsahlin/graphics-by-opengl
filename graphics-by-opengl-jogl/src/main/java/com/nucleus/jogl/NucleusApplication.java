@@ -7,7 +7,7 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.RendererFactory;
-import com.nucleus.texture.j2se.J2SEImageFactory;
+import com.nucleus.texturing.J2SEImageFactory;
 
 /**
  * Base class for an application using {@link NucleusRenderer} through JOGL

@@ -1,4 +1,4 @@
-package com.nucleus.texture.j2se;
+package com.nucleus.texturing;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
@@ -7,20 +7,33 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 import javax.imageio.ImageIO;
 
-import com.nucleus.texturing.Image;
 import com.nucleus.texturing.Image.ImageFormat;
-import com.nucleus.texturing.ImageFactory;
 
+/**
+ * Implementation of image factory using J2SE, in this implementation java.awt will be used.
+ * TODO Consider moving image factory to a separate package.
+ * TODO Rename to AWTImageFactory - this class is not J2SE only, it needs AWT in order to function
+ * 
+ * @author Richard Sahlin
+ *
+ */
 public class J2SEImageFactory implements ImageFactory {
+
+    private final static String NULL_PARAMETER = "Null parameter";
+    private static final String ILLEGAL_PARAMETER = "Illegal parameter";
 
     public J2SEImageFactory() {
     }
 
     @Override
     public Image createImage(String name, float scaleX, float scaleY) throws IOException {
+        if (name == null) {
+            throw new IllegalArgumentException(NULL_PARAMETER);
+        }
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream stream = null;
         BufferedImage img = null;
@@ -44,15 +57,6 @@ public class J2SEImageFactory implements ImageFactory {
         return image;
     }
 
-    /**
-     * Creates a scaled copy of the image
-     * 
-     * @param source
-     * @param width Width of scaled image
-     * @param height Height of scaled image
-     * @param type The type of image to return {@link BufferedImage#TYPE_INT_ARGB} or similar
-     * @return Scaled copy of the source image
-     */
     public BufferedImage createScaledImage(BufferedImage source, int width, int height, int type) {
         BufferedImage scaled = new BufferedImage(width, height, type);
 
@@ -78,7 +82,7 @@ public class J2SEImageFactory implements ImageFactory {
     }
 
     /**
-     * Copies pixel data from the buffere image to the destination.
+     * Copies pixel data from the buffered image to the destination.
      * This will copy all of the data (image)
      * 
      * @param source
@@ -111,6 +115,27 @@ public class J2SEImageFactory implements ImageFactory {
         }
     }
 
+    /**
+     * Copies the pixels from the source to the destination doing a format conversion if needed.
+     * This will copy the whole image in a packed manner, it will not take width or height into consideration.
+     * 
+     * @param source
+     * @param sourceFormat
+     * @param destination
+     * @param destinationFormat
+     */
+    public void copyPixels(int[] source, PixelFormat sourceFormat, IntBuffer destination, ImageFormat destinationFormat) {
+
+    }
+
+    /**
+     * Copies pixel data from the byte array source to the destination.
+     * The type (format) is
+     * 
+     * @param source
+     * @param type
+     * @param destination
+     */
     private void copyPixels(byte[] source, int type, ByteBuffer destination) {
 
         byte[] rgba = new byte[4];
@@ -128,6 +153,30 @@ public class J2SEImageFactory implements ImageFactory {
         default:
             throw new IllegalArgumentException("Not implemented");
         }
+    }
+
+    @Override
+    public Image createScaledImage(Image source, int width, int height, ImageFormat format) {
+        if (source == null || width <= 0 || height <= 0 || format == null) {
+            throw new IllegalArgumentException(ILLEGAL_PARAMETER + source + ", " + width + ", " + height + " : "
+                    + format);
+        }
+
+        Image result = new Image(width, height, format);
+        scaleImage(source, result);
+        return result;
+    }
+
+    public void scaleImage(Image source, Image destination) {
+
+    }
+
+    @Override
+    public Image createImage(int width, int height, ImageFormat format) {
+        if (width <= 0 || height <= 0 || format == null) {
+            throw new IllegalArgumentException(ILLEGAL_PARAMETER + width + ", " + height + " : " + format);
+        }
+        return new Image(width, height, format);
     }
 
 }
