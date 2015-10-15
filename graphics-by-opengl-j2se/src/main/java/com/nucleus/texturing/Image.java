@@ -3,6 +3,8 @@ package com.nucleus.texturing;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
+import com.nucleus.geometry.BufferObject;
+
 /**
  * Container for pixel based images that can be used for texturing in OpenGL, this is for a straightforward
  * image. It does not contain LOD information.
@@ -10,34 +12,40 @@ import java.nio.ByteBuffer;
  * @author Richard Sahlin
  *
  */
-public class Image {
+public class Image extends BufferObject {
 
+    /**
+     *
+     * Image pixel formats
+     */
     public enum ImageFormat {
         /**
          * Image format RGBA 4 bits per pixel and component, ie 16 bit format.
          */
-        RGBA4(0x8056),
+        RGBA4(0x8056, 2),
         /**
          * Image format RGB 555 + 1 bit alpha, 16 bit format.
          */
-        RGB5_A1(0x8057),
+        RGB5_A1(0x8057, 2),
         /**
          * Image format RGB 565, 16 bit format.
          */
-        RGB565(0x8D62),
+        RGB565(0x8D62, 2),
         /**
          * Image format RGB 888, 8 bits per component, 24 bit format.
          */
-        RGB(0x1907),
+        RGB(0x1907, 3),
         /**
          * Image format RGBA 8888, 8 bits per component, 32 bit format.
          */
-        RGBA(0x1908);
+        RGBA(0x1908, 4);
 
-        int format;
+        public final int format;
+        public final int size;
 
-        ImageFormat(int format) {
+        ImageFormat(int format, int size) {
             this.format = format;
+            this.size = size;
         }
 
         /**
@@ -73,13 +81,16 @@ public class Image {
         case RGB565:
         case RGB5_A1:
         case RGBA4:
-            buffer = ByteBuffer.allocateDirect(width * height * 2);
+            sizeInBytes = width * height * 2;
+            buffer = ByteBuffer.allocateDirect(sizeInBytes);
             break;
         case RGB:
-            buffer = ByteBuffer.allocateDirect(width * height * 3);
+            sizeInBytes = width * height * 3;
+            buffer = ByteBuffer.allocateDirect(sizeInBytes);
             break;
         case RGBA:
-            buffer = ByteBuffer.allocateDirect(width * height * 4);
+            sizeInBytes = width * height * 4;
+            buffer = ByteBuffer.allocateDirect(sizeInBytes);
         }
     }
 
