@@ -4,7 +4,6 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.Window;
-import com.nucleus.resource.ResourceBias;
 
 /**
  * Used to create texture objects, constructor data is abstracted in a separate class to make it easy to de-couple file
@@ -53,9 +52,8 @@ public class TextureFactory {
 
         int textureID = textures[0];
         Window window = Window.getInstance();
-        Image[] textureImg = TextureUtils.loadTextureMIPMAP(imageFactory, source.getSourceName(),
-                ResourceBias.getScaleFactorLandscape(window.getWidth(), window.getHeight(),
-                        source.getResolution().lines), source.getLevels());
+        Image[] textureImg = TextureUtils
+                .loadTextureMIPMAP(imageFactory, source.getSourceName(), 1, source.getLevels());
 
         try {
             TextureUtils.uploadTextures(gles, GLES20.GL_TEXTURE0, textureID, textureImg);
