@@ -3,6 +3,8 @@ package com.nucleus.texturing;
 import com.nucleus.io.BaseReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.GLUtils;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 
 /**
@@ -122,7 +124,7 @@ public class Texture2D extends BaseReference {
      * 
      * @param gles
      */
-    public void uploadTexParameters(GLES20Wrapper gles) {
+    public void uploadTexParameters(GLES20Wrapper gles) throws GLException {
 
         int[] values = textureParameters.values;
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
@@ -133,6 +135,7 @@ public class Texture2D extends BaseReference {
                 values[TextureParameter.WRAP_S]);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
                 values[TextureParameter.WRAP_T]);
+        GLUtils.handleError(gles, "glTexParameteri ");
     }
 
 }

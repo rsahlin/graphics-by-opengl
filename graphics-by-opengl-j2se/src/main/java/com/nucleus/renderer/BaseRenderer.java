@@ -192,7 +192,9 @@ class BaseRenderer implements NucleusRenderer {
         VertexBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         ElementBuffer indices = mesh.getElementBuffer();
         gles.glUseProgram(program.getProgram());
-
+        GLUtils.handleError(gles, "glUseProgram ");
+        
+        
         Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
         if (texture != null) {
             int textureID = texture.getName();
