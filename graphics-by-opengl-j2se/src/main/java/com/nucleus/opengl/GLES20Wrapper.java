@@ -451,6 +451,13 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             int format, int type, Buffer pixels);
 
     /**
+     * Abstraction for glGenerateMipmap
+     * 
+     * @param target
+     */
+    public abstract void glGenerateMipmap(int target);
+
+    /**
      * Abstraction for glBlendEquationSeparate
      * 
      * @param modeRGB

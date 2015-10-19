@@ -364,4 +364,9 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
 
     }
 
+    @Override
+    public void glGenerateMipmap(int target) {
+        gles.glGenerateMipmap(target);
+    }
+
 }

@@ -245,4 +245,9 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
         android.opengl.GLES20.glDeleteBuffers(n, buffers, offset);
     }
 
+    @Override
+    public void glGenerateMipmap(int target) {
+        android.opengl.GLES20.glGenerateMipmap(target);
+    }
+
 }
