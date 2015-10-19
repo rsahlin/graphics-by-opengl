@@ -6,6 +6,7 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.texturing.Image.ImageFormat;
 
 /**
  * Texture utilities, loading of texture(s)
@@ -30,16 +31,28 @@ public class TextureUtils {
      */
     public static Image[] loadTextureMIPMAP(ImageFactory imageFactory, String imageName, float scale, int levels) {
 
-        Image[] images = new Image[levels];
         try {
-            for (int i = 0; i < levels; i++) {
-                images[i] = imageFactory.createImage(imageName, scale, scale);
-                scale = scale * 0.5f;
+            Image image = imageFactory.createImage(imageName, scale, scale);
+            int scaledWidth = image.getWidth();
+            int scaledHeight = image.getHeight();
+            if (levels > 1) {
+                levels = 1 + (int) Math.floor(31 - Integer.numberOfLeadingZeros(Math.max(scaledWidth, scaledHeight)));
             }
+            Image[] images = new Image[levels];
+            images[0] = image;
+            if (levels > 1) {
+                // levels = 1 + (int) Math.floor(Math.log(Math.max(scaledWidth, scaledHeight)));
+                for (int i = 1; i < levels; i++) {
+                    scaledWidth = Math.max(1, scaledWidth >>> 1);
+                    scaledHeight = Math.max(1, scaledHeight >>> 1);
+                    images[i] = imageFactory.createScaledImage(images[0], scaledWidth,
+                            scaledHeight, ImageFormat.RGBA);
+                }
+            }
+            return images;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return images;
     }
 
     /**
@@ -56,11 +69,11 @@ public class TextureUtils {
      */
     public static void uploadTextures(GLES20Wrapper gles, int texture, int texName, Image[] textureImages)
             throws GLException {
-        gles.glActiveTexture(texture);
-        gles.glBindTexture(GLES20.GL_TEXTURE_2D, texName);
         int level = 0;
         int format;
         for (Image textureImg : textureImages) {
+            gles.glActiveTexture(texture);
+            gles.glBindTexture(GLES20.GL_TEXTURE_2D, texName);
             if (textureImg != null) {
                 format = textureImg.getFormat().format;
                 gles.glTexImage2D(GLES20.GL_TEXTURE_2D, level, format,
@@ -71,6 +84,7 @@ public class TextureUtils {
             }
             level++;
         }
+        // gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
 
     }
 
