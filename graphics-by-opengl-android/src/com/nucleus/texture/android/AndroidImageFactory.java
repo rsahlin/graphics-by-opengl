@@ -5,11 +5,12 @@ import java.io.IOException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Image;
 import com.nucleus.texturing.Image.ImageFormat;
 import com.nucleus.texturing.ImageFactory;
 
-public class AndroidImageFactory implements ImageFactory {
+public class AndroidImageFactory extends BaseImageFactory implements ImageFactory {
 
     @Override
     public Image createImage(String name, float scaleX, float scaleY) throws IOException {
@@ -18,6 +19,8 @@ public class AndroidImageFactory implements ImageFactory {
         if (b == null) {
             throw new IOException("Could not load " + name);
         }
+        Image image = new Image(b.getWidth(), b.getHeight(), ImageFormat.RGBA);
+        b.copyPixelsToBuffer(image.getBuffer().position(0));
         if (scaleX != 1 || scaleY != 1) {
             int width = (int) (b.getWidth() * scaleX + 0.5f);
             int height = (int) (b.getHeight() * scaleY + 0.5f);
@@ -27,12 +30,9 @@ public class AndroidImageFactory implements ImageFactory {
             if (width == 0) {
                 width = 1;
             }
-            Bitmap copy = Bitmap.createScaledBitmap(b, width, height, true);
-            b = copy;
-        }
+            return createScaledImage(image, width, height, ImageFormat.RGBA);
 
-        Image image = new Image(b.getWidth(), b.getHeight(), ImageFormat.RGBA);
-        b.copyPixelsToBuffer(image.getBuffer().position(0));
+        }
         return image;
     }
 }

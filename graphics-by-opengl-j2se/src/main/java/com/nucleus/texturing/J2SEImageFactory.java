@@ -21,7 +21,7 @@ import com.nucleus.texturing.Image.ImageFormat;
  * @author Richard Sahlin
  *
  */
-public class J2SEImageFactory implements ImageFactory {
+public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
 
     private final static String NULL_PARAMETER = "Null parameter";
     private static final String ILLEGAL_PARAMETER = "Illegal parameter";
@@ -36,34 +36,25 @@ public class J2SEImageFactory implements ImageFactory {
         }
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream stream = null;
-        BufferedImage img = null;
         try {
             stream = classLoader.getResourceAsStream(name);
-            img = ImageIO.read(stream);
-            if (scaleX != 1 || scaleY != 1) {
-                img = createScaledImage(img, (int) (scaleX * img.getWidth()), (int) (scaleY * img.getHeight()),
-                        BufferedImage.TYPE_4BYTE_ABGR);
-            } else if (img.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
+            BufferedImage img = ImageIO.read(stream);
+            if (img.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
                 img = createImage(img, BufferedImage.TYPE_4BYTE_ABGR);
             }
+            Image image = new Image(img.getWidth(), img.getHeight(), ImageFormat.RGBA);
+            copyPixels(img, image);
+            if (scaleX != 1 || scaleY != 1) {
+                return createScaledImage(image, (int) (scaleX * img.getWidth()), (int) (scaleY * img.getHeight()),
+                        ImageFormat.RGBA);
+            }
+            return image;
+
         } finally {
             if (stream != null) {
                 stream.close();
             }
         }
-        Image image = new Image(img.getWidth(), img.getHeight(), ImageFormat.RGBA);
-        copyPixels(img, image);
-
-        return image;
-    }
-
-    public BufferedImage createScaledImage(BufferedImage source, int width, int height, int type) {
-        BufferedImage scaled = new BufferedImage(width, height, type);
-
-        while (!scaled.createGraphics().drawImage(source, 0, 0, width, height, null)) {
-            System.out.println("waiting");
-        }
-        return scaled;
     }
 
     /**
@@ -154,29 +145,4 @@ public class J2SEImageFactory implements ImageFactory {
             throw new IllegalArgumentException("Not implemented");
         }
     }
-
-    @Override
-    public Image createScaledImage(Image source, int width, int height, ImageFormat format) {
-        if (source == null || width <= 0 || height <= 0 || format == null) {
-            throw new IllegalArgumentException(ILLEGAL_PARAMETER + source + ", " + width + ", " + height + " : "
-                    + format);
-        }
-
-        Image result = new Image(width, height, format);
-        scaleImage(source, result);
-        return result;
-    }
-
-    public void scaleImage(Image source, Image destination) {
-
-    }
-
-    @Override
-    public Image createImage(int width, int height, ImageFormat format) {
-        if (width <= 0 || height <= 0 || format == null) {
-            throw new IllegalArgumentException(ILLEGAL_PARAMETER + width + ", " + height + " : " + format);
-        }
-        return new Image(width, height, format);
-    }
-
 }
