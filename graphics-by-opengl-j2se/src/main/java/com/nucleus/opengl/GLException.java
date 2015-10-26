@@ -68,15 +68,11 @@ public class GLException extends Throwable {
     /**
      * Utility method to turn this exception into readable string.
      */
+    @Override
     public String toString() {
         StringBuffer message = new StringBuffer(getMessage());
-        int errors = 0;
         for (int error : errorCodes) {
-            if (errors > 0) {
-                message.append(", " + error);
-            } else {
-                message.append(error);
-            }
+            message.append(", " + error);
         }
         return message.toString();
     }
