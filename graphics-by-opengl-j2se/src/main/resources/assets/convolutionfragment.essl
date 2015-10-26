@@ -1,0 +1,38 @@
+/* Copyright 2015 Richard Sahlin
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+ /**
+ * Fragment shader for 3 X 3 convolution kernel
+ * @author Richard Sahlin
+ */
+#version 100
+
+precision mediump float;
+uniform sampler2D uTexture;      //The texture sampler
+//Put array declaration after name for GLSL compatibility
+uniform mat3 uKernel[3];		//0=kernel, 1=uoffset, 2=voffset
+varying vec2 vTexCoord;
+
+void main()
+{
+	vec3 pixel = vec3(texture2D(uTexture, vTexCoord + vec2(uKernel[1][0][0],uKernel[2][0][0])) * uKernel[0][0][0] + 
+				 texture2D(uTexture, vTexCoord + vec2(uKernel[1][0][1],uKernel[2][0][1])) * uKernel[0][0][1] + 
+				 texture2D(uTexture, vTexCoord + vec2(uKernel[1][0][2],uKernel[2][0][2])) * uKernel[0][0][2] +
+				 texture2D(uTexture, vTexCoord + vec2(uKernel[1][1][0],uKernel[2][1][0])) * uKernel[0][1][0] + 
+				 texture2D(uTexture, vTexCoord + vec2(uKernel[1][1][1],uKernel[2][1][1])) * uKernel[0][1][1] + 
+				 texture2D(uTexture, vTexCoord + vec2(uKernel[1][1][2],uKernel[2][1][2])) * uKernel[0][1][2] +
+				 texture2D(uTexture, vTexCoord + vec2(uKernel[1][2][0],uKernel[2][2][0])) * uKernel[0][2][0] + 
+				 texture2D(uTexture, vTexCoord + vec2(uKernel[1][2][1],uKernel[2][2][1])) * uKernel[0][2][1] + 
+				 texture2D(uTexture, vTexCoord + vec2(uKernel[1][2][2],uKernel[2][2][2])) * uKernel[0][2][2]);
+	gl_FragColor = vec4(pixel, 1.0);
+}
