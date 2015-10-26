@@ -193,8 +193,7 @@ class BaseRenderer implements NucleusRenderer {
         ElementBuffer indices = mesh.getElementBuffer();
         gles.glUseProgram(program.getProgram());
         GLUtils.handleError(gles, "glUseProgram ");
-        
-        
+
         Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
         if (texture != null) {
             int textureID = texture.getName();
@@ -207,7 +206,7 @@ class BaseRenderer implements NucleusRenderer {
         program.bindUniforms(gles, mvpMatrix, mesh);
 
         if (indices == null) {
-            gles.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.getVerticeCount());
+            gles.glDrawArrays(mesh.getMode(), 0, vertices.getVerticeCount());
         } else {
             if (indices.getBufferName() > 0) {
                 gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());

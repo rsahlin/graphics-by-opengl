@@ -77,7 +77,10 @@ public class Mesh extends BaseReference {
      */
     protected VertexBuffer[] attributes;
     protected ElementBuffer indices;
-
+    /**
+     * Drawmode, if indices is null then glDrawArrays shall be used with this mode
+     */
+    protected int mode;
     protected Material material;
     /**
      * Currently only supports single texture
@@ -364,4 +367,24 @@ public class Mesh extends BaseReference {
         }
         return count;
     }
+
+    /**
+     * Sets the draw mode to use when glDrawArrays is used.
+     * 
+     * @param mode GL drawmode, one of GL_POINTS, GL_LINE_STRIP, GL_LINE_LOOP, GL_LINES, GL_TRIANGLE_STRIP,
+     * GL_TRIANGLE_FAN, and GL_TRIANGLES
+     */
+    public void setMode(int mode) {
+        this.mode = mode;
+    }
+
+    /**
+     * Gets the draw mode to use when glDrawArrays is used.
+     * 
+     * @return The GL drawmode for glDrawArrays
+     */
+    public int getMode() {
+        return mode;
+    }
+
 }
