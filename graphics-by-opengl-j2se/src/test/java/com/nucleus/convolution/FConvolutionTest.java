@@ -1,4 +1,4 @@
-package com.nucleus.texturing;
+package com.nucleus.convolution;
 
 import java.awt.Frame;
 import java.awt.Graphics;
@@ -16,13 +16,17 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.Convolution.Kernel;
+import com.nucleus.texturing.Image;
+import com.nucleus.texturing.J2SEImageFactory;
 
 public class FConvolutionTest implements WindowListener {
 
     private static volatile boolean wait = false;
     J2SEImageFactory imageFactory = new J2SEImageFactory();
     private final static int ITERATIONS = 50;
+    private final static String IMAGE_NAME = "assets/af.png";
 
     private static List<Frame> frames = new ArrayList<Frame>();
 
@@ -68,12 +72,12 @@ public class FConvolutionTest implements WindowListener {
 
     @Test
     public void testProcessOriginal() throws IOException {
-        executeTest("af.png", "Original 3X3", Kernel.SIZE_3X3, new float[] { 0, 0, 0, 0, 1, 0, 0, 0, 0 }, ITERATIONS);
+        executeTest(IMAGE_NAME, "Original 3X3", Kernel.SIZE_3X3, new float[] { 0, 0, 0, 0, 1, 0, 0, 0, 0 }, ITERATIONS);
     }
 
     @Test
     public void testProcessOriginal5X5() throws IOException {
-        executeTest("af.png", "Original 5X5", Kernel.SIZE_5X5, new float[] {
+        executeTest(IMAGE_NAME, "Original 5X5", Kernel.SIZE_5X5, new float[] {
                 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0,
                 0, 0, 1, 0, 0,
@@ -83,7 +87,7 @@ public class FConvolutionTest implements WindowListener {
 
     @Test
     public void testProcessBlur5X5() throws IOException {
-        executeTest("af.png", "Original 5X5", Kernel.SIZE_5X5, new float[] {
+        executeTest(IMAGE_NAME, "Original 5X5", Kernel.SIZE_5X5, new float[] {
                 1, 2, 3, 2, 1,
                 2, 3, 4, 3, 2,
                 3, 4, 5, 4, 3,
@@ -93,12 +97,12 @@ public class FConvolutionTest implements WindowListener {
 
     @Test
     public void testProcessBlur() throws IOException {
-        executeTest("af.png", "Blur 3X3", Kernel.SIZE_3X3, new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 }, ITERATIONS);
+        executeTest(IMAGE_NAME, "Blur 3X3", Kernel.SIZE_3X3, new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 }, ITERATIONS);
     }
 
     @Test
     public void testProcessScaleHalf() throws IOException {
-        Image source = imageFactory.createImage("af.png", 1f, 1f);
+        Image source = imageFactory.createImage(IMAGE_NAME, 1f, 1f);
         Image destination = new Image(source.getWidth() >>> 1, source.getHeight() >>> 1, source.getFormat());
         executeTest(source, destination, "Scale 1/2 2X2", Kernel.SIZE_2X2, new float[] { 1, 1, 1, 1 }, 1);
 
@@ -110,7 +114,7 @@ public class FConvolutionTest implements WindowListener {
 
     @Test
     public void testProcessScaleQuarter() throws IOException {
-        Image source = imageFactory.createImage("af.png", 1f, 1f);
+        Image source = imageFactory.createImage(IMAGE_NAME, 1f, 1f);
         Image destination = new Image(source.getWidth() >>> 2, source.getHeight() >>> 2, source.getFormat());
         executeTest(source, destination, "Scale 1/4 4X4", Kernel.SIZE_4X4, new float[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1 }, 1);
@@ -127,7 +131,7 @@ public class FConvolutionTest implements WindowListener {
 
     @Test
     public void testProcessScaleEight() throws IOException {
-        Image source = imageFactory.createImage("af.png", 1f, 1f);
+        Image source = imageFactory.createImage(IMAGE_NAME, 1f, 1f);
         Image destination = new Image(source.getWidth() >>> 3, source.getHeight() >>> 3, source.getFormat());
         executeTest(source, destination, "Scale 1/8 8X8", Kernel.SIZE_8X8, new float[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -191,7 +195,7 @@ public class FConvolutionTest implements WindowListener {
     private Image processImage(Convolution.Kernel kernel, float[] data, Image image) {
         Convolution filter = new Convolution(kernel);
         filter.set(data, 0, 0, data.length);
-        filter.normalize();
+        filter.normalize(false);
         Image result = filter.process(image);
         return result;
     }
@@ -199,7 +203,7 @@ public class FConvolutionTest implements WindowListener {
     private void processImage(Convolution.Kernel kernel, float[] data, Image image, Image destination) {
         Convolution filter = new Convolution(kernel);
         filter.set(data, 0, 0, data.length);
-        filter.normalize();
+        filter.normalize(false);
         filter.process(image, destination);
     }
 
