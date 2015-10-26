@@ -16,6 +16,12 @@ public class ElementBuilder {
      * Builds an element buffer for quads, ie 4 separate vertices are used to create one quad (2 triangles)
      * There is no sharing of vertices between the quads, ie each quad is separated.
      * Only supports ElementBuffer of type SHORT
+     * Triangles are built clockwise:
+     * 1-2
+     * --3
+     * 
+     * 1--
+     * 4-3
      * 
      * @param quadStorage
      * @param count Number of quads to build
