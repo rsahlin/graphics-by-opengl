@@ -54,7 +54,7 @@ public abstract class ShaderProgram {
 
     public final static String SHADER_SOURCE_ERROR = "Error setting shader source: ";
     public final static String COMPILE_SHADER_ERROR = "Error compiling shader: ";
-    public final static String CREATE_SHADER_ERROR = "Error creating shader object, shader is null";
+    public final static String CREATE_SHADER_ERROR = "Can not create shader object, context not active?";
     public final static String LINK_PROGRAM_ERROR = "Error linking program: ";
     public final static String BIND_ATTRIBUTE_ERROR = "Error binding attribute: ";
     public final static String VARIABLE_LOCATION_ERROR = "Could not get shader variable location: ";
@@ -505,19 +505,40 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Internal method to create the arrays needed for uniform vector and matrix storage.
-     * The arrays will be set into the mesh.
+     * Internal method, creates the array storage for uniform matrix and vector variables.
+     * This will create the float array storage in the mesh, indexing must be done by the apropriate program
+     * when uniform variables are set before rendering.
      * 
-     * @param mesh The mesh to set vector and matrix uniform data arrays into.
-     * @param vectors Shader variable for the uniform vectors
-     * @param matrices Shader variable for the uniform matrices
+     * @param mesh
+     * @param variables Shader variables, attribute variables are ignored
      */
-    protected void setUniformArrays(Mesh mesh, ShaderVariable vectors, ShaderVariable matrices) {
+    protected void createUniformStorage(Mesh mesh, ShaderVariable[] variables) {
 
-        float[] uniformVectors = new float[vectors.getSizeInFloats()];
-        mesh.setUniformVectors(uniformVectors);
-        float[] uniformMatrices = new float[matrices.getSizeInFloats()];
-        mesh.setUniformMatrices(uniformMatrices);
+        int vectorSize = 0;
+        int matrixSize = 0;
+        if (variables != null) {
+            for (ShaderVariable v : variables) {
+                if (v != null && v.getType() == VariableType.UNIFORM) {
+                    switch (v.getDataType()) {
+                    case GLES20.GL_FLOAT_VEC2:
+                    case GLES20.GL_FLOAT_VEC3:
+                    case GLES20.GL_FLOAT_VEC4:
+                        vectorSize += v.getSizeInFloats();
+                        break;
+                    case GLES20.GL_FLOAT_MAT2:
+                    case GLES20.GL_FLOAT_MAT3:
+                    case GLES20.GL_FLOAT_MAT4:
+                        matrixSize += v.getSizeInFloats();
+                    }
+                }
+            }
+            if (vectorSize > 0) {
+                mesh.setUniformVectors(new float[vectorSize]);
+            }
+            if (matrixSize > 0) {
+                mesh.setUniformMatrices(new float[matrixSize]);
+            }
+        }
     }
 
     /**
