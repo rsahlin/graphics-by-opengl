@@ -268,6 +268,30 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public abstract void glUniformMatrix4fv(int location, int count, boolean transpose, float[] v, int offset);
 
     /**
+     * Abstraction for glUniformMatrix3fv()
+     * 
+     * @param location
+     * @param count
+     * @param transpose
+     * @param transform
+     * @param v
+     * @param offset
+     */
+    public abstract void glUniformMatrix3fv(int location, int count, boolean transpose, float[] v, int offset);
+
+    /**
+     * Abstraction for glUniformMatrix2fv()
+     * 
+     * @param location
+     * @param count
+     * @param transpose
+     * @param transform
+     * @param v
+     * @param offset
+     */
+    public abstract void glUniformMatrix2fv(int location, int count, boolean transpose, float[] v, int offset);
+
+    /**
      * Abstraction for glDrawArrays()
      * 
      * @param mode

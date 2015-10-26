@@ -85,6 +85,16 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
+    public void glUniformMatrix3fv(int location, int count, boolean transpose, float[] v, int offset) {
+        android.opengl.GLES20.glUniformMatrix3fv(location, count, transpose, v, offset);
+    }
+
+    @Override
+    public void glUniformMatrix2fv(int location, int count, boolean transpose, float[] v, int offset) {
+        android.opengl.GLES20.glUniformMatrix2fv(location, count, transpose, v, offset);
+    }
+
+    @Override
     public void glDrawArrays(int mode, int first, int count) {
         android.opengl.GLES20.glDrawArrays(mode, first, count);
     }

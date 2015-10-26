@@ -185,7 +185,16 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glUniformMatrix4fv(int location, int count, boolean transpose, float[] v, int offset) {
         gles.glUniformMatrix4fv(location, count, transpose, v, offset);
+    }
 
+    @Override
+    public void glUniformMatrix3fv(int location, int count, boolean transpose, float[] v, int offset) {
+        gles.glUniformMatrix3fv(location, count, transpose, v, offset);
+    }
+
+    @Override
+    public void glUniformMatrix2fv(int location, int count, boolean transpose, float[] v, int offset) {
+        gles.glUniformMatrix2fv(location, count, transpose, v, offset);
     }
 
     @Override
