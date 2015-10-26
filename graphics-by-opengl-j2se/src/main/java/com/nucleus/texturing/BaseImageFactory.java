@@ -69,7 +69,7 @@ public abstract class BaseImageFactory implements ImageFactory {
 
         }
 
-        c.normalize();
+        c.normalize(false);
         Image destination = new Image(width, height, ImageFormat.RGBA);
         c.process(source, destination);
         return destination;

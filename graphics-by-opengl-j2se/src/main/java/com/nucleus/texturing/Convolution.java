@@ -86,14 +86,30 @@ public class Convolution {
     }
 
     /**
-     * Calculates the sum of all the values in the kernel
+     * Calculates the sum of the values in the kernel
      * 
-     * @return The sum of the values in the kernel
+     * @param absolute True to calculate the sum using absolute values
+     * @return The sum of the values in this kernel
      */
-    public int calculateSum() {
+    public float calculateSum(boolean absolute) {
+        return calculateSum(matrix, absolute);
+    }
+
+    /**
+     * Calculates the sum of the values in the kernel
+     * 
+     * @param kernel
+     * @param absolute True to calculate the sum using absolute values
+     * @return Sum of the kernel values
+     */
+    public static float calculateSum(float[] kernel, boolean absolute) {
         int sum = 0;
-        for (float f : matrix) {
-            sum += f;
+        for (float f : kernel) {
+            if (absolute) {
+                sum += Math.abs(f);
+            } else {
+                sum += f;
+            }
         }
         return sum;
     }
@@ -101,11 +117,37 @@ public class Convolution {
     /**
      * Normalizes the values in the kernel, that is calculates the sum and divides all
      * kernel values by this sum
+     * 
+     * @param absolute True to use absolute values when calculating the sum
      */
-    public void normalize() {
-        int sum = calculateSum();
-        for (int i = 0; i < matrix.length; i++) {
-            matrix[i] = matrix[i] / sum;
+    public void normalize(boolean absolute) {
+        normalize(matrix, absolute);
+    }
+
+    /**
+     * Normalizes the kernel based on the sum of the kernel values.
+     * 
+     * @param kernel
+     * @param absolute True to use absolute values when calculating the sum, ie -1 counts as 1, false otherwise
+     */
+    public static void normalize(float[] kernel, boolean absolute) {
+        normalize(kernel, absolute, 1f);
+    }
+
+    /**
+     * Normalizes the kernel based on the sum of the kernel values and the factor.
+     * Each kernel value will be(kernel / sum) * factor
+     * 
+     * @param kernel
+     * @param absolute
+     * @param factor Factor used to multiply the normalized values with, used to darken or lighten.
+     * Values above 1 will lighten, values below 1 will darken
+     * 
+     */
+    public static void normalize(float[] kernel, boolean absolute, float factor) {
+        float sum = Convolution.calculateSum(kernel, absolute);
+        for (int i = 0; i < kernel.length; i++) {
+            kernel[i] = (kernel[i] / sum) * factor;
         }
     }
 
