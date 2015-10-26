@@ -3,7 +3,6 @@ package com.nucleus.texturing;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
-import com.nucleus.renderer.Window;
 
 /**
  * Used to create texture objects, constructor data is abstracted in a separate class to make it easy to de-couple file
@@ -51,7 +50,6 @@ public class TextureFactory {
         gles.glGenTextures(1, textures, 0);
 
         int textureID = textures[0];
-        Window window = Window.getInstance();
         Image[] textureImg = TextureUtils
                 .loadTextureMIPMAP(imageFactory, source.getSourceName(), 1, source.getLevels());
 
