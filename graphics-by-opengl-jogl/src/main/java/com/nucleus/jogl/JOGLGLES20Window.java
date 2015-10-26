@@ -13,8 +13,8 @@ import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
  */
 public class JOGLGLES20Window extends JOGLGLEWindow {
 
-    public JOGLGLES20Window(int width, int height, RenderContextListener listener) {
-        super(width, height, GLProfile.get(GLProfile.GL2ES2), listener);
+    public JOGLGLES20Window(int width, int height, RenderContextListener listener, int swapInterval) {
+        super(width, height, GLProfile.get(GLProfile.GL2ES2), listener, swapInterval);
     }
 
     @Override

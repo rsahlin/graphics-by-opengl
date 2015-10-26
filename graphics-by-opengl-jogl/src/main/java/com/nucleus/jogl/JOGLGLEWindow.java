@@ -40,6 +40,7 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener {
     private boolean fullscreen = false;
     private boolean mouseVisible = true;
     private boolean mouseConfined = false;
+    private int swapInterval = 1;
     protected volatile boolean contextCreated = false;
     protected RenderContextListener listener;
     protected GLCanvas canvas;
@@ -53,6 +54,14 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener {
         this.listener = listener;
         windowSize = new Dimension(width, height);
         createNEWTWindow(width, height, glProfile);
+    }
+
+    public JOGLGLEWindow(int width, int height, GLProfile glProfile, RenderContextListener listener, int swapInterval) {
+        this.listener = listener;
+        this.swapInterval = swapInterval;
+        windowSize = new Dimension(width, height);
+        createNEWTWindow(width, height, glProfile);
+
     }
 
     /**
@@ -85,7 +94,7 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener {
 
         GLCapabilities caps = new GLCapabilities(glProfile);
         caps.setBackgroundOpaque(false);
-        GLWindow glWindow = GLWindow.create(caps);
+        glWindow = GLWindow.create(caps);
 
         frame = new java.awt.Frame("Nucleus");
         frame.setSize(width, height);
@@ -103,6 +112,15 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener {
         // frame.validate();
         // GLProfile.initSingleton();
 
+    }
+
+    public void setTitle(String title) {
+        if (frame != null) {
+            frame.setTitle(title);
+        }
+        if (glWindow != null) {
+            glWindow.setTitle(title);
+        }
     }
 
     /**
@@ -148,7 +166,7 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener {
     public void init(GLAutoDrawable drawable) {
         contextCreated = true;
         listener.contextCreated(getWidth(), getHeight());
-        drawable.getGL().setSwapInterval(1);
+        drawable.getGL().setSwapInterval(swapInterval);
     }
 
     @Override
