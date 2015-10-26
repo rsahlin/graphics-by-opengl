@@ -21,9 +21,30 @@ public class VertexBuffer extends BufferObject {
     private final static String ILLEGAL_DATATYPE_STR = "Illegal datatype: ";
 
     /**
+     * Number of vertices for an indexed quad
+     */
+    public final static int INDEXED_QUAD_VERTICES = 4;
+    /**
+     * Number of vertices for a triangle strip quad
+     */
+    public final static int STRIP_QUAD_VERTICES = 4;
+    /**
+     * Number of components for X,Y,Z
+     */
+    public final static int XYZ_COMPONENTS = 3;
+    /**
+     * XYZ and UV
+     */
+    public final static int XYZUV_COMPONENTS = 5;
+    /**
+     * Number of indexes for a quad drawn using drawElements (3 * 2)
+     */
+    public final static int QUAD_INDICES = 6;
+
+    /**
      * Number of floats to next set of attribute data
      */
-    private int attribFloatSize;
+    private int attribFloatStride;
     /**
      * Number of bytes to next attrib variable.
      */
@@ -74,30 +95,54 @@ public class VertexBuffer extends BufferObject {
         vertices = ByteBuffer.allocateDirect(sizeInBytes)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         attribByteStride = sizePerVertex * dataSize;
-        attribFloatSize = sizePerVertex;
+        attribFloatStride = sizePerVertex;
         System.out
-                .println("Allocated atrribute buffer with " + sizeInBytes + " bytes, capacity() " + vertices.capacity());
+                .println("Allocated atrribute buffer with " + sizeInBytes + " bytes, components " + components
+                        + ", sizePerVertices " + sizePerVertex + " dataSize " + dataSize + ", capacity() "
+                        + vertices.capacity());
     }
 
     /**
      * Sets position data from the source array.
-     * After each triangle copied, the vertice stride is used to step in the destination buffer.
+     * After each vertice copied, the vertice stride is used to step in the destination buffer.
+     * This method is not efficient for a large number of triangles.
+     * 
+     * @param triangleData The source data to copy, must hold data for the specified number of triangles.
+     * Data is read in the format X,Y,Z
+     * @param sourceOffset Offset in source where data is read.
+     * @param destOffset Offset in destination vertex buffer, in floats, where data is stored - normally 0.
+     * @param verticeCount Number of vertices to store.
+     */
+    public void setPosition(float[] verticeData, int sourceOffset, int destOffset, int verticeCount) {
+
+        for (int i = 0; i < verticeCount; i++) {
+            vertices.position(destOffset);
+            vertices.put(verticeData, sourceOffset, XYZ_COMPONENTS);
+            sourceOffset += XYZ_COMPONENTS;
+            destOffset += attribFloatStride;
+        }
+    }
+
+    /**
+     * Sets position and UV data from the source array, the format will be XYZUV
+     * After each vertice copied, the vertice stride is used to step in the destination buffer.
      * This method is not efficient for a large number of triangles.
      * 
      * @param triangleData The source data to copy, must hold data for the specified number of triangles.
      * Data is read in the format X,Y,Z,U,V
      * @param sourceOffset Offset in source where data is read.
      * @param destOffset Offset in destination vertex buffer, in floats, where data is stored - normally 0.
-     * @param triangleCount Number of triangles to store.
+     * @param verticeCount Number of vertices to store.
      */
-    public void setPosition(float[] verticeData, int sourceOffset, int destOffset, int verticeCount) {
+    public void setPositionUV(float[] verticeData, int sourceOffset, int destOffset, int verticeCount) {
 
         for (int i = 0; i < verticeCount; i++) {
             vertices.position(destOffset);
-            vertices.put(verticeData, sourceOffset, 3);
-            sourceOffset += 3;
-            destOffset += attribFloatSize;
+            vertices.put(verticeData, sourceOffset, XYZUV_COMPONENTS);
+            sourceOffset += XYZUV_COMPONENTS;
+            destOffset += attribFloatStride;
         }
+
     }
 
     /**

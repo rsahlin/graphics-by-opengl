@@ -1,5 +1,11 @@
 package com.nucleus.geometry;
 
+import static com.nucleus.geometry.VertexBuffer.INDEXED_QUAD_VERTICES;
+import static com.nucleus.geometry.VertexBuffer.QUAD_INDICES;
+import static com.nucleus.geometry.VertexBuffer.STRIP_QUAD_VERTICES;
+import static com.nucleus.geometry.VertexBuffer.XYZUV_COMPONENTS;
+import static com.nucleus.geometry.VertexBuffer.XYZ_COMPONENTS;
+
 import java.nio.ByteBuffer;
 
 import com.nucleus.geometry.ElementBuffer.Mode;
@@ -15,19 +21,6 @@ import com.nucleus.shader.ShaderProgram;
  *
  */
 public class MeshBuilder {
-
-    /**
-     * Number of vertices for an indexed quad
-     */
-    public final static int INDEXED_QUAD_VERTICES = 4;
-    /**
-     * Number of components for X,Y,Z
-     */
-    public final static int XYZ_COMPONENTS = 3;
-    /**
-     * Number of indexes for a quad drawn using drawElements (3 * 2)
-     */
-    public final static int QUAD_INDICES = 6;
 
     /**
      * Sets 3 component position in the destination array.
@@ -46,6 +39,27 @@ public class MeshBuilder {
     }
 
     /**
+     * Sets 3 component position plus uv in the destination array.
+     * This method is not speed efficient, only use when very few positions shall be set.
+     * For instance when creating one quad.
+     * 
+     * @param x
+     * @param y
+     * @param z
+     * @param u
+     * @param v
+     * @param dest position will be set here, must contain at least pos + 5 values.
+     * @param pos The index where data is written.
+     */
+    public static void setPositionUV(float x, float y, float z, float u, float v, float[] dest, int pos) {
+        dest[pos++] = x;
+        dest[pos++] = y;
+        dest[pos++] = z;
+        dest[pos++] = u;
+        dest[pos++] = v;
+    }
+
+    /**
      * Sets 3 component position in the destination buffer.
      * This method is not speed efficient, only use when very few positions shall be set.
      * 
@@ -61,13 +75,16 @@ public class MeshBuilder {
     }
 
     /**
-     * Builds a buffer containing the 4 vertices for XYZ components, to be indexed when drawing, ie drawn using
+     * Builds an array containing the 4 vertices for XYZ components, to be indexed when drawing, ie drawn using
      * drawElements().
      * The vertices will be centered using anchorX and anchorY, a value of 0 will be left/top aligned.
      * A value of 1/width will be centered horizontally.
+     * Vertices are numbered clockwise from upper left, ie upper left, upper right, lower right, lower left.
+     * 1 2
+     * 4 3
      * 
-     * @param width
-     * @param height
+     * @param width width of quad in world coordinates
+     * @param height height of quad in world coordinates
      * @param z The Z position
      * @param anchorX X axis anchor offet, 0 will be left centered (assuming x axis is increasing to the right)
      * @param anchorY Y axis anchor offet, 0 will be top centered, (assuming y axis is increasing downwards)
@@ -80,7 +97,6 @@ public class MeshBuilder {
             int vertexStride) {
 
         float[] quadPositions = new float[vertexStride * 4];
-
         com.nucleus.geometry.MeshBuilder.setPosition(-anchorX, -anchorY, z, quadPositions, 0);
         com.nucleus.geometry.MeshBuilder.setPosition(width - anchorX, -anchorY, z, quadPositions,
                 vertexStride);
@@ -92,13 +108,45 @@ public class MeshBuilder {
     }
 
     /**
+     * Builds an array for 4 vertices containing xyz and uv components, the array can be drawn
+     * using GL_TRIANGLE_FAN
+     * The vertices will be centered using anchorX and anchorY, a value of 0 will be left/top aligned.
+     * A value of 1/width will be centered horizontally.
+     * Vertices are numbered clockwise from upper left, ie upper left, upper right, lower right, lower left.
+     * 1 2
+     * 4 3
+     * 
+     * @param width width of quad in world coordinates
+     * @param height height of quad in world coordinates
+     * @param z The Z position
+     * @param anchorX X axis anchor offet, 0 will be left centered (assuming x axis is increasing to the right)
+     * @param anchorY Y axis anchor offet, 0 will be top centered, (assuming y axis is increasing downwards)
+     * @param vertexStride, number of floats to add from one vertex to the next. 5 for a packed array with xyz and uv
+     * @return array containing 4 vertices for a quad with the specified size, the size of the array will be
+     * vertexStride * 4
+     */
+    public static float[] buildQuadPositionsUV(float width, float height, float z, float anchorX, float anchorY) {
+
+        float[] quadPositions = new float[XYZUV_COMPONENTS * 4];
+        com.nucleus.geometry.MeshBuilder.setPositionUV(-anchorX, -anchorY, z, 0, 0, quadPositions, 0);
+        com.nucleus.geometry.MeshBuilder.setPositionUV(width - anchorX, -anchorY, z, 1, 0, quadPositions,
+                XYZUV_COMPONENTS);
+        com.nucleus.geometry.MeshBuilder.setPositionUV(width - anchorX, height - anchorY, z, 1, 1, quadPositions,
+                XYZUV_COMPONENTS * 2);
+        com.nucleus.geometry.MeshBuilder.setPositionUV(-anchorX, height - anchorY, z, 0, 1, quadPositions,
+                XYZUV_COMPONENTS * 3);
+
+        return quadPositions;
+    }
+
+    /**
      * Builds a mesh with a specified number of indexed quads of GL_FLOAT type, the mesh will have an elementbuffer to
      * index the vertices.
      * Vertex buffer will have storage for XYZ + UV.
      * 
      * @param mesh The mesh to build the buffers in, this is the mesh that can be rendered.
      * @param The program to use when rendering the mesh
-     * @param spriteCount Number of sprites to build, this is NOT the vertex count.
+     * @param quadCount Number of quads to build, this is NOT the vertex count.
      * @param quadPositions Array with x,y,z - this is set for each tile. Must contain data for 4 vertices.
      * @param attribute2Size Size per vertex for attribute buffer 2, this may be 0
      * 
@@ -131,6 +179,31 @@ public class MeshBuilder {
         attributes[BufferIndex.VERTICES.index].setPosition(vertices, 0, 0, quadCount * INDEXED_QUAD_VERTICES);
         Material material = new Material(program);
         mesh.setupIndexed(indices, attributes, material, null);
+    }
+
+    /**
+     * Builds a quad mesh using a fan, the mesh can be rendered using glDrawArrays
+     * 
+     * @param mesh
+     * @param program
+     * @param quadPositions
+     * @param attribute2Size
+     */
+    public static void buildQuadMeshFan(Mesh mesh, ShaderProgram program, float[] quadPositions, int attribute2Size) {
+        int attributeBuffers = 1;
+        if (attribute2Size > 0) {
+            attributeBuffers = 2;
+        }
+        VertexBuffer[] attributes = new VertexBuffer[attributeBuffers];
+        attributes[BufferIndex.VERTICES.index] = new VertexBuffer(STRIP_QUAD_VERTICES, XYZ_COMPONENTS,
+                XYZUV_COMPONENTS, GLES20.GL_FLOAT);
+        if (attributeBuffers > 1) {
+            attributes[1] = new VertexBuffer(STRIP_QUAD_VERTICES, XYZ_COMPONENTS, attribute2Size, GLES20.GL_FLOAT);
+        }
+        attributes[BufferIndex.VERTICES.index].setPositionUV(quadPositions, 0, 0, STRIP_QUAD_VERTICES);
+        Material material = new Material(program);
+        mesh.setupVertices(attributes, material, null);
+        mesh.setMode(GLES20.GL_TRIANGLE_FAN);
     }
 
     /**
