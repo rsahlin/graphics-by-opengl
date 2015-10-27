@@ -6,7 +6,6 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
-import com.nucleus.texturing.Image.ImageFormat;
 
 /**
  * Texture utilities, loading of texture(s)
@@ -33,20 +32,21 @@ public class TextureUtils {
 
         try {
             Image image = imageFactory.createImage(imageName, scale, scale);
-            int scaledWidth = image.getWidth();
-            int scaledHeight = image.getHeight();
+            int width = image.getWidth();
+            int height = image.getHeight();
             if (levels > 1) {
-                levels = 1 + (int) Math.floor(31 - Integer.numberOfLeadingZeros(Math.max(scaledWidth, scaledHeight)));
+                levels = (int) Math.floor(Math.log((Math.max(width, height))) / Math.log(2)) + 1;
             }
             Image[] images = new Image[levels];
             images[0] = image;
             if (levels > 1) {
                 // levels = 1 + (int) Math.floor(Math.log(Math.max(scaledWidth, scaledHeight)));
                 for (int i = 1; i < levels; i++) {
-                    scaledWidth = Math.max(1, scaledWidth >>> 1);
-                    scaledHeight = Math.max(1, scaledHeight >>> 1);
-                    images[i] = imageFactory.createScaledImage(images[0], scaledWidth,
-                            scaledHeight, ImageFormat.RGBA);
+                    // max(1, floor(w_t/2^i)) x max(1, floor(h_t/2^i))
+                    int scaledWidth = (int) Math.max(1, Math.floor(width / Math.pow(2, i)));
+                    int scaledHeight = (int) Math.max(1, Math.floor(height / Math.pow(2, i)));
+                    // images[i] = imageFactory.createScaledImage(images[0], scaledWidth,
+                    // scaledHeight, ImageFormat.RGBA);
                 }
             }
             return images;
@@ -84,7 +84,9 @@ public class TextureUtils {
             }
             level++;
         }
-        // gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+        if (textureImages.length > 1) {
+            gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+        }
 
     }
 
