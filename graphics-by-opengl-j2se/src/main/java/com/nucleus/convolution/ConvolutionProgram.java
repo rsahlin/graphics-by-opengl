@@ -17,27 +17,6 @@ import com.nucleus.texturing.TiledTexture2D;
 public class ConvolutionProgram extends ShaderProgram {
 
     protected final static int DEFAULT_COMPONENTS = 3;
-    /**
-     * Index into uniform char data where the texture fraction s (width) is
-     */
-    protected final static int UNIFORM_TEX_FRACTION_S_INDEX = 0;
-    /**
-     * Index into uniform charmap data where the texture fraction t (height) is
-     */
-    protected final static int UNIFORM_TEX_FRACTION_T_INDEX = 1;
-
-    /**
-     * Index into uniform charmap data where 1 / texture fraction w - this is used to calculate y pos from frame index
-     */
-    protected final static int UNIFORM_TEX_ONEBY_S_INDEX = 2;
-
-    /**
-     * Number of float data per vertex
-     */
-    protected final static int ATTRIBUTES_PER_VERTEX = 8;
-
-    protected final static int ATTRIBUTE_1_OFFSET = 0;
-    protected final static int ATTRIBUTE_2_OFFSET = 4;
 
     public enum VARIABLES {
         uMVPMatrix(0, ShaderVariable.VariableType.UNIFORM, 0),
