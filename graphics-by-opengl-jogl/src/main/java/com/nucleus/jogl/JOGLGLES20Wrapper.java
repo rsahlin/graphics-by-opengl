@@ -378,4 +378,29 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
         gles.glGenerateMipmap(target);
     }
 
+    @Override
+    public void glCullFace(int mode) {
+        gles.glCullFace(mode);
+    }
+
+    @Override
+    public void glDepthFunc(int func) {
+        gles.glDepthFunc(func);
+    }
+
+    @Override
+    public void glDepthMask(boolean flag) {
+        gles.glDepthMask(flag);
+    }
+
+    @Override
+    public void glClearDepthf(float depth) {
+        gles.glClearDepthf(depth);
+    }
+
+    @Override
+    public void glDepthRangef(float nearVal, float farVal) {
+        gles.glDepthRangef(nearVal, farVal);
+    }
+
 }

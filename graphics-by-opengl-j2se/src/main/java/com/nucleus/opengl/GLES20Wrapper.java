@@ -459,6 +459,42 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public abstract void glEnable(int cap);
 
     /**
+     * Abstraction for glCullFace()
+     * 
+     * @param mode
+     */
+    public abstract void glCullFace(int mode);
+
+    /**
+     * Abstraction for glDepthFunc()
+     * 
+     * @param func
+     */
+    public abstract void glDepthFunc(int func);
+
+    /**
+     * Abstraction for glDepthMask()
+     * 
+     * @param flag
+     */
+    public abstract void glDepthMask(boolean flag);
+
+    /**
+     * Abstraction for glClearDepthf
+     * 
+     * @param depth
+     */
+    public abstract void glClearDepthf(float depth);
+
+    /**
+     * Abstraction for glDepthRangef
+     * 
+     * @param nearVal
+     * @param farVal
+     */
+    public abstract void glDepthRangef(float nearVal, float farVal);
+
+    /**
      * Abstraction for glTexImage2D()
      * 
      * @param target

@@ -260,4 +260,29 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
         android.opengl.GLES20.glGenerateMipmap(target);
     }
 
+    @Override
+    public void glCullFace(int mode) {
+        android.opengl.GLES20.glCullFace(mode);
+    }
+
+    @Override
+    public void glDepthFunc(int func) {
+        android.opengl.GLES20.glDepthFunc(func);
+    }
+
+    @Override
+    public void glDepthMask(boolean flag) {
+        android.opengl.GLES20.glDepthMask(flag);
+    }
+
+    @Override
+    public void glClearDepthf(float depth) {
+        android.opengl.GLES20.glClearDepthf(depth);
+    }
+
+    @Override
+    public void glDepthRangef(float nearVal, float farVal) {
+        android.opengl.GLES20.glDepthRangef(nearVal, farVal);
+    }
+
 }
