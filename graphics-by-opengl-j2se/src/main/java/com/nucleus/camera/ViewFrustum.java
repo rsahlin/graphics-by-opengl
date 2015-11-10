@@ -99,6 +99,16 @@ public class ViewFrustum {
         projectionType = PROJECTION_ORTHOGONAL;
     }
 
+    public void setPerspectiveProjection(float left, float right, float bottom, float top, float near, float far) {
+        projection[LEFT_INDEX] = left;
+        projection[RIGHT_INDEX] = right;
+        projection[BOTTOM_INDEX] = bottom;
+        projection[TOP_INDEX] = top;
+        projection[NEAR_INDEX] = near;
+        projection[FAR_INDEX] = far;
+        projectionType = PROJECTION_PERSPECTIVE;
+    }
+
     /**
      * Returns the projection type, PROJECTION_ORTHOGONAL or PROJECTION_PERSPECTIVE
      * 

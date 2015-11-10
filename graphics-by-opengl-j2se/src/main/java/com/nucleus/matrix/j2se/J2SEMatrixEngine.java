@@ -21,6 +21,12 @@ public class J2SEMatrixEngine implements MatrixEngine {
                     projection[ViewFrustum.TOP_INDEX], projection[ViewFrustum.NEAR_INDEX],
                     projection[ViewFrustum.FAR_INDEX]);
             break;
+        case ViewFrustum.PROJECTION_PERSPECTIVE:
+            Matrix.frustumM(viewFrustum.getProjectionMatrix(), 0, projection[ViewFrustum.LEFT_INDEX],
+                    projection[ViewFrustum.RIGHT_INDEX], projection[ViewFrustum.BOTTOM_INDEX],
+                    projection[ViewFrustum.TOP_INDEX], projection[ViewFrustum.NEAR_INDEX],
+                    projection[ViewFrustum.FAR_INDEX]);
+            break;
         default:
             System.err.println("Illegal projection: " + viewFrustum.getProjectionType());
         }
