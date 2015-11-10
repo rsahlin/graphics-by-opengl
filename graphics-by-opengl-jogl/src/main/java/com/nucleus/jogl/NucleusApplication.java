@@ -18,11 +18,33 @@ import com.nucleus.texturing.J2SEImageFactory;
  */
 public class NucleusApplication implements CoreAppStarter, RenderContextListener {
 
+    public final static String WINDOW_WIDTH_KEY = "WINDOW-WIDTH";
+    public final static String WINDOW_HEIGHT_KEY = "WINDOW-HEIGHT";
+
     protected JOGLGLES20Window window;
     protected CoreApp coreApp;
     protected int swapInterval = 1;
     protected int windowWidth = 480;
     protected int windowHeight = 800;
+
+    /**
+     * Reads arguments from the VM and sets
+     * 
+     * @param args
+     */
+    protected void setProperties(String[] args) {
+        for (String str : args) {
+
+            if (str.toUpperCase().startsWith(WINDOW_WIDTH_KEY)) {
+                windowWidth = Integer.parseInt(str.substring(WINDOW_WIDTH_KEY.length() + 1));
+                System.out.println(WINDOW_WIDTH_KEY + " set to " + windowWidth);
+            }
+            if (str.toUpperCase().startsWith(WINDOW_HEIGHT_KEY)) {
+                windowHeight = Integer.parseInt(str.substring(WINDOW_HEIGHT_KEY.length() + 1));
+                System.out.println(WINDOW_HEIGHT_KEY + " set to " + windowHeight);
+            }
+        }
+    }
 
     @Override
     public void createCore(Renderers version) {
