@@ -6,6 +6,8 @@ import com.nucleus.convolution.ConvolutionProgram.VARIABLES;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.jogl.NucleusApplication;
+import com.nucleus.mmi.MMIEventListener;
+import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
@@ -18,12 +20,21 @@ import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureSetup;
 
-public class FGLConvolutionTest extends NucleusApplication implements RenderContextListener, FrameListener {
+public class FGLConvolutionTest extends NucleusApplication implements RenderContextListener, FrameListener,
+        MMIEventListener {
 
     private final static int ITERATIONS = 100;
 
-    private float[] kernel;
+    private final static float[] kernel1 = new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 };
+    private final static float[] kernel2 = new float[] { -1, -1, -1, -1, 8, -1, -1, -1, -1 };
+    private final static float[] kernel3 = new float[] { 0, -1, 0, -1, 5, -1, 0, -1, 0 };
+    private final static boolean[] absNormalize = new boolean[] { false, true, false };
+
+    private float[][] kernel = new float[][] { kernel1, kernel2, kernel3 };
+    private float[] normalizedKernel = new float[9];
+
     private float factor = 1f;
+    private int kernelIndex = 2;
     Mesh mesh;
     int counter = 0;
     long start = 0;
@@ -51,6 +62,7 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
         super.contextCreated(width, height);
         NucleusRenderer renderer = getRenderer();
         renderer.getViewFrustum().setOrthoProjection(-0.5f, 0.5f, 0.5f, -0.5f, 0f, 10f);
+        coreApp.getInputProcessor().addMMIListener(this);
 
         mesh = new Mesh();
         ConvolutionProgram c = new ConvolutionProgram();
@@ -58,19 +70,23 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
         Node node = new Node();
         TextureSetup texSetup = new TextureSetup(new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, 1);
         Texture2D tex = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), texSetup);
-        kernel = new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 };
-        // kernel = new float[] { -1, -1, -1, -1, 8, -1, -1, -1, -1 };
-        // kernel = new float[] { 0, -1, 0, -1, 5, -1, 0, -1, 0 };
-        Convolution.normalize(kernel, false, 1.5f);
-        c.buildMesh(mesh, tex, 1f, 1f, 0, kernel);
+        c.buildMesh(mesh, tex, 1f, 1f, 0, kernel[kernelIndex]);
         node.addMesh(mesh);
         renderer.setScene(node);
         renderer.addFrameListener(this);
 
     }
 
+    private void setTest(int test) {
+
+    }
+
     @Override
     public void processFrame(float deltaTime) {
+        factor += deltaTime * 0.2f;
+        if (factor > 2.5) {
+            factor = 0.3f;
+        }
     }
 
     @Override
@@ -90,13 +106,26 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
             start = System.currentTimeMillis();
             counter = 0;
         }
-        factor += 0.001f;
-        if (factor > 2) {
-            factor = 1f;
+        Convolution.normalize(kernel[kernelIndex], normalizedKernel, absNormalize[kernelIndex], factor);
+        System.arraycopy(normalizedKernel, 0, mesh.getUniformMatrices(), VARIABLES.uKernel.offset,
+                normalizedKernel.length);
+
+    }
+
+    @Override
+    public void inputEvent(MMIPointerEvent event) {
+
+        switch (event.getAction()) {
+        case ACTIVE:
+            kernelIndex++;
+            if (kernelIndex >= kernel.length) {
+                kernelIndex = 0;
+            }
+            break;
+        case INACTIVE:
+        case ZOOM:
+        case MOVE:
         }
-        kernel = new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 };
-        Convolution.normalize(kernel, false, factor);
-        System.arraycopy(kernel, 0, mesh.getUniformMatrices(), VARIABLES.uKernel.offset, kernel.length);
 
     }
 }
