@@ -51,6 +51,7 @@ class BaseRenderer implements NucleusRenderer {
     protected float[] mvpMatrix = Matrix.createMatrix();
 
     protected GLES20Wrapper gles;
+    protected RenderSettings renderSettings = new RenderSettings();
     protected ImageFactory imageFactory;
     protected MatrixEngine matrixEngine;
     private ArrayList<RenderContextListener> contextListeners = new ArrayList<RenderContextListener>();
@@ -118,6 +119,18 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public float beginFrame() {
+        try {
+            if (renderSettings.getChangeFlag() != RenderSettings.CHANGE_FLAG_NONE) {
+                setRenderSetting(renderSettings);
+                renderSettings.setChangeFlag(RenderSettings.CHANGE_FLAG_NONE);
+            }
+        } catch (GLException e) {
+            throw new RuntimeException(e);
+        }
+        int clearFunc = renderSettings.getClearFunction();
+        if (clearFunc != GLES20.GL_NONE) {
+            gles.glClear(clearFunc);
+        }
         for (FrameListener listener : frameListeners) {
             listener.updateGLData();
         }
@@ -134,18 +147,45 @@ class BaseRenderer implements NucleusRenderer {
 
         mvpMatrix = getViewFrustum().getProjectionMatrix();
 
-        try {
-            // TODO Add render setting with clear flags, depth test, cull face etc.
-            gles.glClearColor(0.6f, 0.5f, 0.4f, 1.0f);
-            gles.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-            gles.glDisable(GLES20.GL_DEPTH_TEST);
-            gles.glDisable(GLES20.GL_CULL_FACE);
-            GLUtils.handleError(gles, "Error");
-
-        } catch (GLException e) {
-            throw new RuntimeException(e);
-        }
         return deltaTime;
+    }
+
+    /**
+     * Internal method to apply the rendersettings.
+     * 
+     * @param setting
+     * @throws GLException
+     */
+    private void setRenderSetting(RenderSettings setting) throws GLException {
+
+        int flags = setting.getChangeFlag();
+        if ((flags & RenderSettings.CHANGE_FLAG_CLEARCOLOR) != 0) {
+            float[] clear = setting.getClearColor();
+            gles.glClearColor(clear[0], clear[1], clear[2], clear[3]);
+        }
+        if ((flags & RenderSettings.CHANGE_FLAG_CULLFACE) != 0) {
+            // Set GL values.
+            if (setting.getCullFace() != GLES20.GL_NONE) {
+                gles.glEnable(GLES20.GL_CULL_FACE);
+                gles.glCullFace(setting.getCullFace());
+            } else {
+                gles.glDisable(GLES20.GL_CULL_FACE);
+            }
+        }
+        if ((flags & RenderSettings.CHANGE_FLAG_DEPTH) != 0) {
+            if (setting.getDepthFunc() != GLES20.GL_NONE) {
+                gles.glEnable(GLES20.GL_DEPTH_TEST);
+                gles.glDepthFunc(setting.getDepthFunc());
+                gles.glDepthMask(true);
+                gles.glClearDepthf(setting.getClearDepth());
+                gles.glDepthRangef(setting.getDepthRangeNear(), setting.getDepthRangeFar());
+            } else {
+                gles.glDisable(GLES20.GL_DEPTH_TEST);
+                gles.glDepthMask(false);
+            }
+        }
+        GLUtils.handleError(gles, "setRenderSettings ");
+
     }
 
     @Override
@@ -333,6 +373,11 @@ class BaseRenderer implements NucleusRenderer {
     @Override
     public void bufferData(int target, int size, Buffer data, int usage) {
         gles.glBufferData(target, size, data, usage);
+    }
+
+    @Override
+    public RenderSettings getRenderSettings() {
+        return renderSettings;
     }
 
 }

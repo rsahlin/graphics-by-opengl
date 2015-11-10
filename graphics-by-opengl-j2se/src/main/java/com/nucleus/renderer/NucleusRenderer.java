@@ -112,6 +112,14 @@ public interface NucleusRenderer {
     public float beginFrame();
 
     /**
+     * Returns the rendersettings for this renderer. Use this object to change settings such as
+     * culling, depth test, depth function, clear and clear color {@link RenderSettings}
+     * 
+     * @return The rendersettings for this renderer
+     */
+    public RenderSettings getRenderSettings();
+
+    /**
      * Renders the current scene, as set with {@link #setScene(Node)} Uses the current mvp matrix, will call children
      * recursively.
      * 
