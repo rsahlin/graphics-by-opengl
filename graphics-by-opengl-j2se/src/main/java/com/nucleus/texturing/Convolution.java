@@ -152,6 +152,24 @@ public class Convolution {
     }
 
     /**
+     * Normalizes the kernel, into a destination kernel, based on the sum of the kernel values and the factor.
+     * Each kernel value will be(kernel / sum) * factor
+     * 
+     * @param kernel The source kernel
+     * @param destination The destination for the normalized kernel
+     * @param absolute
+     * @param factor Factor used to multiply the normalized values with, used to darken or lighten.
+     * Values above 1 will lighten, values below 1 will darken
+     * 
+     */
+    public static void normalize(float[] kernel, float[] destination, boolean absolute, float factor) {
+        float sum = Convolution.calculateSum(kernel, absolute);
+        for (int i = 0; i < kernel.length; i++) {
+            destination[i] = (kernel[i] / sum) * factor;
+        }
+    }
+
+    /**
      * Process the specified image using this filter and return the result as a copy
      * 
      * @param image
