@@ -8,11 +8,13 @@ import com.nucleus.io.ExternalReference;
 import com.nucleus.jogl.NucleusApplication;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.renderer.RenderSettings;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.Node;
 import com.nucleus.texturing.Convolution;
@@ -61,6 +63,9 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
     public void contextCreated(int width, int height) {
         super.contextCreated(width, height);
         NucleusRenderer renderer = getRenderer();
+        RenderSettings rs = renderer.getRenderSettings();
+        rs.setCullFace(GLES20.GL_NONE);
+        rs.setDepthFunc(GLES20.GL_NONE);
         renderer.getViewFrustum().setOrthoProjection(-0.5f, 0.5f, 0.5f, -0.5f, 0f, 10f);
         coreApp.getInputProcessor().addMMIListener(this);
 
