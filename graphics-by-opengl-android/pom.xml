@@ -15,6 +15,8 @@
      <artifactId>android-maven-plugin</artifactId>
      <version>4.0.0-rc.2</version>
 	     <configuration>
+	   	<androidManifestFile>AndroidManifest.xml</androidManifestFile>
+		<resourceDirectory>res</resourceDirectory>
 	          <sdk>
 	              <platform>9</platform>
 	          </sdk>
