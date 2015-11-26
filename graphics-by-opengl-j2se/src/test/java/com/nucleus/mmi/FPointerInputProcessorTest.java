@@ -247,7 +247,7 @@ public class FPointerInputProcessorTest implements MMIEventListener {
             if (event.getAction() == Action.ZOOM) {
                 found++;
                 Vector2D zoom = event.getZoom();
-                Assert.assertEquals(deltaX1 - deltaX2, zoom.vector[Vector2D.MAGNITUDE], 0f);
+                Assert.assertEquals(deltaX2 - deltaX1, zoom.vector[Vector2D.MAGNITUDE], 0f);
                 Assert.assertNotNull(zoom);
             }
         }

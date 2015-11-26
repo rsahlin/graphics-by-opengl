@@ -61,7 +61,7 @@ public class MMIPointerEvent {
         float value = (dot1 + dot2) / 2;
         zoom.vector[VecMath.X] = value;
         zoom.vector[VecMath.Y] = value;
-        zoom.vector[Vector2D.MAGNITUDE] = -(delta1.vector[Vector2D.MAGNITUDE] + delta2.vector[Vector2D.MAGNITUDE]);
+        zoom.vector[Vector2D.MAGNITUDE] = (delta1.vector[Vector2D.MAGNITUDE] + delta2.vector[Vector2D.MAGNITUDE]);
     }
 
     public void setZoom(float x, float y) {
