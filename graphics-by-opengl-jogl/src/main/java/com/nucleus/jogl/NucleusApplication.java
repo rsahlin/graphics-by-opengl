@@ -16,7 +16,7 @@ import com.nucleus.texturing.J2SEImageFactory;
  * @author Richard Sahlin
  *
  */
-public class NucleusApplication implements CoreAppStarter, RenderContextListener {
+public class NucleusApplication implements CoreAppStarter, RenderContextListener, WindowListener {
 
     public final static String WINDOW_WIDTH_KEY = "WINDOW-WIDTH";
     public final static String WINDOW_HEIGHT_KEY = "WINDOW-HEIGHT";
@@ -50,6 +50,7 @@ public class NucleusApplication implements CoreAppStarter, RenderContextListener
     public void createCore(Renderers version) {
         window = new JOGLGLES20Window(windowWidth, windowHeight, this, swapInterval);
         window.setGLEVentListener();
+        window.setWindowListener(this);
         // Setting window to visible will trigger the GLEventListener, on the same or another thread.
         window.setVisible(true);
     }
@@ -77,4 +78,14 @@ public class NucleusApplication implements CoreAppStarter, RenderContextListener
         return coreApp.getRenderer();
     }
 
+    @Override
+    public void resize(int x, int y, int width, int height) {
+        if (coreApp != null) {
+            coreApp.getRenderer().resizeWindow(x, y, width, height);
+        }
+    }
+
+    @Override
+    public void windowClosed() {
+    }
 }

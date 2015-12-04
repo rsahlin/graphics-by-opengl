@@ -5,6 +5,8 @@ import java.awt.Frame;
 import com.jogamp.nativewindow.util.Dimension;
 import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.event.MouseListener;
+import com.jogamp.newt.event.WindowEvent;
+import com.jogamp.newt.event.WindowUpdateEvent;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilities;
@@ -27,7 +29,7 @@ import com.nucleus.renderer.Window;
  * has GL access. This is normally done in the {@link #display(GLAutoDrawable)} method.
  *
  */
-public abstract class JOGLGLEWindow implements GLEventListener, MouseListener {
+public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener {
 
     /**
      * A zoom on the wheel equals 1 / 100 screen height
@@ -46,6 +48,7 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener {
     protected GLCanvas canvas;
     protected Frame frame;
     protected GLWindow glWindow;
+    WindowListener windowListener;
 
     protected GLESWrapper glesWrapper;
     protected CoreApp coreApp;
@@ -84,6 +87,7 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener {
         glWindow.setPointerVisible(mouseVisible);
         glWindow.confinePointer(mouseConfined);
         glWindow.addMouseListener(this);
+        glWindow.addWindowListener(this);
         GLProfile.initSingleton();
         Animator animator = new Animator();
         animator.add(glWindow);
@@ -174,6 +178,9 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener {
         System.out.println("reshape: x,y= " + x + ", " + y + " width,height= " + width + ", " + height);
         windowSize.setWidth(width);
         windowSize.setHeight(height);
+        if (windowListener != null) {
+            windowListener.resize(x, y, width, height);
+        }
     }
 
     /**
@@ -223,6 +230,15 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener {
         }
     }
 
+    /**
+     * Sets the windowlistener to get callbacks when the window has changed.
+     * 
+     * @param listener
+     */
+    public void setWindowListener(WindowListener listener) {
+        this.windowListener = listener;
+    }
+
     @Override
     public void mouseClicked(MouseEvent e) {
         // TODO Auto-generated method stub
@@ -267,4 +283,34 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener {
         coreApp.getInputProcessor().pointerEvent(PointerAction.ZOOM, e.getWhen(), PointerData.POINTER_1, new float[] {
                 e.getRotation()[1] * factor, e.getRotation()[1] * factor });
     }
+
+    @Override
+    public void windowResized(WindowEvent e) {
+    }
+
+    @Override
+    public void windowMoved(WindowEvent e) {
+    }
+
+    @Override
+    public void windowDestroyNotify(WindowEvent e) {
+        windowListener.windowClosed();
+    }
+
+    @Override
+    public void windowDestroyed(WindowEvent e) {
+    }
+
+    @Override
+    public void windowGainedFocus(WindowEvent e) {
+    }
+
+    @Override
+    public void windowLostFocus(WindowEvent e) {
+    }
+
+    @Override
+    public void windowRepaint(WindowUpdateEvent e) {
+    }
+
 }
