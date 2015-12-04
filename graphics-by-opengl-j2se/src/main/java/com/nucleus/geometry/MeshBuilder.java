@@ -13,6 +13,7 @@ import com.nucleus.geometry.ElementBuffer.Type;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.vecmath.Axis;
 
 /**
  * Utility class to help build different type of Meshes.
@@ -85,25 +86,27 @@ public class MeshBuilder {
      * 
      * @param width width of quad in world coordinates
      * @param height height of quad in world coordinates
+     * @param anchor X,Y and Z offset
      * @param z The Z position
-     * @param anchorX X axis anchor offet, 0 will be left centered (assuming x axis is increasing to the right)
-     * @param anchorY Y axis anchor offet, 0 will be top centered, (assuming y axis is increasing downwards)
+     * X = 0 will be left centered (assuming x axis is increasing to the right)
+     * Y = 0 will be top centered, (assuming y axis is increasing downwards)
+     * Z is set as the Z position.
      * @param vertexStride, number of floats to add from one vertex to the next. Usually 3 to allow XYZ storage,
      * increase if padding (eg for UV) is needed.
      * @return array containing 4 vertices for a quad with the specified size, the size of the array will be
      * vertexStride * 4
      */
-    public static float[] buildQuadPositionsIndexed(float width, float height, float z, float anchorX, float anchorY,
-            int vertexStride) {
+    public static float[] buildQuadPositionsIndexed(float width, float height, float[] anchor, int vertexStride) {
 
         float[] quadPositions = new float[vertexStride * 4];
-        com.nucleus.geometry.MeshBuilder.setPosition(-anchorX, -anchorY, z, quadPositions, 0);
-        com.nucleus.geometry.MeshBuilder.setPosition(width - anchorX, -anchorY, z, quadPositions,
-                vertexStride);
-        com.nucleus.geometry.MeshBuilder.setPosition(width - anchorX, height - anchorY, z, quadPositions,
-                vertexStride * 2);
-        com.nucleus.geometry.MeshBuilder.setPosition(-anchorX, height - anchorY, z, quadPositions,
-                vertexStride * 3);
+        com.nucleus.geometry.MeshBuilder.setPosition(-anchor[Axis.X.index], -anchor[Axis.Y.index],
+                anchor[Axis.Z.index], quadPositions, 0);
+        com.nucleus.geometry.MeshBuilder.setPosition(width - anchor[Axis.X.index], -anchor[Axis.Y.index],
+                anchor[Axis.Z.index], quadPositions, vertexStride);
+        com.nucleus.geometry.MeshBuilder.setPosition(width - anchor[Axis.X.index], height - anchor[Axis.Y.index],
+                anchor[Axis.Z.index], quadPositions, vertexStride * 2);
+        com.nucleus.geometry.MeshBuilder.setPosition(-anchor[Axis.X.index], height - anchor[Axis.Y.index],
+                anchor[Axis.Z.index], quadPositions, vertexStride * 3);
         return quadPositions;
     }
 

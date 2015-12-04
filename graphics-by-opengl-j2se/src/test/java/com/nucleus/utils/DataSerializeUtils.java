@@ -6,8 +6,8 @@ import com.nucleus.common.StringUtils;
 import com.nucleus.io.DataSetup;
 import com.nucleus.io.DataSetup.DataIndexer;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
+import com.nucleus.texturing.TexParameter;
 import com.nucleus.texturing.TextureParameter;
-import com.nucleus.texturing.TextureParameter.Name;
 import com.nucleus.types.DataType;
 
 public class DataSerializeUtils {
@@ -48,13 +48,13 @@ public class DataSerializeUtils {
         case TEXTURE_PARAMETER:
             switch (index) {
             case TextureParameter.MIN_FILTER:
-                return Name.LINEAR.toString();
+                return TexParameter.LINEAR.toString();
             case TextureParameter.MAG_FILTER:
-                return Name.NEAREST.toString();
+                return TexParameter.NEAREST.toString();
             case TextureParameter.WRAP_S:
-                return Name.CLAMP.toString();
+                return TexParameter.CLAMP.toString();
             case TextureParameter.WRAP_T:
-                return Name.REPEAT.toString();
+                return TexParameter.REPEAT.toString();
             default:
                 throw new IllegalArgumentException("Not implemented");
             }

@@ -14,33 +14,6 @@ import com.nucleus.types.DataType;
  */
 public class TextureParameter extends DataSetup {
 
-    public enum Name {
-        NEAREST(GLES20.GL_NEAREST),
-        LINEAR(GLES20.GL_LINEAR),
-        NEAREST_MIPMAP_NEAREST(GLES20.GL_NEAREST_MIPMAP_NEAREST),
-        LINEAR_MIPMAP_NEAREST(GLES20.GL_LINEAR_MIPMAP_NEAREST),
-        NEAREST_MIPMAP_LINEAR(GLES20.GL_NEAREST_MIPMAP_LINEAR),
-        LINEAR_MIPMAP_LINEAR(GLES20.GL_LINEAR_MIPMAP_LINEAR),
-        CLAMP(GLES20.GL_CLAMP_TO_EDGE),
-        REPEAT(GLES20.GL_REPEAT),
-        MIRRORED_REPEAT(GLES20.GL_MIRRORED_REPEAT);
-
-        private final int value;
-
-        private Name(int value) {
-            this.value = value;
-        }
-
-        /**
-         * Returns the GL value for the texture parameter
-         * 
-         * @return
-         */
-        public int getValue() {
-            return value;
-        }
-    }
-
     public enum TextureParameterMapping implements DataIndexer {
         MIN_FILTER(0, DataType.TEXTURE_PARAMETER),
         MAG_FILTER(1, DataType.TEXTURE_PARAMETER),
@@ -75,6 +48,20 @@ public class TextureParameter extends DataSetup {
     }
 
     /**
+     * Creates texture parameters with the specified values for MIN_FILTER, MAG_FILTER, WRAP_S and WRAP_T
+     * 
+     * @param params
+     */
+    public TextureParameter(TexParameter[] params) {
+        int index = 0;
+        for (TexParameter tp : params) {
+            if (index < values.length) {
+                values[index++] = tp.value;
+            }
+        }
+    }
+
+    /**
      * Index into parameters where min filter value is
      */
     public final static int MIN_FILTER = 0;
@@ -104,10 +91,10 @@ public class TextureParameter extends DataSetup {
      * @param offset Offset into parameters where values are read.
      */
     public void setValues(String[] parameters, int offset) {
-        values[MIN_FILTER] = Name.valueOf(getString(parameters, offset, TextureParameterMapping.MIN_FILTER)).value;
-        values[MAG_FILTER] = Name.valueOf(getString(parameters, offset, TextureParameterMapping.MAG_FILTER)).value;
-        values[WRAP_S] = Name.valueOf(getString(parameters, offset, TextureParameterMapping.WRAP_S)).value;
-        values[WRAP_T] = Name.valueOf(getString(parameters, offset, TextureParameterMapping.WRAP_T)).value;
+        values[MIN_FILTER] = TexParameter.valueOf(getString(parameters, offset, TextureParameterMapping.MIN_FILTER)).value;
+        values[MAG_FILTER] = TexParameter.valueOf(getString(parameters, offset, TextureParameterMapping.MAG_FILTER)).value;
+        values[WRAP_S] = TexParameter.valueOf(getString(parameters, offset, TextureParameterMapping.WRAP_S)).value;
+        values[WRAP_T] = TexParameter.valueOf(getString(parameters, offset, TextureParameterMapping.WRAP_T)).value;
     }
 
     /**
@@ -126,6 +113,18 @@ public class TextureParameter extends DataSetup {
     }
 
     /**
+     * Copy values from the source texture parameters
+     * 
+     * @param source
+     */
+    public void setValues(TextureParameter source) {
+        values[MIN_FILTER] = source.values[MIN_FILTER];
+        values[MAG_FILTER] = source.values[MAG_FILTER];
+        values[WRAP_S] = source.values[WRAP_S];
+        values[WRAP_T] = source.values[WRAP_T];
+    }
+
+    /**
      * Returns the string (name) for a texture parameter value, eg 9728 will return NEAREST
      * Can be used when exporting to texture format for readability
      * 
@@ -134,7 +133,7 @@ public class TextureParameter extends DataSetup {
      */
     public static String valueToString(int value) {
 
-        for (Name n : Name.values()) {
+        for (TexParameter n : TexParameter.values()) {
             if (n.value == value) {
                 return n.toString();
             }

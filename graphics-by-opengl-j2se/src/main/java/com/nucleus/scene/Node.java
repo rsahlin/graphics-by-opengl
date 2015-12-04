@@ -2,26 +2,40 @@ package com.nucleus.scene;
 
 import java.util.ArrayList;
 
+import com.google.gson.annotations.SerializedName;
+import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.Reference;
 import com.nucleus.vecmath.Transform;
 
 /**
  * Point of interest in a scene. Normally represents a visual object (vertices) that will be rendered.
+ * This shall be a 'dumb' node in that sense that it shall not contain logic or behavior other than the ability to
+ * be rendered and serailized.
+ * This class may be serialized using GSON
  * 
  * @author Richard Sahlin
  *
  */
 public class Node implements Reference {
 
-    final Transform transform = new Transform();
+    @SerializedName("id")
+    String id;
+    @SerializedName("type")
+    private String type;
+    @SerializedName("reference")
+    private String reference;
+
+    @SerializedName("transform")
+    Transform transform = new Transform();
     /**
-     * Optional projection for the node, this will affect all child nodes.
+     * Optional projection Matrix for the node, this will affect all child nodes.
      */
     float[] projection;
+    @SerializedName("viewFrustum")
+    private ViewFrustum viewFrustum;
     ArrayList<Mesh> meshes = new ArrayList<Mesh>();
     ArrayList<Node> children = new ArrayList<Node>();
-    String id;
 
     /**
      * Creates an empty node, add children and meshes as needed.
@@ -167,7 +181,7 @@ public class Node implements Reference {
     }
 
     /**
-     * Returns the first matching node by id.
+     * Returns node with matching id, searching through this node and recursively searching through children.
      * 
      * @param id Id of node to return
      * @return First instance of node with matching id, or null if none found
@@ -204,6 +218,34 @@ public class Node implements Reference {
     @Override
     public String toString() {
         return "Node '" + id + "', " + meshes.size() + " meshes, " + children.size() + " children";
+    }
+
+    /**
+     * Returns the type of node, this is a String representation that must be understood by the implementation
+     * This may not be defined.
+     * 
+     * @return
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * Returns a reference to the data for the type, this may not be defined
+     * 
+     * @return
+     */
+    public String getReference() {
+        return reference;
+    }
+
+    /**
+     * Returns the viewfrustum if defined.
+     * 
+     * @return View frustum or null
+     */
+    public ViewFrustum getViewFrustum() {
+        return viewFrustum;
     }
 
 }

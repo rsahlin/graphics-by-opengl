@@ -100,7 +100,7 @@ public class TextureSetup extends DataSetup {
         this.levels = texture.images.length;
         this.targetResolution = texture.targetResolution;
         this.texParams = texture.textureParameters;
-        this.sourceName = externalRef.getSourceName();
+        this.sourceName = externalRef.getSource();
         setId(texture.getId());
     }
 
@@ -112,7 +112,7 @@ public class TextureSetup extends DataSetup {
      * @param levels
      */
     public void setup(ExternalReference externalRef, RESOLUTION targetResolution, int levels) {
-        this.sourceName = externalRef.getSourceName();
+        this.sourceName = externalRef.getSource();
         this.targetResolution = targetResolution;
         this.levels = levels;
     }

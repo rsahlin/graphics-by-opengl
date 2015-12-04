@@ -1,5 +1,7 @@
 package com.nucleus.texturing;
 
+import com.nucleus.resource.ResourceBias.RESOLUTION;
+import com.nucleus.vecmath.Axis;
 
 /**
  * A texture that can be used for tiling, ie using a texture atlas where many images/frames are stored
@@ -19,6 +21,20 @@ public class TiledTexture2D extends Texture2D {
      */
     protected TiledTexture2D() {
         super();
+    }
+
+    /**
+     * Creates a texture with the specified id
+     * 
+     * @param id The id of the texture, not the GL texture name.
+     * @param targetResolution
+     * @param params Texture parameters, min/mag filter wrap s/t
+     * @param dimension Number of frames in x and y
+     */
+    protected TiledTexture2D(String id, RESOLUTION targetResolution, TextureParameter params, int[] dimension) {
+        super(id, targetResolution, params);
+        framesX = dimension[Axis.WIDTH.index];
+        framesY = dimension[Axis.HEIGHT.index];
     }
 
     /**

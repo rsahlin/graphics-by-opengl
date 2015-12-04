@@ -55,6 +55,19 @@ public class Texture2D extends BaseReference {
     }
 
     /**
+     * Creates a texture with the specified id
+     * 
+     * @param id The id of the texture, not the GL texture name.
+     * @param targetResolution
+     * @param params Texture parameters, min/mag filter wrap s/t
+     */
+    protected Texture2D(String id, RESOLUTION targetResolution, TextureParameter params) {
+        super(id);
+        this.targetResolution = targetResolution;
+        this.textureParameters.setValues(params);
+    }
+
+    /**
      * Creates a texture reference with name, width and height.
      * 
      * @param name Texture object name (OpenGL)
@@ -62,8 +75,11 @@ public class Texture2D extends BaseReference {
      * @param targetResolution The originating texture source resolution, not that the actual provided sources may be
      * scaled if the platform has lower resolution.
      */
-    protected Texture2D(int name, Image[] images, RESOLUTION targetResolution) {
-        setup(name, images, targetResolution);
+    protected Texture2D(String id, int name, Image[] images, RESOLUTION targetResolution, TextureParameter params) {
+        super(id);
+        setup(name, images);
+        this.targetResolution = targetResolution;
+        this.textureParameters.setValues(params);
     }
 
     /**
@@ -72,12 +88,10 @@ public class Texture2D extends BaseReference {
      * 
      * @param name
      * @param images
-     * @param targetResolution
      */
-    protected void setup(int name, Image[] images, RESOLUTION targetResolution) {
+    protected void setup(int name, Image[] images) {
         this.name = name;
         this.images = images;
-        this.targetResolution = targetResolution;
         this.width = images[0].width;
         this.height = images[0].height;
     }

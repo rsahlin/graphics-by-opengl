@@ -3,6 +3,7 @@ package com.nucleus.texturing;
 import com.nucleus.common.StringUtils;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.types.DataType;
+import com.nucleus.vecmath.Axis;
 
 /**
  * Setup for a tiled texture, adds number of frames horizontally and vertically.
@@ -90,6 +91,17 @@ public class TiledTextureSetup extends TextureSetup {
     public void setFrames(int x, int y) {
         framesX = x;
         framesY = y;
+    }
+
+    /**
+     * Sets the number of frames in x and y (width and height)
+     * 
+     * @param size
+     */
+    public void setFrames(int[] size) {
+        framesX = size[Axis.WIDTH.index];
+        framesY = size[Axis.HEIGHT.index];
+
     }
 
     @Override
