@@ -1,12 +1,14 @@
 package com.nucleus;
 
+import com.nucleus.logic.J2SELogicProcessor;
+import com.nucleus.logic.LogicProcessor;
+import com.nucleus.logic.LogicProcessorRunnable;
 import com.nucleus.mmi.PointerInputProcessor;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
-import com.nucleus.renderer.ProcessFrameRunnable;
 
 /**
  * Base application, use this to get the objects needed to start and run an application.
@@ -70,7 +72,8 @@ public class CoreApp {
     protected PointerInputProcessor inputProcessor = new PointerInputProcessor();
 
     Thread runnableThread;
-    ProcessFrameRunnable frameRunnable;
+    LogicProcessorRunnable logicRunnable;
+    LogicProcessor logicProcessor;
 
     /**
      * Set to true to trigger a call to context created next time {@link #drawFrame()} is called
@@ -90,11 +93,11 @@ public class CoreApp {
      */
     public CoreApp(NucleusRenderer renderer) {
         this.renderer = renderer;
-        frameRunnable = new ProcessFrameRunnable(renderer);
+        logicRunnable = new LogicProcessorRunnable(renderer, new J2SELogicProcessor());
         if (Runtime.getRuntime().availableProcessors() > 1) {
             System.out.println("Started extra process for logic processing, number of processors: "
                     + Runtime.getRuntime().availableProcessors());
-            runnableThread = new Thread(frameRunnable);
+            runnableThread = new Thread(logicRunnable);
         } else {
             System.out.println("Running everything on one thread.");
         }
@@ -125,15 +128,13 @@ public class CoreApp {
     }
 
     /**
-     * Main loop, call this method to produce one frame. This will call registered {@link FrameListener} so that
-     * logic can be updated together with the new frame.
+     * Main loop, call this method to produce one frame.
      * This method MUST be called from a thread that can access GL.
      * The normal case is to call it from window/surface that has onDraw/display callbacks.
      */
     public void drawFrame() {
         if (contextCreated) {
             contextCreated = false;
-            renderer.getViewFrustum().setViewPort(0, 0, width, height);
             renderer.GLContextCreated(width, height);
         }
         if (!hasCalledCreated) {
@@ -145,12 +146,13 @@ public class CoreApp {
                 if (!runnableThread.isAlive()) {
                     runnableThread.start();
                 } else {
-                    synchronized (frameRunnable) {
-                        frameRunnable.notify();
+                    synchronized (logicRunnable) {
+                        logicRunnable.notify();
                     }
                 }
             } else {
-                renderer.processFrame();
+                // renderer.processFrame();
+                logicProcessor.processNode(renderer.getScene(), renderer.getFrameSampler().getDelta());
             }
             renderer.renderScene();
         } catch (GLException e) {
@@ -158,6 +160,10 @@ public class CoreApp {
         }
         renderer.endFrame();
 
+    }
+
+    public void setLogicProcessor(LogicProcessor logicProcessor) {
+        this.logicProcessor = logicProcessor;
     }
 
 }
