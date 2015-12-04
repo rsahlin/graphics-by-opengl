@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 
 import com.nucleus.camera.ViewFrustum;
+import com.nucleus.camera.ViewPort;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
@@ -44,6 +45,8 @@ class BaseRenderer implements NucleusRenderer {
     private final static String NULL_MATRIXENGINE_ERROR = "MatrixEngine is null";
 
     protected ViewFrustum viewFrustum = new ViewFrustum();
+    protected ViewPort viewPort = new ViewPort();
+
     protected Deque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     /**
      * The current matrix
@@ -103,6 +106,8 @@ class BaseRenderer implements NucleusRenderer {
             throw new IllegalArgumentException(RenderContextListener.INVALID_CONTEXT_DIMENSION);
         }
         window.setDimension(width, height);
+        viewPort.setViewPort(0, 0, width, height);
+
         for (RenderContextListener listener : contextListeners) {
             listener.contextCreated(width, height);
         }
@@ -119,6 +124,10 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public float beginFrame() {
+        deltaTime = timeKeeper.update();
+        if (timeKeeper.getSampleDuration() > 3) {
+            System.out.println(BASE_RENDERER_TAG + ": Average FPS: " + timeKeeper.sampleFPS());
+        }
         try {
             if (renderSettings.getChangeFlag() != RenderSettings.CHANGE_FLAG_NONE) {
                 setRenderSetting(renderSettings);
@@ -134,18 +143,14 @@ class BaseRenderer implements NucleusRenderer {
         for (FrameListener listener : frameListeners) {
             listener.updateGLData();
         }
-        deltaTime = timeKeeper.update();
-        if (timeKeeper.getSampleDuration() > 3) {
-            System.out.println(BASE_RENDERER_TAG + ": Average FPS: " + timeKeeper.sampleFPS());
-        }
         // For now always set the viewport
         // TODO: Add dirty flag in viewport and only set when updated.
-        int[] viewport = viewFrustum.getViewPort();
-        gles.glViewport(viewport[ViewFrustum.VIEWPORT_X], viewport[ViewFrustum.VIEWPORT_Y],
-                viewport[ViewFrustum.VIEWPORT_WIDTH], viewport[ViewFrustum.VIEWPORT_HEIGHT]);
-        matrixEngine.setProjectionMatrix(viewFrustum);
-
-        mvpMatrix = getViewFrustum().getProjectionMatrix();
+        int[] view = viewPort.getViewPort();
+        gles.glViewport(view[ViewPort.VIEWPORT_X], view[ViewPort.VIEWPORT_Y],
+                view[ViewPort.VIEWPORT_WIDTH], view[ViewPort.VIEWPORT_HEIGHT]);
+        // matrixEngine.setProjectionMatrix(viewFrustum);
+        // mvpMatrix = getViewFrustum().getProjectionMatrix();
+        Matrix.setIdentity(mvpMatrix, 0);
 
         return deltaTime;
     }
@@ -194,6 +199,10 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(Node node) throws GLException {
+        float[] projection = node.getProjection();
+        if (projection != null) {
+            Matrix.mul4(mvpMatrix, projection);
+        }
         float[] modelMatrix = node.getTransform().getMatrix();
         float[] mvp = Matrix.createMatrix();
         Matrix.mul4(mvpMatrix, modelMatrix, mvp);
@@ -340,7 +349,9 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void renderScene() throws GLException {
-        render(scene);
+        if (scene != null) {
+            render(scene);
+        }
     }
 
     @Override
@@ -378,6 +389,17 @@ class BaseRenderer implements NucleusRenderer {
     @Override
     public RenderSettings getRenderSettings() {
         return renderSettings;
+    }
+
+    @Override
+    public FrameSampler getFrameSampler() {
+        return timeKeeper;
+    }
+
+    @Override
+    public void resizeWindow(int x, int y, int width, int height) {
+        viewPort.setViewPort(x, y, width, height);
+        Window.getInstance().setDimension(width, height);
     }
 
 }
