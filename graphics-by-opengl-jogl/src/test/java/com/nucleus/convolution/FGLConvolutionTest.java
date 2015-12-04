@@ -19,8 +19,8 @@ import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.Node;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.Texture2DData;
 import com.nucleus.texturing.TextureFactory;
-import com.nucleus.texturing.TextureSetup;
 
 public class FGLConvolutionTest extends NucleusApplication implements RenderContextListener, FrameListener,
         MMIEventListener {
@@ -73,7 +73,7 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
         ConvolutionProgram c = new ConvolutionProgram();
         c.createProgram(renderer.getGLES());
         Node node = new Node();
-        TextureSetup texSetup = new TextureSetup(new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, 1);
+        Texture2DData texSetup = new Texture2DData(new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, 1);
         Texture2D tex = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), texSetup);
         c.buildMesh(mesh, tex, 1f, 1f, 0, kernel[kernelIndex]);
         node.addMesh(mesh);

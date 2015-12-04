@@ -23,30 +23,6 @@ public class TextureFactory {
      * 
      * @return
      */
-    public static Texture2D createTexture(GLES20Wrapper gles, ImageFactory imageFactory, TextureSetup source) {
-        Texture2D texture = null;
-        if (source instanceof TiledTextureSetup) {
-            TiledTextureSetup tiledSource = (TiledTextureSetup) source;
-            texture = new TiledTexture2D(source.getId(), source.getResolution(), source.texParams, new int[] {
-                    tiledSource.framesX, tiledSource.framesY });
-        } else {
-            texture = new Texture2D(source.getId(), source.getResolution(), source.texParams);
-        }
-        prepareTexture(gles, texture, imageFactory, new ExternalReference(source.getSourceName()),
-                source.getLevels());
-        return texture;
-
-    }
-
-    /**
-     * Creates a texture for the specified image, the texture will be scaled according to target resolution (for the
-     * image) and current height of screen.
-     * The texture will be uploaded to GL using the specified texture object name, if several mip-map levels are
-     * supplied they will be used.
-     * If the device current resolution is lower than the texture target resolution then a lower mip-map level is used.
-     * 
-     * @return
-     */
     public static Texture2D createTexture(GLES20Wrapper gles, ImageFactory imageFactory, Texture2DData source) {
         Texture2D texture = null;
         if (source instanceof TiledTexture2DData) {
@@ -87,18 +63,5 @@ public class TextureFactory {
             throw new IllegalArgumentException(e);
         }
         texture.setup(textureID, textureImg);
-    }
-
-    /**
-     * Internal method to prepare a tiled texture
-     * 
-     * @param gles
-     * @param imageFactory
-     * @param source
-     * @param texture
-     */
-    private static void prepareTiledTexture(GLES20Wrapper gles, TiledTexture2D texture, ImageFactory imageFactory,
-            ExternalReference textureSource, int mipmaps) {
-        prepareTexture(gles, texture, imageFactory, textureSource, mipmaps);
     }
 }

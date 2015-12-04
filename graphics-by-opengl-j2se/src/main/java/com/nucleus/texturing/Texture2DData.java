@@ -11,6 +11,17 @@ public class Texture2DData extends NodeData {
     private TexParameter[] texparameter;
     private ExternalReference externalReference;
 
+    public Texture2DData() {
+        super();
+    }
+
+    public Texture2DData(ExternalReference externalReference, RESOLUTION resolution, int mipmap) {
+        this.externalReference = externalReference;
+        this.resolution = resolution;
+        this.mipmap = mipmap;
+
+    }
+
     public RESOLUTION getResolution() {
         return resolution;
     }

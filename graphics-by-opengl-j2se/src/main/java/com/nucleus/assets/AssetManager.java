@@ -8,7 +8,6 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2DData;
 import com.nucleus.texturing.TextureFactory;
-import com.nucleus.texturing.TextureSetup;
 
 /**
  * Loading and unloading assets, mainly textures.
@@ -61,29 +60,6 @@ public class AssetManager {
          * released.
          */
         public void destroy();
-    }
-
-    /**
-     * Returns the texture, if the texture has not been loaded it will be loaded and stored in the assetmanager.
-     * 
-     * @param renderer
-     * @param source
-     * @return The texture
-     * @throws IOException
-     */
-    public Texture2D getTexture(NucleusRenderer renderer, TextureSetup source) throws IOException {
-
-        Texture2D texture = textures.get(source.getSourceName());
-        if (texture != null) {
-            return texture;
-        }
-
-        texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), source);
-        textures.put(source.getSourceName(), texture);
-        ExternalReference ref = new ExternalReference(source.getSourceName());
-        ref.setId(source.getId());
-        sourceNames.put(source.getId(), ref);
-        return texture;
     }
 
     /**
