@@ -5,6 +5,7 @@ import java.nio.Buffer;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.Node;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
@@ -82,6 +83,16 @@ public interface NucleusRenderer {
     public void GLContextCreated(int width, int height);
 
     /**
+     * Called when the system has resized the window, update viewport and set the new window size to the {@link Window}
+     * 
+     * @param x Window x start position, normally 0
+     * @param y Window y start position, normally 0
+     * @param width Window width
+     * @param height Window height
+     */
+    public void resizeWindow(int x, int y, int width, int height);
+
+    /**
      * Call this first time when the context is created, before calling GLContextCreated()
      * Initialize parameters that do not need to be updated when context is re-created.
      */
@@ -104,7 +115,8 @@ public interface NucleusRenderer {
     /**
      * Signals the start of a frame, implement if needed in subclasses.
      * This shall be called by the thread driving rendering and will call {@link FrameListener#updateGLData()} to copy
-     * GL data from sprites.
+     * GL data from sprites/objects.
+     * Shall call the framesampler so that the frame delta is updated.
      * Do not perform rendering or time consuming tasks in this method.
      * 
      * @return Number of seconds since last call to beginFrame
@@ -120,8 +132,16 @@ public interface NucleusRenderer {
     public RenderSettings getRenderSettings();
 
     /**
+     * Fetches a reference to the frame sampler, this can be used to query the current delta interval.
+     * 
+     * @return
+     */
+    public FrameSampler getFrameSampler();
+
+    /**
      * Renders the current scene, as set with {@link #setScene(Node)} Uses the current mvp matrix, will call children
      * recursively.
+     * This shall be called by the thread driving rendering.
      * 
      * @throws GLException If there is a GL error when rendering.
      */
