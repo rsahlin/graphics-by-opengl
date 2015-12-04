@@ -82,10 +82,6 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
 
     }
 
-    private void setTest(int test) {
-
-    }
-
     @Override
     public void processFrame(float deltaTime) {
         factor += deltaTime * 0.2f;
