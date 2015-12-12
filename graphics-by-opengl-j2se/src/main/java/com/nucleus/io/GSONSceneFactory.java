@@ -5,14 +5,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.HashMap;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nucleus.camera.ViewFrustum;
+import com.nucleus.common.Key;
+import com.nucleus.geometry.Mesh;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.BaseSceneData;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.SceneData;
+import com.nucleus.texturing.Texture2D;
 
 /**
  * GSON Serialilzer for nucleus scenegraph.
@@ -26,8 +30,32 @@ public class GSONSceneFactory implements SceneSerializer {
     private final static String NULL_PARAMETER_ERROR = "Parameter is null: ";
     public final static String NOT_IMPLEMENTED = "Not implemented: ";
     private final static String WRONG_CLASS_ERROR = "Wrong class: ";
+    private final static String ALREADY_REGISTERED_TYPE = "Already registered for type: ";
+
+    /**
+     * Register node exporters by node type, when a node of registered type shall be serialized the exporter is called
+     * to prepare the node to be serialized, for instance collecting additional data.
+     */
+    private HashMap<String, NodeExporter> nodeExporters = new HashMap<String, NodeExporter>();
 
     protected NucleusRenderer renderer;
+
+    /**
+     * Registers the node exporter for the specified node type
+     * 
+     * @param type The node type to register the exporter for
+     * @param exporter The exporter to register, during scene export when a node with matching key is encountered this
+     * exporter will be
+     * called
+     * @throws IllegalArgumentException If a exporter already has been registered for the type
+     * @throws NullPointerException If type is null
+     */
+    public void registerNodeExporter(Key type, NodeExporter exporter) {
+        if (nodeExporters.containsKey(type.getKey())) {
+            throw new IllegalArgumentException(ALREADY_REGISTERED_TYPE + type.getKey());
+        }
+        nodeExporters.put(type.getKey(), exporter);
+    }
 
     @Override
     public void setRenderer(NucleusRenderer renderer) {
@@ -91,13 +119,11 @@ public class GSONSceneFactory implements SceneSerializer {
      * @throws IOException
      */
     private Node createScene(SceneData scene, String id) throws IOException {
-        Node n = scene.getInstanceNode().getNodeById(id);
-        if (n == null) {
+        Node source = scene.getInstanceNode().getNodeById(id);
+        if (source == null) {
             return null;
         }
-        Node root = new Node(id);
-        createRoot(scene, n, root);
-        return root;
+        return createRoot(scene, source, null);
     }
 
     /**
@@ -105,31 +131,42 @@ public class GSONSceneFactory implements SceneSerializer {
      * If type is specified then the data for this type is appended to the Node.
      * 
      * @param scene
-     * @param n
+     * @param source
      * @return the created node
      */
-    private void createRoot(SceneData scene, Node n, Node parent) throws IOException {
+    private Node createRoot(SceneData scene, Node source, Node parent) throws IOException {
         Node node = null;
-        node = createNode(scene, n, parent);
-        if (n.getChildren() == null) {
-            return;
+        node = createNode(scene, source, parent);
+        if (node == null) {
+            return null;
+        }
+        if (parent != null) {
+            parent.addChild(node);
+        }
+        if (source.getChildren() == null) {
+            return node;
         }
         // Recursively create children
-        for (Node nd : n.getChildren()) {
-            createNode(scene, nd, node);
+        for (Node nd : source.getChildren()) {
+            Node child = createNode(scene, nd, node);
+            if (child != null) {
+                node.addChild(child);
+            }
         }
+        return node;
     }
 
     /**
-     * Creates a Node for the specified nodedata using the resources in the scene.
-     * If type is specified then the data for this type is appended to the Node.
+     * Creates a new node from the source node, looking up resources as needed.
+     * The new node will be returned, it is not added to the parent node - this shall be done by the caller.
+     * The new node will have parent as its parent node
      * 
      * @param scene
-     * @param nodedata
+     * @param source
      * @param node
      * @return The created node
      */
-    protected Node createNode(SceneData scene, Node nodeData, Node parent) throws IOException {
+    protected Node createNode(SceneData scene, Node source, Node parent) throws IOException {
         return null;
     }
 
@@ -156,8 +193,59 @@ public class GSONSceneFactory implements SceneSerializer {
         // First create the scenedata to hold resources and instances.
         // Subclasses may need to override to return correct instance of SceneData
         SceneData sceneData = createSceneData();
-        sceneData.setInstanceNode(node);
 
+        Node exported = exportNodes(node, sceneData);
+        sceneData.setInstanceNode(exported);
+
+        Gson gson = new GsonBuilder().create();
+        out.write(gson.toJson(sceneData).getBytes());
+
+    }
+
+    /**
+     * Creates node for export by calling registered nodexporter if one is registered for node type.
+     * If no exporter is registered then the current node is copied and returned.
+     * Will recursively call children.
+     * 
+     * @param source The source to create export version of, for some Nodes this will be a copy of the current node.
+     * Ie no export conversion is needed
+     * @param sceneData The scenedata
+     * @return The node that can be exported
+     */
+    protected Node exportNodes(Node source, SceneData sceneData) {
+        NodeExporter exporter = nodeExporters.get(source.getType());
+        Node export = null;
+        if (exporter != null) {
+            export = exporter.exportNode(source, sceneData);
+        } else {
+            export = new Node(source);
+        }
+        for (Node child : source.getChildren()) {
+            export.addChild(exportNodes(child, sceneData));
+        }
+        return export;
+    }
+
+    /**
+     * Exports a mesh to scenedata
+     * This will currently only export the texture(s)
+     * 
+     * @param mesh
+     * @param sceneData
+     */
+    protected void exportMesh(Mesh mesh, SceneData sceneData) {
+        for (Texture2D texture : mesh.getTextures()) {
+            exportTexture(texture, sceneData);
+        }
+    }
+
+    /**
+     * Exports a texture to scenedata
+     * 
+     * @param texture
+     * @param sceneData
+     */
+    protected void exportTexture(Texture2D texture, SceneData sceneData) {
     }
 
     /**
