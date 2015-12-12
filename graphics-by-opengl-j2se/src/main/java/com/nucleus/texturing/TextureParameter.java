@@ -1,7 +1,5 @@
 package com.nucleus.texturing;
 
-import com.nucleus.opengl.GLESWrapper.GLES20;
-
 /**
  * Info for the texture parameters, GL MIN and MAG filter, S and T wrap modes.
  * Helper class to make it easier to map from String names to GL values, for instance when serializing texture setup.
@@ -19,6 +17,15 @@ public class TextureParameter {
     }
 
     /**
+     * Creates a new texture parameter from the source
+     * 
+     * @param source
+     */
+    public TextureParameter(TextureParameter source) {
+        setValues(source);
+    }
+
+    /**
      * Creates texture parameters with the specified values for MIN_FILTER, MAG_FILTER, WRAP_S and WRAP_T
      * 
      * @param params
@@ -27,7 +34,7 @@ public class TextureParameter {
         int index = 0;
         for (TexParameter tp : params) {
             if (index < values.length) {
-                values[index++] = tp.value;
+                values[index++] = tp;
             }
         }
     }
@@ -52,23 +59,8 @@ public class TextureParameter {
     /**
      * Texture parameter values.
      */
-    protected final int[] values = new int[] { GLES20.GL_NEAREST, GLES20.GL_NEAREST, GLES20.GL_CLAMP_TO_EDGE,
-            GLES20.GL_CLAMP_TO_EDGE };
-
-    /**
-     * Sets the texture parameter values
-     * 
-     * @param minFilter
-     * @param magFilter
-     * @param wrapS
-     * @param wrapT
-     */
-    public void setValues(int minFilter, int magFilter, int wrapS, int wrapT) {
-        values[MIN_FILTER] = minFilter;
-        values[MAG_FILTER] = magFilter;
-        values[WRAP_S] = wrapS;
-        values[WRAP_T] = wrapT;
-    }
+    protected final TexParameter[] values = new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST,
+            TexParameter.CLAMP, TexParameter.CLAMP };
 
     /**
      * Copy values from the source texture parameters

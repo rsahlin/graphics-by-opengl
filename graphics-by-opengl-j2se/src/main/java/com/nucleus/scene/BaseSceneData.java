@@ -1,5 +1,8 @@
 package com.nucleus.scene;
 
+import com.nucleus.geometry.Mesh;
+import com.nucleus.texturing.Texture2D;
+
 public class BaseSceneData extends SceneData {
 
     ResourcesData resources;
@@ -11,6 +14,16 @@ public class BaseSceneData extends SceneData {
      */
     public ResourcesData getResources() {
         return resources;
+    }
+
+    @Override
+    public void addResource(Texture2D texture) {
+        throw new IllegalArgumentException("Not implemented");
+    }
+
+    @Override
+    public void addResource(Mesh mesh) {
+        throw new IllegalArgumentException("Not implemented");
     }
 
 }

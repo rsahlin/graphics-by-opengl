@@ -550,9 +550,9 @@ public abstract class ShaderProgram {
      * @param offset
      */
     protected void setTextureUniforms(TiledTexture2D texture, float[] destination, int offset) {
-        destination[offset++] = 1f / texture.getFramesX();
-        destination[offset++] = 1f / texture.getFramesY();
-        destination[offset++] = texture.getFramesX();
+        destination[offset++] = 1f / texture.getTileWidth();
+        destination[offset++] = 1f / texture.getTileHeight();
+        destination[offset++] = texture.getTileWidth();
     }
 
 }

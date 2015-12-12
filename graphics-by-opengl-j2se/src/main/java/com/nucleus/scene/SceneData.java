@@ -1,5 +1,9 @@
 package com.nucleus.scene;
 
+import com.google.gson.annotations.SerializedName;
+import com.nucleus.geometry.Mesh;
+import com.nucleus.texturing.Texture2D;
+
 /**
  * Container for Nodes and resource for a scene
  * The SceneData can have multiple main (root) nodes to be rendered.
@@ -9,6 +13,7 @@ package com.nucleus.scene;
  */
 public abstract class SceneData {
 
+    @SerializedName("instanceNodes")
     Node instanceNodes;
 
     /**
@@ -28,5 +33,19 @@ public abstract class SceneData {
     public Node getInstanceNode() {
         return instanceNodes;
     }
+
+    /**
+     * Adds a texture as a resource to the scene, implementations must handle how textures are added
+     * 
+     * @param texture
+     */
+    public abstract void addResource(Texture2D texture);
+
+    /**
+     * Adds the mesh as s resource to the scene, implementations must handle how meshes are added
+     * 
+     * @param mesh
+     */
+    public abstract void addResource(Mesh mesh);
 
 }

@@ -13,8 +13,10 @@ import com.nucleus.vecmath.Axis;
  */
 public class TiledTexture2D extends Texture2D {
 
-    protected int framesX;
-    protected int framesY;
+    /**
+     * Size of tiled texture, ie how many frames in x and y
+     */
+    private int[] tile;
 
     /**
      * Default constructor
@@ -33,19 +35,20 @@ public class TiledTexture2D extends Texture2D {
      */
     protected TiledTexture2D(String id, RESOLUTION targetResolution, TextureParameter params, int[] dimension) {
         super(id, targetResolution, params);
-        framesX = dimension[Axis.WIDTH.index];
-        framesY = dimension[Axis.HEIGHT.index];
+        tile = new int[2];
+        tile[Axis.WIDTH.index] = dimension[Axis.WIDTH.index];
+        tile[Axis.HEIGHT.index] = dimension[Axis.HEIGHT.index];
     }
 
     /**
      * Setup the texture number of frames in x and y.
      * 
-     * @param framesX Number of frames horizontally in texture
-     * @param framesY Number of frames vertically in texture
+     * @param width Number of frames horizontally in texture
+     * @param height Number of frames vertically in texture
      */
     protected void setupTiledSize(int framesX, int framesY) {
-        this.framesX = framesX;
-        this.framesY = framesY;
+        tile[Axis.WIDTH.index] = width;
+        tile[Axis.HEIGHT.index] = height;
     }
 
     /**
@@ -53,8 +56,8 @@ public class TiledTexture2D extends Texture2D {
      * 
      * @return The number of frames horizontally in texture
      */
-    public int getFramesX() {
-        return framesX;
+    public int getTileWidth() {
+        return tile[Axis.WIDTH.index];
     }
 
     /**
@@ -62,8 +65,17 @@ public class TiledTexture2D extends Texture2D {
      * 
      * @return The number of frames vertically in texture
      */
-    public int getFramesY() {
-        return framesY;
+    public int getTileHeight() {
+        return tile[Axis.HEIGHT.index];
+    }
+
+    /**
+     * Returns the dimension of the tile, ie number of frames in x and y.
+     * 
+     * @return Number of frames in x and y
+     */
+    public int[] getTileDimension() {
+        return tile;
     }
 
 }

@@ -28,14 +28,16 @@ public class Node implements Reference {
 
     @SerializedName("transform")
     Transform transform = new Transform();
+    @SerializedName("viewFrustum")
+    private ViewFrustum viewFrustum;
+    @SerializedName("children")
+    ArrayList<Node> children = new ArrayList<Node>();
+
     /**
      * Optional projection Matrix for the node, this will affect all child nodes.
      */
-    float[] projection;
-    @SerializedName("viewFrustum")
-    private ViewFrustum viewFrustum;
-    ArrayList<Mesh> meshes = new ArrayList<Mesh>();
-    ArrayList<Node> children = new ArrayList<Node>();
+    transient float[] projection;
+    transient ArrayList<Mesh> meshes = new ArrayList<Mesh>();
 
     /**
      * Creates an empty node, add children and meshes as needed.
@@ -51,6 +53,16 @@ public class Node implements Reference {
      */
     public Node(String id) {
         this.id = id;
+    }
+
+    /**
+     * Create a new instance of the specified node
+     * Note! This will not copy children or the transient values.
+     * 
+     * @param source The source node to copy
+     */
+    public Node(Node source) {
+        set(source);
     }
 
     /**
@@ -168,6 +180,40 @@ public class Node implements Reference {
     @Override
     public void setId(String id) {
         this.id = id;
+    }
+
+    /**
+     * Sets (copies) the data from the source
+     * 
+     * @param source
+     */
+    public void set(Node source) {
+        id = source.id;
+        type = source.type;
+        reference = source.reference;
+        if (source.getTransform() != null) {
+            transform.set(source.getTransform());
+        }
+        if (source.viewFrustum != null) {
+            viewFrustum = new ViewFrustum(source.viewFrustum);
+        }
+    }
+
+    /**
+     * Sets (copies) the data from the source
+     * 
+     * @param source
+     */
+    public void set(NodeData source) {
+        id = source.getId();
+        type = source.getType();
+        reference = source.getReference();
+        if (source.getTransform() != null) {
+            transform.set(source.getTransform());
+        }
+        if (source.getViewFrustum() != null) {
+            viewFrustum = new ViewFrustum(source.getViewFrustum());
+        }
     }
 
     /**

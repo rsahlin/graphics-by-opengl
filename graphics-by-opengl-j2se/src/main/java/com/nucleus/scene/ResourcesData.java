@@ -1,7 +1,8 @@
 package com.nucleus.scene;
 
-import com.nucleus.texturing.Texture2DData;
-import com.nucleus.texturing.TiledTexture2DData;
+import com.google.gson.annotations.SerializedName;
+import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.TiledTexture2D;
 
 /**
  * Definition of all resources (for a scene)
@@ -11,16 +12,18 @@ import com.nucleus.texturing.TiledTexture2DData;
  */
 public class ResourcesData {
 
-    private Texture2DData[] texture2DData;
-    private TiledTexture2DData[] tiledTexture2DData;
+    @SerializedName("texture2D")
+    private Texture2D[] texture2D;
+    @SerializedName("tiledTexture2D")
+    private TiledTexture2D[] tiledTexture2D;
 
     /**
      * Returns the defined texture objects
      * 
      * @return
      */
-    public Texture2DData[] getTexture2DData() {
-        return texture2DData;
+    public Texture2D[] getTexture2DData() {
+        return texture2D;
     }
 
     /**
@@ -28,8 +31,8 @@ public class ResourcesData {
      * 
      * @return
      */
-    public TiledTexture2DData[] getTiledTexture2DData() {
-        return tiledTexture2DData;
+    public TiledTexture2D[] getTiledTexture2DData() {
+        return tiledTexture2D;
     }
 
     /**
@@ -38,13 +41,13 @@ public class ResourcesData {
      * @param id
      * @return
      */
-    public Texture2DData getTexture2DData(String id) {
-        for (Texture2DData t : texture2DData) {
+    public Texture2D getTexture2DData(String id) {
+        for (Texture2D t : texture2D) {
             if (id.equals(t.getId())) {
                 return t;
             }
         }
-        for (TiledTexture2DData tt : tiledTexture2DData) {
+        for (TiledTexture2D tt : tiledTexture2D) {
             if (id.equals(tt.getId())) {
                 return tt;
             }
