@@ -231,10 +231,22 @@ public class Mesh extends BaseReference {
      * Returns the texture
      * 
      * @param index Active texture to return, 0 for the first texture.
-     * @return
+     * @return The texture
+     * @throws ArrayIndexOutOfBoundsException If index is larger than max number of textures
      */
     public Texture2D getTexture(int index) {
         return (texture[index]);
+    }
+
+    /**
+     * Returns the array containing the textures.
+     * Please not that this is the reference to the textures - any modifications to the texture will be
+     * reflected in this class.
+     * 
+     * @return The textures for this mesh
+     */
+    public Texture2D[] getTextures() {
+        return texture;
     }
 
     /**
