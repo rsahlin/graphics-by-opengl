@@ -38,6 +38,30 @@ public class ViewFrustum {
     private Projection projection = Projection.PERSPECTIVE;
 
     /**
+     * Default constructor
+     */
+    public ViewFrustum() {
+    }
+
+    /**
+     * Creates a copy of the specified view frustum
+     * 
+     * @param source
+     */
+    public ViewFrustum(ViewFrustum source) {
+        set(source);
+    }
+
+    /**
+     * Copies the values from the source viewfrustum to this
+     * 
+     * @param source
+     */
+    public void set(ViewFrustum source) {
+        setProjection(source.projection, source.values);
+    }
+
+    /**
      * Sets the projection to be orthogonal (2D)
      * 
      * @param left
