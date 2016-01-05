@@ -1,7 +1,7 @@
 package com.nucleus.camera;
 
 /**
- * The viewport dimensions
+ * The viewport size, width and height, in pixel units
  * 
  * @author Richard Sahlin
  *
@@ -25,7 +25,7 @@ public class ViewPort {
     private int[] viewPort = new int[VIEWPORT_SIZE];
 
     /**
-     * Sets the dimension, in pixels, for the screen viewport.
+     * Sets the size, in pixels, for the screen viewport.
      * 
      * @param x
      * @param y

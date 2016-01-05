@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.io.Reference;
+import com.nucleus.io.BaseReference;
 import com.nucleus.vecmath.Transform;
 
 /**
@@ -13,14 +13,13 @@ import com.nucleus.vecmath.Transform;
  * This shall be a 'dumb' node in that sense that it shall not contain logic or behavior other than the ability to
  * be rendered and serailized.
  * This class may be serialized using GSON
+ * Before the node can be rendered one or more meshes must be added using {@link #addMesh(Mesh)}
  * 
  * @author Richard Sahlin
  *
  */
-public class Node implements Reference {
+public class Node extends BaseReference {
 
-    @SerializedName("id")
-    String id;
     @SerializedName("type")
     private String type;
     @SerializedName("reference")
@@ -52,7 +51,7 @@ public class Node implements Reference {
      * @param id
      */
     public Node(String id) {
-        this.id = id;
+        setId(id);
     }
 
     /**
@@ -85,6 +84,21 @@ public class Node implements Reference {
     }
 
     /**
+     * Turns this node into a node with a reference to the specified node.
+     * The id and type will be taken from the source node.
+     * This is used by instance nodes to when importing an instance node (that references a resource node)
+     * 
+     * @param source This node will have the Id from the source.
+     * @param reference This node will have the reference set from the reference.
+     */
+    public void toReference(Node source, Node reference) {
+        String refId = reference.getId();
+        this.type = source.getType();
+        setId(source.getId());
+        setReference(refId);
+    }
+
+    /**
      * Adds a mesh to be rendered with this node.
      * 
      * @param mesh
@@ -110,6 +124,44 @@ public class Node implements Reference {
      */
     public Transform getTransform() {
         return transform;
+    }
+
+    /**
+     * Copies the transform from the source to this class.
+     * This will copy all values, creating the transform in this node if needed.
+     * 
+     * @param source The source transform to copy.
+     */
+    public void copyTransform(Transform source) {
+        if (transform == null) {
+            transform = new Transform(source);
+        } else {
+            transform.set(source);
+        }
+    }
+
+    /**
+     * Copies the transform from the source node, if the transform in the source is null then this nodes transform
+     * is set to null as well.
+     * 
+     * @param source The node to copy the transform from.
+     */
+    public void copyTransform(Node source) {
+        if (source.getTransform() != null) {
+            copyTransform(source.getTransform());
+        } else {
+            setTransform(null);
+        }
+
+    }
+
+    /**
+     * Sets the source transform as a referrence.
+     * 
+     * @param source The transform reference, may be null.
+     */
+    public void setTransform(Transform source) {
+        this.transform = source;
     }
 
     /**
@@ -172,23 +224,12 @@ public class Node implements Reference {
     }
 
     /**
-     * Sets the id of this Node, what this id means is up to the user.
-     * The id is not checked for uniqueness, ie 2 nodes can exist with the same id.
-     * 
-     * @param id
-     */
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    /**
      * Sets (copies) the data from the source
      * 
      * @param source
      */
     public void set(Node source) {
-        id = source.id;
+        super.set(source);
         type = source.type;
         reference = source.reference;
         if (source.getTransform() != null) {
@@ -205,7 +246,7 @@ public class Node implements Reference {
      * @param source
      */
     public void set(NodeData source) {
-        id = source.getId();
+        setId(source.getId());
         type = source.getType();
         reference = source.getReference();
         if (source.getTransform() != null) {
@@ -217,23 +258,13 @@ public class Node implements Reference {
     }
 
     /**
-     * Returns the id of this node, or null if none is set.
-     * 
-     * @return
-     */
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    /**
      * Returns node with matching id, searching through this node and recursively searching through children.
      * 
      * @param id Id of node to return
      * @return First instance of node with matching id, or null if none found
      */
     public Node getNodeById(String id) {
-        if (id.equals(this.id)) {
+        if (id.equals(getId())) {
             return this;
         }
         for (Node child : children) {
@@ -263,7 +294,7 @@ public class Node implements Reference {
 
     @Override
     public String toString() {
-        return "Node '" + id + "', " + meshes.size() + " meshes, " + children.size() + " children";
+        return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children";
     }
 
     /**
@@ -286,12 +317,31 @@ public class Node implements Reference {
     }
 
     /**
+     * Sets the reference for this node, this is used by instance nodes when exporting
+     * 
+     * @param reference The id of the node that this node shall reference when exporting, or null to remove reference
+     */
+    public void setReference(String reference) {
+        this.reference = reference;
+    }
+
+    /**
      * Returns the viewfrustum if defined.
      * 
      * @return View frustum or null
      */
     public ViewFrustum getViewFrustum() {
         return viewFrustum;
+    }
+
+    /**
+     * Sets the viewfrustum as a reference to the specified source
+     * Note this will reference the source {@link ViewFrustum} any changes will be reflected here
+     * 
+     * @param source The frustum reference
+     */
+    public void setViewFrustum(ViewFrustum source) {
+        viewFrustum = source;
     }
 
 }

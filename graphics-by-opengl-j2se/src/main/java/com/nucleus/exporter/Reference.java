@@ -1,4 +1,4 @@
-package com.nucleus.io;
+package com.nucleus.exporter;
 
 /**
  * For objects that can be referenced, either in the Node-tree, or when serializing.
@@ -11,15 +11,16 @@ package com.nucleus.io;
 public interface Reference {
 
     /**
-     * Returns the unique ID of the object.
+     * Returns the unique ID of the object, or null if not set.
      * 
      * @return The unique ID, this does not have to be globally unique, it shall be unique from a scene and context
-     * perspective.
+     * perspective. Or null if not set.
      */
     public String getId();
 
     /**
      * Sets the object id, this shall be context unique but does not have to be globally unique.
+     * It is up to the implementations to check if mulitple objects with the same id exists and decide what to do.
      * 
      * @param id The id of the object
      */

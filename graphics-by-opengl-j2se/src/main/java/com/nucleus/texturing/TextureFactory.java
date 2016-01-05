@@ -27,12 +27,9 @@ public class TextureFactory {
         Texture2D texture = null;
         if (source instanceof TiledTexture2D) {
             TiledTexture2D tiledSource = (TiledTexture2D) source;
-            texture = new TiledTexture2D(source.getId(), source.getResolution(),
-                    new TextureParameter(source.getTexParams()),
-                    tiledSource.getTileDimension());
+            texture = new TiledTexture2D(tiledSource);
         } else {
-            texture = new Texture2D(source.getId(), source.getResolution(), new TextureParameter(
-                    source.getTexParams()));
+            texture = new Texture2D(source);
         }
         prepareTexture(gles, texture, imageFactory, source.getExternalReference(), source.getLevels());
         return texture;

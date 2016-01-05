@@ -78,15 +78,14 @@ public class MeshBuilder {
     /**
      * Builds an array containing the 4 vertices for XYZ components, to be indexed when drawing, ie drawn using
      * drawElements().
-     * The vertices will be centered using anchorX and anchorY, a value of 0 will be left/top aligned.
-     * A value of 1/width will be centered horizontally.
+     * The vertices will be centered using translate, a value of 0 will be left/top aligned.
+     * A value of -1/width will be centered horizontally.
      * Vertices are numbered clockwise from upper left, ie upper left, upper right, lower right, lower left.
      * 1 2
      * 4 3
      * 
-     * @param width width of quad in world coordinates
-     * @param height height of quad in world coordinates
-     * @param anchor X,Y and Z offset
+     * @param size Width and height of quad in world coordinates
+     * @param translate X,Y and Z offset
      * @param z The Z position
      * X = 0 will be left centered (assuming x axis is increasing to the right)
      * Y = 0 will be top centered, (assuming y axis is increasing downwards)
@@ -96,25 +95,27 @@ public class MeshBuilder {
      * @return array containing 4 vertices for a quad with the specified size, the size of the array will be
      * vertexStride * 4
      */
-    public static float[] buildQuadPositionsIndexed(float width, float height, float[] anchor, int vertexStride) {
+    public static float[] buildQuadPositionsIndexed(float[] size, float[] translate, int vertexStride) {
 
         float[] quadPositions = new float[vertexStride * 4];
-        com.nucleus.geometry.MeshBuilder.setPosition(-anchor[Axis.X.index], -anchor[Axis.Y.index],
-                anchor[Axis.Z.index], quadPositions, 0);
-        com.nucleus.geometry.MeshBuilder.setPosition(width - anchor[Axis.X.index], -anchor[Axis.Y.index],
-                anchor[Axis.Z.index], quadPositions, vertexStride);
-        com.nucleus.geometry.MeshBuilder.setPosition(width - anchor[Axis.X.index], height - anchor[Axis.Y.index],
-                anchor[Axis.Z.index], quadPositions, vertexStride * 2);
-        com.nucleus.geometry.MeshBuilder.setPosition(-anchor[Axis.X.index], height - anchor[Axis.Y.index],
-                anchor[Axis.Z.index], quadPositions, vertexStride * 3);
+        com.nucleus.geometry.MeshBuilder.setPosition(translate[Axis.X.index], translate[Axis.Y.index],
+                translate[Axis.Z.index], quadPositions, 0);
+        com.nucleus.geometry.MeshBuilder.setPosition(size[Axis.WIDTH.index] + translate[Axis.X.index],
+                translate[Axis.Y.index], translate[Axis.Z.index], quadPositions, vertexStride);
+        com.nucleus.geometry.MeshBuilder.setPosition(size[Axis.WIDTH.index] + translate[Axis.X.index],
+                size[Axis.HEIGHT.index] + translate[Axis.Y.index],
+                translate[Axis.Z.index], quadPositions, vertexStride * 2);
+        com.nucleus.geometry.MeshBuilder.setPosition(translate[Axis.X.index],
+                size[Axis.HEIGHT.index] + translate[Axis.Y.index],
+                translate[Axis.Z.index], quadPositions, vertexStride * 3);
         return quadPositions;
     }
 
     /**
      * Builds an array for 4 vertices containing xyz and uv components, the array can be drawn
      * using GL_TRIANGLE_FAN
-     * The vertices will be centered using anchorX and anchorY, a value of 0 will be left/top aligned.
-     * A value of 1/width will be centered horizontally.
+     * The vertices will be centered using translate, a value of 0 will be left/top aligned.
+     * A value of -width/2 will be centered horizontally.
      * Vertices are numbered clockwise from upper left, ie upper left, upper right, lower right, lower left.
      * 1 2
      * 4 3
@@ -122,21 +123,21 @@ public class MeshBuilder {
      * @param width width of quad in world coordinates
      * @param height height of quad in world coordinates
      * @param z The Z position
-     * @param anchorX X axis anchor offet, 0 will be left centered (assuming x axis is increasing to the right)
-     * @param anchorY Y axis anchor offet, 0 will be top centered, (assuming y axis is increasing downwards)
+     * @param x axis offset, 0 will be left centered (assuming x axis is increasing to the right)
+     * @param y axis offset, 0 will be top centered, (assuming y axis is increasing downwards)
      * @param vertexStride, number of floats to add from one vertex to the next. 5 for a packed array with xyz and uv
      * @return array containing 4 vertices for a quad with the specified size, the size of the array will be
      * vertexStride * 4
      */
-    public static float[] buildQuadPositionsUV(float width, float height, float z, float anchorX, float anchorY) {
+    public static float[] buildQuadPositionsUV(float width, float height, float z, float x, float y) {
 
         float[] quadPositions = new float[XYZUV_COMPONENTS * 4];
-        com.nucleus.geometry.MeshBuilder.setPositionUV(-anchorX, -anchorY, z, 0, 0, quadPositions, 0);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(width - anchorX, -anchorY, z, 1, 0, quadPositions,
+        com.nucleus.geometry.MeshBuilder.setPositionUV(x, y, z, 0, 0, quadPositions, 0);
+        com.nucleus.geometry.MeshBuilder.setPositionUV(width + x, y, z, 1, 0, quadPositions,
                 XYZUV_COMPONENTS);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(width - anchorX, height - anchorY, z, 1, 1, quadPositions,
+        com.nucleus.geometry.MeshBuilder.setPositionUV(width + x, height + y, z, 1, 1, quadPositions,
                 XYZUV_COMPONENTS * 2);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(-anchorX, height - anchorY, z, 0, 1, quadPositions,
+        com.nucleus.geometry.MeshBuilder.setPositionUV(x, height + y, z, 0, 1, quadPositions,
                 XYZUV_COMPONENTS * 3);
 
         return quadPositions;

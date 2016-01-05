@@ -6,7 +6,6 @@ import java.util.Hashtable;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.Texture2DData;
 import com.nucleus.texturing.TextureFactory;
 
 /**
@@ -70,7 +69,7 @@ public class AssetManager {
      * @return The texture
      * @throws IOException
      */
-    public Texture2D getTexture(NucleusRenderer renderer, Texture2DData source) throws IOException {
+    public Texture2D getTexture(NucleusRenderer renderer, Texture2D source) throws IOException {
 
         ExternalReference ref = source.getExternalReference();
         Texture2D texture = textures.get(ref.getSource());

@@ -2,10 +2,11 @@ package com.nucleus.scene;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.io.ResourcesData;
 import com.nucleus.texturing.Texture2D;
 
 /**
- * Container for Nodes and resource for a scene
+ * Container for serialized Nodes and resource for a scene
  * The SceneData can have multiple main (root) nodes to be rendered.
  * 
  * @author Richard Sahlin
@@ -35,17 +36,39 @@ public abstract class SceneData {
     }
 
     /**
-     * Adds a texture as a resource to the scene, implementations must handle how textures are added
+     * Returns the resources in this scene, this is the objects that are used to make up the nodes.
      * 
-     * @param texture
+     * @return
      */
-    public abstract void addResource(Texture2D texture);
+    public abstract ResourcesData getResources();
 
     /**
      * Adds the mesh as s resource to the scene, implementations must handle how meshes are added
      * 
      * @param mesh
      */
-    public abstract void addResource(Mesh mesh);
+    public void addResource(Mesh mesh) {
+        addResource(mesh.getTextures());
+    }
+
+    /**
+     * Adds textures as a resource to the scene
+     * 
+     * @param textures
+     */
+    public void addResource(Texture2D[] textures) {
+        System.out.println("texture: " + textures.getClass().getSimpleName());
+        getResources().addTextures(textures);
+    }
+
+    /**
+     * Adds the texture as a resource to the scene.
+     * 
+     * @param texture
+     */
+    public void addResource(Texture2D texture) {
+        System.out.println("texture: " + texture.getClass().getSimpleName());
+        getResources().addTexture(texture);
+    }
 
 }

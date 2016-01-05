@@ -73,49 +73,60 @@ public class Mesh extends BaseReference {
     public final static int DESTINATION_ALPHA = 5;
 
     /**
-     * One or more generic attribute arrays, read by the program specified in the material.
-     */
-    protected VertexBuffer[] attributes;
-    protected ElementBuffer indices;
-    /**
-     * Drawmode, if indices is null then glDrawArrays shall be used with this mode
-     */
-    protected int mode;
-    protected Material material;
-    /**
      * Currently only supports single texture
+     * Texture object should not be exported, store texture as resource and use a reference
      */
-    protected Texture2D[] texture = new Texture2D[MAX_TEXTURE_COUNT];
+    transient protected Texture2D[] texture = new Texture2D[MAX_TEXTURE_COUNT];
 
     /**
      * Array with values for blend equation separate (blend equation RGB, blend equation Alpha, src RGB, dst RGB, src
      * Alpha, dst Alpha
      */
-    protected final int[] blendModes = new int[] { GLES20.GL_FUNC_ADD, GLES20.GL_FUNC_ADD,
+    transient protected final int[] blendModes = new int[] { GLES20.GL_FUNC_ADD, GLES20.GL_FUNC_ADD,
             GLES20.GL_SRC_ALPHA,
             GLES20.GL_ONE_MINUS_SRC_ALPHA, GLES20.GL_SRC_ALPHA, GLES20.GL_DST_ALPHA };
 
     /**
      * Uniform vectors, used when rendering this Mesh depending on what ShaderProgram is used.
      */
-    protected float[] uniformVectors;
+    transient protected float[] uniformVectors;
     /**
      * Uniform matrices, used when rendering this Mesh depending on what ShaderProgram is used.
      */
-    protected float[] uniformMatrices;
+    transient protected float[] uniformMatrices;
 
     /**
      * Optional updater for attributes, use this when dynamic mesh is needed. ie when the generic attribute data must be
      * updated each frame.
      * TODO Maybe move this to the node?
      */
-    protected AttributeUpdater attributeUpdater;
+    transient protected AttributeUpdater attributeUpdater;
+    /**
+     * One or more generic attribute arrays, read by the program specified in the material.
+     */
+    transient protected VertexBuffer[] attributes;
+    transient protected ElementBuffer indices;
+    /**
+     * Drawmode, if indices is null then glDrawArrays shall be used with this mode
+     */
+    transient protected int mode;
+    transient protected Material material;
 
     /**
      * Creates a new empty mesh, the attribute/index buffers must be prepared before rendering can take place.
      */
     public Mesh() {
         super();
+    }
+
+    /**
+     * Creates a new empty mesh with the specified id, the attribute/index buffers must be prepared before rendering can
+     * take place.
+     * 
+     * @param id
+     */
+    public Mesh(String id) {
+        super(id);
     }
 
     /**

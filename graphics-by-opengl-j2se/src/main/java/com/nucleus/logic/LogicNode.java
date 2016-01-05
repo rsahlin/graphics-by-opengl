@@ -1,6 +1,5 @@
 package com.nucleus.logic;
 
-import com.google.gson.annotations.Expose;
 import com.nucleus.CoreApp;
 import com.nucleus.scene.Node;
 
@@ -13,8 +12,7 @@ import com.nucleus.scene.Node;
  */
 public abstract class LogicNode extends Node implements ActorController {
 
-    @Expose(serialize = false, deserialize = false)
-    public State state = State.CREATED;
+    transient public State state = State.CREATED;
 
     /**
      * Default constructor

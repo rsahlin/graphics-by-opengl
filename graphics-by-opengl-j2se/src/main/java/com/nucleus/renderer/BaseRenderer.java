@@ -105,7 +105,7 @@ class BaseRenderer implements NucleusRenderer {
         if (width <= 0 || height <= 0) {
             throw new IllegalArgumentException(RenderContextListener.INVALID_CONTEXT_DIMENSION);
         }
-        window.setDimension(width, height);
+        window.setSize(width, height);
         viewPort.setViewPort(0, 0, width, height);
 
         for (RenderContextListener listener : contextListeners) {
@@ -399,7 +399,7 @@ class BaseRenderer implements NucleusRenderer {
     @Override
     public void resizeWindow(int x, int y, int width, int height) {
         viewPort.setViewPort(x, y, width, height);
-        Window.getInstance().setDimension(width, height);
+        Window.getInstance().setSize(width, height);
     }
 
 }

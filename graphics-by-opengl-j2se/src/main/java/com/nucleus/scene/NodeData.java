@@ -1,15 +1,32 @@
 package com.nucleus.scene;
 
+import java.util.ArrayList;
+
+import com.google.gson.annotations.SerializedName;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.vecmath.Transform;
 
+/**
+ * 
+ * Node data for a serializable node, this node is used when importing and exporting.
+ * This class can be serialized using GSON
+ * 
+ * @author Richard Sahlin
+ *
+ */
 public class NodeData {
 
+    @SerializedName("id")
     private String id;
+    @SerializedName("transform")
     private Transform transform;
+    @SerializedName("type")
     private String type;
+    @SerializedName("reference")
     private String reference;
-    private NodeData[] children;
+    @SerializedName("children")
+    private ArrayList<NodeData> children = new ArrayList<NodeData>();
+    @SerializedName("viewFrustum")
     private ViewFrustum viewFrustum;
 
     /**
@@ -25,6 +42,49 @@ public class NodeData {
      */
     public NodeData(String id) {
         this.id = id;
+    }
+
+    /**
+     * Creates a copy of the node for export
+     * This will NOT copy the children
+     * 
+     * @param source
+     */
+    public NodeData(Node source) {
+        set(source);
+    }
+
+    /**
+     * Sets this node to the the source that can be referenced
+     * 
+     * @param source
+     */
+    public void toReference(Node source) {
+        this.id = source.getReference();
+        if (source.getTransform() != null) {
+            this.transform = new Transform(source.getTransform());
+        }
+        if (source.getViewFrustum() != null) {
+            this.viewFrustum = new ViewFrustum(source.getViewFrustum());
+        }
+    }
+
+    /**
+     * Sets the data in this class from the Node source
+     * This will NOT copy the children
+     * 
+     * @param source The node source to set data from, child nodes will not be set
+     */
+    public void set(Node source) {
+        this.id = source.getId();
+        this.reference = source.getReference();
+        this.type = source.getType();
+        if (source.getTransform() != null) {
+            this.transform = new Transform(source.getTransform());
+        }
+        if (source.getViewFrustum() != null) {
+            this.viewFrustum = new ViewFrustum(source.getViewFrustum());
+        }
     }
 
     /**
@@ -66,15 +126,6 @@ public class NodeData {
     }
 
     /**
-     * Returns the children to this node, or null if no children.
-     * 
-     * @return
-     */
-    public NodeData[] getChildren() {
-        return children;
-    }
-
-    /**
      * Returns the viewfrustum if defined.
      * 
      * @return View frustum or null
@@ -99,10 +150,11 @@ public class NodeData {
         this.reference = reference;
     }
 
-    public void setChildren(NodeData[] children) {
-        this.children = children;
-    }
-
+    /**
+     * Sets the viewfrustum as a reference
+     * 
+     * @param viewFrustum
+     */
     public void setViewFrustum(ViewFrustum viewFrustum) {
         this.viewFrustum = viewFrustum;
     }

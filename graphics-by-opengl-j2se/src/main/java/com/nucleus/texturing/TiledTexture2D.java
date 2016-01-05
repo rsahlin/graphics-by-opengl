@@ -1,5 +1,6 @@
 package com.nucleus.texturing;
 
+import com.google.gson.annotations.SerializedName;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.vecmath.Axis;
 
@@ -7,6 +8,7 @@ import com.nucleus.vecmath.Axis;
  * A texture that can be used for tiling, ie using a texture atlas where many images/frames are stored
  * within the texture.
  * Initial support is only to store number of frames across / down.
+ * This class can be serialized using GSON
  * 
  * @author Richard Sahlin
  *
@@ -16,6 +18,7 @@ public class TiledTexture2D extends Texture2D {
     /**
      * Size of tiled texture, ie how many frames in x and y
      */
+    @SerializedName("tile")
     private int[] tile;
 
     /**
@@ -26,18 +29,28 @@ public class TiledTexture2D extends Texture2D {
     }
 
     /**
+     * Creates a copy of the texture
+     * 
+     * @param source
+     */
+    protected TiledTexture2D(TiledTexture2D source) {
+        super(source);
+        setTileSize(source.tile);
+    }
+
+    /**
      * Creates a texture with the specified id
      * 
      * @param id The id of the texture, not the GL texture name.
      * @param targetResolution
      * @param params Texture parameters, min/mag filter wrap s/t
-     * @param dimension Number of frames in x and y
+     * @param size Number of frames in x and y
      */
-    protected TiledTexture2D(String id, RESOLUTION targetResolution, TextureParameter params, int[] dimension) {
+    protected TiledTexture2D(String id, RESOLUTION targetResolution, TextureParameter params, int[] size) {
         super(id, targetResolution, params);
         tile = new int[2];
-        tile[Axis.WIDTH.index] = dimension[Axis.WIDTH.index];
-        tile[Axis.HEIGHT.index] = dimension[Axis.HEIGHT.index];
+        tile[Axis.WIDTH.index] = size[Axis.WIDTH.index];
+        tile[Axis.HEIGHT.index] = size[Axis.HEIGHT.index];
     }
 
     /**
@@ -49,6 +62,19 @@ public class TiledTexture2D extends Texture2D {
     protected void setupTiledSize(int framesX, int framesY) {
         tile[Axis.WIDTH.index] = width;
         tile[Axis.HEIGHT.index] = height;
+    }
+
+    /**
+     * Copies the tilesize from the array, creating the tile array if needed.
+     * 
+     * @param size
+     */
+    protected void setTileSize(int[] size) {
+        if (tile == null) {
+            tile = new int[2];
+        }
+        tile[Axis.WIDTH.index] = size[Axis.WIDTH.index];
+        tile[Axis.HEIGHT.index] = size[Axis.HEIGHT.index];
     }
 
     /**
@@ -70,11 +96,11 @@ public class TiledTexture2D extends Texture2D {
     }
 
     /**
-     * Returns the dimension of the tile, ie number of frames in x and y.
+     * Returns the size of the tile, ie number of frames in x and y.
      * 
      * @return Number of frames in x and y
      */
-    public int[] getTileDimension() {
+    public int[] getTileSize() {
         return tile;
     }
 

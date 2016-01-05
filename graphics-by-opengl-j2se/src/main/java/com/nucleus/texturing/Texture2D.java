@@ -63,6 +63,26 @@ public class Texture2D extends BaseReference {
     }
 
     /**
+     * Creates a copy of the specified texture, this can be used if more than one instance of the same
+     * texture is needed.
+     * The external reference and images will be referenced
+     * A new instance of texture parameters will be created.
+     * 
+     * @param source
+     */
+    protected Texture2D(Texture2D source) {
+        super(source);
+        resolution = source.resolution;
+        externalReference = source.getExternalReference();
+        texParameters = new TextureParameter(source.getTexParams());
+        mipmap = source.mipmap;
+        name = source.name;
+        width = source.width;
+        height = source.height;
+        images = source.images;
+    }
+
+    /**
      * Creates a texture with the specified id
      * 
      * @param id The id of the texture, not the GL texture name.
@@ -143,6 +163,15 @@ public class Texture2D extends BaseReference {
      */
     public ExternalReference getExternalReference() {
         return externalReference;
+    }
+
+    /**
+     * Sets the external reference for this texture
+     * 
+     * @param ref
+     */
+    public void setExternalReference(ExternalReference ref) {
+        externalReference = ref;
     }
 
     /**

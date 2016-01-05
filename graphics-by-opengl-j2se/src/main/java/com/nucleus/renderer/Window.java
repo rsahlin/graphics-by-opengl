@@ -1,7 +1,7 @@
 package com.nucleus.renderer;
 
 /**
- * The dimensions of the renderable area, this is a singleton class since only one instance of GL is supported.
+ * The size of the renderable area, this is a singleton class since only one instance of GL is supported.
  * 
  * @author Richard Sahlin
  *
@@ -32,12 +32,12 @@ public class Window {
     }
 
     /**
-     * Sets the dimension of the window area, ie the renderable area. This is an internal method.
+     * Sets the size of the window area, ie the renderable area. This is an internal method.
      * 
      * @param width
      * @param height
      */
-    protected void setDimension(int width, int height) {
+    protected void setSize(int width, int height) {
         this.width = width;
         this.height = height;
     }

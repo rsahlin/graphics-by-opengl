@@ -56,7 +56,7 @@ public interface ImageFactory {
     public Image createScaledImage(Image source, int width, int height, ImageFormat format);
 
     /**
-     * Creates an image with the specified dimension and format.
+     * Creates an image with the specified size and format.
      * The returned images content will be undefined
      * 
      * @param width Width of image in pixels
