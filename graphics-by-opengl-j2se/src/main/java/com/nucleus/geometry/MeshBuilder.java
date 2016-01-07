@@ -8,6 +8,7 @@ import static com.nucleus.geometry.VertexBuffer.XYZ_COMPONENTS;
 
 import java.nio.ByteBuffer;
 
+import com.nucleus.data.Anchor;
 import com.nucleus.geometry.ElementBuffer.Mode;
 import com.nucleus.geometry.ElementBuffer.Type;
 import com.nucleus.geometry.Mesh.BufferIndex;
@@ -85,18 +86,15 @@ public class MeshBuilder {
      * 4 3
      * 
      * @param size Width and height of quad in world coordinates
-     * @param translate X,Y and Z offset
-     * @param z The Z position
-     * X = 0 will be left centered (assuming x axis is increasing to the right)
-     * Y = 0 will be top centered, (assuming y axis is increasing downwards)
-     * Z is set as the Z position.
+     * @param anchor Anchor values for x,y and z
      * @param vertexStride, number of floats to add from one vertex to the next. Usually 3 to allow XYZ storage,
      * increase if padding (eg for UV) is needed.
      * @return array containing 4 vertices for a quad with the specified size, the size of the array will be
      * vertexStride * 4
      */
-    public static float[] buildQuadPositionsIndexed(float[] size, float[] translate, int vertexStride) {
+    public static float[] buildQuadPositionsIndexed(float[] size, Anchor anchor, int vertexStride) {
 
+        float[] translate = anchor.calcOffsets(size);
         float[] quadPositions = new float[vertexStride * 4];
         com.nucleus.geometry.MeshBuilder.setPosition(translate[Axis.X.index], translate[Axis.Y.index],
                 translate[Axis.Z.index], quadPositions, 0);
