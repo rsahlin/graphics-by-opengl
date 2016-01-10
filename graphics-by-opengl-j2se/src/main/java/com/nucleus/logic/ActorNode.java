@@ -10,18 +10,18 @@ import com.nucleus.scene.Node;
  * @author Richard Sahlin
  *
  */
-public abstract class LogicNode extends Node implements ActorController {
+public abstract class ActorNode extends Node implements ActorController {
 
-    transient public State state = State.CREATED;
+    transient public State controllerState = State.CREATED;
 
     /**
      * Default constructor
      */
-    protected LogicNode() {
+    protected ActorNode() {
         super();
     }
 
-    protected LogicNode(LogicNode source) {
+    protected ActorNode(ActorNode source) {
         super(source);
     }
 
@@ -30,11 +30,11 @@ public abstract class LogicNode extends Node implements ActorController {
      * 
      * @return The logic objects for the node, or null if not set.
      */
-    public abstract LogicContainer[] getLogicContainer();
+    public abstract ActorContainer[] getLogicContainer();
 
     @Override
-    public State getState() {
-        return state;
+    public State getControllerState() {
+        return controllerState;
     }
 
 }

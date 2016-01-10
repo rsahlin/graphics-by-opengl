@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.ArrayList;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -12,9 +13,10 @@ import com.nucleus.camera.ViewFrustum;
 import com.nucleus.exporter.NodeExporter;
 import com.nucleus.exporter.NucleusNodeExporter;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.scene.BaseSceneData;
+import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.Node;
-import com.nucleus.scene.SceneData;
+import com.nucleus.scene.NodeType;
+import com.nucleus.scene.RootNode;
 
 /**
  * GSON Serialilzer for nucleus scenegraph.
@@ -48,11 +50,11 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     @Override
-    public Node importScene(String filename, String name) throws IOException {
+    public RootNode importScene(String filename) throws IOException {
         ClassLoader loader = getClass().getClassLoader();
         InputStream is = loader.getResourceAsStream(filename);
         try {
-            return importScene(loader.getResourceAsStream(filename), name);
+            return importScene(loader.getResourceAsStream(filename));
         } finally {
             if (is != null) {
                 try {
@@ -66,7 +68,7 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     @Override
-    public Node importScene(InputStream is, String name) throws IOException {
+    public RootNode importScene(InputStream is) throws IOException {
         if (renderer == null) {
             throw new IllegalStateException(RENDERER_NOT_SET_ERROR);
         }
@@ -75,9 +77,8 @@ public class GSONSceneFactory implements SceneSerializer {
         }
         Reader reader = new InputStreamReader(is, "UTF-8");
         Gson gson = new GsonBuilder().create();
-        SceneData scene = getSceneFromJson(gson, reader);
-        Node node = createScene(scene, name);
-        return node;
+        RootNode scene = getSceneFromJson(gson, reader);
+        return createScene(scene);
     }
 
     /**
@@ -88,24 +89,23 @@ public class GSONSceneFactory implements SceneSerializer {
      * @param classT
      * @return
      */
-    protected SceneData getSceneFromJson(Gson gson, Reader reader) {
-        return gson.fromJson(reader, BaseSceneData.class);
+    protected RootNode getSceneFromJson(Gson gson, Reader reader) {
+        return gson.fromJson(reader, BaseRootNode.class);
     }
 
     /**
      * Creates a scene from scenedata and returns the root.
      * 
      * @param scene The scene data
-     * @param id The id of the root node to create and return.
-     * @return The create scene or null if node with matching id was not found.
+     * @return The created scene or null if there is an error.
      * @throws IOException
      */
-    private Node createScene(SceneData scene, String id) throws IOException {
-        Node source = scene.getInstanceNode().getNodeById(id);
+    private RootNode createScene(RootNode scene) throws IOException {
+        ArrayList<Node> source = scene.getScenes();
         if (source == null) {
             return null;
         }
-        return createRoot(scene, source, null);
+        return createRoot(scene, source);
     }
 
     /**
@@ -114,28 +114,14 @@ public class GSONSceneFactory implements SceneSerializer {
      * 
      * @param scene
      * @param source
-     * @return the created node
+     * @return the created nodes
      */
-    private Node createRoot(SceneData scene, Node source, Node parent) throws IOException {
-        Node node = null;
-        node = createNode(scene, source, parent);
-        if (node == null) {
-            return null;
+    private RootNode createRoot(RootNode scene, ArrayList<Node> source) throws IOException {
+        RootNode root = createSceneData();
+        for (Node n : source) {
+            root.addScene(createNode(scene, n, null));
         }
-        if (parent != null) {
-            parent.addChild(node);
-        }
-        if (source.getChildren() == null) {
-            return node;
-        }
-        // Recursively create children
-        for (Node nd : source.getChildren()) {
-            Node child = createNode(scene, nd, node);
-            if (child != null) {
-                node.addChild(child);
-            }
-        }
-        return node;
+        return root;
     }
 
     /**
@@ -148,17 +134,47 @@ public class GSONSceneFactory implements SceneSerializer {
      * @param node
      * @return The created node
      */
-    protected Node createNode(SceneData scene, Node source, Node parent) throws IOException {
-        return null;
+    protected Node createNode(RootNode scene, Node source, Node parent) throws IOException {
+        try {
+            NodeType type = NodeType.valueOf(source.getType());
+            Node created = null;
+            switch (type) {
+            case node:
+                created = new Node(source);
+                break;
+            default:
+                throw new IllegalArgumentException(NOT_IMPLEMENTED + type);
+            }
+            setViewFrustum(source, created);
+            createChildNodes(scene, source, created);
+            return created;
+
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    protected void createChildNodes(RootNode scene, Node source, Node parent) throws IOException {
+        // Recursively create children
+        for (Node nd : source.getChildren()) {
+            Node child = createNode(scene, nd, parent);
+            if (child != null) {
+                parent.addChild(child);
+            }
+        }
+
     }
 
     /**
      * Checks if the node data has viewfrustum data, if it has it is set in the node.
      * 
      * @param source The source node containing the viewfrustum
-     * @param node
+     * @param node Node to check, or null
      */
     protected void setViewFrustum(Node source, Node node) {
+        if (node == null) {
+            return;
+        }
         ViewFrustum projection = source.getViewFrustum();
         if (projection == null) {
             return;
@@ -169,19 +185,18 @@ public class GSONSceneFactory implements SceneSerializer {
 
     @Override
     public void exportScene(OutputStream out, Object obj) throws IOException {
-        if (!(obj instanceof Node)) {
+        if (!(obj instanceof RootNode)) {
             throw new IllegalArgumentException(WRONG_CLASS_ERROR + obj.getClass().getName());
         }
-        Node node = (Node) obj;
-        // First create the scenedata to hold resources and instances.
+        RootNode root = (RootNode) obj;
+        // First create the rootnode to hold resources and instances.
         // Subclasses may need to override to return correct instance of SceneData
-        SceneData sceneData = createSceneData();
+        RootNode rootNode = createSceneData();
 
-        Node exported = nodeExporter.exportNodes(node, sceneData);
-        sceneData.setInstanceNode(exported);
+        nodeExporter.exportNodes(root, rootNode);
 
         Gson gson = new GsonBuilder().create();
-        out.write(gson.toJson(sceneData).getBytes());
+        out.write(gson.toJson(rootNode).getBytes());
 
     }
 
@@ -190,8 +205,8 @@ public class GSONSceneFactory implements SceneSerializer {
      * 
      * @return The SceneData implementation to use for the Serializer
      */
-    protected SceneData createSceneData() {
-        return new BaseSceneData();
+    protected RootNode createSceneData() {
+        return new BaseRootNode();
     }
 
     /**

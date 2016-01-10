@@ -3,7 +3,7 @@ package com.nucleus.scene;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.io.ResourcesData;
 
-public class BaseSceneData extends SceneData {
+public class BaseRootNode extends RootNode {
 
     @SerializedName("resources")
     ResourcesData resources;

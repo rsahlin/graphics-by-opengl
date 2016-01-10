@@ -24,7 +24,8 @@ public class Node extends BaseReference {
     private String type;
     @SerializedName("reference")
     private String reference;
-
+    @SerializedName("state")
+    private NodeState state;
     @SerializedName("transform")
     Transform transform = new Transform();
     @SerializedName("viewFrustum")
@@ -277,6 +278,25 @@ public class Node extends BaseReference {
     }
 
     /**
+     * Returns the first node with matching type, or null if none found
+     * 
+     * @param type
+     * @return
+     */
+    public Node getNodeByType(String type) {
+        if (type.equals(this.type)) {
+            return this;
+        }
+        for (Node child : children) {
+            Node result = child.getNodeByType(type);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the mesh by the given id from this Node, if a mesh with matching id is not present in the list of meshes
      * then null is returned.
      * 
@@ -305,6 +325,15 @@ public class Node extends BaseReference {
      */
     public String getType() {
         return type;
+    }
+
+    /**
+     * Returns the state of the node, the specifies if the node is on or off.
+     * 
+     * @return The state, or null if not set
+     */
+    public NodeState getState() {
+        return state;
     }
 
     /**

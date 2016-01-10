@@ -7,7 +7,8 @@ import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Key;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.scene.Node;
-import com.nucleus.scene.SceneData;
+import com.nucleus.scene.RootNode;
+import com.nucleus.scene.RootNode;
 import com.nucleus.texturing.Texture2D;
 
 public class NucleusNodeExporter implements NodeExporter {
@@ -29,22 +30,23 @@ public class NucleusNodeExporter implements NodeExporter {
     }
 
     @Override
-    public Node exportNodes(Node source, SceneData sceneData) {
-        NodeExporter exporter = nodeExporters.get(source.getType());
-        Node export = null;
-        if (exporter != null) {
-            export = exporter.exportNode(source, sceneData);
-        } else {
-            export = new Node(source);
+    public void exportNodes(RootNode source, RootNode rootNode) {
+        for (Node n : source.getScenes()) {
+            NodeExporter exporter = nodeExporters.get(n.getType());
+            Node export = null;
+            if (exporter != null) {
+                export = exporter.exportNode(n, rootNode);
+            } else {
+                export = new Node(n);
+            }
+            for (Node child : n.getChildren()) {
+                export.addChild(exportNode(child, rootNode));
+            }
         }
-        for (Node child : source.getChildren()) {
-            export.addChild(exportNodes(child, sceneData));
-        }
-        return export;
     }
 
     @Override
-    public void exportObject(Object object, SceneData sceneData) {
+    public void exportObject(Object object, RootNode rootNode) {
         // TODO Auto-generated method stub
 
     }
@@ -56,7 +58,7 @@ public class NucleusNodeExporter implements NodeExporter {
      * @param mesh
      * @param sceneData
      */
-    protected void exportMesh(Mesh mesh, SceneData sceneData) {
+    protected void exportMesh(Mesh mesh, RootNode sceneData) {
         exportTextures(mesh.getTextures(), sceneData);
     }
 
@@ -67,7 +69,7 @@ public class NucleusNodeExporter implements NodeExporter {
      * @param meshes
      * @param sceneData
      */
-    protected void exportMeshes(List<Mesh> meshes, SceneData sceneData) {
+    protected void exportMeshes(List<Mesh> meshes, RootNode sceneData) {
         for (Mesh mesh : meshes) {
             exportMesh(mesh, sceneData);
         }
@@ -80,7 +82,7 @@ public class NucleusNodeExporter implements NodeExporter {
      * @param texture
      * @param sceneData
      */
-    protected void exportTextures(Texture2D[] texture, SceneData sceneData) {
+    protected void exportTextures(Texture2D[] texture, RootNode sceneData) {
         for (Texture2D t : texture) {
             exportTexture(t, sceneData);
         }
@@ -94,13 +96,13 @@ public class NucleusNodeExporter implements NodeExporter {
      * @param texture The texture to export, will be added to scenedata after the external reference has been set.
      * @param sceneData
      */
-    protected void exportTexture(Texture2D texture, SceneData sceneData) {
+    protected void exportTexture(Texture2D texture, RootNode sceneData) {
         texture.setExternalReference(AssetManager.getInstance().getSourceReference(texture.getId()));
         sceneData.addResource(texture);
     }
 
     @Override
-    public Node exportNode(Node source, SceneData sceneData) {
+    public Node exportNode(Node source, RootNode rootNode) {
         return new Node(source);
     }
 

@@ -2,7 +2,7 @@ package com.nucleus.logic;
 
 /**
  * Controls the state of actors (logic), this is used to start, pause and reset the logic behavior.
- * An actor controller may control one or more logic items {@link LogicItem} The initial state for actors shall be
+ * An actor controller may control one or more logic items {@link ActorItem} The initial state for actors shall be
  * {@value State#STOPPED}
  * 
  * @author Richard Sahlin
@@ -68,6 +68,6 @@ public interface ActorController {
      * 
      * @return
      */
-    public State getState();
+    public State getControllerState();
 
 }

@@ -19,6 +19,7 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.NodeState;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
@@ -199,19 +200,22 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(Node node) throws GLException {
-        float[] projection = node.getProjection();
-        if (projection != null) {
-            Matrix.mul4(mvpMatrix, projection);
+        NodeState state = node.getState();
+        if (state == null || state == NodeState.on || state == NodeState.render) {
+            float[] projection = node.getProjection();
+            if (projection != null) {
+                Matrix.mul4(mvpMatrix, projection);
+            }
+            float[] modelMatrix = node.getTransform().getMatrix();
+            float[] mvp = Matrix.createMatrix();
+            Matrix.mul4(mvpMatrix, modelMatrix, mvp);
+            renderMeshes(node.getMeshes(), mvp);
+            pushMatrix(mvp);
+            for (Node n : node.getChildren()) {
+                render(n);
+            }
+            popMatrix();
         }
-        float[] modelMatrix = node.getTransform().getMatrix();
-        float[] mvp = Matrix.createMatrix();
-        Matrix.mul4(mvpMatrix, modelMatrix, mvp);
-        renderMeshes(node.getMeshes(), mvp);
-        pushMatrix(mvp);
-        for (Node n : node.getChildren()) {
-            render(n);
-        }
-        popMatrix();
     }
 
     protected void renderMeshes(ArrayList<Mesh> meshes, float[] mvpMatrix) throws GLException {

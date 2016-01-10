@@ -1,22 +1,22 @@
 package com.nucleus.logic;
 
 /**
- * Interface for one logic item, ie one logic element.
- * Logic items are usually put in a logic container {@link LogicContainer} and contained within a {@link LogicNode}
+ * Interface for one actor item, ie one logic element.
+ * Actor items are usually put in a actor container {@link ActorContainer} and contained within a {@link ActorNode}
  * 
  * @author Richard Sahlin
  *
  */
-public interface LogicItem {
+public interface ActorItem {
 
     /**
-     * Resets the logic, this shall prepare the object to do processing in the {@link #process(LogicContainer, float)}
+     * Resets the logic, this shall prepare the object to do processing in the {@link #process(ActorContainer, float)}
      * method.
-     * This method may be called any time after {@link #init(LogicContainer)} has been called.
+     * This method may be called any time after {@link #init(ActorContainer)} has been called.
      * 
      * @param logic
      */
-    public void reset(LogicContainer logic);
+    public void reset(ActorContainer logic);
 
     /**
      * Initializes the logic, preparing any data that may be fetched or processed before processing can begin.
@@ -24,7 +24,7 @@ public interface LogicItem {
      * 
      * @param logic
      */
-    public void init(LogicContainer logic);
+    public void init(ActorContainer logic);
 
     /**
      * Do the processing of the sprite, this shall be called at intervals to do the logic processing.
@@ -33,7 +33,7 @@ public interface LogicItem {
      * @param sprite The sprite to perform behavior for.
      * @param deltaTime Time in millis since last call.
      */
-    public void process(LogicContainer logic, float deltaTime);
+    public void process(ActorContainer logic, float deltaTime);
 
     /**
      * Returns the name of the logic, ie the name of the implementing logic class.

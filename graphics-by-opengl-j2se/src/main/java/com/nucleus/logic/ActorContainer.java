@@ -3,12 +3,12 @@ package com.nucleus.logic;
 import com.nucleus.vecmath.Vector2D;
 
 /**
- * For objects containing logic
+ * For objects containing actor logic
  * 
  * @author Richard Sahlin
  *
  */
-public abstract class LogicContainer {
+public abstract class ActorContainer {
 
     /**
      * All objects can move using a vector

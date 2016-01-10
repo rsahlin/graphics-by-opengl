@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.scene.Node;
+import com.nucleus.scene.RootNode;
 
 /**
  * Create a scene node without a direct connection to the underlying implementation of how to load and parse
@@ -29,29 +29,27 @@ public interface SceneSerializer {
     public void setRenderer(NucleusRenderer renderer);
 
     /**
-     * Creates a named node from a scene, the scene will be loaded using filename and the node returned shall be named
-     * name.
+     * Creates nodetree from a scene, the scene will be loaded using filename and the node returned shall be the root
+     * node.
      * Before calling this method the renderer must be set, otherwise loading of texture and materials cannot be
      * created.
      * 
      * @param filename Name of file containing scene data.
-     * @param name Name of scene to create
-     * @return The scene node with matching name, including all defined children.
+     * @return The scene, including all defined children.
      * @throws IOException If there is an exception loading the data.
      * @throws IllegalStateException If the renderer has not been set before calling this method.
      */
-    public Node importScene(String filename, String name) throws IOException;
+    public RootNode importScene(String filename) throws IOException;
 
     /**
-     * Creates a named node from a scene, the scene will be loaded from the inputstream.
-     * Same as calling {@link #importScene(String, String)} but with stream instead of filename.
+     * Creates a root node from a scene, the scene will be loaded from the inputstream.
+     * Same as calling {@link #importScene(String)} but with stream instead of filename.
      * 
      * @param is Inputstream containing the scene data
-     * @param name Name of scene to create
-     * @return The scene node with matching name, including all defined children.
+     * @return The scene root node, including all defined children.
      * @throws IOException If there is an exception loading the data.
      */
-    public Node importScene(InputStream is, String name) throws IOException;
+    public RootNode importScene(InputStream is) throws IOException;
 
     /**
      * Exports a scene in the same format as this serializer can import.
