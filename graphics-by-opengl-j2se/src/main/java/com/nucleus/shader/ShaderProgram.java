@@ -114,6 +114,62 @@ public abstract class ShaderProgram {
     public abstract int getVariableIndex(ShaderVariable variable);
 
     /**
+     * Returns the vertex stride for the program, use this when creating a mesh
+     * 
+     * @return
+     */
+    public abstract int getVertexStride();
+
+    /**
+     * Creates the storage for attributes that are not vertices, only creates the storage will not fill buffer.
+     * 
+     * @param verticeCount Number of vertices
+     * @return The buffer for attribute storage or null if not needed.
+     */
+    public abstract VertexBuffer createAttributeBuffer(int verticeCount);
+
+    /**
+     * Creates uniform storage and sets values as needed by the program
+     * 
+     * @param mesh
+     */
+    public abstract void setupUniforms(Mesh mesh);
+
+    /**
+     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
+     * Returns the shader variables associated with position
+     * 
+     * 
+     * @return
+     */
+    protected abstract ShaderVariable[] getPositionAttributes();
+
+    /**
+     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
+     * Returns the offsets for the position attributes
+     * 
+     * @return
+     */
+    protected abstract int[] getPositionOffsets();
+
+    /**
+     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
+     * Returns the shader variables associated with generic attributes (not position)
+     * 
+     * 
+     * @return
+     */
+    protected abstract ShaderVariable[] getGenericAttributes();
+
+    /**
+     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
+     * Returns the offsets for the generic attributes (not position)
+     * 
+     * @return
+     */
+    protected abstract int[] getGenericOffsets();
+
+    /**
      * Set the attribute pointer(s) using the data in the vertexbuffer, this shall make the necessary calls to
      * set the pointers for used attributes, enable pointers as needed.
      * This will make the actual connection between the attribute data in the vertex buffer and the shader.
@@ -125,7 +181,7 @@ public abstract class ShaderProgram {
      * @param gles
      * @param mesh
      */
-    public abstract void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException;
+    // public abstract void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException;
 
     /**
      * Sets the uniforms needed by the program, this will make the binding between the shader and uniforms
@@ -164,6 +220,25 @@ public abstract class ShaderProgram {
      * @throws RuntimeException If there is an error reading shader sources or compiling/linking program.
      */
     public abstract void createProgram(GLES20Wrapper gles);
+
+    /**
+     * Set the attribute pointer(s) using the data in the vertexbuffer, this shall make the necessary calls to
+     * set the pointers for used attributes, enable pointers as needed.
+     * This will make the actual connection between the attribute data in the vertex buffer and the shader.
+     * 
+     * @param gles
+     * @param mesh
+     */
+    public void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
+        // TODO - make into generic method that can be shared with PlayfieldProgram
+        VertexBuffer buffer = mesh.getVerticeBuffer(BufferIndex.VERTICES);
+        gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, getPositionAttributes(), getPositionOffsets());
+        GLUtils.handleError(gles, "glVertexAttribPointers ");
+
+        VertexBuffer buffer2 = mesh.getVerticeBuffer(BufferIndex.ATTRIBUTES);
+        gles.glVertexAttribPointer(buffer2, GLES20.GL_ARRAY_BUFFER, getGenericAttributes(), getGenericOffsets());
+        GLUtils.handleError(gles, "glVertexAttribPointers ");
+    }
 
     /**
      * Utility method to automatically load, compile and link the specified vertex and fragment shaders.

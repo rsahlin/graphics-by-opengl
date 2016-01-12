@@ -147,27 +147,19 @@ public class MeshBuilder {
      * Vertex buffer will have storage for XYZ + UV.
      * 
      * @param mesh The mesh to build the buffers in, this is the mesh that can be rendered.
-     * @param The program to use when rendering the mesh
+     * @param program The program to use when rendering the mesh, it is stored in the material
      * @param quadCount Number of quads to build, this is NOT the vertex count.
      * @param quadPositions Array with x,y,z - this is set for each tile. Must contain data for 4 vertices.
      * @param attribute2Size Size per vertex for attribute buffer 2, this may be 0
      * 
      * @throws IllegalArgumentException if type is not GLES20.GL_FLOAT
      */
-    public static void buildQuadMeshIndexed(Mesh mesh, ShaderProgram program, int quadCount, float[] quadPositions,
-            int attribute2Size) {
-        int attributeBuffers = 1;
-        if (attribute2Size > 0) {
-            attributeBuffers = 2;
-        }
-        VertexBuffer[] attributes = new VertexBuffer[attributeBuffers];
+    public static void buildQuadMeshIndexed(Mesh mesh, ShaderProgram program, int quadCount, float[] quadPositions) {
+        VertexBuffer[] attributes = new VertexBuffer[2];
         attributes[BufferIndex.VERTICES.index] = new VertexBuffer(quadCount * INDEXED_QUAD_VERTICES, XYZ_COMPONENTS,
                 XYZ_COMPONENTS,
                 GLES20.GL_FLOAT);
-        if (attributeBuffers > 1) {
-            attributes[1] = new VertexBuffer(quadCount * INDEXED_QUAD_VERTICES, 4, attribute2Size, GLES20.GL_FLOAT);
-        }
-
+        attributes[1] = program.createAttributeBuffer(quadCount * INDEXED_QUAD_VERTICES);
         ElementBuffer indices = new ElementBuffer(Mode.TRIANGLES, QUAD_INDICES * quadCount, Type.SHORT);
         ElementBuilder.buildQuadBuffer(indices, indices.getCount() / QUAD_INDICES, 0);
 
@@ -187,7 +179,7 @@ public class MeshBuilder {
      * Builds a quad mesh using a fan, the mesh can be rendered using glDrawArrays
      * 
      * @param mesh
-     * @param program
+     * @param program The program to use for the material in the mesh
      * @param quadPositions
      * @param attribute2Size
      */
