@@ -9,12 +9,12 @@ package com.nucleus.actor;
 public interface ActorResolver {
 
     /**
-     * Returns the sprite logic class for the specified id, this is normally done when loading scene or when
-     * creating logic from loaded data.
+     * Returns the sprite actor class for the specified id, this is normally done when loading scene or when
+     * creating actor from loaded data.
      * 
-     * @param id The id of the sprite object
-     * @return The sprite logic object or null if not found
+     * @param id The id of the actor/sprite object
+     * @return The sprite actor object or null if not found
      */
-    ActorItem getLogic(String id);
+    ActorItem getActor(String id);
 
 }

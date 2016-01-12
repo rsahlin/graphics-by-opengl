@@ -4,8 +4,8 @@ import com.nucleus.CoreApp;
 import com.nucleus.scene.Node;
 
 /**
- * For nodes that contain logic objects
- * To automatically process logic set the {@link LogicProcessor} in {@link CoreApp#setLogicProcessor(LogicProcessor)}
+ * For nodes that contain actor objects
+ * To automatically process actor set the {@link LogicProcessor} in {@link CoreApp#setLogicProcessor(LogicProcessor)}
  * 
  * @author Richard Sahlin
  *
@@ -26,11 +26,11 @@ public abstract class ActorNode extends Node implements ActorController {
     }
 
     /**
-     * Returns the logic objects for this node, or null if not set.
+     * Returns the actor objects for this node, or null if not set.
      * 
-     * @return The logic objects for the node, or null if not set.
+     * @return The actor objects for the node, or null if not set.
      */
-    public abstract ActorContainer[] getLogicContainer();
+    public abstract ActorContainer[] getActorContainer();
 
     @Override
     public State getControllerState() {

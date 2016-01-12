@@ -17,11 +17,11 @@ public class J2SELogicProcessor implements LogicProcessor {
             return;
         }
         if (node instanceof ActorNode) {
-            ActorNode logicNode = (ActorNode) node;
-            if (logicNode.getControllerState() == State.CREATED) {
-                logicNode.init();
+            ActorNode actorNode = (ActorNode) node;
+            if (actorNode.getControllerState() == State.CREATED) {
+                actorNode.init();
             }
-            ActorContainer[] lcArray = ((ActorNode) node).getLogicContainer();
+            ActorContainer[] lcArray = ((ActorNode) node).getActorContainer();
             if (lcArray != null) {
                 for (ActorContainer lc : lcArray) {
                     if (lc != null) {

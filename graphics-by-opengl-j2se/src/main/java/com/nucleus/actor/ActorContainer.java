@@ -20,7 +20,7 @@ public abstract class ActorContainer {
     public final static int MIN_INT_COUNT = 8;
 
     /**
-     * Processes this logic container
+     * Processes this actor container
      * 
      * @return
      */
