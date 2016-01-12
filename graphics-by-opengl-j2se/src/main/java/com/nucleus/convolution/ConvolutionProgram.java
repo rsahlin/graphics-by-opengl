@@ -18,7 +18,7 @@ public class ConvolutionProgram extends ShaderProgram {
 
     protected final static int DEFAULT_COMPONENTS = 3;
 
-    public enum VARIABLES {
+    protected enum VARIABLES {
         uMVPMatrix(0, ShaderVariable.VariableType.UNIFORM, 0),
         uKernel(1, ShaderVariable.VariableType.UNIFORM, 32),
         aPosition(2, ShaderVariable.VariableType.ATTRIBUTE, 0),
@@ -64,7 +64,6 @@ public class ConvolutionProgram extends ShaderProgram {
 
     @Override
     public void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
-        // TODO - make into generic method that can be shared with TiledSpriteProgram
         VertexBuffer buffer = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attribs, offsets);
         GLUtils.handleError(gles, "glVertexAttribPointers ");
@@ -124,6 +123,48 @@ public class ConvolutionProgram extends ShaderProgram {
                 getShaderVariable(VARIABLES.aTexCoord.index) };
         offsets = new int[] { VARIABLES.aPosition.offset, VARIABLES.aTexCoord.offset };
 
+    }
+
+    @Override
+    public int getVertexStride() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public VertexBuffer createAttributeBuffer(int verticeCount) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void setupUniforms(Mesh mesh) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    protected ShaderVariable[] getPositionAttributes() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    protected int[] getPositionOffsets() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    protected ShaderVariable[] getGenericAttributes() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    protected int[] getGenericOffsets() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
