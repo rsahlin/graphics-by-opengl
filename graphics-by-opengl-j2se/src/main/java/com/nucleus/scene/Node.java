@@ -242,23 +242,6 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Sets (copies) the data from the source
-     * 
-     * @param source
-     */
-    public void set(NodeData source) {
-        setId(source.getId());
-        type = source.getType();
-        reference = source.getReference();
-        if (source.getTransform() != null) {
-            transform.set(source.getTransform());
-        }
-        if (source.getViewFrustum() != null) {
-            viewFrustum = new ViewFrustum(source.getViewFrustum());
-        }
-    }
-
-    /**
      * Returns node with matching id, searching through this node and recursively searching through children.
      * 
      * @param id Id of node to return

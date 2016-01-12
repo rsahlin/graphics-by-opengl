@@ -79,7 +79,7 @@ public class ShaderVariable {
      * @param typeOffset Offset into array where type of variable is
      * @throws ArrayIndexOutOfBoundsException If sizeOffset or typeOffset is larger than data length, or negative.
      */
-    public ShaderVariable(VariableType type, byte[] name, int[] data, int nameLengthOffset, int sizeOffset,
+    ShaderVariable(VariableType type, byte[] name, int[] data, int nameLengthOffset, int sizeOffset,
             int typeOffset) {
         this.type = type;
         this.name = new String(name, 0, data[nameLengthOffset]);

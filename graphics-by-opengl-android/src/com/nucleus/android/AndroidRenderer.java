@@ -30,7 +30,7 @@ public class AndroidRenderer implements Renderer {
      * @param appListener Call when each frame shall be drawn.
      * @throws IllegalArgumentException If renderer is null.
      */
-    public AndroidRenderer(CoreApp coreApp) {
+    AndroidRenderer(CoreApp coreApp) {
         if (coreApp == null) {
             throw new IllegalArgumentException(NULL_CORE_RENDERER_ERROR);
         }

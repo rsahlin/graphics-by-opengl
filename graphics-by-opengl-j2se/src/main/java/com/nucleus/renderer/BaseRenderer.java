@@ -86,7 +86,7 @@ class BaseRenderer implements NucleusRenderer {
      * TODO Remove parameters from constructor and move to setter methods, this is in order for injection to be more
      * straightforward
      */
-    public BaseRenderer(GLES20Wrapper gles, ImageFactory imageFactory, MatrixEngine matrixEngine) {
+    protected BaseRenderer(GLES20Wrapper gles, ImageFactory imageFactory, MatrixEngine matrixEngine) {
         if (gles == null) {
             throw new IllegalArgumentException(NULL_GLESWRAPPER_ERROR);
         }

@@ -207,7 +207,7 @@ public abstract class ShaderProgram {
     /**
      * Creates a new ShaderProgram
      */
-    public ShaderProgram() {
+    protected ShaderProgram() {
         super();
         unMappedTypes.add(GLES20.GL_SAMPLER_2D);
     }
