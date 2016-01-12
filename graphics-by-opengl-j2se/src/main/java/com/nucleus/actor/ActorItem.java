@@ -1,4 +1,4 @@
-package com.nucleus.logic;
+package com.nucleus.actor;
 
 /**
  * Interface for one actor item, ie one logic element.

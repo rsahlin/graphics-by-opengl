@@ -1,4 +1,4 @@
-package com.nucleus.logic;
+package com.nucleus.actor;
 
 /**
  * Controls the state of actors (logic), this is used to start, pause and reset the logic behavior.

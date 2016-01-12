@@ -1,8 +1,8 @@
 package com.nucleus;
 
-import com.nucleus.logic.J2SELogicProcessor;
-import com.nucleus.logic.LogicProcessor;
-import com.nucleus.logic.LogicProcessorRunnable;
+import com.nucleus.actor.J2SELogicProcessor;
+import com.nucleus.actor.LogicProcessor;
+import com.nucleus.actor.LogicProcessorRunnable;
 import com.nucleus.mmi.PointerInputProcessor;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;

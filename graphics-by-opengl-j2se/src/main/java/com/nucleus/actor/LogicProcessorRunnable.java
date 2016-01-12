@@ -1,4 +1,4 @@
-package com.nucleus.logic;
+package com.nucleus.actor;
 
 import com.nucleus.renderer.NucleusRenderer;
 

@@ -1,4 +1,4 @@
-package com.nucleus.logic;
+package com.nucleus.actor;
 
 /**
  * Interface used to find a Sprite actor class from String/Binary id

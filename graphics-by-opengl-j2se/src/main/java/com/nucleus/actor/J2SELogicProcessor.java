@@ -1,6 +1,6 @@
-package com.nucleus.logic;
+package com.nucleus.actor;
 
-import com.nucleus.logic.ActorController.State;
+import com.nucleus.actor.ActorController.State;
 import com.nucleus.scene.Node;
 
 /**
