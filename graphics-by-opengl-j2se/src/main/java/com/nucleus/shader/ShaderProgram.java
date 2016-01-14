@@ -30,6 +30,19 @@ import com.nucleus.texturing.TiledTexture2D;
 public abstract class ShaderProgram {
 
     /**
+     * Number of vertices per sprite - this is for a quad that is created using element buffer.
+     */
+    public final static int VERTICES_PER_SPRITE = 4;
+    /**
+     * Draw using an index list each quad is made up of 6 indices (2 triangles)
+     */
+    public final static int INDICES_PER_SPRITE = 6;
+    /**
+     * Default number of components (x,y,z)
+     */
+    public final static int DEFAULT_COMPONENTS = 3;
+
+    /**
      * Enum used when the attribute locations shall be automatically bound.
      * The mode can be either APPEND or PREFIX.
      * APPEND means that the location to bind the attribute to is appended after the name - must contain 2 numbers,
