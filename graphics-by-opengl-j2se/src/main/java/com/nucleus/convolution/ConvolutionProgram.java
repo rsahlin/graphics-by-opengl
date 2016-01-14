@@ -104,8 +104,6 @@ public class ConvolutionProgram extends ShaderProgram {
 
         float[] quadPositions = MeshBuilder.buildQuadPositionsUV(width, height, zPos, width / 2, height / 2);
         MeshBuilder.buildQuadMeshFan(mesh, this, quadPositions, 0);
-
-        createUniformStorage(mesh, shaderVariables);
         mesh.setTexture(texture, Texture2D.TEXTURE_0);
         System.arraycopy(kernel, 0, mesh.getUniformMatrices(), VARIABLES.uKernel.offset, kernel.length);
         float deltaU = 1f / texture.getWidth();
@@ -139,8 +137,7 @@ public class ConvolutionProgram extends ShaderProgram {
 
     @Override
     public void setupUniforms(Mesh mesh) {
-        // TODO Auto-generated method stub
-
+        createUniformStorage(mesh, shaderVariables);
     }
 
     @Override

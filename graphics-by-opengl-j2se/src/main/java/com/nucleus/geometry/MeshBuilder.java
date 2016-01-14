@@ -173,6 +173,7 @@ public class MeshBuilder {
         attributes[BufferIndex.VERTICES.index].setPosition(vertices, 0, 0, quadCount * INDEXED_QUAD_VERTICES);
         Material material = new Material(program);
         mesh.setupIndexed(indices, attributes, material, null);
+        program.setupUniforms(mesh);
     }
 
     /**
@@ -198,6 +199,7 @@ public class MeshBuilder {
         Material material = new Material(program);
         mesh.setupVertices(attributes, material, null);
         mesh.setMode(GLES20.GL_TRIANGLE_FAN);
+        program.setupUniforms(mesh);
     }
 
     /**

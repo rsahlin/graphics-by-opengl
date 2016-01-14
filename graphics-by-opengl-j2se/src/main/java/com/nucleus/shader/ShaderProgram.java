@@ -29,6 +29,7 @@ import com.nucleus.texturing.TiledTexture2D;
  */
 public abstract class ShaderProgram {
 
+    protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
     /**
      * Number of vertices per sprite - this is for a quad that is created using element buffer.
      */
@@ -54,15 +55,8 @@ public abstract class ShaderProgram {
      *
      */
     public enum AttribNameMapping {
-
-        APPEND(0),
-        PREFIX(1);
-        final private int mode;
-
-        private AttribNameMapping(int mode) {
-            this.mode = mode;
-        }
-
+        APPEND(),
+        PREFIX();
     }
 
     public final static String SHADER_SOURCE_ERROR = "Error setting shader source: ";
@@ -114,6 +108,18 @@ public abstract class ShaderProgram {
     private AttribNameMapping attribNameMapping = null;
 
     /**
+     * The following fields MUST be set by subclasses
+     */
+    protected String vertexShaderName;
+    protected String fragmentShaderName;
+    protected int components = DEFAULT_COMPONENTS;
+    protected int attributesPerVertex = -1;
+    protected ShaderVariable[] positionAttributes;
+    protected int[] positionOffsets;
+    protected ShaderVariable[] genericAttributes;
+    protected int[] genericOffsets;
+
+    /**
      * Unmapped variable types, by default Sampler2D is added to avoid having to add Sampler2D variables.
      * Sampler is set by activating textures and uploading textures not by attribute or uniform.
      */
@@ -127,74 +133,11 @@ public abstract class ShaderProgram {
     public abstract int getVariableIndex(ShaderVariable variable);
 
     /**
-     * Returns the vertex stride for the program, use this when creating a mesh
-     * 
-     * @return
-     */
-    public abstract int getVertexStride();
-
-    /**
-     * Creates the storage for attributes that are not vertices, only creates the storage will not fill buffer.
-     * 
-     * @param verticeCount Number of vertices
-     * @return The buffer for attribute storage or null if not needed.
-     */
-    public abstract VertexBuffer createAttributeBuffer(int verticeCount);
-
-    /**
      * Creates uniform storage and sets values as needed by the program
      * 
      * @param mesh
      */
     public abstract void setupUniforms(Mesh mesh);
-
-    /**
-     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
-     * Returns the shader variables associated with position
-     * 
-     * 
-     * @return
-     */
-    protected abstract ShaderVariable[] getPositionAttributes();
-
-    /**
-     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
-     * Returns the offsets for the position attributes
-     * 
-     * @return
-     */
-    protected abstract int[] getPositionOffsets();
-
-    /**
-     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
-     * Returns the shader variables associated with generic attributes (not position)
-     * 
-     * 
-     * @return
-     */
-    protected abstract ShaderVariable[] getGenericAttributes();
-
-    /**
-     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
-     * Returns the offsets for the generic attributes (not position)
-     * 
-     * @return
-     */
-    protected abstract int[] getGenericOffsets();
-
-    /**
-     * Set the attribute pointer(s) using the data in the vertexbuffer, this shall make the necessary calls to
-     * set the pointers for used attributes, enable pointers as needed.
-     * This will make the actual connection between the attribute data in the vertex buffer and the shader.
-     * 
-     * TODO Move this method to NucleusRenderer, or similar class that has knowledge of GLES implementation, DO NOT
-     * spread GLES20 wrapper across the implementation, doing so will make it very hard to update to newer versions of
-     * GLES
-     * 
-     * @param gles
-     * @param mesh
-     */
-    // public abstract void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException;
 
     /**
      * Sets the uniforms needed by the program, this will make the binding between the shader and uniforms
@@ -226,13 +169,79 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
+     * Returns the shader variables associated with position
+     * 
+     * 
+     * @return
+     */
+    protected ShaderVariable[] getPositionAttributes() {
+        return positionAttributes;
+    }
+
+    /**
+     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
+     * Returns the offsets for the position attributes
+     * 
+     * @return
+     */
+    protected int[] getPositionOffsets() {
+        return positionOffsets;
+    }
+
+    /**
+     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
+     * Returns the shader variables associated with generic attributes (not position)
+     * 
+     * 
+     * @return
+     */
+    protected ShaderVariable[] getGenericAttributes() {
+        return genericAttributes;
+    }
+
+    /**
+     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
+     * Returns the offsets for the generic attributes (not position)
+     * 
+     * @return
+     */
+    protected int[] getGenericOffsets() {
+        return genericOffsets;
+    }
+
+    /**
      * Create the programs for the shader program implementation.
      * This method must be called before the program is used, or the other methods are called.
      * 
      * @param gles The GLES20 wrapper to use when compiling and linking program.
      * @throws RuntimeException If there is an error reading shader sources or compiling/linking program.
      */
-    public abstract void createProgram(GLES20Wrapper gles);
+    public void createProgram(GLES20Wrapper gles) {
+        if (attributesPerVertex == -1 || vertexShaderName == null || fragmentShaderName == null) {
+            throw new ShaderProgramException(MUST_SET_FIELDS);
+        }
+        createProgram(gles, vertexShaderName, fragmentShaderName);
+    }
+
+    /**
+     * Returns the vertex stride for the program, use this when creating a mesh
+     * 
+     * @return
+     */
+    public int getVertexStride() {
+        return components;
+    }
+
+    /**
+     * Creates the storage for attributes that are not vertices, only creates the storage will not fill buffer.
+     * 
+     * @param verticeCount Number of vertices
+     * @return The buffer for attribute storage or null if not needed.
+     */
+    public VertexBuffer createAttributeBuffer(int verticeCount) {
+        return new VertexBuffer(verticeCount, 4, attributesPerVertex, GLES20.GL_FLOAT);
+    }
 
     /**
      * Set the attribute pointer(s) using the data in the vertexbuffer, this shall make the necessary calls to
