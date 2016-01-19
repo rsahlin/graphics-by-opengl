@@ -65,7 +65,14 @@ public class ShaderVariable {
     private String name;
     private int size;
     private int dataType;
+    /**
+     * The gl location of the varaible
+     */
     private int location;
+    /**
+     * The internal index, this is specified in the shader program
+     */
+    private int index;
 
     /**
      * Creates a new ActiveVariable from the specified data.

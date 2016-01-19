@@ -87,13 +87,9 @@ public class Mesh extends BaseReference {
             GLES20.GL_ONE_MINUS_SRC_ALPHA, GLES20.GL_SRC_ALPHA, GLES20.GL_DST_ALPHA };
 
     /**
-     * Uniform vectors, used when rendering this Mesh depending on what ShaderProgram is used.
+     * Uniforms, used when rendering this Mesh depending on what ShaderProgram is used.
      */
-    transient protected float[] uniformVectors;
-    /**
-     * Uniform matrices, used when rendering this Mesh depending on what ShaderProgram is used.
-     */
-    transient protected float[] uniformMatrices;
+    transient protected float[] uniforms;
 
     /**
      * Optional updater for attributes, use this when dynamic mesh is needed. ie when the generic attribute data must be
@@ -265,39 +261,19 @@ public class Mesh extends BaseReference {
      * 
      * @return One or more uniform vector as used by the shader program implementation
      */
-    public float[] getUniformVectors() {
-        return uniformVectors;
+    public float[] getUniforms() {
+        return uniforms;
     }
 
     /**
      * Sets a reference to an array with float values that can be used by when rendering this Mesh.
      * Note that the use of uniforms is depending on the shader program used.
      * 
-     * @param uniformVectors Values to reference in this class, note that values are NOT copied.
+     * @param uniforms Values to reference in this class, note that values are NOT copied.
      * 
      */
-    public void setUniformVectors(float[] uniformVectors) {
-        this.uniformVectors = uniformVectors;
-    }
-
-    /**
-     * Returns one or more defined uniform matrices used when rendering.
-     * 
-     * @return
-     */
-    public float[] getUniformMatrices() {
-        return uniformMatrices;
-    }
-
-    /**
-     * Sets a reference to an array with float values that can be used by when rendering this Mesh.
-     * Note that the use of uniforms is depending on the shader program used.
-     * 
-     * @param uniformMatrices Values to reference in this class, note that values are NOT copied.
-     * 
-     */
-    public void setUniformMatrices(float[] uniformMatrices) {
-        this.uniformMatrices = uniformMatrices;
+    public void setUniforms(float[] uniforms) {
+        this.uniforms = uniforms;
     }
 
     /**

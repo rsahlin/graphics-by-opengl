@@ -11,6 +11,7 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.VariableType;
+import com.nucleus.shader.VariableMapping;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;
 
@@ -18,11 +19,11 @@ public class ConvolutionProgram extends ShaderProgram {
 
     protected final static int DEFAULT_COMPONENTS = 3;
 
-    protected enum VARIABLES {
-        uMVPMatrix(0, ShaderVariable.VariableType.UNIFORM, 0),
-        uKernel(1, ShaderVariable.VariableType.UNIFORM, 32),
-        aPosition(2, ShaderVariable.VariableType.ATTRIBUTE, 0),
-        aTexCoord(3, ShaderVariable.VariableType.ATTRIBUTE, 3);
+    protected enum VARIABLES implements VariableMapping {
+        uMVPMatrix(0, 0, ShaderVariable.VariableType.UNIFORM),
+        uKernel(1, 16, ShaderVariable.VariableType.UNIFORM),
+        aPosition(2, 0, ShaderVariable.VariableType.ATTRIBUTE),
+        aTexCoord(3, 0, ShaderVariable.VariableType.ATTRIBUTE);
 
         public final int index;
         protected final VariableType type;
@@ -31,13 +32,23 @@ public class ConvolutionProgram extends ShaderProgram {
         /**
          * 
          * @param index Index of the shader variable
-         * @param type Type of variable
          * @param offset Offset into data array where the variable data source is
+         * @param type Type of variable
          */
-        private VARIABLES(int index, VariableType type, int offset) {
+        private VARIABLES(int index, int offset, VariableType type) {
             this.index = index;
             this.type = type;
             this.offset = offset;
+        }
+
+        @Override
+        public int getIndex() {
+            return index;
+        }
+
+        @Override
+        public int getOffset() {
+            return offset;
         }
 
     }
@@ -50,6 +61,11 @@ public class ConvolutionProgram extends ShaderProgram {
 
     public ConvolutionProgram() {
         super();
+        vertexShaderName = VERTEX_SHADER_NAME;
+        fragmentShaderName = FRAGMENT_SHADER_NAME;
+        // attributesPerVertex = ATTRIBUTES_PER_VERTEX;
+        uniforms = new VariableMapping[] { VARIABLES.uMVPMatrix, VARIABLES.uKernel };
+
     }
 
     @Override
@@ -72,17 +88,8 @@ public class ConvolutionProgram extends ShaderProgram {
 
     @Override
     public void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, Mesh mesh) throws GLException {
-        ShaderVariable mvp = getShaderVariable(VARIABLES.uMVPMatrix.index);
-        System.arraycopy(modelviewMatrix, 0, mesh.getUniformMatrices(), 0, modelviewMatrix.length);
-        gles.glUniformMatrix4fv(getShaderVariable(VARIABLES.uMVPMatrix.index).getLocation(), mvp.getSize(), false,
-                mesh.getUniformMatrices(), VARIABLES.uMVPMatrix.index);
-        GLUtils.handleError(gles, "glUniformMatrix4fv ");
-
-        ShaderVariable kernel = getShaderVariable(VARIABLES.uKernel.index);
-        gles.glUniformMatrix3fv(getShaderVariable(VARIABLES.uKernel.index).getLocation(), kernel.getSize(), false,
-                mesh.getUniformMatrices(), VARIABLES.uKernel.offset);
-        GLUtils.handleError(gles, "glUniformMatrix4fv ");
-
+        System.arraycopy(modelviewMatrix, 0, mesh.getUniforms(), 0, modelviewMatrix.length);
+        bindUniforms(gles, uniforms, mesh.getUniforms());
     }
 
     /**
@@ -105,63 +112,25 @@ public class ConvolutionProgram extends ShaderProgram {
         float[] quadPositions = MeshBuilder.buildQuadPositionsUV(width, height, zPos, width / 2, height / 2);
         MeshBuilder.buildQuadMeshFan(mesh, this, quadPositions, 0);
         mesh.setTexture(texture, Texture2D.TEXTURE_0);
-        System.arraycopy(kernel, 0, mesh.getUniformMatrices(), VARIABLES.uKernel.offset, kernel.length);
+        System.arraycopy(kernel, 0, mesh.getUniforms(), VARIABLES.uKernel.offset, kernel.length);
         float deltaU = 1f / texture.getWidth();
         float deltaV = 1f / texture.getHeight();
         float[] uvOffsets = new float[] { -deltaU, 0, deltaU, -deltaU, 0, deltaU, -deltaU, 0, deltaU, -deltaV, 0,
                 deltaV, -deltaV, 0, deltaV, -deltaV, 0, deltaV };
-        System.arraycopy(uvOffsets, 0, mesh.getUniformMatrices(), VARIABLES.uKernel.offset + 9, uvOffsets.length);
+        System.arraycopy(uvOffsets, 0, mesh.getUniforms(), VARIABLES.uKernel.offset + 9, uvOffsets.length);
     }
 
     @Override
     public void createProgram(GLES20Wrapper gles) {
         createProgram(gles, VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME);
 
-        attribs = new ShaderVariable[] { getShaderVariable(VARIABLES.aPosition.index),
-                getShaderVariable(VARIABLES.aTexCoord.index) };
+        attribs = new ShaderVariable[] { getShaderVariable(VARIABLES.aPosition),
+                getShaderVariable(VARIABLES.aTexCoord) };
         offsets = new int[] { VARIABLES.aPosition.offset, VARIABLES.aTexCoord.offset };
-
-    }
-
-    @Override
-    public int getVertexStride() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
-    public VertexBuffer createAttributeBuffer(int verticeCount) {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override
     public void setupUniforms(Mesh mesh) {
         createUniformStorage(mesh, shaderVariables);
     }
-
-    @Override
-    protected ShaderVariable[] getPositionAttributes() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    protected int[] getPositionOffsets() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    protected ShaderVariable[] getGenericAttributes() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    protected int[] getGenericOffsets() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }
