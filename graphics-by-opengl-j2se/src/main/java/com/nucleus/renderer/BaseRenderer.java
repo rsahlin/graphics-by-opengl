@@ -274,11 +274,6 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public ViewFrustum getViewFrustum() {
-        return viewFrustum;
-    }
-
-    @Override
     public boolean isInitialized() {
         return initialized;
     }

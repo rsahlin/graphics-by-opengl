@@ -180,7 +180,6 @@ public class GSONSceneFactory implements SceneSerializer {
             return;
         }
         node.setViewFrustum(new ViewFrustum(projection));
-        node.setProjection(projection.getMatrix());
     }
 
     @Override

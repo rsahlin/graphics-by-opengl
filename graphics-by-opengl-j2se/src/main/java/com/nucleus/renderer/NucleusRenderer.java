@@ -171,13 +171,6 @@ public interface NucleusRenderer {
     public void processFrame();
 
     /**
-     * Returns the view frustum
-     * 
-     * @return
-     */
-    public ViewFrustum getViewFrustum();
-
-    /**
      * Returns true if this renderer has been initialized by calling init() when
      * the context is created.
      * 

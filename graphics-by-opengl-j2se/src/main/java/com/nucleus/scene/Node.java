@@ -237,7 +237,7 @@ public class Node extends BaseReference {
             transform.set(source.getTransform());
         }
         if (source.viewFrustum != null) {
-            viewFrustum = new ViewFrustum(source.viewFrustum);
+            setViewFrustum(new ViewFrustum(source.viewFrustum));
         }
     }
 
@@ -349,11 +349,13 @@ public class Node extends BaseReference {
     /**
      * Sets the viewfrustum as a reference to the specified source
      * Note this will reference the source {@link ViewFrustum} any changes will be reflected here
+     * The viewfrustum matrix will be set in the projection for this node, call {@link #getProjection()} to
+     * get the matrix
      * 
      * @param source The frustum reference
      */
     public void setViewFrustum(ViewFrustum source) {
         viewFrustum = source;
+        setProjection(source.getMatrix());
     }
-
 }
