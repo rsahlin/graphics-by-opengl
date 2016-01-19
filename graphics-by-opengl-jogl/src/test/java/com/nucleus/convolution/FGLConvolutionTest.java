@@ -2,6 +2,7 @@ package com.nucleus.convolution;
 
 import org.junit.Test;
 
+import com.nucleus.camera.ViewFrustum;
 import com.nucleus.convolution.ConvolutionProgram.VARIABLES;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.ExternalReference;
@@ -23,8 +24,6 @@ import com.nucleus.texturing.TextureFactory;
 
 public class FGLConvolutionTest extends NucleusApplication implements RenderContextListener, FrameListener,
         MMIEventListener {
-
-    private final static int ITERATIONS = 100;
 
     private final static float[] kernel1 = new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 };
     private final static float[] kernel2 = new float[] { -1, -1, -1, -1, 8, -1, -1, -1, -1 };
@@ -65,13 +64,15 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
         RenderSettings rs = renderer.getRenderSettings();
         rs.setCullFace(GLES20.GL_NONE);
         rs.setDepthFunc(GLES20.GL_NONE);
-        renderer.getViewFrustum().setOrthoProjection(-0.5f, 0.5f, 0.5f, -0.5f, 0f, 10f);
         coreApp.getInputProcessor().addMMIListener(this);
 
         mesh = new Mesh();
         ConvolutionProgram c = new ConvolutionProgram();
         c.createProgram(renderer.getGLES());
         Node node = new Node();
+        ViewFrustum vf = new ViewFrustum();
+        vf.setOrthoProjection(-0.5f, 0.5f, 0.5f, -0.5f, 0, 10);
+        node.setViewFrustum(vf);
         Texture2D tex = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(),
                 new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD);
         c.buildMesh(mesh, tex, 1f, 1f, 0, kernel[kernelIndex]);
@@ -107,7 +108,7 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
             counter = 0;
         }
         Convolution.normalize(kernel[kernelIndex], normalizedKernel, absNormalize[kernelIndex], factor);
-        System.arraycopy(normalizedKernel, 0, mesh.getUniformMatrices(), VARIABLES.uKernel.offset,
+        System.arraycopy(normalizedKernel, 0, mesh.getUniforms(), VARIABLES.uKernel.offset,
                 normalizedKernel.length);
 
     }

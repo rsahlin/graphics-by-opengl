@@ -23,7 +23,7 @@ public class ConvolutionProgram extends ShaderProgram {
         uMVPMatrix(0, 0, ShaderVariable.VariableType.UNIFORM),
         uKernel(1, 16, ShaderVariable.VariableType.UNIFORM),
         aPosition(2, 0, ShaderVariable.VariableType.ATTRIBUTE),
-        aTexCoord(3, 0, ShaderVariable.VariableType.ATTRIBUTE);
+        aTexCoord(3, 3, ShaderVariable.VariableType.ATTRIBUTE);
 
         public final int index;
         protected final VariableType type;
@@ -93,23 +93,19 @@ public class ConvolutionProgram extends ShaderProgram {
     }
 
     /**
-     * Builds a mesh with data that can be rendered using a tiled charmap renderer, this will draw a number of
-     * charmaps using one drawcall.
-     * Vertex buffer will have storage for XYZ + UV.
-     * Before using the mesh the chars needs to be positioned, this call just creates the buffers. All chars will
-     * have a position of 0.
+     * Builds the mesh to use for convolution
      * 
      * @param mesh The mesh to build buffers for
      * @param texture The texture source, if tiling shall be used it must be {@link TiledTexture2D}
-     * @param width The width of a char, the char will be left aligned.
-     * @param height The height of a char, the char will be top aligned.
-     * @param zPos The zpos for the mesh, all chars will have this zpos.
+     * @param width The width of the mesh
+     * @param height The height of the mesh
+     * @param zPos The zpos for the mesh
      * @param kernel The normalized kernel values, must be 3*3
      * @throws IllegalArgumentException if type is not GLES20.GL_FLOAT
      */
     public void buildMesh(Mesh mesh, Texture2D texture, float width, float height, float zPos, float[] kernel) {
 
-        float[] quadPositions = MeshBuilder.buildQuadPositionsUV(width, height, zPos, width / 2, height / 2);
+        float[] quadPositions = MeshBuilder.buildQuadPositionsUV(width, height, zPos, -width / 2, -height / 2);
         MeshBuilder.buildQuadMeshFan(mesh, this, quadPositions, 0);
         mesh.setTexture(texture, Texture2D.TEXTURE_0);
         System.arraycopy(kernel, 0, mesh.getUniforms(), VARIABLES.uKernel.offset, kernel.length);
