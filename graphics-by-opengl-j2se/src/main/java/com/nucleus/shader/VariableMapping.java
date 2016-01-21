@@ -1,5 +1,9 @@
 package com.nucleus.shader;
 
+import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.Mesh.BufferIndex;
+import com.nucleus.shader.ShaderVariable.VariableType;
+
 /**
  * This interface has the uniform and attribute mapping for a shader program, this is used to find the program specific
  * index and offset of a variable.
@@ -25,5 +29,20 @@ public interface VariableMapping {
      * @return Variable data offset, used by GL when setting attribute/uniform data.
      */
     public int getOffset();
+
+    /**
+     * Returns the type of variable
+     * 
+     * @return Type of variable
+     */
+    public VariableType getType();
+
+    /**
+     * Returns the buffer index in the mesh.
+     * This value can be used to call {@link Mesh#getVerticeBuffer(BufferIndex)}
+     * 
+     * @param BufferIndex Index to buffer holding variables
+     */
+    public BufferIndex getBufferIndex();
 
 }

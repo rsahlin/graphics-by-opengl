@@ -208,6 +208,16 @@ public class Mesh extends BaseReference {
     }
 
     /**
+     * Returns the buffer, at the specified index, containing vertices and attribute data
+     * 
+     * @param buffer Index into the vertex/attribute buffer to return
+     * @return The vertexbuffer
+     */
+    public VertexBuffer getVerticeBuffer(int index) {
+        return attributes[index];
+    }
+
+    /**
      * Returns the attribute/vertice buffers.
      * 
      * @return

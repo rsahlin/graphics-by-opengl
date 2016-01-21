@@ -155,11 +155,12 @@ public class MeshBuilder {
      * @throws IllegalArgumentException if type is not GLES20.GL_FLOAT
      */
     public static void buildQuadMeshIndexed(Mesh mesh, ShaderProgram program, int quadCount, float[] quadPositions) {
+        // TODO Ask shader program how many attribute buffers that shall be allocated.
         VertexBuffer[] attributes = new VertexBuffer[2];
         attributes[BufferIndex.VERTICES.index] = new VertexBuffer(quadCount * INDEXED_QUAD_VERTICES, XYZ_COMPONENTS,
                 XYZ_COMPONENTS,
                 GLES20.GL_FLOAT);
-        attributes[1] = program.createAttributeBuffer(quadCount * INDEXED_QUAD_VERTICES);
+        attributes[BufferIndex.ATTRIBUTES.index] = program.createAttributeBuffer(quadCount * INDEXED_QUAD_VERTICES);
         ElementBuffer indices = new ElementBuffer(Mode.TRIANGLES, QUAD_INDICES * quadCount, Type.SHORT);
         ElementBuilder.buildQuadBuffer(indices, indices.getCount() / QUAD_INDICES, 0);
 

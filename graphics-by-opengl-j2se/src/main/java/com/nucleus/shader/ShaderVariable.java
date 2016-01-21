@@ -20,14 +20,11 @@ public class ShaderVariable {
      */
     public enum VariableType {
 
-        UNIFORM(1),
-        ATTRIBUTE(2);
+        UNIFORM(),
+        ATTRIBUTE();
 
-        private VariableType(int type) {
-            this.type = type;
+        private VariableType() {
         }
-
-        private final int type;
     }
 
     /**
@@ -66,13 +63,13 @@ public class ShaderVariable {
     private int size;
     private int dataType;
     /**
-     * The gl location of the varaible
+     * The gl location of the variable
      */
     private int location;
     /**
-     * The internal index, this is specified in the shader program
+     * Offset into buffer where the data for this varible is stored, used by GL
      */
-    private int index;
+    private int offset;
 
     /**
      * Creates a new ActiveVariable from the specified data.
@@ -119,6 +116,24 @@ public class ShaderVariable {
      */
     public int getLocation() {
         return location;
+    }
+
+    /**
+     * Sets the offset into buffer where the data for this variable is.
+     * 
+     * @param offset
+     */
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+
+    /**
+     * Returns the offset into buffer where the data for this variable is.
+     * 
+     * @return
+     */
+    public int getOffset() {
+        return offset;
     }
 
     /**

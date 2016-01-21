@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.nucleus.geometry.Mesh;
@@ -119,12 +120,10 @@ public abstract class ShaderProgram {
     protected String fragmentShaderName;
     protected int components = DEFAULT_COMPONENTS;
     protected int attributesPerVertex = -1;
-    protected ShaderVariable[] positionAttributes;
-    protected int[] positionOffsets;
-    protected ShaderVariable[] genericAttributes;
-    protected int[] genericOffsets;
+    protected int attributeBufferCount; // Number of buffers used by attributes
     protected VariableMapping[] uniforms; // List of uniforms defined by a program
     protected VariableMapping[] attributes; // List of attributes defined by a program
+    protected ShaderVariable[][] attribsPerBuffer;
 
     /**
      * Unmapped variable types, by default Sampler2D is added to avoid having to add Sampler2D variables.
@@ -133,13 +132,13 @@ public abstract class ShaderProgram {
     protected List<Integer> unMappedTypes = new ArrayList<>();
 
     /**
-     * Get the index to the shader variable, as defined in the implementing ShaderProgram class.
-     * This is the index into array storage of all active variables in a program, ie each variable for a program has its
-     * own index.
+     * Returns the variable mapping for the shader variable, the mapping is used to find buffer index and offsets.
      * 
-     * @param variable
+     * @param variable The shader variable to get the variable mapping for.
+     * @throws IllegalArgumentException If the shader variable has no variable mapping in the subclass.
+     * @throws NullPointerException If variable is null
      */
-    public abstract int getVariableIndex(ShaderVariable variable);
+    public abstract VariableMapping getVariableMapping(ShaderVariable variable);
 
     /**
      * Creates uniform storage and sets values as needed by the program
@@ -171,52 +170,43 @@ public abstract class ShaderProgram {
 
     /**
      * Creates a new ShaderProgram
+     * 
+     * @param mapping The variable mapping as defined by the subclass, this holds information of where uniform and
+     * attribute data is
      */
-    protected ShaderProgram() {
+    protected ShaderProgram(VariableMapping[] mapping) {
         super();
         unMappedTypes.add(GLES20.GL_SAMPLER_2D);
+        setUniformMapping(mapping);
+        setAttributeMapping(mapping);
     }
 
     /**
-     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
-     * Returns the shader variables associated with position
+     * Sets the uniform mapping as defined by subclass
      * 
-     * 
-     * @return
+     * @param mapping
      */
-    protected ShaderVariable[] getPositionAttributes() {
-        return positionAttributes;
+    protected void setUniformMapping(VariableMapping[] mapping) {
+        ArrayList<VariableMapping> uniformList = new ArrayList<VariableMapping>();
+        for (VariableMapping v : mapping) {
+            if (v.getType() == VariableType.UNIFORM) {
+                uniformList.add(v);
+            }
+        }
+        uniforms = uniformList.toArray(new VariableMapping[uniformList.size()]);
     }
 
-    /**
-     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
-     * Returns the offsets for the position attributes
-     * 
-     * @return
-     */
-    protected int[] getPositionOffsets() {
-        return positionOffsets;
-    }
-
-    /**
-     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
-     * Returns the shader variables associated with generic attributes (not position)
-     * 
-     * 
-     * @return
-     */
-    protected ShaderVariable[] getGenericAttributes() {
-        return genericAttributes;
-    }
-
-    /**
-     * Internal method, used by {@link #bindAttributes(GLES20Wrapper, Mesh)}.
-     * Returns the offsets for the generic attributes (not position)
-     * 
-     * @return
-     */
-    protected int[] getGenericOffsets() {
-        return genericOffsets;
+    protected void setAttributeMapping(VariableMapping[] mapping) {
+        ArrayList<VariableMapping> attributeList = new ArrayList<VariableMapping>();
+        for (VariableMapping v : mapping) {
+            if (v.getType() == VariableType.ATTRIBUTE) {
+                attributeList.add(v);
+                if (v.getBufferIndex().index + 1 > attributeBufferCount) {
+                    attributeBufferCount = v.getBufferIndex().index + 1;
+                }
+            }
+        }
+        attributes = attributeList.toArray(new VariableMapping[attributeList.size()]);
     }
 
     /**
@@ -231,6 +221,34 @@ public abstract class ShaderProgram {
             throw new ShaderProgramException(MUST_SET_FIELDS);
         }
         createProgram(gles, vertexShaderName, fragmentShaderName);
+        attribsPerBuffer = new ShaderVariable[attributeBufferCount][];
+        mapAttributeVariablePerBuffer(attribsPerBuffer);
+    }
+
+    /**
+     * Finds the shader attribute variables per buffer using VariableMapping, iterate through defined (by subclasses)
+     * attribute variable mapping.
+     * Put the result in the result array
+     * 
+     * @param Array to store shader variables for each attribute buffer in, attributes for buffer 1 will go at index 0.
+     */
+    private void mapAttributeVariablePerBuffer(ShaderVariable[][] resultArray) {
+
+        HashMap<BufferIndex, ArrayList<ShaderVariable>> svPerBuffer = new HashMap<BufferIndex, ArrayList<ShaderVariable>>();
+        for (VariableMapping vm : attributes) {
+            ArrayList<ShaderVariable> array = svPerBuffer.get(vm.getBufferIndex());
+            if (array == null) {
+                array = new ArrayList<ShaderVariable>();
+                svPerBuffer.put(vm.getBufferIndex(), array);
+            }
+            array.add(getShaderVariable(vm));
+        }
+        for (BufferIndex key : svPerBuffer.keySet()) {
+            ArrayList<ShaderVariable> defined = svPerBuffer.get(key);
+            if (defined != null) {
+                resultArray[key.index] = defined.toArray(new ShaderVariable[defined.size()]);
+            }
+        }
     }
 
     /**
@@ -256,19 +274,17 @@ public abstract class ShaderProgram {
      * Set the attribute pointer(s) using the data in the vertexbuffer, this shall make the necessary calls to
      * set the pointers for used attributes, enable pointers as needed.
      * This will make the actual connection between the attribute data in the vertex buffer and the shader.
+     * It is up to the caller to make sure that the attribute array(s) in the mesh contains valid data.
      * 
      * @param gles
      * @param mesh
      */
     public void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
-        // TODO - make into generic method that can be shared with PlayfieldProgram
-        VertexBuffer buffer = mesh.getVerticeBuffer(BufferIndex.VERTICES);
-        gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, getPositionAttributes(), getPositionOffsets());
-        GLUtils.handleError(gles, "glVertexAttribPointers ");
-
-        VertexBuffer buffer2 = mesh.getVerticeBuffer(BufferIndex.ATTRIBUTES);
-        gles.glVertexAttribPointer(buffer2, GLES20.GL_ARRAY_BUFFER, getGenericAttributes(), getGenericOffsets());
-        GLUtils.handleError(gles, "glVertexAttribPointers ");
+        for (int i = 0; i < attribsPerBuffer.length; i++) {
+            VertexBuffer buffer = mesh.getVerticeBuffer(i);
+            gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attribsPerBuffer[i]);
+            GLUtils.handleError(gles, "glVertexAttribPointers ");
+        }
     }
 
     /**
@@ -375,7 +391,6 @@ public abstract class ShaderProgram {
     private void fetchActiveVariables(GLES20Wrapper gles, VariableType type, int[] info) throws GLException {
 
         int count = info[ACTIVE_COUNT_OFFSET];
-        // ShaderVariable[] variables = new ShaderVariable[info[ACTIVE_COUNT_OFFSET]];
         byte[] nameBuffer = new byte[info[MAX_NAME_LENGTH_OFFSET]];
         int[] written = new int[3];
 
@@ -532,14 +547,16 @@ public abstract class ShaderProgram {
         if (shaderVariables == null) {
             throw new IllegalArgumentException(NULL_VARIABLES_ERROR);
         }
-        // If variable type is is unMappedTypes then skip.
+        // If variable type is is unMappedTypes then skip, for instance texture
         if (unMappedTypes.contains(variable.getDataType())) {
             return;
         }
-        // Check for unused variables, index will be out of range if names are defined in program but not used
-        int index = getVariableIndex(variable);
-        if (index < shaderVariables.length) {
-            shaderVariables[index] = variable;
+        try {
+            VariableMapping vm = getVariableMapping(variable);
+            variable.setOffset(vm.getOffset());
+            shaderVariables[vm.getIndex()] = variable;
+        } catch (IllegalArgumentException e) {
+            System.out.println("Variable has no mapping: " + variable.getName());
         }
     }
 
