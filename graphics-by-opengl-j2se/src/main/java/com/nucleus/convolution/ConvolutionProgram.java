@@ -20,25 +20,27 @@ public class ConvolutionProgram extends ShaderProgram {
     protected final static int DEFAULT_COMPONENTS = 3;
 
     protected enum VARIABLES implements VariableMapping {
-        uMVPMatrix(0, 0, ShaderVariable.VariableType.UNIFORM),
-        uKernel(1, 16, ShaderVariable.VariableType.UNIFORM),
-        aPosition(2, 0, ShaderVariable.VariableType.ATTRIBUTE),
-        aTexCoord(3, 3, ShaderVariable.VariableType.ATTRIBUTE);
+        uMVPMatrix(0, 0, ShaderVariable.VariableType.UNIFORM, null),
+        uKernel(1, 16, ShaderVariable.VariableType.UNIFORM, null),
+        aPosition(2, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+        aTexCoord(3, 3, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES);
 
-        public final int index;
-        protected final VariableType type;
-        protected final int offset;
+        private final int index;
+        private final VariableType type;
+        public final int offset;
+        private final BufferIndex bufferIndex;
 
         /**
-         * 
          * @param index Index of the shader variable
          * @param offset Offset into data array where the variable data source is
          * @param type Type of variable
+         * @param bufferIndex Index of buffer in mesh that holds the variable data
          */
-        private VARIABLES(int index, int offset, VariableType type) {
+        private VARIABLES(int index, int offset, VariableType type, BufferIndex bufferIndex) {
             this.index = index;
             this.type = type;
             this.offset = offset;
+            this.bufferIndex = bufferIndex;
         }
 
         @Override
@@ -51,26 +53,31 @@ public class ConvolutionProgram extends ShaderProgram {
             return offset;
         }
 
+        @Override
+        public VariableType getType() {
+            return type;
+        }
+
+        @Override
+        public BufferIndex getBufferIndex() {
+            return bufferIndex;
+        }
+
     }
 
     private final static String VERTEX_SHADER_NAME = "assets/convolutionvertex.essl";
     private final static String FRAGMENT_SHADER_NAME = "assets/convolutionfragment.essl";
 
-    ShaderVariable[] attribs;
-    int[] offsets;
-
     public ConvolutionProgram() {
-        super();
+        super(VARIABLES.values());
         vertexShaderName = VERTEX_SHADER_NAME;
         fragmentShaderName = FRAGMENT_SHADER_NAME;
-        // attributesPerVertex = ATTRIBUTES_PER_VERTEX;
-        uniforms = new VariableMapping[] { VARIABLES.uMVPMatrix, VARIABLES.uKernel };
 
     }
 
     @Override
-    public int getVariableIndex(ShaderVariable variable) {
-        return VARIABLES.valueOf(getVariableName(variable)).index;
+    public VariableMapping getVariableMapping(ShaderVariable variable) {
+        return VARIABLES.valueOf(getVariableName(variable));
     }
 
     @Override
@@ -81,7 +88,7 @@ public class ConvolutionProgram extends ShaderProgram {
     @Override
     public void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
         VertexBuffer buffer = mesh.getVerticeBuffer(BufferIndex.VERTICES);
-        gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attribs, offsets);
+        gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attribsPerBuffer[BufferIndex.VERTICES.index]);
         GLUtils.handleError(gles, "glVertexAttribPointers ");
 
     }
@@ -119,10 +126,6 @@ public class ConvolutionProgram extends ShaderProgram {
     @Override
     public void createProgram(GLES20Wrapper gles) {
         createProgram(gles, VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME);
-
-        attribs = new ShaderVariable[] { getShaderVariable(VARIABLES.aPosition),
-                getShaderVariable(VARIABLES.aTexCoord) };
-        offsets = new int[] { VARIABLES.aPosition.offset, VARIABLES.aTexCoord.offset };
     }
 
     @Override
