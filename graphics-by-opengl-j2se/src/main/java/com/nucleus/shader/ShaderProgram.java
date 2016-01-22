@@ -123,7 +123,7 @@ public abstract class ShaderProgram {
     protected int attributeBufferCount; // Number of buffers used by attributes
     protected VariableMapping[] uniforms; // List of uniforms defined by a program
     protected VariableMapping[] attributes; // List of attributes defined by a program
-    protected ShaderVariable[][] attribsPerBuffer;
+    protected ShaderVariable[][] variablesPerBuffer;
 
     /**
      * Unmapped variable types, by default Sampler2D is added to avoid having to add Sampler2D variables.
@@ -182,6 +182,15 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Returns the number of attribute buffers - as found when calling {@link #createProgram(GLES20Wrapper)}
+     * 
+     * @return
+     */
+    public int getAttributeBufferCount() {
+        return attributeBufferCount;
+    }
+
+    /**
      * Sets the uniform mapping as defined by subclass
      * 
      * @param mapping
@@ -221,8 +230,8 @@ public abstract class ShaderProgram {
             throw new ShaderProgramException(MUST_SET_FIELDS);
         }
         createProgram(gles, vertexShaderName, fragmentShaderName);
-        attribsPerBuffer = new ShaderVariable[attributeBufferCount][];
-        mapAttributeVariablePerBuffer(attribsPerBuffer);
+        variablesPerBuffer = new ShaderVariable[attributeBufferCount][];
+        mapAttributeVariablePerBuffer(variablesPerBuffer);
     }
 
     /**
@@ -280,9 +289,9 @@ public abstract class ShaderProgram {
      * @param mesh
      */
     public void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
-        for (int i = 0; i < attribsPerBuffer.length; i++) {
+        for (int i = 0; i < variablesPerBuffer.length; i++) {
             VertexBuffer buffer = mesh.getVerticeBuffer(i);
-            gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attribsPerBuffer[i]);
+            gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, variablesPerBuffer[i]);
             GLUtils.handleError(gles, "glVertexAttribPointers ");
         }
     }

@@ -99,6 +99,8 @@ public class Mesh extends BaseReference {
     transient protected AttributeUpdater attributeUpdater;
     /**
      * One or more generic attribute arrays, read by the program specified in the material.
+     * The reason to have multiple buffers is for cases where for instance vertex and UV data does not change
+     * but other attributes change (per frame).
      */
     transient protected VertexBuffer[] attributes;
     transient protected ElementBuffer indices;
