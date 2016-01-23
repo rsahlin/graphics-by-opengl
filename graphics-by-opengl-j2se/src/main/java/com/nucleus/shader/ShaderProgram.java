@@ -114,16 +114,20 @@ public abstract class ShaderProgram {
     private AttribNameMapping attribNameMapping = null;
 
     /**
+     * Calculated in create program
+     */
+    protected ShaderVariable[][] variablesPerBuffer;
+    protected VariableMapping[] attributes; // List of attributes defined by a program
+    protected int attributeBufferCount; // Number of buffers used by attributes
+    protected VariableMapping[] uniforms; // List of uniforms defined by a program
+
+    /**
      * The following fields MUST be set by subclasses
      */
     protected String vertexShaderName;
     protected String fragmentShaderName;
     protected int components = DEFAULT_COMPONENTS;
     protected int attributesPerVertex = -1;
-    protected int attributeBufferCount; // Number of buffers used by attributes
-    protected VariableMapping[] uniforms; // List of uniforms defined by a program
-    protected VariableMapping[] attributes; // List of attributes defined by a program
-    protected ShaderVariable[][] variablesPerBuffer;
 
     /**
      * Unmapped variable types, by default Sampler2D is added to avoid having to add Sampler2D variables.
@@ -149,10 +153,6 @@ public abstract class ShaderProgram {
 
     /**
      * Sets the uniforms needed by the program, this will make the binding between the shader and uniforms
-     * 
-     * TODO Move this method to NucleusRenderer, or similar class that has knowledge of GLES implementation, DO NOT
-     * spread GLES20 wrapper across the implementation, doing so will make it very hard to update to newer versions of
-     * GLES
      * 
      * @param gles
      * @param modelviewMatrix The matrix to use for the MVP matrix
@@ -205,6 +205,13 @@ public abstract class ShaderProgram {
         uniforms = uniformList.toArray(new VariableMapping[uniformList.size()]);
     }
 
+    /**
+     * Internal method
+     * Fetches the attribute variable mappings, these are used to create per buffer attribute mappings.
+     * The attribute buffer count is calculated.
+     * 
+     * @param mapping
+     */
     protected void setAttributeMapping(VariableMapping[] mapping) {
         ArrayList<VariableMapping> attributeList = new ArrayList<VariableMapping>();
         for (VariableMapping v : mapping) {
