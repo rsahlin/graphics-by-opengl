@@ -14,12 +14,14 @@ import com.nucleus.exporter.NodeExporter;
 import com.nucleus.exporter.NucleusNodeExporter;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.BaseRootNode;
+import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
 
 /**
- * GSON Serialilzer for nucleus scenegraph.
+ * GSON Serializer for nucleus scenegraph.
  * 
  * @author Richard Sahlin
  *
@@ -33,6 +35,7 @@ public class GSONSceneFactory implements SceneSerializer {
 
     protected NucleusRenderer renderer;
     protected NodeExporter nodeExporter;
+    protected NodeFactory nodeFactory;
 
     /**
      * Creates a default scenefactory with {@link NucleusNodeExporter}
@@ -42,11 +45,15 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     @Override
-    public void setRenderer(NucleusRenderer renderer) {
+    public void init(NucleusRenderer renderer, NodeFactory nodeFactory) {
         if (renderer == null) {
             throw new IllegalArgumentException(NULL_RENDERER_ERROR);
         }
+        if (nodeFactory == null) {
+            throw new IllegalArgumentException(NULL_NODEFACTORY_ERROR);
+        }
         this.renderer = renderer;
+        this.nodeFactory = nodeFactory;
     }
 
     @Override
@@ -69,8 +76,8 @@ public class GSONSceneFactory implements SceneSerializer {
 
     @Override
     public RootNode importScene(InputStream is) throws IOException {
-        if (renderer == null) {
-            throw new IllegalStateException(RENDERER_NOT_SET_ERROR);
+        if (renderer == null || nodeFactory == null) {
+            throw new IllegalStateException(INIT_NOT_CALLED_ERROR);
         }
         if (is == null) {
             throw new IllegalArgumentException(NULL_PARAMETER_ERROR + "inputstream");
@@ -79,6 +86,15 @@ public class GSONSceneFactory implements SceneSerializer {
         Gson gson = new GsonBuilder().create();
         RootNode scene = getSceneFromJson(gson, reader);
         return createScene(scene);
+    }
+
+    /**
+     * Utility method to get the default nodefactory
+     * 
+     * @return
+     */
+    public static NodeFactory getNodeFactory() {
+        return new DefaultNodeFactory();
     }
 
     /**

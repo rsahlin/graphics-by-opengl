@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.RootNode;
 
 /**
@@ -17,16 +18,18 @@ import com.nucleus.scene.RootNode;
 public interface SceneSerializer {
 
     public final static String NULL_RENDERER_ERROR = "Renderer is null.";
-    public final static String RENDERER_NOT_SET_ERROR = "Renderer is not set, must set before calling this method.";
+    public final static String NULL_NODEFACTORY_ERROR = "Node factory is null.";
+    public final static String INIT_NOT_CALLED_ERROR = "Renderer or NodeFactory is not set, must set before calling this method.";
 
     /**
-     * Sets the renderer needed when scenes are imported.
+     * Sets the renderer and node factory needed when scenes are imported.
      * This method must be called before importScene is called.
      * 
      * @param renderer
+     * @param nodeFactory
      * @throws IllegalArgumentException If renderer is null
      */
-    public void setRenderer(NucleusRenderer renderer);
+    public void init(NucleusRenderer renderer, NodeFactory nodeFactory);
 
     /**
      * Creates nodetree from a scene, the scene will be loaded using filename and the node returned shall be the root

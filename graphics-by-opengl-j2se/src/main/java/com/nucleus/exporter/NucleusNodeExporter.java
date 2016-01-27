@@ -8,7 +8,6 @@ import com.nucleus.common.Key;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
-import com.nucleus.scene.RootNode;
 import com.nucleus.texturing.Texture2D;
 
 public class NucleusNodeExporter implements NodeExporter {
@@ -104,6 +103,13 @@ public class NucleusNodeExporter implements NodeExporter {
     @Override
     public Node exportNode(Node source, RootNode rootNode) {
         return new Node(source);
+    }
+
+    @Override
+    public void registerNodeExporter(Key[] types, NodeExporter exporter) {
+        for (Key k : types) {
+            registerNodeExporter(k, exporter);
+        }
     }
 
 }
