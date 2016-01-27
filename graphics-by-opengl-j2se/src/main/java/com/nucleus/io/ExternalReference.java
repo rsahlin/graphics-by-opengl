@@ -10,7 +10,7 @@ import com.google.gson.annotations.SerializedName;
  * @author Richard Sahlin
  *
  */
-public class ExternalReference extends BaseReference {
+public class ExternalReference {
 
     /**
      * Name of the source for this external reference, for instance the name of an image for a texture.
