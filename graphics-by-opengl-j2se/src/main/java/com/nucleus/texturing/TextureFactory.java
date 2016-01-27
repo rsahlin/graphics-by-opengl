@@ -24,16 +24,9 @@ public class TextureFactory {
      * @return A new texture object containing the texture image.
      */
     public static Texture2D createTexture(GLES20Wrapper gles, ImageFactory imageFactory, Texture2D source) {
-        Texture2D texture = null;
-        if (source instanceof TiledTexture2D) {
-            TiledTexture2D tiledSource = (TiledTexture2D) source;
-            texture = new TiledTexture2D(tiledSource);
-        } else {
-            texture = new Texture2D(source);
-        }
+        Texture2D texture = createTexture(source);
         prepareTexture(gles, texture, imageFactory, source.getExternalReference(), source.getLevels());
         return texture;
-
     }
 
     /**
@@ -49,6 +42,44 @@ public class TextureFactory {
             RESOLUTION resolution) {
         Texture2D source = new Texture2D(externalReference, resolution, 1);
         return createTexture(gles, imageFactory, source);
+    }
+
+    /**
+     * Creates a copy of the texture contents (image)
+     * 
+     * @param source The source texture, this holds the texture data
+     * @return Texture with same contents as the source
+     */
+    public static Texture2D createTexture(Texture2D source) {
+        switch (source.type) {
+        case Texture2D:
+            return new Texture2D(source);
+        case TiledTexture2D:
+            return new TiledTexture2D((TiledTexture2D) source);
+        case UVTexture2D:
+            return new UVTexture2D((UVTexture2D) source);
+        default:
+            throw new IllegalArgumentException();
+        }
+    }
+
+    /**
+     * Creates a new empty texture object of the specified type
+     * 
+     * @param type The texture type
+     * @return The texture
+     */
+    public static Texture2D createTexture(TextureType type) {
+        switch (type) {
+        case Texture2D:
+            return new Texture2D();
+        case TiledTexture2D:
+            return new TiledTexture2D();
+        case UVTexture2D:
+            return new UVTexture2D();
+        default:
+            throw new IllegalArgumentException();
+        }
     }
 
     /**
@@ -75,6 +106,18 @@ public class TextureFactory {
         } catch (GLException e) {
             throw new IllegalArgumentException(e);
         }
+        // TODO Do not need to keep images after texture is uploaded
         texture.setup(textureID, textureImg);
     }
+
+    /**
+     * Copies the texture data, ie the texture name and image data to the destination.
+     * 
+     * @param source
+     * @param destination
+     */
+    public static void copyTextureData(Texture2D source, Texture2D destination) {
+        destination.setup(source.getName(), source.images);
+    }
+
 }
