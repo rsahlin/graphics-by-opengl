@@ -210,23 +210,22 @@ public class MeshBuilder {
      * 
      * @param attributeData Array with attribute data where UV is stored.
      * @param offset Offset into attribute array
-     * @param uIndex Index to U in attribute data
-     * @param vIndex Index to V in attribute data
+     * @param uIndex Index to UV in attribute data
      * @param stride Added to get to next vertex.
      */
-    public static void prepareTiledUV(float[] attributeData, int offset, int uIndex, int vIndex, int stride) {
+    public static void prepareTiledUV(float[] attributeData, int offset, int uvIndex, int stride) {
         int index = offset;
-        attributeData[index + uIndex] = 0;
-        attributeData[index + vIndex] = 0;
+        attributeData[index + uvIndex] = 0;
+        attributeData[index + uvIndex + 1] = 0;
         index += stride;
-        attributeData[index + uIndex] = 1;
-        attributeData[index + vIndex] = 0;
+        attributeData[index + uvIndex] = 1;
+        attributeData[index + uvIndex + 1] = 0;
         index += stride;
-        attributeData[index + uIndex] = 1;
-        attributeData[index + vIndex] = 1;
+        attributeData[index + uvIndex] = 1;
+        attributeData[index + uvIndex + 1] = 1;
         index += stride;
-        attributeData[index + uIndex] = 0;
-        attributeData[index + vIndex] = 1;
+        attributeData[index + uvIndex] = 0;
+        attributeData[index + uvIndex + 1] = 1;
     }
 
 }
