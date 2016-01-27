@@ -605,6 +605,7 @@ public abstract class ShaderProgram {
      * @param fragmentShader Name of fragment shader to load, compile and link
      */
     protected void createProgram(GLES20Wrapper gles, String vertexShader, String fragmentShader) {
+        System.out.println("Creating program for: " + vertexShader + " and " + fragmentShader);
         ClassLoader classLoader = getClass().getClassLoader();
         try {
             createProgram(gles,
@@ -699,7 +700,10 @@ public abstract class ShaderProgram {
             throws GLException {
         for (VariableMapping am : uniformMapping) {
             ShaderVariable v = getShaderVariable(am);
-            setUniform(gles, v, uniformData, am.getOffset());
+            // If null then declared in program but not used, silently ignore
+            if (v != null) {
+                setUniform(gles, v, uniformData, am.getOffset());
+            }
         }
     }
 
