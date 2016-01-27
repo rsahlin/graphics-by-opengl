@@ -101,7 +101,7 @@ public abstract class RootNode {
      * @param textures
      */
     public void addResource(Texture2D[] textures) {
-        System.out.println("texture: " + textures.getClass().getSimpleName());
+        System.out.println("texture: " + textures.getClass().getSimpleName() + ", size: " + textures.length);
         getResources().addTextures(textures);
     }
 
