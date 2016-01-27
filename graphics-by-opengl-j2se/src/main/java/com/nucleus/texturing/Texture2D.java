@@ -55,11 +55,13 @@ public class Texture2D extends BaseReference {
      */
     transient Image[] images;
 
+    transient public final TextureType type;
+
     /**
      * Default constructor
      */
     protected Texture2D() {
-        super();
+        type = TextureType.valueOf(getClass().getSimpleName());
     }
 
     /**
@@ -71,7 +73,17 @@ public class Texture2D extends BaseReference {
      * @param source
      */
     protected Texture2D(Texture2D source) {
-        super(source);
+        type = TextureType.valueOf(getClass().getSimpleName());
+        set(source);
+    }
+
+    /**
+     * Copies the values from the source texture into this
+     * 
+     * @param source
+     */
+    protected void set(Texture2D source) {
+        super.set(source);
         resolution = source.resolution;
         externalReference = source.getExternalReference();
         texParameters = new TextureParameter(source.getTexParams());
@@ -91,6 +103,7 @@ public class Texture2D extends BaseReference {
      */
     protected Texture2D(String id, RESOLUTION resolution, TextureParameter params) {
         super(id);
+        type = TextureType.valueOf(getClass().getSimpleName());
         this.resolution = resolution;
         this.texParameters.setValues(params);
     }
@@ -104,6 +117,7 @@ public class Texture2D extends BaseReference {
      */
     protected Texture2D(ExternalReference externalReference, RESOLUTION resolution, int levels) {
         super();
+        type = TextureType.valueOf(getClass().getSimpleName());
         this.externalReference = externalReference;
         this.resolution = resolution;
         this.mipmap = levels;
@@ -119,6 +133,7 @@ public class Texture2D extends BaseReference {
      */
     protected Texture2D(String id, int name, Image[] images, RESOLUTION resolution, TextureParameter params) {
         super(id);
+        type = TextureType.valueOf(getClass().getSimpleName());
         setup(name, images);
         this.resolution = resolution;
         this.texParameters.setValues(params);

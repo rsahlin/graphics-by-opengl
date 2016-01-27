@@ -34,8 +34,7 @@ public class TiledTexture2D extends Texture2D {
      * @param source
      */
     protected TiledTexture2D(TiledTexture2D source) {
-        super(source);
-        setTileSize(source.tile);
+        set(source);
     }
 
     /**
@@ -51,6 +50,16 @@ public class TiledTexture2D extends Texture2D {
         tile = new int[2];
         tile[Axis.WIDTH.index] = size[Axis.WIDTH.index];
         tile[Axis.HEIGHT.index] = size[Axis.HEIGHT.index];
+    }
+
+    /**
+     * Copies data from the source texture into this.
+     * 
+     * @param source
+     */
+    protected void set(TiledTexture2D source) {
+        super.set(source);
+        setTileSize(source.tile);
     }
 
     /**
