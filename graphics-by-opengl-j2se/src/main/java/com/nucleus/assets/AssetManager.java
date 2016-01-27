@@ -1,6 +1,7 @@
 package com.nucleus.assets;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 import com.nucleus.io.ExternalReference;
@@ -23,7 +24,7 @@ public class AssetManager {
     /**
      * Store textures using the source image name.
      */
-    private Hashtable<String, Texture2D> textures = new Hashtable<String, Texture2D>();
+    private HashMap<String, HashMap<Texture2D, Texture2D>> textures = new HashMap<String, HashMap<Texture2D, Texture2D>>();
     /**
      * Use to convert from object id (texture reference) to name of source (file)
      */
@@ -72,15 +73,32 @@ public class AssetManager {
     public Texture2D getTexture(NucleusRenderer renderer, Texture2D source) throws IOException {
 
         ExternalReference ref = source.getExternalReference();
-        Texture2D texture = textures.get(ref.getSource());
-        if (texture != null) {
-            return texture;
+        HashMap<Texture2D, Texture2D> classMap = textures.get(ref.getSource());
+        Texture2D texture = null;
+        if (classMap == null) {
+            classMap = new HashMap<Texture2D, Texture2D>();
+            textures.put(ref.getSource(), classMap);
+        } else {
+            texture = classMap.get(source);
+            if (texture != null) {
+                return texture;
+            }
+            texture = classMap.entrySet().iterator().next().getKey();
+            Texture2D copy = TextureFactory.createTexture(source);
+            TextureFactory.copyTextureData(texture, copy);
+            putTexture(copy, classMap);
         }
-        texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), source);
-        ref.setId(source.getId());
-        textures.put(ref.getSource(), texture);
-        sourceNames.put(source.getId(), ref);
+        if (texture == null) {
+            texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), source);
+            putTexture(texture, classMap);
+        }
         return texture;
+    }
+
+    private void putTexture(Texture2D texture, HashMap<Texture2D, Texture2D> map) {
+        map.put(texture, texture);
+        sourceNames.put(texture.getId(), texture.getExternalReference());
+
     }
 
     /**
