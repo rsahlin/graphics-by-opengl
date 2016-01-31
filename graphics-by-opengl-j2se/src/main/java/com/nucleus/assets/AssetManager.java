@@ -87,6 +87,7 @@ public class AssetManager {
             Texture2D copy = TextureFactory.createTexture(source);
             TextureFactory.copyTextureData(texture, copy);
             putTexture(copy, classMap);
+            return copy;
         }
         if (texture == null) {
             texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), source);
