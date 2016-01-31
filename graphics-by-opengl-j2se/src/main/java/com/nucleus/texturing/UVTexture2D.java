@@ -3,7 +3,7 @@ package com.nucleus.texturing;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * A texture that has an array of UV coordinates so that it can hold data for a number of sprite frames.
+ * A texture that has an array of UV coordinates + width/height,so that it can hold data for a number of sprite frames.
  * This class can be serialized using GSON
  * 
  * @author Richard Sahlin
@@ -11,8 +11,8 @@ import com.google.gson.annotations.SerializedName;
  */
 public class UVTexture2D extends Texture2D {
 
-    @SerializedName("UVFrames")
-    String UVFrames;
+    @SerializedName("UVAtlas")
+    UVAtlas UVAtlas;
 
     public UVTexture2D() {
         super();
@@ -20,7 +20,6 @@ public class UVTexture2D extends Texture2D {
 
     protected UVTexture2D(UVTexture2D source) {
         set(source);
-
     }
 
     /**
@@ -30,16 +29,16 @@ public class UVTexture2D extends Texture2D {
      */
     protected void set(UVTexture2D source) {
         super.set(source);
-        this.UVFrames = source.UVFrames;
+        this.UVAtlas = source.UVAtlas;
     }
 
     /**
-     * Returns the name of the frame definitions, ie the reference to UVAtlas
+     * Returns the frame definitions
      * 
-     * @return Reference to UVAtlas
+     * @return UVAtlas
      */
-    public String getUVFramesName() {
-        return UVFrames;
+    public UVAtlas getUVAtlas() {
+        return UVAtlas;
     }
 
 }
