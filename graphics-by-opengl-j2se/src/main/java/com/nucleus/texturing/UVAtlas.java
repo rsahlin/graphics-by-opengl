@@ -100,8 +100,8 @@ public class UVAtlas extends BaseReference {
         destination[index++] = u + w;
         destination[index++] = v;
         destination[index++] = u + w;
-        destination[index++] = v - h;
+        destination[index++] = v + h;
         destination[index++] = u;
-        destination[index++] = v - h;
+        destination[index++] = v + h;
     }
 }
