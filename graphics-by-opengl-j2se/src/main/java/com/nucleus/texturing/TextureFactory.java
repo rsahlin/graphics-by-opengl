@@ -7,8 +7,9 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 
 /**
- * Used to create texture objects, constructor data is abstracted in a separate class to make it easy to de-couple file
- * loading.
+ * Used to create texture objects.
+ * Texture objects created using the same image (external reference) will share texture data, through the texture object
+ * id.
  * 
  * @author Richard Sahlin
  *
