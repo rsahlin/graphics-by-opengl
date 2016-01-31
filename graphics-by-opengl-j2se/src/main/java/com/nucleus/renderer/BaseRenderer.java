@@ -7,7 +7,8 @@ import java.util.Deque;
 
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.camera.ViewPort;
-import com.nucleus.geometry.AttributeUpdater;
+import com.nucleus.geometry.AttributeUpdater.Consumer;
+import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
@@ -202,6 +203,11 @@ class BaseRenderer implements NucleusRenderer {
     public void render(Node node) throws GLException {
         NodeState state = node.getState();
         if (state == null || state == NodeState.on || state == NodeState.render) {
+            // Check for AttributeUpdate producer.
+            Producer producer = node.getAttributeProducer();
+            if (producer != null) {
+                producer.updateAttributeData();
+            }
             float[] projection = node.getProjection();
             if (projection != null) {
                 Matrix.mul4(mvpMatrix, projection);
@@ -236,7 +242,7 @@ class BaseRenderer implements NucleusRenderer {
      * @throws GLException If there is an error in GL while drawing this mesh.
      */
     protected void renderMesh(Mesh mesh, float[] mvpMatrix) throws GLException {
-        AttributeUpdater updater = mesh.getAttributeUpdater();
+        Consumer updater = mesh.getAttributeConsumer();
         if (updater != null) {
             updater.setAttributeData();
         }

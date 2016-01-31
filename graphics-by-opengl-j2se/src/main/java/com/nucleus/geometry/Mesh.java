@@ -1,5 +1,6 @@
 package com.nucleus.geometry;
 
+import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.io.BaseReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
@@ -92,11 +93,11 @@ public class Mesh extends BaseReference {
     transient protected float[] uniforms;
 
     /**
-     * Optional updater for attributes, use this when dynamic mesh is needed. ie when the generic attribute data must be
-     * updated each frame.
+     * Optional consumer for attributes, use this when dynamic mesh is needed. ie when the generic attribute data must
+     * be updated each frame.
      * TODO Maybe move this to the node?
      */
-    transient protected AttributeUpdater attributeUpdater;
+    transient protected Consumer attributeConsumer;
     /**
      * One or more generic attribute arrays, read by the program specified in the material.
      * The reason to have multiple buffers is for cases where for instance vertex and UV data does not change
@@ -322,10 +323,10 @@ public class Mesh extends BaseReference {
      * This method shall copy data, as needed, into the VertexBuffer arrays that are used when the mesh is rendered.
      * What data to copy is implementation specific.
      * 
-     * @param attributeUpdater Callback to set data into the generic vertex arrays, or null to remove.
+     * @param attributeConsumer Callback to set data into the generic vertex arrays, or null to remove.
      */
-    public void setAttributeUpdater(AttributeUpdater attributeUpdater) {
-        this.attributeUpdater = attributeUpdater;
+    public void setAttributeUpdater(Consumer attributeConsumer) {
+        this.attributeConsumer = attributeConsumer;
     }
 
     /**
@@ -333,8 +334,8 @@ public class Mesh extends BaseReference {
      * 
      * @return The attribute updater or null if none is set.
      */
-    public AttributeUpdater getAttributeUpdater() {
-        return attributeUpdater;
+    public Consumer getAttributeConsumer() {
+        return attributeConsumer;
     }
 
     /**

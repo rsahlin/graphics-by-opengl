@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.camera.ViewFrustum;
+import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.BaseReference;
 import com.nucleus.vecmath.Transform;
@@ -38,6 +39,10 @@ public class Node extends BaseReference {
      */
     transient float[] projection;
     transient ArrayList<Mesh> meshes = new ArrayList<Mesh>();
+    /**
+     * Optional AttributeUpdate producer, used for instance by spritemesh nodes
+     */
+    transient Producer attributeProducer;
 
     /**
      * Creates an empty node, add children and meshes as needed.
@@ -82,6 +87,27 @@ public class Node extends BaseReference {
      */
     public ArrayList<Mesh> getMeshes() {
         return meshes;
+    }
+
+    /**
+     * Returns the attribute producer, or null if not set
+     * 
+     * @return
+     */
+    public Producer getAttributeProducer() {
+        return attributeProducer;
+    }
+
+    /**
+     * Sets the attribute producer, this is for instance used by sprite nodes where the sprites have data that needs
+     * to be updated to the mesh attributes.
+     * The producer will be called by the renderer before the mesh is rendered, but after the completion of the
+     * previous frame.
+     * 
+     * @param producer
+     */
+    public void setAttributeProducer(Producer producer) {
+        this.attributeProducer = producer;
     }
 
     /**
