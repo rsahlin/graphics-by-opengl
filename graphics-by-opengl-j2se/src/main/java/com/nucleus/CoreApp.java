@@ -8,6 +8,7 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
+import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 
 /**
@@ -151,10 +152,10 @@ public class CoreApp {
                     }
                 }
             } else {
-                // renderer.processFrame();
-                logicProcessor.processNode(renderer.getScene(), renderer.getFrameSampler().getDelta());
+                // TODO make sure this calls the same code as LogicProcessorRunnable
+                logicProcessor.processNode(renderer.getNode(Layer.SCENE), renderer.getFrameSampler().getDelta());
             }
-            renderer.renderScene();
+            renderer.render((Layer) null);
         } catch (GLException e) {
             throw new RuntimeException(e);
         }

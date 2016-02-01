@@ -1,6 +1,7 @@
 package com.nucleus.actor;
 
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.NucleusRenderer.Layer;
 
 public class LogicProcessorRunnable implements Runnable {
 
@@ -27,7 +28,8 @@ public class LogicProcessorRunnable implements Runnable {
         running = true;
         while (running) {
             synchronized (this) {
-                logicProcessor.processNode(renderer.getScene(), renderer.getFrameSampler().getDelta());
+                // TODO Make sure this code is the same as in CoreApp
+                logicProcessor.processNode(renderer.getNode(Layer.SCENE), renderer.getFrameSampler().getDelta());
                 try {
                     wait();
                 } catch (InterruptedException e) {

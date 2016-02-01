@@ -29,16 +29,16 @@ public abstract class RootNode {
     }
 
     @SerializedName("scenes")
-    ArrayList<Node> scenes;
+    ArrayList<LayerNode> scenes;
 
     /**
      * Adds a node instance in this scene, this is a nodetree that can be rendered.
      * 
      * @param node
      */
-    public void addScene(Node node) {
+    public void addScene(LayerNode node) {
         if (scenes == null) {
-            scenes = new ArrayList<Node>();
+            scenes = new ArrayList<LayerNode>();
         }
         scenes.add(node);
     }
@@ -50,8 +50,8 @@ public abstract class RootNode {
      * @id Id of scene node to return
      * @return scene node (tree) or null.
      */
-    public Node getScene(String id) {
-        for (Node n : scenes) {
+    public LayerNode getScene(String id) {
+        for (LayerNode n : scenes) {
             if (n.getId().equals(id)) {
                 return n;
             }
@@ -66,7 +66,7 @@ public abstract class RootNode {
      * @id scene The scene node to return
      * @return scene node (tree) or null.
      */
-    public Node getScene(Scenes scene) {
+    public LayerNode getScene(Scenes scene) {
         return getScene(scene.name());
     }
 
@@ -75,7 +75,7 @@ public abstract class RootNode {
      * 
      * @return
      */
-    public ArrayList<Node> getScenes() {
+    public ArrayList<LayerNode> getScenes() {
         return scenes;
     }
 

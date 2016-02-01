@@ -15,6 +15,7 @@ import com.nucleus.exporter.NucleusNodeExporter;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
+import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.NodeType;
@@ -117,7 +118,7 @@ public class GSONSceneFactory implements SceneSerializer {
      * @throws IOException
      */
     private RootNode createScene(RootNode scene) throws IOException {
-        ArrayList<Node> source = scene.getScenes();
+        ArrayList<LayerNode> source = scene.getScenes();
         if (source == null) {
             return null;
         }
@@ -132,12 +133,33 @@ public class GSONSceneFactory implements SceneSerializer {
      * @param source
      * @return the created nodes
      */
-    private RootNode createRoot(RootNode scene, ArrayList<Node> source) throws IOException {
+    private RootNode createRoot(RootNode scene, ArrayList<LayerNode> source) throws IOException {
         RootNode root = createSceneData();
-        for (Node n : source) {
-            root.addScene(createNode(scene, n, null));
+        for (LayerNode n : source) {
+            root.addScene(createNode(scene, n));
         }
         return root;
+    }
+
+    private LayerNode createNode(RootNode scene, LayerNode source) throws IOException {
+        try {
+            NodeType type = NodeType.valueOf(source.getType());
+            LayerNode created = null;
+            switch (type) {
+            case node:
+                created = new LayerNode(source);
+                break;
+            default:
+                throw new IllegalArgumentException(NOT_IMPLEMENTED + type);
+            }
+            setViewFrustum(source, created);
+            createChildNodes(scene, source, created);
+            return created;
+
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+
     }
 
     /**

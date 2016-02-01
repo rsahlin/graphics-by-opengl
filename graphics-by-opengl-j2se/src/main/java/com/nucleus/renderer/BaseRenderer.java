@@ -19,6 +19,7 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeState;
 import com.nucleus.shader.ShaderProgram;
@@ -68,7 +69,7 @@ class BaseRenderer implements NucleusRenderer {
     protected Window window = Window.getInstance();
 
     protected GLInfo glInfo;
-    private Node scene;
+    private ArrayList<LayerNode>[] layers = new ArrayList[Layer.values().length];
     /**
      * Set to true when init is called
      */
@@ -348,20 +349,57 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void setScene(Node scene) {
-        this.scene = scene;
+    public void setNode(LayerNode layer) {
+        addNode(layer, layer.getLayer());
     }
 
     @Override
-    public void renderScene() throws GLException {
-        if (scene != null) {
-            render(scene);
+    public void removeNode(LayerNode layer) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void render(Layer layer) throws GLException {
+        if (layer == null) {
+            Layer[] layers = Layer.values();
+            for (Layer l : layers) {
+                renderLayer(l);
+            }
+        }
+    }
+
+    /**
+     * Internal method, renders the specified layer, if layer is SCENE then the scene is rendered after the layers
+     * Nodes.
+     * 
+     * @param layer
+     * @throws GLException
+     */
+    private void renderLayer(Layer layer) throws GLException {
+        renderLayer(layers[layer.index]);
+    }
+
+    /**
+     * Renders a list of Nodes (in a layer)
+     * 
+     * @param layer
+     * @throws GLException
+     */
+    private void renderLayer(ArrayList<LayerNode> layer) throws GLException {
+        if (layer != null) {
+            for (Node n : layer) {
+                render(n);
+            }
         }
     }
 
     @Override
-    public Node getScene() {
-        return scene;
+    public Node getNode(Layer layer) {
+        if (layer != null && layers[layer.index] != null) {
+            return layers[layer.index].get(0);
+        }
+        return null;
     }
 
     @Override
@@ -405,6 +443,20 @@ class BaseRenderer implements NucleusRenderer {
     public void resizeWindow(int x, int y, int width, int height) {
         viewPort.setViewPort(x, y, width, height);
         Window.getInstance().setSize(width, height);
+    }
+
+    private void addNode(LayerNode node, Layer layer) {
+        if (layers[layer.index] == null) {
+            layers[layer.index] = new ArrayList<LayerNode>();
+        }
+        layers[layer.index].add(node);
+    }
+
+    private void removeNode(Node node, Layer layer) {
+        if (layers[layer.index] == null) {
+            return;
+        }
+        layers[layer.index].remove(node);
     }
 
 }

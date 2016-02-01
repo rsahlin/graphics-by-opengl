@@ -18,6 +18,7 @@ import com.nucleus.texturing.TiledTexture2D;
 public class ConvolutionProgram extends ShaderProgram {
 
     protected final static int DEFAULT_COMPONENTS = 3;
+    private final static int ATTRIBUTES_PER_VERTEX = 5;
 
     protected enum VARIABLES implements VariableMapping {
         uMVPMatrix(0, 0, ShaderVariable.VariableType.UNIFORM, null),
@@ -72,7 +73,7 @@ public class ConvolutionProgram extends ShaderProgram {
         super(VARIABLES.values());
         vertexShaderName = VERTEX_SHADER_NAME;
         fragmentShaderName = FRAGMENT_SHADER_NAME;
-
+        attributesPerVertex = ATTRIBUTES_PER_VERTEX;
     }
 
     @Override
@@ -121,11 +122,6 @@ public class ConvolutionProgram extends ShaderProgram {
         float[] uvOffsets = new float[] { -deltaU, 0, deltaU, -deltaU, 0, deltaU, -deltaU, 0, deltaU, -deltaV, 0,
                 deltaV, -deltaV, 0, deltaV, -deltaV, 0, deltaV };
         System.arraycopy(uvOffsets, 0, mesh.getUniforms(), VARIABLES.uKernel.offset + 9, uvOffsets.length);
-    }
-
-    @Override
-    public void createProgram(GLES20Wrapper gles) {
-        createProgram(gles, VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME);
     }
 
     @Override
