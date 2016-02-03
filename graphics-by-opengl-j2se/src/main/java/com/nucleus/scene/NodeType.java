@@ -10,7 +10,8 @@ import com.nucleus.common.Key;
  */
 public enum NodeType implements Key {
 
-    node();
+    node(),
+    layernode();
 
     @Override
     public String getKey() {
