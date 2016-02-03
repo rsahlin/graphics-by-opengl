@@ -6,7 +6,9 @@ import java.util.List;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Key;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
 import com.nucleus.texturing.Texture2D;
 
@@ -36,7 +38,7 @@ public class NucleusNodeExporter implements NodeExporter {
             if (exporter != null) {
                 export = exporter.exportNode(n, rootNode);
             } else {
-                export = new Node(n);
+                throw new IllegalAccessError("Invalid node type: " + n.getType());
             }
             for (Node child : n.getChildren()) {
                 export.addChild(exportNode(child, rootNode));
@@ -102,7 +104,18 @@ public class NucleusNodeExporter implements NodeExporter {
 
     @Override
     public Node exportNode(Node source, RootNode rootNode) {
-        return new Node(source);
+        NodeType type = NodeType.valueOf(source.getType());
+        switch (type) {
+        case node:
+            // exportDataReferences((Node) source, (RootNode) rootNode);
+            return new Node(source);
+        case layernode:
+            // exportDataReferences((LayerNode) source, (RootNode) rootNode);
+
+            return new LayerNode((LayerNode) source);
+        default:
+            throw new IllegalArgumentException(NOT_IMPLEMENTED + type);
+        }
     }
 
     @Override
