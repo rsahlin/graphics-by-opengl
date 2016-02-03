@@ -12,24 +12,25 @@ import com.nucleus.renderer.NucleusRenderer;
  */
 public class DefaultNodeFactory implements NodeFactory {
 
-    private static final String NOT_IMPLEMENTED = "Not implemented";
+    protected static final String NOT_IMPLEMENTED = "Not implemented: ";
+    protected static final String ILLEGAL_NODE_TYPE = "Unknown node type: ";
 
     @Override
-    public Node create(NucleusRenderer renderer, Node source, String reference, RootNode scene) throws IOException {
+    public Node create(NucleusRenderer renderer, Node source, RootNode scene) throws IOException {
+        NodeType type = null;
         try {
-            NodeType type = NodeType.valueOf(source.getType());
-            Node created = null;
-            switch (type) {
-            case node:
-                created = new Node(source);
-                break;
-            default:
-                throw new IllegalArgumentException(NOT_IMPLEMENTED + type);
-            }
-            return created;
-
+            type = NodeType.valueOf(source.getType());
         } catch (IllegalArgumentException e) {
-            return null;
+            // This means the node type is not known.
+            throw new IllegalArgumentException(ILLEGAL_NODE_TYPE + source.getType());
+        }
+        switch (type) {
+        case node:
+            return new Node(source);
+        case layernode:
+            return new LayerNode((LayerNode) source);
+        default:
+            throw new IllegalArgumentException(NOT_IMPLEMENTED + type);
         }
     }
 

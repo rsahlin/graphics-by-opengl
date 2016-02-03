@@ -39,10 +39,12 @@ public class GSONSceneFactory implements SceneSerializer {
     protected NodeFactory nodeFactory;
 
     /**
-     * Creates a default scenefactory with {@link NucleusNodeExporter}
+     * Creates a default scenefactory with {@link NucleusNodeExporter}.
+     * Calls {@link #createNodeExporter()} and {@link #registerNodeExporters()}
      */
     public GSONSceneFactory() {
         createNodeExporter();
+        registerNodeExporters();
     }
 
     @Override
@@ -142,24 +144,10 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     private LayerNode createNode(RootNode scene, LayerNode source) throws IOException {
-        try {
-            NodeType type = NodeType.valueOf(source.getType());
-            LayerNode created = null;
-            switch (type) {
-            case node:
-                created = new LayerNode(source);
-                break;
-            default:
-                throw new IllegalArgumentException(NOT_IMPLEMENTED + type);
-            }
-            setViewFrustum(source, created);
-            createChildNodes(scene, source, created);
-            return created;
-
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-
+        LayerNode created = (LayerNode) nodeFactory.create(renderer, source, scene);
+        setViewFrustum(source, created);
+        createChildNodes(scene, source, created);
+        return created;
     }
 
     /**
@@ -173,23 +161,11 @@ public class GSONSceneFactory implements SceneSerializer {
      * @return The created node
      */
     protected Node createNode(RootNode scene, Node source, Node parent) throws IOException {
-        try {
-            NodeType type = NodeType.valueOf(source.getType());
-            Node created = null;
-            switch (type) {
-            case node:
-                created = new Node(source);
-                break;
-            default:
-                throw new IllegalArgumentException(NOT_IMPLEMENTED + type);
-            }
-            setViewFrustum(source, created);
-            createChildNodes(scene, source, created);
-            return created;
+        Node created = nodeFactory.create(renderer, source, scene);
+        setViewFrustum(source, created);
+        createChildNodes(scene, source, created);
+        return created;
 
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
     }
 
     protected void createChildNodes(RootNode scene, Node source, Node parent) throws IOException {
@@ -248,10 +224,17 @@ public class GSONSceneFactory implements SceneSerializer {
 
     /**
      * Creates the correct instance of the node exporter
-     * Subclasses must implement this to create proper exporter instance
+     * Subclasses must implement this to create proper exporter instance, do not call super in subclasses.
      */
     protected void createNodeExporter() {
         nodeExporter = new NucleusNodeExporter();
+    }
+
+    /**
+     * Registers the nodetypes and nodeexporter for the scenfactory, implement in subclasses and call super.
+     */
+    protected void registerNodeExporters() {
+        nodeExporter.registerNodeExporter(NodeType.values(), new NucleusNodeExporter());
     }
 
 }
