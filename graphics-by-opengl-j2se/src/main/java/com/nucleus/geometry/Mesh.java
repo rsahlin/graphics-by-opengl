@@ -182,11 +182,21 @@ public class Mesh extends BaseReference {
         if (vertices == null || material == null) {
             throw new IllegalArgumentException(NULL_PARAMETER_STR);
         }
-        this.attributes = vertices;
+        setBuffers(vertices);
         this.material = material;
         if (texture != null) {
             this.texture[Texture2D.TEXTURE_0] = texture;
         }
+    }
+
+    /**
+     * Sets the vertice/attribute buffers,
+     * 
+     * @param attributes Buffers containing vertices/attributes, what this means is specific to the program
+     * used to render the mesh.
+     */
+    protected void setBuffers(VertexBuffer[] attributes) {
+        this.attributes = attributes;
     }
 
     /**

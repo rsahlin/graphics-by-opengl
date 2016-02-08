@@ -29,6 +29,10 @@ public class VertexBuffer extends BufferObject {
      */
     public final static int STRIP_QUAD_VERTICES = 4;
     /**
+     * Number of vertices for a triangle fan quad
+     */
+    public final static int FAN_QUAD_VERTICES = 4;
+    /**
      * Number of components for X,Y,Z
      */
     public final static int XYZ_COMPONENTS = 3;

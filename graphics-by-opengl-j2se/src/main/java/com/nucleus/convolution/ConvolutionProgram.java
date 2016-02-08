@@ -1,5 +1,6 @@
 package com.nucleus.convolution;
 
+import com.nucleus.geometry.AttributeUpdater.Property;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.MeshBuilder;
@@ -127,5 +128,16 @@ public class ConvolutionProgram extends ShaderProgram {
     @Override
     public void setupUniforms(Mesh mesh) {
         createUniformStorage(mesh, shaderVariables);
+    }
+
+    @Override
+    public int getAttributeOffset(int vertex) {
+        return vertex * ATTRIBUTES_PER_VERTEX;
+    }
+
+    @Override
+    public int getPropertyOffset(Property property) {
+        // TODO Auto-generated method stub
+        return 0;
     }
 }

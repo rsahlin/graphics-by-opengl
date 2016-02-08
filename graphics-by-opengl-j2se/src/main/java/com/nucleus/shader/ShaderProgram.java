@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.nucleus.geometry.AttributeUpdater.Producer;
+import com.nucleus.geometry.AttributeUpdater.Property;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.VertexBuffer;
@@ -40,7 +42,7 @@ public abstract class ShaderProgram {
      */
     public final static int INDICES_PER_SPRITE = 6;
     /**
-     * Default number of components (x,y,z)
+     * Default number of components 1
      */
     public final static int DEFAULT_COMPONENTS = 3;
 
@@ -169,6 +171,26 @@ public abstract class ShaderProgram {
     public abstract int getVariableCount();
 
     /**
+     * Returns the offset into the attribute data where the data for the specified vertex is.
+     * 
+     * @param vertex The vertex number to get the offset to
+     * @return Offset into attribute data where storage for the specified vertex is
+     */
+    public abstract int getAttributeOffset(int vertex);
+
+    /**
+     * Returns the offset within an vertex where the property is, this is used to set specific properties
+     * of a vertex.
+     * This will be the same for all vertices, you only need to fetch this once. It will not change as long
+     * as the same program is used.
+     * 
+     * @param property
+     * @return Offset into attribute where the storage for the specified property is, or -1 if the property
+     * is not supported.
+     */
+    public abstract int getPropertyOffset(Property property);
+
+    /**
      * Creates a new ShaderProgram
      * 
      * @param mapping The variable mapping as defined by the subclass, this holds information of where uniform and
@@ -278,11 +300,15 @@ public abstract class ShaderProgram {
 
     /**
      * Creates the storage for attributes that are not vertices, only creates the storage will not fill buffer.
+     * For some subclasses this must also create a backing attribute array in the mesh that is used as
+     * intermediate storage before the vertex buffer is updated.
      * 
      * @param verticeCount Number of vertices
+     * @param mesh
      * @return The buffer for attribute storage or null if not needed.
      */
-    public VertexBuffer createAttributeBuffer(int verticeCount) {
+    public VertexBuffer createAttributeBuffer(int verticeCount, Mesh mesh) {
+        // The allocated buffer is in bytes, therefore components is 4
         return new VertexBuffer(verticeCount, 4, attributesPerVertex, GLES20.GL_FLOAT);
     }
 
@@ -651,6 +677,15 @@ public abstract class ShaderProgram {
             break;
         }
         GLUtils.handleError(gles, "setVectorUniform(), dataType: " + variable.getDataType());
+
+    }
+
+    /**
+     * Creates the attribute storage needed in the mesh for this shader program.
+     * 
+     * @param mesh
+     */
+    protected void createAttributeData(Producer producer) {
 
     }
 
