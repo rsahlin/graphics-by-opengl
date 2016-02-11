@@ -1,5 +1,7 @@
 package com.nucleus.geometry;
 
+import com.nucleus.shader.ShaderProgram;
+
 /**
  * For usecases where the attribute data needs to be updated (in the mesh), ie it is not sufficient to set static
  * attribute data.
@@ -20,26 +22,66 @@ public interface AttributeUpdater {
      *
      */
     public enum Property {
-        TRANSLATE(),
-        ROTATE(),
-        SCALE(),
+        TRANSLATE(0),
+        ROTATE(1),
+        SCALE(2),
         /**
          * Frame information, number, coordinates etc
          */
-        FRAME(),
+        FRAME(3),
         /**
          * (Diffuse) Color
          */
-        COLOR(),
+        COLOR(4),
         /**
          * Specular reflection property
          */
-        COLOR_SPECULAR(),
+        COLOR_SPECULAR(5),
         /**
          * Ambient color
          */
-        COLOR_AMBIENT(),
-        SPECULAR_POWER();
+        COLOR_AMBIENT(6),
+        SPECULAR_POWER(7);
+
+        public final int index;
+
+        private Property(int index) {
+            this.index = index;
+        }
+
+    }
+
+    /**
+     * Holds the property indexes as they will be in a shader program.
+     * 
+     * @author Richard Sahlin
+     *
+     */
+    public class PropertyMapper {
+        public final int TRANSLATE_INDEX;
+        public final int ROTATE_INDEX;
+        public final int SCALE_INDEX;
+        public final int FRAME_INDEX;
+        public final int COLOR_INDEX;
+        public final int COLOR_SPECULAR_INDEX;
+        public final int SPECULAR_POWER_INDEX;
+        public final int ATTRIBUTES_PER_VERTEX;
+
+        /**
+         * Creates the attributer index mapping for the properties with a specific shader program.
+         * 
+         * @param program
+         */
+        public PropertyMapper(ShaderProgram program) {
+            TRANSLATE_INDEX = program.getPropertyOffset(Property.TRANSLATE);
+            ROTATE_INDEX = program.getPropertyOffset(Property.ROTATE);
+            SCALE_INDEX = program.getPropertyOffset(Property.SCALE);
+            FRAME_INDEX = program.getPropertyOffset(Property.FRAME);
+            COLOR_INDEX = program.getPropertyOffset(Property.COLOR);
+            COLOR_SPECULAR_INDEX = program.getPropertyOffset(Property.COLOR);
+            SPECULAR_POWER_INDEX = program.getPropertyOffset(Property.SPECULAR_POWER);
+            ATTRIBUTES_PER_VERTEX = program.getAttributesPerVertex();
+        }
 
     }
 

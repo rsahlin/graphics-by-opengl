@@ -299,6 +299,15 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Returns the number of attributes per vertex
+     * 
+     * @return
+     */
+    public int getAttributesPerVertex() {
+        return attributesPerVertex;
+    }
+
+    /**
      * Creates the storage for attributes that are not vertices, only creates the storage will not fill buffer.
      * For some subclasses this must also create a backing attribute array in the mesh that is used as
      * intermediate storage before the vertex buffer is updated.
