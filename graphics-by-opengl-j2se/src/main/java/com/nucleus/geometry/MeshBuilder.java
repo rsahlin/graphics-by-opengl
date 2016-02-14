@@ -9,6 +9,7 @@ import static com.nucleus.geometry.VertexBuffer.XYZ_COMPONENTS;
 import java.nio.ByteBuffer;
 
 import com.nucleus.data.Anchor;
+import com.nucleus.geometry.AttributeUpdater.PropertyMapper;
 import com.nucleus.geometry.ElementBuffer.Mode;
 import com.nucleus.geometry.ElementBuffer.Type;
 import com.nucleus.geometry.Mesh.BufferIndex;
@@ -204,18 +205,22 @@ public class MeshBuilder {
     }
 
     /**
+     * Prepares the UV coordinates for a Quad sprite.
      * Used by tiled objects to set the UV position to 1 or 0 so it can be multiplied by a fraction size to get
      * correct UV for a specific frame.
      * This method is chosen to move as much processing as possible to the GPU - the UV of each sprite could be
      * calculated at runtime but that would give a higher CPU impact when a large number of sprites are animated.
      * 
      * @param attributeData Array with attribute data where UV is stored.
-     * @param offset Offset into attribute array
+     * @param index Index of first vertex
      * @param uIndex Index to UV in attribute data
      * @param stride Added to get to next vertex.
      */
-    public static void prepareTiledUV(float[] attributeData, int offset, int uvIndex, int stride) {
-        int index = offset;
+    public static void prepareTiledUV(PropertyMapper mapper, float[] attributeData, int index) {
+        int uvIndex = mapper.FRAME_INDEX;
+        int stride = mapper.ATTRIBUTES_PER_VERTEX;
+
+        index = index * mapper.ATTRIBUTES_PER_VERTEX * ShaderProgram.VERTICES_PER_SPRITE;
         attributeData[index + uvIndex] = 0;
         attributeData[index + uvIndex + 1] = 0;
         index += stride;
@@ -228,5 +233,4 @@ public class MeshBuilder {
         attributeData[index + uvIndex] = 0;
         attributeData[index + uvIndex + 1] = 1;
     }
-
 }
