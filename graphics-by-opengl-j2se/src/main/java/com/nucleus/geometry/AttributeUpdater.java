@@ -22,32 +22,30 @@ public interface AttributeUpdater {
      *
      */
     public enum Property {
-        TRANSLATE(0),
-        ROTATE(1),
-        SCALE(2),
+        TRANSLATE(),
+        /**
+         * UV information
+         */
+        UV(),
+        ROTATE(),
+        SCALE(),
         /**
          * Frame information, number, coordinates etc
          */
-        FRAME(3),
+        FRAME(),
         /**
          * (Diffuse) Color
          */
-        COLOR(4),
+        COLOR(),
         /**
          * Specular reflection property
          */
-        COLOR_SPECULAR(5),
+        COLOR_SPECULAR(),
         /**
          * Ambient color
          */
-        COLOR_AMBIENT(6),
-        SPECULAR_POWER(7);
-
-        public final int index;
-
-        private Property(int index) {
-            this.index = index;
-        }
+        COLOR_AMBIENT(),
+        SPECULAR_POWER();
 
     }
 
@@ -59,6 +57,7 @@ public interface AttributeUpdater {
      */
     public class PropertyMapper {
         public final int TRANSLATE_INDEX;
+        public final int UV_INDEX;
         public final int ROTATE_INDEX;
         public final int SCALE_INDEX;
         public final int FRAME_INDEX;
@@ -74,6 +73,7 @@ public interface AttributeUpdater {
          */
         public PropertyMapper(ShaderProgram program) {
             TRANSLATE_INDEX = program.getPropertyOffset(Property.TRANSLATE);
+            UV_INDEX = program.getPropertyOffset(Property.UV);
             ROTATE_INDEX = program.getPropertyOffset(Property.ROTATE);
             SCALE_INDEX = program.getPropertyOffset(Property.SCALE);
             FRAME_INDEX = program.getPropertyOffset(Property.FRAME);

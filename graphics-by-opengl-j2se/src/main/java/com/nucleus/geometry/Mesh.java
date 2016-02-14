@@ -1,10 +1,13 @@
 package com.nucleus.geometry;
 
+import com.google.gson.annotations.SerializedName;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.io.BaseReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.TiledTexture2D;
 
 /**
  * This is the smallest renderable self contained unit, it has surface (vertice and triangle) information, attribute
@@ -78,6 +81,12 @@ public class Mesh extends BaseReference {
      * Texture object should not be exported, store texture as resource and use a reference
      */
     transient protected Texture2D[] texture = new Texture2D[MAX_TEXTURE_COUNT];
+
+    /**
+     * Reference to tiled texture
+     */
+    @SerializedName("textureref")
+    protected String textureRef;
 
     /**
      * Array with values for blend equation separate (blend equation RGB, blend equation Alpha, src RGB, dst RGB, src
@@ -154,6 +163,17 @@ public class Mesh extends BaseReference {
     }
 
     /**
+     * Creates the Mesh to be rendered, after this method returns it shall be possible to render the mesh.
+     * 
+     * @param program
+     * @param texture The texture to use for sprites, must be {@link TiledTexture2D} otherwise tiling will not work.
+     * @return
+     */
+    public void createMesh(ShaderProgram program, Texture2D texture) {
+        setTexture(texture, Texture2D.TEXTURE_0);
+    }
+
+    /**
      * Setup the buffers needed for indexed (elements) rendering using glDrawElements()
      * 
      * @param indices Buffer with element data for vertices to be drawn.
@@ -208,6 +228,15 @@ public class Mesh extends BaseReference {
      */
     public void setTexture(Texture2D texture, int index) {
         this.texture[index] = texture;
+    }
+
+    /**
+     * Returns the texture reference or null if not set, this is used when importing/exporting
+     * 
+     * @return
+     */
+    public String getTextureRef() {
+        return textureRef;
     }
 
     /**

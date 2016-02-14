@@ -217,7 +217,7 @@ public class MeshBuilder {
      * @param stride Added to get to next vertex.
      */
     public static void prepareTiledUV(PropertyMapper mapper, float[] attributeData, int index) {
-        int uvIndex = mapper.FRAME_INDEX;
+        int uvIndex = mapper.UV_INDEX;
         int stride = mapper.ATTRIBUTES_PER_VERTEX;
 
         index = index * mapper.ATTRIBUTES_PER_VERTEX * ShaderProgram.VERTICES_PER_SPRITE;
