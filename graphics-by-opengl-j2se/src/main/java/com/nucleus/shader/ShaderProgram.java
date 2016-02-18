@@ -729,6 +729,8 @@ public abstract class ShaderProgram {
             if (vectorSize + matrixSize > 0) {
                 mesh.setUniforms(new float[vectorSize + matrixSize]);
             }
+        } else {
+            throw new IllegalArgumentException("Shader variables is null, forgot to call createProgram()?");
         }
     }
 
