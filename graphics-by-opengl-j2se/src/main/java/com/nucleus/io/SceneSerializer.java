@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.nucleus.geometry.MeshFactory;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.RootNode;
@@ -27,9 +28,10 @@ public interface SceneSerializer {
      * 
      * @param renderer
      * @param nodeFactory
+     * @param meshFactory
      * @throws IllegalArgumentException If renderer is null
      */
-    public void init(NucleusRenderer renderer, NodeFactory nodeFactory);
+    public void init(NucleusRenderer renderer, NodeFactory nodeFactory, MeshFactory meshFactory);
 
     /**
      * Creates nodetree from a scene, the scene will be loaded using filename and the node returned shall be the root

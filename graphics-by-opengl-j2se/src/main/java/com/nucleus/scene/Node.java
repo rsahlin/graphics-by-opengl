@@ -62,7 +62,7 @@ public class Node extends BaseReference {
 
     /**
      * Create a new instance of the specified node
-     * Note! This will not copy children or the transient values.
+     * Note! This will not copy children or the transient values. call {@link #create()} to set transient values
      * 
      * @param source The source node to copy
      */
@@ -78,6 +78,12 @@ public class Node extends BaseReference {
      */
     public Node(Mesh mesh) {
         meshes.add(mesh);
+    }
+
+    /**
+     * Creates the transient values needed in runtime - implement in subclasses
+     */
+    public void create() {
     }
 
     /**
@@ -252,6 +258,8 @@ public class Node extends BaseReference {
 
     /**
      * Sets (copies) the data from the source
+     * Note! This will not copy children or the transient values.
+     * Call {@link #create()} to set transient values
      * 
      * @param source
      */
@@ -265,6 +273,10 @@ public class Node extends BaseReference {
         if (source.viewFrustum != null) {
             setViewFrustum(new ViewFrustum(source.viewFrustum));
         }
+    }
+
+    public void copyTo(Node target) {
+        target.set(this);
     }
 
     /**

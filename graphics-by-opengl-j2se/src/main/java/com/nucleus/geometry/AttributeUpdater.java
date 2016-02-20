@@ -126,6 +126,13 @@ public interface AttributeUpdater {
          */
         public void bindAttributeBuffer(VertexBuffer buffer);
 
+        /**
+         * Returns the propertymapper to be used for the consumer.
+         * 
+         * @return The propertymapper.
+         */
+        public PropertyMapper getMapper();
+
     }
 
     /**

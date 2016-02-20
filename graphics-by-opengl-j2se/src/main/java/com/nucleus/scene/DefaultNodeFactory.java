@@ -2,6 +2,7 @@ package com.nucleus.scene;
 
 import java.io.IOException;
 
+import com.nucleus.geometry.MeshFactory;
 import com.nucleus.renderer.NucleusRenderer;
 
 /**
@@ -16,7 +17,8 @@ public class DefaultNodeFactory implements NodeFactory {
     protected static final String ILLEGAL_NODE_TYPE = "Unknown node type: ";
 
     @Override
-    public Node create(NucleusRenderer renderer, Node source, RootNode scene) throws IOException {
+    public Node create(NucleusRenderer renderer, Node source, MeshFactory meshFactory, RootNode scene)
+            throws IOException {
         NodeType type = null;
         try {
             type = NodeType.valueOf(source.getType());

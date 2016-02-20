@@ -2,6 +2,7 @@ package com.nucleus.scene;
 
 import java.io.IOException;
 
+import com.nucleus.geometry.MeshFactory;
 import com.nucleus.renderer.NucleusRenderer;
 
 /**
@@ -22,11 +23,12 @@ public interface NodeFactory {
      * 
      * @param renderer
      * @param source The source node, the returned node shall be same type.
+     * @param meshFactory The mesh factory to use when creating mesh
      * @param scene Scene data.
      * @return A new instance of the source node, ready to be rendered/processed
      * @throws IOException If there is an error fetching shader programs or texture.
      */
-    public Node create(NucleusRenderer renderer, Node source, RootNode scene)
+    public Node create(NucleusRenderer renderer, Node source, MeshFactory meshFactory, RootNode scene)
             throws IOException;
 
 }

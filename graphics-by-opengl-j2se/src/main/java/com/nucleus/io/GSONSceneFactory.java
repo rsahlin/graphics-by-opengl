@@ -12,6 +12,7 @@ import com.google.gson.GsonBuilder;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.exporter.NodeExporter;
 import com.nucleus.exporter.NucleusNodeExporter;
+import com.nucleus.geometry.MeshFactory;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
@@ -37,6 +38,7 @@ public class GSONSceneFactory implements SceneSerializer {
     protected NucleusRenderer renderer;
     protected NodeExporter nodeExporter;
     protected NodeFactory nodeFactory;
+    protected MeshFactory meshFactory;
 
     /**
      * Creates a default scenefactory with {@link NucleusNodeExporter}.
@@ -48,7 +50,7 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     @Override
-    public void init(NucleusRenderer renderer, NodeFactory nodeFactory) {
+    public void init(NucleusRenderer renderer, NodeFactory nodeFactory, MeshFactory meshFactory) {
         if (renderer == null) {
             throw new IllegalArgumentException(NULL_RENDERER_ERROR);
         }
@@ -144,7 +146,7 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     private LayerNode createNode(RootNode scene, LayerNode source) throws IOException {
-        LayerNode created = (LayerNode) nodeFactory.create(renderer, source, scene);
+        LayerNode created = (LayerNode) nodeFactory.create(renderer, source, meshFactory, scene);
         setViewFrustum(source, created);
         createChildNodes(scene, source, created);
         return created;
@@ -161,7 +163,7 @@ public class GSONSceneFactory implements SceneSerializer {
      * @return The created node
      */
     protected Node createNode(RootNode scene, Node source, Node parent) throws IOException {
-        Node created = nodeFactory.create(renderer, source, scene);
+        Node created = nodeFactory.create(renderer, source, meshFactory, scene);
         setViewFrustum(source, created);
         createChildNodes(scene, source, created);
         return created;
