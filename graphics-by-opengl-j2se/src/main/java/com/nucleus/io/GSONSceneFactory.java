@@ -57,8 +57,12 @@ public class GSONSceneFactory implements SceneSerializer {
         if (nodeFactory == null) {
             throw new IllegalArgumentException(NULL_NODEFACTORY_ERROR);
         }
+        if (meshFactory == null) {
+            throw new IllegalArgumentException(NULL_MESHFACTORY_ERROR);
+        }
         this.renderer = renderer;
         this.nodeFactory = nodeFactory;
+        this.meshFactory = meshFactory;
     }
 
     @Override

@@ -20,6 +20,7 @@ public interface SceneSerializer {
 
     public final static String NULL_RENDERER_ERROR = "Renderer is null.";
     public final static String NULL_NODEFACTORY_ERROR = "Node factory is null.";
+    public final static String NULL_MESHFACTORY_ERROR = "Mesh factory is null.";
     public final static String INIT_NOT_CALLED_ERROR = "Renderer or NodeFactory is not set, must set before calling this method.";
 
     /**

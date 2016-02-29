@@ -1,7 +1,6 @@
 package com.nucleus.geometry;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.io.BaseReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
@@ -18,7 +17,7 @@ import com.nucleus.texturing.TiledTexture2D;
  * @author Richard Sahlin
  *
  */
-public class Mesh extends BaseReference {
+public class Mesh extends BaseReference implements AttributeUpdater {
 
     private final static String NULL_NAMES = "Buffer names is null";
     private final static String NOT_ENOUGH_NAMES = "Not enough buffer names";
@@ -100,6 +99,10 @@ public class Mesh extends BaseReference {
      * Uniforms, used when rendering this Mesh depending on what ShaderProgram is used.
      */
     transient protected float[] uniforms;
+    /**
+     * The mapper used to find positions of property attributes.
+     */
+    protected transient PropertyMapper mapper;
 
     /**
      * Optional consumer for attributes, use this when dynamic mesh is needed. ie when the generic attribute data must
@@ -171,6 +174,7 @@ public class Mesh extends BaseReference {
      */
     public void createMesh(ShaderProgram program, Texture2D texture) {
         setTexture(texture, Texture2D.TEXTURE_0);
+        mapper = new PropertyMapper(program);
     }
 
     /**
@@ -436,6 +440,16 @@ public class Mesh extends BaseReference {
      */
     public int getMode() {
         return mode;
+    }
+
+    @Override
+    public void destroy() {
+        // TODO Release resources
+    }
+
+    @Override
+    public PropertyMapper getMapper() {
+        return mapper;
     }
 
 }

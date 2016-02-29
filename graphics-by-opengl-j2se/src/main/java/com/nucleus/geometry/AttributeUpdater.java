@@ -126,13 +126,6 @@ public interface AttributeUpdater {
          */
         public void bindAttributeBuffer(VertexBuffer buffer);
 
-        /**
-         * Returns the propertymapper to be used for the consumer.
-         * 
-         * @return The propertymapper.
-         */
-        public PropertyMapper getMapper();
-
     }
 
     /**
@@ -153,4 +146,12 @@ public interface AttributeUpdater {
      * Release all resources allocated by the implementing class, call this when this object shall not be used anymore.
      */
     public void destroy();
+
+    /**
+     * Returns the propertymapper to be used to find positions of property attributes.
+     * 
+     * @return The propertymapper.
+     */
+    public PropertyMapper getMapper();
+
 }
