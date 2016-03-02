@@ -12,11 +12,18 @@ This can greatly reduce development times since starting and debugging a J2SE ap
 
 When importing the project use either the eclipse project files or the pom file. I use Eclipse, though a Maven base IDE _should_ work.
 
-graphics-by-opengl-j2se contains all APIs and implementation that is not platform specific 
+graphics-by-opengl-j2se contains all APIs and implementation that is not platform specific
 - the majority of functionality and code should be here.
 
-graphics-by-opengl-jogl and 
+graphics-by-opengl-jogl and
+
 graphics-by-opengl-android
+
 contains JOGL and Android implementations.
+
+To use the project in Eclipse, import as Existing Maven project.
+
+You need ADT installed, may experience problem with non-existing project.properties file - I solved by adding an empty project.properties file in the Android project root, then chosing 'Properties-Android' and selecting a valid SDK.
+
 
 
