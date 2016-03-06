@@ -3,6 +3,7 @@ package com.nucleus.io;
 import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.geometry.Mesh;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;
 import com.nucleus.texturing.UVAtlas;
@@ -27,6 +28,8 @@ public class ResourcesData {
     private ArrayList<TiledTexture2D> tiledTexture2D = new ArrayList<TiledTexture2D>();
     @SerializedName("uvTexture2D")
     private ArrayList<UVTexture2D> uvTexture2D = new ArrayList<UVTexture2D>();
+    @SerializedName("mesh")
+    private ArrayList<Mesh> mesh = new ArrayList<Mesh>();
 
     /**
      * Returns the defined texture objects
@@ -120,6 +123,20 @@ public class ResourcesData {
         } else {
             texture2D.add(texture);
         }
+    }
+
+    /**
+     * Returns the first instance of a Mesh with the specified id.
+     * @param id
+     * @return The mesh or null if not found.
+     */
+    public Mesh getMesh(String id) {
+        for (Mesh m : mesh) {
+            if (m.getId().equals(id)) {
+                return m;
+            }
+        }
+        return null;
     }
 
 }
