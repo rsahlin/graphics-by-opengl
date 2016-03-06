@@ -358,9 +358,9 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Returns a reference to the data for the type, this may not be defined
+     * Returns a reference to the node instance, if specified this points to the node to instantiate.
      * 
-     * @return
+     * @return The node to instantiate
      */
     public String getReference() {
         return reference;
