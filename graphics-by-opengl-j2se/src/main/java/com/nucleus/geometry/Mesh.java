@@ -131,13 +131,13 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     }
 
     /**
-     * Creates a new empty mesh with the specified id, the attribute/index buffers must be prepared before rendering can
-     * take place.
+     * Creates a shallow copy of the source mesh, only the serialized values are copied, id and textureRef.
      * 
-     * @param id
+     * @param source
      */
-    public Mesh(String id) {
-        super(id);
+    public Mesh(Mesh source) {
+        setId(source.getId());
+        textureRef = source.textureRef;
     }
 
     /**
