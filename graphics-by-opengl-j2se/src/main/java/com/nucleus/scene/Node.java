@@ -25,6 +25,11 @@ public class Node extends BaseReference {
     private String type;
     @SerializedName("reference")
     private String reference;
+    /**
+     * Reference to mesh
+     */
+    @SerializedName("meshRef")
+    private String meshRef;
     @SerializedName("state")
     private NodeState state;
     @SerializedName("transform")
@@ -267,6 +272,7 @@ public class Node extends BaseReference {
         super.set(source);
         type = source.type;
         reference = source.reference;
+        meshRef = source.meshRef;
         if (source.getTransform() != null) {
             transform.set(source.getTransform());
         }
@@ -364,6 +370,15 @@ public class Node extends BaseReference {
      */
     public String getReference() {
         return reference;
+    }
+
+    /**
+     * Returns the name of the mesh for this node, this is used when importing
+     * 
+     * @return
+     */
+    public String getMeshRef() {
+        return meshRef;
     }
 
     /**
