@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.camera.ViewFrustum;
+import com.nucleus.data.Anchor;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.BaseReference;
@@ -23,13 +24,6 @@ public class Node extends BaseReference {
 
     @SerializedName("type")
     private String type;
-    @SerializedName("reference")
-    private String reference;
-    /**
-     * Reference to mesh
-     */
-    @SerializedName("meshRef")
-    private String meshRef;
     @SerializedName("state")
     private NodeState state;
     @SerializedName("transform")
@@ -38,6 +32,30 @@ public class Node extends BaseReference {
     private ViewFrustum viewFrustum;
     @SerializedName("children")
     ArrayList<Node> children = new ArrayList<Node>();
+    /**
+     * Anchor value for mesh, 0 to 1 where 0 is upper/left and 1 is lower/right assuming mesh is built normally.
+     * Not relevant for all nodes
+     */
+    @SerializedName("anchor")
+    private Anchor anchor;
+    /**
+     * Best approximation of the size of the Node
+     */
+    @SerializedName("size")
+    private float[] size;
+
+    /**
+     * Reference to the node instance, used when importing exporting.
+     * No runtime meaning
+     */
+    @SerializedName("reference")
+    private String reference;
+    /**
+     * Reference to mesh, used when importing exporting.
+     * No runtime meaning
+     */
+    @SerializedName("meshRef")
+    private String meshRef;
 
     /**
      * Optional projection Matrix for the node, this will affect all child nodes.
@@ -65,14 +83,29 @@ public class Node extends BaseReference {
         setId(id);
     }
 
+
     /**
-     * Create a new instance of the specified node
-     * Note! This will not copy children or the transient values. call {@link #create()} to set transient values
+     * Creates a new instance of this node.
+     * This will be a new empty instance.
      * 
-     * @param source The source node to copy
+     * @return New instance of this node
      */
-    public Node(Node source) {
-        set(source);
+    public Node createInstance() {
+        Node copy = new Node();
+        copy.set(this);
+        return copy;
+    }
+
+    /**
+     * Creates a new instance of this node, then copies this node into the copy.
+     * This is a shallow copy, it does not copy children.
+     * 
+     * @return New copy of this node, transient values and children will not be copied.
+     */
+    public Node copy() {
+        Node copy = createInstance();
+        copy.set(this);
+        return copy;
     }
 
     /**
@@ -98,6 +131,15 @@ public class Node extends BaseReference {
      */
     public ArrayList<Mesh> getMeshes() {
         return meshes;
+    }
+
+    /**
+     * Returns the size of this mesh, or null if not specified.
+     * 
+     * @return Size of the node/mesh or null if not specified
+     */
+    public float[] getSize() {
+        return size;
     }
 
     /**
@@ -279,7 +321,27 @@ public class Node extends BaseReference {
         if (source.viewFrustum != null) {
             setViewFrustum(new ViewFrustum(source.viewFrustum));
         }
+        if (source.anchor != null) {
+            anchor = new Anchor(source.anchor);
+        }
+        if (source.size != null) {
+            setSize(source.size);
+        }
     }
+
+    /**
+     * Internal method, sets the size of the mesh/node.
+     * This will only set the size parameter, createMesh must be called to actually create the mesh
+     * 
+     * @param size The size to set
+     */
+    private void setSize(float[] size) {
+        if (this.size == null) {
+            this.size = new float[size.length];
+        }
+        System.arraycopy(size, 0, this.size, 0, size.length);
+    }
+
 
     public void copyTo(Node target) {
         target.set(this);
@@ -341,7 +403,8 @@ public class Node extends BaseReference {
 
     @Override
     public String toString() {
-        return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children";
+        return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children, reference: "
+                + reference;
     }
 
     /**
@@ -361,6 +424,15 @@ public class Node extends BaseReference {
      */
     public NodeState getState() {
         return state;
+    }
+
+    /**
+     * Returns a reference to the Anchor values, do NOT modify these values.
+     * 
+     * @return
+     */
+    public Anchor getAnchor() {
+        return anchor;
     }
 
     /**

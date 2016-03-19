@@ -21,10 +21,6 @@ public abstract class ActorNode extends Node implements ActorController {
         super();
     }
 
-    protected ActorNode(ActorNode source) {
-        super(source);
-    }
-
     /**
      * Returns the actor objects for this node, or null if not set.
      * 

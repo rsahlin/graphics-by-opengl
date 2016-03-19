@@ -108,7 +108,7 @@ public class NucleusNodeExporter implements NodeExporter {
         switch (type) {
         case node:
             // exportDataReferences((Node) source, (RootNode) rootNode);
-            return new Node(source);
+            return source.copy();
         case layernode:
             // exportDataReferences((LayerNode) source, (RootNode) rootNode);
 

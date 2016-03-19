@@ -28,7 +28,7 @@ public class DefaultNodeFactory implements NodeFactory {
         }
         switch (type) {
         case node:
-            return new Node(source);
+            return source.copy();
         case layernode:
             return new LayerNode((LayerNode) source);
         default:
