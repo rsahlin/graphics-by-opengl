@@ -68,6 +68,11 @@ public class Node extends BaseReference {
     transient Producer attributeProducer;
 
     /**
+     * The parent node, this shall be set when node is added as child
+     */
+    transient Node parent;
+
+    /**
      * Creates an empty node, add children and meshes as needed.
      */
     public Node() {
@@ -265,11 +270,22 @@ public class Node extends BaseReference {
 
     /**
      * Adds a child at the end of the list of children.
+     * The child node's parent will be set to this node.
      * 
      * @param child The child to add to this node.
      */
     public void addChild(Node child) {
         children.add(child);
+        child.parent = this;
+    }
+
+    /**
+     * Returns the parent of this node, or null if this is the root
+     * 
+     * @return
+     */
+    public Node getParent() {
+        return parent;
     }
 
     /**
@@ -483,4 +499,15 @@ public class Node extends BaseReference {
         viewFrustum = source;
         setProjection(source.getMatrix());
     }
+
+    /**
+     * Called by factory method when node has been created, do not call childrens {@link #onCreated()} recursively from
+     * this method.
+     * Implement in subclasses to perform actions when the node has been created, this will be called after all children
+     * of this node has been created.
+     */
+    public void onCreated() {
+        // Default implementation does nothing.
+    }
+
 }

@@ -140,18 +140,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         textureRef = source.textureRef;
     }
 
-    /**
-     * Creates a new Mesh that can be rendered using drawElements()
-     * 
-     * @param indices Buffer with element data for vertices to be drawn.
-     * @param vertices One or more buffers with vertice/attribute data
-     * @param material The material to use when rendering this mesh.
-     * @param texture Texture to set or null
-     * @throws IllegalArgumentException If vertices, indices or material is null.
-     */
-    public Mesh(ElementBuffer indices, VertexBuffer[] vertices, Material material, Texture2D texture) {
-        setupIndexed(indices, vertices, material, texture);
-    }
 
     /**
      * Creates a new Mesh that can be rendered using drawArrays()
@@ -167,6 +155,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
     /**
      * Creates the Mesh to be rendered, after this method returns it shall be possible to render the mesh.
+     * The material will be created with the specified program.
      * 
      * @param program
      * @param texture The texture to use for sprites, must be {@link TiledTexture2D} otherwise tiling will not work.
@@ -175,23 +164,16 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     public void createMesh(ShaderProgram program, Texture2D texture) {
         setTexture(texture, Texture2D.TEXTURE_0);
         mapper = new PropertyMapper(program);
+        setMaterial(new Material(program));
     }
 
     /**
-     * Setup the buffers needed for indexed (elements) rendering using glDrawElements()
+     * Sets the material in this mesh.
      * 
-     * @param indices Buffer with element data for vertices to be drawn.
-     * @param vertices One or more buffers with vertice/attribute data
-     * @param material The material to use when rendering this mesh.
-     * @param texture Texture to set or null
-     * @throws IllegalArgumentException If vertices or material is null.
+     * @param material
      */
-    public void setupIndexed(ElementBuffer indices, VertexBuffer[] vertices, Material material, Texture2D texture) {
-        if (indices == null) {
-            throw new IllegalArgumentException(NULL_PARAMETER_STR);
-        }
-        this.indices = indices;
-        setupVertices(vertices, material, texture);
+    private void setMaterial(Material material) {
+        this.material = material;
     }
 
     /**

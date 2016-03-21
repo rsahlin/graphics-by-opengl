@@ -114,16 +114,17 @@ public class VertexBuffer extends BufferObject {
      * @param triangleData The source data to copy, must hold data for the specified number of triangles.
      * Data is read in the format X,Y,Z
      * @param sourceOffset Offset in source where data is read.
-     * @param destOffset Offset in destination vertex buffer, in floats, where data is stored - normally 0.
+     * @param vertexIndex Index of first vertex to set.
      * @param verticeCount Number of vertices to store.
      */
-    public void setPosition(float[] verticeData, int sourceOffset, int destOffset, int verticeCount) {
+    public void setPosition(float[] verticeData, int sourceOffset, int vertexIndex, int verticeCount) {
 
+        vertexIndex = vertexIndex * attribFloatStride;
         for (int i = 0; i < verticeCount; i++) {
-            vertices.position(destOffset);
+            vertices.position(vertexIndex);
             vertices.put(verticeData, sourceOffset, XYZ_COMPONENTS);
             sourceOffset += XYZ_COMPONENTS;
-            destOffset += attribFloatStride;
+            vertexIndex += attribFloatStride;
         }
     }
 
