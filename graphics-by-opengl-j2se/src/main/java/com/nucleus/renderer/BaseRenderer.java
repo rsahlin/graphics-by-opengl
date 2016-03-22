@@ -213,8 +213,14 @@ class BaseRenderer implements NucleusRenderer {
             if (projection != null) {
                 Matrix.mul4(mvpMatrix, projection);
             }
-            float[] modelMatrix = node.getTransform().getMatrix();
             float[] mvp = Matrix.createMatrix();
+            float[] modelMatrix = null;
+            if (node.getTransform() != null) {
+                modelMatrix = node.getTransform().getMatrix();
+            } else {
+                modelMatrix = Matrix.createMatrix();
+                Matrix.setIdentity(modelMatrix, 0);
+            }
             Matrix.mul4(mvpMatrix, modelMatrix, mvp);
             renderMeshes(node.getMeshes(), mvp);
             pushMatrix(mvp);

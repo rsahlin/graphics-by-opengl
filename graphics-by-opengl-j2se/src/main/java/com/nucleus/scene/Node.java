@@ -27,7 +27,7 @@ public class Node extends BaseReference {
     @SerializedName("state")
     private NodeState state;
     @SerializedName("transform")
-    Transform transform = new Transform();
+    protected Transform transform;
     @SerializedName("viewFrustum")
     private ViewFrustum viewFrustum;
     @SerializedName("children")
@@ -332,7 +332,13 @@ public class Node extends BaseReference {
         reference = source.reference;
         meshRef = source.meshRef;
         if (source.getTransform() != null) {
-            transform.set(source.getTransform());
+            if (transform == null) {
+                transform = new Transform(source.getTransform());
+            } else {
+                transform.set(source.getTransform());
+            }
+        } else {
+            transform = null;
         }
         if (source.viewFrustum != null) {
             setViewFrustum(new ViewFrustum(source.viewFrustum));
