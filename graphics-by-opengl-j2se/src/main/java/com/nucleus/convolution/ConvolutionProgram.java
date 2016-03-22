@@ -114,7 +114,7 @@ public class ConvolutionProgram extends ShaderProgram {
      */
     public void buildMesh(Mesh mesh, Texture2D texture, float width, float height, float zPos, float[] kernel) {
 
-        float[] quadPositions = MeshBuilder.buildQuadPositionsUV(width, height, zPos, -width / 2, -height / 2);
+        float[] quadPositions = MeshBuilder.createQuadPositionsUV(width, height, zPos, -width / 2, -height / 2);
         MeshBuilder.buildQuadMeshFan(mesh, this, quadPositions, 0);
         mesh.setTexture(texture, Texture2D.TEXTURE_0);
         System.arraycopy(kernel, 0, mesh.getUniforms(), VARIABLES.uKernel.offset, kernel.length);

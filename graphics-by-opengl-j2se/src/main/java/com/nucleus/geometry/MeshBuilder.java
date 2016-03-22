@@ -91,7 +91,7 @@ public class MeshBuilder {
      * @return array containing 4 vertices for a quad with the specified size, the size of the array will be
      * vertexStride * 4
      */
-    public static float[] buildQuadPositionsIndexed(float[] size, Anchor anchor, int vertexStride) {
+    public static float[] createQuadPositionsIndexed(float[] size, Anchor anchor, int vertexStride) {
 
         float[] translate = anchor.calcOffsets(size);
         float[] quadPositions = new float[vertexStride * 4];
@@ -126,7 +126,7 @@ public class MeshBuilder {
      * @return array containing 4 vertices for a quad with the specified size, the size of the array will be
      * vertexStride * 4
      */
-    public static float[] buildQuadPositionsUV(float width, float height, float z, float x, float y) {
+    public static float[] createQuadPositionsUV(float width, float height, float z, float x, float y) {
 
         float[] quadPositions = new float[XYZUV_COMPONENTS * 4];
         com.nucleus.geometry.MeshBuilder.setPositionUV(x, y, z, 0, 0, quadPositions, 0);
@@ -142,7 +142,7 @@ public class MeshBuilder {
 
     /**
      * Builds a mesh with a specified number of indexed quads of GL_FLOAT type, the mesh must have an elementbuffer to
-     * index the vertices.
+     * index the vertices. The index buffer will be built with indexes, this mesh shall be drawn using indexed mode.
      * Vertex buffer shall have storage for XYZ + UV.
      * 
      * @param mesh The mesh to build the buffers in, this is the mesh that can be rendered.
@@ -164,9 +164,24 @@ public class MeshBuilder {
             System.arraycopy(quadPositions, 0, vertices, destPos, quadPositions.length);
             destPos += quadPositions.length;
         }
-
         mesh.attributes[BufferIndex.VERTICES.index].setPosition(vertices, 0, index * INDEXED_QUAD_VERTICES,
                 quadCount * INDEXED_QUAD_VERTICES);
+    }
+
+    /**
+     * Builds the position and UV for one Quad, before calling this method the indexbuffer must be built if needed.
+     * 
+     * @param mesh
+     * @param program
+     * @param index
+     */
+    public static void buildQuad(Mesh mesh, ShaderProgram program, int index, float[] quadPositions) {
+        float[] vertices = new float[INDEXED_QUAD_VERTICES * XYZ_COMPONENTS];
+        int destPos = 0;
+        System.arraycopy(quadPositions, 0, vertices, destPos, quadPositions.length);
+        mesh.attributes[BufferIndex.VERTICES.index].setPosition(vertices, 0, index * INDEXED_QUAD_VERTICES,
+                INDEXED_QUAD_VERTICES);
+
     }
 
     /**
