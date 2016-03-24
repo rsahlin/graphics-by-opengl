@@ -3,6 +3,7 @@ package com.nucleus.data;
 import com.google.gson.annotations.SerializedName;
 
 /**
+ * This class is deprecated - do NOT use Anchor, use position + size instead.
  * Anchor values for objects
  * The anchor value for each axis will be multiplied by the size of the object,
  * 0 on the X axis will give an anchor value of 0, 1 will give an anchor value of width.
@@ -12,6 +13,7 @@ import com.google.gson.annotations.SerializedName;
  * @author Richard Sahlin
  *
  */
+@Deprecated
 public class Anchor {
 
     /**

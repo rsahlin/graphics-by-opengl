@@ -3,8 +3,8 @@ package com.nucleus.scene;
 import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.bounds.Bounds;
 import com.nucleus.camera.ViewFrustum;
-import com.nucleus.data.Anchor;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.BaseReference;
@@ -32,17 +32,9 @@ public class Node extends BaseReference {
     private ViewFrustum viewFrustum;
     @SerializedName("children")
     ArrayList<Node> children = new ArrayList<Node>();
-    /**
-     * Anchor value for mesh, 0 to 1 where 0 is upper/left and 1 is lower/right assuming mesh is built normally.
-     * Not relevant for all nodes
-     */
-    @SerializedName("anchor")
-    private Anchor anchor;
-    /**
-     * Best approximation of the size of the Node
-     */
-    @SerializedName("size")
-    private float[] size;
+
+    @SerializedName("bounds")
+    private Bounds bounds;
 
     /**
      * Reference to the node instance, used when importing exporting.
@@ -71,6 +63,7 @@ public class Node extends BaseReference {
      * The parent node, this shall be set when node is added as child
      */
     transient Node parent;
+
 
     /**
      * Creates an empty node, add children and meshes as needed.
@@ -136,15 +129,6 @@ public class Node extends BaseReference {
      */
     public ArrayList<Mesh> getMeshes() {
         return meshes;
-    }
-
-    /**
-     * Returns the size of this mesh, or null if not specified.
-     * 
-     * @return Size of the node/mesh or null if not specified
-     */
-    public float[] getSize() {
-        return size;
     }
 
     /**
@@ -343,27 +327,7 @@ public class Node extends BaseReference {
         if (source.viewFrustum != null) {
             setViewFrustum(new ViewFrustum(source.viewFrustum));
         }
-        if (source.anchor != null) {
-            anchor = new Anchor(source.anchor);
-        }
-        if (source.size != null) {
-            setSize(source.size);
-        }
     }
-
-    /**
-     * Internal method, sets the size of the mesh/node.
-     * This will only set the size parameter, createMesh must be called to actually create the mesh
-     * 
-     * @param size The size to set
-     */
-    private void setSize(float[] size) {
-        if (this.size == null) {
-            this.size = new float[size.length];
-        }
-        System.arraycopy(size, 0, this.size, 0, size.length);
-    }
-
 
     public void copyTo(Node target) {
         target.set(this);
@@ -446,15 +410,6 @@ public class Node extends BaseReference {
      */
     public NodeState getState() {
         return state;
-    }
-
-    /**
-     * Returns a reference to the Anchor values, do NOT modify these values.
-     * 
-     * @return
-     */
-    public Anchor getAnchor() {
-        return anchor;
     }
 
     /**

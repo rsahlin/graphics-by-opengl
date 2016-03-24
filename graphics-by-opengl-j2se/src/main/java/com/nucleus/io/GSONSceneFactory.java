@@ -9,10 +9,12 @@ import java.util.ArrayList;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.nucleus.bounds.Bounds;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.exporter.NodeExporter;
 import com.nucleus.exporter.NucleusNodeExporter;
 import com.nucleus.geometry.MeshFactory;
+import com.nucleus.io.gson.BoundsDeserializer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
@@ -92,7 +94,7 @@ public class GSONSceneFactory implements SceneSerializer {
             throw new IllegalArgumentException(NULL_PARAMETER_ERROR + "inputstream");
         }
         Reader reader = new InputStreamReader(is, "UTF-8");
-        Gson gson = new GsonBuilder().create();
+        Gson gson = new GsonBuilder().registerTypeAdapter(Bounds.class, new BoundsDeserializer()).create();
         RootNode scene = getSceneFromJson(gson, reader);
         return createScene(scene);
     }

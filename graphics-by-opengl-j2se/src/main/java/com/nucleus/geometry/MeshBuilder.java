@@ -5,15 +5,20 @@ import static com.nucleus.geometry.VertexBuffer.QUAD_INDICES;
 import static com.nucleus.geometry.VertexBuffer.STRIP_QUAD_VERTICES;
 import static com.nucleus.geometry.VertexBuffer.XYZUV_COMPONENTS;
 import static com.nucleus.geometry.VertexBuffer.XYZ_COMPONENTS;
+import static com.nucleus.vecmath.Rectangle.HEIGHT;
+import static com.nucleus.vecmath.Rectangle.WIDTH;
+import static com.nucleus.vecmath.Rectangle.X;
+import static com.nucleus.vecmath.Rectangle.Y;
 
 import java.nio.ByteBuffer;
 
-import com.nucleus.data.Anchor;
+import com.nucleus.Error;
 import com.nucleus.geometry.AttributeUpdater.PropertyMapper;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.vecmath.Axis;
+import com.nucleus.vecmath.Rectangle;
+import com.nucleus.vecmath.Rectangle.Mode;
 
 /**
  * Utility class to help build different type of Meshes.
@@ -84,27 +89,29 @@ public class MeshBuilder {
      * 1 2
      * 4 3
      * 
-     * @param size Width and height of quad in world coordinates
-     * @param anchor Anchor values for x,y and z
+     * @param rectangle x1, y1, width, height
      * @param vertexStride, number of floats to add from one vertex to the next. Usually 3 to allow XYZ storage,
      * increase if padding (eg for UV) is needed.
      * @return array containing 4 vertices for a quad with the specified size, the size of the array will be
      * vertexStride * 4
      */
-    public static float[] createQuadPositionsIndexed(float[] size, Anchor anchor, int vertexStride) {
+    public static float[] createQuadPositionsIndexed(Rectangle rectangle, int vertexStride, float z) {
 
-        float[] translate = anchor.calcOffsets(size);
+        float[] values = rectangle.getValues();
+        if (rectangle.getMode() != Mode.SIZE) {
+            throw new IllegalArgumentException(Error.NOT_IMPLEMENTED.message);
+        }
+
         float[] quadPositions = new float[vertexStride * 4];
-        com.nucleus.geometry.MeshBuilder.setPosition(translate[Axis.X.index], translate[Axis.Y.index],
-                translate[Axis.Z.index], quadPositions, 0);
-        com.nucleus.geometry.MeshBuilder.setPosition(size[Axis.WIDTH.index] + translate[Axis.X.index],
-                translate[Axis.Y.index], translate[Axis.Z.index], quadPositions, vertexStride);
-        com.nucleus.geometry.MeshBuilder.setPosition(size[Axis.WIDTH.index] + translate[Axis.X.index],
-                size[Axis.HEIGHT.index] + translate[Axis.Y.index],
-                translate[Axis.Z.index], quadPositions, vertexStride * 2);
-        com.nucleus.geometry.MeshBuilder.setPosition(translate[Axis.X.index],
-                size[Axis.HEIGHT.index] + translate[Axis.Y.index],
-                translate[Axis.Z.index], quadPositions, vertexStride * 3);
+        com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y],
+                z, quadPositions, 0);
+        com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y], z, quadPositions,
+                vertexStride);
+        com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y] + values[HEIGHT],
+                z, quadPositions,
+                vertexStride * 2);
+        com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y] + values[HEIGHT], z, quadPositions,
+                vertexStride * 3);
         return quadPositions;
     }
 
