@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.bounds.Bounds;
+import com.nucleus.bounds.BoundsFactory;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.Mesh;
@@ -327,6 +328,11 @@ public class Node extends BaseReference {
         if (source.viewFrustum != null) {
             setViewFrustum(new ViewFrustum(source.viewFrustum));
         }
+        if (source.bounds != null) {
+            this.bounds = BoundsFactory.create(source.bounds.getType(), source.bounds.getBounds());
+        } else {
+            this.bounds = null;
+        }
     }
 
     public void copyTo(Node target) {
@@ -401,6 +407,15 @@ public class Node extends BaseReference {
      */
     public String getType() {
         return type;
+    }
+
+    /**
+     * Returns the bounds for this node if set, otherwise null
+     * 
+     * @return
+     */
+    public Bounds getBounds() {
+        return bounds;
     }
 
     /**
