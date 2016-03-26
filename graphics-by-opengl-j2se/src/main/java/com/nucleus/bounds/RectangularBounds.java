@@ -66,7 +66,9 @@ public class RectangularBounds extends Bounds {
      */
     public RectangularBounds(float[] values, int index) {
         type = Type.RECTANGULAR;
-        if (values.length == 4) {
+        if (values == null || values.length == 0) {
+            // Take bounds from rectangle
+        } else if (values.length == 4) {
             setBounds(values[0], values[1], values[2], values[3]);
         } else {
             setBounds(values, index);
