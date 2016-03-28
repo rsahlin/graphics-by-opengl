@@ -1,6 +1,8 @@
 package com.nucleus.scene;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.bounds.Bounds;
@@ -38,17 +40,17 @@ public class Node extends BaseReference {
     private Bounds bounds;
 
     /**
-     * Reference to the node instance, used when importing exporting.
-     * No runtime meaning
-     */
-    @SerializedName("reference")
-    private String reference;
-    /**
      * Reference to mesh, used when importing exporting.
      * No runtime meaning
      */
     @SerializedName("meshRef")
     private String meshRef;
+
+    /**
+     * Properties for this node
+     */
+    @SerializedName("properties")
+    private Map<String, String> properties;
 
     /**
      * Optional projection Matrix for the node, this will affect all child nodes.
@@ -151,21 +153,6 @@ public class Node extends BaseReference {
      */
     public void setAttributeProducer(Producer producer) {
         this.attributeProducer = producer;
-    }
-
-    /**
-     * Turns this node into a node with a reference to the specified node.
-     * The id and type will be taken from the source node.
-     * This is used by instance nodes to when importing an instance node (that references a resource node)
-     * 
-     * @param source This node will have the Id from the source.
-     * @param reference This node will have the reference set from the reference.
-     */
-    public void toReference(Node source, Node reference) {
-        String refId = reference.getId();
-        this.type = source.getType();
-        setId(source.getId());
-        setReference(refId);
     }
 
     /**
@@ -314,7 +301,6 @@ public class Node extends BaseReference {
     public void set(Node source) {
         super.set(source);
         type = source.type;
-        reference = source.reference;
         meshRef = source.meshRef;
         if (source.getTransform() != null) {
             if (transform == null) {
@@ -332,6 +318,24 @@ public class Node extends BaseReference {
             this.bounds = BoundsFactory.create(source.bounds.getType(), source.bounds.getBounds());
         } else {
             this.bounds = null;
+        }
+        setProperties(source);
+    }
+
+    /**
+     * Copies the properties from the source node to this
+     * 
+     * @param source
+     */
+    public void setProperties(Node source) {
+        if (source.properties == null || source.properties.size() == 0) {
+            return;
+        }
+        if (properties == null) {
+            properties = new HashMap<>();
+        }
+        for (String key : source.properties.keySet()) {
+            properties.put(key, source.properties.get(key));
         }
     }
 
@@ -395,8 +399,7 @@ public class Node extends BaseReference {
 
     @Override
     public String toString() {
-        return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children, reference: "
-                + reference;
+        return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children";
     }
 
     /**
@@ -427,14 +430,6 @@ public class Node extends BaseReference {
         return state;
     }
 
-    /**
-     * Returns a reference to the node instance, if specified this points to the node to instantiate.
-     * 
-     * @return The node to instantiate
-     */
-    public String getReference() {
-        return reference;
-    }
 
     /**
      * Returns the name of the mesh for this node, this is used when importing
@@ -443,15 +438,6 @@ public class Node extends BaseReference {
      */
     public String getMeshRef() {
         return meshRef;
-    }
-
-    /**
-     * Sets the reference for this node, this is used by instance nodes when exporting
-     * 
-     * @param reference The id of the node that this node shall reference when exporting, or null to remove reference
-     */
-    public void setReference(String reference) {
-        this.reference = reference;
     }
 
     /**
