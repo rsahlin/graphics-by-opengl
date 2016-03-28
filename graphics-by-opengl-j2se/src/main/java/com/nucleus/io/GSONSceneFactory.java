@@ -42,6 +42,8 @@ public class GSONSceneFactory implements SceneSerializer {
     protected NodeFactory nodeFactory;
     protected MeshFactory meshFactory;
 
+    protected Gson gson;
+
     /**
      * Creates a default scenefactory with {@link NucleusNodeExporter}.
      * Calls {@link #createNodeExporter()} and {@link #registerNodeExporters()}
@@ -94,9 +96,20 @@ public class GSONSceneFactory implements SceneSerializer {
             throw new IllegalArgumentException(NULL_PARAMETER_ERROR + "inputstream");
         }
         Reader reader = new InputStreamReader(is, "UTF-8");
-        Gson gson = new GsonBuilder().registerTypeAdapter(Bounds.class, new BoundsDeserializer()).create();
+        GsonBuilder builder = new GsonBuilder();
+        registerTypeAdapter(builder);
+        setGson(builder.create());
         RootNode scene = getSceneFromJson(gson, reader);
         return createScene(scene);
+    }
+
+    /**
+     * Retister type adapter(s), implement in subclasses as needed and call super
+     * 
+     * @param builder
+     */
+    protected void registerTypeAdapter(GsonBuilder builder) {
+        builder.registerTypeAdapter(Bounds.class, new BoundsDeserializer());
     }
 
     /**
@@ -243,6 +256,15 @@ public class GSONSceneFactory implements SceneSerializer {
      */
     protected void registerNodeExporters() {
         nodeExporter.registerNodeExporter(NodeType.values(), new NucleusNodeExporter());
+    }
+
+    /**
+     * Set the gson instance to be used, this is called after {@link #registerTypeAdapter(GsonBuilder)}
+     * 
+     * @param gson
+     */
+    protected void setGson(Gson gson) {
+        this.gson = gson;
     }
 
 }
