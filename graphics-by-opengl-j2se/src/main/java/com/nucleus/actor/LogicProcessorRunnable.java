@@ -2,10 +2,12 @@ package com.nucleus.actor;
 
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
+import com.nucleus.scene.RootNode;
 
 public class LogicProcessorRunnable implements Runnable {
 
     private static final String NULL_PARAMETER = "Parameter is null:";
+    private RootNode rootNode;
     private NucleusRenderer renderer;
     private LogicProcessor logicProcessor;
     private boolean running = false;
@@ -22,6 +24,10 @@ public class LogicProcessorRunnable implements Runnable {
         this.logicProcessor = logicProcessor;
     }
 
+    public void setRootNode(RootNode root) {
+        this.rootNode = root;
+    }
+
     @Override
     public void run() {
         System.out.println("Started thread to call processNode()");
@@ -29,7 +35,9 @@ public class LogicProcessorRunnable implements Runnable {
         while (running) {
             synchronized (this) {
                 // TODO Make sure this code is the same as in CoreApp
-                logicProcessor.processNode(renderer.getNode(Layer.SCENE), renderer.getFrameSampler().getDelta());
+                if (rootNode != null) {
+                    logicProcessor.processNode(rootNode.getNode(Layer.SCENE), renderer.getFrameSampler().getDelta());
+                }
                 try {
                     wait();
                 } catch (InterruptedException e) {

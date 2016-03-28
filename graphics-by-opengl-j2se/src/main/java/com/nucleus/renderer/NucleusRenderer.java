@@ -6,8 +6,8 @@ import com.nucleus.camera.ViewFrustum;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
-import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
 
@@ -128,48 +128,6 @@ public interface NucleusRenderer {
     public void init();
 
     /**
-     * Sets the scene node to be rendered when {@link #render()} is called
-     * The scene will be rendered in respect to the different layers.
-     * 
-     * @param layer The nodes to be rendered.
-     */
-    public void setNode(LayerNode layer);
-
-    /**
-     * Removes a Node from the specified layer, it will not be rendered after it has been successfully removed.
-     * 
-     * @param layer The node to be removed
-     */
-    public void removeNode(LayerNode layer);
-
-    /**
-     * Adds a Node to the specified layer, the Node will be draw every frame until it is removed.
-     * 
-     * @see #removeNode(Node, Layer)
-     * @param node
-     * @param layer The layer to add the Node to
-     */
-    // public void addNode(Node node, Layer layer);
-
-    /**
-     * Removes a Node from the specified layer, it will not be rendered after it has been successfully removed.
-     * 
-     * @see #addNode(Node, Layer)
-     * @param node
-     * @param layer The layer the Node shall be removed from, must match the layer it was added to.
-     */
-    // public void removeNode(Node node, Layer layer);
-
-    /**
-     * Returns the node for the specified layer. Take care when updating this in order not to break ongoing rendering.
-     * This will return the node added with a call to {@link #setNode(LayerNode)}
-     * 
-     * @param layer the layer to return the node for
-     * @return The node at the specified layer, or null
-     */
-    public Node getNode(Layer layer);
-
-    /**
      * Signals the start of a frame, implement if needed in subclasses.
      * This shall be called by the thread driving rendering and will call {@link FrameListener#updateGLData()} to copy
      * GL data from sprites/objects.
@@ -197,15 +155,13 @@ public interface NucleusRenderer {
 
     /**
      * Renders one specific layer or all layers.
-     * If layer is {@link Layer#SCENE} the scene nodetree, as set with {@link #setScene(Node)} will be rendered.
      * Uses the current mvp matrix, will call children recursively.
      * This shall be called by the thread driving rendering.
      * 
-     * @param layer Layer to render - or null to render all layers. If layer is {@link Layer#SCENE} then the scene
-     * nodetree will be rendered if it is set.
+     * @param root The root node to render
      * @throws GLException If there is a GL error when rendering.
      */
-    public void render(Layer layer) throws GLException;
+    public void render(RootNode root) throws GLException;
 
     /**
      * Signals the end of a frame - rendering is considered to be finished and implementations should call

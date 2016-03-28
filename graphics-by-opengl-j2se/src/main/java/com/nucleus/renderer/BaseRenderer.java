@@ -22,6 +22,7 @@ import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeState;
+import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
@@ -69,7 +70,6 @@ class BaseRenderer implements NucleusRenderer {
     protected Window window = Window.getInstance();
 
     protected GLInfo glInfo;
-    private ArrayList<LayerNode>[] layers = new ArrayList[Layer.values().length];
     /**
      * Set to true when init is called
      */
@@ -355,57 +355,31 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void setNode(LayerNode layer) {
-        addNode(layer, layer.getLayer());
-    }
-
-    @Override
-    public void removeNode(LayerNode layer) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void render(Layer layer) throws GLException {
+    public void render(RootNode root) throws GLException {
+        Layer layer = root.getLayer();
         if (layer == null) {
-            Layer[] layers = Layer.values();
-            for (Layer l : layers) {
-                renderLayer(l);
+            for (LayerNode node : root.getScenes()) {
+                renderLayer(node);
+            }
+        } else {
+            for (LayerNode node : root.getScenes()) {
+                if (node.getLayer() == layer) {
+                    renderLayer(node);
+                }
             }
         }
     }
 
     /**
-     * Internal method, renders the specified layer, if layer is SCENE then the scene is rendered after the layers
-     * Nodes.
+     * Renders a layer node
      * 
-     * @param layer
+     * @param layer The layer node
      * @throws GLException
      */
-    private void renderLayer(Layer layer) throws GLException {
-        renderLayer(layers[layer.index]);
-    }
-
-    /**
-     * Renders a list of Nodes (in a layer)
-     * 
-     * @param layer
-     * @throws GLException
-     */
-    private void renderLayer(ArrayList<LayerNode> layer) throws GLException {
+    private void renderLayer(LayerNode layer) throws GLException {
         if (layer != null) {
-            for (Node n : layer) {
-                render(n);
-            }
+            render(layer);
         }
-    }
-
-    @Override
-    public Node getNode(Layer layer) {
-        if (layer != null && layers[layer.index] != null) {
-            return layers[layer.index].get(0);
-        }
-        return null;
     }
 
     @Override
@@ -449,20 +423,6 @@ class BaseRenderer implements NucleusRenderer {
     public void resizeWindow(int x, int y, int width, int height) {
         viewPort.setViewPort(x, y, width, height);
         Window.getInstance().setSize(width, height);
-    }
-
-    private void addNode(LayerNode node, Layer layer) {
-        if (layers[layer.index] == null) {
-            layers[layer.index] = new ArrayList<LayerNode>();
-        }
-        layers[layer.index].add(node);
-    }
-
-    private void removeNode(Node node, Layer layer) {
-        if (layers[layer.index] == null) {
-            return;
-        }
-        layers[layer.index].remove(node);
     }
 
 }

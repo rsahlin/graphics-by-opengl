@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.ResourcesData;
+import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.texturing.Texture2D;
 
 /**
@@ -30,6 +31,11 @@ public abstract class RootNode {
 
     @SerializedName("scenes")
     ArrayList<LayerNode> scenes;
+
+    /**
+     * The current layer to be processed, or null to process all.
+     */
+    private Layer layer;
 
     /**
      * Adds a node instance in this scene, this is a nodetree that can be rendered.
@@ -113,6 +119,41 @@ public abstract class RootNode {
     public void addResource(Texture2D texture) {
         System.out.println("texture: " + texture.getClass().getSimpleName());
         getResources().addTexture(texture);
+    }
+
+    /**
+     * Sets the layer to be processed and rendered.
+     * Set to null to process and render all layers
+     * 
+     * @param layer
+     */
+    public void setLayer(Layer layer) {
+        this.layer = layer;
+    }
+
+    /**
+     * Returns the current layer to process
+     * 
+     * @return The layer to process and render, or null for all layers.
+     */
+    public Layer getLayer() {
+        return layer;
+    }
+
+    /**
+     * Returns the node for the specified layer. Take care when updating this in order not to break ongoing rendering.
+     * This will return the node added with a call to {@link #setNode(LayerNode)}
+     * 
+     * @param layer the layer to return the node for
+     * @return The node at the specified layer, or null
+     */
+    public Node getNode(Layer layer) {
+        for (LayerNode node : getScenes()) {
+            if (node.getLayer() == layer) {
+                return node;
+            }
+        }
+        return null;
     }
 
 }

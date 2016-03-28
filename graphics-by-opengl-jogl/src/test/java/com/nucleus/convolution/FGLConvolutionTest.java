@@ -18,6 +18,7 @@ import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.RenderSettings;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
+import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.LayerNode;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.Texture2D;
@@ -78,9 +79,10 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
                 new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD);
         c.buildMesh(mesh, tex, 1f, 1f, 0, kernel[kernelIndex]);
         node.addMesh(mesh);
-        renderer.setNode(node);
+        BaseRootNode root = new BaseRootNode();
+        root.addScene(node);
+        coreApp.setRootNode(root);
         renderer.addFrameListener(this);
-
     }
 
     @Override

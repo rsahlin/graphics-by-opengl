@@ -10,6 +10,7 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.scene.RootNode;
 
 /**
  * Base application, use this to get the objects needed to start and run an application.
@@ -68,6 +69,11 @@ public class CoreApp {
      */
     protected NucleusRenderer renderer;
     /**
+     * The scene rootnode
+     */
+    protected RootNode rootNode;
+
+    /**
      * Touch and pointer input
      */
     protected PointerInputProcessor inputProcessor = new PointerInputProcessor();
@@ -105,10 +111,20 @@ public class CoreApp {
 
     }
 
+    /**
+     * Returns the renderer, this should generally not be used.
+     * 
+     * @return
+     */
     public NucleusRenderer getRenderer() {
         return renderer;
     }
 
+    /**
+     * Returns the pointer input processor, this can be used to listen to low level MMI (pointer input) events.
+     * 
+     * @return
+     */
     public PointerInputProcessor getInputProcessor() {
         return inputProcessor;
     }
@@ -153,9 +169,13 @@ public class CoreApp {
                 }
             } else {
                 // TODO make sure this calls the same code as LogicProcessorRunnable
-                logicProcessor.processNode(renderer.getNode(Layer.SCENE), renderer.getFrameSampler().getDelta());
+                if (rootNode != null) {
+                    logicProcessor.processNode(rootNode.getNode(Layer.SCENE), renderer.getFrameSampler().getDelta());
+                }
             }
-            renderer.render((Layer) null);
+            if (rootNode != null) {
+                renderer.render(rootNode);
+            }
         } catch (GLException e) {
             throw new RuntimeException(e);
         }
@@ -163,8 +183,24 @@ public class CoreApp {
 
     }
 
+    /**
+     * Sets the processor for actor objects, this will be used when actors are loaded to resolve symbols into
+     * implementation classes.
+     * 
+     * @param logicProcessor
+     */
     public void setLogicProcessor(LogicProcessor logicProcessor) {
         this.logicProcessor = logicProcessor;
+    }
+
+    /**
+     * Sets the scene rootnode
+     * 
+     * @param node
+     */
+    public void setRootNode(RootNode node) {
+        this.rootNode = node;
+        logicRunnable.setRootNode(node);
     }
 
 }
