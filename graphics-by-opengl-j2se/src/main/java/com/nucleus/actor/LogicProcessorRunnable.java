@@ -1,5 +1,6 @@
 package com.nucleus.actor;
 
+import com.nucleus.CoreApp;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.scene.RootNode;
@@ -24,6 +25,12 @@ public class LogicProcessorRunnable implements Runnable {
         this.logicProcessor = logicProcessor;
     }
 
+    /**
+     * Sets the root node for the logic processor
+     * Call this from {@linkplain CoreApp} when the root node is set.
+     * 
+     * @param root
+     */
     public void setRootNode(RootNode root) {
         this.rootNode = root;
     }

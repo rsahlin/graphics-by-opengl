@@ -5,6 +5,9 @@ import java.util.List;
 
 import com.nucleus.geometry.Vertex2D;
 import com.nucleus.mmi.PointerData.PointerAction;
+import com.nucleus.properties.PropertyManager;
+import com.nucleus.properties.PropertyManager.PropertyHandler;
+import com.nucleus.scene.Node;
 import com.nucleus.vecmath.Vector2D;
 
 /**
@@ -13,7 +16,7 @@ import com.nucleus.vecmath.Vector2D;
  * @author Richard Sahlin
  *
  */
-public class PointerInputProcessor implements PointerListener {
+public class PointerInputProcessor implements PointerListener, PropertyHandler {
 
     public final static int MAX_POINTERS = 5;
 
@@ -29,6 +32,13 @@ public class PointerInputProcessor implements PointerListener {
      * If a movement is less than this then don't count. Use to filter out too small movements.
      */
     private float moveThreshold = 3;
+
+    /**
+     * Default constructor
+     */
+    public PointerInputProcessor() {
+        PropertyManager.getInstance().registerKey("input", this);
+    }
 
     @Override
     public void pointerEvent(PointerAction action, long timestamp, int pointer, float[] position) {
@@ -169,5 +179,19 @@ public class PointerInputProcessor implements PointerListener {
             listener.inputEvent(event);
         }
 
+    }
+
+    @Override
+    public boolean handleProperty(String key, String value) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean handleObjectProperty(Object obj, String key, String value) {
+        if (obj instanceof Node && "pointer".equals(value)) {
+            addMMIListener((Node) obj);
+        }
+        return false;
     }
 }

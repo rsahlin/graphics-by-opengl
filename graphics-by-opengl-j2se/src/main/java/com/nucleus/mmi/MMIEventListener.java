@@ -1,8 +1,8 @@
 package com.nucleus.mmi;
 
 /**
- * Interface for recieveing input events on input actions.
- * This is low level input events processed into MMI events.
+ * Interface for receiving input events on input actions.
+ * This is the low level input events that are processed into MMI events.
  * 
  * @author Richard Sahlin
  *

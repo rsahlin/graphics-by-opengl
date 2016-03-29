@@ -11,6 +11,9 @@ import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.BaseReference;
+import com.nucleus.mmi.MMIEventListener;
+import com.nucleus.mmi.MMIPointerEvent;
+import com.nucleus.properties.PropertyManager;
 import com.nucleus.vecmath.Transform;
 
 /**
@@ -23,7 +26,7 @@ import com.nucleus.vecmath.Transform;
  * @author Richard Sahlin
  *
  */
-public class Node extends BaseReference {
+public class Node extends BaseReference implements MMIEventListener {
 
     @SerializedName("type")
     private String type;
@@ -339,6 +342,15 @@ public class Node extends BaseReference {
         }
     }
 
+    /**
+     * Returns the properties for this node, or null if not set.
+     * 
+     * @return
+     */
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
     public void copyTo(Node target) {
         target.set(this);
     }
@@ -469,7 +481,24 @@ public class Node extends BaseReference {
      * of this node has been created.
      */
     public void onCreated() {
-        // Default implementation does nothing.
+        setObjectProperties();
+    }
+
+    /**
+     * Internal method, sets all properties to the {@linkplain PropertyManager} with the node as object
+     * 
+     */
+    private void setObjectProperties() {
+        if (properties != null) {
+            for (String key : properties.keySet()) {
+                PropertyManager.getInstance().setObjectProperty(this, key, properties.get(key));
+            }
+        }
+    }
+
+    @Override
+    public void inputEvent(MMIPointerEvent event) {
+        System.out.println("event: " + event.getAction());
     }
 
 }

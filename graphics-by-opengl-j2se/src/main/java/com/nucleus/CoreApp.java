@@ -194,7 +194,7 @@ public class CoreApp {
     }
 
     /**
-     * Sets the scene rootnode
+     * Sets the scene rootnode, this will update the root node in the logic runnable {@linkplain LogicProcessorRunnable}
      * 
      * @param node
      */
