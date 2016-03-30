@@ -142,6 +142,7 @@ public class CoreApp {
         contextCreated = true;
         this.width = width;
         this.height = height;
+        inputProcessor.setPointerTransform((float) 1 / width, (float) 1 / height, -0.5f, -0.5f);
     }
 
     /**

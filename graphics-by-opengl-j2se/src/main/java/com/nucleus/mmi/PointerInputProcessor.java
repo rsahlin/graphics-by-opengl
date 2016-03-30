@@ -25,6 +25,14 @@ public class PointerInputProcessor implements PointerListener, PropertyHandler {
      */
     PointerMotionData[] pointerMotionData = new PointerMotionData[MAX_POINTERS];
 
+    /**
+     * Scale and offset value for incoming pointer values, this can be used to normalize pointer values.
+     * Set to 1/width and 1/height to normalize
+     * values are: scalex, scaley, translatex, translatey
+     */
+    private final float[] transform = new float[] { 1, 1, 0, 0 };
+    private final float[] scaledPosition = new float[2];
+
     List<MMIEventListener> mmiListeners = new ArrayList<MMIEventListener>();
 
     private int pointerCount = 0;
@@ -45,8 +53,9 @@ public class PointerInputProcessor implements PointerListener, PropertyHandler {
         if (pointer >= MAX_POINTERS) {
             return;
         }
-        MMIPointerEvent event = null;
-        PointerData pointerData = new PointerData(action, timestamp, pointer, position);
+        scaledPosition[X] = position[X] * transform[X] + transform[2];
+        scaledPosition[Y] = position[Y] * transform[Y] + transform[3];
+        PointerData pointerData = new PointerData(action, timestamp, pointer, scaledPosition);
         switch (action) {
         case MOVE:
             addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.MOVE, pointer,
@@ -179,6 +188,22 @@ public class PointerInputProcessor implements PointerListener, PropertyHandler {
             listener.inputEvent(event);
         }
 
+    }
+
+    /**
+     * Sets the scale factor for incoming pointer values, a value of 1 will keep the values.
+     * Use 1/width and 1/height to normalize pointer values.
+     * 
+     * @param scaleX
+     * @param scaleY
+     * @param translateX Offset for the x position
+     * @param translateY Offset for y position
+     */
+    public void setPointerTransform(float scaleX, float scaleY, float translateX, float translateY) {
+        transform[X] = scaleX;
+        transform[Y] = scaleY;
+        transform[2] = translateX;
+        transform[3] = translateY;
     }
 
     @Override
