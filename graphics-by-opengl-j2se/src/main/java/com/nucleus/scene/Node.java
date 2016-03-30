@@ -14,6 +14,7 @@ import com.nucleus.io.BaseReference;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.properties.PropertyManager;
+import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Transform;
 
 /**
@@ -43,7 +44,7 @@ public class Node extends BaseReference implements MMIEventListener {
     private Bounds bounds;
 
     /**
-     * Reference to mesh, used when importing exporting.
+     * Reference to mesh, used when importing / exporting.
      * No runtime meaning
      */
     @SerializedName("meshRef")
@@ -59,6 +60,12 @@ public class Node extends BaseReference implements MMIEventListener {
      * Optional projection Matrix for the node, this will affect all child nodes.
      */
     transient float[] projection;
+    /**
+     * The node concatenated MVP matrix at time of render, this is set when the node is rendered.
+     * May be used when calculating bounds/collision on the current frame.
+     * DO NOT WRITE TO THIS!
+     */
+    transient float[] mvp = Matrix.createMatrix();
     transient ArrayList<Mesh> meshes = new ArrayList<Mesh>();
     /**
      * Optional AttributeUpdate producer, used for instance by spritemesh nodes
@@ -231,6 +238,16 @@ public class Node extends BaseReference implements MMIEventListener {
      */
     public float[] getProjection() {
         return projection;
+    }
+
+    /**
+     * Returns the MVP matrix, this updated the the concatenated MVP matrix for the node when it is rendered.
+     * DO NOT MODIFY THESE VALUES, CHANGES WILL BE OVERWRITTEN WHEN NODE IS RENDERED.
+     * 
+     * @return The concatenated MVP from last rendered frame, if Node is not rendered the MVP will not be updated.
+     */
+    public float[] getMVP() {
+        return mvp;
     }
 
     /**
@@ -498,7 +515,12 @@ public class Node extends BaseReference implements MMIEventListener {
 
     @Override
     public void inputEvent(MMIPointerEvent event) {
-        System.out.println("event: " + event.getAction());
+        System.out.println(event.getPointerData().getCurrentPosition()[0]);
+        // Default behavior is to check if node has bounds, if it has the pointer event is checked against it.
+        // Children are called recursively.
+        if (bounds != null) {
+            // bounds.isPointInside(event.getPointerData().getCurrentPosition(), 0);
+        }
     }
 
 }
