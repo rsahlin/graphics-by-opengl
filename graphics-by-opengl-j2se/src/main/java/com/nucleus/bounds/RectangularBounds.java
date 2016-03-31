@@ -6,6 +6,7 @@ import static com.nucleus.vecmath.VecMath.Z;
 
 import java.util.LinkedList;
 
+import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Vector2D;
 import com.nucleus.vecmath.Vector3D;
 
@@ -65,6 +66,8 @@ public class RectangularBounds extends Bounds {
      * If not, the array must contain 8 values, X+Y for each corner in a clockwise manner from upper left.
      */
     public RectangularBounds(float[] values, int index) {
+        // TODO How to handle if bounds do not use position reference?
+        position = new float[2];
         type = Type.RECTANGULAR;
         if (values == null || values.length == 0) {
             // Take bounds from rectangle
@@ -265,6 +268,7 @@ public class RectangularBounds extends Bounds {
             Vector2D.rotateZAxis(bounds, 2, rotatedBounds, 2, angle);
             Vector2D.rotateZAxis(bounds, 4, rotatedBounds, 4, angle);
             Vector2D.rotateZAxis(bounds, 6, rotatedBounds, 6, angle);
+            updated = true;
         break;
         }
 
@@ -343,6 +347,12 @@ public class RectangularBounds extends Bounds {
         }
 
         return new RectangularBounds(x1, y1, x2 - x1, y2 - y1);
+    }
+
+    @Override
+    public void transform(float[] matrix, int index) {
+        Matrix.transformVec2(matrix, index, bounds, rotatedBounds, 4);
+        updated = true;
     }
 
 }

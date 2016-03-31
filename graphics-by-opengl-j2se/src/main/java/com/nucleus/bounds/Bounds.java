@@ -61,7 +61,7 @@ public abstract class Bounds {
     @SerializedName("type")
     protected Type type;
     /**
-     * The bounds data, this is implementation specifiec.
+     * The bounds data, this is implementation specific.
      * For a circular bounds this is one value.
      * For rectangle bounds it is 8 values, this is the bounds without position.
      */
@@ -109,12 +109,25 @@ public abstract class Bounds {
     }
 
     /**
-     * Rotate the bounds on the specified axis.
+     * Sets the rotation of the bounds to the specified angle, calling this method several times
+     * with the same angle will produce the same value, it it will rotate the original bound to the
+     * specified angle.
+     * For some bounds this will have no meaning, eg rotating a circular bounds along z axis.
      * 
      * @param axis The axis, X, Y or Z (0,1 or 2)
      * @param angle
      */
     public abstract void rotate(int axis, float angle);
+
+    /**
+     * Transforms the bounds using the matrix, this will transform the original bounds.
+     * Calling this method multiple times with the same matrix will yield the same ouput.
+     * This method can be called with the node MVP matrix to produce the transformed bounds.
+     * 
+     * @param matrix
+     * @param index
+     */
+    public abstract void transform(float[] matrix, int index);
 
     /**
      * Flag that this bounds may need updating, this is for instance when the source position has changed.

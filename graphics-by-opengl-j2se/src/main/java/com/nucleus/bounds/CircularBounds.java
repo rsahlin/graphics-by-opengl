@@ -2,7 +2,7 @@ package com.nucleus.bounds;
 
 
 /**
- * 2 Dimensional circular bounds, the bounds is one value containing the radius.
+ * 2 Dimensional circular bounds, the bounds is 3 values, x,y and radius.
  * 
  * @author Richard Sahlin
  *
@@ -12,34 +12,38 @@ public class CircularBounds extends Bounds {
     /**
      * Index into bounds data where the radius is
      */
-    public final static int RADIUS_INDEX = 0;
+    public final static int X_INDEX = 0;
+    public final static int Y_INDEX = 1;
+    public final static int RADIUS_INDEX = 2;
 
 
     /**
-     * Creates a new circular bounds, with the specified radius.
+     * Creates a new circular bounds, with the specified 2D position and radius.
      * 
-     * @param radius The radius of the bounds
+     * @param values The bounds values. X,y and radius
      */
-    public CircularBounds(float radius) {
-        create(radius);
+    public CircularBounds(float[] values) {
+        create(values);
     }
 
     /**
      * Sets the bounds data with the radius, first creating the array and sets the type to CIRCULAR
      * 
-     * @param radius
+     * @param values The bounds values. X,y and radius
      */
-    private void create(float radius) {
-        bounds = new float[1];
-        bounds[RADIUS_INDEX] = radius;
+    private void create(float[] values) {
+        bounds = new float[3];
+        bounds[X_INDEX] = values[X_INDEX];
+        bounds[Y_INDEX] = values[Y_INDEX];
+        bounds[RADIUS_INDEX] = values[RADIUS_INDEX];
         type = Type.CIRCULAR;
     }
 
 
     @Override
     public boolean isPointInside(float[] position, int index) {
-        float xdist = this.position[0] - position[index++];
-        float ydist = this.position[1] - position[index];
+        float xdist = bounds[X_INDEX] - position[index++];
+        float ydist = bounds[Y_INDEX] - position[index];
         float dist = (float) Math.sqrt(xdist * xdist + ydist * ydist);
         if (dist < bounds[RADIUS_INDEX]) {
             return true;
@@ -50,8 +54,8 @@ public class CircularBounds extends Bounds {
     @Override
     public boolean isCircularInside(CircularBounds bounds) {
 
-        int distX = (int) (bounds.position[0] - position[0]);
-        int distY = (int) (bounds.position[1] - position[1]);
+        int distX = (int) (bounds.bounds[X_INDEX] - this.bounds[X_INDEX]);
+        int distY = (int) (bounds.bounds[Y_INDEX] - this.bounds[Y_INDEX]);
         if (Math.abs(distX) > this.bounds[RADIUS_INDEX] + bounds.bounds[RADIUS_INDEX]) {
             return false;
         }
@@ -71,5 +75,10 @@ public class CircularBounds extends Bounds {
         //Rotation of the circular bounds have no meaning.
     }
 
+    @Override
+    public void transform(float[] matrix, int index) {
+        // TODO Implement scale and translate
+
+    }
 
 }

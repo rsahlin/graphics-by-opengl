@@ -15,7 +15,7 @@ public class BoundsFactory {
     public static Bounds create(Type type, float[] bounds) {
         switch (type) {
             case CIRCULAR:
-            return new CircularBounds(bounds[0]);
+            return new CircularBounds(bounds);
         case RECTANGULAR:
             return new RectangularBounds(bounds, 0);
         default:
