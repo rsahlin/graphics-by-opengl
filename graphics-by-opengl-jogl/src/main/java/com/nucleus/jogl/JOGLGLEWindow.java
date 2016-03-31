@@ -32,9 +32,9 @@ import com.nucleus.renderer.Window;
 public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener {
 
     /**
-     * A zoom on the wheel equals 1 / 100 screen height
+     * A zoom on the wheel equals 1 / 5 screen height
      */
-    private final static float ZOOM_FACTOR = 0.01f;
+    private final static float ZOOM_FACTOR = 0.2f;
 
     private Dimension windowSize;
     private boolean undecorated = false;

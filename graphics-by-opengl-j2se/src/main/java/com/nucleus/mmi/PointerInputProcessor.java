@@ -83,7 +83,7 @@ public class PointerInputProcessor implements PointerListener, PropertyHandler {
         case ZOOM:
             MMIPointerEvent zoom = new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ZOOM, pointer,
                     pointerMotionData[pointer]);
-            zoom.setZoom(position[0], position[1]);
+            zoom.setZoom(position[X] * transform[X], position[Y] * transform[Y]);
             sendToListeners(zoom);
             break;
         default:
