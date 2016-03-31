@@ -13,6 +13,7 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.io.BaseReference;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
+import com.nucleus.mmi.MMIPointerEvent.Action;
 import com.nucleus.properties.PropertyManager;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Transform;
@@ -515,11 +516,17 @@ public class Node extends BaseReference implements MMIEventListener {
 
     @Override
     public void inputEvent(MMIPointerEvent event) {
-        System.out.println(event.getPointerData().getCurrentPosition()[0]);
-        // Default behavior is to check if node has bounds, if it has the pointer event is checked against it.
-        // Children are called recursively.
-        if (bounds != null) {
-            // bounds.isPointInside(event.getPointerData().getCurrentPosition(), 0);
+        if (event.getAction() == Action.ACTIVE || event.getAction() == Action.MOVE) {
+            System.out.println(event.getPointerData().getCurrentPosition()[0]);
+            // Default behavior is to check if node has bounds, if it has the pointer event is checked against it.
+            // Children are called recursively.
+            if (bounds != null) {
+                bounds.transform(mvp, 0);
+                if (bounds.isPointInside(event.getPointerData().getCurrentPosition(), 0)) {
+                    System.out.println("HIT");
+                }
+            }
+
         }
     }
 
