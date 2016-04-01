@@ -35,10 +35,10 @@ public class RectangularBounds extends Bounds {
 
     transient protected float[] collideVector1 = new float[2];
     transient protected float[] collideVector2D = new float[2];
-    transient protected float[] vector1 = new float[2];
-    transient protected float[] vector2D = new float[2];
-    transient protected float[] vector3D = new float[2];
-    transient protected float[] vector4 = new float[2];
+    transient protected float[] top = new float[2];
+    transient protected float[] left = new float[2];
+    transient protected float[] right = new float[2];
+    transient protected float[] bottom = new float[2];
     /**
      * Store result position + rotated bounding here
      */
@@ -155,19 +155,19 @@ public class RectangularBounds extends Bounds {
         collideVector1[0] = position[index] - resultPositions[0];
         collideVector1[1] = position[index + 1] - resultPositions[1];
         Vector3D.normalize2D(collideVector1, 0);
-        if (Vector2D.dot2D(collideVector1, vector1) < 0) {
+        if (Vector2D.dot2D(collideVector1, top) < 0) {
             return false;
         }
-        if (Vector2D.dot2D(collideVector1, vector2D) > 0) {
+        if (Vector2D.dot2D(collideVector1, left) < 0) {
             return false;
         }
         collideVector1[0] = position[index] - resultPositions[4];
         collideVector1[1] = position[index + 1] - resultPositions[5];
         Vector3D.normalize2D(collideVector1, 0);
-        if (Vector2D.dot2D(collideVector1, vector3D) > 0) {
+        if (Vector2D.dot2D(collideVector1, right) < 0) {
             return false;
         }
-        if (Vector2D.dot2D(collideVector1, vector4) < 0) {
+        if (Vector2D.dot2D(collideVector1, bottom) < 0) {
             return false;
         }
         return true;
@@ -176,29 +176,33 @@ public class RectangularBounds extends Bounds {
 
     /**
      * Internal method to calculate the vectors in the rectangular bounds.
-     * This needs to be done when the position reference has changed or when the bounds itself has changed.
+     * This needs to be done when the position reference has changed or when the bounds itself has
+     * changed/rotated/transformed
      */
     protected void calculateVectors() {
         if (!updated) {
             return;
         }
         getPositions(resultPositions, 0);
-        //Rotate along z axis to get cross
-        vector1[1] = (position[0] + rotatedBounds[2] - resultPositions[0]);
-        vector1[0] = -(position[1] + rotatedBounds[3] - resultPositions[1]);
-        Vector3D.normalize2D(vector1, 0);
+        // TOP
+        top[0] = (rotatedBounds[2] - rotatedBounds[0]);
+        top[1] = (rotatedBounds[3] - rotatedBounds[1]);
+        Vector3D.normalize2D(top, 0);
 
-        vector2D[1] = (position[0] + rotatedBounds[6] - resultPositions[0]);
-        vector2D[0] = -(position[1] + rotatedBounds[7] - resultPositions[1]);
-        Vector3D.normalize2D(vector2D, 0);
+        // LEFT
+        left[0] = (rotatedBounds[6] - rotatedBounds[0]);
+        left[1] = (rotatedBounds[7] - rotatedBounds[1]);
+        Vector3D.normalize2D(left, 0);
 
-        vector3D[1] = (position[0] + rotatedBounds[2] - resultPositions[4]);
-        vector3D[0] = -(position[1] + rotatedBounds[3] - resultPositions[5]);
-        Vector3D.normalize2D(vector3D, 0);
+        // RIGHT
+        right[0] = (rotatedBounds[2] - rotatedBounds[4]);
+        right[1] = (rotatedBounds[3] - rotatedBounds[5]);
+        Vector3D.normalize2D(right, 0);
 
-        vector4[1] = (position[0] + rotatedBounds[6] - resultPositions[4]);
-        vector4[0] = -(position[1] + rotatedBounds[7] - resultPositions[5]);
-        Vector3D.normalize2D(vector4, 0);
+        // BOTTOM
+        bottom[0] = (rotatedBounds[6] - rotatedBounds[4]);
+        bottom[1] = (rotatedBounds[7] - rotatedBounds[5]);
+        Vector3D.normalize2D(bottom, 0);
         updated = false;
     }
 
@@ -208,28 +212,28 @@ public class RectangularBounds extends Bounds {
         float[] position = bounds.position;
 
         float radius = bounds.bounds[CircularBounds.RADIUS_INDEX];
-        collideVector1[0] = (position[0] + radius  * vector1[0]) - resultPositions[0];
-        collideVector1[1] = (position[1] + radius * vector1[1]) - resultPositions[1];
+        collideVector1[0] = (position[0] + radius  * top[0]) - resultPositions[0];
+        collideVector1[1] = (position[1] + radius * top[1]) - resultPositions[1];
         Vector3D.normalize2D(collideVector1, 0);
-        if (Vector2D.dot2D(collideVector1, vector1) < 0) {
+        if (Vector2D.dot2D(collideVector1, top) < 0) {
             return false;
         }
-        collideVector1[0] = (position[0] - radius * vector2D[0]) - resultPositions[0];
-        collideVector1[1] = (position[1] - radius * vector2D[1]) - resultPositions[1];
+        collideVector1[0] = (position[0] - radius * left[0]) - resultPositions[0];
+        collideVector1[1] = (position[1] - radius * left[1]) - resultPositions[1];
         Vector3D.normalize2D(collideVector1, 0);
-        if (Vector2D.dot2D(collideVector1, vector2D) > 0) {
+        if (Vector2D.dot2D(collideVector1, left) > 0) {
             return false;
         }
-        collideVector1[0] = (position[0] - radius * vector3D[0]) - resultPositions[4];
-        collideVector1[1] = (position[1] - radius * vector3D[1]) - resultPositions[5];
+        collideVector1[0] = (position[0] - radius * right[0]) - resultPositions[4];
+        collideVector1[1] = (position[1] - radius * right[1]) - resultPositions[5];
         Vector3D.normalize2D(collideVector1, 0);
-        if (Vector2D.dot2D(collideVector1, vector3D) > 0) {
+        if (Vector2D.dot2D(collideVector1, right) > 0) {
             return false;
         }
-        collideVector1[0] = (position[0] + radius  * vector4[0]) - resultPositions[4];
-        collideVector1[1] = (position[1] + radius * vector4[1]) - resultPositions[5];
+        collideVector1[0] = (position[0] + radius  * bottom[0]) - resultPositions[4];
+        collideVector1[1] = (position[1] + radius * bottom[1]) - resultPositions[5];
         Vector3D.normalize2D(collideVector1, 0);
-        if (Vector2D.dot2D(collideVector1, vector4) < 0) {
+        if (Vector2D.dot2D(collideVector1, bottom) < 0) {
             return false;
         }
         return true;
