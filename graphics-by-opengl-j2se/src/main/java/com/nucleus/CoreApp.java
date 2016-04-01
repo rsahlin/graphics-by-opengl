@@ -142,7 +142,8 @@ public class CoreApp {
         contextCreated = true;
         this.width = width;
         this.height = height;
-        inputProcessor.setPointerTransform((float) 1 / width, (float) 1 / height, -0.5f, -0.5f);
+        // Reverse y so that 0 is at bottom which is the same as OpenGL
+        inputProcessor.setPointerTransform((float) 1 / width, (float) 1 / -height, -0.5f, 0.5f);
     }
 
     /**
