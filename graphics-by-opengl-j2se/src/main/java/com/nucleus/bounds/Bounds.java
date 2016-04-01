@@ -120,12 +120,15 @@ public abstract class Bounds {
     public abstract void rotate(int axis, float angle);
 
     /**
-     * Transforms the bounds using the matrix, this will transform the original bounds.
-     * Calling this method multiple times with the same matrix will yield the same ouput.
-     * This method can be called with the node MVP matrix to produce the transformed bounds.
+     * Transforms the bounds using the matrix, this will transform from the original bounds.
+     * Calling this method multiple times with the same matrix will yield the same ouput, eg the original
+     * bounds are preserved.
+     * This method can be called with the node model or mvp matrix to produce the transformed bounds.
+     * It is up to the caller to make sure that it is the expected matrix that is used, ie what space the bounds
+     * shall be in (model?, view?, projection?)
      * 
-     * @param matrix
-     * @param index
+     * @param matrix The matrix used to transform the boundingbox
+     * @param index Index into array where matrix is
      */
     public abstract void transform(float[] matrix, int index);
 
