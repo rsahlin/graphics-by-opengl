@@ -242,12 +242,15 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Returns the MVP matrix, this updated the the concatenated MVP matrix for the node when it is rendered.
-     * DO NOT MODIFY THESE VALUES, CHANGES WILL BE OVERWRITTEN WHEN NODE IS RENDERED.
+     * Returns the resulting model matrix for this node.
+     * It is updated with the concatenated model matrix for the node when it is rendered.
+     * This will contain the sum of the model matrices of this nodes parents.
+     * If object space collision shall be done this matrix can be used to transform the bounds.
      * 
-     * @return The concatenated MVP from last rendered frame, if Node is not rendered the MVP will not be updated.
+     * @return The concatenated MVP from last rendered frame, if Node is not rendered the matrix will not be updated.
+     * It will contain the values from the last frame it was processed/rendered
      */
-    public float[] getMVP() {
+    public float[] getModelMatrix() {
         return mvp;
     }
 
@@ -517,7 +520,7 @@ public class Node extends BaseReference implements MMIEventListener {
     @Override
     public void inputEvent(MMIPointerEvent event) {
         if (event.getAction() == Action.ACTIVE || event.getAction() == Action.MOVE) {
-            System.out.println(event.getPointerData().getCurrentPosition()[0]);
+            // System.out.println(event.getPointerData().getCurrentPosition()[1]);
             // Default behavior is to check if node has bounds, if it has the pointer event is checked against it.
             // Children are called recursively.
             if (bounds != null) {
