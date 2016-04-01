@@ -3,7 +3,6 @@ package com.nucleus.renderer;
 import java.nio.Buffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.camera.ViewPort;
@@ -51,11 +50,20 @@ class BaseRenderer implements NucleusRenderer {
     protected ViewFrustum viewFrustum = new ViewFrustum();
     protected ViewPort viewPort = new ViewPort();
 
-    protected Deque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
+    protected ArrayDeque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
+    protected ArrayDeque<float[]> projection = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     /**
-     * The current matrix
+     * The current concatenated matrix matrix
      */
     protected float[] mvpMatrix = Matrix.createMatrix();
+    /**
+     * Reference to the current modelmatrix
+     */
+    protected float[] modelMatrix;
+    /**
+     * The current projection matrix
+     */
+    protected float[] projectionMatrix = Matrix.createMatrix();
 
     protected GLES20Wrapper gles;
     protected RenderSettings renderSettings = new RenderSettings();
@@ -153,7 +161,7 @@ class BaseRenderer implements NucleusRenderer {
                 view[ViewPort.VIEWPORT_WIDTH], view[ViewPort.VIEWPORT_HEIGHT]);
         // matrixEngine.setProjectionMatrix(viewFrustum);
         // mvpMatrix = getViewFrustum().getProjectionMatrix();
-        Matrix.setIdentity(mvpMatrix, 0);
+        this.modelMatrix = null;
 
         return deltaTime;
     }
@@ -209,11 +217,7 @@ class BaseRenderer implements NucleusRenderer {
             if (producer != null) {
                 producer.updateAttributeData();
             }
-            float[] projection = node.getProjection();
-            if (projection != null) {
-                Matrix.mul4(mvpMatrix, projection);
-            }
-            float[] mvp = node.getMVP();
+            float[] nodeMatrix = node.getModelMatrix();
             float[] modelMatrix = null;
             if (node.getTransform() != null) {
                 modelMatrix = node.getTransform().getMatrix();
@@ -221,13 +225,28 @@ class BaseRenderer implements NucleusRenderer {
                 modelMatrix = Matrix.createMatrix();
                 Matrix.setIdentity(modelMatrix, 0);
             }
-            Matrix.mul4(mvpMatrix, modelMatrix, mvp);
-            renderMeshes(node.getMeshes(), mvp);
-            pushMatrix(mvp);
+            if (this.modelMatrix == null) {
+                System.arraycopy(modelMatrix, 0, nodeMatrix, 0, 16);
+            } else {
+                Matrix.mul4(this.modelMatrix, modelMatrix, nodeMatrix);
+            }
+            // Fetch projection just before render
+            float[] projection = node.getProjection();
+            if (projection != null) {
+                pushMatrix(this.projection, this.projectionMatrix);
+                this.projectionMatrix = projection;
+            }
+            Matrix.mul4(nodeMatrix, this.projectionMatrix, mvpMatrix);
+            renderMeshes(node.getMeshes(), mvpMatrix);
+            this.modelMatrix = nodeMatrix;
+            pushMatrix(matrixStack, this.modelMatrix);
             for (Node n : node.getChildren()) {
                 render(n);
             }
-            popMatrix();
+            this.modelMatrix = popMatrix(matrixStack);
+            if (projection != null) {
+                this.projectionMatrix = popMatrix(this.projection);
+            }
         }
     }
 
@@ -332,21 +351,21 @@ class BaseRenderer implements NucleusRenderer {
     /**
      * Internal method to handle matrix stack, push a matrix on the stack
      * 
+     * @param stack The stack to push onto
      * @param matrix
      */
-    protected void pushMatrix(float[] matrix) {
-        matrixStack.push(matrix);
-        mvpMatrix = matrix;
+    protected void pushMatrix(ArrayDeque<float[]> stack, float[] matrix) {
+        stack.push(matrix);
     }
 
     /**
      * Internal method to handle matrix stack - pops the latest matrix off the stack
      * 
-     * @return
+     * @param stack The stack to pop from
+     * @return The poped matrix
      */
-    protected float[] popMatrix() {
-        mvpMatrix = matrixStack.pop();
-        return mvpMatrix;
+    protected float[] popMatrix(ArrayDeque<float[]> stack) {
+        return stack.pop();
     }
 
     @Override
