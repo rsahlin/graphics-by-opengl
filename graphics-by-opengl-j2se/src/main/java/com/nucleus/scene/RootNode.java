@@ -7,6 +7,7 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.io.ResourcesData;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.vecmath.Transform;
 
 /**
  * Starting point of a nodetree, the root has a collection of nodes the each represent a scene.
@@ -33,9 +34,17 @@ public abstract class RootNode {
     ArrayList<LayerNode> scenes;
 
     /**
+     * The current view location, this is translated into the view transform that is set into
+     * the renderer.
+     * Use this to move the location of the view.
+     */
+    @SerializedName("view")
+    private Transform view;
+
+    /**
      * The current layer to be processed, or null to process all.
      */
-    private Layer layer;
+    transient private Layer layer;
 
     /**
      * Adds a node instance in this scene, this is a nodetree that can be rendered.
@@ -154,6 +163,24 @@ public abstract class RootNode {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the view transform
+     * 
+     * @return The view transform, or null if not set
+     */
+    public Transform getView() {
+        return view;
+    }
+
+    /**
+     * Sets the view transform for this rootnode, this is normally done by defining it in the scene.
+     * 
+     * @param view
+     */
+    public void setView(Transform view) {
+        this.view = view;
     }
 
 }
