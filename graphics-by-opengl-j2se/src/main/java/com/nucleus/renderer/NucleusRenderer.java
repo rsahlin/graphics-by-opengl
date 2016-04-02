@@ -11,6 +11,16 @@ import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
 
+/**
+ * An interface for rendering scenes. This is done by supporting a Node base hierarchy.
+ * Parts, or all, of the Nodetree can be rendered by calling {@link #render(Node)} or {@link #render(RootNode)
+ * The goal for this API is to provide an abstraction on top of OpenGL/ES so that it can be used without prior
+ * OpenGL knowledge.
+ * 
+ * 
+ * @author Richard Sahlin
+ *
+ */
 public interface NucleusRenderer {
 
     /**
@@ -281,5 +291,40 @@ public interface NucleusRenderer {
      * GL_STREAM_DRAW, GL_STATIC_DRAW, or GL_DYNAMIC_DRAW.
      */
     public void bufferData(int target, int size, Buffer data, int usage);
+
+    /**
+     * Sets the projection matrix, this will copy the values from the source matrix.
+     * Please not that this will be overwritten when rendering nodes that have a projections.
+     * This method can be used when a Node shall be rendered that does not have a projection property.
+     * 
+     * @param matrix The projection matrix
+     * @param index Index into array where matrix is
+     * @throws NullPointerException If matrix is null
+     * @throws IndexOutOfBoundsException If there is not enough storage in the source matrix at index
+     */
+    public void setProjection(float[] matrix, int index);
+
+    /**
+     * Returns the current projection matrix, you should normally not change these values.
+     * The projection matrix is controlled by setting a projection in the Node
+     * 
+     * @return The projection matrix
+     */
+    public float[] getProjection();
+
+    /**
+     * Sets the view matrix, this will copy the values from the source matrix.
+     * 
+     * @param matrix The view matrix
+     * @param index Index into array where matrix is
+     */
+    public void setView(float[] matrix, int index);
+
+    /**
+     * Returns the view matrix
+     * 
+     * @return
+     */
+    public float[] getView();
 
 }
