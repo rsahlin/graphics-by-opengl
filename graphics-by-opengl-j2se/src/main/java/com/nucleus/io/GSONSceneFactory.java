@@ -23,6 +23,7 @@ import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
+import com.nucleus.vecmath.Transform;
 
 /**
  * GSON Serializer for nucleus scenegraph.
@@ -157,9 +158,13 @@ public class GSONSceneFactory implements SceneSerializer {
      * @return the created nodes
      */
     private RootNode createRoot(RootNode scene, ArrayList<LayerNode> source) throws IOException {
+        // TODO Cleanup of root creation, use same way as other Nodes? (create instance and copy)
         RootNode root = createSceneData();
         for (LayerNode n : source) {
             root.addScene(createNode(scene, n));
+        }
+        if (scene.getView() != null) {
+            root.setView(new Transform(scene.getView()));
         }
         return root;
     }

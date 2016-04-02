@@ -26,6 +26,7 @@ import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.vecmath.Matrix;
+import com.nucleus.vecmath.Transform;
 
 /**
  * Platform agnostic renderer, this handles pure render related methods.
@@ -57,13 +58,18 @@ class BaseRenderer implements NucleusRenderer {
      */
     protected float[] mvpMatrix = Matrix.createMatrix();
     /**
-     * Reference to the current modelmatrix
+     * Reference to the current modelmatrix, each Node has its own Matrix that is referenced.
      */
     protected float[] modelMatrix;
+
+    /**
+     * The view matrix
+     */
+    protected float[] viewMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
     /**
      * The current projection matrix
      */
-    protected float[] projectionMatrix = Matrix.createMatrix();
+    protected float[] projectionMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
 
     protected GLES20Wrapper gles;
     protected RenderSettings renderSettings = new RenderSettings();
@@ -236,7 +242,8 @@ class BaseRenderer implements NucleusRenderer {
                 pushMatrix(this.projection, this.projectionMatrix);
                 this.projectionMatrix = projection;
             }
-            Matrix.mul4(nodeMatrix, this.projectionMatrix, mvpMatrix);
+            Matrix.mul4(nodeMatrix, viewMatrix, mvpMatrix);
+            Matrix.mul4(mvpMatrix, projectionMatrix);
             renderMeshes(node.getMeshes(), mvpMatrix);
             this.modelMatrix = nodeMatrix;
             pushMatrix(matrixStack, this.modelMatrix);
@@ -375,6 +382,10 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(RootNode root) throws GLException {
+        Transform view = root.getView();
+        if (view != null) {
+            setView(view.getMatrix(), 0);
+        }
         Layer layer = root.getLayer();
         if (layer == null) {
             for (LayerNode node : root.getScenes()) {
@@ -442,6 +453,26 @@ class BaseRenderer implements NucleusRenderer {
     public void resizeWindow(int x, int y, int width, int height) {
         viewPort.setViewPort(x, y, width, height);
         Window.getInstance().setSize(width, height);
+    }
+
+    @Override
+    public void setProjection(float[] matrix, int index) {
+        System.arraycopy(matrix, index, projectionMatrix, 0, 16);
+    }
+
+    @Override
+    public float[] getProjection() {
+        return projectionMatrix;
+    }
+
+    @Override
+    public void setView(float[] matrix, int index) {
+        System.arraycopy(matrix, index, viewMatrix, 0, 16);
+    }
+
+    @Override
+    public float[] getView() {
+        return viewMatrix;
     }
 
 }
