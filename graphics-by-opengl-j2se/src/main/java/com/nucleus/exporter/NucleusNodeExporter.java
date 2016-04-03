@@ -6,7 +6,6 @@ import java.util.List;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Key;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
@@ -105,17 +104,19 @@ public class NucleusNodeExporter implements NodeExporter {
     @Override
     public Node exportNode(Node source, RootNode rootNode) {
         NodeType type = NodeType.valueOf(source.getType());
+        Node created;
         switch (type) {
         case node:
-            // exportDataReferences((Node) source, (RootNode) rootNode);
-            return source.copy();
+            created = source.copy();
+            break;
         case layernode:
-            // exportDataReferences((LayerNode) source, (RootNode) rootNode);
-
-            return new LayerNode((LayerNode) source);
+            created = source.copy();
+            break;
         default:
             throw new IllegalArgumentException(NOT_IMPLEMENTED + type);
         }
+        created.setRootNode(rootNode);
+        return created;
     }
 
     @Override

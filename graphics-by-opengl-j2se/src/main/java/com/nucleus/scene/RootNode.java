@@ -59,6 +59,13 @@ public abstract class RootNode {
     }
 
     /**
+     * Creates a new instance of RootNode, implement in RootNode subclasses to return the implementation instance.
+     * 
+     * @return A new instance of RootNode implementation
+     */
+    public abstract RootNode createInstance();
+
+    /**
      * Returns the base scene node with matching id, or null if none is set.
      * This will only check base nodes (scenes), it will not recurse into children.
      * 

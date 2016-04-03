@@ -3,6 +3,7 @@ package com.nucleus.scene;
 import java.io.IOException;
 
 import com.nucleus.geometry.MeshFactory;
+import com.nucleus.io.ResourcesData;
 import com.nucleus.renderer.NucleusRenderer;
 
 /**
@@ -17,7 +18,7 @@ public class DefaultNodeFactory implements NodeFactory {
     protected static final String ILLEGAL_NODE_TYPE = "Unknown node type: ";
 
     @Override
-    public Node create(NucleusRenderer renderer, Node source, MeshFactory meshFactory, RootNode scene)
+    public Node create(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resources, Node source)
             throws IOException {
         NodeType type = null;
         try {
@@ -30,7 +31,7 @@ public class DefaultNodeFactory implements NodeFactory {
         case node:
             return source.copy();
         case layernode:
-            return new LayerNode((LayerNode) source);
+            return ((LayerNode) source).copy();
         default:
             throw new IllegalArgumentException(NOT_IMPLEMENTED + type);
         }

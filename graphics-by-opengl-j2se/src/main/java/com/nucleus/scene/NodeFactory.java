@@ -3,6 +3,7 @@ package com.nucleus.scene;
 import java.io.IOException;
 
 import com.nucleus.geometry.MeshFactory;
+import com.nucleus.io.ResourcesData;
 import com.nucleus.renderer.NucleusRenderer;
 
 /**
@@ -20,15 +21,16 @@ public interface NodeFactory {
      * Creates a new instance of the source node, allocating buffers, programs and fetching textures as needed.
      * If implementations do not recognize the node to be created they must call super
      * {@link #create(NucleusRenderer, Node, RootNode)}
+     * TODO Shall this method take the rootnode as property and always set in the created node?
      * 
      * @param renderer
-     * @param source The source node, the returned node shall be same type.
      * @param meshFactory The mesh factory to use when creating mesh
-     * @param scene Scene data.
+     * @param resources The scene data
+     * @param source The source node, the returned node shall be the same type
      * @return A new instance of the source node, ready to be rendered/processed
      * @throws IOException If there is an error fetching shader programs or texture.
      */
-    public Node create(NucleusRenderer renderer, Node source, MeshFactory meshFactory, RootNode scene)
+    public Node create(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resource, Node source)
             throws IOException;
 
 }

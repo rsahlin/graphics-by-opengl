@@ -13,4 +13,9 @@ public class BaseRootNode extends RootNode {
         return resources;
     }
 
+    @Override
+    public RootNode createInstance() {
+        return new BaseRootNode();
+    }
+
 }

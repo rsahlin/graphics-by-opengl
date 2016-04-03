@@ -62,11 +62,11 @@ public class Node extends BaseReference implements MMIEventListener {
      */
     transient float[] projection;
     /**
-     * The node concatenated MVP matrix at time of render, this is set when the node is rendered.
+     * The node concatenated model matrix at time of render, this is set when the node is rendered.
      * May be used when calculating bounds/collision on the current frame.
      * DO NOT WRITE TO THIS!
      */
-    transient float[] mvp = Matrix.createMatrix();
+    transient float[] modelMatrix = Matrix.createMatrix();
     transient ArrayList<Mesh> meshes = new ArrayList<Mesh>();
     /**
      * Optional AttributeUpdate producer, used for instance by spritemesh nodes
@@ -77,7 +77,10 @@ public class Node extends BaseReference implements MMIEventListener {
      * The parent node, this shall be set when node is added as child
      */
     transient Node parent;
-
+    /**
+     * The root node
+     */
+    transient protected RootNode rootNode;
 
     /**
      * Creates an empty node, add children and meshes as needed.
@@ -98,13 +101,13 @@ public class Node extends BaseReference implements MMIEventListener {
 
     /**
      * Creates a new instance of this node.
-     * This will be a new empty instance.
+     * This will be a new empty instance
      * 
      * @return New instance of this node
+     * @throws IllegalArgumentException If root is null
      */
     public Node createInstance() {
         Node copy = new Node();
-        copy.set(this);
         return copy;
     }
 
@@ -251,7 +254,7 @@ public class Node extends BaseReference implements MMIEventListener {
      * It will contain the values from the last frame it was processed/rendered
      */
     public float[] getModelMatrix() {
-        return mvp;
+        return modelMatrix;
     }
 
     /**
@@ -266,13 +269,14 @@ public class Node extends BaseReference implements MMIEventListener {
 
     /**
      * Adds a child at the end of the list of children.
-     * The child node's parent will be set to this node.
+     * The child node's parent will be set to this node and the rootnode will be set same as the parent.
      * 
      * @param child The child to add to this node.
      */
     public void addChild(Node child) {
         children.add(child);
         child.parent = this;
+        child.setRootNode(getRootNode());
     }
 
     /**
@@ -282,6 +286,15 @@ public class Node extends BaseReference implements MMIEventListener {
      */
     public Node getParent() {
         return parent;
+    }
+
+    /**
+     * Returns the root node for this node, this is the document root.
+     * 
+     * @return The document root.
+     */
+    public RootNode getRootNode() {
+        return rootNode;
     }
 
     /**
@@ -344,6 +357,18 @@ public class Node extends BaseReference implements MMIEventListener {
             this.bounds = null;
         }
         setProperties(source);
+    }
+
+    /**
+     * Sets the rootnode for this node, this shall normally not be changed
+     * 
+     * @param root
+     */
+    public void setRootNode(RootNode root) {
+        if (root == null) {
+            throw new IllegalArgumentException("Document root can not be null");
+        }
+        this.rootNode = root;
     }
 
     /**
@@ -523,8 +548,11 @@ public class Node extends BaseReference implements MMIEventListener {
             // System.out.println(event.getPointerData().getCurrentPosition()[1]);
             // Default behavior is to check if node has bounds, if it has the pointer event is checked against it.
             // Children are called recursively.
+            float[] mv = Matrix.createMatrix();
             if (bounds != null) {
-                bounds.transform(mvp, 0);
+                Matrix.mul4(modelMatrix, getRootNode().getView().getMatrix(), mv);
+                // To do pointer intersections the model and view matrix is needed.
+                bounds.transform(mv, 0);
                 if (bounds.isPointInside(event.getPointerData().getCurrentPosition(), 0)) {
                     System.out.println("HIT");
                 }

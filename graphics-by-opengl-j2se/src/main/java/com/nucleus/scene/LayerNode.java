@@ -14,25 +14,17 @@ public class LayerNode extends Node {
     @SerializedName("layer")
     private Layer layer;
 
-    /**
-     * Creates a new instance of a layer node.
-     * 
-     * @throws IllegalArgumentException If layer is null
-     */
-    public LayerNode(Layer layer) {
-        if (layer == null) {
-            throw new IllegalArgumentException();
-        }
-        this.layer = layer;
+    @Override
+    public LayerNode createInstance() {
+        LayerNode copy = new LayerNode();
+        return copy;
     }
 
-    /**
-     * Creates a new instance copy of the source node
-     * 
-     * @param source
-     */
-    public LayerNode(LayerNode source) {
-        set(source);
+    @Override
+    public LayerNode copy() {
+        LayerNode copy = createInstance();
+        copy.set(this);
+        return copy;
     }
 
     /**
@@ -45,6 +37,7 @@ public class LayerNode extends Node {
         this.layer = source.layer;
     }
 
+
     /**
      * Returns the layer this node is for
      * 
@@ -52,6 +45,10 @@ public class LayerNode extends Node {
      */
     public Layer getLayer() {
         return layer;
+    }
+
+    public void setLayer(Layer layer) {
+        this.layer = layer;
     }
 
 }

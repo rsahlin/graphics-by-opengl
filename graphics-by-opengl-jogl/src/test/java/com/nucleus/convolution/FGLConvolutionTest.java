@@ -71,7 +71,8 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
         mesh = new Mesh();
         ConvolutionProgram c = new ConvolutionProgram();
         c.createProgram(renderer.getGLES());
-        LayerNode node = new LayerNode(Layer.SCENE);
+        LayerNode node = new LayerNode();
+        node.setLayer(Layer.SCENE);
         ViewFrustum vf = new ViewFrustum();
         vf.setOrthoProjection(-0.5f, 0.5f, 0.5f, -0.5f, 0, 10);
         node.setViewFrustum(vf);

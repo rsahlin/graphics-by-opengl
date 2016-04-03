@@ -101,7 +101,11 @@ public class GSONSceneFactory implements SceneSerializer {
         registerTypeAdapter(builder);
         setGson(builder.create());
         RootNode scene = getSceneFromJson(gson, reader);
-        return createScene(scene);
+        RootNode createdRoot = createScene(scene.getResources(), scene.getScenes());
+        if (scene.getView() != null) {
+            createdRoot.setView(new Transform(scene.getView()));
+        }
+        return createdRoot;
     }
 
     /**
@@ -135,44 +139,50 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     /**
-     * Creates a scene from scenedata and returns the root.
+     * Creates {@linkplain RootNode} from the layers and returns, use this method when importing to create
+     * a new instance of the loaded scene.
      * 
-     * @param scene The scene data
+     * @param resource The resources for the scene
+     * @param scenes The layers with nodes to creates
      * @return The created scene or null if there is an error.
      * @throws IOException
      */
-    private RootNode createScene(RootNode scene) throws IOException {
-        ArrayList<LayerNode> source = scene.getScenes();
-        if (source == null) {
+    private RootNode createScene(ResourcesData resources, ArrayList<LayerNode> layers) throws IOException {
+        if (layers == null) {
             return null;
         }
-        return createRoot(scene, source);
-    }
-
-    /**
-     * Creates a Node for the specified nodedata using the resources in the scene.
-     * If type is specified then the data for this type is appended to the Node.
-     * 
-     * @param scene
-     * @param source
-     * @return the created nodes
-     */
-    private RootNode createRoot(RootNode scene, ArrayList<LayerNode> source) throws IOException {
-        // TODO Cleanup of root creation, use same way as other Nodes? (create instance and copy)
-        RootNode root = createSceneData();
-        for (LayerNode n : source) {
-            root.addScene(createNode(scene, n));
-        }
-        if (scene.getView() != null) {
-            root.setView(new Transform(scene.getView()));
+        RootNode root = createRoot();
+        for (LayerNode n : layers) {
+            addNodes(resources, root, n);
         }
         return root;
     }
 
-    private LayerNode createNode(RootNode scene, LayerNode source) throws IOException {
-        LayerNode created = (LayerNode) nodeFactory.create(renderer, source, meshFactory, scene);
-        setViewFrustum(source, created);
-        createChildNodes(scene, source, created);
+    /**
+     * Creates a new {@linkplain RootNode} for the specified scene, containing the layer nodes.
+     * The layer nodes will have the new root as its rootnode.
+     * 
+     * @return The root not implementation to use
+     */
+    protected RootNode createRoot() {
+        return new BaseRootNode();
+    }
+
+    /**
+     * Internal method to create a layer node and add it to the rootnode.
+     * 
+     * @param resources The resources in the scene
+     * @param root The root node that the created node will be added to.
+     * @param layer The layer to create
+     * @return
+     * @throws IOException
+     */
+    private LayerNode addNodes(ResourcesData resources, RootNode root, LayerNode layer) throws IOException {
+        LayerNode created = (LayerNode) nodeFactory.create(renderer, meshFactory, resources, layer);
+        created.setRootNode(root);
+        setViewFrustum(layer, created);
+        createChildNodes(resources, layer, created);
+        root.addScene(created);
         return created;
     }
 
@@ -181,23 +191,24 @@ public class GSONSceneFactory implements SceneSerializer {
      * The new node will be returned, it is not added to the parent node - this shall be done by the caller.
      * The new node will have parent as its parent node
      * 
-     * @param scene
-     * @param source
-     * @param node
-     * @return The created node
+     * @param resources The scene resources
+     * @param source The node source,
+     * @param parent The parent node
+     * @return The created node, this will be a new instance of the source node ready to be rendered/processed
      */
-    protected Node createNode(RootNode scene, Node source, Node parent) throws IOException {
-        Node created = nodeFactory.create(renderer, source, meshFactory, scene);
+    protected Node createNode(ResourcesData resources, Node source, Node parent) throws IOException {
+        Node created = nodeFactory.create(renderer, meshFactory, resources, source);
+        created.setRootNode(parent.getRootNode());
         setViewFrustum(source, created);
-        createChildNodes(scene, source, created);
+        createChildNodes(resources, source, created);
         return created;
 
     }
 
-    protected void createChildNodes(RootNode scene, Node source, Node parent) throws IOException {
+    protected void createChildNodes(ResourcesData resources, Node source, Node parent) throws IOException {
         // Recursively create children
         for (Node nd : source.getChildren()) {
-            Node child = createNode(scene, nd, parent);
+            Node child = createNode(resources, nd, parent);
             if (child != null) {
                 parent.addChild(child);
             }
