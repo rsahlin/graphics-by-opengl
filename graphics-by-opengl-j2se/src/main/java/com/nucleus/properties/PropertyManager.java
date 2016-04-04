@@ -11,6 +11,9 @@ import java.util.HashMap;
  */
 public class PropertyManager {
 
+    public final static String TRUE = "true";
+    public final static String FALSE = "false";
+
     private static PropertyManager propertyManager = new PropertyManager();
 
     private HashMap<String, PropertyHandler> handlers = new HashMap<>();
@@ -34,6 +37,16 @@ public class PropertyManager {
          */
         public boolean handleProperty(String key, String value);
 
+        /**
+         * Called when {@linkplain PropertyManager#setObjectProperty(Object, String, String)} is called with a
+         * registered key.
+         * This method is normally used to register the object with the receiver
+         * 
+         * @param obj The object related to the key/value
+         * @param key
+         * @param value
+         * @return
+         */
         public boolean handleObjectProperty(Object obj, String key, String value);
     }
 

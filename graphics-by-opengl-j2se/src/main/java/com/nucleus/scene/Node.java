@@ -25,6 +25,9 @@ import com.nucleus.vecmath.Transform;
  * This class may be serialized using GSON
  * Before the node can be rendered one or more meshes must be added using {@link #addMesh(Mesh)}
  * 
+ * If a node contains properties the {@linkplain PropertyManager#setObjectProperty(Object, String, String)} is called
+ * with the property/key and this class as object.
+ * 
  * @author Richard Sahlin
  *
  */
@@ -531,7 +534,8 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Internal method, sets all properties to the {@linkplain PropertyManager} with the node as object
+     * Internal method, sets all properties with a call for each property to
+     * {@linkplain PropertyManager#setObjectProperty(Object, String, String)} with the node as object
      * 
      */
     private void setObjectProperties() {

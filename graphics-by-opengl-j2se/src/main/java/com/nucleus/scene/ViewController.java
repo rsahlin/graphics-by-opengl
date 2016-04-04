@@ -1,0 +1,68 @@
+package com.nucleus.scene;
+
+import com.nucleus.properties.PropertyManager;
+import com.nucleus.properties.PropertyManager.PropertyHandler;
+import com.nucleus.vecmath.Transform;
+
+/**
+ * This handles the update of the scene View.
+ * To register this class to handle property key, call the
+ * This class will be registered as handling view properties.
+ * 
+ * @author Richard Sahlin
+ *
+ */
+public class ViewController implements PropertyHandler {
+
+    /**
+     * The key to register in the property handler for this class
+     * TODO Do not store as magic string, find some other way.
+     */
+    public final static String HANDLER_KEY = "view";
+
+    public enum Actions {
+        MOVE(),
+        SCALE(),
+        ROTATE();
+    }
+
+    private Transform view;
+
+    /**
+     * Creates a new viewcontroller with the specified view.
+     * 
+     * @param view
+     * @throws IllegalArgumentException If view is null
+     */
+    public ViewController(Transform view) {
+        if (view == null) {
+            throw new IllegalArgumentException("View transform is null");
+        }
+        this.view = view;
+    }
+
+    /**
+     * Registers this class as a propertyhandler for the key, if key is null the {@link #HANDLER_KEY} is used.
+     * 
+     * @param key The key to register this controller for, or null to use default.
+     */
+    public void registerPropertyHandler(String key) {
+        if (key == null) {
+            key = HANDLER_KEY;
+        }
+        PropertyManager.getInstance().registerKey(key, this);
+    }
+
+    @Override
+    public boolean handleProperty(String key, String value) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean handleObjectProperty(Object obj, String key, String value) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+}

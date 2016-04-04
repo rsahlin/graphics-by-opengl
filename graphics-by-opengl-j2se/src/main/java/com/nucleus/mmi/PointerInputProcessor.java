@@ -18,6 +18,12 @@ import com.nucleus.vecmath.Vector2D;
  */
 public class PointerInputProcessor implements PointerListener, PropertyHandler {
 
+    /**
+     * The key to register in the property handler for this class
+     * TODO Do not store as magic string, find some other way.
+     */
+    private final static String HANDLER_KEY = "pointerinput";
+
     public final static int MAX_POINTERS = 5;
 
     /**
@@ -43,9 +49,12 @@ public class PointerInputProcessor implements PointerListener, PropertyHandler {
 
     /**
      * Default constructor
+     * This will register the {@link #HANDLER_KEY} with the PropertyManager as key with this
+     * class as handler.
+     * TODO Do not always register when this class is created, move to CoreApp or settings.
      */
     public PointerInputProcessor() {
-        PropertyManager.getInstance().registerKey("input", this);
+        PropertyManager.getInstance().registerKey(HANDLER_KEY, this);
     }
 
     @Override
@@ -214,7 +223,7 @@ public class PointerInputProcessor implements PointerListener, PropertyHandler {
 
     @Override
     public boolean handleObjectProperty(Object obj, String key, String value) {
-        if (obj instanceof Node && "pointer".equals(value)) {
+        if (obj instanceof Node && PropertyManager.TRUE.equals(value)) {
             addMMIListener((Node) obj);
         }
         return false;

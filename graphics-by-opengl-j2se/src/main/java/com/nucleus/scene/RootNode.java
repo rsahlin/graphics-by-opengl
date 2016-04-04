@@ -39,7 +39,7 @@ public abstract class RootNode {
      * Use this to move the location of the view.
      */
     @SerializedName("view")
-    private Transform view;
+    protected Transform view;
 
     /**
      * The current layer to be processed, or null to process all.

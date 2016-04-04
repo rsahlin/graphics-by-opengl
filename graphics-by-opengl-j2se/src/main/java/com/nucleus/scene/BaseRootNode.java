@@ -15,7 +15,8 @@ public class BaseRootNode extends RootNode {
 
     @Override
     public RootNode createInstance() {
-        return new BaseRootNode();
+        BaseRootNode root = new BaseRootNode();
+        return root;
     }
 
 }
