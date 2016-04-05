@@ -102,15 +102,16 @@ public class MeshBuilder {
             throw new IllegalArgumentException(Error.NOT_IMPLEMENTED.message);
         }
 
+        // TODO How to handle Y axis going other direction?
         float[] quadPositions = new float[vertexStride * 4];
         com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y],
                 z, quadPositions, 0);
         com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y], z, quadPositions,
                 vertexStride);
-        com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y] + values[HEIGHT],
+        com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y] - values[HEIGHT],
                 z, quadPositions,
                 vertexStride * 2);
-        com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y] + values[HEIGHT], z, quadPositions,
+        com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y] - values[HEIGHT], z, quadPositions,
                 vertexStride * 3);
         return quadPositions;
     }

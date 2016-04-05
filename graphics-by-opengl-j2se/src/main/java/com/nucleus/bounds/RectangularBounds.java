@@ -125,6 +125,7 @@ public class RectangularBounds extends Bounds {
     /**
      * Sets the bounds from upper left corner position, width and height
      * 
+     * @TODO How to handle if Y axis is going up?
      * @param x1
      * @param y1
      * @param width
@@ -139,9 +140,9 @@ public class RectangularBounds extends Bounds {
         bounds[X2] = x1 + width;
         bounds[Y2] = y1;
         bounds[X3] = x1 + width;
-        bounds[Y3] = y1 + height;
+        bounds[Y3] = y1 - height;
         bounds[X4] = x1;
-        bounds[Y4] = y1 + height;
+        bounds[Y4] = y1 - height;
         System.arraycopy(bounds, 0, rotatedBounds, 0, BOUNDS_LENGTH);
         updated = true;
         calculateRadius();

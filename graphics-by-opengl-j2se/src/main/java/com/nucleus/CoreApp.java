@@ -144,7 +144,7 @@ public class CoreApp {
         contextCreated = true;
         this.width = width;
         this.height = height;
-        // Reverse y so that 0 is at bottom which is the same as OpenGL
+        // If y is going down then reverse y so that 0 is at bottom which is the same as OpenGL
         inputProcessor.setPointerTransform((float) 1 / width, (float) 1 / -height, -0.5f, 0.5f);
     }
 
@@ -200,8 +200,7 @@ public class CoreApp {
     /**
      * Sets the scene rootnode, this will update the root node in the logic runnable {@linkplain LogicProcessorRunnable}
      * A {@linkplain ViewController} will be created with a reference to the root node view transform. This
-     * viewcontroller
-     * will be registered with the {@linkplain PropertyManager}
+     * viewcontroller will be registered with the {@linkplain PropertyManager}
      * 
      * @param node
      */

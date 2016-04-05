@@ -554,10 +554,14 @@ public class Node extends BaseReference implements MMIEventListener {
             // Children are called recursively.
             float[] mv = Matrix.createMatrix();
             if (bounds != null) {
-                Matrix.mul4(modelMatrix, getRootNode().getView().getMatrix(), mv);
+                Matrix.mul4(getRootNode().getView().getMatrix(), modelMatrix, mv);
                 // To do pointer intersections the model and view matrix is needed.
+                // For this to work it is important that the view keeps the same orientation of axis as OpenGL (right
+                // and up)
                 bounds.transform(mv, 0);
                 if (bounds.isPointInside(event.getPointerData().getCurrentPosition(), 0)) {
+                    // PropertyManager.getInstance().setProperty(ViewController.HANDLER_KEY,
+                    // ViewController.Actions.MOVE.name() + ":0.1,0,0");
                     System.out.println("HIT");
                 }
             }
