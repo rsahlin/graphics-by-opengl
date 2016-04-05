@@ -1,5 +1,6 @@
 package com.nucleus.scene;
 
+import com.nucleus.common.StringUtils;
 import com.nucleus.properties.PropertyManager;
 import com.nucleus.properties.PropertyManager.PropertyHandler;
 import com.nucleus.vecmath.Transform;
@@ -53,10 +54,36 @@ public class ViewController implements PropertyHandler {
         PropertyManager.getInstance().registerKey(key, this);
     }
 
+    /**
+     * Returns the value as a number of arrays, the first element contains the action, with any following
+     * element containing the data
+     * 
+     * @param value
+     * @return
+     */
+    private String[] getParts(String value) {
+        int index = value.indexOf(":");
+        if (index >= 0) {
+            return new String[] { value.substring(0, index), value.substring(index + 1) };
+        } else {
+            return new String[] {value};
+        }
+    }
+    
     @Override
     public boolean handleProperty(String key, String value) {
-        // TODO Auto-generated method stub
+        String[] parts = getParts(value);
+        Actions action = Actions.valueOf(parts[0]);
+        handleAction(action, parts[1]);
         return false;
+    }
+
+    private void handleAction(Actions action, String data) {
+        float[] values = StringUtils.getFloatArray(data);
+        switch (action) {
+        case MOVE:
+            view.setTranslate(values);
+        }
     }
 
     @Override
