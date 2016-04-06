@@ -400,6 +400,31 @@ public class Node extends BaseReference implements MMIEventListener {
         return properties;
     }
 
+    /**
+     * Returns the property for the specified key if set, or null.
+     * 
+     * @param key
+     * @return The property value for the key, or null
+     */
+    public String getProperty(String key) {
+        return properties.get(key);
+    }
+
+    /**
+     * Returns the property for the key, if the key has no value then defaultValue is returned.
+     * 
+     * @param key
+     * @param defaultValue
+     * @return The property value for key, or defaultValue if not set.
+     */
+    public String getProperty(String key, String defaultValue) {
+        String val = properties.get(key);
+        if (val != null) {
+            return val;
+        }
+        return defaultValue;
+    }
+
     public void copyTo(Node target) {
         target.set(this);
     }
@@ -560,8 +585,10 @@ public class Node extends BaseReference implements MMIEventListener {
                 // and up)
                 bounds.transform(mv, 0);
                 if (bounds.isPointInside(event.getPointerData().getCurrentPosition(), 0)) {
-                    // PropertyManager.getInstance().setProperty(ViewController.HANDLER_KEY,
-                    // ViewController.Actions.MOVE.name() + ":0.1,0,0");
+                    String onclick = getProperty("onclick");
+                    if (onclick != null) {
+                        PropertyManager.getInstance().setProperty(ViewController.HANDLER_KEY, onclick);
+                    }
                     System.out.println("HIT");
                 }
             }
