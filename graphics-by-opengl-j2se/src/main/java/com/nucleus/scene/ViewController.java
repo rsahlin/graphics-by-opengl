@@ -24,7 +24,8 @@ public class ViewController implements PropertyHandler {
     public enum Actions {
         MOVE(),
         SCALE(),
-        ROTATE();
+        ROTATE(),
+        MOVETO();
     }
 
     private Transform view;
@@ -73,16 +74,27 @@ public class ViewController implements PropertyHandler {
     @Override
     public boolean handleProperty(String key, String value) {
         String[] parts = getParts(value);
-        Actions action = Actions.valueOf(parts[0]);
-        handleAction(action, parts[1]);
-        return false;
+        try {
+            Actions action = Actions.valueOf(parts[0]);
+            handleAction(action, parts[1]);
+            return false;
+        } catch (IllegalArgumentException e) {
+            System.out.println("Could not parse action: " + parts[0]);
+        }
+        return true;
     }
 
     private void handleAction(Actions action, String data) {
         float[] values = StringUtils.getFloatArray(data);
         switch (action) {
         case MOVE:
+            view.addTranslation(values);
+            break;
+        case MOVETO:
             view.setTranslate(values);
+            break;
+        default:
+            throw new IllegalArgumentException("Not implemented");
         }
     }
 
