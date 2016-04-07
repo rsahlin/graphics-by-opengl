@@ -42,7 +42,7 @@ public class Node extends BaseReference implements MMIEventListener {
     @SerializedName("viewFrustum")
     private ViewFrustum viewFrustum;
     @SerializedName("children")
-    ArrayList<Node> children = new ArrayList<Node>();
+    private ArrayList<Node> children = new ArrayList<Node>();
 
     @SerializedName("bounds")
     private Bounds bounds;
