@@ -14,6 +14,7 @@ import com.nucleus.io.BaseReference;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
+import com.nucleus.properties.Property;
 import com.nucleus.properties.PropertyManager;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Transform;
@@ -41,6 +42,11 @@ public class Node extends BaseReference implements MMIEventListener {
     protected Transform transform;
     @SerializedName("viewFrustum")
     private ViewFrustum viewFrustum;
+    /**
+     * The childnodes shall always be processed/rendered in the order they are defined.
+     * This makes it possible to treat the children as a list that is rendered in a set order.
+     * Rearranging the children will alter the render order.
+     */
     @SerializedName("children")
     private ArrayList<Node> children = new ArrayList<Node>();
 
@@ -324,6 +330,9 @@ public class Node extends BaseReference implements MMIEventListener {
     /**
      * Returns the list of children for this node.
      * Any modifications done to the returned list will be reflected here.
+     * The childnodes shall always be processed/rendered in the order they are defined.
+     * This makes it possible to treat the children as a list that is rendered in a set order.
+     * Rearranging the children will alter the render order.
      * 
      * @return The list of children.
      */
@@ -468,6 +477,21 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
+     * Returns the child node with matching id from this node, children are not searched recursively.
+     * 
+     * @param id
+     * @return The child from this node with matching id, or null if not found.
+     */
+    public Node getChildById(String id) {
+        for (Node n : children) {
+            if (n.getId().equals(id)) {
+                return n;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the mesh by the given id from this Node, if a mesh with matching id is not present in the list of meshes
      * then null is returned.
      * 
@@ -587,7 +611,8 @@ public class Node extends BaseReference implements MMIEventListener {
                 if (bounds.isPointInside(event.getPointerData().getCurrentPosition(), 0)) {
                     String onclick = getProperty("onclick");
                     if (onclick != null) {
-                        PropertyManager.getInstance().setProperty(ViewController.HANDLER_KEY, onclick);
+                        Property p = Property.create(onclick);
+                        PropertyManager.getInstance().setProperty(p.getKey(), p.getValue());
                     }
                     System.out.println("HIT");
                 }

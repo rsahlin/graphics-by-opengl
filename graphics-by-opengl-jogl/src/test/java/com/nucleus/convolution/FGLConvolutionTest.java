@@ -19,7 +19,7 @@ import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.RenderSettings;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
-import com.nucleus.scene.LayerNode;
+import com.nucleus.scene.ViewNode;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -71,7 +71,7 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
         mesh = new Mesh();
         ConvolutionProgram c = new ConvolutionProgram();
         c.createProgram(renderer.getGLES());
-        LayerNode node = new LayerNode();
+        ViewNode node = new ViewNode();
         node.setLayer(Layer.SCENE);
         ViewFrustum vf = new ViewFrustum();
         vf.setOrthoProjection(-0.5f, 0.5f, 0.5f, -0.5f, 0, 10);
@@ -81,7 +81,7 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
         c.buildMesh(mesh, tex, 1f, 1f, 0, kernel[kernelIndex]);
         node.addMesh(mesh);
         BaseRootNode root = new BaseRootNode();
-        root.addScene(node);
+        root.setScene(node);
         coreApp.setRootNode(root);
         renderer.addFrameListener(this);
     }

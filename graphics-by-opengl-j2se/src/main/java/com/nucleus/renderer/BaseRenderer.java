@@ -18,7 +18,6 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
-import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeState;
 import com.nucleus.scene.RootNode;
@@ -386,29 +385,8 @@ class BaseRenderer implements NucleusRenderer {
         if (view != null) {
             setView(view.getMatrix(), 0);
         }
-        Layer layer = root.getLayer();
-        if (layer == null) {
-            for (LayerNode node : root.getScenes()) {
-                renderLayer(node);
-            }
-        } else {
-            for (LayerNode node : root.getScenes()) {
-                if (node.getLayer() == layer) {
-                    renderLayer(node);
-                }
-            }
-        }
-    }
-
-    /**
-     * Renders a layer node
-     * 
-     * @param layer The layer node
-     * @throws GLException
-     */
-    private void renderLayer(LayerNode layer) throws GLException {
-        if (layer != null) {
-            render(layer);
+        if (root.getScene() != null) {
+            render(root.getScene());
         }
     }
 

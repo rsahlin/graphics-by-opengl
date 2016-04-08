@@ -9,7 +9,6 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.properties.PropertyManager;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
-import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewController;
@@ -174,7 +173,7 @@ public class CoreApp {
             } else {
                 // TODO make sure this calls the same code as LogicProcessorRunnable
                 if (rootNode != null) {
-                    logicProcessor.processNode(rootNode.getNode(Layer.SCENE), renderer.getFrameSampler().getDelta());
+                    logicProcessor.processNode(rootNode.getScene(), renderer.getFrameSampler().getDelta());
                 }
             }
             if (rootNode != null) {
@@ -207,8 +206,8 @@ public class CoreApp {
     public void setRootNode(RootNode node) {
         this.rootNode = node;
         logicRunnable.setRootNode(node);
-        ViewController viewController = new ViewController(node.getView());
-        viewController.registerPropertyHandler(null);
+        // ViewController viewController = new ViewController(node.getView());
+        // viewController.registerPropertyHandler(null);
     }
 
 }

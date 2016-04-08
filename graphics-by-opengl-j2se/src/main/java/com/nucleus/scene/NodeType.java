@@ -11,7 +11,8 @@ import com.nucleus.common.Key;
 public enum NodeType implements Key {
 
     node(),
-    layernode();
+    viewnode(),
+    switchnode();
 
     @Override
     public String getKey() {

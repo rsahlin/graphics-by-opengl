@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.util.ArrayList;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -18,7 +17,6 @@ import com.nucleus.io.gson.BoundsDeserializer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
-import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.NodeType;
@@ -32,6 +30,8 @@ import com.nucleus.vecmath.Transform;
  *
  */
 public class GSONSceneFactory implements SceneSerializer {
+
+    private NucleusNodeDeserializer nodeDeserializer = new NucleusNodeDeserializer();
 
     private final static String ERROR_CLOSING_STREAM = "Error closing stream:";
     private final static String NULL_PARAMETER_ERROR = "Parameter is null: ";
@@ -101,7 +101,7 @@ public class GSONSceneFactory implements SceneSerializer {
         registerTypeAdapter(builder);
         setGson(builder.create());
         RootNode scene = getSceneFromJson(gson, reader);
-        RootNode createdRoot = createScene(scene.getResources(), scene.getScenes());
+        RootNode createdRoot = createScene(scene.getResources(), scene.getScene());
         if (scene.getView() != null) {
             createdRoot.setView(new Transform(scene.getView()));
         }
@@ -115,6 +115,7 @@ public class GSONSceneFactory implements SceneSerializer {
      */
     protected void registerTypeAdapter(GsonBuilder builder) {
         builder.registerTypeAdapter(Bounds.class, new BoundsDeserializer());
+        builder.registerTypeAdapter(Node.class, nodeDeserializer);
     }
 
     /**
@@ -139,22 +140,17 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     /**
-     * Creates {@linkplain RootNode} from the layers and returns, use this method when importing to create
+     * Creates {@linkplain RootNode} from the scene node and returns, use this method when importing to create
      * a new instance of the loaded scene.
      * 
      * @param resource The resources for the scene
-     * @param scenes The layers with nodes to creates
+     * @param scene The root scene node
      * @return The created scene or null if there is an error.
      * @throws IOException
      */
-    private RootNode createScene(ResourcesData resources, ArrayList<LayerNode> layers) throws IOException {
-        if (layers == null) {
-            return null;
-        }
+    private RootNode createScene(ResourcesData resources, Node scene) throws IOException {
         RootNode root = createRoot();
-        for (LayerNode n : layers) {
-            addNodes(resources, root, n);
-        }
+        addNodes(resources, root, scene);
         return root;
     }
 
@@ -162,7 +158,7 @@ public class GSONSceneFactory implements SceneSerializer {
      * Creates a new {@linkplain RootNode} for the specified scene, containing the layer nodes.
      * The layer nodes will have the new root as its rootnode.
      * 
-     * @return The root not implementation to use
+     * @return The root node implementation to use
      */
     protected RootNode createRoot() {
         return new BaseRootNode();
@@ -173,16 +169,16 @@ public class GSONSceneFactory implements SceneSerializer {
      * 
      * @param resources The resources in the scene
      * @param root The root node that the created node will be added to.
-     * @param layer The layer to create
+     * @param node The node to create
      * @return
      * @throws IOException
      */
-    private LayerNode addNodes(ResourcesData resources, RootNode root, LayerNode layer) throws IOException {
-        LayerNode created = (LayerNode) nodeFactory.create(renderer, meshFactory, resources, layer);
+    private Node addNodes(ResourcesData resources, RootNode root, Node node) throws IOException {
+        Node created = nodeFactory.create(renderer, meshFactory, resources, node);
         created.setRootNode(root);
-        setViewFrustum(layer, created);
-        createChildNodes(resources, layer, created);
-        root.addScene(created);
+        setViewFrustum(node, created);
+        createChildNodes(resources, node, created);
+        root.setScene(created);
         return created;
     }
 
@@ -281,6 +277,7 @@ public class GSONSceneFactory implements SceneSerializer {
      */
     protected void setGson(Gson gson) {
         this.gson = gson;
+        nodeDeserializer.setGson(gson);
     }
 
 }

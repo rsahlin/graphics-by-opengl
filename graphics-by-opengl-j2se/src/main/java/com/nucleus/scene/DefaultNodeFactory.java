@@ -30,8 +30,10 @@ public class DefaultNodeFactory implements NodeFactory {
         switch (type) {
         case node:
             return source.copy();
-        case layernode:
-            return ((LayerNode) source).copy();
+        case viewnode:
+            return ((ViewNode) source).copy();
+        case switchnode:
+            return ((SwitchNode) source).copy();
         default:
             throw new IllegalArgumentException(NOT_IMPLEMENTED + type);
         }

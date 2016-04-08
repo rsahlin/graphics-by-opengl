@@ -6,9 +6,11 @@ import java.util.List;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Key;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.scene.ViewNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
+import com.nucleus.scene.SwitchNode;
 import com.nucleus.texturing.Texture2D;
 
 public class NucleusNodeExporter implements NodeExporter {
@@ -31,17 +33,18 @@ public class NucleusNodeExporter implements NodeExporter {
 
     @Override
     public void exportNodes(RootNode source, RootNode rootNode) {
-        for (Node n : source.getScenes()) {
-            NodeExporter exporter = nodeExporters.get(n.getType());
-            Node export = null;
-            if (exporter != null) {
-                export = exporter.exportNode(n, rootNode);
-            } else {
-                throw new IllegalAccessError("Invalid node type: " + n.getType());
-            }
-            for (Node child : n.getChildren()) {
-                export.addChild(exportNode(child, rootNode));
-            }
+        Node scene = source.getScene();
+        NodeExporter exporter = nodeExporters.get(scene.getType());
+        Node export = null;
+        if (exporter != null) {
+            export = exporter.exportNode(scene, rootNode);
+            rootNode.setScene(export);
+        } else {
+            throw new IllegalAccessError("Invalid node type: " + scene.getType());
+        }
+        for (Node child : scene.getChildren()) {
+            NodeExporter exporter2 = nodeExporters.get(child.getType());
+            export.addChild(exporter2.exportNode(child, rootNode));
         }
     }
 
@@ -109,8 +112,11 @@ public class NucleusNodeExporter implements NodeExporter {
         case node:
             created = source.copy();
             break;
-        case layernode:
-            created = source.copy();
+        case viewnode:
+            created = ((ViewNode) source).copy();
+            break;
+        case switchnode:
+            created = ((SwitchNode) source).copy();
             break;
         default:
             throw new IllegalArgumentException(NOT_IMPLEMENTED + type);

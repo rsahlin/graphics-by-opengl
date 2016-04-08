@@ -24,9 +24,8 @@ import com.nucleus.texturing.ImageFactory;
 public interface NucleusRenderer {
 
     /**
-     * Layers for the renderer, Nodes will be draw BACKGROUND to OVERLAY.
-     * The drawing order within a layer is the same as the order Meshes are added, ie the Mesh added first will
-     * be drawn first (and possibly overwritten by the ones added later.
+     * Layers for the renderer
+     * 
      */
     public enum Layer {
         /**

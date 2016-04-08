@@ -1,7 +1,5 @@
 package com.nucleus.scene;
 
-import java.util.ArrayList;
-
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.ResourcesData;
@@ -11,6 +9,9 @@ import com.nucleus.vecmath.Transform;
 
 /**
  * Starting point of a nodetree, the root has a collection of nodes the each represent a scene.
+ * There shall only be one rootnode at any given time, the root node defines the possible resource that may be
+ * needed for the tree.
+ * A root node shall be self contained, reference textures and large data sets.
  * This class can be serialized using GSON
  * 
  * @author Richard Sahlin
@@ -30,8 +31,8 @@ public abstract class RootNode {
         about(),
     }
 
-    @SerializedName("scenes")
-    ArrayList<LayerNode> scenes;
+    @SerializedName("scene")
+    private Node scene;
 
     /**
      * The current view location, this is translated into the view transform that is set into
@@ -47,15 +48,12 @@ public abstract class RootNode {
     transient private Layer layer;
 
     /**
-     * Adds a node instance in this scene, this is a nodetree that can be rendered.
+     * Sets the root scene node.
      * 
      * @param node
      */
-    public void addScene(LayerNode node) {
-        if (scenes == null) {
-            scenes = new ArrayList<LayerNode>();
-        }
-        scenes.add(node);
+    public void setScene(Node scene) {
+        this.scene = scene;
     }
 
     /**
@@ -65,40 +63,8 @@ public abstract class RootNode {
      */
     public abstract RootNode createInstance();
 
-    /**
-     * Returns the base scene node with matching id, or null if none is set.
-     * This will only check base nodes (scenes), it will not recurse into children.
-     * 
-     * @id Id of scene node to return
-     * @return scene node (tree) or null.
-     */
-    public LayerNode getScene(String id) {
-        for (LayerNode n : scenes) {
-            if (n.getId().equals(id)) {
-                return n;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the base scene node with matching id, or null if none is set.
-     * This will only check base nodes (scenes), it will not recurse into children.
-     * 
-     * @id scene The scene node to return
-     * @return scene node (tree) or null.
-     */
-    public LayerNode getScene(Scenes scene) {
-        return getScene(scene.name());
-    }
-
-    /**
-     * Returns all scene nodes in the root.
-     * 
-     * @return
-     */
-    public ArrayList<LayerNode> getScenes() {
-        return scenes;
+    public Node getScene() {
+        return scene;
     }
 
     /**
@@ -135,41 +101,6 @@ public abstract class RootNode {
     public void addResource(Texture2D texture) {
         System.out.println("texture: " + texture.getClass().getSimpleName());
         getResources().addTexture(texture);
-    }
-
-    /**
-     * Sets the layer to be processed and rendered.
-     * Set to null to process and render all layers
-     * 
-     * @param layer
-     */
-    public void setLayer(Layer layer) {
-        this.layer = layer;
-    }
-
-    /**
-     * Returns the current layer to process
-     * 
-     * @return The layer to process and render, or null for all layers.
-     */
-    public Layer getLayer() {
-        return layer;
-    }
-
-    /**
-     * Returns the node for the specified layer. Take care when updating this in order not to break ongoing rendering.
-     * This will return the node added with a call to {@link #setNode(LayerNode)}
-     * 
-     * @param layer the layer to return the node for
-     * @return The node at the specified layer, or null
-     */
-    public Node getNode(Layer layer) {
-        for (LayerNode node : getScenes()) {
-            if (node.getLayer() == layer) {
-                return node;
-            }
-        }
-        return null;
     }
 
     /**
