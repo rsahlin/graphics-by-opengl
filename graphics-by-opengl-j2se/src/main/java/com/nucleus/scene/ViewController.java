@@ -1,15 +1,12 @@
 package com.nucleus.scene;
 
 import com.nucleus.common.StringUtils;
-import com.nucleus.properties.Property;
 import com.nucleus.properties.PropertyManager;
 import com.nucleus.properties.PropertyManager.PropertyHandler;
 import com.nucleus.vecmath.Transform;
 
 /**
  * This handles the update of the scene View.
- * To register this class to handle property key, call the
- * This class will be registered as handling view properties.
  * 
  * @author Richard Sahlin
  *
@@ -58,13 +55,12 @@ public class ViewController implements PropertyHandler {
 
     @Override
     public boolean handleProperty(String key, String value) {
-        String[] parts = Property.split(value);
         try {
-            Actions action = Actions.valueOf(parts[0]);
-            handleAction(action, parts[1]);
+            Actions action = Actions.valueOf(key);
+            handleAction(action, value);
             return false;
         } catch (IllegalArgumentException e) {
-            System.out.println("Could not parse action: " + parts[0]);
+            System.out.println("Could not parse action: " + key);
         }
         return true;
     }

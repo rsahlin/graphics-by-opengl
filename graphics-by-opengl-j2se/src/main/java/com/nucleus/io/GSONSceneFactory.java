@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.ArrayDeque;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -21,7 +22,7 @@ import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
-import com.nucleus.vecmath.Transform;
+import com.nucleus.scene.ViewNode;
 
 /**
  * GSON Serializer for nucleus scenegraph.
@@ -31,6 +32,7 @@ import com.nucleus.vecmath.Transform;
  */
 public class GSONSceneFactory implements SceneSerializer {
 
+    protected ArrayDeque<ViewNode> viewStack = new ArrayDeque<ViewNode>(NucleusRenderer.MIN_STACKELEMENTS);
     private NucleusNodeDeserializer nodeDeserializer = new NucleusNodeDeserializer();
 
     private final static String ERROR_CLOSING_STREAM = "Error closing stream:";
@@ -102,9 +104,6 @@ public class GSONSceneFactory implements SceneSerializer {
         setGson(builder.create());
         RootNode scene = getSceneFromJson(gson, reader);
         RootNode createdRoot = createScene(scene.getResources(), scene.getScene());
-        if (scene.getView() != null) {
-            createdRoot.setView(new Transform(scene.getView()));
-        }
         return createdRoot;
     }
 
@@ -183,7 +182,7 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     /**
-     * Creates a new node from the source node, looking up resources as needed.
+     * Creates a new node from the source node, creating child nodes as well, looking up resources as needed.
      * The new node will be returned, it is not added to the parent node - this shall be done by the caller.
      * The new node will have parent as its parent node
      * 
@@ -194,9 +193,17 @@ public class GSONSceneFactory implements SceneSerializer {
      */
     protected Node createNode(ResourcesData resources, Node source, Node parent) throws IOException {
         Node created = nodeFactory.create(renderer, meshFactory, resources, source);
+        boolean isViewNode = false;
+        if (NodeType.viewnode.name().equals(created.getType())) {
+            viewStack.push((ViewNode) created);
+            isViewNode = true;
+        }
         created.setRootNode(parent.getRootNode());
         setViewFrustum(source, created);
         createChildNodes(resources, source, created);
+        if (isViewNode) {
+            viewStack.pop();
+        }
         return created;
 
     }

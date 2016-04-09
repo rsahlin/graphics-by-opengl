@@ -20,7 +20,9 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeState;
+import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
+import com.nucleus.scene.ViewNode;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
@@ -41,7 +43,6 @@ class BaseRenderer implements NucleusRenderer {
     public final static String NOT_INITIALIZED_ERROR = "Not initialized, must call init()";
 
     protected final static String BASE_RENDERER_TAG = "BaseRenderer";
-    private final static int MIN_STACKELEMENTS = 100;
 
     private final static String NULL_GLESWRAPPER_ERROR = "GLES wrapper is null";
     private final static String NULL_IMAGEFACTORY_ERROR = "ImageFactory is null";
@@ -217,6 +218,12 @@ class BaseRenderer implements NucleusRenderer {
     public void render(Node node) throws GLException {
         NodeState state = node.getState();
         if (state == null || state == NodeState.on || state == NodeState.render) {
+            if (NodeType.viewnode.name().equals(node.getType())) {
+                Transform view = ((ViewNode) node).getView();
+                if (view != null) {
+                    setView(view.getMatrix(), 0);
+                }
+            }
             // Check for AttributeUpdate producer.
             Producer producer = node.getAttributeProducer();
             if (producer != null) {
@@ -381,10 +388,6 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(RootNode root) throws GLException {
-        Transform view = root.getView();
-        if (view != null) {
-            setView(view.getMatrix(), 0);
-        }
         if (root.getScene() != null) {
             render(root.getScene());
         }

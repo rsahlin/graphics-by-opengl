@@ -16,6 +16,7 @@ import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
 import com.nucleus.properties.Property;
 import com.nucleus.properties.PropertyManager;
+import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Transform;
 
@@ -286,6 +287,12 @@ public class Node extends BaseReference implements MMIEventListener {
         children.add(child);
         child.parent = this;
         child.setRootNode(getRootNode());
+        // if (NodeType.viewnode.name().equals(child.getType())) {
+        // Transform vt = ((ViewNode) child).getView();
+        // if (vt != null) {
+        // ViewController viewController = new ViewController(vt);
+        // viewController.registerPropertyHandler(null);
+        // }
     }
 
     /**
@@ -295,6 +302,23 @@ public class Node extends BaseReference implements MMIEventListener {
      */
     public Node getParent() {
         return parent;
+    }
+
+    /**
+     * Returns the first (closest from this node) parent.
+     * The search starts with the partent node of this node, if that is not a {@linkplain ViewNode} that nodes parent
+     * is checked.
+     * 
+     * @return The view parent of this node, or null if none could be found
+     */
+    public ViewNode getViewParent() {
+        if (parent == null) {
+            return null;
+        }
+        if (NodeType.viewnode.name().equals(parent.getType())) {
+            return (ViewNode) parent;
+        }
+        return parent.getViewParent();
     }
 
     /**
@@ -603,7 +627,7 @@ public class Node extends BaseReference implements MMIEventListener {
             // Children are called recursively.
             float[] mv = Matrix.createMatrix();
             if (bounds != null) {
-                Matrix.mul4(getRootNode().getView().getMatrix(), modelMatrix, mv);
+                Matrix.mul4(getRootNode().getViewNode(Layer.SCENE).getView().getMatrix(), modelMatrix, mv);
                 // To do pointer intersections the model and view matrix is needed.
                 // For this to work it is important that the view keeps the same orientation of axis as OpenGL (right
                 // and up)
@@ -612,7 +636,14 @@ public class Node extends BaseReference implements MMIEventListener {
                     String onclick = getProperty("onclick");
                     if (onclick != null) {
                         Property p = Property.create(onclick);
-                        PropertyManager.getInstance().setProperty(p.getKey(), p.getValue());
+                        if (p.getKey().equals("view")) {
+                            ViewNode view = getViewParent();
+                            if (view != null) {
+                                p = Property.create(p.getValue());
+                                view.getViewController().handleProperty(p.getKey(), p.getValue());
+                            }
+                        }
+                        // PropertyManager.getInstance().setProperty(p.getKey(), p.getValue());
                     }
                     System.out.println("HIT");
                 }

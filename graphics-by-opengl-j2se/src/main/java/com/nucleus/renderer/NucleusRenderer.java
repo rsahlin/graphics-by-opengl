@@ -24,6 +24,11 @@ import com.nucleus.texturing.ImageFactory;
 public interface NucleusRenderer {
 
     /**
+     * Min number of stack elements to supports, this is the depth of the tree
+     */
+    public final static int MIN_STACKELEMENTS = 100;
+
+    /**
      * Layers for the renderer
      * 
      */
