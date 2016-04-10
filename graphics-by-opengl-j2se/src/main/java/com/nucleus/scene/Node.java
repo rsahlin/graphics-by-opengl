@@ -16,7 +16,6 @@ import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
 import com.nucleus.properties.Property;
 import com.nucleus.properties.PropertyManager;
-import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Transform;
 
@@ -279,20 +278,12 @@ public class Node extends BaseReference implements MMIEventListener {
 
     /**
      * Adds a child at the end of the list of children.
-     * The child node's parent will be set to this node and the rootnode will be set same as the parent.
+     * This is the same as calling {@link #addChild(int, Node)} with index 0
      * 
      * @param child The child to add to this node.
      */
     public void addChild(Node child) {
-        children.add(child);
-        child.parent = this;
-        child.setRootNode(getRootNode());
-        // if (NodeType.viewnode.name().equals(child.getType())) {
-        // Transform vt = ((ViewNode) child).getView();
-        // if (vt != null) {
-        // ViewController viewController = new ViewController(vt);
-        // viewController.registerPropertyHandler(null);
-        // }
+        addChild(0, child);
     }
 
     /**
@@ -305,9 +296,9 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Returns the first (closest from this node) parent.
-     * The search starts with the partent node of this node, if that is not a {@linkplain ViewNode} that nodes parent
-     * is checked.
+     * Returns the first (closest from this node) {@linkplain ViewNode} parent.
+     * The search starts with the parent node of this node, if that is not a {@linkplain ViewNode} that nodes parent
+     * is checked, continuing until root node.
      * 
      * @return The view parent of this node, or null if none could be found
      */
@@ -332,6 +323,7 @@ public class Node extends BaseReference implements MMIEventListener {
 
     /**
      * Insert a child at the specified index
+     * The child node's parent will be set to this node.
      * 
      * @param index
      * @param child
@@ -339,6 +331,7 @@ public class Node extends BaseReference implements MMIEventListener {
      */
     public void addChild(int index, Node child) {
         children.add(index, child);
+        child.parent = this;
     }
 
     /**
@@ -502,6 +495,7 @@ public class Node extends BaseReference implements MMIEventListener {
 
     /**
      * Returns the child node with matching id from this node, children are not searched recursively.
+     * TODO Shall this method call getChildren() which will return only on-switched nodes?
      * 
      * @param id
      * @return The child from this node with matching id, or null if not found.
@@ -609,6 +603,7 @@ public class Node extends BaseReference implements MMIEventListener {
     /**
      * Internal method, sets all properties with a call for each property to
      * {@linkplain PropertyManager#setObjectProperty(Object, String, String)} with the node as object
+     * This shall be called from the {@link #onCreated()} method
      * 
      */
     private void setObjectProperties() {
@@ -622,34 +617,53 @@ public class Node extends BaseReference implements MMIEventListener {
     @Override
     public void inputEvent(MMIPointerEvent event) {
         if (event.getAction() == Action.ACTIVE || event.getAction() == Action.MOVE) {
-            // System.out.println(event.getPointerData().getCurrentPosition()[1]);
-            // Default behavior is to check if node has bounds, if it has the pointer event is checked against it.
-            // Children are called recursively.
+            checkNode(event);
+        }
+    }
+
+    /**
+     * Checks this node and children for pointer event.
+     * 
+     * @param event
+     * @return True if there was an event that was inside a node, ie a 'hit'
+     */
+    protected boolean checkNode(MMIPointerEvent event) {
+        if (bounds != null && getProperty("pointerinput", PropertyManager.FALSE).equals(PropertyManager.TRUE)) {
+            ViewNode viewNode = getViewParent();
+            // If ViewNode parent does not exist the identitymatrix is used
             float[] mv = Matrix.createMatrix();
-            if (bounds != null) {
-                Matrix.mul4(getRootNode().getViewNode(Layer.SCENE).getView().getMatrix(), modelMatrix, mv);
-                // To do pointer intersections the model and view matrix is needed.
+            if (viewNode != null) {
+                // In order to do pointer intersections the model and view matrix is needed.
                 // For this to work it is important that the view keeps the same orientation of axis as OpenGL (right
                 // and up)
-                bounds.transform(mv, 0);
-                if (bounds.isPointInside(event.getPointerData().getCurrentPosition(), 0)) {
-                    String onclick = getProperty("onclick");
-                    if (onclick != null) {
-                        Property p = Property.create(onclick);
-                        if (p.getKey().equals("view")) {
-                            ViewNode view = getViewParent();
-                            if (view != null) {
-                                p = Property.create(p.getValue());
-                                view.getViewController().handleProperty(p.getKey(), p.getValue());
-                            }
-                        }
-                        // PropertyManager.getInstance().setProperty(p.getKey(), p.getValue());
-                    }
-                    System.out.println("HIT");
-                }
+                Matrix.mul4(viewNode.getView().getMatrix(), modelMatrix, mv);
+            } else {
+                Matrix.setIdentity(mv, 0);
             }
-
+            bounds.transform(mv, 0);
+            if (bounds.isPointInside(event.getPointerData().getCurrentPosition(), 0)) {
+                String onclick = getProperty("onclick");
+                if (onclick != null) {
+                    Property p = Property.create(onclick);
+                    if (p.getKey().equals("view")) {
+                        ViewNode view = getViewParent();
+                        if (view != null) {
+                            p = Property.create(p.getValue());
+                            view.getViewController().handleProperty(p.getKey(), p.getValue());
+                        }
+                    }
+                    // PropertyManager.getInstance().setProperty(p.getKey(), p.getValue());
+                }
+                System.out.println("HIT");
+                return true;
+            }
         }
+        for (Node n : getChildren()) {
+            if (n.checkNode(event)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

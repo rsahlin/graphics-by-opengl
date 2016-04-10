@@ -5,9 +5,6 @@ import java.util.List;
 
 import com.nucleus.geometry.Vertex2D;
 import com.nucleus.mmi.PointerData.PointerAction;
-import com.nucleus.properties.PropertyManager;
-import com.nucleus.properties.PropertyManager.PropertyHandler;
-import com.nucleus.scene.Node;
 import com.nucleus.vecmath.Vector2D;
 
 /**
@@ -16,7 +13,7 @@ import com.nucleus.vecmath.Vector2D;
  * @author Richard Sahlin
  *
  */
-public class PointerInputProcessor implements PointerListener, PropertyHandler {
+public class PointerInputProcessor implements PointerListener {
 
     /**
      * The key to register in the property handler for this class
@@ -49,12 +46,8 @@ public class PointerInputProcessor implements PointerListener, PropertyHandler {
 
     /**
      * Default constructor
-     * This will register the {@link #HANDLER_KEY} with the PropertyManager as key with this
-     * class as handler.
-     * TODO Do not always register when this class is created, move to CoreApp or settings.
      */
     public PointerInputProcessor() {
-        PropertyManager.getInstance().registerKey(HANDLER_KEY, this);
     }
 
     @Override
@@ -185,6 +178,15 @@ public class PointerInputProcessor implements PointerListener, PropertyHandler {
     }
 
     /**
+     * Removes the {@linkplain MMIEventListener}, the listener will no longer get mmi callbacks
+     * 
+     * @param listener
+     */
+    public void removeMMIListener(MMIEventListener listener) {
+        mmiListeners.remove(listener);
+    }
+
+    /**
      * Sends the event to listeners, if event is specified. If null, nothing is done.
      * 
      * @param event
@@ -215,17 +217,4 @@ public class PointerInputProcessor implements PointerListener, PropertyHandler {
         transform[3] = translateY;
     }
 
-    @Override
-    public boolean handleProperty(String key, String value) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean handleObjectProperty(Object obj, String key, String value) {
-        if (obj instanceof Node && PropertyManager.TRUE.equals(value)) {
-            addMMIListener((Node) obj);
-        }
-        return false;
-    }
 }

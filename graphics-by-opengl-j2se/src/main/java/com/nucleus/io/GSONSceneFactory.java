@@ -174,10 +174,10 @@ public class GSONSceneFactory implements SceneSerializer {
      */
     private Node addNodes(ResourcesData resources, RootNode root, Node node) throws IOException {
         Node created = nodeFactory.create(renderer, meshFactory, resources, node);
-        created.setRootNode(root);
+        root.setScene(created);
         setViewFrustum(node, created);
         createChildNodes(resources, node, created);
-        root.setScene(created);
+        created.onCreated();
         return created;
     }
 

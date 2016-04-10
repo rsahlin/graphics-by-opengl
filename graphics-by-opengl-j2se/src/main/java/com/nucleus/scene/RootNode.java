@@ -39,12 +39,15 @@ public abstract class RootNode {
     transient private Layer layer;
 
     /**
-     * Sets the root scene node.
+     * Sets the root scene node, this rootnode will be parent to scene.
+     * This node will be rootnode of scene.
      * 
      * @param node
      */
     public void setScene(Node scene) {
         this.scene = scene;
+        scene.setRootNode(this);
+        scene.parent = null;
     }
 
     /**

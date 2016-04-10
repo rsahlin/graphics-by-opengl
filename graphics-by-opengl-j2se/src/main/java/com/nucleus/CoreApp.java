@@ -3,15 +3,14 @@ package com.nucleus;
 import com.nucleus.actor.J2SELogicProcessor;
 import com.nucleus.actor.LogicProcessor;
 import com.nucleus.actor.LogicProcessorRunnable;
+import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.PointerInputProcessor;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
-import com.nucleus.properties.PropertyManager;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.scene.RootNode;
-import com.nucleus.scene.ViewController;
 
 /**
  * Base application, use this to get the objects needed to start and run an application.
@@ -198,16 +197,32 @@ public class CoreApp {
 
     /**
      * Sets the scene rootnode, this will update the root node in the logic runnable {@linkplain LogicProcessorRunnable}
-     * A {@linkplain ViewController} will be created with a reference to the root node view transform. This
-     * viewcontroller will be registered with the {@linkplain PropertyManager}
      * 
      * @param node
      */
     public void setRootNode(RootNode node) {
         this.rootNode = node;
         logicRunnable.setRootNode(node);
-        // ViewController viewController = new ViewController(node.getView());
-        // viewController.registerPropertyHandler(null);
+    }
+
+    /**
+     * Adds pointer input callback {@linkplain MMIEventListener} to the scene, after this call the Node tree will get
+     * callbacks on pointer input
+     * 
+     * @param root
+     */
+    public void addPointerInput(RootNode root) {
+        inputProcessor.addMMIListener(root.getScene());
+    }
+
+    /**
+     * Removes the scene from pointer input callbacks {@linkplain MMIEventListener}, after this call the Node tree will
+     * no longer get pointer input callbacks
+     * 
+     * @param root
+     */
+    public void removePointerInput(RootNode root) {
+        inputProcessor.removeMMIListener(root.getScene());
     }
 
 }
