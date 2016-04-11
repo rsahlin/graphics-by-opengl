@@ -48,6 +48,14 @@ public class PropertyManager {
          * @return
          */
         public boolean handleObjectProperty(Object obj, String key, String value);
+
+        /**
+         * Returns the key that the handler can understand.
+         * 
+         * @return
+         */
+        public String getHandlerKey();
+
     }
 
     /**
@@ -65,10 +73,13 @@ public class PropertyManager {
      * After this method any call to {@linkplain PropertyManager#setProperty(String, String)} with the specified key
      * will invoke the {@linkplain PropertyHandler#handleProperty(String, String)} method.
      * 
-     * @param key The key to register a handler for
+     * @param key The key to register a handler for, or null to register with the handlers key
      * @param handler Handler for the key, or null to remove.
      */
     public void registerKey(String key, PropertyHandler handler) {
+        if (key == null) {
+            key = handler.getHandlerKey();
+        }
         handlers.put(key, handler);
     }
 

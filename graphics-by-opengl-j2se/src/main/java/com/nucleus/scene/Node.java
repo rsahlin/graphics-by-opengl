@@ -444,6 +444,9 @@ public class Node extends BaseReference implements MMIEventListener {
      * @return The property value for key, or defaultValue if not set.
      */
     public String getProperty(String key, String defaultValue) {
+        if (properties == null) {
+            return defaultValue;
+        }
         String val = properties.get(key);
         if (val != null) {
             return val;
@@ -645,14 +648,7 @@ public class Node extends BaseReference implements MMIEventListener {
                 String onclick = getProperty("onclick");
                 if (onclick != null) {
                     Property p = Property.create(onclick);
-                    if (p.getKey().equals("view")) {
-                        ViewNode view = getViewParent();
-                        if (view != null) {
-                            p = Property.create(p.getValue());
-                            view.getViewController().handleProperty(p.getKey(), p.getValue());
-                        }
-                    }
-                    // PropertyManager.getInstance().setProperty(p.getKey(), p.getValue());
+                    PropertyManager.getInstance().setObjectProperty(this, p.getKey(), p.getValue());
                 }
                 System.out.println("HIT");
                 return true;

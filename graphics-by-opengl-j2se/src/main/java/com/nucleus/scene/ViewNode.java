@@ -93,6 +93,11 @@ public class ViewNode extends Node {
         return view;
     }
 
+    /**
+     * Returns the viewcontroller for this node, shall not be null.
+     * 
+     * @return
+     */
     public ViewController getViewController() {
         return viewController;
     }

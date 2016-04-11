@@ -10,7 +10,9 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.scene.NodeController;
 import com.nucleus.scene.RootNode;
+import com.nucleus.scene.ViewController;
 
 /**
  * Base application, use this to get the objects needed to start and run an application.
@@ -203,6 +205,10 @@ public class CoreApp {
     public void setRootNode(RootNode node) {
         this.rootNode = node;
         logicRunnable.setRootNode(node);
+        ViewController vc = new ViewController();
+        vc.registerPropertyHandler(null);
+        NodeController nc = new NodeController(node);
+
     }
 
     /**
