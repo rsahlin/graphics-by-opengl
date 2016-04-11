@@ -15,7 +15,7 @@ import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
 import com.nucleus.properties.Property;
-import com.nucleus.properties.PropertyManager;
+import com.nucleus.properties.EventManager;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Transform;
 
@@ -26,7 +26,7 @@ import com.nucleus.vecmath.Transform;
  * This class may be serialized using GSON
  * Before the node can be rendered one or more meshes must be added using {@link #addMesh(Mesh)}
  * 
- * If a node contains properties the {@linkplain PropertyManager#setObjectProperty(Object, String, String)} is called
+ * If a node contains properties the {@linkplain EventManager#sendObjectEvent(Object, String, String)} is called
  * with the property/key and this class as object.
  * 
  * @author Richard Sahlin
@@ -605,14 +605,14 @@ public class Node extends BaseReference implements MMIEventListener {
 
     /**
      * Internal method, sets all properties with a call for each property to
-     * {@linkplain PropertyManager#setObjectProperty(Object, String, String)} with the node as object
+     * {@linkplain EventManager#sendObjectEvent(Object, String, String)} with the node as object
      * This shall be called from the {@link #onCreated()} method
      * 
      */
     private void setObjectProperties() {
         if (properties != null) {
             for (String key : properties.keySet()) {
-                PropertyManager.getInstance().setObjectProperty(this, key, properties.get(key));
+                EventManager.getInstance().sendObjectEvent(this, key, properties.get(key));
             }
         }
     }
@@ -631,7 +631,7 @@ public class Node extends BaseReference implements MMIEventListener {
      * @return True if there was an event that was inside a node, ie a 'hit'
      */
     protected boolean checkNode(MMIPointerEvent event) {
-        if (bounds != null && getProperty("pointerinput", PropertyManager.FALSE).equals(PropertyManager.TRUE)) {
+        if (bounds != null && getProperty("pointerinput", EventManager.FALSE).equals(EventManager.TRUE)) {
             ViewNode viewNode = getViewParent();
             // If ViewNode parent does not exist the identitymatrix is used
             float[] mv = Matrix.createMatrix();
@@ -648,7 +648,7 @@ public class Node extends BaseReference implements MMIEventListener {
                 String onclick = getProperty("onclick");
                 if (onclick != null) {
                     Property p = Property.create(onclick);
-                    PropertyManager.getInstance().setObjectProperty(this, p.getKey(), p.getValue());
+                    EventManager.getInstance().sendObjectEvent(this, p.getKey(), p.getValue());
                 }
                 System.out.println("HIT");
                 return true;

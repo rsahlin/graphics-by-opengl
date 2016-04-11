@@ -1,7 +1,7 @@
 package com.nucleus.scene;
 
+import com.nucleus.properties.EventManager.EventHandler;
 import com.nucleus.properties.Property;
-import com.nucleus.properties.PropertyManager.PropertyHandler;
 
 /**
  * Handles node related actions, there shall be only one node controller for each nodetree.
@@ -10,7 +10,7 @@ import com.nucleus.properties.PropertyManager.PropertyHandler;
  * @author Richard Sahlin
  *
  */
-public class NodeController implements PropertyHandler {
+public class NodeController implements EventHandler {
 
     /**
      * The key to register in the property handler for this class
@@ -37,20 +37,17 @@ public class NodeController implements PropertyHandler {
     }
 
     @Override
-    public boolean handleProperty(String key, String value) {
+    public void handleEvent(String key, String value) {
         Property p = Property.create(value);
-
-        return true;
     }
 
     @Override
-    public boolean handleObjectProperty(Object obj, String key, String value) {
+    public void handleObjectEvent(Object obj, String key, String value) {
         // TODO Auto-generated method stub
-        return false;
     }
 
     @Override
-    public String getHandlerKey() {
+    public String getHandlerCategory() {
         return HANDLER_KEY;
     }
 
