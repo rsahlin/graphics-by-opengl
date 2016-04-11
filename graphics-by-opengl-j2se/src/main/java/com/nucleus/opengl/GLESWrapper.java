@@ -14,6 +14,26 @@ public abstract class GLESWrapper {
         };
     }
 
+    public abstract class GL10 {
+
+        public static final int GL_POINT_SMOOTH = 0x0B10;
+        public static final int GL_LINE_SMOOTH = 0x0B20;
+        public static final int GL_SCISSOR_TEST = 0x0C11;
+        public static final int GL_COLOR_MATERIAL = 0x0B57;
+        public static final int GL_NORMALIZE = 0x0BA1;
+        public static final int GL_RESCALE_NORMAL = 0x803A;
+        public static final int GL_POLYGON_OFFSET_FILL = 0x8037;
+        public static final int GL_VERTEX_ARRAY = 0x8074;
+        public static final int GL_NORMAL_ARRAY = 0x8075;
+        public static final int GL_COLOR_ARRAY = 0x8076;
+        public static final int GL_TEXTURE_COORD_ARRAY = 0x8078;
+        public static final int GL_MULTISAMPLE = 0x809D;
+        public static final int GL_SAMPLE_ALPHA_TO_COVERAGE = 0x809E;
+        public static final int GL_SAMPLE_ALPHA_TO_ONE = 0x809F;
+        public static final int GL_SAMPLE_COVERAGE = 0x80A0;
+
+    }
+
     /**
      * TODO Rename to GL
      */
