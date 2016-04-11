@@ -77,9 +77,11 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, c
         // Display display = NewtFactory.createDisplay(null);
         // Screen screen = NewtFactory.createScreen(display, SCREEN_ID);
         GLCapabilities glCapabilities = new GLCapabilities(glProfile);
+        glCapabilities.setSampleBuffers(true);
+        glCapabilities.setNumSamples(8);
+        glCapabilities.setAlphaBits(8);
         // Window window = NewtFactory.createWindow(glCapabilities);
         glWindow = GLWindow.create(glCapabilities);
-
         glWindow.setSize(windowSize.getWidth(), windowSize.getHeight());
         glWindow.setUndecorated(undecorated);
         glWindow.setAlwaysOnTop(alwaysOnTop);
