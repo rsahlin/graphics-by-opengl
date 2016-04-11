@@ -151,16 +151,13 @@ public class MeshBuilder {
     /**
      * Builds a mesh with a specified number of indexed quads of GL_FLOAT type, the mesh must have an elementbuffer to
      * index the vertices. The index buffer will be built with indexes, this mesh shall be drawn using indexed mode.
-     * Vertex buffer shall have storage for XYZ + UV.
+     * Vertex buffer shall have storage for XYZ.
      * 
      * @param mesh The mesh to build the buffers in, this is the mesh that can be rendered.
      * @param program The program to use when rendering the mesh, it is stored in the material
      * @param index The index of the first quad to build
      * @param quadCount Number of quads to build, this is NOT the vertex count.
      * @param quadPositions Array with x,y,z - this is set for each tile. Must contain data for 4 vertices.
-     * @param attribute2Size Size per vertex for attribute buffer 2, this may be 0
-     * 
-     * @throws IllegalArgumentException if type is not GLES20.GL_FLOAT
      */
     public static void buildQuadMeshIndexed(Mesh mesh, ShaderProgram program, int index, int quadCount,
             float[] quadPositions) {
@@ -184,10 +181,7 @@ public class MeshBuilder {
      * @param index
      */
     public static void buildQuad(Mesh mesh, ShaderProgram program, int index, float[] quadPositions) {
-        float[] vertices = new float[INDEXED_QUAD_VERTICES * XYZ_COMPONENTS];
-        int destPos = 0;
-        System.arraycopy(quadPositions, 0, vertices, destPos, quadPositions.length);
-        mesh.attributes[BufferIndex.VERTICES.index].setPosition(vertices, 0, index * INDEXED_QUAD_VERTICES,
+        mesh.attributes[BufferIndex.VERTICES.index].setPosition(quadPositions, 0, index * INDEXED_QUAD_VERTICES,
                 INDEXED_QUAD_VERTICES);
 
     }
