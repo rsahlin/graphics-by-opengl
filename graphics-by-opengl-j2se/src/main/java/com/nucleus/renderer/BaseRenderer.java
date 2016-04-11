@@ -14,6 +14,7 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.VertexBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLESWrapper.GL10;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
@@ -204,6 +205,13 @@ class BaseRenderer implements NucleusRenderer {
             } else {
                 gles.glDisable(GLES20.GL_DEPTH_TEST);
                 gles.glDepthMask(false);
+            }
+        }
+        if ((flags & RenderSettings.CHANGE_FLAG_MULTISAMPLE) != 0) {
+            if (setting.isMultisampling()) {
+                gles.glEnable(GL10.GL_MULTISAMPLE);
+            } else {
+                gles.glDisable(GL10.GL_MULTISAMPLE);
             }
         }
         GLUtils.handleError(gles, "setRenderSettings ");
