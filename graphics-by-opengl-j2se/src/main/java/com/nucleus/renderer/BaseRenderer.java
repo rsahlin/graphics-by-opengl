@@ -260,11 +260,11 @@ class BaseRenderer implements NucleusRenderer {
             Matrix.mul4(mvpMatrix, projectionMatrix);
             renderMeshes(node.getMeshes(), mvpMatrix);
             this.modelMatrix = nodeMatrix;
-            pushMatrix(matrixStack, this.modelMatrix);
             for (Node n : node.getChildren()) {
+                pushMatrix(matrixStack, this.modelMatrix);
                 render(n);
+                this.modelMatrix = popMatrix(matrixStack);
             }
-            this.modelMatrix = popMatrix(matrixStack);
             if (projection != null) {
                 this.projectionMatrix = popMatrix(this.projection);
             }
