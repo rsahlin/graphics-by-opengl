@@ -14,8 +14,8 @@ import com.nucleus.io.BaseReference;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
-import com.nucleus.properties.Property;
 import com.nucleus.properties.EventManager;
+import com.nucleus.properties.Property;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Transform;
 
@@ -277,16 +277,6 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Adds a child at the end of the list of children.
-     * This is the same as calling {@link #addChild(int, Node)} with index 0
-     * 
-     * @param child The child to add to this node.
-     */
-    public void addChild(Node child) {
-        addChild(0, child);
-    }
-
-    /**
      * Returns the parent of this node, or null if this is the root
      * 
      * @return
@@ -322,15 +312,13 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Insert a child at the specified index
+     * Adds a child at the end of the list of children.
      * The child node's parent will be set to this node.
      * 
-     * @param index
-     * @param child
-     * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index > size())
+     * @param child The child to add to this node.
      */
-    public void addChild(int index, Node child) {
-        children.add(index, child);
+    public void addChild(Node child) {
+        children.add(child);
         child.parent = this;
     }
 
@@ -645,12 +633,12 @@ public class Node extends BaseReference implements MMIEventListener {
             }
             bounds.transform(mv, 0);
             if (bounds.isPointInside(event.getPointerData().getCurrentPosition(), 0)) {
+                System.out.println("HIT");
                 String onclick = getProperty("onclick");
                 if (onclick != null) {
                     Property p = Property.create(onclick);
                     EventManager.getInstance().sendObjectEvent(this, p.getKey(), p.getValue());
                 }
-                System.out.println("HIT");
                 return true;
             }
         }
