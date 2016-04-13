@@ -105,7 +105,8 @@ public class EventManager {
     public void sendObjectEvent(Object obj, String category, String value) {
         EventHandler handler = handlers.get(category);
         if (handler != null) {
-            handler.handleObjectEvent(obj, category, value);
+            Property p = Property.create(value);
+            handler.handleObjectEvent(obj, p.getKey(), p.getValue());
         }
 
     }

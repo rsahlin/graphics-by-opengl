@@ -3,13 +3,11 @@ package com.nucleus.scene;
 import com.nucleus.common.StringUtils;
 import com.nucleus.properties.EventManager;
 import com.nucleus.properties.EventManager.EventHandler;
-import com.nucleus.properties.Property;
 import com.nucleus.vecmath.Transform;
 
 /**
  * Handles the update of the scene View.
- * This class can be registered with {@linkplain EventHandler} to listen
- * for view property changes.
+ * This class can be registered with {@linkplain EventHandler} to listen for view events.
  * 
  * @author Richard Sahlin
  *
@@ -52,25 +50,26 @@ public class ViewController implements EventHandler {
     }
 
     /**
-     * Registers this class as a propertyhandler for the key, if key is null the {@link #HANDLER_KEY} is used.
+     * Registers this class as a eventhandler for the key, if key is null the {@link #HANDLER_KEY} is used.
      * NOTE! Only register ONE view controller, this shall be called with the
      * {@link #handleObjectEvent(Object, String, String)} method which will resolve the needed target view transform.
+     * TODO How to make sure only one instance of this class is registered?
      * TODO Perhaps split viewcontroller into 2 parts, one that handles the "view" property and does not need a target
      * reference
      * 
      * @param key The key to register this controller for, or null to use default.
      */
-    public void registerPropertyHandler(String key) {
+    public void registerEventHandler(String key) {
         EventManager.getInstance().registerCategory(key, this);
     }
 
     @Override
-    public void handleEvent(String key, String value) {
+    public void handleEvent(String category, String value) {
         try {
-            Actions action = Actions.valueOf(key);
+            Actions action = Actions.valueOf(category);
             handleAction(action, value);
         } catch (IllegalArgumentException e) {
-            System.out.println("Could not parse action: " + key);
+            System.out.println("Could not parse category: " + category);
         }
     }
 
@@ -89,11 +88,10 @@ public class ViewController implements EventHandler {
     }
 
     @Override
-    public void handleObjectEvent(Object obj, String key, String value) {
+    public void handleObjectEvent(Object obj, String category, String value) {
         ViewNode view = ((Node) obj).getViewParent();
         if (view != null) {
-            Property p = Property.create(value);
-            view.getViewController().handleEvent(p.getKey(), p.getValue());
+            view.getViewController().handleEvent(category, value);
         }
     }
 
