@@ -48,7 +48,7 @@ public class Node extends BaseReference implements MMIEventListener {
      * Rearranging the children will alter the render order.
      */
     @SerializedName("children")
-    private ArrayList<Node> children = new ArrayList<Node>();
+    protected ArrayList<Node> children = new ArrayList<Node>();
 
     @SerializedName("bounds")
     private Bounds bounds;
@@ -448,6 +448,7 @@ public class Node extends BaseReference implements MMIEventListener {
 
     /**
      * Returns node with matching id, searching through this node and recursively searching through children.
+     * Children will be searched by calling {@link #getChildren()} excluding nodes that are switched off.
      * 
      * @param id Id of node to return
      * @return First instance of node with matching id, or null if none found
@@ -456,7 +457,7 @@ public class Node extends BaseReference implements MMIEventListener {
         if (id.equals(getId())) {
             return this;
         }
-        for (Node child : children) {
+        for (Node child : getChildren()) {
             Node result = child.getNodeById(id);
             if (result != null) {
                 return result;
@@ -466,7 +467,8 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Returns the first node with matching type, or null if none found
+     * Returns the first node with matching type, or null if none found.
+     * This method will search through the active children.
      * 
      * @param type
      * @return
@@ -475,7 +477,7 @@ public class Node extends BaseReference implements MMIEventListener {
         if (type.equals(this.type)) {
             return this;
         }
-        for (Node child : children) {
+        for (Node child : getChildren()) {
             Node result = child.getNodeByType(type);
             if (result != null) {
                 return result;

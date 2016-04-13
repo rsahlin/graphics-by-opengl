@@ -176,47 +176,9 @@ public class GSONSceneFactory implements SceneSerializer {
         Node created = nodeFactory.create(renderer, meshFactory, resources, node);
         root.setScene(created);
         setViewFrustum(node, created);
-        createChildNodes(resources, node, created);
+        nodeFactory.createChildNodes(renderer, meshFactory, resources, node, created);
         created.onCreated();
         return created;
-    }
-
-    /**
-     * Creates a new node from the source node, creating child nodes as well, looking up resources as needed.
-     * The new node will be returned, it is not added to the parent node - this shall be done by the caller.
-     * The new node will have parent as its parent node
-     * 
-     * @param resources The scene resources
-     * @param source The node source,
-     * @param parent The parent node
-     * @return The created node, this will be a new instance of the source node ready to be rendered/processed
-     */
-    protected Node createNode(ResourcesData resources, Node source, Node parent) throws IOException {
-        Node created = nodeFactory.create(renderer, meshFactory, resources, source);
-        boolean isViewNode = false;
-        if (NodeType.viewnode.name().equals(created.getType())) {
-            viewStack.push((ViewNode) created);
-            isViewNode = true;
-        }
-        created.setRootNode(parent.getRootNode());
-        setViewFrustum(source, created);
-        createChildNodes(resources, source, created);
-        if (isViewNode) {
-            viewStack.pop();
-        }
-        return created;
-
-    }
-
-    protected void createChildNodes(ResourcesData resources, Node source, Node parent) throws IOException {
-        // Recursively create children
-        for (Node nd : source.getChildren()) {
-            Node child = createNode(resources, nd, parent);
-            if (child != null) {
-                parent.addChild(child);
-            }
-        }
-
     }
 
     /**

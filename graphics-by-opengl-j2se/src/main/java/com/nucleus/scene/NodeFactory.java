@@ -33,4 +33,16 @@ public interface NodeFactory {
     public Node create(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resource, Node source)
             throws IOException;
 
+    /**
+     * Creates the child nodes in from the source node, adding the created children to the parent node.
+     * 
+     * @param resources
+     * @param source The source node containing the children to create
+     * @param parent The destination where the created child nodes will be added.
+     * @throws IOException
+     */
+    public void createChildNodes(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resources,
+            Node source, Node parent) throws IOException;
+
+
 }

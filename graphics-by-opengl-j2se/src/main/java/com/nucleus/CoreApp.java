@@ -206,8 +206,9 @@ public class CoreApp {
         this.rootNode = node;
         logicRunnable.setRootNode(node);
         ViewController vc = new ViewController();
-        vc.registerPropertyHandler(null);
+        vc.registerEventHandler(null);
         NodeController nc = new NodeController(node);
+        nc.registerEventHandler(null);
 
     }
 
