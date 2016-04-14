@@ -148,19 +148,30 @@ public class GSONSceneFactory implements SceneSerializer {
      * @throws IOException
      */
     private RootNode createScene(ResourcesData resources, Node scene) throws IOException {
-        RootNode root = createRoot();
+        RootNode root = createInstance(resources);
         addNodes(resources, root, scene);
         return root;
     }
 
     /**
      * Creates a new {@linkplain RootNode} for the specified scene, containing the layer nodes.
-     * The layer nodes will have the new root as its rootnode.
      * 
      * @return The root node implementation to use
      */
-    protected RootNode createRoot() {
+    protected RootNode createInstance() {
         return new BaseRootNode();
+    }
+
+    /**
+     * Creates a new root node and copying the resources into the new root.
+     * 
+     * @param resource
+     * @return
+     */
+    protected RootNode createInstance(ResourcesData resource) {
+        RootNode root = createInstance();
+        root.getResources().copy(resource);
+        return root;
     }
 
     /**

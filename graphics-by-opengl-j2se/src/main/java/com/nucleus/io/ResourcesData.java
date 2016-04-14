@@ -32,6 +32,65 @@ public class ResourcesData {
     private ArrayList<Mesh> mesh = new ArrayList<Mesh>();
 
     /**
+     * Copies the resources (definitions) from the source into this class
+     * 
+     * @param source
+     */
+    public void copy(ResourcesData source) {
+        copyMeshes(source.mesh);
+        copyTextures(source.texture2D);
+        copyTiledTextures(source.tiledTexture2D);
+        copyUVTextures(source.uvTexture2D);
+    }
+
+    /**
+     * Copies the meshes into this class, adding to the list of available meshes
+     * 
+     * @param meshes
+     */
+    protected void copyMeshes(ArrayList<Mesh> meshes) {
+        for (Mesh m : meshes) {
+            mesh.add(new Mesh(m));
+        }
+    }
+
+    /**
+     * Copies the textures into this class, adding to the list of available textures
+     * If texture with same id already exist then nothing is added.
+     * 
+     * @param textures List of texture objects to add to this class
+     */
+    protected void copyTextures(ArrayList<Texture2D> textures) {
+        for (Texture2D t : textures) {
+            addTexture(t);
+        }
+    }
+
+    /**
+     * Copies the textures into this class, adding to the list of available textures.
+     * If texture with same id already exist then nothing is added
+     * 
+     * @param textures List of texture objects to add to this class
+     */
+    protected void copyTiledTextures(ArrayList<TiledTexture2D> textures) {
+        for (TiledTexture2D t : textures) {
+            addTexture(t);
+        }
+    }
+
+    /**
+     * Copies the textures into this class, adding to the list of available textures.
+     * If texture with same id already exist then nothing is added
+     * 
+     * @param textures List of texture objects to add to this class
+     */
+    protected void copyUVTextures(ArrayList<UVTexture2D> textures) {
+        for (UVTexture2D t : textures) {
+            addTexture(t);
+        }
+    }
+
+    /**
      * Returns the defined texture objects
      * 
      * @return
@@ -116,6 +175,10 @@ public class ResourcesData {
      * @param texture
      */
     public void addTexture(Texture2D texture) {
+        if (getTexture2D(texture.getId()) != null) {
+            System.out.println("Not adding texture, id already present: " + texture.getId());
+            return;
+        }
         if (texture instanceof TiledTexture2D) {
             tiledTexture2D.add((TiledTexture2D) texture);
         } else if (texture instanceof UVTexture2D) {
@@ -123,6 +186,19 @@ public class ResourcesData {
         } else {
             texture2D.add(texture);
         }
+    }
+
+    /**
+     * Adds the mesh to list of meshes, if a mesh with same id already exist then the mesh is not added
+     * 
+     * @param mesh
+     */
+    public void addMesh(Mesh mesh) {
+        if (getMesh(mesh.getId()) != null) {
+            System.out.println("Not adding mesh, id already present: " + mesh.getId());
+            return;
+        }
+        this.mesh.add(mesh);
     }
 
     /**
