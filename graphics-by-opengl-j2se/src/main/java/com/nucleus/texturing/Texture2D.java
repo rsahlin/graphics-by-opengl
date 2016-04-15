@@ -19,6 +19,46 @@ import com.nucleus.resource.ResourceBias.RESOLUTION;
  */
 public class Texture2D extends BaseReference {
 
+    /**
+     * The GL texture formats
+     * 
+     * @author Richard Sahlin
+     *
+     */
+    public enum Format {
+        ALPHA(0x1906),
+        RGB(0x1907),
+        RGBA(0x1908),
+        LUMINANCE(0x1909),
+        LUMINANCE_ALPHA(0x190A);
+
+        public final int format;
+
+        private Format(int format) {
+            this.format = format;
+        }
+    }
+
+    /**
+     * The GL texture types
+     * 
+     * @author Richard Sahlin
+     *
+     */
+    public enum Type {
+        UNSIGNED_BYTE(0x1401),
+        UNSIGNED_SHORT_5_6_5(0x8363),
+        UNSIGNED_SHORT_4_4_4_4(0x8033),
+        UNSIGNED_SHORT_5_5_5_1(0x8034);
+
+        public final int type;
+
+        private Type(int type) {
+            this.type = type;
+        }
+
+    }
+
     public final static int TEXTURE_0 = 0;
 
     /**
@@ -36,6 +76,17 @@ public class Texture2D extends BaseReference {
      */
     @SerializedName("textureParameters")
     protected TextureParameter texParameters = new TextureParameter();
+    /**
+     * The texture format
+     */
+    @SerializedName("format")
+    private Format format;
+
+    /**
+     * The texture type
+     */
+    @SerializedName("type")
+    private Type type;
 
     /**
      * The texture name, this is a loose reference to the allocated texture name.
@@ -55,13 +106,13 @@ public class Texture2D extends BaseReference {
      */
     transient Image[] images;
 
-    transient public final TextureType type;
+    transient public final TextureType textureType;
 
     /**
      * Default constructor
      */
     protected Texture2D() {
-        type = TextureType.valueOf(getClass().getSimpleName());
+        textureType = TextureType.valueOf(getClass().getSimpleName());
     }
 
     /**
@@ -73,7 +124,7 @@ public class Texture2D extends BaseReference {
      * @param source
      */
     protected Texture2D(Texture2D source) {
-        type = TextureType.valueOf(getClass().getSimpleName());
+        textureType = TextureType.valueOf(getClass().getSimpleName());
         set(source);
     }
 
@@ -103,7 +154,7 @@ public class Texture2D extends BaseReference {
      */
     protected Texture2D(String id, RESOLUTION resolution, TextureParameter params) {
         super(id);
-        type = TextureType.valueOf(getClass().getSimpleName());
+        textureType = TextureType.valueOf(getClass().getSimpleName());
         this.resolution = resolution;
         this.texParameters.setValues(params);
     }
@@ -117,7 +168,7 @@ public class Texture2D extends BaseReference {
      */
     protected Texture2D(ExternalReference externalReference, RESOLUTION resolution, int levels) {
         super();
-        type = TextureType.valueOf(getClass().getSimpleName());
+        textureType = TextureType.valueOf(getClass().getSimpleName());
         this.externalReference = externalReference;
         this.resolution = resolution;
         this.mipmap = levels;
@@ -133,7 +184,7 @@ public class Texture2D extends BaseReference {
      */
     protected Texture2D(String id, int name, Image[] images, RESOLUTION resolution, TextureParameter params) {
         super(id);
-        type = TextureType.valueOf(getClass().getSimpleName());
+        textureType = TextureType.valueOf(getClass().getSimpleName());
         setup(name, images);
         this.resolution = resolution;
         this.texParameters.setValues(params);
@@ -223,6 +274,24 @@ public class Texture2D extends BaseReference {
      */
     public int getLevels() {
         return mipmap;
+    }
+
+    /**
+     * Returns the texture type
+     * 
+     * @return
+     */
+    public Type getType() {
+        return type;
+    }
+
+    /**
+     * Returns the texture format
+     * 
+     * @return
+     */
+    public Format getFormat() {
+        return format;
     }
 
     /**

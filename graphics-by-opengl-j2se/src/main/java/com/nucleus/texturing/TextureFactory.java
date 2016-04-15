@@ -52,7 +52,7 @@ public class TextureFactory {
      * @return Texture with same contents as the source
      */
     public static Texture2D createTexture(Texture2D source) {
-        switch (source.type) {
+        switch (source.textureType) {
         case Texture2D:
             return new Texture2D(source);
         case TiledTexture2D:
