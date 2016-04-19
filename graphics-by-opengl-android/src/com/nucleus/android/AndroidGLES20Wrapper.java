@@ -53,10 +53,17 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glGetActiveAttrib(int program, int index, int bufsize, int[] length, int lengthOffset, int[] size,
+    public void glGetActiveAttrib(int program, int index, int nameSize, int[] length, int lengthOffset, int[] size,
             int sizeOffset, int[] type, int typeOffset, byte[] name, int nameOffset) {
-        android.opengl.GLES20.glGetActiveAttrib(program, index, bufsize, length, lengthOffset, size, sizeOffset, type,
-                typeOffset, name, nameOffset);
+        // Fix for some stupid devices that can't write into the same destination array.
+        int[] l = new int[1];
+        int[] t = new int[1];
+        int[] s = new int[1];
+        android.opengl.GLES20.glGetActiveAttrib(program, index, nameSize, l, 0, s, 0, t,
+                0, name, nameOffset);
+        length[lengthOffset] = l[0];
+        type[typeOffset] = t[0];
+        size[sizeOffset] = s[0];
     }
 
     @Override
@@ -105,10 +112,17 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glGetActiveUniform(int program, int index, int bufsize, int[] length, int lengthOffset, int[] size,
+    public void glGetActiveUniform(int program, int index, int nameSize, int[] length, int lengthOffset, int[] size,
             int sizeOffset, int[] type, int typeOffset, byte[] name, int nameOffset) {
-        android.opengl.GLES20.glGetActiveUniform(program, index, bufsize, length, lengthOffset, size, sizeOffset, type,
-                typeOffset, name, nameOffset);
+        // Fix for some stupid devices that can't write into the same destination array.
+        int[] l = new int[1];
+        int[] t = new int[1];
+        int[] s = new int[1];
+        android.opengl.GLES20.glGetActiveUniform(program, index, nameSize, l, 0, s, 0, t,
+                0, name, nameOffset);
+        length[lengthOffset] = l[0];
+        type[typeOffset] = t[0];
+        size[sizeOffset] = s[0];
     }
 
     @Override
