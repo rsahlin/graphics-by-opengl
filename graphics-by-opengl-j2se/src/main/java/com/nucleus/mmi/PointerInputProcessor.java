@@ -109,10 +109,10 @@ public class PointerInputProcessor implements PointerListener {
         Vector2D vector2 = getDeltaAsVector(pointer2, 1);
         // Check if movement from or towards middle.
         if (vector1 != null && vector2 != null) {
-            System.out.println("Twopointer delta1: " + vector1.vector[Vector2D.MAGNITUDE] + " pos: "
-                    + pointer1.getCurrentPosition()[0] + ", " + pointer1.getCurrentPosition()[1]);
-            if (vector1.vector[Vector2D.MAGNITUDE] > moveThreshold ||
-                    vector2.vector[Vector2D.MAGNITUDE] > moveThreshold) {
+//            System.out.println("Twopointer delta1: " + vector1.vector[Vector2D.MAGNITUDE] + " pos: "
+            // + pointer1.getCurrentPosition()[0] + ", " + pointer1.getCurrentPosition()[1]);
+            // if (vector1.vector[Vector2D.MAGNITUDE] > moveThreshold ||
+            // vector2.vector[Vector2D.MAGNITUDE] > moveThreshold) {
 
                 Vertex2D.getDistance(middle, pointer1.getCurrentPosition(), toMiddle);
                 Vector2D center1 = new Vector2D(toMiddle);
@@ -123,21 +123,21 @@ public class PointerInputProcessor implements PointerListener {
                 float angle2 = (float) Math.acos(vector2.dot(center2)) * 57.2957795f;
                 if ((angle1 > 135 && angle2 > 135) || (angle1 < 45 && angle2 < 45)) {
                     zoom(pointer1, pointer2, vector1, vector2, center1, center2);
-                } else if (vector1.vector[Vector2D.MAGNITUDE] < moveThreshold) {
+            } else // if (vector1.vector[Vector2D.MAGNITUDE] < moveThreshold) {
                     // If one touch is very small then count the other.
                     // TODO Maybe use magnitude as a factor and weigh angles together
                     if ((angle2 > 135) || (angle2 < 45)) {
                         zoom(pointer1, pointer2, vector1, vector2, center1, center2);
-                    }
-                } else if (vector2.vector[Vector2D.MAGNITUDE] < moveThreshold) {
+                // }
+            } else // if (vector2.vector[Vector2D.MAGNITUDE] < moveThreshold) {
                     // If one touch is very small then count the other.
                     // TODO Maybe use magnitude as a factor and weigh angles together
                     if ((angle1 > 135) || (angle1 < 45)) {
                         zoom(pointer1, pointer2, vector1, vector2, center1, center2);
                     }
-                }
+            // }
 
-            }
+            // }
         }
 
     }
@@ -145,9 +145,9 @@ public class PointerInputProcessor implements PointerListener {
     private void zoom(PointerMotionData pointer1, PointerMotionData pointer2, Vector2D vector1, Vector2D vector2,
             Vector2D center1, Vector2D center2) {
         // Zoom movement
-        // System.out.println("DOT1 " + vector1.dot(center1) + ", DOT2: " + vector2.dot(center2) +
-        // " LENGTH: "
-        // + (vector1.vector[Vector2D.MAGNITUDE] + vector2.vector[Vector2D.MAGNITUDE]));
+        System.out.println("DOT1 " + vector1.dot(center1) + ", DOT2: " + vector2.dot(center2) +
+                " LENGTH: "
+                + (vector1.vector[Vector2D.MAGNITUDE] + vector2.vector[Vector2D.MAGNITUDE]));
         sendToListeners(new MMIPointerEvent(pointer1, pointer2, vector1, vector2, vector1.dot(center1),
                 vector2.dot(center2)));
 
