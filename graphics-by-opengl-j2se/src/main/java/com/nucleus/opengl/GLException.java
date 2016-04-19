@@ -13,6 +13,35 @@ import java.util.List;
  */
 public class GLException extends Throwable {
 
+    public enum Error {
+        INVALID_ENUM(0x0500),
+        INVALID_VALUE(0x0501),
+        INVALID_OPERATION(0x0502),
+        OUT_OF_MEMORY(0x0505);
+
+        public final int value;
+
+        private Error(int value) {
+            this.value = value;
+        }
+
+        /**
+         * Finds the Error enum for the error value
+         * 
+         * @param value The error value to look up
+         * @return The error, or null if not found
+         */
+        public static Error getError(int value) {
+            for (Error e : Error.values()) {
+                if (e.value == value) {
+                    return e;
+                }
+            }
+            return null;
+        }
+
+    }
+
     /**
      * One or more error codes from OpenGL/ES
      */
@@ -72,7 +101,12 @@ public class GLException extends Throwable {
     public String toString() {
         StringBuffer message = new StringBuffer(getMessage());
         for (int error : errorCodes) {
-            message.append(", " + error);
+            Error e = Error.getError(error);
+            if (e != null) {
+                message.append(", " + e + "(" + error + ")");
+            } else {
+                message.append(", " + error);
+            }
         }
         return message.toString();
     }
