@@ -69,6 +69,7 @@ public abstract class ShaderProgram {
     public final static String BIND_ATTRIBUTE_ERROR = "Error binding attribute: ";
     public final static String VARIABLE_LOCATION_ERROR = "Could not get shader variable location: ";
     public final static String NULL_VARIABLES_ERROR = "ShaderVariables are null, program not created? Must call fetchProgramInfo()";
+    public final static String GET_PROGRAM_INFO_ERROR = "Error fetching program info.";
 
     /**
      * Index into array where active (attribute or uniform) variable is stored, used when
@@ -423,6 +424,7 @@ public abstract class ShaderProgram {
         gles.glGetProgramiv(program, GLES20.GL_ACTIVE_UNIFORMS, uniformInfo, ACTIVE_COUNT_OFFSET);
         gles.glGetProgramiv(program, GLES20.GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, attribInfo, MAX_NAME_LENGTH_OFFSET);
         gles.glGetProgramiv(program, GLES20.GL_ACTIVE_UNIFORM_MAX_LENGTH, uniformInfo, MAX_NAME_LENGTH_OFFSET);
+        GLUtils.handleError(gles, GET_PROGRAM_INFO_ERROR);
         shaderVariables = new ShaderVariable[getVariableCount()];
         fetchActiveVariables(gles, VariableType.ATTRIBUTE, attribInfo);
         fetchActiveVariables(gles, VariableType.UNIFORM, uniformInfo);

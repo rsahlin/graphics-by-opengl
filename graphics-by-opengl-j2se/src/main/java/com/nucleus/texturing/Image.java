@@ -3,6 +3,7 @@ package com.nucleus.texturing;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
+import com.nucleus.ErrorMessage;
 import com.nucleus.geometry.BufferObject;
 
 /**
@@ -19,6 +20,11 @@ public class Image extends BufferObject {
      * Image pixel formats
      */
     public enum ImageFormat {
+
+        /**
+         * From awt BufferedImage
+         */
+        TYPE_4BYTE_ABGR(06, 4),
         /**
          * Image format RGBA 4 bits per pixel and component, ie 16 bit format.
          */
@@ -38,7 +44,19 @@ public class Image extends BufferObject {
         /**
          * Image format RGBA 8888, 8 bits per component, 32 bit format.
          */
-        RGBA(0x1908, 4);
+        RGBA(0x1908, 4),
+        /**
+         * 8 Bits luminance, 8 bits alpha, 16 bit format.
+         */
+        LUMINANCE_ALPHA(0x1909, 2),
+        /**
+         * 8 Bit luminance, 8 bit format
+         */
+        LUMINANCE(0x190A, 1),
+        /**
+         * 8 bit alpha format
+         */
+        ALPHA(0x1906, 1);
 
         public final int format;
         public final int size;
@@ -56,6 +74,22 @@ public class Image extends BufferObject {
         public int getFormat() {
             return format;
         }
+
+        /**
+         * Returns the enum for the specified int value, if found
+         * 
+         * @param format
+         * @return The image format enum, or null if not found.
+         */
+        public static ImageFormat getImageFormat(int format) {
+            for (ImageFormat imgFormat : ImageFormat.values()) {
+                if (imgFormat.format == format) {
+                    return imgFormat;
+                }
+            }
+            return null;
+        }
+
     }
 
     ImageFormat format;
@@ -81,16 +115,16 @@ public class Image extends BufferObject {
         case RGB565:
         case RGB5_A1:
         case RGBA4:
-            sizeInBytes = width * height * 2;
-            buffer = ByteBuffer.allocateDirect(sizeInBytes);
-            break;
         case RGB:
-            sizeInBytes = width * height * 3;
+        case RGBA:
+        case LUMINANCE_ALPHA:
+        case LUMINANCE:
+        case ALPHA:
+            sizeInBytes = width * height * format.size;
             buffer = ByteBuffer.allocateDirect(sizeInBytes);
             break;
-        case RGBA:
-            sizeInBytes = width * height * 4;
-            buffer = ByteBuffer.allocateDirect(sizeInBytes);
+        default:
+            throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE + ", " + format);
         }
     }
 

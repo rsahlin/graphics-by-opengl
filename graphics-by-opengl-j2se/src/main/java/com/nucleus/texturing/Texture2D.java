@@ -143,6 +143,8 @@ public class Texture2D extends BaseReference {
         width = source.width;
         height = source.height;
         images = source.images;
+        type = source.type;
+        format = source.format;
     }
 
     /**

@@ -2,10 +2,14 @@ package com.nucleus.texturing;
 
 import java.io.IOException;
 
+import com.nucleus.ErrorMessage;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.texturing.Image.ImageFormat;
+import com.nucleus.texturing.Texture2D.Format;
+import com.nucleus.texturing.Texture2D.Type;
 
 /**
  * Texture utilities, loading of texture(s)
@@ -15,25 +19,26 @@ import com.nucleus.opengl.GLUtils;
  */
 public class TextureUtils {
 
-    public final static String INVALID_FORMAT_ERROR = "Invalid format: ";
-
     /**
      * Loads an image into several mip-map levels, the same image will be scaled to produce the
      * different mip-map levels.
      * TODO: Add method to ImageFactory to scale existing image - currently re-loads image and scales.
      * 
      * @param imageFactory ImageFactory to use when creating/scaling image
-     * @param imageName Name of image to load
-     * @param scale The source image will be scaled by this, second mip-map will be 1/2 scale, third will be 1/4 scale
-     * @param levels Number of mip-map levels
+     * @param texture The texture source object
      * @return Array with an image for each mip-map level.
      */
-    public static Image[] loadTextureMIPMAP(ImageFactory imageFactory, String imageName, float scale, int levels) {
+    public static Image[] loadTextureMIPMAP(ImageFactory imageFactory, Texture2D texture) {
 
         try {
-            Image image = imageFactory.createImage(imageName, scale, scale);
+            ImageFormat imageFormat = getImageFormat(texture);
+            Image image = imageFactory.createImage(texture.getExternalReference().getSource(), imageFormat, 1f, 1f);
             int width = image.getWidth();
             int height = image.getHeight();
+            int levels = texture.getLevels();
+            if (levels == 0) {
+                levels = 1;
+            }
             if (levels > 1) {
                 levels = (int) Math.floor(Math.log((Math.max(width, height))) / Math.log(2)) + 1;
             }
@@ -60,25 +65,38 @@ public class TextureUtils {
      * mip-map level will be same as the image index.
      * 
      * @param gles GLES20Wrapper for GL calls
-     * @param texture Texture unit number (active texture)
+     * @param unit Texture unit number (active texture)
+     * @param texture The texture object
      * @param texName Name of texture object
      * @param textureImages Array with one or more images to send to GL. If more than
      * one image is specified then multiple mip-map levels will be set.
      * Level 0 shall be at index 0
      * @throws GLException If there is an error uploading the textures.
      */
-    public static void uploadTextures(GLES20Wrapper gles, int texture, int texName, Image[] textureImages)
+    public static void uploadTextures(GLES20Wrapper gles, int unit, Texture2D texture, int texName,
+            Image[] textureImages)
             throws GLException {
         int level = 0;
         int format;
+        int type;
+        gles.glActiveTexture(unit);
+        gles.glBindTexture(GLES20.GL_TEXTURE_2D, texName);
         for (Image textureImg : textureImages) {
-            gles.glActiveTexture(texture);
-            gles.glBindTexture(GLES20.GL_TEXTURE_2D, texName);
             if (textureImg != null) {
-                format = textureImg.getFormat().format;
+                if (texture.getFormat() != null) {
+                    format = texture.getFormat().format;
+                } else {
+                    // If no format specified in texture, use the format best suited for the image
+                    format = textureImg.getFormat().format;
+                }
+                if (texture.getType() != null) {
+                    type = texture.getType().type;
+                } else {
+                    type = getTypeFromFormat(format);
+                }
                 gles.glTexImage2D(GLES20.GL_TEXTURE_2D, level, format,
                         textureImg.getWidth(),
-                        textureImg.getHeight(), 0, format, getTypeFromFormat(format),
+                        textureImg.getHeight(), 0, format, type,
                         textureImg.getBuffer().position(0));
                 GLUtils.handleError(gles, "texImage2D");
             }
@@ -110,8 +128,74 @@ public class TextureUtils {
         case GLES20.GL_RGB5_A1:
             return GLES20.GL_UNSIGNED_SHORT_5_5_5_1;
         default:
-            throw new IllegalArgumentException(INVALID_FORMAT_ERROR + format);
+            throw new IllegalArgumentException(ErrorMessage.INVALID_FORMAT.message + format);
+        }
+    }
+
+    /**
+     * Returns the ImageFormat that fits for the texture format and type.
+     * If format or type is not defined then the default value is choosen, normally RGBA 32 bit.
+     * 
+     * @param texture
+     * @return The imageformat that is suitable for the texture format and type
+     */
+    public static ImageFormat getImageFormat(Texture2D texture) {
+        Format format = texture.getFormat();
+        Type type = texture.getType();
+        if (format == null || type == null) {
+            return ImageFormat.RGBA;
+        }
+
+        switch (format) {
+        case RGBA:
+            switch (type) {
+            case UNSIGNED_BYTE:
+                return ImageFormat.RGBA;
+            case UNSIGNED_SHORT_4_4_4_4:
+                return ImageFormat.RGBA4;
+            case UNSIGNED_SHORT_5_5_5_1:
+                return ImageFormat.RGB5_A1;
+                default:
+                throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE.message + type);
+            }
+        case RGB:
+            switch (type) {
+            case UNSIGNED_BYTE:
+                return ImageFormat.RGB;
+            case UNSIGNED_SHORT_5_6_5:
+                return ImageFormat.RGB565;
+            default:
+                throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE.message + type);
+            }
+        case ALPHA:
+            switch (type) {
+            case UNSIGNED_BYTE:
+                return ImageFormat.ALPHA;
+            default:
+                throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE.message + type);
+            }
+        case LUMINANCE:
+            switch (type) {
+            case UNSIGNED_BYTE:
+                return ImageFormat.LUMINANCE;
+            default:
+                throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE.message + type);
+            }
+        case LUMINANCE_ALPHA:
+            switch (type) {
+            case UNSIGNED_BYTE:
+                return ImageFormat.LUMINANCE_ALPHA;
+            case UNSIGNED_SHORT_5_5_5_1:
+                return ImageFormat.RGB5_A1;
+            case UNSIGNED_SHORT_4_4_4_4:
+                return ImageFormat.RGBA4;
+            default:
+                throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE.message + type);
+            }
+            default:
+            throw new IllegalArgumentException(ErrorMessage.INVALID_FORMAT.message);
         }
 
     }
+
 }

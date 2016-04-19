@@ -5,8 +5,6 @@ import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import javax.imageio.ImageIO;
@@ -30,7 +28,7 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
     }
 
     @Override
-    public Image createImage(String name, float scaleX, float scaleY) throws IOException {
+    public Image createImage(String name, Image.ImageFormat format, float scaleX, float scaleY) throws IOException {
         if (name == null) {
             throw new IllegalArgumentException(NULL_PARAMETER);
         }
@@ -42,7 +40,7 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
             if (img.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
                 img = createImage(img, BufferedImage.TYPE_4BYTE_ABGR);
             }
-            Image image = new Image(img.getWidth(), img.getHeight(), ImageFormat.RGBA);
+            Image image = new Image(img.getWidth(), img.getHeight(), format);
             copyPixels(img, image);
             if (scaleX != 1 || scaleY != 1) {
                 return createScaledImage(image, (int) (scaleX * img.getWidth()), (int) (scaleY * img.getHeight()),
@@ -80,14 +78,8 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
      * @param destination
      */
     public void copyPixels(BufferedImage source, Image destination) {
-        int type = source.getType();
-        Buffer buff = destination.getBuffer();
-        destination.getBuffer().position(0);
-        if (buff instanceof ByteBuffer) {
-            copyPixels(source.getData().getDataBuffer(), type, (ByteBuffer) buff);
-        } else {
-            throw new IllegalArgumentException("Not implemented");
-        }
+        ImageFormat sourceFormat = ImageFormat.getImageFormat(source.getType());
+        copyPixels(source.getData().getDataBuffer(), sourceFormat, destination);
     }
 
     /**
@@ -95,12 +87,12 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
      * Pixels are of the specified type.
      * 
      * @param source Source pixels
-     * @param type The source type
-     * @param destination Destination, destination shall be RGBA
+     * @param sourceFormat The source type
+     * @param destination The destination image
      */
-    private void copyPixels(DataBuffer source, int type, ByteBuffer destination) {
+    private void copyPixels(DataBuffer source, ImageFormat sourceFormat, Image destination) {
         if (source instanceof DataBufferByte) {
-            copyPixels(((DataBufferByte) source).getData(), type, destination);
+            copyPixels(((DataBufferByte) source).getData(), sourceFormat, destination);
         } else {
             throw new IllegalArgumentException("Not implemented");
         }
@@ -119,30 +111,5 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
 
     }
 
-    /**
-     * Copies pixel data from the byte array source to the destination.
-     * The type (format) is
-     * 
-     * @param source
-     * @param type
-     * @param destination
-     */
-    private void copyPixels(byte[] source, int type, ByteBuffer destination) {
 
-        byte[] rgba = new byte[4];
-        switch (type) {
-        case BufferedImage.TYPE_4BYTE_ABGR:
-            int length = source.length;
-            for (int index = 0; index < length;) {
-                rgba[3] = source[index++];
-                rgba[2] = source[index++];
-                rgba[1] = source[index++];
-                rgba[0] = source[index++];
-                destination.put(rgba, 0, 4);
-            }
-            break;
-        default:
-            throw new IllegalArgumentException("Not implemented");
-        }
-    }
 }

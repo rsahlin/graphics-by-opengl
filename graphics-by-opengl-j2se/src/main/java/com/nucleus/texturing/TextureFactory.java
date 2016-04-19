@@ -22,11 +22,14 @@ public class TextureFactory {
      * supplied they will be used.
      * If the device current resolution is lower than the texture target resolution then a lower mip-map level is used.
      * 
+     * @param gles The gles wrapper
+     * @param imageFactory factor for image creation
+     * @param source The texture source, the new texture will be a copy of this with the texture image loaded into GL.
      * @return A new texture object containing the texture image.
      */
     public static Texture2D createTexture(GLES20Wrapper gles, ImageFactory imageFactory, Texture2D source) {
         Texture2D texture = createTexture(source);
-        prepareTexture(gles, texture, imageFactory, source.getExternalReference(), source.getLevels());
+        prepareTexture(gles, imageFactory, texture);
         return texture;
     }
 
@@ -88,22 +91,19 @@ public class TextureFactory {
      * texture setup and uploaded to GL.
      * 
      * @param gles
-     * @param texture The texture destination
-     * @param imageFactory
-     * @param textureSource The texture image to load
-     * @param mipmaps Number of mipmap levels
+     * @param texture The texture
+     * @param imageFactory The imagefactory to use for image creation
      */
-    private static void prepareTexture(GLES20Wrapper gles, Texture2D texture, ImageFactory imageFactory,
-            ExternalReference textureSource, int mipmaps) {
+    private static void prepareTexture(GLES20Wrapper gles, ImageFactory imageFactory, Texture2D texture) {
         int[] textures = new int[1];
         gles.glGenTextures(1, textures, 0);
 
         int textureID = textures[0];
         Image[] textureImg = TextureUtils
-                .loadTextureMIPMAP(imageFactory, textureSource.getSource(), 1, mipmaps);
+                .loadTextureMIPMAP(imageFactory, texture);
 
         try {
-            TextureUtils.uploadTextures(gles, GLES20.GL_TEXTURE0, textureID, textureImg);
+            TextureUtils.uploadTextures(gles, GLES20.GL_TEXTURE0, texture, textureID, textureImg);
         } catch (GLException e) {
             throw new IllegalArgumentException(e);
         }

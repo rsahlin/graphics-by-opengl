@@ -129,8 +129,8 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * 
      * @param program
      * @param index
-     * @param bufsize
-     * @param length
+     * @param nameSize Max size of name
+     * @param length Result buffer for length
      * @param lengthOffset
      * @param size
      * @param sizeOffset
@@ -139,7 +139,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param name
      * @param nameOffset
      */
-    public abstract void glGetActiveAttrib(int program, int index, int bufsize, int[] length, int lengthOffset,
+    public abstract void glGetActiveAttrib(int program, int index, int nameSize, int[] length, int lengthOffset,
             int[] size,
             int sizeOffset, int[] type, int typeOffset, byte[] name, int nameOffset);
 
@@ -148,8 +148,8 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * 
      * @param program
      * @param index
-     * @param bufsize
-     * @param length
+     * @param nameSize Max length of name
+     * @param length Destination for length
      * @param lengthOffset
      * @param size
      * @param sizeOffset
@@ -158,7 +158,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param name
      * @param nameOffset
      */
-    public abstract void glGetActiveUniform(int program, int index, int bufsize, int[] length, int lengthOffset,
+    public abstract void glGetActiveUniform(int program, int index, int nameSize, int[] length, int lengthOffset,
             int[] size,
             int sizeOffset, int[] type, int typeOffset, byte[] name, int nameOffset);
 

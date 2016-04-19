@@ -1,6 +1,6 @@
 package com.nucleus.bounds;
 
-import com.nucleus.Error;
+import com.nucleus.ErrorMessage;
 import com.nucleus.bounds.Bounds.Type;
 
 public class BoundsFactory {
@@ -19,7 +19,7 @@ public class BoundsFactory {
         case RECTANGULAR:
             return new RectangularBounds(bounds, 0);
         default:
-            throw new IllegalArgumentException(Error.NOT_IMPLEMENTED.message + type);
+            throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + type);
         }
     }
 

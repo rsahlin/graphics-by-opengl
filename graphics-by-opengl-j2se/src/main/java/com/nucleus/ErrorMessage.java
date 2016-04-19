@@ -1,12 +1,12 @@
 package com.nucleus;
 
 /**
- * Common enum for errors
+ * Common enum for error messages
  * 
  * @author Richard Sahlin
  *
  */
-public enum Error {
+public enum ErrorMessage {
 
     /**
      * Not implemented
@@ -15,14 +15,18 @@ public enum Error {
     /**
      * An object is of wrong type/class, some other parameter type was expected.
      */
-    INVALID_TYPE("Invalid type: ");
-
+    INVALID_TYPE("Invalid type: "),
+    /**
+     * A value/object is invalid format.
+     */
+    INVALID_FORMAT("Invalid format: ");
+    
     /**
      * The error message
      */
     public final String message;
 
-    private Error(String message) {
+    private ErrorMessage(String message) {
         this.message = message;
     }
 

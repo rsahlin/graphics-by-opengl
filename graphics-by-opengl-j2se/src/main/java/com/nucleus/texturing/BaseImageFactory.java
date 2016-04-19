@@ -1,5 +1,8 @@
 package com.nucleus.texturing;
 
+import java.nio.ByteBuffer;
+
+import com.nucleus.ErrorMessage;
 import com.nucleus.texturing.Convolution.Kernel;
 import com.nucleus.texturing.Image.ImageFormat;
 
@@ -81,6 +84,168 @@ public abstract class BaseImageFactory implements ImageFactory {
             throw new IllegalArgumentException(ILLEGAL_PARAMETER + width + ", " + height + " : " + format);
         }
         return new Image(width, height, format);
+    }
+
+    /**
+     * Copies pixel data from the byte array source to the destination.
+     * The type (format) is
+     * 
+     * @param source
+     * @param sourceFormat The source type
+     * @param destination
+     */
+    protected void copyPixels(byte[] source, ImageFormat sourceFormat, Image destination) {
+
+        ByteBuffer buffer = (ByteBuffer) destination.getBuffer().rewind();
+        switch (sourceFormat) {
+        case TYPE_4BYTE_ABGR:
+            switch (destination.getFormat()) {
+            case RGBA:
+                copyPixels_4BYTE_ABGR_TO_RGBA(source, buffer);
+                break;
+            case LUMINANCE_ALPHA:
+                copyPixels_4BYTE_ABGR_TO_LUMINANCE_ALPHA(source, buffer);
+                break;
+            case RGB565:
+                copyPixels_4BYTE_ABGR_TO_RGB565(source, buffer);
+                break;
+            // default:
+            // throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + type);
+            }
+            break;
+        case RGBA:
+            switch (destination.getFormat()) {
+            case RGBA:
+                copyPixels_4BYTE_RGBA_TO_RGBA(source, buffer);
+                break;
+            case LUMINANCE_ALPHA:
+                copyPixels_4BYTE_RGBA_TO_LUMINANCE_ALPHA(source, buffer);
+                break;
+            case RGB565:
+                copyPixels_4BYTE_RGBA_TO_RGB565(source, buffer);
+                break;
+            }
+            break;
+        default:
+            throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + sourceFormat);
+        }
+    }
+
+
+    /**
+     * Copies the 4 byte RGBA to 16 bit luminance alpha
+     * 
+     * @param source
+     * @param destination
+     */
+    protected void copyPixels_4BYTE_RGBA_TO_LUMINANCE_ALPHA(byte[] source, ByteBuffer destination) {
+        byte[] la = new byte[2];
+        int length = source.length;
+        for (int index = 0; index < length;) {
+            la[0] = source[index++];
+            la[1] = source[index++];
+            index += 2;
+            destination.put(la, 0, 2);
+        }
+    }
+
+    /**
+     * Copies the 4 byte RGBA to 16 bit RGB565
+     * 
+     * @param source
+     * @param destination
+     */
+    protected void copyPixels_4BYTE_RGBA_TO_RGB565(byte[] source, ByteBuffer destination) {
+        byte[] rgb = new byte[2];
+        int length = source.length;
+        int r, g, b, a;
+        int rgbint;
+        for (int index = 0; index < length;) {
+            a = source[index++];
+            r = source[index++];
+            g = source[index++];
+            b = source[index++];
+            rgbint = (r >>> 3) | ((g >>> 2) << 5) | ((b >>> 3) << 11);
+            rgb[0] = (byte) (rgbint & 0xff);
+            rgb[1] = (byte) (rgbint >>> 8);
+            destination.put(rgb, 0, 2);
+        }
+    }
+
+    /**
+     * Straight copy from source to destination
+     * 
+     * @param source
+     * @param destination
+     */
+    protected void copyPixels_4BYTE_RGBA_TO_RGBA(byte[] source, ByteBuffer destination) {
+        byte[] rgba = new byte[4];
+        int length = source.length;
+        for (int index = 0; index < length;) {
+            rgba[0] = source[index++];
+            rgba[1] = source[index++];
+            rgba[2] = source[index++];
+            rgba[3] = source[index++];
+            destination.put(rgba, 0, 4);
+        }
+    }
+
+    /**
+     * Straight copy from source to destination - just swap ABGR to RGBA
+     * 
+     * @param source
+     * @param destination
+     */
+    protected void copyPixels_4BYTE_ABGR_TO_RGBA(byte[] source, ByteBuffer destination) {
+        byte[] rgba = new byte[4];
+        int length = source.length;
+        for (int index = 0; index < length;) {
+            rgba[3] = source[index++];
+            rgba[2] = source[index++];
+            rgba[1] = source[index++];
+            rgba[0] = source[index++];
+            destination.put(rgba, 0, 4);
+        }
+    }
+
+    /**
+     * Copies the 4 byte ABGR to 16 bit luminance alpha
+     * 
+     * @param source
+     * @param destination
+     */
+    protected void copyPixels_4BYTE_ABGR_TO_LUMINANCE_ALPHA(byte[] source, ByteBuffer destination) {
+        byte[] la = new byte[2];
+        int length = source.length;
+        for (int index = 0; index < length;) {
+            la[0] = source[index++];
+            la[1] = source[index++];
+            index += 2;
+            destination.put(la, 0, 2);
+        }
+    }
+
+    /**
+     * Copies the 4 byte ABGR to 16 bit RGB565
+     * 
+     * @param source
+     * @param destination
+     */
+    protected void copyPixels_4BYTE_ABGR_TO_RGB565(byte[] source, ByteBuffer destination) {
+        byte[] rgb = new byte[2];
+        int length = source.length;
+        int r, g, b, a;
+        int rgbint;
+        for (int index = 0; index < length;) {
+            a = source[index++];
+            r = source[index++];
+            g = source[index++];
+            b = source[index++];
+            rgbint = (r >>> 3) | ((g >>> 2) << 5) | ((b >>> 3) << 11);
+            rgb[0] = (byte) (rgbint & 0xff);
+            rgb[1] = (byte) (rgbint >>> 8);
+            destination.put(rgb, 0, 2);
+        }
     }
 
 }

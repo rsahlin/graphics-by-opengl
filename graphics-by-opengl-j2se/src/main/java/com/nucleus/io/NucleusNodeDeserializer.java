@@ -8,7 +8,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.nucleus.Error;
+import com.nucleus.ErrorMessage;
 import com.nucleus.scene.ViewNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeType;
@@ -53,7 +53,7 @@ public class NucleusNodeDeserializer implements JsonDeserializer<Node> {
         case switchnode:
             return gson.fromJson(json, SwitchNode.class);
         default:
-            throw new IllegalArgumentException(Error.NOT_IMPLEMENTED.message);
+            throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message);
         }
     }
 

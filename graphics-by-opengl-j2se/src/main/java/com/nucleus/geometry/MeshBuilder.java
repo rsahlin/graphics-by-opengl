@@ -12,7 +12,7 @@ import static com.nucleus.vecmath.Rectangle.Y;
 
 import java.nio.ByteBuffer;
 
-import com.nucleus.Error;
+import com.nucleus.ErrorMessage;
 import com.nucleus.geometry.AttributeUpdater.PropertyMapper;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.opengl.GLESWrapper.GLES20;
@@ -99,7 +99,7 @@ public class MeshBuilder {
 
         float[] values = rectangle.getValues();
         if (rectangle.getMode() != Mode.SIZE) {
-            throw new IllegalArgumentException(Error.NOT_IMPLEMENTED.message);
+            throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message);
         }
 
         // TODO How to handle Y axis going other direction?

@@ -4,9 +4,15 @@
     <artifactId>graphics-by-opengl</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <name>Graphics By OpenGL - Parent</name>
+    <modules>
+        <module>graphics-by-opengl-android</module>
+        <module>graphics-by-opengl-jogl</module>
+        <module>graphics-by-opengl-j2se</module>
+    </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <android.plugin.version>4.4.1</android.plugin.version>
+        <android.maven.version>4.4.1</android.maven.version>
     </properties>
     <build>
         <pluginManagement>
@@ -19,12 +25,7 @@
                         <target>1.7</target>
                     </configuration>
                 </plugin>
-			</plugins>
-		</pluginManagement>    
+            </plugins>
+        </pluginManagement>    
     </build>
-        <modules>
-            <module>graphics-by-opengl-android</module>
-            <module>graphics-by-opengl-jogl</module>
-            <module>graphics-by-opengl-j2se</module>
-        </modules>
 </project>
