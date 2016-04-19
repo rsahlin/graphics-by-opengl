@@ -7,14 +7,15 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>graphics-by-opengl-android</artifactId>
-    <packaging>apk</packaging>
+    <packaging>apklib</packaging>
+    <name>Graphics By OpenGL APKlib</name>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <plugins>
             <plugin>
                 <groupId>com.simpligility.maven.plugins</groupId>
                 <artifactId>android-maven-plugin</artifactId>
-                <version>${android.plugin.version}</version>
+                <version>${android.maven.version}</version>
                 <configuration>
                     <androidManifestFile>AndroidManifest.xml</androidManifestFile>
                     <resourceDirectory>./res</resourceDirectory>
@@ -50,7 +51,7 @@
                                             android-maven-plugin
                                         </artifactId>
                                         <versionRange>
-                                            [4.3.0,)
+                                            [4.4.1,)
                                         </versionRange>
                                         <goals>
                                             <goal>emma</goal>
