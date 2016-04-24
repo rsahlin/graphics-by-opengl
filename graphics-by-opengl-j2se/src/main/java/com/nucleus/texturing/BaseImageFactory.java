@@ -34,6 +34,11 @@ public abstract class BaseImageFactory implements ImageFactory {
         case 2:
             c = new Convolution(Kernel.SIZE_2X2);
             c.set(new float[] { 1, 1, 1, 1 }, 0, 0, Kernel.SIZE_2X2.size);
+            // c = new Convolution(Kernel.SIZE_4X4);
+            // c.set(new float[] { 1, 1, 1, 1,
+            // 1, 3, 2, 1,
+            // 1, 2, 3, 1,
+            // 1, 1, 1, 1 }, 0, 0, Kernel.SIZE_4X4.size);
             break;
         case 3:
             c = new Convolution(Kernel.SIZE_3X3);
@@ -41,7 +46,10 @@ public abstract class BaseImageFactory implements ImageFactory {
             break;
         case 4:
             c = new Convolution(Kernel.SIZE_4X4);
-            c.set(new float[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, 0, 0, Kernel.SIZE_4X4.size);
+            c.set(new float[] { 1, 1, 1, 1,
+                    1, 3, 2, 1,
+                    1, 2, 3, 1,
+                    1, 1, 1, 1 }, 0, 0, Kernel.SIZE_4X4.size);
             break;
         case 5:
             c = new Convolution(Kernel.SIZE_5X5);
@@ -57,15 +65,35 @@ public abstract class BaseImageFactory implements ImageFactory {
             c = new Convolution(Kernel.SIZE_8X8);
             c.set(new float[] {
                     1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 2, 2, 1, 1, 1,
-                    1, 1, 2, 3, 3, 2, 1, 1,
-                    1, 2, 3, 4, 4, 3, 2, 1,
-                    1, 2, 3, 4, 4, 3, 2, 1,
-                    1, 1, 2, 3, 3, 2, 1, 1,
-                    1, 1, 1, 2, 2, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1
-
+                    1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1,
             }, 0, 0, Kernel.SIZE_8X8.size);
+            break;
+        case 16:
+            c = new Convolution(Kernel.SIZE_16X16);
+            c.set(new float[] {
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+            }, 0, 0, Kernel.SIZE_16X16.size);
             break;
         default:
             c = new Convolution(Kernel.SIZE_8X8);
@@ -73,9 +101,19 @@ public abstract class BaseImageFactory implements ImageFactory {
         }
 
         c.normalize(false);
-        Image destination = new Image(width, height, ImageFormat.RGBA);
+        Image destination = new Image(width, height, source.getFormat());
         c.process(source, destination);
+        // if (scale >= 2) {
+        // return sharpen(destination);
+        // }
         return destination;
+    }
+
+    private Image sharpen(Image source) {
+        Convolution c = new Convolution(Kernel.SIZE_3X3);
+        c.set(new float[] { 0.1f, -0.2f, 0.1f, -0.2f, 1.8f, -0.2f, 0.1f, -0.2f, 0.1f }, 0, 0, Kernel.SIZE_3X3.size);
+        c.normalize(false);
+        return c.process(source);
     }
 
     @Override

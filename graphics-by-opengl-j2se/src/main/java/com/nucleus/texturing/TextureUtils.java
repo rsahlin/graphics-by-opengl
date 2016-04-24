@@ -50,8 +50,8 @@ public class TextureUtils {
                     // max(1, floor(w_t/2^i)) x max(1, floor(h_t/2^i))
                     int scaledWidth = (int) Math.max(1, Math.floor(width / Math.pow(2, i)));
                     int scaledHeight = (int) Math.max(1, Math.floor(height / Math.pow(2, i)));
-                    // images[i] = imageFactory.createScaledImage(images[0], scaledWidth,
-                    // scaledHeight, ImageFormat.RGBA);
+                    images[i] = imageFactory.createScaledImage(images[0], scaledWidth,
+                            scaledHeight, imageFormat);
                 }
             }
             return images;
@@ -99,11 +99,15 @@ public class TextureUtils {
                         textureImg.getHeight(), 0, format, type,
                         textureImg.getBuffer().position(0));
                 GLUtils.handleError(gles, "texImage2D");
+                level++;
+            } else {
+                break;
             }
-            level++;
         }
-        if (textureImages.length > 1) {
-            gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+        if (level < textureImages.length) {
+            if (textureImages.length > 1) {
+                gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+            }
         }
 
     }

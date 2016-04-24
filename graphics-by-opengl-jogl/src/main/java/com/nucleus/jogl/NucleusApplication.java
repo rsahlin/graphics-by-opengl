@@ -7,6 +7,7 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.RendererFactory;
+import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.texturing.J2SEImageFactory;
 
 /**
@@ -59,7 +60,7 @@ public class NucleusApplication implements CoreAppStarter, RenderContextListener
     public void contextCreated(int width, int height) {
         coreApp = new CoreApp(RendererFactory.getRenderer(window.getGLESWrapper(), new J2SEImageFactory(),
                 new J2SEMatrixEngine()));
-        coreApp.getRenderer().init();
+        coreApp.getRenderer().init(new SurfaceConfiguration());
         coreApp.contextCreated(window.getWidth(), window.getHeight());
         window.setCoreApp(coreApp);
     }

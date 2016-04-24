@@ -1,5 +1,9 @@
 package com.nucleus.texturing;
 
+import java.util.ArrayList;
+
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Info for the texture parameters, GL MIN and MAG filter, S and T wrap modes.
  * Helper class to make it easier to map from String names to GL values, for instance when serializing texture setup.
@@ -26,20 +30,6 @@ public class TextureParameter {
     }
 
     /**
-     * Creates texture parameters with the specified values for MIN_FILTER, MAG_FILTER, WRAP_S and WRAP_T
-     * 
-     * @param params
-     */
-    public TextureParameter(TexParameter[] params) {
-        int index = 0;
-        for (TexParameter tp : params) {
-            if (index < values.length) {
-                values[index++] = tp;
-            }
-        }
-    }
-
-    /**
      * Index into parameters where min filter value is
      */
     public final static int MIN_FILTER = 0;
@@ -57,21 +47,58 @@ public class TextureParameter {
     public final static int WRAP_T = 3;
 
     /**
-     * Texture parameter values.
+     * Texture parameter values, MUST contain 4 values
      */
-    protected final TexParameter[] values = new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST,
-            TexParameter.CLAMP, TexParameter.CLAMP };
+    @SerializedName("values")
+    protected ArrayList<TexParameter> values;
+
+    private transient int[] intArray;
 
     /**
      * Copy values from the source texture parameters
      * 
      * @param source
+     * @throws NullPointerException If values is null in source
      */
     public void setValues(TextureParameter source) {
-        values[MIN_FILTER] = source.values[MIN_FILTER];
-        values[MAG_FILTER] = source.values[MAG_FILTER];
-        values[WRAP_S] = source.values[WRAP_S];
-        values[WRAP_T] = source.values[WRAP_T];
+        if (source.values == null) {
+            throw new IllegalArgumentException("No texture parameters in source.");
+        }
+        if (this.values == null) {
+            values = new ArrayList<>();
+        } else {
+            values.clear();
+        }
+        intArray = new int[4];
+        int index = 0;
+        for (TexParameter p : source.values) {
+            if (p == null) {
+                throw new IllegalArgumentException("Texture parameter value is null, invalid name in source?");
+            }
+            values.add(p);
+            intArray[index++] = p.value;
+        }
+    }
+
+    private void createIntArray() {
+        intArray = new int[4];
+        int index = 0;
+        for (TexParameter p : values) {
+            intArray[index++] = p.value;
+        }
+    }
+
+    /**
+     * Returns the texture parameters as int array.
+     * Caches the result for next usage.
+     * 
+     * @return
+     */
+    public int[] getAsIntArray() {
+        if (intArray == null) {
+            createIntArray();
+        }
+        return intArray;
     }
 
 }

@@ -342,4 +342,10 @@ public abstract class GLESWrapper {
 
     }
 
+    public abstract class GLES_EXTENSIONS {
+        public final static int MULTISAMPLE_EXT = 0x809D;
+        public final static int SAMPLE_ALPHA_TO_ONE_EXT = 0x809F;
+
+    }
+
 }

@@ -74,7 +74,7 @@ public class Texture2D extends BaseReference {
     /**
      * Texture parameter values.
      */
-    @SerializedName("textureParameters")
+    @SerializedName("texParameters")
     protected TextureParameter texParameters = new TextureParameter();
     /**
      * The texture format
@@ -304,15 +304,15 @@ public class Texture2D extends BaseReference {
      */
     public void uploadTexParameters(GLES20Wrapper gles) throws GLException {
 
-        TexParameter[] values = texParameters.values;
+        int[] values = texParameters.getAsIntArray();
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
-                values[TextureParameter.MIN_FILTER].value);
+                values[TextureParameter.MIN_FILTER]);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
-                values[TextureParameter.MAG_FILTER].value);
+                values[TextureParameter.MAG_FILTER]);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
-                values[TextureParameter.WRAP_S].value);
+                values[TextureParameter.WRAP_S]);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
-                values[TextureParameter.WRAP_T].value);
+                values[TextureParameter.WRAP_T]);
         GLUtils.handleError(gles, "glTexParameteri ");
     }
 

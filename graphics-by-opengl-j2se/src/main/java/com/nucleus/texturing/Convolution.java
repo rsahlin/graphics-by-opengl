@@ -19,16 +19,19 @@ import java.nio.ByteBuffer;
 public class Convolution {
 
     public enum Kernel {
-        SIZE_2X2(4),
-        SIZE_3X3(9),
-        SIZE_4X4(16),
-        SIZE_5X5(25),
-        SIZE_8X8(64);
+        SIZE_2X2(4, 2),
+        SIZE_3X3(9, 3),
+        SIZE_4X4(16, 4),
+        SIZE_5X5(25, 5),
+        SIZE_8X8(64, 8),
+        SIZE_16X16(256, 16);
 
         public final int size;
+        public final int width;
 
-        private Kernel(int size) {
+        private Kernel(int size, int width) {
             this.size = size;
+            this.width = width;
         }
 
     }
@@ -103,7 +106,7 @@ public class Convolution {
      * @return Sum of the kernel values
      */
     public static float calculateSum(float[] kernel, boolean absolute) {
-        int sum = 0;
+        float sum = 0;
         for (float f : kernel) {
             if (absolute) {
                 sum += Math.abs(f);
@@ -222,7 +225,7 @@ public class Convolution {
                     destPixels[index++] = (byte) (acc[0]);
                     destPixels[index++] = (byte) (acc[1]);
                     destPixels[index++] = (byte) (acc[2]);
-                    destPixels[index++] = (byte) 255;
+                    destPixels[index++] = (byte) (acc[3]);
                 }
             }
             break;
@@ -235,10 +238,34 @@ public class Convolution {
                     fetchPixelRow3(pixels, sourceIndex - widthInBytes - sizeInBytes, 0, acc);
                     fetchPixelRow3(pixels, sourceIndex - sizeInBytes, 3, acc);
                     fetchPixelRow3(pixels, sourceIndex + widthInBytes - sizeInBytes, 6, acc);
+                    if (acc[0] < 0) {
+                        acc[0] = 0;
+                    }
+                    if (acc[1] < 0) {
+                        acc[1] = 0;
+                    }
+                    if (acc[2] < 0) {
+                        acc[2] = 0;
+                    }
+                    if (acc[3] < 0) {
+                        acc[3] = 0;
+                    }
+                    if (acc[0] > 255) {
+                        acc[0] = 255;
+                    }
+                    if (acc[1] > 255) {
+                        acc[1] = 255;
+                    }
+                    if (acc[2] > 255) {
+                        acc[2] = 255;
+                    }
+                    if (acc[3] > 255) {
+                        acc[3] = 255;
+                    }
                     destPixels[index++] = (byte) (acc[0]);
                     destPixels[index++] = (byte) (acc[1]);
                     destPixels[index++] = (byte) (acc[2]);
-                    destPixels[index++] = (byte) 255;
+                    destPixels[index++] = (byte) (acc[3]);
                 }
             }
             break;
@@ -248,14 +275,22 @@ public class Convolution {
                 for (int x = 0; x < width; x++) {
                     clearAcc(acc);
                     sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * sizeInBytes));
-                    fetchPixelRow4(pixels, sourceIndex, 0, acc);
-                    fetchPixelRow4(pixels, sourceIndex + widthInBytes, 4, acc);
-                    fetchPixelRow4(pixels, sourceIndex + widthInBytes * 2, 8, acc);
-                    fetchPixelRow4(pixels, sourceIndex + widthInBytes * 3, 12, acc);
+                    if (sourceIndex < pixels.length) {
+                        fetchPixelRow4(pixels, sourceIndex, 0, acc);
+                    }
+                    if (sourceIndex < pixels.length) {
+                        fetchPixelRow4(pixels, sourceIndex + widthInBytes, 4, acc);
+                    }
+                    if (sourceIndex < pixels.length) {
+                        fetchPixelRow4(pixels, sourceIndex + widthInBytes * 2, 8, acc);
+                    }
+                    if (sourceIndex < pixels.length) {
+                        fetchPixelRow4(pixels, sourceIndex + widthInBytes * 3, 12, acc);
+                    }
                     destPixels[index++] = (byte) (acc[0]);
                     destPixels[index++] = (byte) (acc[1]);
                     destPixels[index++] = (byte) (acc[2]);
-                    destPixels[index++] = (byte) 255;
+                    destPixels[index++] = (byte) (acc[3]);
                 }
             }
             break;
@@ -278,23 +313,20 @@ public class Convolution {
             }
             break;
         case SIZE_8X8:
+        case SIZE_16X16:
             for (int y = 0; y < height - 0; y++) {
                 index = (y * width) * sizeInBytes;
                 for (int x = 0; x < width - 0; x++) {
                     clearAcc(acc);
                     sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * sizeInBytes));
-                    fetchPixelRow8(pixels, sourceIndex, 0, acc);
-                    fetchPixelRow8(pixels, sourceIndex + widthInBytes, 8, acc);
-                    fetchPixelRow8(pixels, sourceIndex + widthInBytes * 2, 16, acc);
-                    fetchPixelRow8(pixels, sourceIndex + widthInBytes * 3, 24, acc);
-                    fetchPixelRow8(pixels, sourceIndex + widthInBytes * 4, 32, acc);
-                    fetchPixelRow8(pixels, sourceIndex + widthInBytes * 5, 40, acc);
-                    fetchPixelRow8(pixels, sourceIndex + widthInBytes * 6, 48, acc);
-                    fetchPixelRow8(pixels, sourceIndex + widthInBytes * 7, 56, acc);
+                    for (int column = 0; column < kernel.width; column++) {
+                        fetchPixelRow(kernel.width, pixels, sourceIndex, column * kernel.width, acc);
+                        sourceIndex += widthInBytes;
+                    }
                     destPixels[index++] = (byte) (acc[0]);
                     destPixels[index++] = (byte) (acc[1]);
                     destPixels[index++] = (byte) (acc[2]);
-                    destPixels[index++] = (byte) 255;
+                    destPixels[index++] = (byte) (acc[3]);
                 }
             }
             break;
@@ -324,12 +356,13 @@ public class Convolution {
     private final void fetchPixelRow2(byte[] pixels, int offset, int index, float[] acc) {
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
 
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
     }
 
     /**
@@ -343,17 +376,18 @@ public class Convolution {
     private final void fetchPixelRow3(byte[] pixels, int offset, int index, float[] acc) {
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
-
-        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
 
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
         acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
     }
 
     /**
@@ -365,24 +399,39 @@ public class Convolution {
      * @param acc
      */
     private final void fetchPixelRow4(byte[] pixels, int offset, int index, float[] acc) {
+        if (offset >= pixels.length) {
+            return;
+        }
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
-
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+        if (offset == pixels.length) {
+            return;
+        }
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
-
-        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+        if (offset == pixels.length) {
+            return;
+        }
 
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
         acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+        if (offset == pixels.length) {
+            return;
+        }
+
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+        if (offset == pixels.length) {
+            return;
+        }
     }
 
     /**
@@ -430,41 +479,62 @@ public class Convolution {
     private final void fetchPixelRow8(byte[] pixels, int offset, int index, float[] acc) {
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
-
-        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
-
-        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
-
-        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
-
-        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
-
-        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
-
-        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
 
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
         acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
     }
+
+    /**
+     * Fetches a pixel row at index from pixels, and stores as RGB in acc
+     * 
+     * @param count Number of pixels to fetch
+     * @param pixels
+     * @param offset Offset into pixels where RGBA is read
+     * @param index Index into matrix
+     * @param acc
+     */
+    private final void fetchPixelRow(int count, byte[] pixels, int offset, int index, float[] acc) {
+        for (int i = 0; i < count; i++) {
+            acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+            acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+            acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+            acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+        }
+
+    }
+
 }

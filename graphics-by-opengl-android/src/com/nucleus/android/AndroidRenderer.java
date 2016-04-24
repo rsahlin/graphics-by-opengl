@@ -3,9 +3,9 @@ package com.nucleus.android;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import android.opengl.GLSurfaceView.Renderer;
-
 import com.nucleus.CoreApp;
+
+import android.opengl.GLSurfaceView.Renderer;
 
 /**
  * Base implementation for Android renderer used with GLSurfaceView
@@ -68,7 +68,7 @@ public class AndroidRenderer implements Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         try {
-            coreApp.getRenderer().init();
+            coreApp.getRenderer().init(null);
         } catch (Throwable t) {
             handleThrowable(t);
         }

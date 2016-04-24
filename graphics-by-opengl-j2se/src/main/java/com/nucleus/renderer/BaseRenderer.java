@@ -14,8 +14,8 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.VertexBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper.GL10;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
@@ -48,6 +48,8 @@ class BaseRenderer implements NucleusRenderer {
     private final static String NULL_GLESWRAPPER_ERROR = "GLES wrapper is null";
     private final static String NULL_IMAGEFACTORY_ERROR = "ImageFactory is null";
     private final static String NULL_MATRIXENGINE_ERROR = "MatrixEngine is null";
+
+    protected SurfaceConfiguration surfaceConfig;
 
     protected ViewFrustum viewFrustum = new ViewFrustum();
     protected ViewPort viewPort = new ViewPort();
@@ -84,7 +86,7 @@ class BaseRenderer implements NucleusRenderer {
 
     protected Window window = Window.getInstance();
 
-    protected GLInfo glInfo;
+    protected RendererInfo rendererInfo;
     /**
      * Set to true when init is called
      */
@@ -132,12 +134,13 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void init() {
+    public void init(SurfaceConfiguration surfaceConfig) {
         if (initialized) {
             return;
         }
         initialized = true;
-        glInfo = new GLInfo(gles);
+        this.surfaceConfig = surfaceConfig;
+        rendererInfo = new RendererInfo(gles);
     }
 
     @Override
@@ -208,10 +211,13 @@ class BaseRenderer implements NucleusRenderer {
             }
         }
         if ((flags & RenderSettings.CHANGE_FLAG_MULTISAMPLE) != 0) {
-            if (setting.isMultisampling()) {
-                gles.glEnable(GL10.GL_MULTISAMPLE);
-            } else {
-                gles.glDisable(GL10.GL_MULTISAMPLE);
+            // TODO - check for support before setting.
+            if (rendererInfo.hasExtensionSupport("MULTISAMPLE_EXT")) {
+                if (surfaceConfig != null && surfaceConfig.getSamples() > 1 && setting.isMultisampling()) {
+                    gles.glEnable(GLES_EXTENSIONS.MULTISAMPLE_EXT);
+                } else {
+                    // gles.glEnable(GLES_EXTENSIONS.MULTISAMPLE_EXT);
+                }
             }
         }
         GLUtils.handleError(gles, "setRenderSettings ");
@@ -462,6 +468,16 @@ class BaseRenderer implements NucleusRenderer {
     @Override
     public float[] getView() {
         return viewMatrix;
+    }
+
+    @Override
+    public SurfaceConfiguration getSurfaceConfiguration() {
+        return surfaceConfig;
+    }
+
+    @Override
+    public RendererInfo getInfo() {
+        return rendererInfo;
     }
 
 }

@@ -138,8 +138,17 @@ public interface NucleusRenderer {
     /**
      * Call this first time when the context is created, before calling GLContextCreated()
      * Initialize parameters that do not need to be updated when context is re-created.
+     * 
+     * @param surfaceConfig The configuration of the surface in use (from EGL)
      */
-    public void init();
+    public void init(SurfaceConfiguration surfaceConfig);
+
+    /**
+     * Returns the surface configuration
+     * 
+     * @return The renderers surface configuration (from EGL)
+     */
+    public SurfaceConfiguration getSurfaceConfiguration();
 
     /**
      * Signals the start of a frame, implement if needed in subclasses.
@@ -330,5 +339,13 @@ public interface NucleusRenderer {
      * @return
      */
     public float[] getView();
+
+    /**
+     * Returns the renderer info.
+     * This is likely to only be available after the context is created.
+     * 
+     * @return The renderer info, or null if called before {@link #init(SurfaceConfiguration)} has been called.
+     */
+    public RendererInfo getInfo();
 
 }
