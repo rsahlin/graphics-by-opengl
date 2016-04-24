@@ -184,4 +184,12 @@ public class SurfaceConfiguration {
     public void setDepthBits(int depthbits){
         depthBits = depthbits;
     }
+
+    @Override
+    public String toString() {
+        return "RGBA:" + redBits + ", " + greenBits + ", " + blueBits + ", " + alphaBits + ", Depth: " + depthBits
+                + ", Samples: " + samples;
+
+    }
+
 }

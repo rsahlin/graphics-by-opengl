@@ -113,6 +113,7 @@ public class AndroidSurfaceView extends GLSurfaceView implements GLSurfaceView.E
         }
         surfaceConfig = new SurfaceConfiguration();
         EGLUtils.readSurfaceConfig(egl, display, eglConfig, surfaceConfig);
+        System.out.println("chooseConfig() has: " + surfaceConfig.toString());
 
         return eglConfig;
     }
@@ -150,6 +151,7 @@ public class AndroidSurfaceView extends GLSurfaceView implements GLSurfaceView.E
             if (surfaceConfig == null) {
                 surfaceConfig = new SurfaceConfiguration();
                 EGLUtils.readSurfaceConfig(egl, display, eglConfig, surfaceConfig);
+                System.out.println("onSurfaceCreated(EGLConfig) has: " + surfaceConfig.toString());
             }
             coreApp.getRenderer().init(surfaceConfig);
         } catch (Throwable t) {

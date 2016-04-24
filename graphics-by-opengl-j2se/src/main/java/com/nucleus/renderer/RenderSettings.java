@@ -138,7 +138,8 @@ public class RenderSettings {
     }
 
     /**
-     * Enables or disables multisampling, to be enabled the surface must also support multisampling.
+     * Enables or disables multisampling, to be disabled the surface must also support GLES_EXTENSIONS.MULTISAMPLE_EXT
+     * This is checked before multisample is enabled/disable in the renderer.
      * 
      * @param enableMultisampling
      */

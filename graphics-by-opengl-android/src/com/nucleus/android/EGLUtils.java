@@ -73,8 +73,6 @@ public class EGLUtils {
         surfaceConfig.setAlphaBits(getEGLConfigAttrib(egl, eglDisplay, config, EGL10.EGL_ALPHA_SIZE));
         surfaceConfig.setDepthBits(getEGLConfigAttrib(egl, eglDisplay, config, EGL10.EGL_DEPTH_SIZE));
         surfaceConfig.setSamples(getEGLConfigAttrib(egl, eglDisplay, config, EGL10.EGL_SAMPLES));
-        int buffers = getEGLConfigAttrib(egl, eglDisplay, config, EGL10.EGL_SAMPLE_BUFFERS);
-        System.out.println(buffers);
 
     }
 
@@ -91,6 +89,7 @@ public class EGLUtils {
     public final static EGLConfig selectConfig(EGL10 egl, EGLDisplay eglDisplay, EGLConfig[] configs, int count,
             SurfaceConfiguration wantedConfig) {
         if (wantedConfig.getSamples() > 1) {
+            System.out.println("Select config with >= " + wantedConfig.getSamples());
             ArrayList<EGLConfig> sortedlist = filterByAttributeGreaterEqual(egl, eglDisplay, configs, EGL10.EGL_SAMPLES,
                     1);
             EGLConfig chosen = null;
@@ -190,7 +189,7 @@ public class EGLUtils {
             //Really bad!
             return null;
         }
-        // Filter på config attributes that may not be present
+        // Filter on config attributes that may not be present
         return EGLUtils.selectConfig(egl, display, configs, num_config[0], wantedConfig);
     }
 
