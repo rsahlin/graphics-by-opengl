@@ -61,6 +61,7 @@ public class NucleusActivity extends Activity implements DialogInterface.OnClick
      */
     private void setup(int rendermode, int layoutParams, int windowFeature) {
         SurfaceConfiguration surfaceConfig = new SurfaceConfiguration();
+        // TODO This shall be set on a per project basis
         surfaceConfig.setSamples(16);
         mGLView = new AndroidSurfaceView(coreApp, surfaceConfig, getApplicationContext(), coreApp.getInputProcessor());
         mGLView.setRenderMode(rendermode);

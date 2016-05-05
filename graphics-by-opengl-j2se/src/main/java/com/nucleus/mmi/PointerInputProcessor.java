@@ -30,8 +30,8 @@ public class PointerInputProcessor implements PointerListener {
 
     /**
      * Scale and offset value for incoming pointer values, this can be used to normalize pointer values.
-     * Set to 1/width and 1/height to normalize
-     * values are: scalex, scaley, translatex, translatey
+     * Set to 1/width and 1/height to normalize.
+     * Values are: scalex, scaley, translatex, translatey
      */
     private final float[] transform = new float[] { 1, 1, 0, 0 };
     private final float[] scaledPosition = new float[2];
