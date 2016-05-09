@@ -158,10 +158,12 @@ public abstract class ShaderProgram {
      * Sets the uniforms needed by the program, this will make the binding between the shader and uniforms
      * 
      * @param gles
-     * @param modelviewMatrix The matrix to use for the MVP matrix
+     * @param modelviewMatrix The matrix to use for the modelview transform
+     * @param projectionMatrix The projection matrix
      * @param mesh
      */
-    public abstract void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, Mesh mesh) throws GLException;
+    public abstract void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, float[] projectionMatrix, Mesh mesh)
+            throws GLException;
 
     /**
      * Returns the number of defined attribute + uniform variables in the program.
@@ -750,7 +752,7 @@ public abstract class ShaderProgram {
             ShaderVariable v = getShaderVariable(am);
             // If null then declared in program but not used, silently ignore
             if (v != null) {
-                setUniform(gles, v, uniformData, am.getOffset());
+                setUniform(gles, v, uniformData, v.getOffset());
             }
         }
     }
@@ -761,11 +763,12 @@ public abstract class ShaderProgram {
      * 
      * @param texture
      * @param destination Will store 1 / tilewidth, 1 / tilewidth, tilewidth, beginning at offset
-     * @param mapping The variable mapping
+     * @param variable The shader variable
      * @param offset Offset into destination where fraction is set
      */
-    protected void setTextureUniforms(TiledTexture2D texture, float[] destination, VariableMapping mapping, int offset) {
-        offset += mapping.getOffset();
+    protected void setTextureUniforms(TiledTexture2D texture, float[] destination, ShaderVariable variable,
+            int offset) {
+        offset += variable.getOffset();
         destination[offset++] = 1f / texture.getTileWidth();
         destination[offset++] = 1f / texture.getTileHeight();
         destination[offset++] = texture.getTileWidth();

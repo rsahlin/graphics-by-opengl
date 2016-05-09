@@ -10,6 +10,7 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.renderer.Window;
 import com.nucleus.scene.NodeController;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewController;
@@ -142,8 +143,7 @@ public class CoreApp {
     public void contextCreated(int width, int height) {
         hasCalledCreated = true;
         contextCreated = true;
-        this.width = width;
-        this.height = height;
+        renderer.resizeWindow(0, 0, width, height);
         // If y is going down then reverse y so that 0 is at bottom which is the same as OpenGL
         inputProcessor.setPointerTransform((float) 1 / width, (float) 1 / -height, -0.5f, 0.5f);
     }
@@ -156,7 +156,8 @@ public class CoreApp {
     public void drawFrame() {
         if (contextCreated) {
             contextCreated = false;
-            renderer.GLContextCreated(width, height);
+            Window w = Window.getInstance();
+            renderer.GLContextCreated(w.getWidth(), w.getHeight());
         }
         if (!hasCalledCreated) {
             throw new IllegalArgumentException(NOT_CALLED_CREATECONTEXT);

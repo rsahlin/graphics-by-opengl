@@ -120,6 +120,7 @@ public class AndroidSurfaceView extends GLSurfaceView implements GLSurfaceView.E
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
+        System.out.println("surfaceChanged() " + width + ", " + height);
         try {
             coreApp.contextCreated(width, height);
         } catch (Throwable t) {
@@ -147,6 +148,7 @@ public class AndroidSurfaceView extends GLSurfaceView implements GLSurfaceView.E
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        System.out.println("surfaceCreated() " + getWidth() + ", " + getHeight());
         try {
             if (surfaceConfig == null) {
                 surfaceConfig = new SurfaceConfiguration();

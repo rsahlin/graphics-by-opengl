@@ -33,7 +33,7 @@ public class ViewFrustum {
      * The projection values, left,right,bottom,top,near,far
      */
     @SerializedName("values")
-    private float[] values = new float[] { -0.5f, 0.5f, -0.5f, 0.5f, 0, 1 };
+    private float[] values = new float[PROJECTION_SIZE];
     @SerializedName("projection")
     private Projection projection = Projection.PERSPECTIVE;
 

@@ -15,6 +15,7 @@ import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
 import com.nucleus.properties.EventManager;
+import com.nucleus.properties.EventManager.EventHandler;
 import com.nucleus.properties.Property;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Transform;
@@ -621,7 +622,8 @@ public class Node extends BaseReference implements MMIEventListener {
      * @return True if there was an event that was inside a node, ie a 'hit'
      */
     protected boolean checkNode(MMIPointerEvent event) {
-        if (bounds != null && getProperty("pointerinput", EventManager.FALSE).equals(EventManager.TRUE)) {
+        if (bounds != null
+                && getProperty(EventHandler.Type.POINTERINPUT.name(), EventManager.FALSE).equals(EventManager.TRUE)) {
             ViewNode viewNode = getViewParent();
             // If ViewNode parent does not exist the identitymatrix is used
             float[] mv = Matrix.createMatrix();

@@ -25,6 +25,14 @@ public class EventManager {
      *
      */
     public interface EventHandler {
+
+        public enum Type {
+            /**
+             * The event is pointer input
+             */
+            POINTERINPUT()
+        }
+
         /**
          * Called when {@linkplain EventManager#sendEvent(String, String)} is called with a registered key.
          * 

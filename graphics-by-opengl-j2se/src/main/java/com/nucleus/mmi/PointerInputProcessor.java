@@ -15,12 +15,6 @@ import com.nucleus.vecmath.Vector2D;
  */
 public class PointerInputProcessor implements PointerListener {
 
-    /**
-     * The key to register in the property handler for this class
-     * TODO Do not store as magic string, find some other way.
-     */
-    private final static String HANDLER_KEY = "pointerinput";
-
     public final static int MAX_POINTERS = 5;
 
     /**

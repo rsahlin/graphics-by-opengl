@@ -14,9 +14,13 @@ public class FrameSampler {
     private long currentTime;
     private int minFPS = DEFAULT_MIN_FPS;
     private float delta;
+    private float maxDelta;
 
     private float totalDelta;
     private int frames;
+    private long vertices;
+    private long indices;
+    private int drawCalls;
     private long sampleStart;
 
     public FrameSampler(int minFPS) {
@@ -44,25 +48,47 @@ public class FrameSampler {
     }
 
     /**
-     * Returns the current delta value, time in seconds from previous frame.
+     * Adds the number of vertices sent to drawArrays
      * 
-     * @return
+     * @param vertices Number of vertices
+     */
+    public void addDrawArrays(int vertices) {
+        this.vertices += vertices;
+        drawCalls++;
+    }
+
+    public void addDrawElements(int vertices, int indices) {
+        this.vertices += vertices;
+        this.indices += indices;
+        drawCalls++;
+    }
+
+    /**
+     * Returns the current delta value, time in seconds from previous frame.
+     * If a call to {@link #setMinFPS(int)} has been made then the delta value is limited according to this.
+     * 
+     * @return The delta value for previous -> current frame, will be limited if {@link #setMinFPS(int)} has been
+     * called.
      */
     public float getDelta() {
+        if (maxDelta > 0) {
+            if (delta > maxDelta) {
+                return maxDelta;
+            }
+        }
         return delta;
     }
 
     /**
      * Returns the average fps, resetting the average values and setting sample start to the current time.
      * 
-     * @return Average FPS for the current time period.
+     * @return Average FPS info - same as calling toString() then resetting the values with clear()
      */
-    public int sampleFPS() {
-        int fps = (int) (frames / totalDelta);
-        totalDelta = 0;
-        frames = 0;
+    public String sampleFPS() {
+        String info = toString();
+        clear();
         sampleStart = currentTime;
-        return fps;
+        return info;
     }
 
     /**
@@ -79,6 +105,17 @@ public class FrameSampler {
     }
 
     /**
+     * Clears all sample values
+     */
+    public void clear() {
+        totalDelta = 0;
+        frames = 0;
+        indices = 0;
+        vertices = 0;
+        drawCalls = 0;
+    }
+
+    /**
      * Sets the min fps value, a value of 20 means that the delta-time, as returned by getDelta(), will never go above
      * 50 milliseconds (1/20 s).
      * Use this to limit the lowest fps for animations/logic - note that slowdown will occur of the client platform
@@ -88,6 +125,15 @@ public class FrameSampler {
      */
     public void setMinFPS(int fps) {
 
+        maxDelta = (float) 1 / fps;
+
+    }
+
+    @Override
+    public String toString() {
+        int fps = (int) (frames / totalDelta);
+        return "Average FPS: " + fps + ", " + vertices / frames + " vertices, " + indices / frames
+                + " indices, " + drawCalls / frames + " drawcall - per frame";
     }
 
 }

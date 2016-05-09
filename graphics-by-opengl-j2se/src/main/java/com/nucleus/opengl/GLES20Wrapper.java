@@ -231,9 +231,11 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                     GLES20.GL_STATIC_DRAW);
             int index = 0;
             for (ShaderVariable a : attribs) {
-                glEnableVertexAttribArray(a.getLocation());
-                glVertexAttribPointer(a.getLocation(), buffer.getComponentCount(), buffer.getDataType(), false,
-                        buffer.getByteStride(), a.getOffset() * 4);
+                if (a != null) {
+                    glEnableVertexAttribArray(a.getLocation());
+                    glVertexAttribPointer(a.getLocation(), buffer.getComponentCount(), buffer.getDataType(), false,
+                            buffer.getByteStride(), a.getOffset() * 4);
+                }
             }
             glBindBuffer(target, 0);
 

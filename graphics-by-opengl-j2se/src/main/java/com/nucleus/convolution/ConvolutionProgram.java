@@ -15,6 +15,7 @@ import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.shader.VariableMapping;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;
+import com.nucleus.vecmath.Matrix;
 
 public class ConvolutionProgram extends ShaderProgram {
 
@@ -96,8 +97,10 @@ public class ConvolutionProgram extends ShaderProgram {
     }
 
     @Override
-    public void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, Mesh mesh) throws GLException {
-        System.arraycopy(modelviewMatrix, 0, mesh.getUniforms(), 0, modelviewMatrix.length);
+    public void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, float[] projectionMatrix, Mesh mesh)
+            throws GLException {
+        Matrix.mul4(modelviewMatrix, projectionMatrix);
+        System.arraycopy(modelviewMatrix, 0, mesh.getUniforms(), 0, Matrix.MATRIX_ELEMENTS);
         bindUniforms(gles, uniforms, mesh.getUniforms());
     }
 

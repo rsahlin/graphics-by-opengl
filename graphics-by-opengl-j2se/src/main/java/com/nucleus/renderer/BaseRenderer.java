@@ -58,9 +58,9 @@ class BaseRenderer implements NucleusRenderer {
     protected ArrayDeque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<float[]> projection = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     /**
-     * The current concatenated matrix matrix
+     * The current concatenated modelview matrix
      */
-    protected float[] mvpMatrix = Matrix.createMatrix();
+    protected float[] mvMatrix = Matrix.createMatrix();
     /**
      * Reference to the current modelmatrix, each Node has its own Matrix that is referenced.
      */
@@ -148,7 +148,7 @@ class BaseRenderer implements NucleusRenderer {
     public float beginFrame() {
         deltaTime = timeKeeper.update();
         if (timeKeeper.getSampleDuration() > 3) {
-            System.out.println(BASE_RENDERER_TAG + ": Average FPS: " + timeKeeper.sampleFPS());
+            System.out.println(BASE_RENDERER_TAG + ": " + timeKeeper.sampleFPS());
         }
         try {
             if (renderSettings.getChangeFlag() != RenderSettings.CHANGE_FLAG_NONE) {
@@ -262,9 +262,9 @@ class BaseRenderer implements NucleusRenderer {
                 pushMatrix(this.projection, this.projectionMatrix);
                 this.projectionMatrix = projection;
             }
-            Matrix.mul4(nodeMatrix, viewMatrix, mvpMatrix);
-            Matrix.mul4(mvpMatrix, projectionMatrix);
-            renderMeshes(node.getMeshes(), mvpMatrix);
+            Matrix.mul4(nodeMatrix, viewMatrix, mvMatrix);
+            // Matrix.mul4(mvMatrix, projectionMatrix);
+            renderMeshes(node.getMeshes(), mvMatrix, projectionMatrix);
             this.modelMatrix = nodeMatrix;
             for (Node n : node.getChildren()) {
                 pushMatrix(matrixStack, this.modelMatrix);
@@ -277,9 +277,9 @@ class BaseRenderer implements NucleusRenderer {
         }
     }
 
-    protected void renderMeshes(ArrayList<Mesh> meshes, float[] mvpMatrix) throws GLException {
+    protected void renderMeshes(ArrayList<Mesh> meshes, float[] mvMatrix, float[] projectionMatrix) throws GLException {
         for (Mesh mesh : meshes) {
-            renderMesh(mesh, mvpMatrix);
+            renderMesh(mesh, mvMatrix, projectionMatrix);
         }
     }
 
@@ -291,10 +291,12 @@ class BaseRenderer implements NucleusRenderer {
      * drawArrays is called.
      * 
      * @param mesh The mesh to be rendered.
-     * @param mvpMatrix accumulated matrix for this mesh, this will be sent to uniform.
+     * @param mvMatrix accumulated modelview matrix for this mesh, this will be sent to uniform.
+     * @param projectionMatrix The projection matrix, depending on shader this is either concatenated
+     * with modelview set to unifom.
      * @throws GLException If there is an error in GL while drawing this mesh.
      */
-    protected void renderMesh(Mesh mesh, float[] mvpMatrix) throws GLException {
+    protected void renderMesh(Mesh mesh, float[] mvMatrix, float[] projectionMatrix) throws GLException {
         Consumer updater = mesh.getAttributeConsumer();
         if (updater != null) {
             updater.setAttributeData();
@@ -315,10 +317,11 @@ class BaseRenderer implements NucleusRenderer {
         }
         mesh.setBlendModeSeparate(gles);
         program.bindAttributes(gles, mesh);
-        program.bindUniforms(gles, mvpMatrix, mesh);
+        program.bindUniforms(gles, mvMatrix, projectionMatrix, mesh);
 
         if (indices == null) {
             gles.glDrawArrays(mesh.getMode(), 0, vertices.getVerticeCount());
+            timeKeeper.addDrawArrays(vertices.getVerticeCount());
         } else {
             if (indices.getBufferName() > 0) {
                 gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
@@ -327,8 +330,8 @@ class BaseRenderer implements NucleusRenderer {
                 gles.glDrawElements(indices.getMode().mode, indices.getCount(), indices.getType().type,
                         indices.getBuffer().position(0));
             }
+            timeKeeper.addDrawElements(vertices.getVerticeCount(), indices.getCount());
         }
-
         GLUtils.handleError(gles, "glDrawArrays ");
     }
 
