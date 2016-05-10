@@ -29,7 +29,6 @@ public abstract class ActorContainer {
     public final static int MOVE_VECTOR_Z = 5;
     public final static int FRAME = 6;
     public final static int ROTATION = 7; // z axis rotation angle
-    public final static int SCALE = 8; // Uniform scale
 
     /**
      * All objects can move using a vector
