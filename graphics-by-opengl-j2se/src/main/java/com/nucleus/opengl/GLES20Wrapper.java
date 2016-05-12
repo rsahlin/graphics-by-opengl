@@ -233,7 +233,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             for (ShaderVariable a : attribs) {
                 if (a != null) {
                     glEnableVertexAttribArray(a.getLocation());
-                    glVertexAttribPointer(a.getLocation(), buffer.getComponentCount(), buffer.getDataType(), false,
+                    glVertexAttribPointer(a.getLocation(), a.getSizeInFloats(), buffer.getDataType(), false,
                             buffer.getByteStride(), a.getOffset() * 4);
                 }
             }

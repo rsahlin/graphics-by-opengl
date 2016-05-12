@@ -37,6 +37,10 @@ public class VertexBuffer extends BufferObject {
      */
     public final static int XYZ_COMPONENTS = 3;
     /**
+     * Number of components for UV
+     */
+    public final static int UV_COMPONENTS = 2;
+    /**
      * XYZ and UV
      */
     public final static int XYZUV_COMPONENTS = 5;
@@ -130,7 +134,7 @@ public class VertexBuffer extends BufferObject {
 
     /**
      * Sets position and UV data from the source array, the format will be XYZUV
-     * After each vertice copied, the vertice stride is used to step in the destination buffer.
+     * After each vertice copied, the attribute stride is used to step in the destination buffer.
      * This method is not efficient for a large number of triangles.
      * 
      * @param triangleData The source data to copy, must hold data for the specified number of triangles.
@@ -140,14 +144,50 @@ public class VertexBuffer extends BufferObject {
      * @param verticeCount Number of vertices to store.
      */
     public void setPositionUV(float[] verticeData, int sourceOffset, int destOffset, int verticeCount) {
-
         for (int i = 0; i < verticeCount; i++) {
             vertices.position(destOffset);
             vertices.put(verticeData, sourceOffset, XYZUV_COMPONENTS);
             sourceOffset += XYZUV_COMPONENTS;
             destOffset += attribFloatStride;
         }
+    }
 
+    /**
+     * Sets a number of components into this buffer from the data array, uses the stride in this buffer
+     * to step from one vertice to the next
+     * 
+     * @param data
+     * @param componentCount
+     * @param sourceOffset
+     * @param destOffset
+     * @param verticeCount
+     */
+    public void setComponents(float[] data, int componentCount, int sourceOffset, int destOffset, int verticeCount) {
+        for (int i = 0; i < verticeCount; i++) {
+            vertices.position(destOffset);
+            vertices.put(data, sourceOffset, componentCount);
+            sourceOffset += componentCount;
+            destOffset += attribFloatStride;
+        }
+
+    }
+
+    /**
+     * Sets the UV data from the uv array, after each UV has been set the attribute stride in this buffer
+     * will be used to step to the next vertice.
+     * 
+     * @param uv Packed UV coordinates to set.
+     * @param sourceOffset
+     * @param destOffset
+     * @param verticeCount
+     */
+    public void setUV(float[] uv, int sourceOffset, int destOffset, int verticeCount) {
+        for (int i = 0; i < verticeCount; i++) {
+            vertices.position(destOffset);
+            vertices.put(uv, sourceOffset, UV_COMPONENTS);
+            sourceOffset += UV_COMPONENTS;
+            destOffset += attribFloatStride;
+        }
     }
 
     /**
@@ -189,7 +229,7 @@ public class VertexBuffer extends BufferObject {
     }
 
     /**
-     * The byte offset between consecutive variables.
+     * The byte offset between consecutive variables
      * 
      * @return Number of bytes between consecutive variables
      */
@@ -197,6 +237,17 @@ public class VertexBuffer extends BufferObject {
         return attribByteStride;
     }
 
+    /**
+     * Sets the byte stride value used when attrib pointer is set.
+     * Call this method if you want to override the default value which is set to ame as vertex byte size when buffer is
+     * created.
+     * 
+     * @param byteStride
+     */
+    public void setByteStride(int byteStride) {
+        attribByteStride = byteStride;
+    }
+    
     /**
      * Copies float values from the source array into the buffer.
      * Use this method when many values shall be written.

@@ -27,13 +27,17 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     public enum BufferIndex {
         /**
-         * Vertex storage buffer
+         * Vertex storage buffer, this is usually not updated
          */
         VERTICES(0),
         /**
-         * Attribute buffer storage
+         * Attribute buffer storage, this is usually dynamic
          */
-        ATTRIBUTES(1);
+        ATTRIBUTES(1),
+        /**
+         * Static attributes
+         */
+        ATTRIBUTES_STATIC(2);
 
         public final int index;
 

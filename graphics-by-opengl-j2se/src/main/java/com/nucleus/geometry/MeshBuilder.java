@@ -1,7 +1,6 @@
 package com.nucleus.geometry;
 
 import static com.nucleus.geometry.VertexBuffer.INDEXED_QUAD_VERTICES;
-import static com.nucleus.geometry.VertexBuffer.QUAD_INDICES;
 import static com.nucleus.geometry.VertexBuffer.STRIP_QUAD_VERTICES;
 import static com.nucleus.geometry.VertexBuffer.XYZUV_COMPONENTS;
 import static com.nucleus.geometry.VertexBuffer.XYZ_COMPONENTS;
@@ -13,7 +12,6 @@ import static com.nucleus.vecmath.Rectangle.Y;
 import java.nio.ByteBuffer;
 
 import com.nucleus.ErrorMessage;
-import com.nucleus.geometry.AttributeUpdater.PropertyMapper;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.shader.ShaderProgram;
@@ -117,6 +115,35 @@ public class MeshBuilder {
     }
 
     /**
+     * Same as {@link #createQuadPositionsIndexed(Rectangle, int, float)} but also creates uv after xyz
+     * 
+     * @param rectangle
+     * @param vertexStride
+     * @param z
+     * @return
+     */
+    public static float[] createQuadPositionsUVIndexed(Rectangle rectangle, int vertexStride, float z) {
+
+        float[] values = rectangle.getValues();
+        if (rectangle.getMode() != Mode.SIZE) {
+            throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message);
+        }
+
+        // TODO How to handle Y axis going other direction?
+        float[] quadPositions = new float[vertexStride * 4];
+        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y],
+                z, 0, 0, quadPositions, 0);
+        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y], z, 1, 0, quadPositions,
+                vertexStride);
+        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y] - values[HEIGHT],
+                z, 1, 1, quadPositions,
+                vertexStride * 2);
+        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y] - values[HEIGHT], z, 0, 1, quadPositions,
+                vertexStride * 3);
+        return quadPositions;
+    }
+
+    /**
      * Builds an array for 4 vertices containing xyz and uv components, the array can be drawn
      * using GL_TRIANGLE_FAN
      * The vertices will be centered using translate, a value of 0 will be left/top aligned.
@@ -134,6 +161,7 @@ public class MeshBuilder {
      * @return array containing 4 vertices for a quad with the specified size, the size of the array will be
      * vertexStride * 4
      */
+    @Deprecated
     public static float[] createQuadPositionsUV(float width, float height, float z, float x, float y) {
 
         float[] quadPositions = new float[XYZUV_COMPONENTS * 4];
@@ -155,21 +183,23 @@ public class MeshBuilder {
      * 
      * @param mesh The mesh to build the buffers in, this is the mesh that can be rendered.
      * @param program The program to use when rendering the mesh, it is stored in the material
-     * @param index The index of the first quad to build
-     * @param quadCount Number of quads to build, this is NOT the vertex count.
+     * @param quadCount Number of quads to put in element (index) buffer, 1 means 6 indexes for 1 quad
+     * This is the max number of quads that can be drawn.
      * @param quadPositions Array with x,y,z - this is set for each tile. Must contain data for 4 vertices.
      */
-    public static void buildQuadMeshIndexed(Mesh mesh, ShaderProgram program, int index, int quadCount,
+    public static void buildQuadMeshIndexed(Mesh mesh, ShaderProgram program, int quadCount,
             float[] quadPositions) {
-        ElementBuilder.buildQuadBuffer(mesh.indices, mesh.indices.getCount() / QUAD_INDICES, 0);
-
-        float[] vertices = new float[quadCount * INDEXED_QUAD_VERTICES * XYZ_COMPONENTS];
+        // // Create the indexes
+        ElementBuilder.buildQuadBuffer(mesh.indices, quadCount, 0);
+        VertexBuffer buffer = mesh.attributes[BufferIndex.VERTICES.index];
+        float[] vertices = new float[buffer.getComponentCount() * buffer.getVerticeCount()];
         int destPos = 0;
         for (int i = 0; i < quadCount; i++) {
             System.arraycopy(quadPositions, 0, vertices, destPos, quadPositions.length);
             destPos += quadPositions.length;
         }
-        mesh.attributes[BufferIndex.VERTICES.index].setPosition(vertices, 0, index * INDEXED_QUAD_VERTICES,
+        mesh.attributes[BufferIndex.VERTICES.index].setComponents(vertices,
+                quadPositions.length / INDEXED_QUAD_VERTICES, 0, 0,
                 quadCount * INDEXED_QUAD_VERTICES);
     }
 
@@ -214,33 +244,4 @@ public class MeshBuilder {
         program.setupUniforms(mesh);
     }
 
-    /**
-     * Prepares the UV coordinates for a Quad sprite.
-     * Used by tiled objects to set the UV position to 1 or 0 so it can be multiplied by a fraction size to get
-     * correct UV for a specific frame.
-     * This method is chosen to move as much processing as possible to the GPU - the UV of each sprite could be
-     * calculated at runtime but that would give a higher CPU impact when a large number of sprites are animated.
-     * 
-     * @param attributeData Array with attribute data where UV is stored.
-     * @param index Index of first vertex
-     * @param uIndex Index to UV in attribute data
-     * @param stride Added to get to next vertex.
-     */
-    public static void prepareTiledUV(PropertyMapper mapper, float[] attributeData, int index) {
-        int uvIndex = mapper.UV_INDEX;
-        int stride = mapper.ATTRIBUTES_PER_VERTEX;
-
-        index = index * mapper.ATTRIBUTES_PER_VERTEX * ShaderProgram.VERTICES_PER_SPRITE;
-        attributeData[index + uvIndex] = 0;
-        attributeData[index + uvIndex + 1] = 0;
-        index += stride;
-        attributeData[index + uvIndex] = 1;
-        attributeData[index + uvIndex + 1] = 0;
-        index += stride;
-        attributeData[index + uvIndex] = 1;
-        attributeData[index + uvIndex + 1] = 1;
-        index += stride;
-        attributeData[index + uvIndex] = 0;
-        attributeData[index + uvIndex + 1] = 1;
-    }
 }
