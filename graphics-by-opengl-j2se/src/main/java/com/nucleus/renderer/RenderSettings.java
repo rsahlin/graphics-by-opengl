@@ -391,7 +391,7 @@ public class RenderSettings {
      */
     public void setViewPort(int x, int y, int width, int height) {
         viewPort.setViewPort(x, y, width, height);
-        clearFlags |= CHANGE_FLAG_VIEWPORT;
+        changeFlag |= CHANGE_FLAG_VIEWPORT;
     }
 
     /**
