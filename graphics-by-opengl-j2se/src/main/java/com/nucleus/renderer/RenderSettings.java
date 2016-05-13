@@ -1,5 +1,6 @@
 package com.nucleus.renderer;
 
+import com.nucleus.camera.ViewPort;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /* Copyright 2015 Richard Sahlin
@@ -44,6 +45,7 @@ public class RenderSettings {
     public final static int CHANGE_FLAG_DEPTH = 2; // Depth related functions has changed.
     public final static int CHANGE_FLAG_CULLFACE = 4; // Cullface has changed
     public final static int CHANGE_FLAG_MULTISAMPLE = 8; // Multisample has changed
+    public final static int CHANGE_FLAG_VIEWPORT = 16; // viewport has changed
 
     /**
      * What parameters have changed, used for some settings.
@@ -96,6 +98,11 @@ public class RenderSettings {
      * Defaults to clearing depth and color-buffer.
      */
     protected int clearFlags = DEFAULT_CLEARFLAG;
+
+    /**
+     * The viewport setting
+     */
+    protected ViewPort viewPort = new ViewPort();
 
     /**
      * Constructs a new RenderSetting with default values.
@@ -372,6 +379,28 @@ public class RenderSettings {
         }
         this.clearFlags = clearFlags;
 
+    }
+
+    /**
+     * Sets the size, in pixels, for the screen viewport.
+     * 
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     */
+    public void setViewPort(int x, int y, int width, int height) {
+        viewPort.setViewPort(x, y, width, height);
+        clearFlags |= CHANGE_FLAG_VIEWPORT;
+    }
+
+    /**
+     * Returns the viewport values - DO NOT MODIFY
+     * 
+     * @return
+     */
+    protected int[] getViewPort() {
+        return viewPort.getViewPort();
     }
 
 }

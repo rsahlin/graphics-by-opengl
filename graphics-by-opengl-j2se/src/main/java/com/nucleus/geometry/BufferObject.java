@@ -14,11 +14,14 @@ public class BufferObject {
      * The buffer object name
      */
     private int name;
-
     /**
      * The size of the buffer in bytes.
      */
     protected int sizeInBytes;
+    /**
+     * Set to true when data in the buffer changes, means it needs to be uploaded to gl
+     */
+    private boolean dirty;
 
     /**
      * Sets the buffer object to use, this must be allocated by GL, or 0 to disable buffer objects.
@@ -45,6 +48,24 @@ public class BufferObject {
      */
     public int getSizeInBytes() {
         return sizeInBytes;
+    }
+
+    /**
+     * Returns true if the data in this buffer has changed.
+     * 
+     * @return True if the data in this buffer has changed
+     */
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    /**
+     * Sets the state of the dirty flag, use this to signal that the data in this buffer has been updated.
+     * 
+     * @param dirty
+     */
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
     }
 
 }

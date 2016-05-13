@@ -227,9 +227,11 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public void glVertexAttribPointer(VertexBuffer buffer, int target, ShaderVariable[] attribs) {
         if (buffer.getBufferName() > 0) {
             glBindBuffer(target, buffer.getBufferName());
-            glBufferData(target, buffer.getSizeInBytes(), buffer.getBuffer().position(0),
-                    GLES20.GL_STATIC_DRAW);
-            int index = 0;
+            if (buffer.isDirty()) {
+                glBufferData(target, buffer.getSizeInBytes(), buffer.getBuffer().position(0),
+                        GLES20.GL_STATIC_DRAW);
+                buffer.setDirty(false);
+            }
             for (ShaderVariable a : attribs) {
                 if (a != null) {
                     glEnableVertexAttribArray(a.getLocation());
@@ -237,7 +239,6 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                             buffer.getByteStride(), a.getOffset() * 4);
                 }
             }
-            glBindBuffer(target, 0);
 
         } else {
             int index = 0;

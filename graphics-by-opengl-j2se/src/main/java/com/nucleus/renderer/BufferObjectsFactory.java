@@ -2,6 +2,7 @@ package com.nucleus.renderer;
 
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.VertexBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 
@@ -41,10 +42,17 @@ public class BufferObjectsFactory {
         renderer.genBuffers(vboCount, names, 0);
         mesh.setBufferNames(0, names, 0);
         ElementBuffer indices = mesh.getElementBuffer();
+        for (VertexBuffer attribs : mesh.getVerticeBuffers()) {
+            renderer.bindBuffer(GLESWrapper.GLES20.GL_ARRAY_BUFFER, attribs.getBufferName());
+            renderer.bufferData(GLESWrapper.GLES20.GL_ARRAY_BUFFER, attribs.getSizeInBytes(),
+                    attribs.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
+            attribs.setDirty(false);
+        }
         if (indices != null) {
-            renderer.bindBuffer(GLESWrapper.GLES20.GL_ELEMENT_ARRAY_BUFFER, names[0]);
+            renderer.bindBuffer(GLESWrapper.GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
             renderer.bufferData(GLESWrapper.GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getSizeInBytes(),
                     indices.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
+            indices.setDirty(false);
         }
     }
 

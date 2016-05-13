@@ -53,7 +53,6 @@ class BaseRenderer implements NucleusRenderer {
     protected SurfaceConfiguration surfaceConfig;
 
     protected ViewFrustum viewFrustum = new ViewFrustum();
-    protected ViewPort viewPort = new ViewPort();
 
     protected ArrayDeque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<float[]> projection = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
@@ -127,7 +126,7 @@ class BaseRenderer implements NucleusRenderer {
             throw new IllegalArgumentException(RenderContextListener.INVALID_CONTEXT_DIMENSION);
         }
         window.setSize(width, height);
-        viewPort.setViewPort(0, 0, width, height);
+        renderSettings.setViewPort(0, 0, width, height);
 
         for (RenderContextListener listener : contextListeners) {
             listener.contextCreated(width, height);
@@ -165,11 +164,6 @@ class BaseRenderer implements NucleusRenderer {
         for (FrameListener listener : frameListeners) {
             listener.updateGLData();
         }
-        // For now always set the viewport
-        // TODO: Add dirty flag in viewport and only set when updated.
-        int[] view = viewPort.getViewPort();
-        gles.glViewport(view[ViewPort.VIEWPORT_X], view[ViewPort.VIEWPORT_Y],
-                view[ViewPort.VIEWPORT_WIDTH], view[ViewPort.VIEWPORT_HEIGHT]);
         // matrixEngine.setProjectionMatrix(viewFrustum);
         // mvpMatrix = getViewFrustum().getProjectionMatrix();
         this.modelMatrix = null;
@@ -219,6 +213,12 @@ class BaseRenderer implements NucleusRenderer {
                     gles.glDisable(GLES_EXTENSIONS.MULTISAMPLE_EXT.value);
                 }
             }
+        }
+        if ((flags & RenderSettings.CHANGE_FLAG_VIEWPORT) != 0) {
+            int[] view = renderSettings.getViewPort();
+            gles.glViewport(view[ViewPort.VIEWPORT_X], view[ViewPort.VIEWPORT_Y],
+                    view[ViewPort.VIEWPORT_WIDTH], view[ViewPort.VIEWPORT_HEIGHT]);
+            
         }
         GLUtils.handleError(gles, "setRenderSettings ");
 
@@ -449,7 +449,7 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void resizeWindow(int x, int y, int width, int height) {
-        viewPort.setViewPort(x, y, width, height);
+        renderSettings.setViewPort(x, y, width, height);
         Window.getInstance().setSize(width, height);
     }
 
