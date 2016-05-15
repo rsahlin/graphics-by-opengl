@@ -74,6 +74,8 @@ class BaseRenderer implements NucleusRenderer {
      */
     protected float[] projectionMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
 
+    private float[] tempMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
+
     protected GLES20Wrapper gles;
     protected RenderSettings renderSettings = new RenderSettings();
     protected ImageFactory imageFactory;
@@ -248,7 +250,7 @@ class BaseRenderer implements NucleusRenderer {
             if (node.getTransform() != null) {
                 modelMatrix = node.getTransform().getMatrix();
             } else {
-                modelMatrix = Matrix.createMatrix();
+                modelMatrix = tempMatrix;
                 Matrix.setIdentity(modelMatrix, 0);
             }
             if (this.modelMatrix == null) {
