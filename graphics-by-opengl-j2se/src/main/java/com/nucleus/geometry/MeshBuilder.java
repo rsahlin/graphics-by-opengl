@@ -15,6 +15,7 @@ import com.nucleus.ErrorMessage;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.texturing.TiledTexture2D;
 import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Rectangle.Mode;
 
@@ -122,23 +123,27 @@ public class MeshBuilder {
      * @param z
      * @return
      */
-    public static float[] createQuadPositionsUVIndexed(Rectangle rectangle, int vertexStride, float z) {
+    public static float[] createQuadPositionsUVIndexed(Rectangle rectangle, int vertexStride, float z,
+            TiledTexture2D texture) {
 
         float[] values = rectangle.getValues();
         if (rectangle.getMode() != Mode.SIZE) {
             throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message);
         }
+        // Calc max U and V
+        float maxU = 1 - (1f / texture.getWidth());
+        float maxV = 1 - (1f / texture.getHeight());
 
         // TODO How to handle Y axis going other direction?
         float[] quadPositions = new float[vertexStride * 4];
         com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y],
                 z, 0, 0, quadPositions, 0);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y], z, 1, 0, quadPositions,
+        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y], z, maxU, 0, quadPositions,
                 vertexStride);
         com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y] - values[HEIGHT],
-                z, 1, 1, quadPositions,
+                z, maxU, maxV, quadPositions,
                 vertexStride * 2);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y] - values[HEIGHT], z, 0, 1, quadPositions,
+        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y] - values[HEIGHT], z, 0, maxV, quadPositions,
                 vertexStride * 3);
         return quadPositions;
     }
