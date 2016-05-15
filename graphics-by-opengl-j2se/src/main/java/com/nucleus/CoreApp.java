@@ -162,7 +162,6 @@ public class CoreApp {
         if (!hasCalledCreated) {
             throw new IllegalArgumentException(NOT_CALLED_CREATECONTEXT);
         }
-        renderer.beginFrame();
         try {
             if (runnableThread != null) {
                 if (!runnableThread.isAlive()) {
@@ -178,6 +177,7 @@ public class CoreApp {
                     logicProcessor.processNode(rootNode.getScene(), renderer.getFrameSampler().getDelta());
                 }
             }
+            renderer.beginFrame();
             if (rootNode != null) {
                 renderer.render(rootNode);
             }
