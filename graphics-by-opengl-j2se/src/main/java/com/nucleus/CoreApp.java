@@ -144,8 +144,6 @@ public class CoreApp {
         hasCalledCreated = true;
         contextCreated = true;
         renderer.resizeWindow(0, 0, width, height);
-        // If y is going down then reverse y so that 0 is at bottom which is the same as OpenGL
-        inputProcessor.setPointerTransform((float) 1 / width, (float) 1 / -height, -0.5f, 0.5f);
     }
 
     /**
