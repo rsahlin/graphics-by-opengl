@@ -93,7 +93,6 @@ public class CoreApp {
      * Set to true when {@link #contextCreated(int, int)} is called
      */
     private volatile boolean hasCalledCreated = false;
-    private volatile int width = -1, height = -1;
 
     /**
      * Creates a new Core application with the specified renderer.
