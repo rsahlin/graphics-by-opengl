@@ -11,13 +11,11 @@ import static com.nucleus.vecmath.Rectangle.Y;
 
 import java.nio.ByteBuffer;
 
-import com.nucleus.ErrorMessage;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.TiledTexture2D;
 import com.nucleus.vecmath.Rectangle;
-import com.nucleus.vecmath.Rectangle.Mode;
 
 /**
  * Utility class to help build different type of Meshes.
@@ -97,9 +95,6 @@ public class MeshBuilder {
     public static float[] createQuadPositionsIndexed(Rectangle rectangle, int vertexStride, float z) {
 
         float[] values = rectangle.getValues();
-        if (rectangle.getMode() != Mode.SIZE) {
-            throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message);
-        }
 
         // TODO How to handle Y axis going other direction?
         float[] quadPositions = new float[vertexStride * 4];
@@ -127,12 +122,9 @@ public class MeshBuilder {
             TiledTexture2D texture) {
 
         float[] values = rectangle.getValues();
-        if (rectangle.getMode() != Mode.SIZE) {
-            throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message);
-        }
         // Calc max U and V
-        float maxU = 1 - (1f / texture.getWidth());
-        float maxV = 1 - (1f / texture.getHeight());
+        float maxU = (1f / (texture.getTileWidth()));
+        float maxV = (1f / (texture.getTileHeight()));
 
         // TODO How to handle Y axis going other direction?
         float[] quadPositions = new float[vertexStride * 4];
