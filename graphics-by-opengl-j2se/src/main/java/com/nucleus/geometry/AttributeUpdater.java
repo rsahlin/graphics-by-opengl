@@ -103,12 +103,12 @@ public interface AttributeUpdater {
          * @throws IllegalArgumentException If {@link #bindAttributeBuffer(VertexBuffer)} has not been called before
          * calling this method.
          */
-        public void setAttributeData();
+        public void updateAttributeData();
 
         /**
          * Returns the generic attribute data as an array reference
          * TODO Maybe it should not be visible to implementing classes that this buffer exist? It should be enough with
-         * {@link #bindAttributeBuffer(VertexBuffer)} and {@link #setAttributeData()}
+         * {@link #bindAttributeBuffer(VertexBuffer)} and {@link #updateAttributeData()}
          * 
          * @return The array containing the attribute data, any changes done here shall be reflected when
          * setAttributeData() is called.
@@ -119,7 +119,7 @@ public interface AttributeUpdater {
 
         /**
          * Binds the attribute buffer to be used as a destination when set attribute data is called.
-         * This method must be called before calling {@link #setAttributeData()}.
+         * This method must be called before calling {@link #updateAttributeData()}.
          * Implementations may need to allocate buffers.
          * 
          * @param buffer

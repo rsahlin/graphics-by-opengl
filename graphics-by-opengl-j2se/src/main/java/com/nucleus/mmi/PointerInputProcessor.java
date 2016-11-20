@@ -211,4 +211,13 @@ public class PointerInputProcessor implements PointerListener {
         transform[3] = translateY;
     }
 
+    /**
+     * Returns the pointer scale in x and y
+     * 
+     * @param scale Array where x and y scale are written
+     */
+    public void getPointerScale(float[] scale) {
+        scale[0] = transform[X];
+        scale[1] = transform[Y];
+    }
 }

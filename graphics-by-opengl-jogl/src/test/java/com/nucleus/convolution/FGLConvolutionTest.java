@@ -23,6 +23,7 @@ import com.nucleus.scene.ViewNode;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
+import com.nucleus.texturing.TextureParameter;
 
 public class FGLConvolutionTest extends NucleusApplication implements RenderContextListener, FrameListener,
         MMIEventListener {
@@ -77,7 +78,7 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
         vf.setOrthoProjection(-0.5f, 0.5f, 0.5f, -0.5f, 0, 10);
         node.setViewFrustum(vf);
         Texture2D tex = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(),
-                new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD);
+                "texture", new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, new TextureParameter(), 1);
         c.buildMesh(mesh, tex, 1f, 1f, 0, kernel[kernelIndex]);
         node.addMesh(mesh);
         BaseRootNode root = new BaseRootNode();

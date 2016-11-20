@@ -69,8 +69,7 @@ public class Texture2D extends BaseReference {
     RESOLUTION resolution;
     @SerializedName("mipmap")
     private int mipmap;
-    @SerializedName("externalReference")
-    private ExternalReference externalReference;
+
     /**
      * Texture parameter values.
      */
@@ -106,7 +105,9 @@ public class Texture2D extends BaseReference {
      */
     transient Image[] images;
 
-    transient public final TextureType textureType;
+    // TODO Make this private
+    @SerializedName("textureType")
+    public final TextureType textureType;
 
     /**
      * Default constructor
@@ -129,6 +130,15 @@ public class Texture2D extends BaseReference {
     }
 
     /**
+     * Returns the texture implementation type
+     * 
+     * @return
+     */
+    public TextureType getTextureType() {
+        return textureType;
+    }
+
+    /**
      * Copies the values from the source texture into this
      * 
      * @param source
@@ -136,7 +146,7 @@ public class Texture2D extends BaseReference {
     protected void set(Texture2D source) {
         super.set(source);
         resolution = source.resolution;
-        externalReference = source.getExternalReference();
+        setExternalReference(source.getExternalReference());
         texParameters = new TextureParameter(source.getTexParams());
         mipmap = source.mipmap;
         name = source.name;
@@ -148,49 +158,28 @@ public class Texture2D extends BaseReference {
     }
 
     /**
-     * Creates a texture with the specified id
+     * Creates a texture with the specified id, external ref, target resolution and mipmap levels
      * 
      * @param id The id of the texture, not the GL texture name.
+     * @param externalReference The texture image reference
      * @param resolution The target resolution for the texture
      * @param params Texture parameters, min/mag filter wrap s/t
+     * @param mipmap Number of mipmap levels
+     * @param format The texture format
+     * @param type The texture type 
      */
-    protected Texture2D(String id, RESOLUTION resolution, TextureParameter params) {
+    protected Texture2D(String id, ExternalReference externalReference, RESOLUTION resolution,
+            TextureParameter params, int mipmap, Format format, Type type) {
         super(id);
         textureType = TextureType.valueOf(getClass().getSimpleName());
+        setExternalReference(externalReference);
         this.resolution = resolution;
         this.texParameters.setValues(params);
+        this.mipmap = mipmap;
+        this.format = format;
+        this.type = type;
     }
 
-    /**
-     * Creates a new texture object with the specified external ref, target resolution and mipmap levels
-     * 
-     * @param externalReference
-     * @param resolution
-     * @param levels
-     */
-    protected Texture2D(ExternalReference externalReference, RESOLUTION resolution, int levels) {
-        super();
-        textureType = TextureType.valueOf(getClass().getSimpleName());
-        this.externalReference = externalReference;
-        this.resolution = resolution;
-        this.mipmap = levels;
-    }
-
-    /**
-     * Creates a texture reference with name, width and height.
-     * 
-     * @param name Texture object name (OpenGL)
-     * @param images One or more texture sources for mipmapping, if 3 are provided then 3 mipmap levels are used.
-     * @param resolution The originating texture source resolution, not that the actual provided sources may be
-     * scaled if the platform has lower resolution.
-     */
-    protected Texture2D(String id, int name, Image[] images, RESOLUTION resolution, TextureParameter params) {
-        super(id);
-        textureType = TextureType.valueOf(getClass().getSimpleName());
-        setup(name, images);
-        this.resolution = resolution;
-        this.texParameters.setValues(params);
-    }
 
     /**
      * Sets the texture object name (for GL), the images (buffers) to use and the resolution of textures.
@@ -222,24 +211,6 @@ public class Texture2D extends BaseReference {
      */
     public RESOLUTION getResolution() {
         return resolution;
-    }
-
-    /**
-     * Returns the external reference for this texture
-     * 
-     * @return
-     */
-    public ExternalReference getExternalReference() {
-        return externalReference;
-    }
-
-    /**
-     * Sets the external reference for this texture
-     * 
-     * @param ref
-     */
-    public void setExternalReference(ExternalReference ref) {
-        externalReference = ref;
     }
 
     /**

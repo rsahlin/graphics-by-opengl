@@ -86,7 +86,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     transient protected Texture2D[] texture = new Texture2D[MAX_TEXTURE_COUNT];
 
     /**
-     * Reference to tiled texture
+     * Reference to texture, used when importing/exporting
      */
     @SerializedName("textureref")
     protected String textureRef;

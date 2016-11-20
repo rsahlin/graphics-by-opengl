@@ -301,7 +301,7 @@ class BaseRenderer implements NucleusRenderer {
     protected void renderMesh(Mesh mesh, float[] mvMatrix, float[] projectionMatrix) throws GLException {
         Consumer updater = mesh.getAttributeConsumer();
         if (updater != null) {
-            updater.setAttributeData();
+            updater.updateAttributeData();
         }
         Material material = mesh.getMaterial();
         ShaderProgram program = material.getProgram();

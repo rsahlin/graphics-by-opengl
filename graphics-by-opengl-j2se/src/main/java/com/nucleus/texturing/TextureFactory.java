@@ -1,10 +1,18 @@
 package com.nucleus.texturing;
 
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.nucleus.io.ExternalReference;
+import com.nucleus.io.gson.TextureDeserializer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
+import com.nucleus.texturing.Texture2D.Format;
+import com.nucleus.texturing.Texture2D.Type;
 
 /**
  * Used to create texture objects.
@@ -34,17 +42,24 @@ public class TextureFactory {
     }
 
     /**
-     * Creates a texture for the specified image,
+     * Creates a texture for the specified image, Format will be RGBA and type UNSUGNED_BYTE
      * The texture will be uploaded to GL using the specified texture object name, if several mip-map levels are
      * supplied they will be used.
      * If the device current resolution is lower than the texture target resolution then a lower mip-map level is used.
      * 
+     * @param gles
+     * @param imageFactory
+     * @param id The id of the texture
+     * @param externalReference
+     * @param resolution
+     * @param parameter
+     * @param mipmap
      * @return A new texture object containing the texture image.
      */
-    public static Texture2D createTexture(GLES20Wrapper gles, ImageFactory imageFactory,
-            ExternalReference externalReference,
-            RESOLUTION resolution) {
-        Texture2D source = new Texture2D(externalReference, resolution, 1);
+    public static Texture2D createTexture(GLES20Wrapper gles, ImageFactory imageFactory, String id,
+            ExternalReference externalReference, RESOLUTION resolution, TextureParameter parameter, int mipmap) {
+        Texture2D source = new Texture2D(id, externalReference, resolution, parameter, mipmap, Format.RGBA,
+                Type.UNSIGNED_BYTE);
         return createTexture(gles, imageFactory, source);
     }
 
@@ -67,6 +82,14 @@ public class TextureFactory {
         }
     }
 
+    public static Texture2D createTexture(ExternalReference ref) throws FileNotFoundException {
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(Texture2D.class, new TextureDeserializer());
+        Gson gson = builder.create();
+        InputStreamReader reader = new InputStreamReader(ref.getAsStream());
+        return gson.fromJson(reader, Texture2D.class);
+    }
+
     /**
      * Creates a new empty texture object of the specified type
      * 
@@ -84,6 +107,26 @@ public class TextureFactory {
         default:
             throw new IllegalArgumentException();
         }
+    }
+
+    /**
+     * Creates a new TiledTexture
+     * 
+     * @param id
+     * @param externalReference
+     * @param targetResolution
+     * @param params
+     * @param mipmap
+     * @param size
+     * @param format
+     * @param type
+     * @return
+     */
+    public static TiledTexture2D createTiledTexture(String id, ExternalReference externalReference,
+            RESOLUTION targetResolution, TextureParameter params, int mipmap, int[] size, Format format, Type type) {
+        TiledTexture2D tex = new TiledTexture2D(id, externalReference, targetResolution, params, mipmap, size, format,
+                type);
+        return tex;
     }
 
     /**

@@ -80,6 +80,22 @@ public class TextureParameter {
         }
     }
 
+    /**
+     * Clears the current values and sets the specified texture parameter values.
+     * 
+     * @param values The values to set, shall contain min filter, mag filter, wrap s and wrap t
+     */
+    public void setValues(TexParameter[] values) {
+        if (this.values == null) {
+            this.values = new ArrayList<>();
+        } else {
+            this.values.clear();
+        }
+        for (TexParameter p : values) {
+            this.values.add(p);
+        }
+    }
+
     private void createIntArray() {
         intArray = new int[4];
         int index = 0;

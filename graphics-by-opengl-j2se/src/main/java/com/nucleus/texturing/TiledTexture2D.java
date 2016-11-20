@@ -1,6 +1,7 @@
 package com.nucleus.texturing;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.io.ExternalReference;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.vecmath.Axis;
 
@@ -41,12 +42,17 @@ public class TiledTexture2D extends Texture2D {
      * Creates a texture with the specified id
      * 
      * @param id The id of the texture, not the GL texture name.
+     * @param externalReference The texture image reference
      * @param targetResolution
      * @param params Texture parameters, min/mag filter wrap s/t
+     * @param mipmap
      * @param size Number of frames in x and y
+     * @param format
+     * @param type
      */
-    protected TiledTexture2D(String id, RESOLUTION targetResolution, TextureParameter params, int[] size) {
-        super(id, targetResolution, params);
+    protected TiledTexture2D(String id, ExternalReference externalReference, RESOLUTION targetResolution,
+            TextureParameter params, int mipmap, int[] size, Format format, Type type) {
+        super(id, externalReference, targetResolution, params, mipmap, format, type);
         tile = new int[2];
         tile[Axis.WIDTH.index] = size[Axis.WIDTH.index];
         tile[Axis.HEIGHT.index] = size[Axis.HEIGHT.index];
@@ -60,17 +66,6 @@ public class TiledTexture2D extends Texture2D {
     protected void set(TiledTexture2D source) {
         super.set(source);
         setTileSize(source.tile);
-    }
-
-    /**
-     * Setup the texture number of frames in x and y.
-     * 
-     * @param width Number of frames horizontally in texture
-     * @param height Number of frames vertically in texture
-     */
-    protected void setupTiledSize(int framesX, int framesY) {
-        tile[Axis.WIDTH.index] = width;
-        tile[Axis.HEIGHT.index] = height;
     }
 
     /**
