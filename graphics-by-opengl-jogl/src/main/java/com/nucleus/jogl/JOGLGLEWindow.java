@@ -19,7 +19,6 @@ import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
-import com.nucleus.renderer.Window;
 
 /**
  * 
@@ -34,7 +33,7 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, c
     /**
      * A zoom on the wheel equals 1 / 5 screen height
      */
-    private final static float ZOOM_FACTOR = 0.2f;
+    private final static float ZOOM_FACTOR = 100f;
 
     private Dimension windowSize;
     private boolean undecorated = false;
@@ -281,7 +280,7 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, c
 
     @Override
     public void mouseWheelMoved(MouseEvent e) {
-        float factor = Window.getInstance().getHeight() * ZOOM_FACTOR;
+        float factor = ZOOM_FACTOR;
         coreApp.getInputProcessor().pointerEvent(PointerAction.ZOOM, e.getWhen(), PointerData.POINTER_1, new float[] {
                 e.getRotation()[1] * factor, e.getRotation()[1] * factor });
     }
