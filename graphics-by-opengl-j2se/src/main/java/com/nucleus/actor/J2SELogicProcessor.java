@@ -1,6 +1,6 @@
 package com.nucleus.actor;
 
-import com.nucleus.actor.ActorController.State;
+import com.nucleus.actor.ComponentController.State;
 import com.nucleus.scene.Node;
 
 /**
@@ -16,12 +16,12 @@ public class J2SELogicProcessor implements LogicProcessor {
         if (node == null) {
             return;
         }
-        if (node instanceof ActorNode) {
-            ActorNode actorNode = (ActorNode) node;
+        if (node instanceof ComponentNode) {
+            ComponentNode actorNode = (ComponentNode) node;
             if (actorNode.getControllerState() == State.CREATED) {
                 actorNode.init();
             }
-            ActorContainer[] lcArray = ((ActorNode) node).getActorContainer();
+            ActorContainer[] lcArray = actorNode.getActorContainer();
             if (lcArray != null) {
                 for (ActorContainer lc : lcArray) {
                     if (lc != null) {
@@ -29,6 +29,7 @@ public class J2SELogicProcessor implements LogicProcessor {
                     }
                 }
             }
+            actorNode.processComponents(deltaTime);
         }
         // Process children
         for (Node child : node.getChildren()) {

@@ -2,7 +2,7 @@ package com.nucleus.actor;
 
 /**
  * Interface for one actor item, ie one actor element.
- * Actor items are usually put in a actor container {@link ActorContainer} and contained within a {@link ActorNode}
+ * Actor items are usually put in a actor container {@link ActorContainer} and contained within a {@link ComponentNode}
  * 
  * @author Richard Sahlin
  *

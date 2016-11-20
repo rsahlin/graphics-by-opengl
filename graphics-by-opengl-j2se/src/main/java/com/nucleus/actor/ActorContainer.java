@@ -4,11 +4,13 @@ import com.nucleus.vecmath.VecMath;
 import com.nucleus.vecmath.Vector2D;
 
 /**
+ * Use System - Component instead, see {@linkplain SpriteS }
  * For objects containing actor logic
  * 
  * @author Richard Sahlin
  *
  */
+@Deprecated
 public abstract class ActorContainer {
 
     /**
