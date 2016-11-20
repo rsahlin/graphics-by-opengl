@@ -1,5 +1,6 @@
 package com.nucleus.scene;
 
+import com.nucleus.actor.ComponentNode;
 import com.nucleus.common.Key;
 
 /**
@@ -10,13 +11,29 @@ import com.nucleus.common.Key;
  */
 public enum NodeType implements Key {
 
-    node(),
-    viewnode(),
-    switchnode();
+    node(Node.class),
+    viewnode(ViewNode.class),
+    switchnode(SwitchNode.class),
+    componentnode(ComponentNode.class);
+
+    private final Class<?> theClass;
+
+    private NodeType(Class<?> theClass) {
+        this.theClass = theClass;
+    }
+
+    /**
+     * Returns the class to instantiate for the different types
+     * 
+     * @return
+     */
+    public Class<?> getTypeClass() {
+        return theClass;
+    }
 
     @Override
     public String getKey() {
         return name();
     }
-
+    
 }

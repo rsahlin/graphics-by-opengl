@@ -37,12 +37,23 @@ public class SwitchNode extends Node {
         return copy;
     }
 
+    @Override
+    public void copyTo(Node target) {
+        target.set(this);
+    }
+
     /**
      * Sets the values from the source to this node, this will not set transient values.
      * 
      * @param source
+     * @throws ClassCastException If source is not {@link #SwitchNode()}
      */
-    public void set(SwitchNode source) {
+    @Override
+    public void set(Node source) {
+        set((SwitchNode) source);
+    }
+
+    private void set(SwitchNode source) {
         super.set(source);
         this.active = source.active;
     }

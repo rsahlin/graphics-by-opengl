@@ -28,10 +28,11 @@ public interface NodeFactory {
      * @param resources The scene data
      * @param source The source node, the returned node shall be the same type
      * @return A new instance of the source node, ready to be rendered/processed
-     * @throws IOException If there is an error fetching shader programs or texture.
+     * @throws IOException If there is an error creating the Node, could be due to problem reading resource or compiling
+     * shaders
      */
     public Node create(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resource, Node source)
-            throws IOException;
+            throws NodeException;
 
     /**
      * Creates the child nodes in from the source node, adding the created children to the parent node.
@@ -39,10 +40,11 @@ public interface NodeFactory {
      * @param resources
      * @param source The source node containing the children to create
      * @param parent The destination where the created child nodes will be added.
-     * @throws IOException
+     * @throws IOException If there is an error creating the Node, could be due to problem reading resource or compiling
+     * shaders
      */
     public void createChildNodes(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resources,
-            Node source, Node parent) throws IOException;
+            Node source, Node parent) throws NodeException;
 
 
 }

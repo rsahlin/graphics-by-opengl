@@ -11,6 +11,7 @@ import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.BaseReference;
+import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
@@ -55,11 +56,11 @@ public class Node extends BaseReference implements MMIEventListener {
     private Bounds bounds;
 
     /**
-     * Reference to mesh, used when importing / exporting.
+     * Reference to texture, used when importing / exporting.
      * No runtime meaning
      */
-    @SerializedName("meshRef")
-    private String meshRef;
+    @SerializedName("textureRef")
+    private ExternalReference textureRef;
 
     /**
      * Properties for this node
@@ -352,11 +353,12 @@ public class Node extends BaseReference implements MMIEventListener {
      * Call {@link #create()} to set transient values
      * 
      * @param source
+     * @throws ClassCastException If source node is not same class as this.
      */
     public void set(Node source) {
         super.set(source);
         type = source.type;
-        meshRef = source.meshRef;
+        textureRef = source.textureRef;
         if (source.getTransform() != null) {
             if (transform == null) {
                 transform = new Transform(source.getTransform());
@@ -554,12 +556,12 @@ public class Node extends BaseReference implements MMIEventListener {
 
 
     /**
-     * Returns the name of the mesh for this node, this is used when importing
+     * Returns the external reference of the texture for this node, this is used when importing
      * 
      * @return
      */
-    public String getMeshRef() {
-        return meshRef;
+    public ExternalReference getTextureRef() {
+        return textureRef;
     }
 
     /**

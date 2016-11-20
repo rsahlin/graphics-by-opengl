@@ -1,18 +1,14 @@
-package com.nucleus.io;
+package com.nucleus.io.gson;
 
 import java.lang.reflect.Type;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.nucleus.ErrorMessage;
-import com.nucleus.scene.ViewNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeType;
-import com.nucleus.scene.SwitchNode;
 
 /**
  * Implementation of graphics-by-opengl node deserialization, this shall return the correct Node implementations
@@ -23,21 +19,7 @@ import com.nucleus.scene.SwitchNode;
  * @author Richard Sahlin
  *
  */
-public class NucleusNodeDeserializer implements JsonDeserializer<Node> {
-
-    /**
-     * The gson instance to use when deserializing
-     */
-    protected Gson gson;
-    
-    /**
-     * Sets the gson instance to be used when deserializing
-     * 
-     * @param gson
-     */
-    public void setGson(Gson gson) {
-        this.gson = gson;
-    }
+public class NucleusNodeDeserializer extends NucleusDeserializer implements JsonDeserializer<Node> {
 
     @Override
     public Node deserialize(JsonElement json, Type type, JsonDeserializationContext context)
@@ -45,16 +27,7 @@ public class NucleusNodeDeserializer implements JsonDeserializer<Node> {
 
         JsonObject obj = json.getAsJsonObject();
         NodeType t = NodeType.valueOf(obj.get("type").getAsString());
-        switch (t) {
-        case node:
-            return gson.fromJson(json, Node.class);
-        case viewnode:
-            return gson.fromJson(json, ViewNode.class);
-        case switchnode:
-            return gson.fromJson(json, SwitchNode.class);
-        default:
-            throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message);
-        }
+        return (Node) gson.fromJson(json, t.getTypeClass());
     }
 
 }

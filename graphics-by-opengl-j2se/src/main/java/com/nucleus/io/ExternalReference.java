@@ -1,5 +1,7 @@
 package com.nucleus.io;
 
+import java.io.InputStream;
+
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -32,6 +34,16 @@ public class ExternalReference {
      */
     public String getSource() {
         return source;
+    }
+
+    /**
+     * Returns the source as an InputStream
+     * 
+     * @return
+     */
+    public InputStream getAsStream() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        return classLoader.getResourceAsStream(getSource());
     }
 
 }

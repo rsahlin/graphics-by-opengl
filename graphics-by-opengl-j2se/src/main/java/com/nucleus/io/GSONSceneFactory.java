@@ -15,10 +15,12 @@ import com.nucleus.exporter.NodeExporter;
 import com.nucleus.exporter.NucleusNodeExporter;
 import com.nucleus.geometry.MeshFactory;
 import com.nucleus.io.gson.BoundsDeserializer;
+import com.nucleus.io.gson.NucleusNodeDeserializer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.NodeException;
 import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
@@ -73,11 +75,11 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     @Override
-    public RootNode importScene(String filename) throws IOException {
+    public RootNode importScene(String filename) throws NodeException {
         ClassLoader loader = getClass().getClassLoader();
         InputStream is = loader.getResourceAsStream(filename);
         try {
-            return importScene(loader.getResourceAsStream(filename));
+            return importScene(is);
         } finally {
             if (is != null) {
                 try {
@@ -91,20 +93,26 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     @Override
-    public RootNode importScene(InputStream is) throws IOException {
+    public RootNode importScene(InputStream is) throws NodeException {
         if (renderer == null || nodeFactory == null) {
             throw new IllegalStateException(INIT_NOT_CALLED_ERROR);
         }
         if (is == null) {
             throw new IllegalArgumentException(NULL_PARAMETER_ERROR + "inputstream");
         }
-        Reader reader = new InputStreamReader(is, "UTF-8");
-        GsonBuilder builder = new GsonBuilder();
-        registerTypeAdapter(builder);
-        setGson(builder.create());
-        RootNode scene = getSceneFromJson(gson, reader);
-        RootNode createdRoot = createScene(scene.getResources(), scene.getScene());
-        return createdRoot;
+        try {
+            Reader reader = new InputStreamReader(is, "UTF-8");
+            GsonBuilder builder = new GsonBuilder();
+            // First register type adapters - then call GsonBuilder.create() to build a Gson instance
+            // using the specified adapters
+            registerTypeAdapter(builder);
+            setGson(builder.create());
+            RootNode scene = getSceneFromJson(gson, reader);
+            RootNode createdRoot = createScene(scene.getResources(), scene.getScene());
+            return createdRoot;
+        } catch (IOException e) {
+            throw new NodeException(e);
+        }
     }
 
     /**
@@ -145,9 +153,9 @@ public class GSONSceneFactory implements SceneSerializer {
      * @param resource The resources for the scene
      * @param scene The root scene node
      * @return The created scene or null if there is an error.
-     * @throws IOException
+     * @throws NodeException
      */
-    private RootNode createScene(ResourcesData resources, Node scene) throws IOException {
+    private RootNode createScene(ResourcesData resources, Node scene) throws NodeException {
         RootNode root = createInstance(resources);
         addNodes(resources, root, scene);
         return root;
@@ -183,7 +191,7 @@ public class GSONSceneFactory implements SceneSerializer {
      * @return
      * @throws IOException
      */
-    private Node addNodes(ResourcesData resources, RootNode root, Node node) throws IOException {
+    private Node addNodes(ResourcesData resources, RootNode root, Node node) throws NodeException {
         Node created = nodeFactory.create(renderer, meshFactory, resources, node);
         root.setScene(created);
         setViewFrustum(node, created);

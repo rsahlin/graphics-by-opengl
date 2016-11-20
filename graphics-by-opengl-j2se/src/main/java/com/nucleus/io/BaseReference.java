@@ -16,6 +16,9 @@ public class BaseReference implements Reference {
     @SerializedName("id")
     private String id;
 
+    @SerializedName("externalReference")
+    private ExternalReference externalReference;
+
     /**
      * Default constructor
      */
@@ -60,6 +63,27 @@ public class BaseReference implements Reference {
         if (source != null) {
             setId(source.getId());
         }
+        setExternalReference(source.getExternalReference());
+    }
+
+    /**
+     * Returns the external reference for this texture
+     * 
+     * @return
+     */
+    @Override
+    public ExternalReference getExternalReference() {
+        return externalReference;
+    }
+
+    /**
+     * Sets the external reference for this texture
+     * 
+     * @param ref
+     */
+    @Override
+    public void setExternalReference(ExternalReference ref) {
+        externalReference = ref;
     }
 
 }

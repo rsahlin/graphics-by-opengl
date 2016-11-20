@@ -10,7 +10,9 @@ import com.nucleus.texturing.UVAtlas;
 import com.nucleus.texturing.UVTexture2D;
 
 /**
- * Definition of all resources (for a scene)
+ * Definition of all resource references (for a scene)
+ * The objects held here are the references to data to include, they do not contain the data themself.
+ * Ie the Texture2D object are contain the reference to image and texture parameters, not the loaded texture.
  * This class can be serialized using GSON
  * 
  * @author Richard Sahlin
@@ -44,7 +46,7 @@ public class ResourcesData {
     }
 
     /**
-     * Copies the meshes into this class, adding to the list of available meshes
+     * Copies the mesh definitions into this class, adding to the list of available meshes
      * 
      * @param meshes
      */
@@ -55,7 +57,7 @@ public class ResourcesData {
     }
 
     /**
-     * Copies the textures into this class, adding to the list of available textures
+     * Copies the texture definitions into this class, adding to the list of available textures
      * If texture with same id already exist then nothing is added.
      * 
      * @param textures List of texture objects to add to this class
@@ -67,7 +69,7 @@ public class ResourcesData {
     }
 
     /**
-     * Copies the textures into this class, adding to the list of available textures.
+     * Copies the texture definitions into this class, adding to the list of available textures.
      * If texture with same id already exist then nothing is added
      * 
      * @param textures List of texture objects to add to this class
@@ -79,7 +81,7 @@ public class ResourcesData {
     }
 
     /**
-     * Copies the textures into this class, adding to the list of available textures.
+     * Copies the texture definitions into this class, adding to the list of available textures.
      * If texture with same id already exist then nothing is added
      * 
      * @param textures List of texture objects to add to this class
@@ -109,7 +111,7 @@ public class ResourcesData {
     }
 
     /**
-     * Returns the (first) texture2d, or tiledtexture2d data with matching id, or null if not found.
+     * Returns the (first) texture2d, or tiledtexture2d definition with matching id, or null if not found.
      * 
      * @param id
      * @return Texture with specified id or null if not found, or if there are no textures
@@ -155,7 +157,7 @@ public class ResourcesData {
     }
 
     /**
-     * Adds a number of textures to the resource data, if a texture with matching ID already
+     * Adds a number of texture definitions to the resource data, if a texture with matching ID already
      * exist then nothing is added.
      * 
      * @param textures The textures to add, if texture with same id is not present
@@ -189,7 +191,7 @@ public class ResourcesData {
     }
 
     /**
-     * Adds the mesh to list of meshes, if a mesh with same id already exist then the mesh is not added
+     * Adds the mesh definition to list of meshes, if a mesh with same id already exist then the mesh is not added
      * 
      * @param mesh
      */
@@ -202,7 +204,8 @@ public class ResourcesData {
     }
 
     /**
-     * Returns the first instance of a Mesh with the specified id.
+     * Returns the first Mesh definition with the specified id.
+     * 
      * @param id
      * @return The mesh or null if not found.
      */

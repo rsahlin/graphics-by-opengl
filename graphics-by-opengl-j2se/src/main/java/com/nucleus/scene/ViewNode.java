@@ -47,12 +47,12 @@ public class ViewNode extends Node {
         return copy;
     }
 
-    /**
-     * Copies the contents of the source node into this node
-     * 
-     * @param source
-     */
-    public void set(ViewNode source) {
+    @Override
+    public void set(Node source) {
+        set((ViewNode) source);
+    }
+
+    private void set(ViewNode source) {
         super.set(source);
         this.layer = source.layer;
         if (source.view != null) {
