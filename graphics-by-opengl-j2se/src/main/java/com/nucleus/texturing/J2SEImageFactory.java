@@ -3,12 +3,14 @@ package com.nucleus.texturing;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.IntBuffer;
 
 import javax.imageio.ImageIO;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.texturing.Image.ImageFormat;
 
 /**
@@ -36,6 +38,9 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
         InputStream stream = null;
         try {
             stream = classLoader.getResourceAsStream(name);
+            if (stream == null) {
+                throw new FileNotFoundException(name);
+            }
             BufferedImage img = ImageIO.read(stream);
             if (img.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
                 img = createImage(img, BufferedImage.TYPE_4BYTE_ABGR);
