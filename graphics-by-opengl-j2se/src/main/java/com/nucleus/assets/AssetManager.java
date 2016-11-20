@@ -16,11 +16,8 @@ import com.nucleus.texturing.TextureFactory;
  *
  */
 public class AssetManager {
-
     protected static AssetManager assetManager = null;
-
     private final static String NO_TEXTURE_SOURCE_ERROR = "No texture source for id: ";
-
     /**
      * Store textures using the source image name.
      */
@@ -66,12 +63,23 @@ public class AssetManager {
      * Returns the texture, if the texture has not been loaded it will be loaded and stored in the assetmanager.
      * 
      * @param renderer
+     * @param ref
+     * @return The texture
+     * @throws IOException
+     */
+    public Texture2D getTexture(NucleusRenderer renderer, ExternalReference ref) throws IOException {
+        return getTexture(renderer, TextureFactory.createTexture(ref));
+    }
+
+    /**
+     * Returns the texture, if the texture has not been loaded it will be loaded and stored in the assetmanager.
+     * 
+     * @param renderer
      * @param source
      * @return The texture
      * @throws IOException
      */
     public Texture2D getTexture(NucleusRenderer renderer, Texture2D source) throws IOException {
-
         ExternalReference ref = source.getExternalReference();
         HashMap<Texture2D, Texture2D> classMap = textures.get(ref.getSource());
         Texture2D texture = null;
@@ -99,7 +107,6 @@ public class AssetManager {
     private void putTexture(Texture2D texture, HashMap<Texture2D, Texture2D> map) {
         map.put(texture, texture);
         sourceNames.put(texture.getId(), texture.getExternalReference());
-
     }
 
     /**
@@ -120,5 +127,4 @@ public class AssetManager {
         }
         return ref;
     }
-
 }
