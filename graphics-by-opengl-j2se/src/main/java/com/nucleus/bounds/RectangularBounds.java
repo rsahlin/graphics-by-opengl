@@ -4,8 +4,6 @@ import static com.nucleus.vecmath.VecMath.X;
 import static com.nucleus.vecmath.VecMath.Y;
 import static com.nucleus.vecmath.VecMath.Z;
 
-import java.util.LinkedList;
-
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Vector2D;
 import com.nucleus.vecmath.Vector3D;
@@ -64,14 +62,14 @@ public class RectangularBounds extends Bounds {
      * Creates a new bounds from an array of values.
      * If the array contains 4 values, bounds will be created from upper left corner (x1,y1) and width + height
      * If not, the array must contain 8 values, X+Y for each corner in a clockwise manner from upper left.
+     * 
+     * @param values The bounds source values, either 4 values for corner + width, height or 8 values.
+     * @throws NullPointerException If values is null
+     * @throws ArrayIndexOutOfBoundsException If values does not contain index + 4 values
      */
     public RectangularBounds(float[] values, int index) {
-        // TODO How to handle if bounds do not use position reference?
-        position = new float[2];
         type = Type.RECTANGULAR;
-        if (values == null || values.length == 0) {
-            // Take bounds from rectangle
-        } else if (values.length == 4) {
+        if (values.length == 4) {
             setBounds(values[0], values[1], values[2], values[3]);
         } else {
             setBounds(values, index);
@@ -210,29 +208,28 @@ public class RectangularBounds extends Bounds {
     @Override
     public boolean isCircularInside(CircularBounds bounds) {
         calculateVectors();
-        float[] position = bounds.position;
 
         float radius = bounds.bounds[CircularBounds.RADIUS_INDEX];
-        collideVector1[0] = (position[0] + radius  * top[0]) - resultPositions[0];
-        collideVector1[1] = (position[1] + radius * top[1]) - resultPositions[1];
+        collideVector1[0] = (radius * top[0]) - resultPositions[0];
+        collideVector1[1] = (radius * top[1]) - resultPositions[1];
         Vector3D.normalize2D(collideVector1, 0);
         if (Vector2D.dot2D(collideVector1, top) < 0) {
             return false;
         }
-        collideVector1[0] = (position[0] - radius * left[0]) - resultPositions[0];
-        collideVector1[1] = (position[1] - radius * left[1]) - resultPositions[1];
+        collideVector1[0] = (radius * left[0]) - resultPositions[0];
+        collideVector1[1] = (radius * left[1]) - resultPositions[1];
         Vector3D.normalize2D(collideVector1, 0);
         if (Vector2D.dot2D(collideVector1, left) > 0) {
             return false;
         }
-        collideVector1[0] = (position[0] - radius * right[0]) - resultPositions[4];
-        collideVector1[1] = (position[1] - radius * right[1]) - resultPositions[5];
+        collideVector1[0] = (radius * right[0]) - resultPositions[4];
+        collideVector1[1] = (radius * right[1]) - resultPositions[5];
         Vector3D.normalize2D(collideVector1, 0);
         if (Vector2D.dot2D(collideVector1, right) > 0) {
             return false;
         }
-        collideVector1[0] = (position[0] + radius  * bottom[0]) - resultPositions[4];
-        collideVector1[1] = (position[1] + radius * bottom[1]) - resultPositions[5];
+        collideVector1[0] = (radius * bottom[0]) - resultPositions[4];
+        collideVector1[1] = (radius * bottom[1]) - resultPositions[5];
         Vector3D.normalize2D(collideVector1, 0);
         if (Vector2D.dot2D(collideVector1, bottom) < 0) {
             return false;
@@ -286,14 +283,14 @@ public class RectangularBounds extends Bounds {
      * @param index Index into array where data is stored, must be able to store 4 x,y values (8)
      */
     protected void getPositions(float[] destination, int index) {
-        destination[index++] = position[0] + rotatedBounds[X1];
-        destination[index++] = position[1] + rotatedBounds[Y1];
-        destination[index++] = position[0] + rotatedBounds[X2];
-        destination[index++] = position[1] + rotatedBounds[Y2];
-        destination[index++] = position[0] + rotatedBounds[X3];
-        destination[index++] = position[1] + rotatedBounds[Y3];
-        destination[index++] = position[0] + rotatedBounds[X4];
-        destination[index++] = position[1] + rotatedBounds[Y4];
+        destination[index++] = rotatedBounds[X1];
+        destination[index++] = rotatedBounds[Y1];
+        destination[index++] = rotatedBounds[X2];
+        destination[index++] = rotatedBounds[Y2];
+        destination[index++] = rotatedBounds[X3];
+        destination[index++] = rotatedBounds[Y3];
+        destination[index++] = rotatedBounds[X4];
+        destination[index++] = rotatedBounds[Y4];
     }
 
     /**
@@ -303,57 +300,58 @@ public class RectangularBounds extends Bounds {
      * Currently only supports Circular bounds in the list.
      * @return
      */
-    public static RectangularBounds createBounds(LinkedList<Bounds> source) {
-
-        float x1 = 1000;
-        float y1 = 1000;
-        float x2 = -1000;
-        float y2 = -1000;
-
-        float[] pos = null;
-        while (source.size() > 0) {
-            Bounds b = source.remove();
-            pos = b.position;
-            switch (b.type) {
-
-            case RECTANGULAR:
-                    //Don't use rotated bounds.
-                    RectangularBounds r = (RectangularBounds) b;
-                if (pos[X] - r.bounds[RectangularBounds.X1] < x1) {
-                    x1 = pos[X] - r.bounds[RectangularBounds.X1];
-                    }
-                if (pos[Y] - r.bounds[RectangularBounds.Y1] < y1) {
-                    y1 = pos[Z] - r.bounds[RectangularBounds.Y1];
-                    }
-                if (pos[X] + r.bounds[RectangularBounds.X2] > x2) {
-                    x2 = pos[X] + r.bounds[RectangularBounds.X2];
-                    }
-                if (pos[Y] + r.bounds[RectangularBounds.Y3] > y2) {
-                    y2 = pos[Y] + r.bounds[RectangularBounds.Y3];
-                    }
-
-                break;
-            case CIRCULAR:
-                    CircularBounds bounds = (CircularBounds) b;
-                if (pos[X] - bounds.bounds[CircularBounds.RADIUS_INDEX] < x1) {
-                    x1 = pos[X] - bounds.bounds[CircularBounds.RADIUS_INDEX];
-                    }
-                if (pos[Y] - bounds.bounds[CircularBounds.RADIUS_INDEX] < y1) {
-                    y1 = pos[Y] - bounds.bounds[CircularBounds.RADIUS_INDEX];
-                    }
-                if (pos[X] + bounds.bounds[CircularBounds.RADIUS_INDEX] > x2) {
-                    x2 = pos[X] + bounds.bounds[CircularBounds.RADIUS_INDEX];
-                    }
-                if (pos[Y] + bounds.bounds[CircularBounds.RADIUS_INDEX] > y2) {
-                    y2 = pos[Y] + bounds.bounds[CircularBounds.RADIUS_INDEX];
-                    }
-                break;
-            }
-        }
-
-        return new RectangularBounds(x1, y1, x2 - x1, y2 - y1);
-    }
-
+    /*
+     * public static RectangularBounds createBounds(LinkedList<Bounds> source) {
+     * 
+     * float x1 = 1000;
+     * float y1 = 1000;
+     * float x2 = -1000;
+     * float y2 = -1000;
+     * 
+     * float[] pos = null;
+     * while (source.size() > 0) {
+     * Bounds b = source.remove();
+     * pos = b.position;
+     * switch (b.type) {
+     * 
+     * case RECTANGULAR:
+     * //Don't use rotated bounds.
+     * RectangularBounds r = (RectangularBounds) b;
+     * if (pos[X] - r.bounds[RectangularBounds.X1] < x1) {
+     * x1 = pos[X] - r.bounds[RectangularBounds.X1];
+     * }
+     * if (pos[Y] - r.bounds[RectangularBounds.Y1] < y1) {
+     * y1 = pos[Z] - r.bounds[RectangularBounds.Y1];
+     * }
+     * if (pos[X] + r.bounds[RectangularBounds.X2] > x2) {
+     * x2 = pos[X] + r.bounds[RectangularBounds.X2];
+     * }
+     * if (pos[Y] + r.bounds[RectangularBounds.Y3] > y2) {
+     * y2 = pos[Y] + r.bounds[RectangularBounds.Y3];
+     * }
+     * 
+     * break;
+     * case CIRCULAR:
+     * CircularBounds bounds = (CircularBounds) b;
+     * if (pos[X] - bounds.bounds[CircularBounds.RADIUS_INDEX] < x1) {
+     * x1 = pos[X] - bounds.bounds[CircularBounds.RADIUS_INDEX];
+     * }
+     * if (pos[Y] - bounds.bounds[CircularBounds.RADIUS_INDEX] < y1) {
+     * y1 = pos[Y] - bounds.bounds[CircularBounds.RADIUS_INDEX];
+     * }
+     * if (pos[X] + bounds.bounds[CircularBounds.RADIUS_INDEX] > x2) {
+     * x2 = pos[X] + bounds.bounds[CircularBounds.RADIUS_INDEX];
+     * }
+     * if (pos[Y] + bounds.bounds[CircularBounds.RADIUS_INDEX] > y2) {
+     * y2 = pos[Y] + bounds.bounds[CircularBounds.RADIUS_INDEX];
+     * }
+     * break;
+     * }
+     * }
+     * 
+     * return new RectangularBounds(x1, y1, x2 - x1, y2 - y1);
+     * }
+     */
     @Override
     public void transform(float[] matrix, int index) {
         Matrix.transformVec2(matrix, index, bounds, rotatedBounds, 4);

@@ -11,8 +11,12 @@ public class BoundsFactory {
      * @param type the type of bounds to create
      * @param bounds The bounds values
      * @return The implementation of the bounds
+     * @throws IllegalArgumentException If bounds or type is null
      */
     public static Bounds create(Type type, float[] bounds) {
+        if (type == null || bounds == null) {
+            throw new IllegalAccessError("Parameter is null " + type + ", " + bounds);
+        }
         switch (type) {
             case CIRCULAR:
             return new CircularBounds(bounds);

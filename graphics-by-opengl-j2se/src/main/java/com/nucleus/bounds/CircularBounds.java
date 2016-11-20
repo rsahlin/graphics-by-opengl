@@ -29,14 +29,15 @@ public class CircularBounds extends Bounds {
     /**
      * Sets the bounds data with the radius, first creating the array and sets the type to CIRCULAR
      * 
-     * @param values The bounds values. X,y and radius
+     * @param values The bounds values. X,y and radius.
+     * @throws NullPointerException If values is null
      */
     private void create(float[] values) {
+        type = Type.CIRCULAR;
         bounds = new float[3];
         bounds[X_INDEX] = values[X_INDEX];
         bounds[Y_INDEX] = values[Y_INDEX];
         bounds[RADIUS_INDEX] = values[RADIUS_INDEX];
-        type = Type.CIRCULAR;
     }
 
 

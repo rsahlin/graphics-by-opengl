@@ -19,10 +19,13 @@ public class BoundsDeserializer implements JsonDeserializer<Bounds> {
         JsonObject obj = json.getAsJsonObject();
         com.nucleus.bounds.Bounds.Type t = com.nucleus.bounds.Bounds.Type
                 .valueOf(obj.get(Bounds.SerializeNames.type.name()).getAsString());
-        JsonArray array = obj.get(Bounds.SerializeNames.bounds.name()).getAsJsonArray();
-        float[] values = new float[array.size()];
-        for (int i = 0; i < array.size(); i++) {
-            values[i] = array.get(i).getAsFloat();
+        float[] values = null;
+        if (obj.get(Bounds.SerializeNames.bounds.name()) != null) {
+            JsonArray array = obj.get(Bounds.SerializeNames.bounds.name()).getAsJsonArray();
+            values = new float[array.size()];
+            for (int i = 0; i < array.size(); i++) {
+                values[i] = array.get(i).getAsFloat();
+            }
         }
         return BoundsFactory.create(t, values);
     }

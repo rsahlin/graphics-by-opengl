@@ -41,7 +41,6 @@ public abstract class Bounds {
         private Type(int value) {
             this.value = value;
         }
-
     }
 
     /**
@@ -49,11 +48,6 @@ public abstract class Bounds {
      * internal data needs to be recalculated.
      */
     transient protected boolean updated = true;
-
-    /**
-     * Ref to position in object space.
-     */
-    transient protected float[] position;
 
     /**
      * The type of bounds object
@@ -141,31 +135,6 @@ public abstract class Bounds {
     }
 
     /**
-     * Sets a reference to the position, this must be set before calling intersection methods.
-     * The position is NOT copied to this class, a reference is kept meaning that it just needs to be set once.
-     * Call {@link #updated()} when the position changes to inform implementations that data may need to be recalculated
-     * 
-     * @param position Reference to the position of this bounds.
-     * @throws IllegalArgumentException If position is null.
-     */
-    public void setPosition(float[] position) {
-        if (position == null) {
-            throw new IllegalArgumentException("Position is null.");
-        }
-        this.position = position;
-        updated = true;
-    }
-
-    /**
-     * Returns the position for the bounds - this is a ref to the object position, do not modify
-     * this position!
-     * @return The position of the bounds.
-     */
-    public float[] getPosition() {
-        return position;
-    }
-
-    /**
      * Performs a quick check if the object is outside the bounds, use this for quick on screen checks or similar.
      * @param bounds Array with x, y, width height
      * @param radius The radius of the object to check.
@@ -179,7 +148,6 @@ public abstract class Bounds {
         if (position[1] + radius < bounds[1] || position[1] - radius > bounds[1] + bounds[3]) {
             return true;
         }
-
         return false;
     }
 
