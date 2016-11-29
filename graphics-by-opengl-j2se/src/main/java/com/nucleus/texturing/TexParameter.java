@@ -27,4 +27,5 @@ public enum TexParameter {
     public int getValue() {
         return value;
     }
+
 }

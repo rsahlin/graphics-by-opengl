@@ -8,6 +8,7 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
+import com.nucleus.texturing.TextureParameter.Name;
 
 /**
  * Texture object and Sampler info, this class holds the texture object ID, texture parameters and a reference to the
@@ -275,15 +276,14 @@ public class Texture2D extends BaseReference {
      */
     public void uploadTexParameters(GLES20Wrapper gles) throws GLException {
 
-        int[] values = texParameters.getAsIntArray();
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
-                values[TextureParameter.MIN_FILTER]);
+                texParameters.getValue(Name.MIN_FILTER).value);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
-                values[TextureParameter.MAG_FILTER]);
+                texParameters.getValue(Name.MAG_FILTER).value);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
-                values[TextureParameter.WRAP_S]);
+                texParameters.getValue(Name.WRAP_S).value);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
-                values[TextureParameter.WRAP_T]);
+                texParameters.getValue(Name.WRAP_T).value);
         GLUtils.handleError(gles, "glTexParameteri ");
     }
 

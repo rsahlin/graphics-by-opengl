@@ -1,7 +1,5 @@
 package com.nucleus.texturing;
 
-import java.util.ArrayList;
-
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -12,6 +10,19 @@ import com.google.gson.annotations.SerializedName;
  *
  */
 public class TextureParameter {
+
+    public enum Name {
+        MIN_FILTER(0),
+        MAG_FILTER(1),
+        WRAP_S(2),
+        WRAP_T(3);
+
+        public final int index;
+
+        private Name(int index) {
+            this.index = index;
+        }
+    }
 
     /**
      * Default constructor
@@ -30,29 +41,10 @@ public class TextureParameter {
     }
 
     /**
-     * Index into parameters where min filter value is
-     */
-    public final static int MIN_FILTER = 0;
-    /**
-     * Index into parameters where mag filter value is
-     */
-    public final static int MAG_FILTER = 1;
-    /**
-     * Index into parameters where wrap s value is
-     */
-    public final static int WRAP_S = 2;
-    /**
-     * Index into parameters where wrap t value is
-     */
-    public final static int WRAP_T = 3;
-
-    /**
      * Texture parameter values, MUST contain 4 values
      */
     @SerializedName("values")
-    protected ArrayList<TexParameter> values;
-
-    private transient int[] intArray;
+    protected TexParameter[] values;
 
     /**
      * Copy values from the source texture parameters
@@ -64,19 +56,13 @@ public class TextureParameter {
         if (source.values == null) {
             throw new IllegalArgumentException("No texture parameters in source.");
         }
-        if (this.values == null) {
-            values = new ArrayList<>();
-        } else {
-            values.clear();
-        }
-        intArray = new int[4];
+        values = new TexParameter[source.values.length];
         int index = 0;
         for (TexParameter p : source.values) {
             if (p == null) {
                 throw new IllegalArgumentException("Texture parameter value is null, invalid name in source?");
             }
-            values.add(p);
-            intArray[index++] = p.value;
+            values[index++] = p;
         }
     }
 
@@ -87,34 +73,38 @@ public class TextureParameter {
      */
     public void setValues(TexParameter[] values) {
         if (this.values == null) {
-            this.values = new ArrayList<>();
-        } else {
-            this.values.clear();
+            this.values = new TexParameter[Name.values().length];
         }
-        for (TexParameter p : values) {
-            this.values.add(p);
-        }
-    }
-
-    private void createIntArray() {
-        intArray = new int[4];
         int index = 0;
         for (TexParameter p : values) {
-            intArray[index++] = p.value;
+            this.values[index++] = p;
         }
     }
 
     /**
-     * Returns the texture parameters as int array.
-     * Caches the result for next usage.
+     * Returns the value for the specified parameter name.
      * 
+     * @param name
      * @return
      */
-    public int[] getAsIntArray() {
-        if (intArray == null) {
-            createIntArray();
-        }
-        return intArray;
+    public TexParameter getValue(Name name) {
+        return values[name.index];
     }
 
+    /**
+     * Checks if the min filter in the texture parameter is one of the mipmap filters.
+     * 
+     * @return True if the texture parameters use mipmaps
+     */
+    public boolean isMipMapFilter() {
+        switch (getValue(Name.MIN_FILTER)) {
+        case LINEAR_MIPMAP_LINEAR:
+        case NEAREST_MIPMAP_LINEAR:
+        case LINEAR_MIPMAP_NEAREST:
+        case NEAREST_MIPMAP_NEAREST:
+            return true;
+        default:
+            return false;
+        }
+    }
 }

@@ -10,6 +10,7 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.texturing.Image.ImageFormat;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.Texture2D.Type;
+import com.nucleus.texturing.TextureParameter.Name;
 
 /**
  * Texture utilities, loading of texture(s)
@@ -36,7 +37,7 @@ public class TextureUtils {
             int width = image.getWidth();
             int height = image.getHeight();
             int levels = texture.getLevels();
-            if (levels == 0) {
+            if (levels == 0 || !texture.getTexParams().isMipMapFilter()) {
                 levels = 1;
             }
             if (levels > 1) {
@@ -71,11 +72,16 @@ public class TextureUtils {
      * @param textureImages Array with one or more images to send to GL. If more than
      * one image is specified then multiple mip-map levels will be set.
      * Level 0 shall be at index 0
-     * @throws GLException If there is an error uploading the textures.
+     * @throws GLException If there is an error uploading the textures
+     * @throws IllegalArgumentException If multiple mipmaps provided but texture min filter is not _MIPMAP_
      */
     public static void uploadTextures(GLES20Wrapper gles, int unit, Texture2D texture, int texName,
             Image[] textureImages)
             throws GLException {
+        if (textureImages.length > 1 && !texture.getTexParams().isMipMapFilter()) {
+            throw new IllegalArgumentException(
+                    "Multiple mipmap images but wrong min filter " + texture.getTexParams().getValue(Name.MIN_FILTER));
+        }
         int level = 0;
         int format;
         int type;
@@ -99,12 +105,9 @@ public class TextureUtils {
                 break;
             }
         }
-        if (level < textureImages.length) {
-            if (textureImages.length > 1) {
-                gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
-            }
+        if (textureImages.length == 1 && texture.getTexParams().isMipMapFilter()) {
+            gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
         }
-
     }
 
     /**
