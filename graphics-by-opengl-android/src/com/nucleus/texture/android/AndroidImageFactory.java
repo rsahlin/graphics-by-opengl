@@ -14,7 +14,7 @@ import android.graphics.BitmapFactory;
 public class AndroidImageFactory extends BaseImageFactory implements ImageFactory {
 
     @Override
-    public Image createImage(String name, ImageFormat format, float scaleX, float scaleY) throws IOException {
+    public Image createImage(String name, ImageFormat format) throws IOException {
         ClassLoader classLoader = getClass().getClassLoader();
         Bitmap b = BitmapFactory.decodeStream(classLoader.getResourceAsStream(name));
         if (b == null) {
@@ -25,18 +25,6 @@ public class AndroidImageFactory extends BaseImageFactory implements ImageFactor
         b.copyPixelsToBuffer(bb);
         Image image = new Image(b.getWidth(), b.getHeight(), format);
         copyPixels(bytePixels, ImageFormat.RGBA, image);
-        if (scaleX != 1 || scaleY != 1) {
-            int width = (int) (b.getWidth() * scaleX + 0.5f);
-            int height = (int) (b.getHeight() * scaleY + 0.5f);
-            if (height == 0) {
-                height = 1;
-            }
-            if (width == 0) {
-                width = 1;
-            }
-            return createScaledImage(image, width, height, ImageFormat.RGBA);
-
-        }
         return image;
     }
 }

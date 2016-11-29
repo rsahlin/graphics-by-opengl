@@ -209,7 +209,7 @@ public class Convolution {
         int sizeInBytes = destination.getFormat().size;
         float yScale = sourceHeight / height;
         float xScale = sourceWidth / width;
-        float acc[] = new float[sizeInBytes];
+        float acc[] = new float[4];
         int widthInBytes = sourceWidth * sizeInBytes;
         int index;
         int sourceIndex;

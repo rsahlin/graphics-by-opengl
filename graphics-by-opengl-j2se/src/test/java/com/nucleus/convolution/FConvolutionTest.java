@@ -103,7 +103,7 @@ public class FConvolutionTest implements WindowListener {
 
     @Test
     public void testProcessScaleHalf() throws IOException {
-        Image source = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA, 1f, 1f);
+        Image source = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA);
         Image destination = new Image(source.getWidth() >>> 1, source.getHeight() >>> 1, source.getFormat());
         executeTest(source, destination, "Scale 1/2 2X2", Kernel.SIZE_2X2, new float[] { 1, 1, 1, 1 }, 1);
 
@@ -115,7 +115,7 @@ public class FConvolutionTest implements WindowListener {
 
     @Test
     public void testProcessScaleQuarter() throws IOException {
-        Image source = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA, 1f, 1f);
+        Image source = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA);
         Image destination = new Image(source.getWidth() >>> 2, source.getHeight() >>> 2, source.getFormat());
         executeTest(source, destination, "Scale 1/4 4X4", Kernel.SIZE_4X4, new float[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1 }, 1);
@@ -132,7 +132,7 @@ public class FConvolutionTest implements WindowListener {
 
     @Test
     public void testProcessScaleEight() throws IOException {
-        Image source = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA, 1f, 1f);
+        Image source = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA);
         Image destination = new Image(source.getWidth() >>> 3, source.getHeight() >>> 3, source.getFormat());
         executeTest(source, destination, "Scale 1/8 8X8", Kernel.SIZE_8X8, new float[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -164,7 +164,7 @@ public class FConvolutionTest implements WindowListener {
      * @throws IOException
      */
     private void executeTest(String imageName, String title, Kernel kernel, float[] data, int loop) throws IOException {
-        Image source = imageFactory.createImage(imageName, ImageFormat.RGBA, 1f, 1f);
+        Image source = imageFactory.createImage(imageName, ImageFormat.RGBA);
         Image destination = new Image(source.getWidth(), source.getHeight(), source.getFormat());
         executeTest(source, destination, title, kernel, data, loop);
     }
@@ -189,7 +189,7 @@ public class FConvolutionTest implements WindowListener {
     }
 
     private Image processImage(Convolution.Kernel kernel, float[] data, String filename) throws IOException {
-        Image img = imageFactory.createImage(filename, ImageFormat.RGBA, 1f, 1f);
+        Image img = imageFactory.createImage(filename, ImageFormat.RGBA);
         return processImage(kernel, data, img);
     }
 

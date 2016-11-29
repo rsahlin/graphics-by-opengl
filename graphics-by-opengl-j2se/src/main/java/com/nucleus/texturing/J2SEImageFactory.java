@@ -10,7 +10,6 @@ import java.nio.IntBuffer;
 
 import javax.imageio.ImageIO;
 
-import com.nucleus.SimpleLogger;
 import com.nucleus.texturing.Image.ImageFormat;
 
 /**
@@ -30,7 +29,7 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
     }
 
     @Override
-    public Image createImage(String name, Image.ImageFormat format, float scaleX, float scaleY) throws IOException {
+    public Image createImage(String name, Image.ImageFormat format) throws IOException {
         if (name == null) {
             throw new IllegalArgumentException(NULL_PARAMETER);
         }
@@ -47,10 +46,6 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
             }
             Image image = new Image(img.getWidth(), img.getHeight(), format);
             copyPixels(img, image);
-            if (scaleX != 1 || scaleY != 1) {
-                return createScaledImage(image, (int) (scaleX * img.getWidth()), (int) (scaleY * img.getHeight()),
-                        ImageFormat.RGBA);
-            }
             return image;
 
         } finally {

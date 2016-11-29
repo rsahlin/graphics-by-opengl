@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.nucleus.SimpleLogger;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.io.gson.TextureDeserializer;
 import com.nucleus.opengl.GLES20Wrapper;
@@ -42,7 +43,7 @@ public class TextureFactory {
     }
 
     /**
-     * Creates a texture for the specified image, Format will be RGBA and type UNSUGNED_BYTE
+     * Creates a texture for the specified image, Format will be RGBA and type UNSIGNED_BYTE
      * The texture will be uploaded to GL using the specified texture object name, if several mip-map levels are
      * supplied they will be used.
      * If the device current resolution is lower than the texture target resolution then a lower mip-map level is used.
@@ -87,7 +88,11 @@ public class TextureFactory {
         builder.registerTypeAdapter(Texture2D.class, new TextureDeserializer());
         Gson gson = builder.create();
         InputStreamReader reader = new InputStreamReader(ref.getAsStream());
-        return gson.fromJson(reader, Texture2D.class);
+        try {
+            return gson.fromJson(reader, Texture2D.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Exception reading " + ref.getSource(), e);
+        }
     }
 
     /**
@@ -144,14 +149,14 @@ public class TextureFactory {
         int textureID = textures[0];
         Image[] textureImg = TextureUtils
                 .loadTextureMIPMAP(imageFactory, texture);
-
         try {
             TextureUtils.uploadTextures(gles, GLES20.GL_TEXTURE0, texture, textureID, textureImg);
+            // TODO Do not need to keep images after texture is uploaded
+            texture.setup(textureID, textureImg);
+            SimpleLogger.d(TextureFactory.class, "Uploaded texture " + texture.toString());
         } catch (GLException e) {
             throw new IllegalArgumentException(e);
         }
-        // TODO Do not need to keep images after texture is uploaded
-        texture.setup(textureID, textureImg);
     }
 
     /**

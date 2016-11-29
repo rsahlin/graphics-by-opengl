@@ -287,4 +287,11 @@ public class Texture2D extends BaseReference {
         GLUtils.handleError(gles, "glTexParameteri ");
     }
 
+    @Override
+    public String toString() {
+        return (textureType + " " + (getId() != null ? getId() : "") + " : " + width + "," + height + " : " + format
+                + " : " + type
+                + ", "
+                + (images != null ? images.length : 0) + " levels");
+    }
 }

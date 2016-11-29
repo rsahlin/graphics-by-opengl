@@ -32,7 +32,7 @@ public class TextureUtils {
 
         try {
             ImageFormat imageFormat = getImageFormat(texture);
-            Image image = imageFactory.createImage(texture.getExternalReference().getSource(), imageFormat, 1f, 1f);
+            Image image = imageFactory.createImage(texture.getExternalReference().getSource(), imageFormat);
             int width = image.getWidth();
             int height = image.getHeight();
             int levels = texture.getLevels();
@@ -83,17 +83,12 @@ public class TextureUtils {
         gles.glBindTexture(GLES20.GL_TEXTURE_2D, texName);
         for (Image textureImg : textureImages) {
             if (textureImg != null) {
-                if (texture.getFormat() != null) {
-                    format = texture.getFormat().format;
-                } else {
-                    // If no format specified in texture, use the format best suited for the image
-                    format = textureImg.getFormat().format;
+                if (texture.getFormat() == null || texture.getType() == null) {
+                    throw new IllegalArgumentException("Texture format or type is null for id " + texture.getId()
+                            + " : " + texture.getFormat() + ", " + texture.getType());
                 }
-                if (texture.getType() != null) {
-                    type = texture.getType().type;
-                } else {
-                    type = getTypeFromFormat(format);
-                }
+                format = texture.getFormat().format;
+                type = texture.getType().type;
                 gles.glTexImage2D(GLES20.GL_TEXTURE_2D, level, format,
                         textureImg.getWidth(),
                         textureImg.getHeight(), 0, format, type,
