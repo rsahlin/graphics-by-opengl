@@ -3,6 +3,7 @@ package com.nucleus.texturing;
 import java.io.IOException;
 
 import com.nucleus.ErrorMessage;
+import com.nucleus.SimpleLogger;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
@@ -107,6 +108,7 @@ public class TextureUtils {
         }
         if (textureImages.length == 1 && texture.getTexParams().isMipMapFilter()) {
             gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+            SimpleLogger.d(TextureUtils.class, "Generated mipmaps for texture " + texture.getId());
         }
     }
 
