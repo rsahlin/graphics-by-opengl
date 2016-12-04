@@ -162,12 +162,17 @@ public abstract class BaseImageFactory implements ImageFactory {
             case RGBA:
                 copyPixels_4BYTE_RGBA_TO_RGBA(source, buffer);
                 break;
+            case RGB:
+                copyPixels_4BYTE_RGBA_TO_RGB(source, buffer);
+                break;
             case LUMINANCE_ALPHA:
                 copyPixels_4BYTE_RGBA_TO_LUMINANCE_ALPHA(source, buffer);
                 break;
             case RGB565:
                 copyPixels_4BYTE_RGBA_TO_RGB565(source, buffer);
                 break;
+            default:
+                throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
             }
             break;
         default:
@@ -230,7 +235,25 @@ public abstract class BaseImageFactory implements ImageFactory {
             rgba[1] = source[index++];
             rgba[2] = source[index++];
             rgba[3] = source[index++];
-            destination.put(rgba, 0, 4);
+            destination.put(rgba, 0, rgba.length);
+        }
+    }
+
+    /**
+     * Straight copy from source to destination
+     * 
+     * @param source
+     * @param destination
+     */
+    protected void copyPixels_4BYTE_RGBA_TO_RGB(byte[] source, ByteBuffer destination) {
+        byte[] rgb = new byte[3];
+        int length = source.length;
+        for (int index = 0; index < length;) {
+            rgb[0] = source[index++];
+            rgb[1] = source[index++];
+            rgb[2] = source[index++];
+            index++;
+            destination.put(rgb, 0, rgb.length);
         }
     }
 

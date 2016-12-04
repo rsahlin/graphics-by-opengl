@@ -9,6 +9,7 @@ import com.nucleus.bounds.Bounds;
 import com.nucleus.bounds.BoundsFactory;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.AttributeUpdater.Producer;
+import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
@@ -55,6 +56,8 @@ public class Node extends BaseReference implements MMIEventListener {
     @SerializedName("bounds")
     private Bounds bounds;
 
+    @SerializedName("material")
+    private Material material;
     /**
      * Reference to texture, used when importing / exporting.
      * No runtime meaning
@@ -209,6 +212,41 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
+     * Copies the material from the source to this node. If the material in the source is null, the material in this
+     * node is set to null
+     * 
+     * @param source
+     * @throws NullPointerException If source is null
+     */
+    public void copyMaterial(Node source) {
+        if (source.material != null) {
+            copyMaterial(source.material);
+        }
+    }
+
+    /**
+     * Returns the material
+     * 
+     * @return
+     */
+    public Material getMaterial() {
+        return material;
+    }
+
+    /**
+     * Copies the material into this node
+     * 
+     * @param source
+     */
+    public void copyMaterial(Material source) {
+        if (material != null) {
+            material.copy(source);
+        } else {
+            material = new Material(source);
+        }
+    }
+
+    /**
      * Copies the transform from the source to this class.
      * This will copy all values, creating the transform in this node if needed.
      * 
@@ -244,6 +282,15 @@ public class Node extends BaseReference implements MMIEventListener {
      */
     public void setTransform(Transform source) {
         this.transform = source;
+    }
+
+    /**
+     * Sets the material reference.
+     * 
+     * @param source
+     */
+    public void setMaterial(Material source) {
+        this.material = source;
     }
 
     /**
@@ -359,23 +406,10 @@ public class Node extends BaseReference implements MMIEventListener {
         super.set(source);
         type = source.type;
         textureRef = source.textureRef;
-        if (source.getTransform() != null) {
-            if (transform == null) {
-                transform = new Transform(source.getTransform());
-            } else {
-                transform.set(source.getTransform());
-            }
-        } else {
-            transform = null;
-        }
-        if (source.viewFrustum != null) {
-            setViewFrustum(new ViewFrustum(source.viewFrustum));
-        }
-        if (source.bounds != null) {
-            this.bounds = BoundsFactory.create(source.bounds.getType(), source.bounds.getBounds());
-        } else {
-            this.bounds = null;
-        }
+        copyTransform(source);
+        copyViewFrustum(source);
+        copyMaterial(source);
+        copyBounds(source);
         setProperties(source);
     }
 
@@ -584,6 +618,67 @@ public class Node extends BaseReference implements MMIEventListener {
     public void setViewFrustum(ViewFrustum source) {
         viewFrustum = source;
         setProjection(source.getMatrix());
+    }
+
+    /**
+     * Copies the viewfrustum from the source node into this class, if the viewfrustum is null in the source
+     * the viewfrustum is set to null
+     * 
+     * @param source The source node
+     * @throws NullPointerException If source is null
+     */
+    public void copyViewFrustum(Node source) {
+        if (source.viewFrustum != null) {
+            copyViewFrustum(source.viewFrustum);
+        } else {
+            viewFrustum = null;
+        }
+    }
+
+    /**
+     * Copies the bounds from the source node into this node.
+     * If the bounds in the source is null, the bounds in this node is set to null
+     * 
+     * @param source
+     * @throws NullPointerException If source is null
+     */
+    public void copyBounds(Node source) {
+        if (source.bounds != null) {
+            copyBounds(source.bounds);
+        } else {
+            setBounds(null);
+        }
+    }
+
+    /**
+     * Copies the bounds
+     * 
+     * @param source
+     */
+    public void copyBounds(Bounds source) {
+        bounds = BoundsFactory.create(source.getType(), source.getBounds());
+    }
+
+    /**
+     * Sets the bounds reference
+     * 
+     * @param bounds Reference to bounds, values are not copied.
+     */
+    public void setBounds(Bounds bounds) {
+    }
+
+    /**
+     * Copies the viewfrustum into this class.
+     * 
+     * @param source The viewfrustum to copy
+     * @throws NullPointerException If source is null
+     */
+    public void copyViewFrustum(ViewFrustum source) {
+        if (viewFrustum != null) {
+            viewFrustum.set(source);
+        } else {
+            viewFrustum = new ViewFrustum(source);
+        }
     }
 
     /**

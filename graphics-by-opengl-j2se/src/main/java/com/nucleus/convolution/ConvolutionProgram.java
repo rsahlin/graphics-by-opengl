@@ -1,6 +1,11 @@
 package com.nucleus.convolution;
 
+import static com.nucleus.geometry.VertexBuffer.STRIP_QUAD_VERTICES;
+import static com.nucleus.geometry.VertexBuffer.XYZUV_COMPONENTS;
+import static com.nucleus.geometry.VertexBuffer.XYZ_COMPONENTS;
+
 import com.nucleus.geometry.AttributeUpdater.Property;
+import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.MeshBuilder;
@@ -115,10 +120,11 @@ public class ConvolutionProgram extends ShaderProgram {
      * @param kernel The normalized kernel values, must be 3*3
      * @throws IllegalArgumentException if type is not GLES20.GL_FLOAT
      */
+    @Deprecated
     public void buildMesh(Mesh mesh, Texture2D texture, float width, float height, float zPos, float[] kernel) {
 
         float[] quadPositions = MeshBuilder.createQuadPositionsUV(width, height, zPos, -width / 2, -height / 2);
-        MeshBuilder.buildQuadMeshFan(mesh, this, quadPositions, 0);
+        buildQuadMeshFan(mesh, this, quadPositions, 0);
         mesh.setTexture(texture, Texture2D.TEXTURE_0);
         System.arraycopy(kernel, 0, mesh.getUniforms(), VARIABLES.uKernel.offset, kernel.length);
         float deltaU = 1f / texture.getWidth();
@@ -126,6 +132,35 @@ public class ConvolutionProgram extends ShaderProgram {
         float[] uvOffsets = new float[] { -deltaU, 0, deltaU, -deltaU, 0, deltaU, -deltaU, 0, deltaU, -deltaV, 0,
                 deltaV, -deltaV, 0, deltaV, -deltaV, 0, deltaV };
         System.arraycopy(uvOffsets, 0, mesh.getUniforms(), VARIABLES.uKernel.offset + 9, uvOffsets.length);
+    }
+
+    /**
+     * This method is deprecated, do not create attribute buffers in this builder.
+     * Builds a quad mesh using a fan, the mesh can be rendered using glDrawArrays
+     * 
+     * @param mesh
+     * @param program The program to use for the material in the mesh
+     * @param quadPositions
+     * @param attribute2Size
+     */
+    @Deprecated
+    public void buildQuadMeshFan(Mesh mesh, ShaderProgram program, float[] quadPositions, int attribute2Size) {
+        int attributeBuffers = 1;
+        if (attribute2Size > 0) {
+            attributeBuffers = 2;
+        }
+        VertexBuffer[] attributes = new VertexBuffer[attributeBuffers];
+        attributes[BufferIndex.VERTICES.index] = new VertexBuffer(STRIP_QUAD_VERTICES, XYZ_COMPONENTS,
+                XYZUV_COMPONENTS, GLES20.GL_FLOAT);
+        if (attributeBuffers > 1) {
+            attributes[BufferIndex.ATTRIBUTES.index] = program.createAttributeBuffer(STRIP_QUAD_VERTICES, mesh);
+        }
+        attributes[BufferIndex.VERTICES.index].setPositionUV(quadPositions, 0, 0, STRIP_QUAD_VERTICES);
+        Material material = new Material();
+        material.setProgram(program);
+        mesh.setupVertices(attributes, material, null);
+        mesh.setMode(GLES20.GL_TRIANGLE_FAN);
+        program.setupUniforms(mesh);
     }
 
     @Override

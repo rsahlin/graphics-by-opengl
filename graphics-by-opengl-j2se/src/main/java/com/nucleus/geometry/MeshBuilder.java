@@ -1,9 +1,7 @@
 package com.nucleus.geometry;
 
 import static com.nucleus.geometry.VertexBuffer.INDEXED_QUAD_VERTICES;
-import static com.nucleus.geometry.VertexBuffer.STRIP_QUAD_VERTICES;
 import static com.nucleus.geometry.VertexBuffer.XYZUV_COMPONENTS;
-import static com.nucleus.geometry.VertexBuffer.XYZ_COMPONENTS;
 import static com.nucleus.vecmath.Rectangle.HEIGHT;
 import static com.nucleus.vecmath.Rectangle.WIDTH;
 import static com.nucleus.vecmath.Rectangle.X;
@@ -12,7 +10,6 @@ import static com.nucleus.vecmath.Rectangle.Y;
 import java.nio.ByteBuffer;
 
 import com.nucleus.geometry.Mesh.BufferIndex;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.TiledTexture2D;
 import com.nucleus.vecmath.Rectangle;
@@ -213,32 +210,5 @@ public class MeshBuilder {
 
     }
 
-    /**
-     * This method is deprecated, do not create attribute buffers in the builder.
-     * Builds a quad mesh using a fan, the mesh can be rendered using glDrawArrays
-     * 
-     * @param mesh
-     * @param program The program to use for the material in the mesh
-     * @param quadPositions
-     * @param attribute2Size
-     */
-    @Deprecated
-    public static void buildQuadMeshFan(Mesh mesh, ShaderProgram program, float[] quadPositions, int attribute2Size) {
-        int attributeBuffers = 1;
-        if (attribute2Size > 0) {
-            attributeBuffers = 2;
-        }
-        VertexBuffer[] attributes = new VertexBuffer[attributeBuffers];
-        attributes[BufferIndex.VERTICES.index] = new VertexBuffer(STRIP_QUAD_VERTICES, XYZ_COMPONENTS,
-                XYZUV_COMPONENTS, GLES20.GL_FLOAT);
-        if (attributeBuffers > 1) {
-            attributes[BufferIndex.ATTRIBUTES.index] = program.createAttributeBuffer(STRIP_QUAD_VERTICES, mesh);
-        }
-        attributes[BufferIndex.VERTICES.index].setPositionUV(quadPositions, 0, 0, STRIP_QUAD_VERTICES);
-        Material material = new Material(program);
-        mesh.setupVertices(attributes, material, null);
-        mesh.setMode(GLES20.GL_TRIANGLE_FAN);
-        program.setupUniforms(mesh);
-    }
 
 }

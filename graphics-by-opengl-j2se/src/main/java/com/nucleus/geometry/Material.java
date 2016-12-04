@@ -1,5 +1,8 @@
 package com.nucleus.geometry;
 
+import com.google.gson.annotations.SerializedName;
+import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.shader.ShaderProgram;
 
 /**
@@ -10,12 +13,43 @@ import com.nucleus.shader.ShaderProgram;
  */
 public class Material {
 
-    public final static String NULL_PROGRAM_STRING = "Program is null";
+    public enum BlendEquation {
+        GL_FUNC_ADD(GLES20.GL_FUNC_ADD),
+        GL_FUNC_SUBTRACT(GLES20.GL_FUNC_SUBTRACT),
+        GL_FUNC_REVERSE_SUBTRACT(GLES20.GL_FUNC_REVERSE_SUBTRACT);
 
-    /**
-     * The shader program to use when rendering
-     */
-    ShaderProgram program;
+        public final int value;
+
+        private BlendEquation(int value) {
+            this.value = value;
+        }
+    }
+
+    public enum BlendFunc {
+        GL_ZERO(GLES20.GL_ZERO),
+        GL_ONE(GLES20.GL_ONE),
+        GL_SRC_COLOR(GLES20.GL_SRC_COLOR),
+        GL_ONE_MINUS_SRC_COLOR(GLES20.GL_ONE_MINUS_SRC_COLOR),
+        GL_DST_COLOR(GLES20.GL_DST_COLOR),
+        GL_ONE_MINUS_DST_COLOR(GLES20.GL_ONE_MINUS_DST_COLOR),
+        GL_SRC_ALPHA(GLES20.GL_SRC_ALPHA),
+        GL_ONE_MINUS_SRC_ALPHA(GLES20.GL_ONE_MINUS_SRC_ALPHA),
+        GL_DST_ALPHA(GLES20.GL_DST_ALPHA),
+        GL_ONE_MINUS_DST_ALPHA(GLES20.GL_ONE_MINUS_DST_ALPHA),
+        GL_CONSTANT_COLOR(GLES20.GL_CONSTANT_COLOR),
+        GL_ONE_MINUS_CONSTANT_COLOR(GLES20.GL_ONE_MINUS_CONSTANT_COLOR),
+        GL_CONSTANT_ALPHA(GLES20.GL_CONSTANT_ALPHA),
+        GL_ONE_MINUS_CONSTANT_ALPHA(GLES20.GL_ONE_MINUS_CONSTANT_ALPHA),
+        GL_SRC_ALPHA_SATURATE(GLES20.GL_SRC_ALPHA_SATURATE);
+        
+        public final int value;
+
+        private BlendFunc(int value) {
+            this.value = value;
+        }
+    }
+
+    public final static String NULL_PROGRAM_STRING = "Program is null";
 
     /**
      * Index for 4 ambient color properties.
@@ -35,35 +69,33 @@ public class Material {
     public final static int SHININESS_INDEX = 12;
 
     public final static int COLOR_DATA_SIZE = 13;
+    /**
+     * The shader program to use when rendering
+     */
+    transient ShaderProgram program;
+
+    @SerializedName("blendEquation")
+    private BlendEquation[] blendEquation = new BlendEquation[] { BlendEquation.GL_FUNC_ADD,
+            BlendEquation.GL_FUNC_ADD };
+    @SerializedName("blendFunc")
+    private BlendFunc[] blendFunction = new BlendFunc[] { BlendFunc.GL_SRC_ALPHA, BlendFunc.GL_ONE_MINUS_SRC_ALPHA,
+            BlendFunc.GL_SRC_ALPHA, BlendFunc.GL_DST_ALPHA };
 
     /**
-     * Color properties, must be supported by the program used.
+     * Creates a default material
      */
-    protected final float[] colorProperties = new float[13];
-
-    /**
-     * 
-     * @param program The program to use
-     * @param color Color property source array, ambient, diffuse, specular
-     * @param sourceoffset Offset into source array where color properties are read.
-     * @param destoffset Offset into this class where color properties are written.
-     * @param length Number of color property values to write, 3 for R,G,B
-     * @throws IllegalArgumentException If program is null
-     * @throws ArrayIndexOutOfBoundsException If length of color < sourceoffset + count or if destoffset + count >
-     * COLOR_DATA_SIZE
-     * @throws NullPointerException If color is null
-     */
-    public Material(ShaderProgram program, float[] color, int sourceoffset, int destoffset, int length) {
-        setProgram(program);
-        System.arraycopy(color, sourceoffset, colorProperties, destoffset, length);
+    public Material() {
     }
 
     /**
-     * @param program The program to use
-     * @throws IllegalArgumentException If program is null
+     * Creates a copy of the source material
+     * 
+     * @param source
      */
-    public Material(ShaderProgram program) {
-        setProgram(program);
+    public Material(Material source) {
+        setBlendFunc(source.blendFunction);
+        setBlendEquation(source.blendEquation);
+        program = source.program;
     }
 
     /**
@@ -80,6 +112,17 @@ public class Material {
     }
 
     /**
+     * Copies the source material
+     * 
+     * @param source
+     */
+    public void copy(Material source) {
+        program = source.program;
+        setBlendFunc(source.blendFunction);
+        setBlendEquation(source.blendEquation);
+    }
+
+    /**
      * Returns the program to use for this material.
      * 
      * @return
@@ -88,4 +131,63 @@ public class Material {
         return program;
     }
 
+
+    /**
+     * Returns the blend equation(s), used when setting the blendEquation or blendEquationSeparate
+     * Set the first value to null to disable alpha blend
+     * 
+     * @return BlendEquation values
+     */
+    public BlendEquation[] getBlendEquation() {
+        return blendEquation;
+    }
+
+    /**
+     * Returns the blend function values, used when setting the blendFunc or blendFuncSeparate values.
+     * 
+     * @return
+     */
+    public BlendFunc[] getBlendFunc() {
+        return blendFunction;
+    }
+
+    /**
+     * Sets the blend equation to use
+     * 
+     * @param blendEquation
+     */
+    public void setBlendEquation(BlendEquation[] blendEquation) {
+        if (this.blendEquation == null || this.blendEquation.length < blendEquation.length) {
+            this.blendEquation = new BlendEquation[blendEquation.length];
+        }
+        System.arraycopy(blendEquation, 0, this.blendEquation, 0, blendEquation.length);
+    }
+
+    /**
+     * Sets the blend function to use, this will copy the values
+     * 
+     * @param blendFunction
+     */
+    public void setBlendFunc(BlendFunc[] blendFunction) {
+        if (this.blendFunction == null || this.blendFunction.length < blendFunction.length) {
+            this.blendFunction = new BlendFunc[blendFunction.length];
+        }
+        System.arraycopy(blendFunction, 0, this.blendFunction, 0, blendFunction.length);
+    }
+
+    /**
+     * Sets the separate blend equation/function for this material, this will copy the values.
+     * 
+     * @param gles
+     */
+    public void setBlendModeSeparate(GLES20Wrapper gles) {
+        if (blendEquation[0] == null) {
+            gles.glDisable(GLES20.GL_BLEND);
+        } else {
+            gles.glEnable(GLES20.GL_BLEND);
+            gles.glBlendEquationSeparate(blendEquation[0].value, blendEquation[1].value);
+            gles.glBlendFuncSeparate(blendFunction[0].value, blendFunction[1].value, blendFunction[2].value,
+                    blendFunction[3].value);
+        }
+    }
 }

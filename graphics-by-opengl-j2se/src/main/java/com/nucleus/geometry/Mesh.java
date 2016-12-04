@@ -3,7 +3,6 @@ package com.nucleus.geometry;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.io.BaseReference;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;
@@ -49,35 +48,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
     public final static int MAX_TEXTURE_COUNT = 1;
     private final static String NULL_PARAMETER_STR = "Null parameter";
-    /**
-     * Set the BLEND_EQUATION_RGB index in blendModes to this value to turn off alpha.
-     */
-    public final static int NO_ALPHA = -1;
-
-    /**
-     * Index to the RGB blend equation, set this to 0 to turn off alpha for a mesh
-     */
-    public final static int BLEND_EQUATION_RGB = 0;
-    /**
-     * Index to the alpha blend equation
-     */
-    public final static int BLEND_EQUATION_ALPHA = 1;
-    /**
-     * Index to the source RGB blend function
-     */
-    public final static int SOURCE_RGB = 2;
-    /**
-     * Index to the destination RGB blend function
-     */
-    public final static int DESTINATION_RGB = 3;
-    /**
-     * Index to the source Alpha blend function
-     */
-    public final static int SOURCE_ALPHA = 4;
-    /**
-     * Index to the destination Alpha blend function
-     */
-    public final static int DESTINATION_ALPHA = 5;
 
     /**
      * Currently only supports single texture
@@ -90,14 +60,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     @SerializedName("textureref")
     protected String textureRef;
-
-    /**
-     * Array with values for blend equation separate (blend equation RGB, blend equation Alpha, src RGB, dst RGB, src
-     * Alpha, dst Alpha
-     */
-    transient protected final int[] blendModes = new int[] { GLES20.GL_FUNC_ADD, GLES20.GL_FUNC_ADD,
-            GLES20.GL_SRC_ALPHA,
-            GLES20.GL_ONE_MINUS_SRC_ALPHA, GLES20.GL_SRC_ALPHA, GLES20.GL_DST_ALPHA };
 
     /**
      * Uniforms, used when rendering this Mesh depending on what ShaderProgram is used.
@@ -144,40 +106,20 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         textureRef = source.textureRef;
     }
 
-
-    /**
-     * Creates a new Mesh that can be rendered using drawArrays()
-     * 
-     * @param vertices One or more buffers with vertice/attribute data
-     * @param material The material to use when rendering this mesh.
-     * @param texture Texture to set or null
-     * @throws IllegalArgumentException If vertices or material is null.
-     */
-    public Mesh(VertexBuffer[] vertices, Material material, Texture2D texture) {
-        setupVertices(vertices, material, texture);
-    }
-
     /**
      * Creates the Mesh to be rendered, after this method returns it shall be possible to render the mesh.
-     * The material will be created with the specified program.
+     * The program will be set to the material in this mesh.
      * 
      * @param program
      * @param texture The texture to use for sprites, must be {@link TiledTexture2D} otherwise tiling will not work.
+     * @param material
      * @return
      */
-    public void createMesh(ShaderProgram program, Texture2D texture) {
+    public void createMesh(ShaderProgram program, Texture2D texture, Material material) {
         setTexture(texture, Texture2D.TEXTURE_0);
+        this.material = new Material(material);
         mapper = new PropertyMapper(program);
-        setMaterial(new Material(program));
-    }
-
-    /**
-     * Sets the material in this mesh.
-     * 
-     * @param material
-     */
-    private void setMaterial(Material material) {
-        this.material = material;
+        this.material.setProgram(program);
     }
 
     /**
@@ -318,33 +260,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         this.uniforms = uniforms;
     }
 
-    /**
-     * Returns the separate blend modes:
-     * blend equation RGB, blend equation Alpha, source RGB, destination RGB, source Alpha, destination Alpha
-     * Use BLEND_EQUATION_RGB, BLEND_EQUATION_ALPHA, SOURCE_RGB, SOURCE_ALPHA, DESTINATION_RGB, DESTINATION_ALPHA to
-     * access the values.
-     * 
-     * @return Array with values for separate alpha blend equation and function
-     */
-    public int[] getBlendModes() {
-        return blendModes;
-    }
-
-    /**
-     * Sets the separate blend equation/function for this mesh.
-     * 
-     * @param gles
-     */
-    public void setBlendModeSeparate(GLES20Wrapper gles) {
-        if (blendModes[BLEND_EQUATION_RGB] == NO_ALPHA) {
-            gles.glDisable(GLES20.GL_BLEND);
-        } else {
-            gles.glEnable(GLES20.GL_BLEND);
-            gles.glBlendEquationSeparate(blendModes[BLEND_EQUATION_RGB], blendModes[BLEND_EQUATION_ALPHA]);
-            gles.glBlendFuncSeparate(blendModes[SOURCE_RGB], blendModes[DESTINATION_RGB], blendModes[SOURCE_ALPHA],
-                    blendModes[SOURCE_RGB]);
-        }
-    }
 
     /**
      * Sets the attribute updater for this mesh, use this for meshes where the attribute data must be updated each

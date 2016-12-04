@@ -317,7 +317,7 @@ class BaseRenderer implements NucleusRenderer {
             gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
             texture.uploadTexParameters(gles);
         }
-        mesh.setBlendModeSeparate(gles);
+        material.setBlendModeSeparate(gles);
         program.bindAttributes(gles, mesh);
         program.bindUniforms(gles, mvMatrix, projectionMatrix, mesh);
 
