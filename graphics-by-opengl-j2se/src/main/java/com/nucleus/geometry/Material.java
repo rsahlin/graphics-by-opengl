@@ -14,6 +14,7 @@ import com.nucleus.shader.ShaderProgram;
 public class Material {
 
     public enum BlendEquation {
+        DISABLED(-1),
         GL_FUNC_ADD(GLES20.GL_FUNC_ADD),
         GL_FUNC_SUBTRACT(GLES20.GL_FUNC_SUBTRACT),
         GL_FUNC_REVERSE_SUBTRACT(GLES20.GL_FUNC_REVERSE_SUBTRACT);
@@ -181,7 +182,7 @@ public class Material {
      * @param gles
      */
     public void setBlendModeSeparate(GLES20Wrapper gles) {
-        if (blendEquation[0] == null) {
+        if (blendEquation == null || blendEquation[0] == BlendEquation.DISABLED) {
             gles.glDisable(GLES20.GL_BLEND);
         } else {
             gles.glEnable(GLES20.GL_BLEND);
