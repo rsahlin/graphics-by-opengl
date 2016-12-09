@@ -74,6 +74,7 @@ public class SwitchNode extends Node {
      * Next call to {@link #getChildren()} will return a list containing the node with the matching id.
      * 
      * @param activeId Id of the child node to set as active, all other children will be inactive
+     * @throws IllegalArgumentException If activeId is not a childnode
      */
     protected void setActive(String activeId) {
         active = activeId;
@@ -85,6 +86,8 @@ public class SwitchNode extends Node {
         Node active = getChildById(activeId);
         if (active != null) {
             activeChildren.add(active);
+        } else {
+            throw new IllegalArgumentException("Could not find child with id: " + activeId);
         }
     }
 

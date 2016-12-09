@@ -2,6 +2,7 @@ package com.nucleus.android;
 
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
+import com.nucleus.SimpleLogger;
 import com.nucleus.matrix.android.AndroidMatrixEngine;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.Renderers;
@@ -34,21 +35,19 @@ public class NucleusActivity extends Activity implements DialogInterface.OnClick
     private static Throwable throwable;
     private static NucleusActivity activity;
 
-    /**
-     * graphics-by-opengl specific objects
-     */
     protected CoreApp coreApp;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        SimpleLogger.d(getClass(), "onCreate()");
         activity = this;
-        try {
-            super.onCreate(savedInstanceState);
-            createCore(Renderers.GLES20);
+        super.onCreate(savedInstanceState);
+        createCore(Renderers.GLES20);
+    }
 
-        } catch (Throwable t) {
-            throwable = t;
-        }
+    @Override
+    public void onResume() {
+
     }
 
     /**

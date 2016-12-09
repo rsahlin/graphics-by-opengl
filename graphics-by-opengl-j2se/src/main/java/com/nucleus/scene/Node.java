@@ -172,8 +172,7 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Sets the attribute producer, this is for instance used by sprite nodes where the sprites have data that needs
-     * to be updated to the mesh attributes.
+     * Sets the attribute producer, this is used by nodes where the attribute data needs to be updated before rendering.
      * The producer will be called by the renderer before the mesh is rendered, but after the completion of the
      * previous frame.
      * 

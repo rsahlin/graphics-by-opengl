@@ -3,17 +3,31 @@ package com.nucleus;
 import com.nucleus.actor.J2SELogicProcessor;
 import com.nucleus.actor.LogicProcessor;
 import com.nucleus.actor.LogicProcessorRunnable;
+import com.nucleus.camera.ViewFrustum;
+import com.nucleus.convolution.ConvolutionProgram;
+import com.nucleus.geometry.Mesh;
+import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.PointerInputProcessor;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
+import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.renderer.RenderSettings;
 import com.nucleus.renderer.Window;
+import com.nucleus.resource.ResourceBias.RESOLUTION;
+import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.NodeController;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewController;
+import com.nucleus.scene.ViewNode;
+import com.nucleus.texturing.TexParameter;
+import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.TextureFactory;
+import com.nucleus.texturing.TextureParameter;
 
 /**
  * Base application, use this to get the objects needed to start and run an application.
@@ -142,8 +156,8 @@ public class CoreApp {
     public void contextCreated(int width, int height) {
         hasCalledCreated = true;
         contextCreated = true;
-        renderer.resizeWindow(0, 0, width, height);
     }
+
 
     /**
      * Main loop, call this method to produce one frame.
@@ -230,4 +244,31 @@ public class CoreApp {
         inputProcessor.removeMMIListener(root.getScene());
     }
 
+    public void displaySplash() throws GLException {
+        RenderSettings rs = renderer.getRenderSettings();
+        rs.setCullFace(GLES20.GL_NONE);
+        rs.setDepthFunc(GLES20.GL_NONE);
+        Mesh mesh = new Mesh();
+        ConvolutionProgram c = new ConvolutionProgram();
+        c.createProgram(renderer.getGLES());
+        ViewNode node = new ViewNode();
+        node.setLayer(Layer.SCENE);
+        ViewFrustum vf = new ViewFrustum();
+        vf.setOrthoProjection(-0.5f, 0.5f, 0.5f, -0.5f, 0, 10);
+        node.setViewFrustum(vf);
+        TextureParameter texParam = new TextureParameter();
+        texParam.setValues(new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST, TexParameter.CLAMP,
+                TexParameter.CLAMP });
+        Texture2D tex = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(),
+                "texture", new ExternalReference("assets/splash.png"), RESOLUTION.HD, texParam, 1);
+        float[] kernel = new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 };
+        // Convolution.normalize(kernel, kernel, false, 1);
+        c.buildMesh(mesh, tex, 0.2f, 0.2f, 0, kernel);
+        node.addMesh(mesh);
+        BaseRootNode root = new BaseRootNode();
+        root.setScene(node);
+        renderer.beginFrame();
+        renderer.render(root);
+        renderer.endFrame();
+    }
 }

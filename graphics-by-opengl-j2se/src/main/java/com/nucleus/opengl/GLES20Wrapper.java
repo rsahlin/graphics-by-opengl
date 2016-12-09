@@ -537,4 +537,8 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      */
     public abstract void glBlendFuncSeparate(int srcRGB, int dstRGB, int srcAlpha, int dstAlpha);
 
+    /**
+     * Abstraction for glFinish()
+     */
+    public abstract void glFinish();
 }

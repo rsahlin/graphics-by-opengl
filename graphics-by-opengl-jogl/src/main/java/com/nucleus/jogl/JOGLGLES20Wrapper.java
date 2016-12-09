@@ -403,4 +403,9 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
         gles.glDepthRangef(nearVal, farVal);
     }
 
+    @Override
+    public void glFinish() {
+        gles.glFinish();
+    }
+
 }

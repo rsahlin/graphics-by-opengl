@@ -7,7 +7,6 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.RendererFactory;
-import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.texturing.J2SEImageFactory;
 
 /**
@@ -28,12 +27,20 @@ public class NucleusApplication implements CoreAppStarter, RenderContextListener
     protected int windowWidth = 480;
     protected int windowHeight = 800;
 
+    public NucleusApplication(String[] args, Renderers version) {
+        setProperties(args);
+        createCore(version);
+    }
+
     /**
      * Reads arguments from the VM and sets
      * 
      * @param args
      */
     protected void setProperties(String[] args) {
+        if (args == null) {
+            return;
+        }
         for (String str : args) {
 
             if (str.toUpperCase().startsWith(WINDOW_WIDTH_KEY)) {
@@ -47,8 +54,7 @@ public class NucleusApplication implements CoreAppStarter, RenderContextListener
         }
     }
 
-    @Override
-    public void createCore(Renderers version) {
+    private void createGLES20Window() {
         window = new JOGLGLES20Window(windowWidth, windowHeight, this, swapInterval);
         window.setGLEVentListener();
         window.setWindowListener(this);
@@ -57,12 +63,24 @@ public class NucleusApplication implements CoreAppStarter, RenderContextListener
     }
 
     @Override
+    public void createCore(Renderers version) {
+        switch (version) {
+        case GLES20:
+            createGLES20Window();
+            break;
+        default:
+            throw new IllegalArgumentException("Not implemented for version " + version);
+        }
+    }
+
+    @Override
     public void contextCreated(int width, int height) {
-        coreApp = new CoreApp(RendererFactory.getRenderer(window.getGLESWrapper(), new J2SEImageFactory(),
-                new J2SEMatrixEngine()));
-        coreApp.getRenderer().init(new SurfaceConfiguration());
-        coreApp.contextCreated(window.getWidth(), window.getHeight());
-        window.setCoreApp(coreApp);
+        if (coreApp == null) {
+            coreApp = new CoreApp(RendererFactory.getRenderer(window.getGLESWrapper(), new J2SEImageFactory(),
+                    new J2SEMatrixEngine()));
+            window.setCoreApp(coreApp);
+        }
+        coreApp.contextCreated(width, height);
     }
 
     /**

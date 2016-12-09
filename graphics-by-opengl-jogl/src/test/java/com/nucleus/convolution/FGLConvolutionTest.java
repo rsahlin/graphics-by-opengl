@@ -43,6 +43,10 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
     int counter = 0;
     long start = 0;
 
+    public FGLConvolutionTest() {
+        super(new String[] {}, Renderers.GLES20);
+    }
+
     public static void main(String[] args) {
         FGLConvolutionTest main = new FGLConvolutionTest();
         main.createCore(Renderers.GLES20);

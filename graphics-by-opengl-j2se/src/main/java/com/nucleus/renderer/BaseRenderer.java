@@ -136,14 +136,16 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void init(SurfaceConfiguration surfaceConfig) {
+    public void init(SurfaceConfiguration surfaceConfig, int width, int height) {
         if (initialized) {
             return;
         }
+        resizeWindow(0, 0, width, height);
         initialized = true;
         this.surfaceConfig = surfaceConfig;
         rendererInfo = new RendererInfo(gles);
     }
+
 
     @Override
     public float beginFrame() {

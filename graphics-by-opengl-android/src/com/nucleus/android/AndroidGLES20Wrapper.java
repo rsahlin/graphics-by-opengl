@@ -298,4 +298,10 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     public void glDepthRangef(float nearVal, float farVal) {
         android.opengl.GLES20.glDepthRangef(nearVal, farVal);
     }
+
+    @Override
+    public void glFinish() {
+        android.opengl.GLES20.glFinish();
+    }
 }
+

@@ -138,10 +138,14 @@ public interface NucleusRenderer {
     /**
      * Call this first time when the context is created, before calling GLContextCreated()
      * Initialize parameters that do not need to be updated when context is re-created.
+     * Will set the window size to 0,0,width,height
+     * If this method is called more than once nothing is done.
      * 
      * @param surfaceConfig The configuration of the surface in use (from EGL)
+     * @param width Width of window surface
+     * @param height Height of window surface
      */
-    public void init(SurfaceConfiguration surfaceConfig);
+    public void init(SurfaceConfiguration surfaceConfig, int width, int height);
 
     /**
      * Returns the surface configuration

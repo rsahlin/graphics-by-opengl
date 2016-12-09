@@ -57,7 +57,6 @@ public interface AttributeUpdater {
      */
     public class PropertyMapper {
         public final int TRANSLATE_INDEX;
-        public final int UV_INDEX;
         public final int ROTATE_INDEX;
         public final int SCALE_INDEX;
         public final int FRAME_INDEX;
@@ -73,7 +72,6 @@ public interface AttributeUpdater {
          */
         public PropertyMapper(ShaderProgram program) {
             TRANSLATE_INDEX = program.getPropertyOffset(Property.TRANSLATE);
-            UV_INDEX = program.getPropertyOffset(Property.UV);
             ROTATE_INDEX = program.getPropertyOffset(Property.ROTATE);
             SCALE_INDEX = program.getPropertyOffset(Property.SCALE);
             FRAME_INDEX = program.getPropertyOffset(Property.FRAME);
@@ -82,7 +80,6 @@ public interface AttributeUpdater {
             SPECULAR_POWER_INDEX = program.getPropertyOffset(Property.SPECULAR_POWER);
             ATTRIBUTES_PER_VERTEX = program.getAttributesPerVertex();
         }
-
     }
 
     /**

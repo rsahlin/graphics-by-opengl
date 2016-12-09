@@ -18,7 +18,9 @@ import com.nucleus.CoreApp;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.renderer.SurfaceConfiguration;
 
 /**
  * 
@@ -169,8 +171,17 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, c
 
     @Override
     public void init(GLAutoDrawable drawable) {
-        contextCreated = true;
         listener.contextCreated(getWidth(), getHeight());
+        contextCreated = true;
+        if (!coreApp.getRenderer().isInitialized()) {
+            coreApp.getRenderer().init(new SurfaceConfiguration(), getWidth(), getHeight());
+            try {
+                coreApp.displaySplash();
+                drawable.swapBuffers();
+            } catch (GLException e) {
+                throw new RuntimeException(e);
+            }
+        }
         drawable.getGL().setSwapInterval(swapInterval);
     }
 

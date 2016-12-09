@@ -173,7 +173,7 @@ public class MeshBuilder {
     /**
      * Builds a mesh with a specified number of indexed quads of GL_FLOAT type, the mesh must have an elementbuffer to
      * index the vertices. The index buffer will be built with indexes, this mesh shall be drawn using indexed mode.
-     * Vertex buffer shall have storage for XYZ.
+     * Vertex buffer shall have storage for XYZ and texture UV if used.
      * 
      * @param mesh The mesh to build the buffers in, this is the mesh that can be rendered.
      * @param program The program to use when rendering the mesh, it is stored in the material
@@ -185,30 +185,35 @@ public class MeshBuilder {
             float[] quadPositions) {
         // // Create the indexes
         ElementBuilder.buildQuadBuffer(mesh.indices, quadCount, 0);
+        buildQuads(mesh, program, quadCount, 0, quadPositions);
+    }
+
+    /**
+     * Builds the position data for one or more quads at the specified index in the mesh.
+     * The indices must already be created
+     * Vertex buffer shall have storage for XYZ and texture UV if used.
+     * 
+     * @param mesh The mesh to build the position data in
+     * @param program The program to use when rendering the mesh, it is stored in the material
+     * @param quadCount Number of quads build positions for.
+     * @param index Index to the quad to build, 0 means the first, 1 the second etc.
+     * @param quadPositions Array with x,y,z and optional uv - this is set for each tile. Must contain data for 4
+     * vertices.
+     */
+    public static void buildQuads(Mesh mesh, ShaderProgram program, int quadCount, int index,
+            float[] quadPositions) {
         VertexBuffer buffer = mesh.attributes[BufferIndex.VERTICES.index];
-        float[] vertices = new float[buffer.getComponentCount() * buffer.getVerticeCount()];
+        float[] vertices = new float[buffer.getComponentCount() * quadCount * 4];
         int destPos = 0;
         for (int i = 0; i < quadCount; i++) {
             System.arraycopy(quadPositions, 0, vertices, destPos, quadPositions.length);
             destPos += quadPositions.length;
         }
-        mesh.attributes[BufferIndex.VERTICES.index].setComponents(vertices,
-                quadPositions.length / INDEXED_QUAD_VERTICES, 0, 0,
+        VertexBuffer vb = mesh.attributes[BufferIndex.VERTICES.index];
+        vb.setComponents(vertices,
+                quadPositions.length / INDEXED_QUAD_VERTICES, 0, index * vb.getComponentCount() * INDEXED_QUAD_VERTICES,
                 quadCount * INDEXED_QUAD_VERTICES);
+        vb.setDirty(true);
     }
-
-    /**
-     * Builds the position and UV for one Quad, before calling this method the indexbuffer must be built if needed.
-     * 
-     * @param mesh
-     * @param program
-     * @param index
-     */
-    public static void buildQuad(Mesh mesh, ShaderProgram program, int index, float[] quadPositions) {
-        mesh.attributes[BufferIndex.VERTICES.index].setPosition(quadPositions, 0, index * INDEXED_QUAD_VERTICES,
-                INDEXED_QUAD_VERTICES);
-
-    }
-
 
 }
