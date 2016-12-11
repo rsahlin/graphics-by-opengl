@@ -3,7 +3,10 @@ package com.nucleus.renderer;
 import java.nio.Buffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.camera.ViewPort;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
@@ -80,8 +83,8 @@ class BaseRenderer implements NucleusRenderer {
     protected RenderSettings renderSettings = new RenderSettings();
     protected ImageFactory imageFactory;
     protected MatrixEngine matrixEngine;
-    private ArrayList<RenderContextListener> contextListeners = new ArrayList<RenderContextListener>();
-    private ArrayList<FrameListener> frameListeners = new ArrayList<BaseRenderer.FrameListener>();
+    private Set<RenderContextListener> contextListeners = new HashSet<RenderContextListener>();
+    private Set<FrameListener> frameListeners = new HashSet<BaseRenderer.FrameListener>();
 
     private FrameSampler timeKeeper = new FrameSampler(30);
     private float deltaTime;
@@ -123,7 +126,8 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void GLContextCreated(int width, int height) {
+    public void contextCreated(int width, int height) {
+        SimpleLogger.d(getClass(), "contextCreated()");
         if (width <= 0 || height <= 0) {
             throw new IllegalArgumentException(RenderContextListener.INVALID_CONTEXT_DIMENSION);
         }

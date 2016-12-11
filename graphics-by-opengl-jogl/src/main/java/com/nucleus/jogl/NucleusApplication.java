@@ -2,6 +2,8 @@ package com.nucleus.jogl;
 
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
+import com.nucleus.J2SELogger;
+import com.nucleus.SimpleLogger;
 import com.nucleus.matrix.j2se.J2SEMatrixEngine;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
@@ -28,6 +30,7 @@ public class NucleusApplication implements CoreAppStarter, RenderContextListener
     protected int windowHeight = 800;
 
     public NucleusApplication(String[] args, Renderers version) {
+        SimpleLogger.setLogger(new J2SELogger());
         setProperties(args);
         createCore(version);
     }

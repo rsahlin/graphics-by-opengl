@@ -61,8 +61,8 @@ public interface NucleusRenderer {
 
         /**
          * Called when the rendering context is created and ready to be used. Can also be called if
-         * context is lost and re-created.
-         * When this method is called clients must assume that all objects are lost (textures/programs) and
+         * EGLcontext is lost and re-created.
+         * When this method is called clients must assume that EGL objects are lost (textures) and
          * recreate them.
          * 
          * @param width Width of display in pixels.
@@ -115,15 +115,15 @@ public interface NucleusRenderer {
     }
 
     /**
-     * Called when the GL context is created for a render surface, GL is now active and can be used to create objects,
+     * Called when the context is created for a render surface, EGL/GL is now active and can be used to create objects,
      * textures and buffers.
-     * If this method is called again - it means that the GL context has been lost and is re-created, all textures,
-     * objects and buffers must be recreated.
+     * If this method is called again - it means that the EGL context has been lost and is re-created, all EGL resources
+     * must be recreated.
      * 
      * @param width Width of display in pixels
      * @param height Height of display in pixels
      */
-    public void GLContextCreated(int width, int height);
+    public void contextCreated(int width, int height);
 
     /**
      * Called when the system has resized the window, update viewport and set the new window size to the {@link Window}

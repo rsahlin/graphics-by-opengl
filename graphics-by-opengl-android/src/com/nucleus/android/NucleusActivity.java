@@ -39,6 +39,7 @@ public class NucleusActivity extends Activity implements DialogInterface.OnClick
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        SimpleLogger.setLogger(new AndroidLogger());
         SimpleLogger.d(getClass(), "onCreate()");
         activity = this;
         super.onCreate(savedInstanceState);
@@ -47,7 +48,8 @@ public class NucleusActivity extends Activity implements DialogInterface.OnClick
 
     @Override
     public void onResume() {
-
+        SimpleLogger.d(getClass(), "onResume()");
+        super.onResume();
     }
 
     /**
@@ -107,11 +109,13 @@ public class NucleusActivity extends Activity implements DialogInterface.OnClick
 
     @Override
     public void createCore(Renderers version) {
-        GLES20Wrapper gles = new AndroidGLES20Wrapper();
-        coreApp = new CoreApp(RendererFactory.getRenderer(gles, new AndroidImageFactory(),
-                new AndroidMatrixEngine()));
-        setup(GLSurfaceView.RENDERMODE_CONTINUOUSLY, LayoutParams.FLAG_FULLSCREEN,
-                Window.FEATURE_NO_TITLE);
+        if (coreApp == null) {
+            GLES20Wrapper gles = new AndroidGLES20Wrapper();
+            coreApp = new CoreApp(RendererFactory.getRenderer(gles, new AndroidImageFactory(),
+                    new AndroidMatrixEngine()));
+            setup(GLSurfaceView.RENDERMODE_CONTINUOUSLY, LayoutParams.FLAG_FULLSCREEN,
+                    Window.FEATURE_NO_TITLE);
+        }
     }
 
 }

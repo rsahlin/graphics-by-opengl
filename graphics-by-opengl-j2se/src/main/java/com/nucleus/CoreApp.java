@@ -158,6 +158,18 @@ public class CoreApp {
         contextCreated = true;
     }
 
+    /**
+     * Called when the rendering surface is destroyed and the EGL context is lost.
+     * This just means that the render surface and EGL context is not available.
+     * The app may just have been switched to background.
+     * This may be followed by a call to contextCreated() in which case only textures needs to be
+     * re-created.
+     */
+    public void surfaceLost() {
+        SimpleLogger.d(getClass(), "surfaceLost()");
+        // Will trigger a call to contextCreated next frame.
+        contextCreated = true;
+    }
 
     /**
      * Main loop, call this method to produce one frame.
@@ -168,7 +180,7 @@ public class CoreApp {
         if (contextCreated) {
             contextCreated = false;
             Window w = Window.getInstance();
-            renderer.GLContextCreated(w.getWidth(), w.getHeight());
+            renderer.contextCreated(w.getWidth(), w.getHeight());
         }
         if (!hasCalledCreated) {
             throw new IllegalArgumentException(NOT_CALLED_CREATECONTEXT);

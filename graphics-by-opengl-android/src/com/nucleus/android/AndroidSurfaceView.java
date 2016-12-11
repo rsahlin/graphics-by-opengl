@@ -37,6 +37,7 @@ public class AndroidSurfaceView extends GLSurfaceView
     private EGLDisplay display;
     private EGLConfig eglConfig;
     private EGLSurface eglSurface;
+    private boolean contextCreated;
 
     PointerInputProcessor inputProcessor;
     /**
@@ -131,7 +132,6 @@ public class AndroidSurfaceView extends GLSurfaceView
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         SimpleLogger.d(getClass(), "surfaceChanged() " + width + ", " + height);
-        coreApp.contextCreated(width, height);
     }
 
     private void handleThrowable(Throwable t) {
@@ -152,11 +152,10 @@ public class AndroidSurfaceView extends GLSurfaceView
         }
     }
 
-    @Override
-    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        SimpleLogger.d(getClass(), "surfaceCreated() " + getWidth() + ", " + getHeight());
+    private void contextCreated() {
         try {
             if (!coreApp.getRenderer().isInitialized()) {
+                SimpleLogger.d(getClass(), "Calling renderer.init()");
                 coreApp.getRenderer().init(surfaceConfig, getWidth(), getHeight());
                 try {
                     coreApp.displaySplash();
@@ -166,15 +165,26 @@ public class AndroidSurfaceView extends GLSurfaceView
                 egl.eglSwapBuffers(display, eglSurface);
                 checkEGLError("eglSwapBuffers()");
             }
-            if (surfaceConfig == null) {
-                surfaceConfig = new SurfaceConfiguration();
-                EGLUtils.readSurfaceConfig(egl, display, eglConfig, surfaceConfig);
-                SimpleLogger.d(getClass(),
-                        "onSurfaceCreated(EGLConfig) has: " + surfaceConfig.toString());
+            if (!contextCreated) {
+                contextCreated = true;
+                SimpleLogger.d(getClass(), "Calling CoreApp.contextCreated(" + getWidth() + ", " + getHeight() + ")");
+                coreApp.contextCreated(getWidth(), getHeight());
             }
         } catch (Throwable t) {
             handleThrowable(t);
         }
+    }
+
+    @Override
+    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        SimpleLogger.d(getClass(), "surfaceCreated() " + getWidth() + ", " + getHeight());
+        if (surfaceConfig == null) {
+            surfaceConfig = new SurfaceConfiguration();
+            EGLUtils.readSurfaceConfig(egl, display, eglConfig, surfaceConfig);
+            SimpleLogger.d(getClass(),
+                    "onSurfaceCreated(EGLConfig) has: " + surfaceConfig.toString());
+        }
+        contextCreated();
     }
 
     @Override
@@ -196,9 +206,13 @@ public class AndroidSurfaceView extends GLSurfaceView
     @Override
     public void destroySurface(EGL10 egl, EGLDisplay display, EGLSurface surface) {
         SimpleLogger.d(getClass(), "destroySurface()");
+        contextCreated = false;
         if (eglSurface != null && display != null) {
             egl.eglDestroySurface(display, eglSurface);
             eglSurface = null;
+        }
+        if (coreApp != null) {
+            coreApp.surfaceLost();
         }
     }
 }
