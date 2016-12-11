@@ -1,8 +1,9 @@
 package com.nucleus.mmi;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.Vertex2D;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.vecmath.Vector2D;
@@ -30,7 +31,7 @@ public class PointerInputProcessor implements PointerListener {
     private final float[] transform = new float[] { 1, 1, 0, 0 };
     private final float[] scaledPosition = new float[2];
 
-    List<MMIEventListener> mmiListeners = new ArrayList<MMIEventListener>();
+    Set<MMIEventListener> mmiListeners = new HashSet<MMIEventListener>();
 
     private int pointerCount = 0;
     /**
@@ -72,7 +73,7 @@ public class PointerInputProcessor implements PointerListener {
             if (pointerCount < 0) {
                 System.out.println("PointerInputProcessor: ERROR: pointerCount= " + pointerCount);
             }
-            System.out.println("PointerInputProcessor: pointerCount= " + pointerCount);
+            SimpleLogger.d(getClass(), "pointerCount= " + pointerCount);
             addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.INACTIVE, pointer,
                     pointerMotionData[pointer]), pointerData);
             break;
@@ -169,6 +170,7 @@ public class PointerInputProcessor implements PointerListener {
      */
     public void addMMIListener(MMIEventListener listener) {
         mmiListeners.add(listener);
+        SimpleLogger.d(getClass(), "Added listener, new total: " + mmiListeners.size());
     }
 
     /**
@@ -178,6 +180,7 @@ public class PointerInputProcessor implements PointerListener {
      */
     public void removeMMIListener(MMIEventListener listener) {
         mmiListeners.remove(listener);
+        SimpleLogger.d(getClass(), "Removed listener, new total: " + mmiListeners.size());
     }
 
     /**
