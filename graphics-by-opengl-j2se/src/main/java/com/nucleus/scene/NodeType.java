@@ -1,6 +1,5 @@
 package com.nucleus.scene;
 
-import com.nucleus.actor.ComponentNode;
 import com.nucleus.common.Key;
 
 /**
@@ -13,8 +12,7 @@ public enum NodeType implements Key {
 
     node(Node.class),
     viewnode(ViewNode.class),
-    switchnode(SwitchNode.class),
-    componentnode(ComponentNode.class);
+    switchnode(SwitchNode.class);
 
     private final Class<?> theClass;
 
