@@ -18,9 +18,8 @@ import com.nucleus.CoreApp;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.opengl.GLESWrapper;
-import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
-import com.nucleus.renderer.SurfaceConfiguration;
+import com.nucleus.renderer.Window;
 
 /**
  * 
@@ -46,13 +45,16 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, c
     private int swapInterval = 1;
     protected volatile boolean contextCreated = false;
     protected RenderContextListener listener;
+    /**
+     * Use an interface instead of CoreApp
+     */
+    protected CoreApp coreApp;
     protected GLCanvas canvas;
     protected Frame frame;
     protected GLWindow glWindow;
     WindowListener windowListener;
 
     protected GLESWrapper glesWrapper;
-    protected CoreApp coreApp;
 
     public JOGLGLEWindow(int width, int height, GLProfile glProfile, RenderContextListener listener) {
         this.listener = listener;
@@ -172,17 +174,10 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, c
     @Override
     public void init(GLAutoDrawable drawable) {
         listener.contextCreated(getWidth(), getHeight());
-        contextCreated = true;
-        if (!coreApp.getRenderer().isInitialized()) {
-            coreApp.getRenderer().init(new SurfaceConfiguration(), getWidth(), getHeight());
-            try {
-                coreApp.displaySplash();
-                drawable.swapBuffers();
-            } catch (GLException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        drawable.swapBuffers();
         drawable.getGL().setSwapInterval(swapInterval);
+        // Call contextCreated since the renderer is already initialized and has a created EGL context.
+        coreApp.contextCreated(Window.getInstance().getWidth(), Window.getInstance().getHeight());
     }
 
     @Override

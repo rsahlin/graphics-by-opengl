@@ -15,9 +15,8 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.renderer.NucleusRenderer.Layer;
-import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.RenderSettings;
-import com.nucleus.renderer.Window;
+import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.NodeController;
@@ -74,7 +73,7 @@ public class CoreApp {
          * Initializes the client application with the {@link CoreApp} Implementations shall do necessary init in this
          * method.
          * 
-         * @param coreApp
+         * @param coreApp CoreApp that is fully initialized and context has already been created
          * @throws IllegalArgumentException If coreApp is null
          */
         public void init(CoreApp coreApp);
@@ -146,8 +145,8 @@ public class CoreApp {
     }
 
     /**
-     * Call this to signal that GL context was created, next time {@link #drawFrame()} is called then the registered
-     * {@link RenderContextListener} are called.
+     * Call this to signal that EGL context was created, if this is the first time context is created then display the
+     * splash screen.
      * Must be called before {@link #drawFrame()} is called.
      * 
      * @param width Width of gl surface
@@ -155,7 +154,16 @@ public class CoreApp {
      */
     public void contextCreated(int width, int height) {
         hasCalledCreated = true;
-        contextCreated = true;
+        if (!getRenderer().isInitialized()) {
+            getRenderer().init(new SurfaceConfiguration(), width, height);
+            try {
+                // The caller shall make sure that buffer are swapped so that the result is visible
+                displaySplash();
+            } catch (GLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        renderer.contextCreated(width, height);
     }
 
     /**
@@ -177,11 +185,6 @@ public class CoreApp {
      * The normal case is to call it from window/surface that has onDraw/display callbacks.
      */
     public void drawFrame() {
-        if (contextCreated) {
-            contextCreated = false;
-            Window w = Window.getInstance();
-            renderer.contextCreated(w.getWidth(), w.getHeight());
-        }
         if (!hasCalledCreated) {
             throw new IllegalArgumentException(NOT_CALLED_CREATECONTEXT);
         }

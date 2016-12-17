@@ -4,8 +4,8 @@ import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.SimpleLogger;
 import com.nucleus.matrix.android.AndroidMatrixEngine;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.Renderers;
+import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.RendererFactory;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.texture.android.AndroidImageFactory;
@@ -26,12 +26,13 @@ import android.view.WindowManager.LayoutParams;
  * @author Richard Sahlin
  *
  */
-public class NucleusActivity extends Activity implements DialogInterface.OnClickListener, CoreAppStarter {
+public class NucleusActivity extends Activity
+        implements DialogInterface.OnClickListener, CoreAppStarter, RenderContextListener {
 
     /**
      * Android specific objects
      */
-    protected GLSurfaceView mGLView;
+    protected AndroidSurfaceView mGLView;
     private static Throwable throwable;
     private static NucleusActivity activity;
 
@@ -64,7 +65,7 @@ public class NucleusActivity extends Activity implements DialogInterface.OnClick
         SurfaceConfiguration surfaceConfig = new SurfaceConfiguration();
         // TODO This shall be set on a per project basis
         surfaceConfig.setSamples(16);
-        mGLView = new AndroidSurfaceView(coreApp, surfaceConfig, getApplicationContext(), coreApp.getInputProcessor());
+        mGLView = new AndroidSurfaceView(surfaceConfig, getApplicationContext(), this);
         mGLView.setRenderMode(rendermode);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -109,13 +110,17 @@ public class NucleusActivity extends Activity implements DialogInterface.OnClick
 
     @Override
     public void createCore(Renderers version) {
-        if (coreApp == null) {
-            GLES20Wrapper gles = new AndroidGLES20Wrapper();
-            coreApp = new CoreApp(RendererFactory.getRenderer(gles, new AndroidImageFactory(),
-                    new AndroidMatrixEngine()));
-            setup(GLSurfaceView.RENDERMODE_CONTINUOUSLY, LayoutParams.FLAG_FULLSCREEN,
-                    Window.FEATURE_NO_TITLE);
-        }
+        setup(GLSurfaceView.RENDERMODE_CONTINUOUSLY, LayoutParams.FLAG_FULLSCREEN,
+                Window.FEATURE_NO_TITLE);
     }
 
+    @Override
+    public void contextCreated(int width, int height) {
+        if (coreApp == null) {
+            coreApp = new CoreApp(RendererFactory.getRenderer(new AndroidGLES20Wrapper(), new AndroidImageFactory(),
+                    new AndroidMatrixEngine()));
+            mGLView.setCoreApp(coreApp);
+        }
+        coreApp.contextCreated(width, height);
+    }
 }

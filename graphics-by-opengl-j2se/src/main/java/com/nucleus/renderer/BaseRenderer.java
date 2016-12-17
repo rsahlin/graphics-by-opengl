@@ -131,7 +131,7 @@ class BaseRenderer implements NucleusRenderer {
         if (width <= 0 || height <= 0) {
             throw new IllegalArgumentException(RenderContextListener.INVALID_CONTEXT_DIMENSION);
         }
-        window.setSize(width, height);
+        resizeWindow(0, 0, width, height);
         renderSettings.setViewPort(0, 0, width, height);
 
         for (RenderContextListener listener : contextListeners) {
