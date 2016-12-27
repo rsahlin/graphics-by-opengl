@@ -1,5 +1,6 @@
 package com.nucleus.texturing;
 
+import java.awt.image.BufferedImage;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
@@ -26,23 +27,23 @@ public class Image extends BufferObject {
          */
         TYPE_4BYTE_ABGR(06, 4),
         /**
-         * Image format RGBA 4 bits per pixel and component, ie 16 bit format.
+         * Image type RGBA 4 bits per pixel and component, ie 16 bit format.
          */
         RGBA4(0x8056, 2),
         /**
-         * Image format RGB 555 + 1 bit alpha, 16 bit format.
+         * Image type RGB 555 + 1 bit alpha, 16 bit format.
          */
         RGB5_A1(0x8057, 2),
         /**
-         * Image format RGB 565, 16 bit format.
+         * Image type RGB 565, 16 bit format.
          */
         RGB565(0x8D62, 2),
         /**
-         * Image format RGB 888, 8 bits per component, 24 bit format.
+         * Image type RGB 888, 8 bits per component, 24 bit format.
          */
         RGB(0x1907, 3),
         /**
-         * Image format RGBA 8888, 8 bits per component, 32 bit format.
+         * Image type RGBA 8888, 8 bits per component, 32 bit format.
          */
         RGBA(0x1908, 4),
         /**
@@ -58,32 +59,23 @@ public class Image extends BufferObject {
          */
         ALPHA(0x1906, 1);
 
-        public final int format;
+        public final int type;
         public final int size;
 
-        ImageFormat(int format, int size) {
-            this.format = format;
+        ImageFormat(int type, int size) {
+            this.type = type;
             this.size = size;
-        }
-
-        /**
-         * Returns the int format.
-         * 
-         * @return
-         */
-        public int getFormat() {
-            return format;
         }
 
         /**
          * Returns the enum for the specified int value, if found
          * 
-         * @param format
+         * @param type {@link BufferedImage} image type
          * @return The image format enum, or null if not found.
          */
-        public static ImageFormat getImageFormat(int format) {
+        public static ImageFormat getImageFormat(int type) {
             for (ImageFormat imgFormat : ImageFormat.values()) {
-                if (imgFormat.format == format) {
+                if (imgFormat.type == type) {
                     return imgFormat;
                 }
             }
