@@ -87,8 +87,8 @@ public class TextureFactory {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(Texture2D.class, new TextureDeserializer());
         Gson gson = builder.create();
-        InputStreamReader reader = new InputStreamReader(ref.getAsStream());
         try {
+            InputStreamReader reader = new InputStreamReader(ref.getAsStream());
             return gson.fromJson(reader, Texture2D.class);
         } catch (Exception e) {
             throw new RuntimeException("Exception reading " + ref.getSource(), e);
