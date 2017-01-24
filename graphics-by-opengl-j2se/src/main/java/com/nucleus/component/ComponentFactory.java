@@ -1,59 +1,39 @@
 package com.nucleus.component;
 
-import com.nucleus.common.TypeResolver;
+import com.nucleus.common.Type;
 
 /**
  * Creates component implementations - used when deserializing from JSON
+ * Singleton class that is fetched using {@link #getInstance()}
  * 
  * @author Richard Sahlin
  *
  */
 public class ComponentFactory {
 
-    public enum Type {
-        component(Component.class);
-        private final Class<?> theClass;
-
-        private Type(Class<?> theClass) {
-            this.theClass = theClass;
-        }
-
-        /**
-         * Returns the class to instantiate for the different types
-         * 
-         * @return
-         */
-        public Class<?> getTypeClass() {
-            return theClass;
-        }
-    }
+    private static ComponentFactory factory;
 
     /**
-     * Returns a new instance of the component of the specified type
+     * Returns the singleton instance of the factory
      * 
-     * @param type The name of the component to return
-     * @return A new instance, or null if invalid name
-     * @throws InstantiationException
-     * @throws IllegalAccessException
+     * @return
      */
-    public Component create(String type) throws InstantiationException, IllegalAccessException {
-        try {
-            Type t = Type.valueOf(type);
-            return (Component) t.theClass.newInstance();
-        } catch (IllegalArgumentException e) {
-            return null;
+    public static ComponentFactory getInstance() {
+        if (factory == null) {
+            factory = new ComponentFactory();
         }
+        return factory;
     }
-    
+
     /**
      * Returns a new instance of the component of the specified type.
      * 
-     * @param type
-     * @return
+     * @param typeClass
+     * @return A new instance of the component.
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public Component create(TypeResolver<?> typeClass) throws InstantiationException, IllegalAccessException {
+    public Component create(Type<?> typeClass) throws InstantiationException, IllegalAccessException {
         return (Component) typeClass.getTypeClass().newInstance();
     }
 

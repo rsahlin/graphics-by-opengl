@@ -18,9 +18,14 @@ import com.nucleus.renderer.NucleusRenderer;
 public abstract class Component extends BaseReference {
 
     public final static String INVALID_DATACOUNT_ERROR = "Invalid datacount";
+    public final static String TYPE = "type";
+    public final static String SYSTEM = "system";
 
-    @SerializedName("type")
+    @SerializedName(TYPE)
     private String type;
+
+    @SerializedName(SYSTEM)
+    private String system;
 
     /**
      * Used to create a new instance of a component
@@ -41,6 +46,14 @@ public abstract class Component extends BaseReference {
     public abstract void create(NucleusRenderer renderer, ResourcesData resources, ComponentNode parent)
             throws ComponentException;
 
+    public String getSystem() {
+        return system;
+    }
+
+    public String getType() {
+        return type;
+    }
+
     public Component copy() {
         Component copy = createInstance();
         copy.set(this);
@@ -51,5 +64,4 @@ public abstract class Component extends BaseReference {
         this.type = source.type;
         this.setId(source.getId());
     }
-
 }

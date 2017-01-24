@@ -136,7 +136,7 @@ public abstract class BaseImageFactory implements ImageFactory {
 
         ByteBuffer buffer = (ByteBuffer) destination.getBuffer().rewind();
         switch (sourceFormat) {
-        case TYPE_4BYTE_ABGR:
+        case ABGR4:
             switch (destination.getFormat()) {
             case RGBA:
                 copyPixels_4BYTE_ABGR_TO_RGBA(source, buffer);

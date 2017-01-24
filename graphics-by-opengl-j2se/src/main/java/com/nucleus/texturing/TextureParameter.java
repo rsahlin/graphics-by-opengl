@@ -5,6 +5,7 @@ import com.google.gson.annotations.SerializedName;
 /**
  * Info for the texture parameters, GL MIN and MAG filter, S and T wrap modes.
  * Helper class to make it easier to map from String names to GL values, for instance when serializing texture setup.
+ * This class can be serialized using GSON
  * 
  * @author Richard Sahlin
  *
@@ -29,6 +30,19 @@ public class TextureParameter {
      */
     public TextureParameter() {
         super();
+    }
+
+    /**
+     * Creates new texture parameters, must contain 4 values.
+     * 
+     * @param values 4 texture parameters, one for eac {@link Name}
+     * @throws IllegalArgumentException If params does not contain 4 values
+     */
+    public TextureParameter(TexParameter[] values) {
+        if (values == null || values.length < 4 || values.length > 4) {
+            throw new IllegalArgumentException("Invalid parameters, length of array is not 4");
+        }
+        setValues(values);
     }
 
     /**

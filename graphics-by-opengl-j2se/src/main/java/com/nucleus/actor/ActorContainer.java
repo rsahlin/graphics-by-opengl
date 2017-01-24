@@ -1,10 +1,13 @@
 package com.nucleus.actor;
 
+import com.nucleus.component.Component;
+import com.nucleus.system.System;
 import com.nucleus.vecmath.VecMath;
 import com.nucleus.vecmath.Vector2D;
 
 /**
- * Use System - Component instead, see {@linkplain SpriteS }
+ * This class is deprecated
+ * Use System - Component instead, see {@linkplain Component}, {@linkplain System}
  * For objects containing actor logic
  * 
  * @author Richard Sahlin

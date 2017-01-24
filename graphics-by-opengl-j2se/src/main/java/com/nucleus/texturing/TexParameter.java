@@ -28,4 +28,31 @@ public enum TexParameter {
         return value;
     }
 
+    /**
+     * Returns an array with the allowed texture minification filters
+     * 
+     * @return
+     */
+    public static TexParameter[] getMinFilters() {
+        return new TexParameter[] { NEAREST, LINEAR, NEAREST_MIPMAP_LINEAR, NEAREST_MIPMAP_NEAREST,
+                LINEAR_MIPMAP_NEAREST, LINEAR_MIPMAP_LINEAR };
+    }
+
+    /**
+     * Returns an array with the texture magnification filters
+     * 
+     * @return
+     */
+    public static TexParameter[] getMagFilters() {
+        return new TexParameter[] { NEAREST, LINEAR };
+    }
+
+    /**
+     * Returns an array with the texture UV wrap modes.
+     * 
+     * @return
+     */
+    public static TexParameter[] getUVWrapModes() {
+        return new TexParameter[] { CLAMP, REPEAT, MIRRORED_REPEAT };
+    }
 }

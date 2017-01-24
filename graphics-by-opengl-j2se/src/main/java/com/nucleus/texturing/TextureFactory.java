@@ -65,10 +65,11 @@ public class TextureFactory {
     }
 
     /**
-     * Creates a copy of the texture contents (image)
+     * Creates a copy of the texture contents (image), this will copy all texture info and the external reference.
+     * This will not make a copy of pixel values since these are held in the external reference.
      * 
-     * @param source The source texture, this holds the texture data
-     * @return Texture with same contents as the source
+     * @param source The source texture to copy texture info from.
+     * @return Texture object with same contents as the source
      */
     public static Texture2D createTexture(Texture2D source) {
         switch (source.textureType) {
@@ -117,12 +118,12 @@ public class TextureFactory {
     /**
      * Creates a new TiledTexture
      * 
-     * @param id
-     * @param externalReference
+     * @param id The name of the texture object
+     * @param externalReference External reference to the texture image
      * @param targetResolution
      * @param params
-     * @param mipmap
-     * @param size
+     * @param mipmap Number of mipmap levels
+     * @param size Width and height of texture atlas, in number of tiles in x and y
      * @param format
      * @param type
      * @return

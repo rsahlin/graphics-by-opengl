@@ -16,7 +16,7 @@ import com.nucleus.scene.RootNode;
  */
 public class ComponentHandler {
 
-    private Map<Component, System> componentSystem = new HashMap<>();
+    private Map<String, System> componentSystem = new HashMap<>();
 
     private static ComponentHandler handler;
 
@@ -28,23 +28,29 @@ public class ComponentHandler {
     }
 
     /**
-     * Registers a component to be handled by a system.
+     * Registers a component, by type, to be handled by a system.
+     * When {@link #processComponent(Component, float)} is called the system specified here will be used
      * 
-     * @param component
-     * @param system
+     * @param component The type of this component will be used to register the system.
+     * @param system The system that will be registered with the components type
      */
     public void registerComponent(Component component, System system) {
-        componentSystem.put(component, system);
+        componentSystem.put(component.getType(), system);
     }
 
     /**
      * Processes the component with the system that has been registered to handle the component
+     * A system must be registered with component by calling {@link #registerComponent(Component, System)}
      * 
      * @param component
      * @param deltaTime
+     * @throws IllegalArgumentException If no system is registered for the component (type)
      */
     public void processComponent(Component component, float deltaTime) {
-        System system = componentSystem.get(component);
+        System system = componentSystem.get(component.getType());
+        if (system == null) {
+            throw new IllegalArgumentException("No system registered for type: " + component.getType());
+        }
         system.process(component, deltaTime);
     }
 

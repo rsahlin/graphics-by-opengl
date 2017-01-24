@@ -96,6 +96,7 @@ public class ComponentNode extends Node implements ComponentController {
         return null;
     }
 
+    @Deprecated
     public ActorContainer[] getActorContainer() {
         return null;
     }

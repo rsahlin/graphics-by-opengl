@@ -25,7 +25,7 @@ public class Image extends BufferObject {
         /**
          * From awt BufferedImage
          */
-        TYPE_4BYTE_ABGR(06, 4),
+        ABGR4(06, 4),
         /**
          * Image type RGBA 4 bits per pixel and component, ie 16 bit format.
          */

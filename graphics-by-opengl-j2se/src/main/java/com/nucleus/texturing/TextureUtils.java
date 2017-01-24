@@ -113,26 +113,57 @@ public class TextureUtils {
     }
 
     /**
-     * Return the texture type for the specified format.
+     * Return the GL texture type for the specified format.
      * 
-     * @param format
+     * @param format Image pixel format.
      * @return GL datatype for the specified format, eg GL_UNSIGNED_BYTE, GL_UNSIGNED_SHORT_5_6_5
-     * @throws IllegalArgumentException If format is not one of: GL_RGB, GL_RGBA, GL_RGB565, GL_RGBA4, GL_RGB5_A1
      */
-    public static int getTypeFromFormat(int format) {
+    public static Texture2D.Type getType(ImageFormat format) {
 
         switch (format) {
-        case GLES20.GL_RGB:
-        case GLES20.GL_RGBA:
-            return GLES20.GL_UNSIGNED_BYTE;
-        case GLES20.GL_RGB565:
-            return GLES20.GL_UNSIGNED_SHORT_5_6_5;
-        case GLES20.GL_RGBA4:
-            return GLES20.GL_UNSIGNED_SHORT_4_4_4_4;
-        case GLES20.GL_RGB5_A1:
-            return GLES20.GL_UNSIGNED_SHORT_5_5_5_1;
+            case ABGR4:
+            case RGBA:
+            case RGB:
+            return Type.UNSIGNED_BYTE;
+            case ALPHA:
+            case LUMINANCE:
+            case LUMINANCE_ALPHA:
+            return Type.UNSIGNED_BYTE;
+            case RGB565:
+            return Type.UNSIGNED_SHORT_5_6_5;
+            case RGBA4:
+            return Type.UNSIGNED_SHORT_4_4_4_4;
+            case RGB5_A1:
+            return Type.UNSIGNED_SHORT_5_5_5_1;
+            default:
+            throw new IllegalArgumentException("Not implemented for: " + format);
+        }
+    }
+
+    /**
+     * Return the GL internal format for the specified format.
+     * 
+     * @param format Image pixel format.
+     * @return GL internal format for the specified format, eg GL_ALPHA, GL_RGB, GL_RGBA
+     */
+    public static Texture2D.Format getFormat(ImageFormat format) {
+        switch (format) {
+        case ABGR4:
+        case RGBA4:
+        case RGBA:
+        case RGB5_A1:
+            return Format.RGBA;
+        case ALPHA:
+            return Format.ALPHA;
+        case LUMINANCE:
+            return Format.LUMINANCE;
+        case LUMINANCE_ALPHA:
+            return Format.LUMINANCE_ALPHA;
+        case RGB565:
+        case RGB:
+            return Format.RGB;
         default:
-            throw new IllegalArgumentException(ErrorMessage.INVALID_FORMAT.message + format);
+            throw new IllegalArgumentException("Not implemented for: " + format);
         }
     }
 
@@ -201,5 +232,6 @@ public class TextureUtils {
         }
 
     }
+
 
 }

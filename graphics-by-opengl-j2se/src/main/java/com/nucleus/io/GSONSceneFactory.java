@@ -6,11 +6,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.util.ArrayDeque;
+import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.camera.ViewFrustum;
+import com.nucleus.common.Type;
+import com.nucleus.common.TypeResolver;
 import com.nucleus.exporter.NodeExporter;
 import com.nucleus.exporter.NucleusNodeExporter;
 import com.nucleus.geometry.MeshFactory;
@@ -28,6 +31,7 @@ import com.nucleus.scene.ViewNode;
 
 /**
  * GSON Serializer for nucleus scenegraph.
+ * Do not create this class directly use {@linkplain SceneSerializerFactory}
  * 
  * @author Richard Sahlin
  *
@@ -52,10 +56,19 @@ public class GSONSceneFactory implements SceneSerializer {
     /**
      * Creates a default scenefactory with {@link NucleusNodeExporter}.
      * Calls {@link #createNodeExporter()} and {@link #registerNodeExporters()}
+     * This constructor will call {@link #init(NucleusRenderer, NodeFactory, MeshFactory)}
+     * 
+     * @param renderer
+     * @param nodeFactory
+     * @param meshFactory
+     * @param types The types to be registered {@linkplain TypeResolver}
      */
-    public GSONSceneFactory() {
+    public GSONSceneFactory(NucleusRenderer renderer, NodeFactory nodeFactory, MeshFactory meshFactory,
+            List<Type<?>> types) {
         createNodeExporter();
         registerNodeExporters();
+        init(renderer, nodeFactory, meshFactory);
+        TypeResolver.getInstance().registerTypes(types);
     }
 
     @Override
