@@ -79,6 +79,8 @@ public class TextureFactory {
             return new TiledTexture2D((TiledTexture2D) source);
         case UVTexture2D:
             return new UVTexture2D((UVTexture2D) source);
+        case Untextured:
+            return new Texture2D(source);
         default:
             throw new IllegalArgumentException();
         }
@@ -144,6 +146,9 @@ public class TextureFactory {
      * @param imageFactory The imagefactory to use for image creation
      */
     private static void prepareTexture(GLES20Wrapper gles, ImageFactory imageFactory, Texture2D texture) {
+        if (texture.getTextureType() == TextureType.Untextured) {
+            return;
+        }
         int[] textures = new int[1];
         gles.glGenTextures(1, textures, 0);
 

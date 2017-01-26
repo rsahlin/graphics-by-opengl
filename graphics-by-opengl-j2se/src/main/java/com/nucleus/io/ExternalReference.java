@@ -19,7 +19,6 @@ public class ExternalReference {
      */
     @SerializedName("source")
     private String source;
-
     /**
      * @param source Name of the external reference, for instance a file.
      */

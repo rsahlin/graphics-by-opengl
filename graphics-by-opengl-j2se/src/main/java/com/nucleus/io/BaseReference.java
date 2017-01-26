@@ -17,7 +17,7 @@ public class BaseReference implements Reference {
     private String id;
 
     @SerializedName("externalReference")
-    private ExternalReference externalReference;
+    private ExternalReference externalReference = new ExternalReference("");
 
     /**
      * Default constructor

@@ -104,11 +104,10 @@ public interface AttributeUpdater {
 
         /**
          * Returns the generic attribute data as an array reference
-         * TODO Maybe it should not be visible to implementing classes that this buffer exist? It should be enough with
-         * {@link #bindAttributeBuffer(VertexBuffer)} and {@link #updateAttributeData()}
          * 
          * @return The array containing the attribute data, any changes done here shall be reflected when
          * setAttributeData() is called.
+         * Returns the attributedata owned by a component that will be used when the node it is attached to is rendered.
          * @throws IllegalArgumentException If {@link #bindAttributeBuffer(VertexBuffer)} has not been called before
          * calling this method.
          */

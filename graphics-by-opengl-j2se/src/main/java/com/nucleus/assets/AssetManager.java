@@ -76,16 +76,18 @@ public class AssetManager {
      * 
      * @param renderer
      * @param source
-     * @return The texture
+     * @return The texture specifying the external reference to the texture to load and return.
      * @throws IOException
      */
     public Texture2D getTexture(NucleusRenderer renderer, Texture2D source) throws IOException {
         ExternalReference ref = source.getExternalReference();
-        HashMap<Texture2D, Texture2D> classMap = textures.get(ref.getSource());
+        String refSource = ref.getSource();
+        HashMap<Texture2D, Texture2D> classMap = null;
+        classMap = textures.get(refSource);
         Texture2D texture = null;
         if (classMap == null) {
             classMap = new HashMap<Texture2D, Texture2D>();
-            textures.put(ref.getSource(), classMap);
+            textures.put(refSource, classMap);
         } else {
             texture = classMap.get(source);
             if (texture != null) {

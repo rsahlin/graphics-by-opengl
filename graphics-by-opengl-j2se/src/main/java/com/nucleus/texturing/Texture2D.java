@@ -75,7 +75,7 @@ public class Texture2D extends BaseReference {
      * Texture parameter values.
      */
     @SerializedName("texParameters")
-    protected TextureParameter texParameters = new TextureParameter();
+    protected TextureParameter texParameters;
     /**
      * The texture format
      */
@@ -126,7 +126,7 @@ public class Texture2D extends BaseReference {
      * @param source
      */
     protected Texture2D(Texture2D source) {
-        textureType = TextureType.valueOf(getClass().getSimpleName());
+        textureType = source.getTextureType();
         set(source);
     }
 
@@ -147,8 +147,11 @@ public class Texture2D extends BaseReference {
     protected void set(Texture2D source) {
         super.set(source);
         resolution = source.resolution;
-        setExternalReference(source.getExternalReference());
-        texParameters = new TextureParameter(source.getTexParams());
+        if (source.getTexParams() != null) {
+            texParameters = new TextureParameter(source.getTexParams());
+        } else {
+            texParameters = null;
+        }
         mipmap = source.mipmap;
         name = source.name;
         width = source.width;
@@ -175,6 +178,7 @@ public class Texture2D extends BaseReference {
         textureType = TextureType.valueOf(getClass().getSimpleName());
         setExternalReference(externalReference);
         this.resolution = resolution;
+        texParameters = new TextureParameter(params);
         this.texParameters.setValues(params);
         this.mipmap = mipmap;
         this.format = format;
