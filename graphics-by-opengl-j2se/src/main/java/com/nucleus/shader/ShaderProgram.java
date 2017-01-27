@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.AttributeUpdater.Property;
 import com.nucleus.geometry.Mesh;
@@ -316,13 +317,26 @@ public abstract class ShaderProgram {
      * For some subclasses this must also create a backing attribute array in the mesh that is used as
      * intermediate storage before the vertex buffer is updated.
      * 
+     * @param index The attribute buffer to create
      * @param verticeCount Number of vertices
      * @param mesh
      * @return The buffer for attribute storage or null if not needed.
      */
-    public VertexBuffer createAttributeBuffer(int verticeCount, Mesh mesh) {
-        // The allocated buffer is in bytes, therefore components is 4
-        return new VertexBuffer(verticeCount, 4, attributesPerVertex, GLES20.GL_FLOAT);
+    public VertexBuffer createAttributeBuffer(BufferIndex index, int verticeCount, Mesh mesh) {
+        switch (index) {
+        case ATTRIBUTES:
+            VertexBuffer buffer = new VertexBuffer(verticeCount, attributesPerVertex, attributesPerVertex,
+                    GLES20.GL_FLOAT);
+            if (mesh instanceof Consumer) {
+                ((Consumer) mesh).bindAttributeBuffer(buffer);
+            }
+            return buffer;
+        case VERTICES:
+            return new VertexBuffer(verticeCount, components, components, GLES20.GL_FLOAT);
+        case ATTRIBUTES_STATIC:
+        default:
+            throw new IllegalArgumentException("Not implemented");
+        }
     }
 
     /**

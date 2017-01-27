@@ -153,7 +153,8 @@ public class ConvolutionProgram extends ShaderProgram {
         attributes[BufferIndex.VERTICES.index] = new VertexBuffer(STRIP_QUAD_VERTICES, XYZ_COMPONENTS,
                 XYZUV_COMPONENTS, GLES20.GL_FLOAT);
         if (attributeBuffers > 1) {
-            attributes[BufferIndex.ATTRIBUTES.index] = program.createAttributeBuffer(STRIP_QUAD_VERTICES, mesh);
+            attributes[BufferIndex.ATTRIBUTES.index] = program.createAttributeBuffer(BufferIndex.ATTRIBUTES,
+                    STRIP_QUAD_VERTICES, mesh);
         }
         attributes[BufferIndex.VERTICES.index].setPositionUV(quadPositions, 0, 0, STRIP_QUAD_VERTICES);
         Material material = new Material();

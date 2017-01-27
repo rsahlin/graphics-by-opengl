@@ -31,6 +31,7 @@ import com.nucleus.scene.ViewNode;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.TextureType;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Transform;
 
@@ -317,7 +318,7 @@ class BaseRenderer implements NucleusRenderer {
         GLUtils.handleError(gles, "glUseProgram ");
 
         Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
-        if (texture != null) {
+        if (texture != null && texture.textureType != TextureType.Untextured) {
             int textureID = texture.getName();
             gles.glActiveTexture(GLES20.GL_TEXTURE0);
             gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
