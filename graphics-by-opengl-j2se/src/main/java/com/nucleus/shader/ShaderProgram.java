@@ -456,7 +456,8 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Fetch the GLES shader variable location and set in the ShaderVariable
+     * Fetch the GLES shader variable location (name) and set in the ShaderVariable
+     * This is the name (int) value to use to access the variable in GL
      * 
      * @param gles
      * @param program
