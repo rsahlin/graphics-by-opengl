@@ -23,7 +23,6 @@ import com.nucleus.texturing.Image.ImageFormat;
 public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
 
     private final static String NULL_PARAMETER = "Null parameter";
-    private static final String ILLEGAL_PARAMETER = "Illegal parameter";
 
     public J2SEImageFactory() {
     }

@@ -61,13 +61,14 @@ public class Material {
      */
     public final static int DIFFUSE_INDEX = 4;
     /**
-     * Index for 4 specular color properties.
-     */
-    public final static int SPECULAR_INDEX = 8;
-    /**
      * Index for shininess
      */
     public final static int SHININESS_INDEX = 12;
+
+    /**
+     * Index for 4 specular color properties.
+     */
+    public final static int SPECULAR_INDEX = 8;
 
     public final static int COLOR_DATA_SIZE = 13;
     /**

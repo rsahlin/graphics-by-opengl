@@ -12,16 +12,14 @@ import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 
 public class TextureDeserializer implements JsonDeserializer<Texture2D> {
-    // TODO where is a good place to store this constant?
-    public final static String TEXTURE_JSON_KEY = "textureType";
 
     @Override
     public Texture2D deserialize(JsonElement json, Type type, JsonDeserializationContext context)
             throws JsonParseException {
         JsonObject obj = json.getAsJsonObject();
-        JsonElement jsonType = obj.get(TEXTURE_JSON_KEY);
+        JsonElement jsonType = obj.get(Texture2D.TEXTURETYPE);
         if (jsonType == null) {
-            throw new IllegalArgumentException("Texture must define " + TEXTURE_JSON_KEY);
+            throw new IllegalArgumentException("Texture must define " + Texture2D.TEXTURETYPE);
         }
         TextureType texType = TextureType.valueOf(jsonType.getAsString());
         return (Texture2D) new Gson().fromJson(json, texType.getImplementation());

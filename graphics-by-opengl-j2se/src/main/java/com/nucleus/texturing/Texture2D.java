@@ -21,6 +21,11 @@ import com.nucleus.texturing.TextureParameter.Name;
 public class Texture2D extends BaseReference {
 
     /**
+     * Name of the serialized field textureType
+     */
+    public final static String TEXTURETYPE = "textureType";
+
+    /**
      * The GL texture formats
      * 
      * @author Richard Sahlin
@@ -107,13 +112,14 @@ public class Texture2D extends BaseReference {
     transient Image[] images;
 
     // TODO Make this private
-    @SerializedName("textureType")
+    @SerializedName(value = TEXTURETYPE)
     public final TextureType textureType;
 
     /**
      * Default constructor
      */
     protected Texture2D() {
+        super();
         textureType = TextureType.valueOf(getClass().getSimpleName());
     }
 
