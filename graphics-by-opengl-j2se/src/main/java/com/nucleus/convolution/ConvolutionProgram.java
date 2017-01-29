@@ -1,8 +1,6 @@
 package com.nucleus.convolution;
 
 import static com.nucleus.geometry.VertexBuffer.STRIP_QUAD_VERTICES;
-import static com.nucleus.geometry.VertexBuffer.XYZUV_COMPONENTS;
-import static com.nucleus.geometry.VertexBuffer.XYZ_COMPONENTS;
 
 import com.nucleus.geometry.AttributeUpdater.Property;
 import com.nucleus.geometry.Material;
@@ -81,6 +79,7 @@ public class ConvolutionProgram extends ShaderProgram {
         vertexShaderName = VERTEX_SHADER_NAME;
         fragmentShaderName = FRAGMENT_SHADER_NAME;
         attributesPerVertex = ATTRIBUTES_PER_VERTEX;
+        components = 5;
     }
 
     @Override
@@ -149,13 +148,7 @@ public class ConvolutionProgram extends ShaderProgram {
         if (attribute2Size > 0) {
             attributeBuffers = 2;
         }
-        VertexBuffer[] attributes = new VertexBuffer[attributeBuffers];
-        attributes[BufferIndex.VERTICES.index] = new VertexBuffer(STRIP_QUAD_VERTICES, XYZ_COMPONENTS,
-                XYZUV_COMPONENTS, GLES20.GL_FLOAT);
-        if (attributeBuffers > 1) {
-            attributes[BufferIndex.ATTRIBUTES.index] = program.createAttributeBuffer(BufferIndex.ATTRIBUTES,
-                    STRIP_QUAD_VERTICES, mesh);
-        }
+        VertexBuffer[] attributes = program.createAttributeBuffers(mesh, STRIP_QUAD_VERTICES);
         attributes[BufferIndex.VERTICES.index].setPositionUV(quadPositions, 0, 0, STRIP_QUAD_VERTICES);
         Material material = new Material();
         material.setProgram(program);
@@ -167,11 +160,6 @@ public class ConvolutionProgram extends ShaderProgram {
     @Override
     public void setupUniforms(Mesh mesh) {
         createUniformStorage(mesh, shaderVariables);
-    }
-
-    @Override
-    public int getAttributeOffset(int vertex) {
-        return vertex * ATTRIBUTES_PER_VERTEX;
     }
 
     @Override

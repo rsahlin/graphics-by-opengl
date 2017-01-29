@@ -24,7 +24,8 @@ public enum TextureType {
     /**
      * No texture is used
      */
-    Untextured(Texture2D.class);
+    Untextured(Texture2D.class),
+    Parametric(Texture2D.class);
 
     private final Class<?> clazz;
 

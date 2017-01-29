@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.AttributeUpdater.Property;
@@ -132,6 +133,8 @@ public abstract class ShaderProgram {
     protected String vertexShaderName;
     protected String fragmentShaderName;
     protected int components = DEFAULT_COMPONENTS;
+    // TODO - this shall not be handled in a static way for attribute array, instead each of the used attribute
+    // buffer sizes shall be calculcated in runtime, ie the size of the uniform, attribute and static attribute buffers
     protected int attributesPerVertex = -1;
 
     /**
@@ -174,14 +177,6 @@ public abstract class ShaderProgram {
      * @return Number of defined variables in the shader program, all variables do not need to be used.
      */
     public abstract int getVariableCount();
-
-    /**
-     * Returns the offset into the attribute data where the data for the specified vertex is.
-     * 
-     * @param vertex The vertex number to get the offset to
-     * @return Offset into attribute data where storage for the specified vertex is
-     */
-    public abstract int getAttributeOffset(int vertex);
 
     /**
      * Returns the offset within an vertex where the property is, this is used to set specific properties
@@ -260,7 +255,7 @@ public abstract class ShaderProgram {
      * @throws RuntimeException If there is an error reading shader sources or compiling/linking program.
      */
     public void createProgram(GLES20Wrapper gles) {
-        if (attributesPerVertex == -1 || vertexShaderName == null || fragmentShaderName == null) {
+        if (vertexShaderName == null || fragmentShaderName == null) {
             throw new ShaderProgramException(MUST_SET_FIELDS);
         }
         createProgram(gles, vertexShaderName, fragmentShaderName);
@@ -313,6 +308,24 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Creates the attribute buffers for the specified mesh.
+     * 
+     * @param mesh
+     * @param verticeCount Number of vertices to allocate storage for
+     * @return
+     */
+    public VertexBuffer[] createAttributeBuffers(Mesh mesh, int verticeCount) {
+        VertexBuffer[] buffers = new VertexBuffer[attributeBufferCount];
+        for (BufferIndex index : BufferIndex.values()) {
+            if (index.index >= buffers.length) {
+                break;
+            }
+            buffers[index.index] = createAttributeBuffer(index, verticeCount, mesh);
+        }
+        return buffers;
+    }
+
+    /**
      * Creates the storage for attributes that are not vertices, only creates the storage will not fill buffer.
      * For some subclasses this must also create a backing attribute array in the mesh that is used as
      * intermediate storage before the vertex buffer is updated.
@@ -322,17 +335,17 @@ public abstract class ShaderProgram {
      * @param mesh
      * @return The buffer for attribute storage or null if not needed.
      */
-    public VertexBuffer createAttributeBuffer(BufferIndex index, int verticeCount, Mesh mesh) {
+    protected VertexBuffer createAttributeBuffer(BufferIndex index, int verticeCount, Mesh mesh) {
         switch (index) {
         case ATTRIBUTES:
-            VertexBuffer buffer = new VertexBuffer(verticeCount, attributesPerVertex, attributesPerVertex,
+            VertexBuffer buffer = new VertexBuffer(verticeCount, getAttributesPerVertex(),
                     GLES20.GL_FLOAT);
             if (mesh instanceof Consumer) {
                 ((Consumer) mesh).bindAttributeBuffer(buffer);
             }
             return buffer;
         case VERTICES:
-            return new VertexBuffer(verticeCount, components, components, GLES20.GL_FLOAT);
+            return new VertexBuffer(verticeCount, components, GLES20.GL_FLOAT);
         case ATTRIBUTES_STATIC:
         default:
             throw new IllegalArgumentException("Not implemented");
@@ -416,6 +429,25 @@ public abstract class ShaderProgram {
         shaderVariables = new ShaderVariable[getVariableCount()];
         fetchActiveVariables(gles, VariableType.ATTRIBUTE, attribInfo);
         fetchActiveVariables(gles, VariableType.UNIFORM, uniformInfo);
+        attributesPerVertex = calculateAttributeSize(shaderVariables, BufferIndex.ATTRIBUTES);
+    }
+
+    /**
+     * Returns the size per vertex, of attribute storage, for the specified buffer index.
+     * The default implementation will calculate based on highest offset in mapped shader variables plus the size of
+     * that datatype.
+     * 
+     * @param shaderVariables
+     * @param index Buffer index to calculate attribute per vertex size for.
+     * @return The number of float attributes values per vertex, ie of only a vec3 is needed the value 3 is returned.
+     */
+    protected int calculateAttributeSize(ShaderVariable[] shaderVariables, BufferIndex index) {
+        switch (index) {
+        case ATTRIBUTES:
+            return getVariableSize(shaderVariables, VariableType.ATTRIBUTE);
+        default:
+            throw new IllegalArgumentException("Not implemented");
+        }
     }
 
     /**
@@ -607,26 +639,6 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Internal utility method to set vertex attribute pointers from one or more arrays.
-     * 
-     * @param gles
-     * @param mesh
-     * @param variables
-     */
-    protected void setAttributePointers(GLES20Wrapper gles, Mesh mesh, ShaderVariable[] variables) throws GLException {
-
-        VertexBuffer buffer;
-        for (ShaderVariable v : variables) {
-            buffer = mesh.getVerticeBuffer(BufferIndex.VERTICES);
-            gles.glEnableVertexAttribArray(v.getLocation());
-            GLUtils.handleError(gles, "glEnableVertexAttribArray ");
-            gles.glVertexAttribPointer(v.getLocation(), buffer.getComponentCount(), buffer.getDataType(), false,
-                    buffer.getByteStride(), buffer.getBuffer());
-
-        }
-    }
-
-    /**
      * Utility method to create the vertex and shader program using the specified shader names.
      * The shaders will be loaded, compiled and linked.
      * Utility method to automatically load, compile and link the specified vertex and fragment shaders.
@@ -717,30 +729,59 @@ public abstract class ShaderProgram {
      */
     protected void createUniformStorage(Mesh mesh, ShaderVariable[] variables) {
 
-        int vectorSize = 0;
-        int matrixSize = 0;
+        int uniformSize = 0;
         if (variables != null) {
-            for (ShaderVariable v : variables) {
-                if (v != null && v.getType() == VariableType.UNIFORM) {
-                    switch (v.getDataType()) {
-                    case GLES20.GL_FLOAT_VEC2:
-                    case GLES20.GL_FLOAT_VEC3:
-                    case GLES20.GL_FLOAT_VEC4:
-                        vectorSize += v.getSizeInFloats();
-                        break;
-                    case GLES20.GL_FLOAT_MAT2:
-                    case GLES20.GL_FLOAT_MAT3:
-                    case GLES20.GL_FLOAT_MAT4:
-                        matrixSize += v.getSizeInFloats();
-                    }
-                }
-            }
-            if (vectorSize + matrixSize > 0) {
-                mesh.setUniforms(new float[vectorSize + matrixSize]);
+            uniformSize = getVariableSize(variables, VariableType.UNIFORM);
+            if (uniformSize > 0) {
+                mesh.setUniforms(new float[uniformSize]);
+            } else {
+                SimpleLogger.d(getClass(), "No uniform size for mesh id " + mesh.getId());
             }
         } else {
             throw new IllegalArgumentException("Shader variables is null, forgot to call createProgram()?");
         }
+    }
+
+    /**
+     * Returns the size of all the shader varibles of the specified type, either ATTRIBUTE or UNIFORM
+     * For uniforms this corresponds to the total size buffer size needed.
+     * For attributes this corresponds to the total buffer size needed, normally attribute data is put in
+     * dynanic and static buffers meaning
+     * 
+     * @param variables
+     * @param type
+     * @return Total size, in floats, of all defined shader variables of the specified type
+     */
+    protected int getVariableSize(ShaderVariable[] variables, VariableType type) {
+        int size = 0;
+        for (ShaderVariable v : variables) {
+            if (v != null && v.getType() == type) {
+                size += v.getSizeInFloats();
+            }
+        }
+        return size;
+    }
+
+    /**
+     * Returns the size of shader variable that are mapped to the specified buffer index.
+     * Use this to fetch the size per attribute for the different buffers.
+     * 
+     * @param variables
+     * @param type
+     * @param index
+     * @return
+     */
+    protected int getVariableSize(ShaderVariable[] variables, BufferIndex index) {
+        int size = 0;
+        for (ShaderVariable v : variables) {
+            if (v != null) {
+                VariableMapping vm = getVariableMapping(v);
+                if (vm.getBufferIndex() == index) {
+                    size += v.getSizeInFloats();
+                }
+            }
+        }
+        return size;
     }
 
     /**

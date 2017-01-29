@@ -60,10 +60,6 @@ public class VertexBuffer extends BufferObject {
     private FloatBuffer vertices;
     private int verticeCount;
     /**
-     * Number of components
-     */
-    private int components;
-    /**
      * Datatype
      */
     private int type;
@@ -73,30 +69,27 @@ public class VertexBuffer extends BufferObject {
      * instance with an element (vertex index) buffer or with drawArrays.
      * 
      * @param verticeCount Number of vertices to allocate storage for
-     * @param components Number of components for each vertex, 3 for x,y,z
      * @param sizePerVertex Size in floats to allocate for each vertex, eg 3 if xyz is specified
      * @param type The datatype GLES20.GL_FLOAT
      * @throws IllegalArgumentException If type is not GLES20.GL_FLOAT
      */
-    public VertexBuffer(int verticeCount, int components, int sizePerVertex, int type) {
-        init(verticeCount, components, sizePerVertex, type);
+    public VertexBuffer(int verticeCount, int sizePerVertex, int type) {
+        init(verticeCount, sizePerVertex, type);
     }
 
     /**
      * Creates the buffer to hold vertice and attribute data.
      * 
      * @param verticeCount Number of vertices to allocate storage for
-     * @param components Number of components for each vertex, 3 for x,y,z
      * @param sizePerVertex Size in floats to allocate for each vertex, normal usecase for x,y,z + texture uv is 5
      * @param type The datatype GLES20.GL_FLOAT
      * @throws IllegalArgumentException If type is not GLES20.GL_FLOAT
      */
-    private void init(int verticeCount, int components, int sizePerVertex, int type) {
+    private void init(int verticeCount, int sizePerVertex, int type) {
         if (type != GLES20.GL_FLOAT) {
             throw new IllegalArgumentException(ILLEGAL_DATATYPE_STR + type);
         }
         int dataSize = 4;
-        this.components = components;
         this.type = type;
         this.verticeCount = verticeCount;
         sizeInBytes = verticeCount * sizePerVertex * dataSize;
@@ -105,8 +98,8 @@ public class VertexBuffer extends BufferObject {
         attribByteStride = sizePerVertex * dataSize;
         attribFloatStride = sizePerVertex;
         System.out
-                .println("Allocated atrribute buffer with " + sizeInBytes + " bytes, components " + components
-                        + ", sizePerVertices " + sizePerVertex + " dataSize " + dataSize + ", capacity() "
+                .println("Allocated atrribute buffer with " + sizeInBytes + " bytes, sizePerVertices " + sizePerVertex
+                        + " dataSize " + dataSize + ", capacity() "
                         + vertices.capacity());
     }
 
@@ -209,13 +202,12 @@ public class VertexBuffer extends BufferObject {
     }
 
     /**
-     * Returns the number of components in this buffer, normally 3 (X,Y,Z)
-     * Used when setting vertex attrib pointer.
+     * Returns the float stride value
      * 
      * @return
      */
-    public int getComponentCount() {
-        return components;
+    public int getFloatStride() {
+        return attribFloatStride;
     }
 
     /**

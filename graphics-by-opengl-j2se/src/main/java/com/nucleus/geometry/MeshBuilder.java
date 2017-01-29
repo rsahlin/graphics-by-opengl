@@ -203,15 +203,17 @@ public class MeshBuilder {
     public static void buildQuads(Mesh mesh, ShaderProgram program, int quadCount, int index,
             float[] quadPositions) {
         VertexBuffer buffer = mesh.attributes[BufferIndex.VERTICES.index];
-        float[] vertices = new float[buffer.getComponentCount() * quadCount * 4];
+        // TODO do not fetch vertices, call buffer.setPosition()
+        float[] vertices = new float[buffer.getFloatStride() * quadCount * 4];
         int destPos = 0;
         for (int i = 0; i < quadCount; i++) {
             System.arraycopy(quadPositions, 0, vertices, destPos, quadPositions.length);
             destPos += quadPositions.length;
         }
+        int components = quadPositions.length / INDEXED_QUAD_VERTICES;
         VertexBuffer vb = mesh.attributes[BufferIndex.VERTICES.index];
         vb.setComponents(vertices,
-                quadPositions.length / INDEXED_QUAD_VERTICES, 0, index * vb.getComponentCount() * INDEXED_QUAD_VERTICES,
+                components, 0, index * components * INDEXED_QUAD_VERTICES,
                 quadCount * INDEXED_QUAD_VERTICES);
         vb.setDirty(true);
     }

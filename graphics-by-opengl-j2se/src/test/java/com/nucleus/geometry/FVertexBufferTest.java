@@ -16,9 +16,8 @@ public class FVertexBufferTest {
 
     @Test
     public void testCreateVertexBuffer() {
-        VertexBuffer vb = new VertexBuffer(TRIANGLE_COUNT * 3, COMPONENT_COUNT, SIZE_PER_VERTEX, GLES20.GL_FLOAT);
+        VertexBuffer vb = new VertexBuffer(TRIANGLE_COUNT * 3, SIZE_PER_VERTEX, GLES20.GL_FLOAT);
         Assert.assertEquals(TRIANGLE_COUNT * 3, vb.getVerticeCount());
-        Assert.assertEquals(COMPONENT_COUNT, vb.getComponentCount());
         Assert.assertEquals(GLES20.GL_FLOAT, vb.getDataType());
         Assert.assertEquals(SIZE_PER_VERTEX * DATA_SIZE32, vb.getByteStride());
         Assert.assertEquals(SIZE_PER_VERTEX * TRIANGLE_COUNT * COMPONENT_COUNT, vb.getBuffer().capacity());
@@ -32,7 +31,7 @@ public class FVertexBufferTest {
         for (int i = 0; i < data.length; i++) {
             data[i] = i;
         }
-        VertexBuffer vb = new VertexBuffer(TRIANGLE_COUNT, COMPONENT_COUNT, SIZE_PER_VERTEX, GLES20.GL_FLOAT);
+        VertexBuffer vb = new VertexBuffer(TRIANGLE_COUNT, SIZE_PER_VERTEX, GLES20.GL_FLOAT);
         vb.setPosition(data, 0, 0, TRIANGLE_COUNT);
         // First 5 values should be followed by empty data (SIZE_PER_VERTEX - 5)
         // For now assume FloatBuffer since this is the only type currently supported.0
