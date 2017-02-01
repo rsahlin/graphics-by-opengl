@@ -138,6 +138,34 @@ public class MeshBuilder {
     }
 
     /**
+     * Same as {@link #createQuadPositionsUVIndexed(Rectangle, int, float, TiledTexture2D)} but specify an array
+     * containing the UV values.
+     *
+     * @param rectangle
+     * @param vertexStride
+     * @param z
+     * @param UV Array with UV values, must contain 4 UV pairs, order is clockwise starting at upper left corner.
+     * @return
+     */
+    public static float[] createQuadPositionsUVIndexed(Rectangle rectangle, int vertexStride, float z, float[] UV) {
+        float[] values = rectangle.getValues();
+        // TODO How to handle Y axis going other direction?
+        float[] quadPositions = new float[vertexStride * 4];
+        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y],
+                z, UV[0], UV[1], quadPositions, 0);
+        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y], z, UV[2], UV[3],
+                quadPositions,
+                vertexStride);
+        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y] - values[HEIGHT],
+                z, UV[4], UV[5], quadPositions,
+                vertexStride * 2);
+        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y] - values[HEIGHT], z, UV[6], UV[7],
+                quadPositions,
+                vertexStride * 3);
+        return quadPositions;
+    }
+
+    /**
      * Builds an array for 4 vertices containing xyz and uv components, the array can be drawn
      * using GL_TRIANGLE_FAN
      * The vertices will be centered using translate, a value of 0 will be left/top aligned.

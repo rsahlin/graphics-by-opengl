@@ -80,7 +80,7 @@ public class TextureFactory {
         case UVTexture2D:
             return new UVTexture2D((UVTexture2D) source);
         case Untextured:
-            return new Texture2D(source);
+            return new Untextured((Untextured) source);
         default:
             throw new IllegalArgumentException();
         }
