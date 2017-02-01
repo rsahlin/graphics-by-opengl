@@ -35,6 +35,10 @@ import com.nucleus.texturing.TiledTexture2D;
  */
 public abstract class ShaderProgram {
 
+    public static final String PROGRAM_DIRECTORY = "assets/";
+    public static final String SHADER_SOURCE_SUFFIX = ".essl";
+    public static final String FRAGMENT = "fragment";
+    public static final String VERTEX = "vertex";
     protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
     /**
      * Number of vertices per sprite - this is for a quad that is created using element buffer.
@@ -123,6 +127,10 @@ public abstract class ShaderProgram {
      * Calculated in create program
      */
     protected ShaderVariable[][] variablesPerBuffer;
+    /**
+     * The size of each buffer for the attribute variables
+     */
+    protected int[] attributesPerVertex;
     protected VariableMapping[] attributes; // List of attributes defined by a program
     protected int attributeBufferCount; // Number of buffers used by attributes
     protected VariableMapping[] uniforms; // List of uniforms defined by a program
@@ -132,10 +140,6 @@ public abstract class ShaderProgram {
      */
     protected String vertexShaderName;
     protected String fragmentShaderName;
-    protected int components = DEFAULT_COMPONENTS;
-    // TODO - this shall not be handled in a static way for attribute array, instead each of the used attribute
-    // buffer sizes shall be calculcated in runtime, ie the size of the uniform, attribute and static attribute buffers
-    protected int attributesPerVertex = -1;
 
     /**
      * Unmapped variable types, by default Sampler2D is added to avoid having to add Sampler2D variables.
@@ -259,8 +263,6 @@ public abstract class ShaderProgram {
             throw new ShaderProgramException(MUST_SET_FIELDS);
         }
         createProgram(gles, vertexShaderName, fragmentShaderName);
-        variablesPerBuffer = new ShaderVariable[attributeBufferCount][];
-        mapAttributeVariablePerBuffer(variablesPerBuffer);
     }
 
     /**
@@ -295,16 +297,17 @@ public abstract class ShaderProgram {
      * @return
      */
     public int getVertexStride() {
-        return components;
+        return attributesPerVertex[BufferIndex.VERTICES.index];
     }
 
     /**
      * Returns the number of attributes per vertex
+     * TODO - rename this to dynamic, since it fetches the number of attributes per vertex for dynamic buffer
      * 
      * @return
      */
     public int getAttributesPerVertex() {
-        return attributesPerVertex;
+        return attributesPerVertex[BufferIndex.ATTRIBUTES.index];
     }
 
     /**
@@ -345,7 +348,7 @@ public abstract class ShaderProgram {
             }
             return buffer;
         case VERTICES:
-            return new VertexBuffer(verticeCount, components, GLES20.GL_FLOAT);
+            return new VertexBuffer(verticeCount, getVertexStride(), GLES20.GL_FLOAT);
         case ATTRIBUTES_STATIC:
         default:
             throw new IllegalArgumentException("Not implemented");
@@ -413,7 +416,7 @@ public abstract class ShaderProgram {
 
     /**
      * Fetches the program info and stores in this class.
-     * This will read active attribute and uniform names
+     * This will read active attribute and uniform names, call this after the program has been compiled and linked.
      * 
      * @param gles
      * @throws GLException If attribute or uniform locations could not be found.
@@ -429,24 +432,11 @@ public abstract class ShaderProgram {
         shaderVariables = new ShaderVariable[getVariableCount()];
         fetchActiveVariables(gles, VariableType.ATTRIBUTE, attribInfo);
         fetchActiveVariables(gles, VariableType.UNIFORM, uniformInfo);
-        attributesPerVertex = calculateAttributeSize(shaderVariables, BufferIndex.ATTRIBUTES);
-    }
-
-    /**
-     * Returns the size per vertex, of attribute storage, for the specified buffer index.
-     * The default implementation will calculate based on highest offset in mapped shader variables plus the size of
-     * that datatype.
-     * 
-     * @param shaderVariables
-     * @param index Buffer index to calculate attribute per vertex size for.
-     * @return The number of float attributes values per vertex, ie of only a vec3 is needed the value 3 is returned.
-     */
-    protected int calculateAttributeSize(ShaderVariable[] shaderVariables, BufferIndex index) {
-        switch (index) {
-        case ATTRIBUTES:
-            return getVariableSize(shaderVariables, VariableType.ATTRIBUTE);
-        default:
-            throw new IllegalArgumentException("Not implemented");
+        variablesPerBuffer = new ShaderVariable[attributeBufferCount][];
+        attributesPerVertex = new int[attributeBufferCount];
+        mapAttributeVariablePerBuffer(variablesPerBuffer);
+        for (int i = 0; i < attributesPerVertex.length; i++) {
+            attributesPerVertex[i] = getVariableSize(variablesPerBuffer[i], VariableType.ATTRIBUTE);
         }
     }
 
@@ -619,7 +609,8 @@ public abstract class ShaderProgram {
      * skipped. Also skip variables that are defined in code but not used in shader.
      * 
      * @param variable
-     * @throws IllegalArgumentException If shader variables are null, the program has probably not been created.
+     * @throws IllegalArgumentException If shader variables are null, the program has probably not been created,
+     * or if a variable has no mapping in the code.
      */
     protected void addShaderVariable(ShaderVariable variable) {
         if (shaderVariables == null) {
@@ -634,7 +625,7 @@ public abstract class ShaderProgram {
             variable.setOffset(vm.getOffset());
             shaderVariables[vm.getIndex()] = variable;
         } catch (IllegalArgumentException e) {
-            System.out.println("Variable has no mapping: " + variable.getName());
+            throw new IllegalArgumentException("Variable has no mapping: " + variable.getName());
         }
     }
 
@@ -652,9 +643,11 @@ public abstract class ShaderProgram {
     protected void createProgram(GLES20Wrapper gles, String vertexName, String fragmentName) {
         System.out.println("Creating program for: " + vertexShader + " and " + fragmentShader);
         ClassLoader classLoader = getClass().getClassLoader();
+        InputStream vertexStream = null;
+        InputStream fragmentStream = null;
         try {
-            InputStream vertexStream = classLoader.getResourceAsStream(vertexName);
-            InputStream fragmentStream = classLoader.getResourceAsStream(fragmentName);
+            vertexStream = classLoader.getResourceAsStream(vertexName);
+            fragmentStream = classLoader.getResourceAsStream(fragmentName);
             vertexShader = gles.glCreateShader(GLES20.GL_VERTEX_SHADER);
             if (vertexShader == 0) {
                 // Only need to check first source for 0. At least GL has current context.
@@ -668,7 +661,11 @@ public abstract class ShaderProgram {
             fetchProgramInfo(gles);
             bindAttributeNames(gles);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            if (vertexStream == null) {
+                throw new RuntimeException("Could not load " + vertexName);
+            } else {
+                throw new RuntimeException("Could not load " + fragmentName);
+            }
         } catch (GLException e) {
             throw new RuntimeException(e.toString());
         }
@@ -746,7 +743,7 @@ public abstract class ShaderProgram {
      * Returns the size of all the shader varibles of the specified type, either ATTRIBUTE or UNIFORM
      * For uniforms this corresponds to the total size buffer size needed.
      * For attributes this corresponds to the total buffer size needed, normally attribute data is put in
-     * dynanic and static buffers meaning
+     * dynamic and static buffers.
      * 
      * @param variables
      * @param type

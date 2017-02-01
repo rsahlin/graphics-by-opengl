@@ -78,8 +78,6 @@ public class ConvolutionProgram extends ShaderProgram {
         super(VARIABLES.values());
         vertexShaderName = VERTEX_SHADER_NAME;
         fragmentShaderName = FRAGMENT_SHADER_NAME;
-        attributesPerVertex = ATTRIBUTES_PER_VERTEX;
-        components = 5;
     }
 
     @Override
