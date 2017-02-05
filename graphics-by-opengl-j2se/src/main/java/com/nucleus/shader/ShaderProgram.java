@@ -126,7 +126,7 @@ public abstract class ShaderProgram {
     /**
      * Calculated in create program
      */
-    protected ShaderVariable[][] variablesPerBuffer;
+    protected ShaderVariable[][] attributeVariables;
     /**
      * The size of each buffer for the attribute variables
      */
@@ -183,13 +183,13 @@ public abstract class ShaderProgram {
     public abstract int getVariableCount();
 
     /**
-     * Returns the offset within an vertex where the property is, this is used to set specific properties
+     * Returns the offset within an attribute buffer where the property is, this is used to set specific properties
      * of a vertex.
      * This will be the same for all vertices, you only need to fetch this once. It will not change as long
      * as the same program is used.
      * 
      * @param property
-     * @return Offset into attribute where the storage for the specified property is, or -1 if the property
+     * @return Offset into attribute (buffer) where the storage for the specified property is, or -1 if the property
      * is not supported.
      */
     public abstract int getPropertyOffset(Property property);
@@ -266,11 +266,14 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Maps the attributes used based on BufferIndex - attribute variables are sorted based on buffer in the specified
+     * result array.
      * Finds the shader attribute variables per buffer using VariableMapping, iterate through defined (by subclasses)
      * attribute variable mapping.
-     * Put the result in the result array
+     * Put the result in the result array and set the {@linkplain ShaderVariable} offset based on used attributes.
      * 
-     * @param Array to store shader variables for each attribute buffer in, attributes for buffer 1 will go at index 0.
+     * @param resultArray Array to store shader variables for each attribute buffer in, attributes for buffer 1 will go
+     * at index 0.
      */
     private void mapAttributeVariablePerBuffer(ShaderVariable[][] resultArray) {
 
@@ -287,6 +290,16 @@ public abstract class ShaderProgram {
             ArrayList<ShaderVariable> defined = svPerBuffer.get(key);
             if (defined != null) {
                 resultArray[key.index] = defined.toArray(new ShaderVariable[defined.size()]);
+            }
+        }
+    }
+
+    private void dynamicMapShaderOffset(ShaderVariable[] variables, VariableType type) {
+        int offset = 0;
+        for (ShaderVariable v : variables) {
+            if (v != null && v.getType() == type) {
+                v.setOffset(offset);
+                offset += v.getSizeInFloats();
             }
         }
     }
@@ -365,9 +378,9 @@ public abstract class ShaderProgram {
      * @param mesh
      */
     public void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
-        for (int i = 0; i < variablesPerBuffer.length; i++) {
+        for (int i = 0; i < attributeVariables.length; i++) {
             VertexBuffer buffer = mesh.getVerticeBuffer(i);
-            gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, variablesPerBuffer[i]);
+            gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attributeVariables[i]);
             GLUtils.handleError(gles, "glVertexAttribPointers ");
         }
     }
@@ -432,12 +445,27 @@ public abstract class ShaderProgram {
         shaderVariables = new ShaderVariable[getVariableCount()];
         fetchActiveVariables(gles, VariableType.ATTRIBUTE, attribInfo);
         fetchActiveVariables(gles, VariableType.UNIFORM, uniformInfo);
-        variablesPerBuffer = new ShaderVariable[attributeBufferCount][];
+        attributeVariables = new ShaderVariable[attributeBufferCount][];
         attributesPerVertex = new int[attributeBufferCount];
-        mapAttributeVariablePerBuffer(variablesPerBuffer);
+        mapAttributeVariablePerBuffer(attributeVariables);
+        dynamicMapVariables();
         for (int i = 0; i < attributesPerVertex.length; i++) {
-            attributesPerVertex[i] = getVariableSize(variablesPerBuffer[i], VariableType.ATTRIBUTE);
+            attributesPerVertex[i] = getVariableSize(attributeVariables[i], VariableType.ATTRIBUTE);
         }
+    }
+
+    /**
+     * Dynamically sets used shader variable offsets, for ATTRIBUTES and UNIFORMS
+     * The offset will be tightly packed based on used variable size
+     */
+    private void dynamicMapVariables() {
+        for (ShaderVariable[] sv : attributeVariables) {
+            dynamicMapShaderOffset(sv, VariableType.ATTRIBUTE);
+        }
+        // Map the used uniforms from all used shader variables.
+        dynamicMapShaderOffset(shaderVariables, VariableType.UNIFORM);
+        
+
     }
 
     /**
@@ -622,7 +650,9 @@ public abstract class ShaderProgram {
         }
         try {
             VariableMapping vm = getVariableMapping(variable);
-            variable.setOffset(vm.getOffset());
+            // TODO Offset is set dynamically when dynamicMapShaderOffset() is called - create a setting so that
+            //it is possible to toggle between the two modes.
+            // variable.setOffset(vm.getOffset());
             shaderVariables[vm.getIndex()] = variable;
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Variable has no mapping: " + variable.getName());
@@ -821,8 +851,9 @@ public abstract class ShaderProgram {
      * Sets the screensize to uniform storage
      * 
      * @param uniforms
+     * @param uniformScreenSize
      */
-    protected void setScreenSize(float[] uniforms, VariableMapping uniformScreenSize) {
+    protected void setScreenSize(float[] uniforms, ShaderVariable uniformScreenSize) {
         int screenSizeOffset = uniformScreenSize.getOffset();
         uniforms[screenSizeOffset++] = Window.getInstance().getWidth();
         uniforms[screenSizeOffset++] = Window.getInstance().getHeight();

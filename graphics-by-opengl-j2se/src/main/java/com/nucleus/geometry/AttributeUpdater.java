@@ -56,14 +56,14 @@ public interface AttributeUpdater {
      *
      */
     public class PropertyMapper {
-        public final int TRANSLATE_INDEX;
-        public final int ROTATE_INDEX;
-        public final int SCALE_INDEX;
-        public final int FRAME_INDEX;
-        public final int COLOR_INDEX;
-        public final int COLOR_SPECULAR_INDEX;
-        public final int SPECULAR_POWER_INDEX;
-        public final int ATTRIBUTES_PER_VERTEX;
+        public final int translateOffset;
+        public final int rotateOffset;
+        public final int scaleOffset;
+        public final int frameOffset;
+        public final int colorOffset;
+        public final int colorSpecularOffset;
+        public final int specularPowerOffset;
+        public final int attributesPerVertex;
 
         /**
          * Creates the attributer index mapping for the properties with a specific shader program.
@@ -71,14 +71,14 @@ public interface AttributeUpdater {
          * @param program
          */
         public PropertyMapper(ShaderProgram program) {
-            TRANSLATE_INDEX = program.getPropertyOffset(Property.TRANSLATE);
-            ROTATE_INDEX = program.getPropertyOffset(Property.ROTATE);
-            SCALE_INDEX = program.getPropertyOffset(Property.SCALE);
-            FRAME_INDEX = program.getPropertyOffset(Property.FRAME);
-            COLOR_INDEX = program.getPropertyOffset(Property.COLOR);
-            COLOR_SPECULAR_INDEX = program.getPropertyOffset(Property.COLOR);
-            SPECULAR_POWER_INDEX = program.getPropertyOffset(Property.SPECULAR_POWER);
-            ATTRIBUTES_PER_VERTEX = program.getAttributesPerVertex();
+            translateOffset = program.getPropertyOffset(Property.TRANSLATE);
+            rotateOffset = program.getPropertyOffset(Property.ROTATE);
+            scaleOffset = program.getPropertyOffset(Property.SCALE);
+            frameOffset = program.getPropertyOffset(Property.FRAME);
+            colorOffset = program.getPropertyOffset(Property.COLOR);
+            colorSpecularOffset = program.getPropertyOffset(Property.COLOR);
+            specularPowerOffset = program.getPropertyOffset(Property.SPECULAR_POWER);
+            attributesPerVertex = program.getAttributesPerVertex();
         }
     }
 
