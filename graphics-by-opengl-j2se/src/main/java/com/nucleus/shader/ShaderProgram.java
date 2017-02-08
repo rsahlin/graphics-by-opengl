@@ -464,8 +464,6 @@ public abstract class ShaderProgram {
         }
         // Map the used uniforms from all used shader variables.
         dynamicMapShaderOffset(shaderVariables, VariableType.UNIFORM);
-        
-
     }
 
     /**

@@ -24,16 +24,6 @@ public interface VariableMapping {
     public int getIndex();
 
     /**
-     * This should not be used anymore - attribute offsets shall be calculated in runtime by looking at the
-     * used attribute sizes.
-     * The offset into attribute/uniform data where the data for the variable is, this value is used by GL
-     * 
-     * @return Variable data offset, used by GL when setting attribute/uniform data.
-     */
-    @Deprecated
-    public int getOffset();
-
-    /**
      * Returns the type of variable
      * 
      * @return Type of variable

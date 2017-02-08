@@ -26,37 +26,29 @@ public class ConvolutionProgram extends ShaderProgram {
     private final static int ATTRIBUTES_PER_VERTEX = 5;
 
     protected enum VARIABLES implements VariableMapping {
-        uMVPMatrix(0, 0, ShaderVariable.VariableType.UNIFORM, null),
-        uKernel(1, 16, ShaderVariable.VariableType.UNIFORM, null),
-        aPosition(2, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-        aTexCoord(3, 3, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES);
+        uMVPMatrix(0, ShaderVariable.VariableType.UNIFORM, null),
+        uKernel(1, ShaderVariable.VariableType.UNIFORM, null),
+        aPosition(2, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+        aTexCoord(3, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES);
 
         private final int index;
         private final VariableType type;
-        public final int offset;
         private final BufferIndex bufferIndex;
 
         /**
          * @param index Index of the shader variable
-         * @param offset Offset into data array where the variable data source is
          * @param type Type of variable
          * @param bufferIndex Index of buffer in mesh that holds the variable data
          */
-        private VARIABLES(int index, int offset, VariableType type, BufferIndex bufferIndex) {
+        private VARIABLES(int index, VariableType type, BufferIndex bufferIndex) {
             this.index = index;
             this.type = type;
-            this.offset = offset;
             this.bufferIndex = bufferIndex;
         }
 
         @Override
         public int getIndex() {
             return index;
-        }
-
-        @Override
-        public int getOffset() {
-            return offset;
         }
 
         @Override
@@ -123,12 +115,14 @@ public class ConvolutionProgram extends ShaderProgram {
         float[] quadPositions = MeshBuilder.createQuadPositionsUV(width, height, zPos, -width / 2, -height / 2);
         buildQuadMeshFan(mesh, this, quadPositions, 0);
         mesh.setTexture(texture, Texture2D.TEXTURE_0);
-        System.arraycopy(kernel, 0, mesh.getUniforms(), VARIABLES.uKernel.offset, kernel.length);
+        System.arraycopy(kernel, 0, mesh.getUniforms(), shaderVariables[VARIABLES.uKernel.index].getOffset(),
+                kernel.length);
         float deltaU = 1f / texture.getWidth();
         float deltaV = 1f / texture.getHeight();
         float[] uvOffsets = new float[] { -deltaU, 0, deltaU, -deltaU, 0, deltaU, -deltaU, 0, deltaU, -deltaV, 0,
                 deltaV, -deltaV, 0, deltaV, -deltaV, 0, deltaV };
-        System.arraycopy(uvOffsets, 0, mesh.getUniforms(), VARIABLES.uKernel.offset + 9, uvOffsets.length);
+        System.arraycopy(uvOffsets, 0, mesh.getUniforms(), shaderVariables[VARIABLES.uKernel.index].getOffset() + 9,
+                uvOffsets.length);
     }
 
     /**

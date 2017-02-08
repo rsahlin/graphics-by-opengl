@@ -3,7 +3,6 @@ package com.nucleus.convolution;
 import org.junit.Test;
 
 import com.nucleus.camera.ViewFrustum;
-import com.nucleus.convolution.ConvolutionProgram.VARIABLES;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.jogl.NucleusApplication;
@@ -20,6 +19,7 @@ import com.nucleus.renderer.RenderSettings;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.ViewNode;
+import com.nucleus.shader.ShaderVariable;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.TexParameter;
 import com.nucleus.texturing.Texture2D;
@@ -42,6 +42,7 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
     Mesh mesh;
     int counter = 0;
     long start = 0;
+    private ShaderVariable uKernel;
 
     public FGLConvolutionTest() {
         super(new String[] {}, Renderers.GLES20);
@@ -76,6 +77,7 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
 
         mesh = new Mesh();
         ConvolutionProgram c = new ConvolutionProgram();
+        uKernel = c.getShaderVariable(ConvolutionProgram.VARIABLES.uKernel);
         c.createProgram(renderer.getGLES());
         ViewNode node = new ViewNode();
         node.setLayer(Layer.SCENE);
@@ -121,7 +123,7 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
             counter = 0;
         }
         Convolution.normalize(kernel[kernelIndex], normalizedKernel, absNormalize[kernelIndex], factor);
-        System.arraycopy(normalizedKernel, 0, mesh.getUniforms(), VARIABLES.uKernel.offset,
+        System.arraycopy(normalizedKernel, 0, mesh.getUniforms(), uKernel.getOffset(),
                 normalizedKernel.length);
 
     }
