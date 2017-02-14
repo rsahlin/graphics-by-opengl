@@ -15,7 +15,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.super2k.graphics-by-opengl</groupId>
+            <groupId>com.super2k.vecmath</groupId>
             <artifactId>vecmath</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>

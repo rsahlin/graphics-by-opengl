@@ -1,0 +1,29 @@
+group = 'com.super2k.graphics-by-opengl'
+version = '0.0.1-SNAPSHOT'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    sourceCompatibility = JavaVersion.VERSION_1_7
+    targetCompatibility = JavaVersion.VERSION_1_7
+}
+
+apply plugin:'java'
+apply plugin: 'maven-publish'
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+repositories {
+    mavenLocal()
+    jcenter() 
+}
+dependencies {
+    compile 'com.super2k.graphics-by-opengl:graphics-by-opengl-j2se:0.0.1-SNAPSHOT'
+    compile 'org.jogamp.gluegen:gluegen-rt-main:2.3.2'
+    compile 'org.jogamp.jogl:jogl-all-main:2.3.2'
+}

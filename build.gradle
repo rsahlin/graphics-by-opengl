@@ -1,0 +1,10 @@
+allprojects  {
+  group = 'com.super2k.graphics-by-opengl'
+  version = '0.0.1-SNAPSHOT'
+}
+
+subprojects {
+  repositories {
+  	jcenter()
+  }
+}

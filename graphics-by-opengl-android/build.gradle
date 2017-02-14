@@ -1,0 +1,61 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.2'
+		}
+}
+
+
+apply plugin: 'com.android.library'
+
+
+repositories {
+    mavenLocal()
+    jcenter()
+}
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion '25.0.0'
+    lintOptions {
+        disable 'MissingTranslation'
+    }
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            resources.srcDirs = ['res']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['res']
+        }
+	}    
+    
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 21
+        versionCode 1
+        versionName "1"
+        multiDexEnabled true
+    }
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+	compile 'com.google.android.gms:play-services:10.0.1'
+    compile 'com.android.support:multidex:1.0.0'
+    compile 'com.super2k.graphics-by-opengl:graphics-by-opengl-j2se:0.0.1-SNAPSHOT'
+    testCompile 'junit:junit:4.12'
+    testCompile "org.mockito:mockito-core:2.+"
+}
+
+//apply plugin: 'com.google.gms.google-services'
+
+
+
