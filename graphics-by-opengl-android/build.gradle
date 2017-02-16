@@ -1,19 +1,37 @@
+group = 'com.super2k.graphics-by-opengl'
+version = '0.0.1-SNAPSHOT'
+
 buildscript {
     repositories {
         jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.2.2'
-		}
+	}
 }
 
 
 apply plugin: 'com.android.library'
-
+apply plugin: 'maven-publish'
 
 repositories {
     mavenLocal()
     jcenter()
+}
+
+publishing {
+    publications {
+        android(MavenPublication) {
+            groupId 'com.super2k.graphics-by-opengl'
+            artifactId 'graphics-by-opengl-android'
+            version '0.0.1-SNAPSHOT'
+            artifact("$buildDir/outputs/aar/graphics-by-opengl-android-release.aar")            
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+    
 }
 
 android {

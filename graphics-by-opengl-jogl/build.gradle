@@ -26,4 +26,5 @@ dependencies {
     compile 'com.super2k.graphics-by-opengl:graphics-by-opengl-j2se:0.0.1-SNAPSHOT'
     compile 'org.jogamp.gluegen:gluegen-rt-main:2.3.2'
     compile 'org.jogamp.jogl:jogl-all-main:2.3.2'
+    testCompile 'junit:junit:4.12'  
 }
