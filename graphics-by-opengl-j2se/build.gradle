@@ -10,12 +10,18 @@ tasks.withType(JavaCompile) {
 apply plugin:'java'
 apply plugin: 'maven-publish'
 
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            from components.java
+            artifact (sourcesAndClasses)
         }
     }
+}
+
+task sourcesAndClasses(type: Jar) {
+   from sourceSets.main.output
+   from sourceSets.main.allJava
 }
 
 repositories {
