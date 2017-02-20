@@ -171,6 +171,9 @@ public abstract class BaseImageFactory implements ImageFactory {
             case RGB565:
                 copyPixels_4BYTE_RGBA_TO_RGB565(source, buffer);
                 break;
+            case RGB5_A1:
+            	copyPixels_4BYTE_RGBA_TO_RGB5551(source, buffer);
+            	break;
             default:
                 throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
             }
@@ -210,16 +213,35 @@ public abstract class BaseImageFactory implements ImageFactory {
         int r, g, b, a;
         int rgbint;
         for (int index = 0; index < length;) {
-            a = source[index++];
-            r = source[index++];
-            g = source[index++];
-            b = source[index++];
-            rgbint = (r >>> 3) | ((g >>> 2) << 5) | ((b >>> 3) << 11);
+            r = (source[index++] & 0x0ff);
+            g = (source[index++] & 0x0ff);
+            b = (source[index++] & 0x0ff);
+            a = (source[index++] & 0x0ff);
+            rgbint = (b >> 3) | ((g >> 2) << 5) | ((r >> 3) << 11);
             rgb[0] = (byte) (rgbint & 0xff);
-            rgb[1] = (byte) (rgbint >>> 8);
+            rgb[1] = (byte) (rgbint >> 8);
             destination.put(rgb, 0, 2);
         }
     }
+    
+    protected void copyPixels_4BYTE_RGBA_TO_RGB5551(byte[] source, ByteBuffer destination) {
+        byte[] rgb = new byte[2];
+        int length = source.length;
+        int r, g, b, a;
+        int rgbint;
+        for (int index = 0; index < length;) {
+            r = (source[index++] & 0x0ff);
+            g = (source[index++] & 0x0ff);
+            b = (source[index++] & 0x0ff);
+            a = source[index++] == 0 ? 0 : 1;
+            rgbint = (b >> 3) << 1 | ((g >> 3) << 6) | ((r >> 3) << 11) | a;
+            rgb[0] = (byte) (rgbint & 0xff);
+            rgb[1] = (byte) (rgbint >> 8);
+            destination.put(rgb, 0, 2);
+        }
+    }
+    
+    
 
     /**
      * Straight copy from source to destination
