@@ -31,4 +31,6 @@ proguard/
 /target/
 .settings/
 *.properties
+*.externalToolBuilders
+
 
