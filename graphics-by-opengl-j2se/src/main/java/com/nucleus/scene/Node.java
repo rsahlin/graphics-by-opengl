@@ -37,10 +37,45 @@ import com.nucleus.vecmath.Transform;
  */
 public class Node extends BaseReference implements MMIEventListener {
 
-    @SerializedName("type")
+    public static final String STATE = "state";
+    public static final String TYPE = "type";
+
+    /**
+     * The states a node can be in, this controlls if node is rendered etc.
+     * This can be used to skip nodes from being rendered or processed.
+     * 
+     * @author Richard Sahlin
+     *
+     */
+    public enum State {
+
+        /**
+         * Node is on, rendered and actors processed
+         */
+        ON(1),
+        /**
+         * Node is off, not rendered and no actors processed
+         */
+        OFF(2),
+        /**
+         * Node is rendered, but no actors processed
+         */
+        RENDER(3),
+        /**
+         * Node is not rendered, but actors processed
+         */
+        ACTOR(4);
+
+        private final int value;
+
+        private State(int value) {
+            this.value = value;
+        }
+
+    }
+
+    @SerializedName(TYPE)
     private String type;
-    @SerializedName("state")
-    private NodeState state;
     @SerializedName("transform")
     protected Transform transform;
     @SerializedName("viewFrustum")
@@ -58,6 +93,10 @@ public class Node extends BaseReference implements MMIEventListener {
 
     @SerializedName("material")
     private Material material;
+
+    @SerializedName(STATE)
+    private State state = State.ON;
+
     /**
      * Reference to texture, used when importing / exporting.
      * No runtime meaning
@@ -111,7 +150,6 @@ public class Node extends BaseReference implements MMIEventListener {
     public Node(String id) {
         setId(id);
     }
-
 
     /**
      * Creates a new instance of this node.
@@ -405,6 +443,7 @@ public class Node extends BaseReference implements MMIEventListener {
         super.set(source);
         type = source.type;
         textureRef = source.textureRef;
+        state = source.state;
         copyTransform(source);
         copyViewFrustum(source);
         copyMaterial(source);
@@ -583,10 +622,18 @@ public class Node extends BaseReference implements MMIEventListener {
      * 
      * @return The state, or null if not set
      */
-    public NodeState getState() {
+    public State getState() {
         return state;
     }
 
+    /**
+     * Sets the state of this node
+     * 
+     * @param state
+     */
+    public void setState(State state) {
+        this.state = state;
+    }
 
     /**
      * Returns the external reference of the texture for this node, this is used when importing

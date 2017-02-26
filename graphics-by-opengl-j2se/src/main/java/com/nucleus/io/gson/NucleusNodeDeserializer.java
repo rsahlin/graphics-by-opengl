@@ -26,9 +26,12 @@ public class NucleusNodeDeserializer extends NucleusDeserializer implements Json
             throws JsonParseException {
 
         JsonObject obj = json.getAsJsonObject();
-        // TODO The type string shall be put in constant field and used with @SerializedName
-        NodeType t = NodeType.valueOf(obj.get("type").getAsString());
-        return (Node) gson.fromJson(json, t.getTypeClass());
+        NodeType t = NodeType.valueOf(obj.get(Node.TYPE).getAsString());
+        Node node = (Node) gson.fromJson(json, t.getTypeClass());
+        if (node instanceof PostDeserializable) {
+            ((PostDeserializable) node).postDeserialize();
+        }
+        return node;
     }
 
 }

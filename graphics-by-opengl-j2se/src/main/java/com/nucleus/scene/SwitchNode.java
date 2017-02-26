@@ -1,17 +1,14 @@
 package com.nucleus.scene;
 
-import java.util.ArrayList;
-
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.io.gson.PostDeserializable;
 
 /**
- * Node that can switch between one active child node, this is done by returning this when {@link #getChildren()} is
- * called.
- * Switching the active node is done by calling
- * The node itself can be rendered as any normal Node
+ * Node that can switch between one active child node, the active node is set by calling {@link #setActive(String)}
+ * This will mark the specified Node as {@link State#ON} the other children will be toggled to {@link State#OFF}
  * This node can be serialized using GSON
  */
-public class SwitchNode extends Node {
+public class SwitchNode extends Node implements PostDeserializable {
 
     /**
      * The Id of the current active child Node, if null all child nodes will be returned when {@link #getChildren()}
@@ -19,11 +16,6 @@ public class SwitchNode extends Node {
      */
     @SerializedName("active")
     private String active;
-
-    /**
-     * The active children, this is the list that will be returned when {@link #getChildren()} is called
-     */
-    transient private ArrayList<Node> activeChildren;
 
     @Override
     public SwitchNode createInstance() {
@@ -58,37 +50,27 @@ public class SwitchNode extends Node {
         this.active = source.active;
     }
 
-    @Override
-    public ArrayList<Node> getChildren() {
-        if (active == null) {
-            return super.getChildren();
-        }
-        if (activeChildren == null) {
-            setActive(active);
-        }
-        return activeChildren;
-    }
-
     /**
      * Sets the active node in the children.
      * Next call to {@link #getChildren()} will return a list containing the node with the matching id.
      * 
      * @param activeId Id of the child node to set as active, all other children will be inactive
-     * @throws IllegalArgumentException If activeId is not a childnode
      */
     protected void setActive(String activeId) {
         active = activeId;
-        if (activeChildren == null) {
-            activeChildren = new ArrayList<>();
-        } else {
-            activeChildren.clear();
-        }
-        Node active = getChildById(activeId);
-        if (active != null) {
-            activeChildren.add(active);
-        } else {
-            throw new IllegalArgumentException("Could not find child with id: " + activeId);
+        for (Node child : children) {
+            if (child.getId().equals(activeId)) {
+                child.setState(State.ON);
+            } else {
+                child.setState(State.OFF);
+            }
         }
     }
 
+    @Override
+    public void postDeserialize() {
+        if (active != null) {
+            setActive(active);
+        }
+    }
 }

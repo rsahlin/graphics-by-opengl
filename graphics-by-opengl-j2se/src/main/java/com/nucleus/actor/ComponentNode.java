@@ -12,9 +12,8 @@ import com.nucleus.scene.Node;
 import com.nucleus.system.ComponentHandler;
 
 /**
- * For nodes that contain component objects
- * Holds one or more components
- * To automatically process components set the {@link LogicProcessor} in
+ * For nodes that contain component objects Holds one or more components To
+ * automatically process components set the {@link LogicProcessor} in
  * {@link CoreApp#setLogicProcessor(LogicProcessor)}
  * 
  * @author Richard Sahlin
@@ -22,11 +21,11 @@ import com.nucleus.system.ComponentHandler;
  */
 public class ComponentNode extends Node implements ComponentController {
 
-    transient public State controllerState = State.CREATED;
+    transient public ComponentState componentState = ComponentState.CREATED;
 
     @SerializedName("components")
     private ArrayList<Component> components = new ArrayList<>();
-    
+
     /**
      * Default constructor
      */
@@ -62,7 +61,8 @@ public class ComponentNode extends Node implements ComponentController {
      * 
      * @param renderer
      * @param resources
-     * @throws ComponentException If one or more of the components could not be created
+     * @throws ComponentException
+     * If one or more of the components could not be created
      */
     public void createComponents(NucleusRenderer renderer, ResourcesData resources) throws ComponentException {
         for (Component c : components) {
@@ -102,7 +102,8 @@ public class ComponentNode extends Node implements ComponentController {
     }
 
     /**
-     * Perform processing on the component, this shall take the state of the component into consideration.
+     * Perform processing on the component, this shall take the state of the
+     * component into consideration.
      * 
      * @param deltaTime
      */
@@ -114,8 +115,8 @@ public class ComponentNode extends Node implements ComponentController {
     }
 
     @Override
-    public State getControllerState() {
-        return controllerState;
+    public ComponentState getControllerState() {
+        return componentState;
     }
 
     @Override
@@ -144,7 +145,7 @@ public class ComponentNode extends Node implements ComponentController {
 
     @Override
     public void init() {
-        controllerState = State.INITIALIZED;
+        componentState = ComponentState.INITIALIZED;
     }
 
 }

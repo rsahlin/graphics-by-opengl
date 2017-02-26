@@ -24,7 +24,7 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.Node;
-import com.nucleus.scene.NodeState;
+import com.nucleus.scene.Node.State;
 import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewNode;
@@ -133,8 +133,6 @@ class BaseRenderer implements NucleusRenderer {
             throw new IllegalArgumentException(RenderContextListener.INVALID_CONTEXT_DIMENSION);
         }
         resizeWindow(0, 0, width, height);
-        renderSettings.setViewPort(0, 0, width, height);
-
         for (RenderContextListener listener : contextListeners) {
             listener.contextCreated(width, height);
         }
@@ -239,8 +237,8 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(Node node) throws GLException {
-        NodeState state = node.getState();
-        if (state == null || state == NodeState.on || state == NodeState.render) {
+        State state = node.getState();
+        if (state == null || state == State.ON || state == State.RENDER) {
             if (NodeType.viewnode.name().equals(node.getType())) {
                 Transform view = ((ViewNode) node).getView();
                 if (view != null) {

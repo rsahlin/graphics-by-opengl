@@ -1,7 +1,8 @@
 package com.nucleus.actor;
 
-import com.nucleus.actor.ComponentController.State;
+import com.nucleus.actor.ComponentController.ComponentState;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.Node.State;
 
 /**
  * Logic processor implementation
@@ -13,12 +14,12 @@ public class J2SELogicProcessor implements LogicProcessor {
 
     @Override
     public void processNode(Node node, float deltaTime) {
-        if (node == null) {
+         if (node == null) {
             return;
         }
         if (node instanceof ComponentNode) {
             ComponentNode actorNode = (ComponentNode) node;
-            if (actorNode.getControllerState() == State.CREATED) {
+            if (actorNode.getControllerState() == ComponentState.CREATED) {
                 actorNode.init();
             }
             ActorContainer[] lcArray = actorNode.getActorContainer();
@@ -33,7 +34,9 @@ public class J2SELogicProcessor implements LogicProcessor {
         }
         // Process children
         for (Node child : node.getChildren()) {
-            processNode(child, deltaTime);
+            if (child.getState() == null || child.getState() == State.ACTOR || child.getState() == State.ON) {
+                processNode(child, deltaTime);
+            }
         }
     }
 

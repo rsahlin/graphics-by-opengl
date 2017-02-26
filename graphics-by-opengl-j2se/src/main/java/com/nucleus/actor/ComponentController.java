@@ -14,7 +14,7 @@ public interface ComponentController {
      * @author Richard Sahlin
      *
      */
-    public enum State {
+    public enum ComponentState {
         /**
          * Set when the the component is created
          */
@@ -32,12 +32,12 @@ public interface ComponentController {
     }
 
     /**
-     * Sets the controller in the {@value State#PLAY} state, component processing will be done using delta time
+     * Sets the controller in the {@value ComponentState#PLAY} state, component processing will be done using delta time
      */
     public void play();
 
     /**
-     * Sets the controller in the {@value State#PAUSE} state, component processing will NOT be done
+     * Sets the controller in the {@value ComponentState#PAUSE} state, component processing will NOT be done
      * Call {@link #play()} to resume
      */
     public void pause();
@@ -45,19 +45,19 @@ public interface ComponentController {
     /**
      * Sets the controller in the stopped state, component processing will not be done.
      * This is for components that shall have specific stop behavior.
-     * The state shall be set to {@value State#STOPPED} Call {@link #play()} to start the component again.
+     * The state shall be set to {@value ComponentState#STOPPED} Call {@link #play()} to start the component again.
      * 
      */
     public void stop();
 
     /**
      * Resets the controller to initial values, for instance setting position or animations.
-     * The state shall be set to {@value State#STOPPED} Call {@link #play()} to start the component
+     * The state shall be set to {@value ComponentState#STOPPED} Call {@link #play()} to start the component
      */
     public void reset();
 
     /**
-     * Initializes the controller, the state shall be {@value State#INITIALIZED} after this method has been called
+     * Initializes the controller, the state shall be {@value ComponentState#INITIALIZED} after this method has been called
      */
     public void init();
 
@@ -66,6 +66,6 @@ public interface ComponentController {
      * 
      * @return
      */
-    public State getControllerState();
+    public ComponentState getControllerState();
 
 }
