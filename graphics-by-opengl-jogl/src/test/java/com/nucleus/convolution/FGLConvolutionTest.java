@@ -14,7 +14,6 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.renderer.NucleusRenderer.Layer;
-import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.RenderSettings;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
@@ -26,7 +25,7 @@ import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
 
-public class FGLConvolutionTest extends NucleusApplication implements RenderContextListener, FrameListener,
+public class FGLConvolutionTest extends NucleusApplication implements FrameListener,
         MMIEventListener {
 
     private final static float[] kernel1 = new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 };
@@ -45,30 +44,30 @@ public class FGLConvolutionTest extends NucleusApplication implements RenderCont
     private ShaderVariable uKernel;
 
     public FGLConvolutionTest() {
-        super(new String[] {}, Renderers.GLES20);
+        super(new String[] {}, Renderers.GLES20, null);
     }
 
     public static void main(String[] args) {
         FGLConvolutionTest main = new FGLConvolutionTest();
-        main.createCore(Renderers.GLES20);
+        main.createCoreWindows(Renderers.GLES20);
     }
 
     @Test
     public void testGLConvolution() throws GLException {
-        createCore(Renderers.GLES20);
+        createCoreWindows(Renderers.GLES20);
     }
 
     @Override
-    public void createCore(Renderers version) {
+    public void createCoreWindows(Renderers version) {
         windowWidth = 1920;
         windowHeight = 1080;
         swapInterval = 0;
-        super.createCore(version);
+        super.createCoreWindows(version);
     }
 
     @Override
-    public void contextCreated(int width, int height) {
-        super.contextCreated(width, height);
+    public void createCoreApp(int width, int height) {
+        super.createCoreApp(width, height);
         NucleusRenderer renderer = getRenderer();
         RenderSettings rs = renderer.getRenderSettings();
         rs.setCullFace(GLES20.GL_NONE);

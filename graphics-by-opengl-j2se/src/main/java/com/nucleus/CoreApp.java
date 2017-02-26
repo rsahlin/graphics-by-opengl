@@ -48,15 +48,23 @@ public class CoreApp {
      */
     public interface CoreAppStarter {
         /**
-         * Creates window if necessary, the gles wrapper and core application using NucleusRenderer with the specified
-         * GLES version.
+         * Create the core renderer and windows, this method is called before GL context is available.
          * Note, this method will only create the underlying renderer of the correct version, it is not guaranteed
-         * that the GL context is created - do not perform any rendering until the {@link CoreApp#contextCreated} method
-         * has been called.
+         * that the GL context is created - do not perform any rendering until the {@link CoreApp#contextCreated} or {@link #createCoreApp(int, int)} method
+         * is called.
          * 
          * @param version Version of GLES to use.
          */
-        public void createCore(Renderers version);
+        public void createCoreWindows(Renderers version);
+        
+        /**
+         * Create the {@link CoreApp} implementation for the platform, the renderer is now created and has a valid GL context.
+         * Do one time setup - for instance displaying splash and create, but do not initialize the {@link ClientApplication}
+         * 
+         * @param width The width of the display window
+         * @param height The height of the display window
+         */
+        public void createCoreApp(int width, int height);
     }
 
     /**
@@ -85,6 +93,10 @@ public class CoreApp {
      */
     protected NucleusRenderer renderer;
     /**
+     * The implementation of main application
+     */
+    protected ClientApplication clientApp;
+    /**
      * The scene rootnode
      */
     protected RootNode rootNode;
@@ -111,10 +123,22 @@ public class CoreApp {
      * Creates a new Core application with the specified renderer.
      * Call {@link #drawFrame()} to produce frames and call attached {@link FrameListener}
      * 
-     * @param renderer
+     * @param renderer Initialized renderer
+     * @param clientApp The client main app implementation
+     * @throws IllegalArgumentException If renderer has not been initialized or is null, or if clientApp is null
      */
-    public CoreApp(NucleusRenderer renderer) {
+    public CoreApp(NucleusRenderer renderer, ClientApplication clientApp) {
+    	if (renderer == null) {
+    		throw new IllegalArgumentException("Renderer is null");
+    	}
+    	if (clientApp == null) {
+    		throw new IllegalArgumentException("ClientApplication is null");
+    	}
+    	if (!renderer.isInitialized()) {
+    		throw new IllegalArgumentException("Renderer has not been initialized");
+    	}
         this.renderer = renderer;
+        this.clientApp = clientApp;
         logicRunnable = new LogicProcessorRunnable(renderer, new J2SELogicProcessor());
         if (Runtime.getRuntime().availableProcessors() > 1) {
             System.out.println("Started extra process for logic processing, number of processors: "
@@ -147,6 +171,7 @@ public class CoreApp {
     /**
      * Call this to signal that EGL context was created, if this is the first time context is created then display the
      * splash screen.
+     * Will initialize the renderer and call {@link NucleusRenderer# (int, int)}
      * Must be called before {@link #drawFrame()} is called.
      * 
      * @param width Width of gl surface
@@ -157,12 +182,13 @@ public class CoreApp {
         if (!getRenderer().isInitialized()) {
             getRenderer().init(new SurfaceConfiguration(), width, height);
             try {
-                // The caller shall make sure that buffer are swapped so that the result is visible
+                // The caller shall make sure that buffers are swapped so that the result is visible
                 displaySplash();
             } catch (GLException e) {
                 throw new RuntimeException(e);
             }
         }
+        clientApp.init(this);
         renderer.contextCreated(width, height);
     }
 
@@ -286,4 +312,28 @@ public class CoreApp {
         renderer.render(root);
         renderer.endFrame();
     }
+    
+    /**
+     * Util method to create the coreapp and dispolay splash. Caller must swapp buffer for splash to be visible.
+     * @param width
+     * @param height
+     * @param renderer
+     * @param clientClass
+     * @return Instance of {@link CoreApp} with the specified clientclass {@link ClientApplication}
+     */
+    public static CoreApp createCoreApp(int width, int height, NucleusRenderer renderer, Class<?> clientClass) {
+    	renderer.init(new SurfaceConfiguration(), width, height);
+    	try {
+            CoreApp coreApp = new CoreApp(renderer, (ClientApplication) clientClass.newInstance());
+            try {
+                coreApp.displaySplash();
+            } catch (GLException e) {
+            	throw new RuntimeException(e);
+            }
+            return coreApp;
+    	} catch (IllegalAccessException |InstantiationException e) {
+    		throw new RuntimeException(e);
+    	}
+    }
+    
 }

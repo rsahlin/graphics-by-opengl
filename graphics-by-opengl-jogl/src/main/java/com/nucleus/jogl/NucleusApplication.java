@@ -1,13 +1,13 @@
 package com.nucleus.jogl;
 
 import com.nucleus.CoreApp;
+import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.J2SELogger;
 import com.nucleus.SimpleLogger;
 import com.nucleus.matrix.j2se.J2SEMatrixEngine;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.RendererFactory;
 import com.nucleus.texturing.J2SEImageFactory;
 
@@ -18,21 +18,33 @@ import com.nucleus.texturing.J2SEImageFactory;
  * @author Richard Sahlin
  *
  */
-public class NucleusApplication implements CoreAppStarter, RenderContextListener, WindowListener {
+public class NucleusApplication implements CoreAppStarter, WindowListener {
 
     public final static String WINDOW_WIDTH_KEY = "WINDOW-WIDTH";
     public final static String WINDOW_HEIGHT_KEY = "WINDOW-HEIGHT";
 
     protected JOGLGLES20Window window;
     protected CoreApp coreApp;
+    protected Class<?> clientClass;
     protected int swapInterval = 1;
     protected int windowWidth = 480;
     protected int windowHeight = 800;
 
-    public NucleusApplication(String[] args, Renderers version) {
+    /**
+     * Creates a new application starter with the specified renderer and client main class implementation.
+     * @param args
+     * @param version
+     * @param clientClass Must implement {@link ClientApplication}
+     * @throws IllegalArgumentException If clientClass is null
+     */
+    public NucleusApplication(String[] args, Renderers version, Class<?> clientClass) {
         SimpleLogger.setLogger(new J2SELogger());
+        if (clientClass == null) {
+        	throw new IllegalArgumentException("ClientClass is null");
+        }
+        this.clientClass = clientClass;
         setProperties(args);
-        createCore(version);
+        createCoreWindows(version);
     }
 
     /**
@@ -66,7 +78,7 @@ public class NucleusApplication implements CoreAppStarter, RenderContextListener
     }
 
     @Override
-    public void createCore(Renderers version) {
+    public void createCoreWindows(Renderers version) {
         switch (version) {
         case GLES20:
             createGLES20Window();
@@ -77,13 +89,10 @@ public class NucleusApplication implements CoreAppStarter, RenderContextListener
     }
 
     @Override
-    public void contextCreated(int width, int height) {
-        if (coreApp == null) {
-            coreApp = new CoreApp(RendererFactory.getRenderer(window.getGLESWrapper(), new J2SEImageFactory(),
-                    new J2SEMatrixEngine()));
-            window.setCoreApp(coreApp);
-        }
-        coreApp.contextCreated(width, height);
+    public void createCoreApp(int width, int height) {
+    	NucleusRenderer renderer = RendererFactory.getRenderer(window.getGLESWrapper(), new J2SEImageFactory(), new J2SEMatrixEngine());
+    	coreApp = CoreApp.createCoreApp(width, height, renderer, clientClass);
+        window.setCoreApp(coreApp);
     }
 
     /**
@@ -110,4 +119,5 @@ public class NucleusApplication implements CoreAppStarter, RenderContextListener
     @Override
     public void windowClosed() {
     }
+
 }

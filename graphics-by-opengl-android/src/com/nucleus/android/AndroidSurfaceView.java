@@ -8,10 +8,9 @@ import javax.microedition.khronos.egl.EGLSurface;
 import javax.microedition.khronos.opengles.GL10;
 
 import com.nucleus.CoreApp;
+import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.PointerData.PointerAction;
-import com.nucleus.opengl.GLException;
-import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.renderer.Window;
 
@@ -24,8 +23,6 @@ import android.view.MotionEvent;
 public class AndroidSurfaceView extends GLSurfaceView
         implements GLSurfaceView.EGLConfigChooser, Renderer, EGLWindowSurfaceFactory {
 
-    private final static String NULL_CORE_RENDERER_ERROR = "Core application renderer is null";
-    protected RenderContextListener listener;
     /**
      * Use an interface instead of CoreApp
      */
@@ -42,7 +39,6 @@ public class AndroidSurfaceView extends GLSurfaceView
     private EGLDisplay display;
     private EGLConfig eglConfig;
     private EGLSurface eglSurface;
-    private boolean contextCreated;
 
     /**
      * The result surface configuration from EGL
@@ -54,20 +50,23 @@ public class AndroidSurfaceView extends GLSurfaceView
      */
     private SurfaceConfiguration wantedConfig = new SurfaceConfiguration();
 
+    CoreApp.CoreAppStarter coreAppStarter;
+    
     /**
      * Creates a new surface view for GL, this class will be used for Renderer, will choose EGL config based on
      * configuration
      * 
      * @param wantedConfig The wanted surface config
      * @param context
-     * @param listener
+     * @param clientClass Must implement {@link ClientApplication}
+     * @throws IllegalArgumentException If clientClass is null
      */
-    public AndroidSurfaceView(SurfaceConfiguration wantedConfig, Context context, RenderContextListener listener) {
+    public AndroidSurfaceView(SurfaceConfiguration wantedConfig, Context context, CoreApp.CoreAppStarter coreAppStarter) {
         super(context);
-        if (listener == null) {
-            throw new IllegalArgumentException("RenderContextListener is null");
-        }
-        this.listener = listener;
+    	if (coreAppStarter == null) {
+    		throw new IllegalArgumentException("CoreAppStarter is null");
+    	}
+        this.coreAppStarter = coreAppStarter;
         setEGLWindowSurfaceFactory(this);
         this.wantedConfig = wantedConfig;
         setEGLContextClientVersion(2);
@@ -160,29 +159,6 @@ public class AndroidSurfaceView extends GLSurfaceView
         this.coreApp = coreApp;
     }
 
-    private void contextCreated() {
-        try {
-            if (!coreApp.getRenderer().isInitialized()) {
-                SimpleLogger.d(getClass(), "Calling renderer.init()");
-                coreApp.getRenderer().init(surfaceConfig, getWidth(), getHeight());
-                try {
-                    coreApp.displaySplash();
-                } catch (GLException e) {
-                    throw new RuntimeException(e);
-                }
-                egl.eglSwapBuffers(display, eglSurface);
-                checkEGLError("eglSwapBuffers()");
-            }
-            if (!contextCreated) {
-                contextCreated = true;
-                SimpleLogger.d(getClass(), "Calling CoreApp.contextCreated(" + getWidth() + ", " + getHeight() + ")");
-                coreApp.contextCreated(getWidth(), getHeight());
-            }
-        } catch (Throwable t) {
-            handleThrowable(t);
-        }
-    }
-
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         SimpleLogger.d(getClass(), "surfaceCreated() " + getWidth() + ", " + getHeight());
@@ -192,7 +168,7 @@ public class AndroidSurfaceView extends GLSurfaceView
             SimpleLogger.d(getClass(),
                     "onSurfaceCreated(EGLConfig) has: " + surfaceConfig.toString());
         }
-        listener.contextCreated(getWidth(), getHeight());
+        coreAppStarter.createCoreApp(getWidth(),  getHeight());
         egl.eglSwapBuffers(display, eglSurface);
         checkEGLError("eglSwapBuffers()");
         // Call contextCreated since the renderer is already initialized and has a created EGL context.
@@ -218,7 +194,6 @@ public class AndroidSurfaceView extends GLSurfaceView
     @Override
     public void destroySurface(EGL10 egl, EGLDisplay display, EGLSurface surface) {
         SimpleLogger.d(getClass(), "destroySurface()");
-        contextCreated = false;
         if (eglSurface != null && display != null) {
             egl.eglDestroySurface(display, eglSurface);
             eglSurface = null;

@@ -5,7 +5,7 @@ import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.SimpleLogger;
 import com.nucleus.matrix.android.AndroidMatrixEngine;
 import com.nucleus.opengl.GLESWrapper.Renderers;
-import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RendererFactory;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.texture.android.AndroidImageFactory;
@@ -27,7 +27,7 @@ import android.view.WindowManager.LayoutParams;
  *
  */
 public class NucleusActivity extends Activity
-        implements DialogInterface.OnClickListener, CoreAppStarter, RenderContextListener {
+        implements DialogInterface.OnClickListener, CoreAppStarter {
 
     /**
      * Android specific objects
@@ -37,14 +37,18 @@ public class NucleusActivity extends Activity
     private static NucleusActivity activity;
 
     protected CoreApp coreApp;
+    protected Class<?> clientClass;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         SimpleLogger.setLogger(new AndroidLogger());
         SimpleLogger.d(getClass(), "onCreate()");
+        if (clientClass == null) {
+        	throw new IllegalArgumentException("ClientClass must be set before calling super.onCreate()");
+        }
         activity = this;
         super.onCreate(savedInstanceState);
-        createCore(Renderers.GLES20);
+        createCoreWindows(Renderers.GLES20);
     }
 
     @Override
@@ -109,18 +113,16 @@ public class NucleusActivity extends Activity
     }
 
     @Override
-    public void createCore(Renderers version) {
+    public void createCoreWindows(Renderers version) {
         setup(GLSurfaceView.RENDERMODE_CONTINUOUSLY, LayoutParams.FLAG_FULLSCREEN,
                 Window.FEATURE_NO_TITLE);
     }
 
     @Override
-    public void contextCreated(int width, int height) {
-        if (coreApp == null) {
-            coreApp = new CoreApp(RendererFactory.getRenderer(new AndroidGLES20Wrapper(), new AndroidImageFactory(),
-                    new AndroidMatrixEngine()));
-            mGLView.setCoreApp(coreApp);
-        }
-        coreApp.contextCreated(width, height);
+    public void createCoreApp(int width, int height) {
+        NucleusRenderer renderer = RendererFactory.getRenderer(new AndroidGLES20Wrapper(), new AndroidImageFactory(),
+                new AndroidMatrixEngine());
+        coreApp = CoreApp.createCoreApp(width, height, renderer, clientClass);
+        mGLView.setCoreApp(coreApp);
     }
 }

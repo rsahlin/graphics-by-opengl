@@ -15,10 +15,10 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.Animator;
 import com.nucleus.CoreApp;
+import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.opengl.GLESWrapper;
-import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.Window;
 
 /**
@@ -44,32 +44,51 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, c
     private boolean mouseConfined = false;
     private int swapInterval = 1;
     protected volatile boolean contextCreated = false;
-    protected RenderContextListener listener;
     /**
      * Use an interface instead of CoreApp
      */
     protected CoreApp coreApp;
+    protected CoreApp.CoreAppStarter coreAppStarter;
     protected GLCanvas canvas;
     protected Frame frame;
     protected GLWindow glWindow;
     WindowListener windowListener;
-
     protected GLESWrapper glesWrapper;
 
-    public JOGLGLEWindow(int width, int height, GLProfile glProfile, RenderContextListener listener) {
-        this.listener = listener;
-        windowSize = new Dimension(width, height);
-        createNEWTWindow(width, height, glProfile);
+    /**
+     * Creates a new JOGL window with the specified {@link CoreAppStarter}
+     * @param width
+     * @param height
+     * @param glProfile
+     * @param coreAppStarter
+     * @throws IllegalArgumentException If coreAppStarter is null
+     */
+    public JOGLGLEWindow(int width, int height, GLProfile glProfile, CoreApp.CoreAppStarter coreAppStarter) {
     }
 
-    public JOGLGLEWindow(int width, int height, GLProfile glProfile, RenderContextListener listener, int swapInterval) {
-        this.listener = listener;
+    /**
+     * Creates a new JOGL window with the specified {@link CoreAppStarter} and swapinterval
+     * @param width
+     * @param height
+     * @param glProfile
+     * @param coreAppStarter
+     * @param swapInterval
+     * @throws IllegalArgumentException If coreAppStarter is null
+     */
+    public JOGLGLEWindow(int width, int height, GLProfile glProfile, CoreApp.CoreAppStarter coreAppStarter, int swapInterval) {
         this.swapInterval = swapInterval;
-        windowSize = new Dimension(width, height);
-        createNEWTWindow(width, height, glProfile);
-
+    	create(width, height, glProfile, coreAppStarter);
     }
 
+    private void create(int width, int height, GLProfile glProfile, CoreApp.CoreAppStarter coreAppStarter) {
+    	if (coreAppStarter == null) {
+    		throw new IllegalArgumentException("CoreAppStarter is null");
+    	}
+    	this.coreAppStarter = coreAppStarter;
+        windowSize = new Dimension(width, height);
+        createNEWTWindow(width, height, glProfile);
+    }
+    
     /**
      * Creates the JOGL display and OpenGLES
      * 
@@ -100,7 +119,6 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, c
     }
 
     private void createAWTWindow(int width, int height, GLProfile glProfile) {
-
         GLCapabilities caps = new GLCapabilities(glProfile);
         caps.setBackgroundOpaque(false);
         glWindow = GLWindow.create(caps);
@@ -120,7 +138,6 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, c
         // frame.add(canvas);
         // frame.validate();
         // GLProfile.initSingleton();
-
     }
 
     public void setTitle(String title) {
@@ -173,7 +190,7 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, c
 
     @Override
     public void init(GLAutoDrawable drawable) {
-        listener.contextCreated(getWidth(), getHeight());
+    	coreAppStarter.createCoreApp(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
         drawable.swapBuffers();
         drawable.getGL().setSwapInterval(swapInterval);
         // Call contextCreated since the renderer is already initialized and has a created EGL context.
