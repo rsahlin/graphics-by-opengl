@@ -1,7 +1,7 @@
 package com.nucleus.io.gson;
 
 /**
- * Interface for objects that can be post processed, ie they need to have some functionallity run AFTER json
+ * Interface for objects that can be post processed, ie they need to have some functionality run AFTER json
  * deserialization
  *
  */
