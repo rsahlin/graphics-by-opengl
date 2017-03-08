@@ -8,6 +8,7 @@ import com.nucleus.io.ExternalReference;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
+import com.nucleus.texturing.TextureType;
 
 /**
  * Loading and unloading assets, mainly textures.
@@ -80,6 +81,12 @@ public class AssetManager {
      * @throws IOException
      */
     public Texture2D getTexture(NucleusRenderer renderer, Texture2D source) throws IOException {
+        /**
+         * External ref for untextured needs to be "" so it can be store and fetched.
+         */
+        if (source.getTextureType() == TextureType.Untextured) {
+            source.setExternalReference(new ExternalReference(""));
+        }
         ExternalReference ref = source.getExternalReference();
         String refSource = ref.getSource();
         HashMap<Texture2D, Texture2D> classMap = null;

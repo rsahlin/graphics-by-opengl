@@ -2,17 +2,11 @@ package com.nucleus.geometry;
 
 import static com.nucleus.geometry.VertexBuffer.INDEXED_QUAD_VERTICES;
 import static com.nucleus.geometry.VertexBuffer.XYZUV_COMPONENTS;
-import static com.nucleus.vecmath.Rectangle.HEIGHT;
-import static com.nucleus.vecmath.Rectangle.WIDTH;
-import static com.nucleus.vecmath.Rectangle.X;
-import static com.nucleus.vecmath.Rectangle.Y;
 
 import java.nio.ByteBuffer;
 
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.texturing.TiledTexture2D;
-import com.nucleus.vecmath.Rectangle;
 
 /**
  * Utility class to help build different type of Meshes.
@@ -72,97 +66,6 @@ public class MeshBuilder {
         buffer.putFloat(x);
         buffer.putFloat(y);
         buffer.putFloat(z);
-    }
-
-    /**
-     * Builds an array containing the 4 vertices for XYZ components, to be indexed when drawing, ie drawn using
-     * drawElements().
-     * The vertices will be centered using translate, a value of 0 will be left/top aligned.
-     * A value of -1/width will be centered horizontally.
-     * Vertices are numbered clockwise from upper left, ie upper left, upper right, lower right, lower left.
-     * 1 2
-     * 4 3
-     * 
-     * @param rectangle x1, y1, width, height
-     * @param vertexStride, number of floats to add from one vertex to the next. Usually 3 to allow XYZ storage,
-     * increase if padding (eg for UV) is needed.
-     * @return array containing 4 vertices for a quad with the specified size, the size of the array will be
-     * vertexStride * 4
-     */
-    public static float[] createQuadPositionsIndexed(Rectangle rectangle, int vertexStride, float z) {
-
-        float[] values = rectangle.getValues();
-
-        // TODO How to handle Y axis going other direction?
-        float[] quadPositions = new float[vertexStride * 4];
-        com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y],
-                z, quadPositions, 0);
-        com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y], z, quadPositions,
-                vertexStride);
-        com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y] - values[HEIGHT],
-                z, quadPositions,
-                vertexStride * 2);
-        com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y] - values[HEIGHT], z, quadPositions,
-                vertexStride * 3);
-        return quadPositions;
-    }
-
-    /**
-     * Same as {@link #createQuadPositionsIndexed(Rectangle, int, float)} but also creates uv after xyz
-     * 
-     * @param rectangle
-     * @param vertexStride
-     * @param z
-     * @return
-     */
-    public static float[] createQuadPositionsUVIndexed(Rectangle rectangle, int vertexStride, float z,
-            TiledTexture2D texture) {
-
-        float[] values = rectangle.getValues();
-        // Calc max U and V
-        float maxU = (1f / (texture.getTileWidth()));
-        float maxV = (1f / (texture.getTileHeight()));
-
-        // TODO How to handle Y axis going other direction?
-        float[] quadPositions = new float[vertexStride * 4];
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y],
-                z, 0, 0, quadPositions, 0);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y], z, maxU, 0, quadPositions,
-                vertexStride);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y] - values[HEIGHT],
-                z, maxU, maxV, quadPositions,
-                vertexStride * 2);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y] - values[HEIGHT], z, 0, maxV, quadPositions,
-                vertexStride * 3);
-        return quadPositions;
-    }
-
-    /**
-     * Same as {@link #createQuadPositionsUVIndexed(Rectangle, int, float, TiledTexture2D)} but specify an array
-     * containing the UV values.
-     *
-     * @param rectangle
-     * @param vertexStride
-     * @param z
-     * @param UV Array with UV values, must contain 4 UV pairs, order is clockwise starting at upper left corner.
-     * @return
-     */
-    public static float[] createQuadPositionsUVIndexed(Rectangle rectangle, int vertexStride, float z, float[] UV) {
-        float[] values = rectangle.getValues();
-        // TODO How to handle Y axis going other direction?
-        float[] quadPositions = new float[vertexStride * 4];
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y],
-                z, UV[0], UV[1], quadPositions, 0);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y], z, UV[2], UV[3],
-                quadPositions,
-                vertexStride);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y] - values[HEIGHT],
-                z, UV[4], UV[5], quadPositions,
-                vertexStride * 2);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y] - values[HEIGHT], z, UV[6], UV[7],
-                quadPositions,
-                vertexStride * 3);
-        return quadPositions;
     }
 
     /**

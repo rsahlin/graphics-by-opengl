@@ -1,5 +1,10 @@
 package com.nucleus.texturing;
 
+import static com.nucleus.vecmath.Rectangle.HEIGHT;
+import static com.nucleus.vecmath.Rectangle.WIDTH;
+import static com.nucleus.vecmath.Rectangle.X;
+import static com.nucleus.vecmath.Rectangle.Y;
+
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
@@ -9,6 +14,7 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.texturing.TextureParameter.Name;
+import com.nucleus.vecmath.Rectangle;
 
 /**
  * Texture object and Sampler info, this class holds the texture object ID, texture parameters and a reference to the
@@ -261,7 +267,7 @@ public class Texture2D extends BaseReference {
     }
 
     /**
-     * Returns the texture type
+     * Returns the GL texture type, number of bits per pixel.
      * 
      * @return
      */
@@ -304,4 +310,30 @@ public class Texture2D extends BaseReference {
                 + ", "
                 + (images != null ? images.length : 0) + " levels");
     }
+    
+    /**
+     * Creates an array of values that define the quad attribute values using this texture.
+     * The resulting array can be used to create attributes for a quad using this texture.
+     * 
+     * @param rectangle Size of quad
+     * @param vertexStride Number of values between vertices
+     * @param z Z axis value for quad.
+     * @return Array of values needed to render a quad.
+     */
+    public float[] createQuadArray(Rectangle rectangle, int vertexStride, float z) {
+
+        float[] values = rectangle.getValues();
+        // TODO How to handle Y axis going other direction?
+        float[] quadPositions = new float[vertexStride * 4];
+        com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y], z, quadPositions, 0);
+        com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y], z, quadPositions,
+                vertexStride);
+        com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y] - values[HEIGHT],
+                z, quadPositions, vertexStride * 2);
+        com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y] - values[HEIGHT], z, quadPositions,
+                vertexStride * 3);
+        return quadPositions;
+    }
+
+
 }
