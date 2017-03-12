@@ -1,6 +1,7 @@
 package com.nucleus.bounds;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.ErrorMessage;
 
 /**
  * Base class for bounds.
@@ -33,8 +34,7 @@ public abstract class Bounds {
      *
      */
     public enum Type {
-        CIRCULAR(1),
-        RECTANGULAR(2);
+        CIRCULAR(1), RECTANGULAR(2);
 
         private final int value;
 
@@ -64,6 +64,7 @@ public abstract class Bounds {
 
     /**
      * Checks if a single point is within the bounds.
+     * 
      * @param position Position array, must contain 3 values in case of 3 dimensional bound.
      * @param index Index into position array where position is
      * @return True if the point is within the bounds
@@ -72,6 +73,7 @@ public abstract class Bounds {
 
     /**
      * Checks if a circular bounds is within the bounds.
+     * 
      * @param bounds The bounds to check against this bound.
      * @return True if the bounds are within this bound, ie some parts are touching. Returns
      * false if there is no contact.
@@ -80,6 +82,7 @@ public abstract class Bounds {
 
     /**
      * Checks if a rectangle bounds is inside the bounds.
+     * 
      * @param bounds The bounds to check against this bound.
      * @return True if the bounds are within this bound, ie some parts are touching. Returns
      * false if there is no contact.
@@ -88,6 +91,7 @@ public abstract class Bounds {
 
     /**
      * Returns the type of bounds.
+     * 
      * @return The type of bounds for this class.
      */
     public Type getType() {
@@ -96,6 +100,7 @@ public abstract class Bounds {
 
     /**
      * Returns the bound data for this bounds.
+     * 
      * @return Array containing the bounds values, this is implementation specific.
      */
     public float[] getBounds() {
@@ -135,7 +140,30 @@ public abstract class Bounds {
     }
 
     /**
+     * Creates the specified bounds, this is used when deserializing.
+     * 
+     * @param type the type of bounds to create
+     * @param bounds The bounds values
+     * @return The implementation of the bounds
+     * @throws IllegalArgumentException If bounds or type is null
+     */
+    public static Bounds create(Type type, float[] bounds) {
+        if (type == null || bounds == null) {
+            throw new IllegalAccessError("Parameter is null " + type + ", " + bounds);
+        }
+        switch (type) {
+        case CIRCULAR:
+            return new CircularBounds(bounds);
+        case RECTANGULAR:
+            return new RectangularBounds(bounds, 0);
+        default:
+            throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + type);
+        }
+    }
+
+    /**
      * Performs a quick check if the object is outside the bounds, use this for quick on screen checks or similar.
+     * 
      * @param bounds Array with x, y, width height
      * @param radius The radius of the object to check.
      * @return True if this object is touches (is inside) the bounds, false if it is fully outside.

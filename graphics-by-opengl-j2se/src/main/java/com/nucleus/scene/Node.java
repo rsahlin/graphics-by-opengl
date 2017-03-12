@@ -6,7 +6,6 @@ import java.util.Map;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.bounds.Bounds;
-import com.nucleus.bounds.BoundsFactory;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.Material;
@@ -702,7 +701,7 @@ public class Node extends BaseReference implements MMIEventListener {
      * @param source
      */
     public void copyBounds(Bounds source) {
-        bounds = BoundsFactory.create(source.getType(), source.getBounds());
+        bounds = Bounds.create(source.getType(), source.getBounds());
     }
 
     /**
