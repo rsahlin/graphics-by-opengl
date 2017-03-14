@@ -1,6 +1,11 @@
-package com.nucleus.properties;
+package com.nucleus.event;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.List;
+
+import com.nucleus.properties.Property;
 
 /**
  * Takes care of parsing and passing on events, events are short lived, have category and value.
@@ -34,7 +39,7 @@ public class EventManager {
         }
 
         /**
-         * Called when {@linkplain EventManager#sendEvent(String, String)} is called with a registered key.
+         * Called when {@linkplain EventManager#postEvent(String, String)} is called with a registered key.
          * 
          * @param category The category
          * @param value The value
@@ -73,13 +78,13 @@ public class EventManager {
     /**
      * Registers a category to be handled by the specified handler, if a handler was already registered for the
      * specified category it is replaced.
-     * After this method any call to {@linkplain EventManager#sendEvent(String, String)} with the specified key
+     * After this method any call to {@linkplain EventManager#postEvent(String, String)} with the specified key
      * will invoke the {@linkplain EventHandler#handleEvent(String, String)} method.
      * 
      * @param category The category to register a handler for, or null to register with the handlers key
      * @param handler Handler for the category
      */
-    public void registerCategory(String category, EventHandler handler) {
+    public void register(String category, EventHandler handler) {
         if (category == null) {
             category = handler.getHandlerCategory();
         }
@@ -95,11 +100,22 @@ public class EventManager {
      * @param key
      * @param value
      */
-    public void sendEvent(String category, String value) {
+    public void postEvent(String category, String value) {
         EventHandler handler = handlers.get(category);
         if (handler != null) {
             handler.handleEvent(category, value);
         }
+    }
+
+    public void register(Object subscriber) {
+        Class<?> subscriberClass = subscriber.getClass();
+        List<Method> subscriberMethods = findMethods(subscriberClass);
+        synchronized (this) {
+            for (Method subscriberMethod : subscriberMethods) {
+                // subscribe(subscriber, subscriberMethod);
+            }
+        }
+
     }
 
     /**
@@ -119,4 +135,34 @@ public class EventManager {
 
     }
     
+    private java.util.List<Method> findMethods(Class<?> clazz) {
+        Method[] methods;
+        try {
+            methods = clazz.getDeclaredMethods();
+
+        } catch (Exception e) {
+            throw e;
+            // methods = clazz.getMethods();
+        }
+        for (Method method : methods) {
+            int modifiers = method.getModifiers();
+            String name = method.getDeclaringClass().getName() + "." + method.getName();
+            if ((modifiers & Modifier.PUBLIC) != 0) {
+                Class<?>[] parameterTypes = method.getParameterTypes();
+                if (parameterTypes.length == 1) {
+                    Subscribe annotation = method.getAnnotation(Subscribe.class);
+                    if (annotation != null) {
+                        Class<?> eventType = parameterTypes[0];
+
+                    }
+                } else if (method.isAnnotationPresent(Subscribe.class)) {
+                    throw new IllegalArgumentException("Method " + name + " has " + parameterTypes.length + " parameters.");
+                }
+            } else if (method.isAnnotationPresent(Subscribe.class)) {
+                throw new IllegalArgumentException(name + " must be public");
+            }
+        }
+        return null;
+    }
+
 }

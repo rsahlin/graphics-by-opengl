@@ -1,4 +1,4 @@
-package com.nucleus.actor;
+package com.nucleus.component;
 
 import com.nucleus.scene.Node;
 

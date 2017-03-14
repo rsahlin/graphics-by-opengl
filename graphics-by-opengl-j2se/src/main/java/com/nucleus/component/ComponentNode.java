@@ -1,20 +1,16 @@
-package com.nucleus.actor;
+package com.nucleus.component;
 
 import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.CoreApp;
-import com.nucleus.component.Component;
-import com.nucleus.component.ComponentException;
 import com.nucleus.io.ResourcesData;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
 import com.nucleus.system.ComponentHandler;
 
 /**
- * For nodes that contain component objects Holds one or more components To
- * automatically process components set the {@link LogicProcessor} in
- * {@link CoreApp#setLogicProcessor(LogicProcessor)}
+ * For nodes that contain component objects.
+ * Holds one or more components
  * 
  * @author Richard Sahlin
  *
@@ -93,11 +89,6 @@ public class ComponentNode extends Node implements ComponentController {
                 return c;
             }
         }
-        return null;
-    }
-
-    @Deprecated
-    public ActorContainer[] getActorContainer() {
         return null;
     }
 

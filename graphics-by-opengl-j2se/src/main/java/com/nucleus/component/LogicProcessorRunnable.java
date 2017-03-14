@@ -1,9 +1,14 @@
-package com.nucleus.actor;
+package com.nucleus.component;
 
 import com.nucleus.CoreApp;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RootNode;
 
+/**
+ * User for thread that drives the logic processing if done on cpu.
+ * Can be started on a separate thread or run on main thread.
+ *
+ */
 public class LogicProcessorRunnable implements Runnable {
 
     private static final String NULL_PARAMETER = "Parameter is null:";
@@ -40,7 +45,6 @@ public class LogicProcessorRunnable implements Runnable {
         running = true;
         while (running) {
             synchronized (this) {
-                // TODO Make sure this code is the same as in CoreApp
                 if (rootNode != null) {
                     logicProcessor.processNode(rootNode.getScene(), renderer.getFrameSampler().getDelta());
                 }

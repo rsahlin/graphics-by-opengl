@@ -1,6 +1,6 @@
-package com.nucleus.actor;
+package com.nucleus.component;
 
-import com.nucleus.actor.ComponentController.ComponentState;
+import com.nucleus.component.ComponentController.ComponentState;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.State;
 
@@ -21,14 +21,6 @@ public class J2SELogicProcessor implements LogicProcessor {
             ComponentNode actorNode = (ComponentNode) node;
             if (actorNode.getControllerState() == ComponentState.CREATED) {
                 actorNode.init();
-            }
-            ActorContainer[] lcArray = actorNode.getActorContainer();
-            if (lcArray != null) {
-                for (ActorContainer lc : lcArray) {
-                    if (lc != null) {
-                        lc.process(deltaTime);
-                    }
-                }
             }
             actorNode.processComponents(deltaTime);
         }

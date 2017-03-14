@@ -1,7 +1,7 @@
 package com.nucleus.scene;
 
-import com.nucleus.properties.EventManager;
-import com.nucleus.properties.EventManager.EventHandler;
+import com.nucleus.event.EventManager;
+import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.properties.Property;
 
 /**
@@ -51,7 +51,7 @@ public class NodeController implements EventHandler {
      * @param key The key to register this controller for, or null to use default.
      */
     public void registerEventHandler(String key) {
-        EventManager.getInstance().registerCategory(key, this);
+        EventManager.getInstance().register(key, this);
     }
 
     @Override

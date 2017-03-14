@@ -1,7 +1,7 @@
 package com.nucleus.component;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.actor.ComponentNode;
+import com.nucleus.common.Type;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ResourcesData;
 import com.nucleus.renderer.NucleusRenderer;
@@ -64,4 +64,17 @@ public abstract class Component extends BaseReference {
         this.type = source.type;
         this.setId(source.getId());
     }
+
+    /**
+     * Returns a new instance of the component of the specified type.
+     * 
+     * @param typeClass
+     * @return A new instance of the component.
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     */
+    public Component create(Type<?> typeClass) throws InstantiationException, IllegalAccessException {
+        return (Component) typeClass.getTypeClass().newInstance();
+    }
+
 }

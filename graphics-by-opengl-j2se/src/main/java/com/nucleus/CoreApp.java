@@ -1,10 +1,10 @@
 package com.nucleus;
 
-import com.nucleus.actor.J2SELogicProcessor;
-import com.nucleus.actor.LogicProcessor;
-import com.nucleus.actor.LogicProcessorRunnable;
 import com.nucleus.camera.ViewFrustum;
+import com.nucleus.component.J2SELogicProcessor;
+import com.nucleus.component.LogicProcessorRunnable;
 import com.nucleus.convolution.ConvolutionProgram;
+import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.MMIEventListener;
@@ -108,7 +108,6 @@ public class CoreApp {
 
     Thread runnableThread;
     LogicProcessorRunnable logicRunnable;
-    LogicProcessor logicProcessor;
 
     /**
      * Set to true to trigger a call to context created next time {@link #drawFrame()} is called
@@ -223,11 +222,6 @@ public class CoreApp {
                         logicRunnable.notify();
                     }
                 }
-            } else {
-                // TODO make sure this calls the same code as LogicProcessorRunnable
-                if (rootNode != null) {
-                    logicProcessor.processNode(rootNode.getScene(), renderer.getFrameSampler().getDelta());
-                }
             }
             renderer.beginFrame();
             if (rootNode != null) {
@@ -241,17 +235,8 @@ public class CoreApp {
     }
 
     /**
-     * Sets the processor for actor objects, this will be used when actors are loaded to resolve symbols into
-     * implementation classes.
-     * 
-     * @param logicProcessor
-     */
-    public void setLogicProcessor(LogicProcessor logicProcessor) {
-        this.logicProcessor = logicProcessor;
-    }
-
-    /**
      * Sets the scene rootnode, this will update the root node in the logic runnable {@linkplain LogicProcessorRunnable}
+     * A {@linkplain NodeController} will be created for the node and used as {@linkplain EventHandler}
      * 
      * @param node
      */
@@ -314,7 +299,8 @@ public class CoreApp {
     }
     
     /**
-     * Util method to create the coreapp and dispolay splash. Caller must swapp buffer for splash to be visible.
+     * Util method to create the coreapp and display splash. Caller must swapp buffer for splash to be visible.
+     * 
      * @param width
      * @param height
      * @param renderer
