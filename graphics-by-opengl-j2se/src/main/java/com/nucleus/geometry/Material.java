@@ -13,6 +13,11 @@ import com.nucleus.shader.ShaderProgram;
  */
 public class Material {
 
+    public static final String BLEND_EQUATION = "blendEquation";
+    public static final String BLEND_FUNC = "blendFunc";
+    public static final String AMBIENT = "ambient";
+    public static final String DIFFUSE = "diffuse";
+
     public enum BlendEquation {
         DISABLED(-1),
         GL_FUNC_ADD(GLES20.GL_FUNC_ADD),
@@ -76,12 +81,17 @@ public class Material {
      */
     transient ShaderProgram program;
 
-    @SerializedName("blendEquation")
+    @SerializedName(BLEND_EQUATION)
     private BlendEquation[] blendEquation = new BlendEquation[] { BlendEquation.GL_FUNC_ADD,
             BlendEquation.GL_FUNC_ADD };
-    @SerializedName("blendFunc")
+    @SerializedName(BLEND_FUNC)
     private BlendFunc[] blendFunction = new BlendFunc[] { BlendFunc.GL_SRC_ALPHA, BlendFunc.GL_ONE_MINUS_SRC_ALPHA,
             BlendFunc.GL_SRC_ALPHA, BlendFunc.GL_DST_ALPHA };
+
+    @SerializedName(AMBIENT)
+    private float[] ambient;
+    @SerializedName(DIFFUSE)
+    private float[] diffuse;
 
     /**
      * Creates a default material
@@ -192,4 +202,23 @@ public class Material {
                     blendFunction[3].value);
         }
     }
+
+    /**
+     * Returns the diffuse color, or null if not set.
+     * 
+     * @return
+     */
+    public float[] getDiffuse() {
+        return diffuse;
+    }
+
+    /**
+     * Returns the ambient color, or null of not set.
+     * 
+     * @return
+     */
+    public float[] getAmbient() {
+        return ambient;
+    }
+
 }
