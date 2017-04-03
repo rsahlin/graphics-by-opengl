@@ -875,6 +875,8 @@ public abstract class ShaderProgram {
         uniforms[offset++] = a[0];
         uniforms[offset++] = a[1];
         uniforms[offset++] = a[2];
+        uniforms[offset++] = a[3];
+
     }
 
 }
