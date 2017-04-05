@@ -11,11 +11,11 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.AttributeUpdater.Property;
-import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.VertexBuffer;
 import com.nucleus.io.StreamUtils;
+import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
@@ -128,6 +128,8 @@ public abstract class ShaderProgram {
      * Calculated in create program
      */
     protected ShaderVariable[][] attributeVariables;
+
+    protected GlobalLight globalLight = GlobalLight.getInstance();
     /**
      * The size of each buffer for the attribute variables
      */
@@ -859,24 +861,18 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets the ambient color in the uniform data, taken from material.
-     * Does nothing if ambient color is not set in material.
+     * Sets the ambient color in the uniform data
      * 
      * @param uniforms
      * @param uniformAmbient
      * @param material
      */
-    protected void setAmbient(float[] uniforms, ShaderVariable uniformAmbient, Material material) {
-        float[] a = material.getAmbient();
-        if (a == null) {
-            return;
-        }
+    protected void setAmbient(float[] uniforms, ShaderVariable uniformAmbient, float[] ambient) {
         int offset = uniformAmbient.getOffset();
-        uniforms[offset++] = a[0];
-        uniforms[offset++] = a[1];
-        uniforms[offset++] = a[2];
-        uniforms[offset++] = a[3];
-
+        uniforms[offset++] = ambient[0];
+        uniforms[offset++] = ambient[1];
+        uniforms[offset++] = ambient[2];
+        uniforms[offset++] = ambient[3];
     }
 
 }

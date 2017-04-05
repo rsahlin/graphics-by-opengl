@@ -13,7 +13,10 @@ public enum DataType {
     SHORT(2, 2),
     STRING(3, 0),
     RESOLUTION(4, 0),
-    TEXTURE_PARAMETER(5, 0);
+    TEXTURE_PARAMETER(5, 0),
+    VEC2(6, 8),
+    VEC3(7, 12),
+    VEC4(8, 16);
 
     private final int type;
     private final int size;
