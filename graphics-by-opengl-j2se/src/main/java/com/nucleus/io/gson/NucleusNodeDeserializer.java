@@ -28,9 +28,7 @@ public class NucleusNodeDeserializer extends NucleusDeserializer implements Json
         JsonObject obj = json.getAsJsonObject();
         NodeType t = NodeType.valueOf(obj.get(Node.TYPE).getAsString());
         Node node = (Node) gson.fromJson(json, t.getTypeClass());
-        if (node instanceof PostDeserializable) {
-            ((PostDeserializable) node).postDeserialize();
-        }
+        postDeserialize(node);
         return node;
     }
 

@@ -861,7 +861,7 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets the ambient color in the uniform data
+     * Sets the ambient light color in uniform data
      * 
      * @param uniforms
      * @param uniformAmbient

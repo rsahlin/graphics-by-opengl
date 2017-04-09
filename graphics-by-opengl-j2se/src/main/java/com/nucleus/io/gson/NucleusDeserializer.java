@@ -29,4 +29,15 @@ public class NucleusDeserializer {
         this.gson = gson;
     }
 
+    /**
+     * Checks if implements post deserialize, then call {@linkplain PostDeserializable#postDeserialize()}
+     * 
+     * @param deserialized The class that has been deserialized
+     */
+    protected void postDeserialize(Object deserialized) {
+        if (deserialized instanceof PostDeserializable) {
+            ((PostDeserializable) deserialized).postDeserialize();
+        }
+    }
+
 }
