@@ -39,6 +39,8 @@ public class Node extends BaseReference implements MMIEventListener {
     public static final String STATE = "state";
     public static final String TYPE = "type";
 
+    public static final String ONCLICK = "onclick";
+
     /**
      * The states a node can be in, this controlls if node is rendered etc.
      * This can be used to skip nodes from being rendered or processed.
@@ -594,7 +596,7 @@ public class Node extends BaseReference implements MMIEventListener {
 
     @Override
     public String toString() {
-        return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children";
+        return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children, state=" + state;
     }
 
     /**
@@ -626,12 +628,15 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Sets the state of this node
+     * Sets the state of this node and all children.
      * 
      * @param state
      */
     public void setState(State state) {
         this.state = state;
+        for (Node n : children) {
+            n.setState(state);
+        }
     }
 
     /**
@@ -752,8 +757,15 @@ public class Node extends BaseReference implements MMIEventListener {
 
     @Override
     public void inputEvent(MMIPointerEvent event) {
-        if (event.getAction() == Action.ACTIVE || event.getAction() == Action.MOVE) {
-            checkNode(event);
+        switch (state) {
+        case ON:
+        case ACTOR:
+            if (event.getAction() == Action.ACTIVE || event.getAction() == Action.MOVE) {
+                checkNode(event);
+            }
+            break;
+        default:
+            // Do nothing
         }
     }
 
@@ -764,7 +776,7 @@ public class Node extends BaseReference implements MMIEventListener {
      * @return True if there was an event that was inside a node, ie a 'hit'
      */
     protected boolean checkNode(MMIPointerEvent event) {
-        if (bounds != null
+        if (bounds != null && (state == State.ON || state == State.ACTOR)
                 && getProperty(EventHandler.Type.POINTERINPUT.name(), EventManager.FALSE).equals(EventManager.TRUE)) {
             ViewNode viewNode = getViewParent();
             // If ViewNode parent does not exist the identitymatrix is used
@@ -780,7 +792,7 @@ public class Node extends BaseReference implements MMIEventListener {
             bounds.transform(mv, 0);
             if (bounds.isPointInside(event.getPointerData().getCurrentPosition(), 0)) {
                 System.out.println("HIT");
-                String onclick = getProperty("onclick");
+                String onclick = getProperty(ONCLICK);
                 if (onclick != null) {
                     Property p = Property.create(onclick);
                     EventManager.getInstance().sendObjectEvent(this, p.getKey(), p.getValue());
