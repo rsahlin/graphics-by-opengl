@@ -12,6 +12,7 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.texturing.TextureParameter.Name;
 import com.nucleus.vecmath.Rectangle;
@@ -335,5 +336,23 @@ public class Texture2D extends BaseReference {
         return quadPositions;
     }
 
+    /**
+     * Calculates a normalized rectangle that covers one frame of this texture, based on size of the Window
+     * and the source resolution of this texture.
+     * A texture frame that will cover the whole screen (adjusted for texture resolution) will return a rectangle
+     * with size 1 X 1
+     * Width of returned rectangle will be texture frame width / WindowWidth
+     * Height of returned rectangle will be texture frame height / height
+     * 
+     * @return A normalized rectangle, based on window width and height.
+     * The rectangle will be centered horizontally and vertically
+     */
+    public Rectangle calculateWindowRectangle() {
+        float scaleFactor = (float) getHeight() / getResolution().lines;
+        float normalizedWidth = (getWidth() * scaleFactor) / Window.getInstance().getWidth();
+        float normalizedHeight = (getHeight() * scaleFactor) / Window.getInstance().getHeight();
+        Rectangle rect = new Rectangle(-normalizedWidth / 2, normalizedHeight / 2, normalizedWidth, normalizedHeight);
+        return rect;
+    }
 
 }
