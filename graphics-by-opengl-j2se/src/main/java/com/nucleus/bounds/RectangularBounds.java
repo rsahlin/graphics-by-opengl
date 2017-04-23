@@ -5,6 +5,7 @@ import static com.nucleus.vecmath.VecMath.Y;
 import static com.nucleus.vecmath.VecMath.Z;
 
 import com.nucleus.vecmath.Matrix;
+import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Vector2D;
 import com.nucleus.vecmath.Vector3D;
 
@@ -46,33 +47,19 @@ public class RectangularBounds extends Bounds {
     transient protected float[] rotatedBounds = new float[8];
 
     /**
-     * Creates a new bounds from the specified upper left corner (x, y) and size
-     * 
-     * @param x Upper left
-     * @param y Upper left
-     * @param width Width of bounds
-     * @param height Height of bounds
-     */
-    public RectangularBounds(float x, float y, float width, float height) {
-        type = Type.RECTANGULAR;
-        setBounds(x, y, width, height);
-    }
-
-    /**
      * Creates a new bounds from an array of values.
      * If the array contains 4 values, bounds will be created from upper left corner (x1,y1) and width + height
      * If not, the array must contain 8 values, X+Y for each corner in a clockwise manner from upper left.
      * 
      * @param values The bounds source values, either 4 values for corner + width, height or 8 values.
+     * May be null to flag that values should be calculated later
      * @throws NullPointerException If values is null
-     * @throws ArrayIndexOutOfBoundsException If values does not contain index + 4 values
+     * @throws ArrayIndexOutOfBoundsException If values does not contain index + 4 or 8 values as needed
      */
-    public RectangularBounds(float[] values, int index) {
+    RectangularBounds(float[] values) {
         type = Type.RECTANGULAR;
-        if (values.length == 4) {
-            setBounds(values[0], values[1], values[2], values[3]);
-        } else {
-            setBounds(values, index);
+        if (values != null) {
+            setBounds(values);
         }
     }
 
@@ -110,42 +97,56 @@ public class RectangularBounds extends Bounds {
      * @param bounds The bounds values, must contain 8 values at index
      * @param index Index into bounds array where values are
      */
-    public void setBounds(float[] bounds, int index) {
-        if (this.bounds == null) {
-            this.bounds = new float[BOUNDS_LENGTH];
-        }
+    private void copyBounds(float[] bounds, int index) {
+        createBounds();
         System.arraycopy(bounds, 0, this.bounds, 0, BOUNDS_LENGTH);
         System.arraycopy(this.bounds, 0, rotatedBounds, 0, BOUNDS_LENGTH);
         updated = true;
         calculateRadius();
     }
 
-    /**
-     * Sets the bounds from upper left corner position, width and height
-     * 
-     * @TODO How to handle if Y axis is going up?
-     * @param x1
-     * @param y1
-     * @param width
-     * @param height
-     */
-    public void setBounds(float x1, float y1, float width, float height) {
-        if (bounds == null) {
-            bounds = new float[BOUNDS_LENGTH];
+    @Override
+    public void setBounds(float[] values) {
+        if (values.length == 4) {
+            setFromRectangle(values);
+        } else {
+            copyBounds(values, 0);
         }
-        bounds[X1] = x1;
-        bounds[Y1] = y1;
-        bounds[X2] = x1 + width;
-        bounds[Y2] = y1;
-        bounds[X3] = x1 + width;
-        bounds[Y3] = y1 - height;
-        bounds[X4] = x1;
-        bounds[Y4] = y1 - height;
+    }
+
+    @Override
+    public void setBounds(Rectangle rectangle) {
+        setFromRectangle(rectangle.getValues());
+    }
+
+    private void setFromRectangle(float[] rectangle) {
+        createBounds();
+        float x = rectangle[Rectangle.X];
+        float y = rectangle[Rectangle.Y];
+        float width = rectangle[Rectangle.WIDTH];
+        float height = rectangle[Rectangle.HEIGHT];
+        bounds[X1] = x;
+        bounds[Y1] = y;
+        bounds[X2] = x + width;
+        bounds[Y2] = y;
+        bounds[X3] = x + width;
+        bounds[Y3] = y - height;
+        bounds[X4] = x;
+        bounds[Y4] = y - height;
         System.arraycopy(bounds, 0, rotatedBounds, 0, BOUNDS_LENGTH);
         updated = true;
         calculateRadius();
     }
 
+    /**
+     * Creates the bounds array if null
+     */
+    private void createBounds() {
+        if (this.bounds == null) {
+            this.bounds = new float[BOUNDS_LENGTH];
+        }
+
+    }
 
     @Override
     public boolean isPointInside(float[] position, int index) {
@@ -357,5 +358,7 @@ public class RectangularBounds extends Bounds {
         Matrix.transformVec2(matrix, index, bounds, rotatedBounds, 4);
         updated = true;
     }
+
+
 
 }

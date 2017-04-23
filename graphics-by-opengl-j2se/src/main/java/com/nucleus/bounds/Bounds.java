@@ -2,6 +2,7 @@ package com.nucleus.bounds;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.ErrorMessage;
+import com.nucleus.vecmath.Rectangle;
 
 /**
  * Base class for bounds.
@@ -143,19 +144,19 @@ public abstract class Bounds {
      * Creates the specified bounds, this is used when deserializing.
      * 
      * @param type the type of bounds to create
-     * @param bounds The bounds values
+     * @param bounds The bounds values or null, x,y, width and height
      * @return The implementation of the bounds
-     * @throws IllegalArgumentException If bounds or type is null
+     * @throws IllegalArgumentException If type is null
      */
     public static Bounds create(Type type, float[] bounds) {
-        if (type == null || bounds == null) {
-            throw new IllegalAccessError("Parameter is null " + type + ", " + bounds);
+        if (type == null) {
+            throw new IllegalAccessError("Type is null");
         }
         switch (type) {
         case CIRCULAR:
             return new CircularBounds(bounds);
         case RECTANGULAR:
-            return new RectangularBounds(bounds, 0);
+            return new RectangularBounds(bounds);
         default:
             throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + type);
         }
@@ -178,5 +179,19 @@ public abstract class Bounds {
         }
         return false;
     }
+
+    /**
+     * Sets the bounds from the values, what the values means is implementation specific.
+     * 
+     * @param values Values that match the data needed for the implementing bounds class.
+     */
+    public abstract void setBounds(float[] values);
+
+    /**
+     * Sets the implementing bounds to match the rectangle
+     * 
+     * @param rectangle
+     */
+    public abstract void setBounds(Rectangle rectangle);
 
 }
