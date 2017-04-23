@@ -348,9 +348,11 @@ public class Texture2D extends BaseReference {
      * The rectangle will be centered horizontally and vertically
      */
     public Rectangle calculateWindowRectangle() {
-        float scaleFactor = (float) getHeight() / getResolution().lines;
-        float normalizedWidth = (getWidth() * scaleFactor) / Window.getInstance().getWidth();
-        float normalizedHeight = (getHeight() * scaleFactor) / Window.getInstance().getHeight();
+        Window w = Window.getInstance();
+        float aspect = (float) w.getWidth() / w.getHeight();
+        float scaleFactor = (float) w.getHeight() / getResolution().lines;
+        float normalizedWidth = ((getWidth() * scaleFactor) / w.getWidth()) * aspect;
+        float normalizedHeight = (getHeight() * scaleFactor) / w.getHeight();
         Rectangle rect = new Rectangle(-normalizedWidth / 2, normalizedHeight / 2, normalizedWidth, normalizedHeight);
         return rect;
     }

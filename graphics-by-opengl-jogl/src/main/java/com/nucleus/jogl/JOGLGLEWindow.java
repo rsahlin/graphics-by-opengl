@@ -3,6 +3,9 @@ package com.nucleus.jogl;
 import java.awt.Frame;
 
 import com.jogamp.nativewindow.util.Dimension;
+import com.jogamp.nativewindow.util.InsetsImmutable;
+import com.jogamp.newt.event.KeyEvent;
+import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.event.MouseListener;
 import com.jogamp.newt.event.WindowEvent;
@@ -16,6 +19,7 @@ import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.Animator;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
+import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.opengl.GLESWrapper;
@@ -29,7 +33,8 @@ import com.nucleus.renderer.Window;
  * has GL access. This is normally done in the {@link #display(GLAutoDrawable)} method.
  *
  */
-public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener {
+public abstract class JOGLGLEWindow
+        implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener, KeyListener {
 
     /**
      * A zoom on the wheel equals 1 / 5 screen height
@@ -68,15 +73,21 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, c
 
     /**
      * Creates a new JOGL window with the specified {@link CoreAppStarter} and swapinterval
+     * 
      * @param width
      * @param height
+     * @param undecorated
+     * @param fullscreen
      * @param glProfile
      * @param coreAppStarter
      * @param swapInterval
      * @throws IllegalArgumentException If coreAppStarter is null
      */
-    public JOGLGLEWindow(int width, int height, GLProfile glProfile, CoreApp.CoreAppStarter coreAppStarter, int swapInterval) {
+    public JOGLGLEWindow(int width, int height, boolean undecorated, boolean fullscreen, GLProfile glProfile,
+            CoreApp.CoreAppStarter coreAppStarter, int swapInterval) {
         this.swapInterval = swapInterval;
+        this.undecorated = undecorated;
+        this.fullscreen = fullscreen;
     	create(width, height, glProfile, coreAppStarter);
     }
 
@@ -104,14 +115,17 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, c
         glCapabilities.setAlphaBits(8);
         // Window window = NewtFactory.createWindow(glCapabilities);
         glWindow = GLWindow.create(glCapabilities);
-        glWindow.setSize(windowSize.getWidth(), windowSize.getHeight());
         glWindow.setUndecorated(undecorated);
+        InsetsImmutable insets = glWindow.getInsets();
+        glWindow.setSize( undecorated ? windowSize.getWidth() : windowSize.getWidth() + insets.getTotalWidth(),
+                undecorated ? windowSize.getHeight() : windowSize.getHeight() + insets.getTotalHeight());
         glWindow.setAlwaysOnTop(alwaysOnTop);
         glWindow.setFullscreen(fullscreen);
         glWindow.setPointerVisible(mouseVisible);
         glWindow.confinePointer(mouseConfined);
         glWindow.addMouseListener(this);
         glWindow.addWindowListener(this);
+        glWindow.addKeyListener(this);
         GLProfile.initSingleton();
         Animator animator = new Animator();
         animator.add(glWindow);
@@ -254,6 +268,18 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, c
         }
     }
 
+    protected void handleKeyEvent(KeyEvent event) {
+        switch (event.getEventType()) {
+        case KeyEvent.EVENT_KEY_PRESSED:
+            switch (event.getKeyCode()) {
+            case KeyEvent.VK_ESCAPE:
+                backPressed();
+            }
+            break;
+        case KeyEvent.EVENT_KEY_RELEASED:
+        }
+    }
+
     /**
      * Sets the windowlistener to get callbacks when the window has changed.
      * 
@@ -335,6 +361,28 @@ public abstract class JOGLGLEWindow implements GLEventListener, MouseListener, c
 
     @Override
     public void windowRepaint(WindowUpdateEvent e) {
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        handleKeyEvent(e);
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        handleKeyEvent(e);
+    }
+
+    private void backPressed() {
+        SimpleLogger.d(getClass(), "backPressed()");
+        if (fullscreen) {
+            fullscreen = false;
+            glWindow.setFullscreen(false);
+            glWindow.setPosition(50, 50);
+        } else {
+            glWindow.destroy();
+            System.exit(0);
+        }
     }
 
 }

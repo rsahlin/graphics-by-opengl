@@ -20,8 +20,10 @@ import com.nucleus.texturing.J2SEImageFactory;
  */
 public class NucleusApplication implements CoreAppStarter, WindowListener {
 
-    public final static String WINDOW_WIDTH_KEY = "WINDOW-WIDTH";
-    public final static String WINDOW_HEIGHT_KEY = "WINDOW-HEIGHT";
+    public static final String WINDOW_WIDTH_KEY = "WINDOW-WIDTH";
+    public static final String WINDOW_HEIGHT_KEY = "WINDOW-HEIGHT";
+    public static final String WINDOW_UNDECORATED_KEY = "WINDOW-UNDECORATED";
+    public static final String FULLSCREEN_KEY = "FULLSCREEN";
 
     protected JOGLGLES20Window window;
     protected CoreApp coreApp;
@@ -29,6 +31,8 @@ public class NucleusApplication implements CoreAppStarter, WindowListener {
     protected int swapInterval = 1;
     protected int windowWidth = 480;
     protected int windowHeight = 800;
+    protected boolean windowUndecorated = false;
+    protected boolean fullscreen = false;
 
     /**
      * Creates a new application starter with the specified renderer and client main class implementation.
@@ -57,20 +61,27 @@ public class NucleusApplication implements CoreAppStarter, WindowListener {
             return;
         }
         for (String str : args) {
-
             if (str.toUpperCase().startsWith(WINDOW_WIDTH_KEY)) {
                 windowWidth = Integer.parseInt(str.substring(WINDOW_WIDTH_KEY.length() + 1));
-                System.out.println(WINDOW_WIDTH_KEY + " set to " + windowWidth);
+                SimpleLogger.d(getClass(), WINDOW_WIDTH_KEY + " set to " + windowWidth);
             }
             if (str.toUpperCase().startsWith(WINDOW_HEIGHT_KEY)) {
                 windowHeight = Integer.parseInt(str.substring(WINDOW_HEIGHT_KEY.length() + 1));
-                System.out.println(WINDOW_HEIGHT_KEY + " set to " + windowHeight);
+                SimpleLogger.d(getClass(), WINDOW_HEIGHT_KEY + " set to " + windowHeight);
+            }
+            if (str.toUpperCase().startsWith(WINDOW_UNDECORATED_KEY)) {
+                windowUndecorated = Boolean.parseBoolean(str.substring(WINDOW_UNDECORATED_KEY.length() + 1));
+                SimpleLogger.d(getClass(), WINDOW_UNDECORATED_KEY + " set to " + windowUndecorated);
+            }
+            if (str.toUpperCase().startsWith(FULLSCREEN_KEY)) {
+                fullscreen = Boolean.parseBoolean(str.substring(FULLSCREEN_KEY.length() + 1));
+                SimpleLogger.d(getClass(), FULLSCREEN_KEY + " set to " + fullscreen);
             }
         }
     }
 
     private void createGLES20Window() {
-        window = new JOGLGLES20Window(windowWidth, windowHeight, this, swapInterval);
+        window = new JOGLGLES20Window(windowWidth, windowHeight, windowUndecorated, fullscreen, this, swapInterval);
         window.setGLEVentListener();
         window.setWindowListener(this);
         // Setting window to visible will trigger the GLEventListener, on the same or another thread.

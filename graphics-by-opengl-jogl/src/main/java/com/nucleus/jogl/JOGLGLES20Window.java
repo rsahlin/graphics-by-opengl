@@ -14,8 +14,10 @@ import com.nucleus.opengl.GLESWrapper;
  */
 public class JOGLGLES20Window extends JOGLGLEWindow {
 
-    public JOGLGLES20Window(int width, int height, CoreAppStarter coreAppStarter, int swapInterval) {
-        super(width, height, GLProfile.get(GLProfile.GL2ES2), coreAppStarter, swapInterval);
+    public JOGLGLES20Window(int width, int height, boolean undecorated, boolean fullscreen,
+            CoreAppStarter coreAppStarter,
+            int swapInterval) {
+        super(width, height, undecorated, fullscreen, GLProfile.get(GLProfile.GL2ES2), coreAppStarter, swapInterval);
     }
 
     @Override
