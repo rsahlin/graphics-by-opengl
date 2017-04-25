@@ -41,7 +41,7 @@ public class RectangularBounds extends Bounds {
     /**
      * Store result position + rotated bounding here
      */
-    transient protected float[] resultPositions = new float[8];
+    // transient protected float[] resultPositions = new float[8];
 
     transient protected float[] tempPositons = new float[8];
     transient protected float[] rotatedBounds = new float[8];
@@ -152,8 +152,8 @@ public class RectangularBounds extends Bounds {
     public boolean isPointInside(float[] position, int index) {
 
         calculateVectors();
-        collideVector1[0] = position[index] - resultPositions[0];
-        collideVector1[1] = position[index + 1] - resultPositions[1];
+        collideVector1[0] = position[index] - rotatedBounds[0];
+        collideVector1[1] = position[index + 1] - rotatedBounds[1];
         Vector3D.normalize2D(collideVector1, 0);
         if (Vector2D.dot2D(collideVector1, top) < 0) {
             return false;
@@ -161,8 +161,8 @@ public class RectangularBounds extends Bounds {
         if (Vector2D.dot2D(collideVector1, left) < 0) {
             return false;
         }
-        collideVector1[0] = position[index] - resultPositions[4];
-        collideVector1[1] = position[index + 1] - resultPositions[5];
+        collideVector1[0] = position[index] - rotatedBounds[4];
+        collideVector1[1] = position[index + 1] - rotatedBounds[5];
         Vector3D.normalize2D(collideVector1, 0);
         if (Vector2D.dot2D(collideVector1, right) < 0) {
             return false;
@@ -183,7 +183,7 @@ public class RectangularBounds extends Bounds {
         if (!updated) {
             return;
         }
-        getPositions(resultPositions, 0);
+        // getPositions(resultPositions, 0);
         // TOP
         top[0] = (rotatedBounds[2] - rotatedBounds[0]);
         top[1] = (rotatedBounds[3] - rotatedBounds[1]);
@@ -211,26 +211,26 @@ public class RectangularBounds extends Bounds {
         calculateVectors();
 
         float radius = bounds.bounds[CircularBounds.RADIUS_INDEX];
-        collideVector1[0] = (radius * top[0]) - resultPositions[0];
-        collideVector1[1] = (radius * top[1]) - resultPositions[1];
+        collideVector1[0] = (radius * top[0]) - rotatedBounds[0];
+        collideVector1[1] = (radius * top[1]) - rotatedBounds[1];
         Vector3D.normalize2D(collideVector1, 0);
         if (Vector2D.dot2D(collideVector1, top) < 0) {
             return false;
         }
-        collideVector1[0] = (radius * left[0]) - resultPositions[0];
-        collideVector1[1] = (radius * left[1]) - resultPositions[1];
+        collideVector1[0] = (radius * left[0]) - rotatedBounds[0];
+        collideVector1[1] = (radius * left[1]) - rotatedBounds[1];
         Vector3D.normalize2D(collideVector1, 0);
         if (Vector2D.dot2D(collideVector1, left) > 0) {
             return false;
         }
-        collideVector1[0] = (radius * right[0]) - resultPositions[4];
-        collideVector1[1] = (radius * right[1]) - resultPositions[5];
+        collideVector1[0] = (radius * right[0]) - rotatedBounds[4];
+        collideVector1[1] = (radius * right[1]) - rotatedBounds[5];
         Vector3D.normalize2D(collideVector1, 0);
         if (Vector2D.dot2D(collideVector1, right) > 0) {
             return false;
         }
-        collideVector1[0] = (radius * bottom[0]) - resultPositions[4];
-        collideVector1[1] = (radius * bottom[1]) - resultPositions[5];
+        collideVector1[0] = (radius * bottom[0]) - rotatedBounds[4];
+        collideVector1[1] = (radius * bottom[1]) - rotatedBounds[5];
         Vector3D.normalize2D(collideVector1, 0);
         if (Vector2D.dot2D(collideVector1, bottom) < 0) {
             return false;
@@ -243,15 +243,7 @@ public class RectangularBounds extends Bounds {
         calculateVectors();
         int index = 0;
         while (index < BOUNDS_LENGTH) {
-            if (bounds.isPointInside(resultPositions, index)) {
-                return true;
-            }
-            index += 2;
-        }
-        index = 0;
-        bounds.getPositions(tempPositons, 0);
-        while (index < BOUNDS_LENGTH) {
-            if (isPointInside(tempPositons, index)) {
+            if (bounds.isPointInside(rotatedBounds, index)) {
                 return true;
             }
             index += 2;

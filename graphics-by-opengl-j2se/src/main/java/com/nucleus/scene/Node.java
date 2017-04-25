@@ -17,7 +17,6 @@ import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
-import com.nucleus.properties.Property;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Transform;
 
@@ -794,8 +793,8 @@ public class Node extends BaseReference implements MMIEventListener {
                 System.out.println("HIT");
                 String onclick = getProperty(ONCLICK);
                 if (onclick != null) {
-                    Property p = Property.create(onclick);
-                    EventManager.getInstance().sendObjectEvent(this, p.getKey(), p.getValue());
+                    // Property p = Property.create(onclick);
+                    // EventManager.getInstance().sendObjectEvent(this, p.getKey(), p.getValue());
                 }
                 return true;
             }
