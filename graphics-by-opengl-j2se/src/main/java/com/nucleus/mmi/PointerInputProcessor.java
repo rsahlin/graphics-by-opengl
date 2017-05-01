@@ -193,7 +193,7 @@ public class PointerInputProcessor implements PointerListener {
             return;
         }
         for (MMIEventListener listener : mmiListeners) {
-            listener.inputEvent(event);
+            listener.onInputEvent(event);
         }
 
     }

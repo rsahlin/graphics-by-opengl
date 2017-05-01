@@ -14,5 +14,5 @@ public interface MMIEventListener {
      * 
      * @param event
      */
-    public void inputEvent(MMIPointerEvent event);
+    public void onInputEvent(MMIPointerEvent event);
 }

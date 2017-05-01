@@ -128,7 +128,7 @@ public class FGLConvolutionTest extends NucleusApplication implements FrameListe
     }
 
     @Override
-    public void inputEvent(MMIPointerEvent event) {
+    public void onInputEvent(MMIPointerEvent event) {
 
         switch (event.getAction()) {
         case ACTIVE:

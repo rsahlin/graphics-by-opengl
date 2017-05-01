@@ -757,7 +757,7 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     @Override
-    public void inputEvent(MMIPointerEvent event) {
+    public void onInputEvent(MMIPointerEvent event) {
         switch (state) {
         case ON:
         case ACTOR:
@@ -811,5 +811,6 @@ public class Node extends BaseReference implements MMIEventListener {
         }
         return false;
     }
+
 
 }

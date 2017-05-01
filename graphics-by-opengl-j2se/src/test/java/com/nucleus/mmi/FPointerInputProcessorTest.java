@@ -298,7 +298,7 @@ public class FPointerInputProcessorTest implements MMIEventListener {
     }
 
     @Override
-    public void inputEvent(MMIPointerEvent event) {
+    public void onInputEvent(MMIPointerEvent event) {
         pointerEvents.add(event);
 
     }
