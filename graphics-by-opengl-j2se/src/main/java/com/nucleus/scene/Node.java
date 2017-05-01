@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.SimpleLogger;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.event.EventManager;
@@ -17,6 +18,7 @@ import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
+import com.nucleus.properties.Property;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Transform;
 
@@ -764,15 +766,18 @@ public class Node extends BaseReference implements MMIEventListener {
             }
             break;
         default:
+            SimpleLogger.d(getClass(), "Not handling input, node in state: " + state);
             // Do nothing
         }
     }
 
     /**
      * Checks this node and children for pointer event.
+     * This default implementation will check bounds and check {@link #ONCLICK} property and send to
+     * {@link EventManager#sendObjectEvent(Object, String, String)} if defined.
      * 
      * @param event
-     * @return True if there was an event that was inside a node, ie a 'hit'
+     * @return True if the input event was consumed, false otherwise.
      */
     protected boolean checkNode(MMIPointerEvent event) {
         if (bounds != null && (state == State.ON || state == State.ACTOR)
@@ -793,8 +798,8 @@ public class Node extends BaseReference implements MMIEventListener {
                 System.out.println("HIT");
                 String onclick = getProperty(ONCLICK);
                 if (onclick != null) {
-                    // Property p = Property.create(onclick);
-                    // EventManager.getInstance().sendObjectEvent(this, p.getKey(), p.getValue());
+                    Property p = Property.create(onclick);
+                    EventManager.getInstance().sendObjectEvent(this, p.getKey(), p.getValue());
                 }
                 return true;
             }
