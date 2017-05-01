@@ -309,7 +309,6 @@ public abstract class JOGLGLEWindow
 
     @Override
     public void mousePressed(MouseEvent e) {
-        System.out.println("Pressed");
         handleMouseEvent(e, PointerAction.DOWN);
     }
 

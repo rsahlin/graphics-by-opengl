@@ -804,13 +804,24 @@ public class Node extends BaseReference implements MMIEventListener {
                 return true;
             }
         }
+        return checkChildren(event);
+    }
+
+    /**
+     * Checks children for pointer event, calling {@link #checkNode(MMIPointerEvent)} recursively and stopping when a
+     * child returns true.
+     * 
+     * @param event
+     * @return
+     */
+    protected boolean checkChildren(MMIPointerEvent event) {
         for (Node n : getChildren()) {
             if (n.checkNode(event)) {
                 return true;
             }
         }
         return false;
-    }
 
+    }
 
 }
