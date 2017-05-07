@@ -330,21 +330,6 @@ public interface NucleusRenderer {
     public float[] getProjection();
 
     /**
-     * Sets the view matrix, this will copy the values from the source matrix.
-     * 
-     * @param matrix The view matrix
-     * @param index Index into array where matrix is
-     */
-    public void setView(float[] matrix, int index);
-
-    /**
-     * Returns the view matrix
-     * 
-     * @return
-     */
-    public float[] getView();
-
-    /**
      * Returns the renderer info.
      * This is likely to only be available after the context is created.
      * 

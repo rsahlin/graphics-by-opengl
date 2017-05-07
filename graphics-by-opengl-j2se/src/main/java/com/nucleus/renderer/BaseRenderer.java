@@ -463,15 +463,6 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void setView(float[] matrix, int index) {
-    }
-
-    @Override
-    public float[] getView() {
-        return null;
-    }
-
-    @Override
     public SurfaceConfiguration getSurfaceConfiguration() {
         return surfaceConfig;
     }
