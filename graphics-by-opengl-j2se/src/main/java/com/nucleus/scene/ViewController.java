@@ -6,7 +6,7 @@ import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.vecmath.Transform;
 
 /**
- * Handles the update of the scene View.
+ * Handles the update of the scene View
  * This class can be registered with {@linkplain EventHandler} to listen for view events.
  * 
  * @author Richard Sahlin
@@ -37,9 +37,9 @@ public class ViewController implements EventHandler {
     }
 
     /**
-     * Creates a new viewcontroller with the specified view.
+     * Creates a new viewcontroller with the specified view transform.
      * 
-     * @param view
+     * @param view The transform that is controlled by this view.
      * @throws IllegalArgumentException If view is null
      */
     public ViewController(Transform view) {

@@ -25,15 +25,12 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.State;
-import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
-import com.nucleus.scene.ViewNode;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.vecmath.Matrix;
-import com.nucleus.vecmath.Transform;
 
 /**
  * Platform agnostic renderer, this handles pure render related methods.
@@ -239,12 +236,6 @@ class BaseRenderer implements NucleusRenderer {
     public void render(Node node) throws GLException {
         State state = node.getState();
         if (state == null || state == State.ON || state == State.RENDER) {
-            if (NodeType.viewnode.name().equals(node.getType())) {
-                Transform view = ((ViewNode) node).getView();
-                if (view != null) {
-                    setView(view.getMatrix(), 0);
-                }
-            }
             // Check for AttributeUpdate producer.
             Producer producer = node.getAttributeProducer();
             if (producer != null) {
@@ -259,6 +250,7 @@ class BaseRenderer implements NucleusRenderer {
                 Matrix.setIdentity(modelMatrix, 0);
             }
             if (this.modelMatrix == null) {
+                // TODO this will never happen
                 System.arraycopy(modelMatrix, 0, nodeMatrix, 0, 16);
             } else {
                 Matrix.mul4(this.modelMatrix, modelMatrix, nodeMatrix);
@@ -472,12 +464,11 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void setView(float[] matrix, int index) {
-        System.arraycopy(matrix, index, viewMatrix, 0, 16);
     }
 
     @Override
     public float[] getView() {
-        return viewMatrix;
+        return null;
     }
 
     @Override

@@ -34,11 +34,6 @@ public abstract class RootNode {
     private Node scene;
 
     /**
-     * The current layer to be processed, or null to process all.
-     */
-    transient private Layer layer;
-
-    /**
      * Sets the root scene node, this rootnode will be parent to scene.
      * This node will be rootnode of scene.
      * 

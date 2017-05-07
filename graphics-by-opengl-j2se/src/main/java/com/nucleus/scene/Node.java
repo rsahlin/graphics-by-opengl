@@ -775,6 +775,7 @@ public class Node extends BaseReference implements MMIEventListener {
      * Checks this node and children for pointer event.
      * This default implementation will check bounds and check {@link #ONCLICK} property and send to
      * {@link EventManager#sendObjectEvent(Object, String, String)} if defined.
+     * TODO Instead of transforming the bounds the inverse matrix should be used.
      * 
      * @param event
      * @return True if the input event was consumed, false otherwise.
@@ -782,18 +783,11 @@ public class Node extends BaseReference implements MMIEventListener {
     protected boolean checkNode(MMIPointerEvent event) {
         if (bounds != null && (state == State.ON || state == State.ACTOR)
                 && getProperty(EventHandler.Type.POINTERINPUT.name(), EventManager.FALSE).equals(EventManager.TRUE)) {
-            ViewNode viewNode = getViewParent();
-            // If ViewNode parent does not exist the identitymatrix is used
-            float[] mv = Matrix.createMatrix();
-            if (viewNode != null) {
-                // In order to do pointer intersections the model and view matrix is needed.
-                // For this to work it is important that the view keeps the same orientation of axis as OpenGL (right
-                // and up)
-                Matrix.mul4(viewNode.getView().getMatrix(), modelMatrix, mv);
-            } else {
-                Matrix.setIdentity(mv, 0);
-            }
-            bounds.transform(mv, 0);
+            // In order to do pointer intersections the model and view matrix is needed.
+            // For this to work it is important that the view keeps the same orientation of axis as OpenGL (right
+            // and up)
+            // Matrix.mul4(viewNode.getTransform().getMatrix(), modelMatrix, mv);
+            bounds.transform(modelMatrix, 0);
             if (bounds.isPointInside(event.getPointerData().getCurrentPosition(), 0)) {
                 System.out.println("HIT");
                 String onclick = getProperty(ONCLICK);
