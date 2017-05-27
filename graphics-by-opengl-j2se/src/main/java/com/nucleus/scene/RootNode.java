@@ -1,5 +1,7 @@
 package com.nucleus.scene;
 
+import java.util.ArrayList;
+
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.ResourcesData;
@@ -95,18 +97,33 @@ public abstract class RootNode {
     /**
      * Returns the first matching viewnode, this is a conveniance method to find node with view
      * 
-     * @param layer Name of the ViewNode to return.
+     * @param layer Which layer the ViewNode to return belongs to.
      * @return The viewnode or null if not found
      */
     public ViewNode getViewNode(Layer layer) {
         if (scene == null) {
             return null;
         }
-        for (Node n : scene.getChildren()) {
+        return getViewNode(layer, scene);
+    }
+
+    private ViewNode getViewNode(Layer layer, Node node) {
+        return getViewNode(layer, node.getChildren());
+    }
+
+    private ViewNode getViewNode(Layer layer, ArrayList<Node> children) {
+        for (Node n : children) {
             if (n.getType().equals(NodeType.viewnode.name())) {
                 if (((ViewNode) n).getLayer() == layer) {
                     return (ViewNode) n;
                 }
+            }
+        }
+        // Search through children recusively
+        for (Node n : children) {
+            ViewNode view = getViewNode(layer, n);
+            if (view != null) {
+                return view;
             }
         }
         return null;

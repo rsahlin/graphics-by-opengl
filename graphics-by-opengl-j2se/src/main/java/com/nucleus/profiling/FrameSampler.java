@@ -2,6 +2,7 @@ package com.nucleus.profiling;
 
 /**
  * Utility class for keeping track of delta times, normally used to calculate the delta time from one frame to the next.
+ * Singleton class that can be
  * 
  * @author Richard Sahlin
  *
@@ -9,11 +10,12 @@ package com.nucleus.profiling;
 public class FrameSampler {
 
     public final static int DEFAULT_MIN_FPS = 30;
+    private static FrameSampler frameSampler = new FrameSampler();
 
     private long previousTime;
     private long currentTime;
     private int minFPS = DEFAULT_MIN_FPS;
-    private float delta;
+    private float delta = (float) 1 / DEFAULT_MIN_FPS;
     private float maxDelta;
 
     private float totalDelta;
@@ -23,8 +25,14 @@ public class FrameSampler {
     private int drawCalls;
     private long sampleStart;
 
-    public FrameSampler(int minFPS) {
-        this.minFPS = minFPS;
+
+    /**
+     * Returns the sampler instance
+     * 
+     * @return
+     */
+    public static FrameSampler getInstance() {
+        return frameSampler;
     }
 
     /**
@@ -48,6 +56,16 @@ public class FrameSampler {
     }
 
     /**
+     * Sets the min fps value
+     * 
+     * @param minFps
+     */
+    public void setMinFps(int minFps) {
+        minFPS = minFps;
+
+    }
+
+    /**
      * Adds the number of vertices sent to drawArrays
      * 
      * @param vertices Number of vertices
@@ -66,6 +84,7 @@ public class FrameSampler {
     /**
      * Returns the current delta value, time in seconds from previous frame.
      * If a call to {@link #setMinFPS(int)} has been made then the delta value is limited according to this.
+     * Will be 1 / DEFAULT_MIN_FPS before the first frame has finished.
      * 
      * @return The delta value for previous -> current frame, will be limited if {@link #setMinFPS(int)} has been
      * called.

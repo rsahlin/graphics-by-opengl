@@ -84,7 +84,7 @@ class BaseRenderer implements NucleusRenderer {
     private Set<RenderContextListener> contextListeners = new HashSet<RenderContextListener>();
     private Set<FrameListener> frameListeners = new HashSet<BaseRenderer.FrameListener>();
 
-    private FrameSampler timeKeeper = new FrameSampler(30);
+    private FrameSampler timeKeeper = FrameSampler.getInstance();
     private float deltaTime;
 
     protected Window window = Window.getInstance();

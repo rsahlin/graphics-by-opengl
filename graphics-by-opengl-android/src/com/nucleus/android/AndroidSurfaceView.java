@@ -39,6 +39,7 @@ public class AndroidSurfaceView extends GLSurfaceView
     private EGLDisplay display;
     private EGLConfig eglConfig;
     private EGLSurface eglSurface;
+    private long lastDraw;
 
     /**
      * The result surface configuration from EGL
