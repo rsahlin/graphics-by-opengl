@@ -1,6 +1,7 @@
 package com.nucleus.component;
 
 import com.nucleus.CoreApp;
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RootNode;
 
@@ -46,7 +47,7 @@ public class LogicProcessorRunnable implements Runnable {
         while (running) {
             synchronized (this) {
                 if (rootNode != null) {
-                    logicProcessor.processNode(rootNode.getScene(), renderer.getFrameSampler().getDelta());
+                    logicProcessor.processNode(rootNode.getScene(), FrameSampler.getInstance().getDelta());
                 }
                 try {
                     wait();
@@ -61,6 +62,19 @@ public class LogicProcessorRunnable implements Runnable {
     public void destroy() {
         running = false;
         Thread.currentThread().interrupt();
+    }
+
+    /**
+     * Process the node specified by calling {@link #setRootNode(RootNode)}
+     * Only needed to call this method if thread has not been creted for this class, normally called from the
+     * {@link #run()} method.
+     * 
+     * @param delta
+     */
+    public void process(float delta) {
+        if (rootNode != null) {
+            logicProcessor.processNode(rootNode.getScene(), delta);
+        }
     }
 
 }

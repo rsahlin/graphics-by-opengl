@@ -5,7 +5,6 @@ import java.nio.Buffer;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
-import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
@@ -172,13 +171,6 @@ public interface NucleusRenderer {
      * @return The rendersettings for this renderer
      */
     public RenderSettings getRenderSettings();
-
-    /**
-     * Fetches a reference to the frame sampler, this can be used to query the current delta interval.
-     * 
-     * @return
-     */
-    public FrameSampler getFrameSampler();
 
     /**
      * Renders one specific layer or all layers.

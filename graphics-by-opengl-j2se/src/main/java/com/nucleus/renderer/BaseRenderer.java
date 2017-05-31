@@ -442,11 +442,6 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public FrameSampler getFrameSampler() {
-        return timeKeeper;
-    }
-
-    @Override
     public void resizeWindow(int x, int y, int width, int height) {
         renderSettings.setViewPort(x, y, width, height);
         Window.getInstance().setSize(width, height);

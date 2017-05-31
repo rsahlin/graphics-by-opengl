@@ -12,6 +12,7 @@ import com.nucleus.mmi.PointerInputProcessor;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.renderer.NucleusRenderer.Layer;
@@ -222,6 +223,8 @@ public class CoreApp {
                         logicRunnable.notify();
                     }
                 }
+            } else {
+                logicRunnable.process(FrameSampler.getInstance().getDelta());
             }
             renderer.beginFrame();
             if (rootNode != null) {

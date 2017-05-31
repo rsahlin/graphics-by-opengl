@@ -20,6 +20,7 @@ import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
 import com.nucleus.properties.Property;
 import com.nucleus.vecmath.Matrix;
+import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Transform;
 
 /**
@@ -776,6 +777,7 @@ public class Node extends BaseReference implements MMIEventListener {
      * This default implementation will check bounds and check {@link #ONCLICK} property and send to
      * {@link EventManager#sendObjectEvent(Object, String, String)} if defined.
      * TODO Instead of transforming the bounds the inverse matrix should be used.
+     * Will stop when a node is in state {@link State#OFF} or {@link State#RENDER}
      * 
      * @param event
      * @return True if the input event was consumed, false otherwise.
@@ -797,8 +799,12 @@ public class Node extends BaseReference implements MMIEventListener {
                 }
                 return true;
             }
+            return checkChildren(event);
         }
-        return checkChildren(event);
+        if (state == State.ON || state == State.ACTOR) {
+            return checkChildren(event);
+        }
+        return false;
     }
 
     /**
@@ -816,6 +822,20 @@ public class Node extends BaseReference implements MMIEventListener {
         }
         return false;
 
+    }
+
+    /**
+     * Set bounds from the specified rectangle, if bounds exist but are not set.
+     * If bounds is null or already set then nothing is done.
+     * 
+     * @param rect
+     */
+    public void initBounds(Rectangle rect) {
+        Bounds bounds = getBounds();
+        if (bounds != null && bounds.getBounds() == null) {
+            // Need to create bounds from rectangle.
+            bounds.setBounds(rect);
+        }
     }
 
 }
