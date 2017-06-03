@@ -5,6 +5,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.properties.Property;
 
 /**
@@ -131,6 +132,8 @@ public class EventManager {
         if (handler != null) {
             Property p = Property.create(value);
             handler.handleObjectEvent(obj, p.getKey(), p.getValue());
+        } else {
+            SimpleLogger.d(getClass(), "No EventHandler for " + category);
         }
 
     }

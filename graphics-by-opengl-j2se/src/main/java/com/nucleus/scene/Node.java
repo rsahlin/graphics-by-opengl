@@ -791,7 +791,7 @@ public class Node extends BaseReference implements MMIEventListener {
             // Matrix.mul4(viewNode.getTransform().getMatrix(), modelMatrix, mv);
             bounds.transform(modelMatrix, 0);
             if (bounds.isPointInside(event.getPointerData().getCurrentPosition(), 0)) {
-                System.out.println("HIT");
+                SimpleLogger.d(getClass(), "HIT: " + this);
                 String onclick = getProperty(ONCLICK);
                 if (onclick != null) {
                     Property p = Property.create(onclick);
@@ -836,6 +836,23 @@ public class Node extends BaseReference implements MMIEventListener {
             // Need to create bounds from rectangle.
             bounds.setBounds(rect);
         }
+    }
+
+    /**
+     * Multiply the concatenated model matrix with this nodes transform matrix and store in this nodes model matrix
+     * If this node does not have a transform an identity matrix is used.
+     * 
+     * @param concatModel The concatenated model matrix
+     * @return The node matrix - concatModel * this nodes transform
+     */
+    public float[] concatModelMatrix(float[] concatModel) {
+        if (concatModel == null) {
+            Matrix.setIdentity(modelMatrix, 0);
+            return modelMatrix;
+        }
+        Matrix.mul4(concatModel, transform != null ? transform.getMatrix() : Matrix.setIdentity(Matrix.matrix, 0),
+                modelMatrix);
+        return modelMatrix;
     }
 
 }

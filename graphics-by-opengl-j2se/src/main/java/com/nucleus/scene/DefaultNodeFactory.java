@@ -25,12 +25,14 @@ public class DefaultNodeFactory implements NodeFactory {
         NodeType type = null;
         try {
             type = NodeType.valueOf(source.getType());
-            Node copy = (Node) type.getTypeClass().newInstance();
-            copy.set(source);
-            return copy;
         } catch (IllegalArgumentException e) {
             // This means the node type is not known.
             throw new IllegalArgumentException(ILLEGAL_NODE_TYPE + source.getType());
+        }
+        try {
+            Node copy = (Node) type.getTypeClass().newInstance();
+            copy.set(source);
+            return copy;
         } catch (InstantiationException | IllegalAccessException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

@@ -8,6 +8,8 @@ import com.nucleus.renderer.NucleusRenderer.Layer;
  * Each layer node has its own view matrix, this makes it possible to set the viewpoint separately in the different
  * nodes.
  * One ViewNode could be the scene, and the next the UI
+ * The ViewNode must have transform, when rendering each layer shall re-set the node view tansform making it independent
+ * from parent.
  * 
  * @author Richard Sahlin
  *
@@ -15,7 +17,10 @@ import com.nucleus.renderer.NucleusRenderer.Layer;
 public class ViewNode extends Node {
 
     /**
-     * This can be used to find nodes based on layer
+     * This can be used to find nodes based on layer, it can also be used to render based on layer.
+     * Each time a layer is defined the Node view transform shall be re-set.
+     * This means layer can be used to create object that is separate from transform hierarchy, for instance adding UI
+     * elements from within children.
      */
     @SerializedName("layer")
     private Layer layer;
@@ -43,6 +48,10 @@ public class ViewNode extends Node {
     private void set(ViewNode source) {
         super.set(source);
         this.layer = source.layer;
+        // Make sure ViewNode has transform
+        if (transform == null) {
+            throw new IllegalArgumentException(getClass().getSimpleName() + " " + getId() + " must have transform");
+        }
     }
 
     @Override

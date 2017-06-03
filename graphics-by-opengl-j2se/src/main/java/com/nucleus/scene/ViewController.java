@@ -1,5 +1,6 @@
 package com.nucleus.scene;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.common.StringUtils;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
@@ -92,6 +93,8 @@ public class ViewController implements EventHandler {
         ViewNode view = ((Node) obj).getViewParent();
         if (view != null) {
             view.getViewController().handleEvent(category, value);
+        } else {
+            SimpleLogger.d(getClass(), "No ViewNode parent in node " + obj);
         }
     }
 
