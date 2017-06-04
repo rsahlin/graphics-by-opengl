@@ -27,7 +27,7 @@ import com.nucleus.scene.NodeException;
 import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
-import com.nucleus.scene.ViewNode;
+import com.nucleus.scene.LayerNode;
 
 /**
  * GSON Serializer for nucleus scenegraph.
@@ -38,7 +38,7 @@ import com.nucleus.scene.ViewNode;
  */
 public class GSONSceneFactory implements SceneSerializer {
 
-    protected ArrayDeque<ViewNode> viewStack = new ArrayDeque<ViewNode>(NucleusRenderer.MIN_STACKELEMENTS);
+    protected ArrayDeque<LayerNode> viewStack = new ArrayDeque<LayerNode>(NucleusRenderer.MIN_STACKELEMENTS);
     private NucleusNodeDeserializer nodeDeserializer = new NucleusNodeDeserializer();
 
     private final static String ERROR_CLOSING_STREAM = "Error closing stream:";

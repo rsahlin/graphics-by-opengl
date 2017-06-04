@@ -17,7 +17,7 @@ import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.RenderSettings;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
-import com.nucleus.scene.ViewNode;
+import com.nucleus.scene.LayerNode;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.TexParameter;
@@ -78,7 +78,7 @@ public class FGLConvolutionTest extends NucleusApplication implements FrameListe
         ConvolutionProgram c = new ConvolutionProgram();
         uKernel = c.getShaderVariable(ConvolutionProgram.VARIABLES.uKernel);
         c.createProgram(renderer.getGLES());
-        ViewNode node = new ViewNode();
+        LayerNode node = new LayerNode();
         node.setLayer(Layer.SCENE);
         ViewFrustum vf = new ViewFrustum();
         vf.setOrthoProjection(-0.5f, 0.5f, 0.5f, -0.5f, 0, 10);

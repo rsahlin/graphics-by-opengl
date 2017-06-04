@@ -241,10 +241,6 @@ class BaseRenderer implements NucleusRenderer {
             if (producer != null) {
                 producer.updateAttributeData();
             }
-            // if (this.modelMatrix == null) {
-                // The first node for the frame
-            // System.arraycopy(modelMatrix, 0, nodeMatrix, 0, 16);
-            // Matrix.mul4(this.modelMatrix, modelMatrix, nodeMatrix);
             float[] nodeMatrix = node.concatModelMatrix(this.modelMatrix);
             // Fetch projection just before render
             float[] projection = node.getProjection();

@@ -11,7 +11,7 @@ import com.nucleus.common.Key;
 public enum NodeType implements Key {
 
     node(Node.class),
-    viewnode(ViewNode.class),
+    layernode(LayerNode.class),
     switchnode(SwitchNode.class);
 
     private final Class<?> theClass;

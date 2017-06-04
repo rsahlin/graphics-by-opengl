@@ -17,7 +17,7 @@ public class DefaultNodeFactory implements NodeFactory {
 
     protected static final String NOT_IMPLEMENTED = "Not implemented: ";
     protected static final String ILLEGAL_NODE_TYPE = "Unknown node type: ";
-    protected ArrayDeque<ViewNode> viewStack = new ArrayDeque<ViewNode>(NucleusRenderer.MIN_STACKELEMENTS);
+    protected ArrayDeque<LayerNode> viewStack = new ArrayDeque<LayerNode>(NucleusRenderer.MIN_STACKELEMENTS);
 
     @Override
     public Node create(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resources, Node source)
@@ -66,8 +66,8 @@ public class DefaultNodeFactory implements NodeFactory {
             Node parent) throws NodeException {
         Node created = create(renderer, meshFactory, resources, source);
         boolean isViewNode = false;
-        if (NodeType.viewnode.name().equals(created.getType())) {
-            viewStack.push((ViewNode) created);
+        if (NodeType.layernode.name().equals(created.getType())) {
+            viewStack.push((LayerNode) created);
             isViewNode = true;
         }
         created.setRootNode(parent.getRootNode());

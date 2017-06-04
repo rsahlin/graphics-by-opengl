@@ -375,18 +375,18 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Returns the first (closest from this node) {@linkplain ViewNode} parent.
-     * The search starts with the parent node of this node, if that is not a {@linkplain ViewNode} that nodes parent
+     * Returns the first (closest from this node) {@linkplain LayerNode} parent.
+     * The search starts with the parent node of this node, if that is not a {@linkplain LayerNode} that nodes parent
      * is checked, continuing until root node.
      * 
      * @return The view parent of this node, or null if none could be found
      */
-    public ViewNode getViewParent() {
+    public LayerNode getViewParent() {
         if (parent == null) {
             return null;
         }
-        if (NodeType.viewnode.name().equals(parent.getType())) {
-            return (ViewNode) parent;
+        if (NodeType.layernode.name().equals(parent.getType())) {
+            return (LayerNode) parent;
         }
         return parent.getViewParent();
     }
@@ -740,21 +740,6 @@ public class Node extends BaseReference implements MMIEventListener {
      * of this node has been created.
      */
     public void onCreated() {
-        setObjectProperties();
-    }
-
-    /**
-     * Internal method, sets all properties with a call for each property to
-     * {@linkplain EventManager#sendObjectEvent(Object, String, String)} with the node as object
-     * This shall be called from the {@link #onCreated()} method
-     * 
-     */
-    private void setObjectProperties() {
-        if (properties != null) {
-            for (String key : properties.keySet()) {
-                EventManager.getInstance().sendObjectEvent(this, key, properties.get(key));
-            }
-        }
     }
 
     @Override
@@ -795,7 +780,7 @@ public class Node extends BaseReference implements MMIEventListener {
                 String onclick = getProperty(ONCLICK);
                 if (onclick != null) {
                     Property p = Property.create(onclick);
-                    EventManager.getInstance().sendObjectEvent(this, p.getKey(), p.getValue());
+                    EventManager.getInstance().post(this, p.getKey(), p.getValue());
                 }
                 return true;
             }
@@ -850,7 +835,8 @@ public class Node extends BaseReference implements MMIEventListener {
             Matrix.setIdentity(modelMatrix, 0);
             return modelMatrix;
         }
-        Matrix.mul4(concatModel, transform != null ? transform.getMatrix() : Matrix.setIdentity(Matrix.matrix, 0),
+        Matrix.mul4(concatModel,
+                transform != null ? transform.getMatrix() : Matrix.IDENTITY_MATRIX,
                 modelMatrix);
         return modelMatrix;
     }

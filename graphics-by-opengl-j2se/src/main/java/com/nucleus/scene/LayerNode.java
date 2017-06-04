@@ -2,6 +2,7 @@ package com.nucleus.scene;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.renderer.NucleusRenderer.Layer;
+import com.nucleus.vecmath.Matrix;
 
 /**
  * A Node representing a layer with a view, the view can be transformed using a {@link #getViewController()}
@@ -14,7 +15,7 @@ import com.nucleus.renderer.NucleusRenderer.Layer;
  * @author Richard Sahlin
  *
  */
-public class ViewNode extends Node {
+public class LayerNode extends Node {
 
     /**
      * This can be used to find nodes based on layer, it can also be used to render based on layer.
@@ -28,24 +29,24 @@ public class ViewNode extends Node {
     transient ViewController viewController;
 
     @Override
-    public ViewNode createInstance() {
-        ViewNode copy = new ViewNode();
+    public LayerNode createInstance() {
+        LayerNode copy = new LayerNode();
         return copy;
     }
 
     @Override
-    public ViewNode copy() {
-        ViewNode copy = createInstance();
+    public LayerNode copy() {
+        LayerNode copy = createInstance();
         copy.set(this);
         return copy;
     }
 
     @Override
     public void set(Node source) {
-        set((ViewNode) source);
+        set((LayerNode) source);
     }
 
-    private void set(ViewNode source) {
+    private void set(LayerNode source) {
         super.set(source);
         this.layer = source.layer;
         // Make sure ViewNode has transform
@@ -83,5 +84,13 @@ public class ViewNode extends Node {
         return viewController;
     }
 
+    @Override
+    public float[] concatModelMatrix(float[] concatModel) {
+        if (concatModel == null) {
+            Matrix.setIdentity(modelMatrix, 0);
+            return modelMatrix;
+        }
+        return transform.getMatrix();
+    }
 
 }

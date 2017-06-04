@@ -100,28 +100,28 @@ public abstract class RootNode {
      * @param layer Which layer the ViewNode to return belongs to.
      * @return The viewnode or null if not found
      */
-    public ViewNode getViewNode(Layer layer) {
+    public LayerNode getViewNode(Layer layer) {
         if (scene == null) {
             return null;
         }
         return getViewNode(layer, scene);
     }
 
-    private ViewNode getViewNode(Layer layer, Node node) {
+    private LayerNode getViewNode(Layer layer, Node node) {
         return getViewNode(layer, node.getChildren());
     }
 
-    private ViewNode getViewNode(Layer layer, ArrayList<Node> children) {
+    private LayerNode getViewNode(Layer layer, ArrayList<Node> children) {
         for (Node n : children) {
-            if (n.getType().equals(NodeType.viewnode.name())) {
-                if (((ViewNode) n).getLayer() == layer) {
-                    return (ViewNode) n;
+            if (n.getType().equals(NodeType.layernode.name())) {
+                if (((LayerNode) n).getLayer() == layer) {
+                    return (LayerNode) n;
                 }
             }
         }
         // Search through children recusively
         for (Node n : children) {
-            ViewNode view = getViewNode(layer, n);
+            LayerNode view = getViewNode(layer, n);
             if (view != null) {
                 return view;
             }

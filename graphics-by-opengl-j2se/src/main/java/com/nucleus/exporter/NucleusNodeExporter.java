@@ -6,7 +6,7 @@ import java.util.List;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Key;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.scene.ViewNode;
+import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
@@ -112,8 +112,8 @@ public class NucleusNodeExporter implements NodeExporter {
         case node:
             created = source.copy();
             break;
-        case viewnode:
-            created = ((ViewNode) source).copy();
+        case layernode:
+            created = ((LayerNode) source).copy();
             break;
         case switchnode:
             created = ((SwitchNode) source).copy();
