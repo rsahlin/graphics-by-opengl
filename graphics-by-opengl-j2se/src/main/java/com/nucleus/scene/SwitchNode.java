@@ -51,7 +51,7 @@ public class SwitchNode extends Node implements PostDeserializable {
     }
 
     /**
-     * Sets the active node in the children.
+     * Sets the active child node, will only alter children in this node
      * Next call to {@link #getChildren()} will return a list containing the node with the matching id.
      * 
      * @param activeId Id of the child node to set as active, all other children will be inactive

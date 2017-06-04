@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.SimpleLogger;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.event.EventManager;
@@ -15,10 +14,6 @@ import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.mmi.MMIEventListener;
-import com.nucleus.mmi.MMIPointerEvent;
-import com.nucleus.mmi.MMIPointerEvent.Action;
-import com.nucleus.properties.Property;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Transform;
@@ -36,7 +31,7 @@ import com.nucleus.vecmath.Transform;
  * @author Richard Sahlin
  *
  */
-public class Node extends BaseReference implements MMIEventListener {
+public class Node extends BaseReference {
 
     public static final String STATE = "state";
     public static final String TYPE = "type";
@@ -44,8 +39,9 @@ public class Node extends BaseReference implements MMIEventListener {
     public static final String ONCLICK = "onclick";
 
     /**
-     * The states a node can be in, this controlls if node is rendered etc.
+     * The states a node can be in, this controls if node is rendered etc.
      * This can be used to skip nodes from being rendered or processed.
+     * Enum values are bitwise
      * 
      * @author Richard Sahlin
      *
@@ -63,13 +59,13 @@ public class Node extends BaseReference implements MMIEventListener {
         /**
          * Node is rendered, but no actors processed
          */
-        RENDER(3),
+        RENDER(4),
         /**
          * Node is not rendered, but actors processed
          */
-        ACTOR(4);
+        ACTOR(8);
 
-        private final int value;
+        public final int value;
 
         private State(int value) {
             this.value = value;
@@ -621,7 +617,7 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Returns the state of the node, the specifies if the node is on or off.
+     * Returns the state of the node, the specifies if the node is on or off, only actor or only render
      * 
      * @return The state, or null if not set
      */
@@ -742,32 +738,15 @@ public class Node extends BaseReference implements MMIEventListener {
     public void onCreated() {
     }
 
-    @Override
-    public void onInputEvent(MMIPointerEvent event) {
-        switch (state) {
-        case ON:
-        case ACTOR:
-            if (event.getAction() == Action.ACTIVE || event.getAction() == Action.MOVE) {
-                checkNode(event);
-            }
-            break;
-        default:
-            SimpleLogger.d(getClass(), "Not handling input, node in state: " + state);
-            // Do nothing
-        }
-    }
-
     /**
-     * Checks this node and children for pointer event.
-     * This default implementation will check bounds and check {@link #ONCLICK} property and send to
-     * {@link EventManager#sendObjectEvent(Object, String, String)} if defined.
-     * TODO Instead of transforming the bounds the inverse matrix should be used.
-     * Will stop when a node is in state {@link State#OFF} or {@link State#RENDER}
+     * Checks if this node is hit by the position.
+     * If {@value State#ON} or {@value State#ACTOR} then the bounds are checked for intersection by the point.
      * 
-     * @param event
-     * @return True if the input event was consumed, false otherwise.
+     * @param position
+     * @return If node is in an enabled state, has bounds and the position is inside then true is returned, otherwise
+     * false
      */
-    protected boolean checkNode(MMIPointerEvent event) {
+    protected boolean isClicked(float[] position) {
         if (bounds != null && (state == State.ON || state == State.ACTOR)
                 && getProperty(EventHandler.Type.POINTERINPUT.name(), EventManager.FALSE).equals(EventManager.TRUE)) {
             // In order to do pointer intersections the model and view matrix is needed.
@@ -775,38 +754,9 @@ public class Node extends BaseReference implements MMIEventListener {
             // and up)
             // Matrix.mul4(viewNode.getTransform().getMatrix(), modelMatrix, mv);
             bounds.transform(modelMatrix, 0);
-            if (bounds.isPointInside(event.getPointerData().getCurrentPosition(), 0)) {
-                SimpleLogger.d(getClass(), "HIT: " + this);
-                String onclick = getProperty(ONCLICK);
-                if (onclick != null) {
-                    Property p = Property.create(onclick);
-                    EventManager.getInstance().post(this, p.getKey(), p.getValue());
-                }
-                return true;
-            }
-            return checkChildren(event);
-        }
-        if (state == State.ON || state == State.ACTOR) {
-            return checkChildren(event);
+            return bounds.isPointInside(position, 0);
         }
         return false;
-    }
-
-    /**
-     * Checks children for pointer event, calling {@link #checkNode(MMIPointerEvent)} recursively and stopping when a
-     * child returns true.
-     * 
-     * @param event
-     * @return
-     */
-    protected boolean checkChildren(MMIPointerEvent event) {
-        for (Node n : getChildren()) {
-            if (n.checkNode(event)) {
-                return true;
-            }
-        }
-        return false;
-
     }
 
     /**
