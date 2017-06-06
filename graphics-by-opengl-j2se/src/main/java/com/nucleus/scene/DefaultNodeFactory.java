@@ -20,7 +20,8 @@ public class DefaultNodeFactory implements NodeFactory {
     protected ArrayDeque<LayerNode> viewStack = new ArrayDeque<LayerNode>(NucleusRenderer.MIN_STACKELEMENTS);
 
     @Override
-    public Node create(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resources, Node source)
+    public Node create(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resources, Node source,
+            RootNode root)
             throws NodeException {
         NodeType type = null;
         try {
@@ -32,6 +33,7 @@ public class DefaultNodeFactory implements NodeFactory {
         try {
             Node copy = (Node) type.getTypeClass().newInstance();
             copy.set(source);
+            copy.setRootNode(root);
             return copy;
         } catch (InstantiationException | IllegalAccessException e) {
             // TODO Auto-generated catch block
@@ -64,7 +66,7 @@ public class DefaultNodeFactory implements NodeFactory {
      */
     protected Node createNode(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resources, Node source,
             Node parent) throws NodeException {
-        Node created = create(renderer, meshFactory, resources, source);
+        Node created = create(renderer, meshFactory, resources, source, parent.getRootNode());
         boolean isViewNode = false;
         if (NodeType.layernode.name().equals(created.getType())) {
             viewStack.push((LayerNode) created);

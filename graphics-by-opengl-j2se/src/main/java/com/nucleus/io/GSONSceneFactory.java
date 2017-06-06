@@ -22,12 +22,12 @@ import com.nucleus.io.gson.NucleusNodeDeserializer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
+import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
-import com.nucleus.scene.LayerNode;
 
 /**
  * GSON Serializer for nucleus scenegraph.
@@ -205,7 +205,7 @@ public class GSONSceneFactory implements SceneSerializer {
      * @throws IOException
      */
     private Node addNodes(ResourcesData resources, RootNode root, Node node) throws NodeException {
-        Node created = nodeFactory.create(renderer, meshFactory, resources, node);
+        Node created = nodeFactory.create(renderer, meshFactory, resources, node, root);
         root.setScene(created);
         setViewFrustum(node, created);
         nodeFactory.createChildNodes(renderer, meshFactory, resources, node, created);

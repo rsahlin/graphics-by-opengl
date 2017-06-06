@@ -20,7 +20,7 @@ import com.nucleus.renderer.RenderSettings;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
-import com.nucleus.scene.J2SENodeInutListener;
+import com.nucleus.scene.J2SENodeInputListener;
 import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.NodeController;
 import com.nucleus.scene.RootNode;
@@ -261,7 +261,7 @@ public class CoreApp {
      * @param root
      */
     public void addPointerInput(RootNode root) {
-        inputProcessor.addMMIListener(new J2SENodeInutListener(root));
+        inputProcessor.addMMIListener(new J2SENodeInputListener(root));
     }
 
     public void displaySplash() throws GLException {

@@ -14,6 +14,7 @@ import com.nucleus.texturing.Texture2D;
  * needed for the tree.
  * A root node shall be self contained, reference textures and large data sets.
  * This class can be serialized using GSON
+ * All childnodes added must have the same RootNode reference
  * 
  * @author Richard Sahlin
  *
@@ -37,13 +38,11 @@ public abstract class RootNode {
 
     /**
      * Sets the root scene node, this rootnode will be parent to scene.
-     * This node will be rootnode of scene.
      * 
      * @param node
      */
     public void setScene(Node scene) {
         this.scene = scene;
-        scene.setRootNode(this);
         scene.parent = null;
     }
 

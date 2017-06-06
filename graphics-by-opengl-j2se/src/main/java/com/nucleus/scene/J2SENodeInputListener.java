@@ -5,14 +5,20 @@ import com.nucleus.event.EventManager;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
+import com.nucleus.mmi.PointerInputProcessor;
 import com.nucleus.properties.Property;
 import com.nucleus.scene.Node.State;
 
-public class J2SENodeInutListener implements NodeInputListener, MMIEventListener {
+/**
+ * Handles pointer input checking on nodes
+ * Takes {@link MMIEventListener} events and checks the registered node tree for pointer hits.
+ * This class must be registred to {@link PointerInputProcessor} for it to get mmi event callbacks.
+ */
+public class J2SENodeInputListener implements NodeInputListener, MMIEventListener {
 
     private final RootNode root;
 
-    public J2SENodeInutListener(RootNode root) {
+    public J2SENodeInputListener(RootNode root) {
         this.root = root;
     }
 
