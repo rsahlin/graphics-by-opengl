@@ -260,6 +260,7 @@ class BaseRenderer implements NucleusRenderer {
             if (projection != null) {
                 this.projectionMatrix = popMatrix(this.projection);
             }
+            node.getRootNode().addRenderedNode(node);
         }
     }
 

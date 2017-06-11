@@ -3,37 +3,24 @@ package com.nucleus.scene;
 import java.util.Iterator;
 
 /**
- * Traverses the nodetree in a breadth first manner.
+ * Superclass for node iterators
  *
  */
-public class NodeIterator implements Iterator<Node> {
+public abstract class NodeIterator implements Iterator<Node> {
 
-    private final Node start;
-
+    protected final Node start;
 
     /**
-     * Creates a new nodeiterator
+     * Creates a new node iterator, for the nodetree starting with node
      * 
      * @param start
      * @throws IllegalArgumentException If start is null
      */
-    public NodeIterator(Node start) {
+    protected NodeIterator(Node start) {
         if (start == null) {
             throw new IllegalArgumentException("Start node may not be null");
         }
         this.start = start;
-    }
-
-    @Override
-    public boolean hasNext() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public Node next() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
 }

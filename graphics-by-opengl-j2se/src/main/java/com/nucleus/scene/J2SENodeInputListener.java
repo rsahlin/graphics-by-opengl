@@ -1,7 +1,10 @@
 package com.nucleus.scene;
 
+import java.util.ArrayList;
+
 import com.nucleus.SimpleLogger;
 import com.nucleus.event.EventManager;
+import com.nucleus.mmi.ClickListener;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
@@ -23,23 +26,30 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
     }
 
     @Override
-    public boolean onInputEvent(Node node, MMIPointerEvent event) {
-        switch (node.getState()) {
+    public boolean onInputEvent(ArrayList<Node> nodes, MMIPointerEvent event) {
+        int count = nodes.size() - 1;
+        Node node = null;
+        for (int i = count; i >= 0; i--) {
+            node = nodes.get(i);
+            switch (node.getState()) {
             case ON:
             case ACTOR:
                 if (event.getAction() == Action.ACTIVE || event.getAction() == Action.MOVE) {
-                return onPointerEvent(node, event);
+                    if (onPointerEvent(node, event)) {
+                        return true;
+                    }
                 }
                 break;
             default:
                 SimpleLogger.d(getClass(), "Not handling input, node in state: " + node.getState());
                 // Do nothing
             }
+        }
         return false;
     }
 
     /**
-     * Checks this node and children for pointer event.
+     * Checks this node for pointer event.
      * This default implementation will check bounds and check {@link #ONCLICK} property and send to
      * {@link EventManager#post(Node, String, String)} if defined.
      * TODO Instead of transforming the bounds the inverse matrix should be used.
@@ -49,16 +59,32 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
      * @return True if the input event was consumed, false otherwise.
      */
     protected boolean onPointerEvent(Node node, MMIPointerEvent event) {
-        if (node.isClicked(event.getPointerData().getCurrentPosition())) {
-            SimpleLogger.d(getClass(), "HIT: " + this);
-            String onclick = node.getProperty(ONCLICK);
-            if (onclick != null) {
-                Property p = Property.create(onclick);
-                EventManager.getInstance().post(node, p.getKey(), p.getValue());
+        switch (event.getAction()) {
+        case ACTIVE:
+            if (node.isClicked(event.getPointerData().getCurrentPosition())) {
+                SimpleLogger.d(getClass(), "HIT: " + node);
+                String onclick = node.getProperty(ONCLICK);
+                if (onclick != null) {
+                    Property p = Property.create(onclick);
+                    EventManager.getInstance().post(node, p.getKey(), p.getValue());
+                }
+                if (node instanceof ClickListener) {
+                    ((ClickListener) node).onClick();
+                }
+                return true;
             }
-            return true;
+            break;
+        case INACTIVE:
+            break;
+        case MOVE:
+            break;
+        case ZOOM:
+            break;
+        default:
+            break;
+
         }
-        return checkChildren(node, event);
+        return false;
     }
 
     /**
@@ -83,7 +109,7 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
 
     @Override
     public void onInputEvent(MMIPointerEvent event) {
-        onInputEvent(root.getScene(), event);
+        onInputEvent(root.getRenderedNodes(), event);
     }
 
 }

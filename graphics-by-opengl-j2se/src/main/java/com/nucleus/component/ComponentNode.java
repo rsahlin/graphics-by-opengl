@@ -6,6 +6,7 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.io.ResourcesData;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.RootNode;
 import com.nucleus.system.ComponentHandler;
 
 /**
@@ -30,14 +31,15 @@ public class ComponentNode extends Node implements ComponentController {
     }
 
     @Override
-    public ComponentNode createInstance() {
+    protected ComponentNode createInstance(RootNode root) {
         ComponentNode node = new ComponentNode();
+        node.setRootNode(root);
         return node;
     }
 
     @Override
-    public Node copy() {
-        ComponentNode copy = createInstance();
+    public Node copy(RootNode root) {
+        ComponentNode copy = createInstance(root);
         copy.set(this);
         return copy;
     }

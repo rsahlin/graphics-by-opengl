@@ -235,6 +235,9 @@ public class CoreApp {
             throw new RuntimeException(e);
         }
         renderer.endFrame();
+        if (rootNode != null) {
+            rootNode.swapNodeList();
+        }
 
     }
 
@@ -271,7 +274,9 @@ public class CoreApp {
         Mesh mesh = new Mesh();
         ConvolutionProgram c = new ConvolutionProgram();
         c.createProgram(renderer.getGLES());
+        BaseRootNode root = new BaseRootNode();
         LayerNode node = new LayerNode();
+        node.setRootNode(root);
         node.setLayer(Layer.SCENE);
         ViewFrustum vf = new ViewFrustum();
         vf.setOrthoProjection(-0.5f, 0.5f, 0.5f, -0.5f, 0, 10);
@@ -285,7 +290,6 @@ public class CoreApp {
         // Convolution.normalize(kernel, kernel, false, 1);
         c.buildMesh(mesh, tex, 0.2f, 0.2f, 0, kernel);
         node.addMesh(mesh);
-        BaseRootNode root = new BaseRootNode();
         root.setScene(node);
         renderer.beginFrame();
         renderer.render(root);

@@ -110,13 +110,13 @@ public class NucleusNodeExporter implements NodeExporter {
         Node created;
         switch (type) {
         case node:
-            created = source.copy();
+            created = source.copy(rootNode);
             break;
         case layernode:
-            created = ((LayerNode) source).copy();
+            created = ((LayerNode) source).copy(rootNode);
             break;
         case switchnode:
-            created = ((SwitchNode) source).copy();
+            created = ((SwitchNode) source).copy(rootNode);
             break;
         default:
             throw new IllegalArgumentException(NOT_IMPLEMENTED + type);

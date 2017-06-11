@@ -153,12 +153,15 @@ public class Node extends BaseReference {
     /**
      * Creates a new instance of this node.
      * This will be a new empty instance
+     * TODO - should have rootnode as parameter
      * 
+     * @param root The root node of the returned instance
      * @return New instance of this node
      * @throws IllegalArgumentException If root is null
      */
-    public Node createInstance() {
+    protected Node createInstance(RootNode root) {
         Node copy = new Node();
+        copy.setRootNode(root);
         return copy;
     }
 
@@ -166,10 +169,12 @@ public class Node extends BaseReference {
      * Creates a new instance of this node, then copies this node into the copy.
      * This is a shallow copy, it does not copy children.
      * 
+     * @param root Root of the created node
      * @return New copy of this node, transient values and children will not be copied.
+     * @throws IllegalArgumentException If root is null
      */
-    public Node copy() {
-        Node copy = createInstance();
+    public Node copy(RootNode root) {
+        Node copy = createInstance(root);
         copy.set(this);
         return copy;
     }

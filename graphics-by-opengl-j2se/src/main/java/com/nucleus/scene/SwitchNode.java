@@ -18,13 +18,15 @@ public class SwitchNode extends Node implements PostDeserializable {
     private String active;
 
     @Override
-    public SwitchNode createInstance() {
-        return new SwitchNode();
+    public SwitchNode createInstance(RootNode root) {
+        SwitchNode node = new SwitchNode();
+        node.setRootNode(root);
+        return node;
     }
 
     @Override
-    public SwitchNode copy() {
-        SwitchNode copy = createInstance();
+    public SwitchNode copy(RootNode root) {
+        SwitchNode copy = createInstance(root);
         copy.set(this);
         return copy;
     }

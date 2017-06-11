@@ -1,5 +1,7 @@
 package com.nucleus.scene;
 
+import java.util.ArrayList;
+
 import com.nucleus.mmi.MMIPointerEvent;
 
 /**
@@ -15,10 +17,11 @@ public interface NodeInputListener {
     /**
      * Recursively check nodes for the input event, when a node consumes the event true will be returned.
      * 
-     * @param node
+     * @param nodes List of nodes to check - this must be in draw order, ie first drawn node will be first.
+     * Iterate through this from end to beginning
      * @param event
      * @return True if a node has consumed the input event event
      */
-    public boolean onInputEvent(Node node, MMIPointerEvent event);
+    public boolean onInputEvent(ArrayList<Node> nodes, MMIPointerEvent event);
 
 }

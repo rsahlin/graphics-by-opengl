@@ -191,6 +191,7 @@ public interface NucleusRenderer {
 
     /**
      * Renders the node using the current mvp matrix, will call children recursively.
+     * If node is drawn it will be added to {@link RootNode} list of rendered nodes.
      * 
      * @param node The node to be rendered
      * @throws GLException If there is an error in GL while drawing this node.
