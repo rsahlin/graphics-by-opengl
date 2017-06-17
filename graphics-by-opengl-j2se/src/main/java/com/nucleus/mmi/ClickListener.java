@@ -12,6 +12,6 @@ public interface ClickListener {
      * 
      * @return True if the object consumes the click action
      */
-    public boolean onClick();
+    public boolean onClick(float[] position);
 
 }

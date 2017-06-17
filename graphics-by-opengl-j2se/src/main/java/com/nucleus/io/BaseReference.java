@@ -67,7 +67,7 @@ public class BaseReference implements Reference {
     }
 
     /**
-     * Returns the external reference for this texture
+     * Returns the external reference for this object
      * 
      * @return
      */

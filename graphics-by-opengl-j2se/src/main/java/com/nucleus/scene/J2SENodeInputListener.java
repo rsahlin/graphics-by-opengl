@@ -69,7 +69,7 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
                     EventManager.getInstance().post(node, p.getKey(), p.getValue());
                 }
                 if (node instanceof ClickListener) {
-                    ((ClickListener) node).onClick();
+                    ((ClickListener) node).onClick(event.getPointerData().getCurrentPosition());
                 }
                 return true;
             }
