@@ -21,6 +21,7 @@ import com.nucleus.vecmath.Rectangle;
  * Texture object and Sampler info, this class holds the texture object ID, texture parameters and a reference to the
  * Image sources to the texture. This is needed so that the system can remove unused texture sources (bitmaps)
  * This class can be serialized using GSON
+ * Texture objects shall be treated as immutable
  * 
  * @author Richard Sahlin
  *

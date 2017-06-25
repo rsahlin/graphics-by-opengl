@@ -73,7 +73,6 @@ public class PointerInputProcessor implements PointerListener {
             if (pointerCount < 0) {
                 System.out.println("PointerInputProcessor: ERROR: pointerCount= " + pointerCount);
             }
-            SimpleLogger.d(getClass(), "pointerCount= " + pointerCount);
             addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.INACTIVE, pointer,
                     pointerMotionData[pointer]), pointerData);
             break;
