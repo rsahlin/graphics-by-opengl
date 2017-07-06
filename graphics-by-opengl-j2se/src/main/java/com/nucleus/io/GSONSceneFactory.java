@@ -19,6 +19,7 @@ import com.nucleus.exporter.NucleusNodeExporter;
 import com.nucleus.geometry.MeshFactory;
 import com.nucleus.io.gson.BoundsDeserializer;
 import com.nucleus.io.gson.NucleusNodeDeserializer;
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
@@ -92,7 +93,8 @@ public class GSONSceneFactory implements SceneSerializer {
         ClassLoader loader = getClass().getClassLoader();
         InputStream is = loader.getResourceAsStream(filename);
         try {
-            return importScene(is);
+            RootNode scene = importScene(is);
+            return scene;
         } finally {
             if (is != null) {
                 try {
@@ -114,6 +116,7 @@ public class GSONSceneFactory implements SceneSerializer {
             throw new IllegalArgumentException(NULL_PARAMETER_ERROR + "inputstream");
         }
         try {
+            long start = System.currentTimeMillis();
             Reader reader = new InputStreamReader(is, "UTF-8");
             GsonBuilder builder = new GsonBuilder();
             // First register type adapters - then call GsonBuilder.create() to build a Gson instance
@@ -121,7 +124,10 @@ public class GSONSceneFactory implements SceneSerializer {
             registerTypeAdapter(builder);
             setGson(builder.create());
             RootNode scene = getSceneFromJson(gson, reader);
+            long loaded = System.currentTimeMillis();
+            FrameSampler.getInstance().logTag(FrameSampler.LOAD_SCENE, start, loaded);
             RootNode createdRoot = createScene(scene.getResources(), scene.getScene());
+            FrameSampler.getInstance().logTag(FrameSampler.CREATE_SCENE, loaded, System.currentTimeMillis());
             return createdRoot;
         } catch (IOException e) {
             throw new NodeException(e);

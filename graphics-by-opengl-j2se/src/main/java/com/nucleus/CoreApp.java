@@ -248,6 +248,7 @@ public class CoreApp {
      * @param node
      */
     public void setRootNode(RootNode node) {
+        FrameSampler.getInstance().logTag(FrameSampler.SET_ROOT_NODE);
         this.rootNode = node;
         logicRunnable.setRootNode(node);
         ViewController vc = new ViewController();
@@ -268,6 +269,7 @@ public class CoreApp {
     }
 
     public void displaySplash() throws GLException {
+        FrameSampler.getInstance().logTag(FrameSampler.DISPLAY_SPLASH);
         RenderSettings rs = renderer.getRenderSettings();
         rs.setCullFace(GLES20.GL_NONE);
         rs.setDepthFunc(GLES20.GL_NONE);

@@ -3,6 +3,7 @@ package com.nucleus.texture.android;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Image;
 import com.nucleus.texturing.Image.ImageFormat;
@@ -15,8 +16,11 @@ public class AndroidImageFactory extends BaseImageFactory implements ImageFactor
 
     @Override
     public Image createImage(String name, ImageFormat format) throws IOException {
+        long start = System.currentTimeMillis();
         ClassLoader classLoader = getClass().getClassLoader();
         Bitmap b = BitmapFactory.decodeStream(classLoader.getResourceAsStream(name));
+        long loaded = System.currentTimeMillis();
+        FrameSampler.getInstance().logTag(FrameSampler.LOAD_IMAGE, start, loaded);
         if (b == null) {
             throw new IOException("Could not load " + name);
         }
@@ -25,6 +29,8 @@ public class AndroidImageFactory extends BaseImageFactory implements ImageFactor
         b.copyPixelsToBuffer(bb);
         Image image = new Image(b.getWidth(), b.getHeight(), format);
         copyPixels(bytePixels, ImageFormat.RGBA, image);
+        FrameSampler.getInstance().logTag(FrameSampler.COPY_IMAGE + " " + image.getFormat().toString(), loaded,
+                System.currentTimeMillis());
         return image;
     }
 }

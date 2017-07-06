@@ -94,7 +94,7 @@ public class TextureFactory {
             InputStreamReader reader = new InputStreamReader(ref.getAsStream());
             return gson.fromJson(reader, Texture2D.class);
         } catch (Exception e) {
-            throw new RuntimeException("Exception reading " + ref.getSource(), e);
+            throw new RuntimeException("Exception reading " + ref.getSource() + " : " + e, e);
         }
     }
 

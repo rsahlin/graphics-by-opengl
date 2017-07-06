@@ -46,4 +46,19 @@ public enum DataType {
         return size;
     }
 
+    /**
+     * Returns the datatype for the specified type value, or null if not found
+     * 
+     * @param type
+     * @return
+     */
+    public static DataType valueOf(int type) {
+        for (DataType dataType : values()) {
+            if (dataType.getType() == type) {
+                return dataType;
+            }
+        }
+        return null;
+    }
+
 }

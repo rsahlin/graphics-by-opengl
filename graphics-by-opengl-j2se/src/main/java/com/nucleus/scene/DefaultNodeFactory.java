@@ -5,6 +5,7 @@ import java.util.ArrayDeque;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.MeshFactory;
 import com.nucleus.io.ResourcesData;
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 
 /**
@@ -66,7 +67,10 @@ public class DefaultNodeFactory implements NodeFactory {
      */
     protected Node createNode(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resources, Node source,
             Node parent) throws NodeException {
+        long start = System.currentTimeMillis();
         Node created = create(renderer, meshFactory, resources, source, parent.getRootNode());
+        FrameSampler.getInstance().logTag(FrameSampler.CREATE_NODE + " " + source.getId(), start,
+                System.currentTimeMillis());
         boolean isViewNode = false;
         if (NodeType.layernode.name().equals(created.getType())) {
             viewStack.push((LayerNode) created);

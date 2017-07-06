@@ -1,5 +1,8 @@
 package com.nucleus.profiling;
 
+import com.nucleus.SimpleLogger;
+import com.nucleus.texturing.Image;
+
 /**
  * Utility class for keeping track of delta times, normally used to calculate the delta time from one frame to the next.
  * Singleton class that can be
@@ -9,9 +12,37 @@ package com.nucleus.profiling;
  */
 public class FrameSampler {
 
+    public final static String DISPLAY_SPLASH = "DISPLAY_SPLASH";
+    public final static String SET_ROOT_NODE = "SET_ROOT_NODE";
+    public final static String LOAD_SCENE = "LOAD_SCENE";
+    public final static String CREATE_SCENE = "CREATE_SCENE";
+    public final static String CREATE_NODE = "CREATE_NODE";
+    public final static String LOAD_MAP = "LOAD_MAP";
+    /**
+     * The whole creation of a texture, load image and copy data, generate mipmaps
+     */
+    public final static String CREATE_TEXTURE = "CREATE_TEXTURE";
+    /**
+     * Load image, plus copy to {@link Image}
+     */
+    public final static String CREATE_IMAGE = "CREATE_IMAGE";
+    /**
+     * Load and decode of image to native format.
+     */
+    public final static String LOAD_IMAGE = "LOAD_IMAGE";
+    /**
+     * Copy native image to nucleus {@link Image}
+     */
+    public final static String COPY_IMAGE = "COPY_IMAGE";
+    public final static String GENERATE_MIPMAPS = "GENERATE_MIPMAPS";
+
     public final static int DEFAULT_MIN_FPS = 30;
     private static FrameSampler frameSampler = new FrameSampler();
 
+    /**
+     * Start time of sampler
+     */
+    private final long samplerStart = System.currentTimeMillis();
     private long previousTime;
     private long currentTime;
     private int minFPS = DEFAULT_MIN_FPS;
@@ -143,9 +174,7 @@ public class FrameSampler {
      * @param fps Min fps, the value of getDelta() will be larger than (1/fps)
      */
     public void setMinFPS(int fps) {
-
         maxDelta = (float) 1 / fps;
-
     }
 
     @Override
@@ -153,6 +182,55 @@ public class FrameSampler {
         int fps = (int) (frames / totalDelta);
         return "Average FPS: " + fps + ", " + vertices / frames + " vertices, " + indices / frames
                 + " indices, " + drawCalls / frames + " drawcall - per frame";
+    }
+
+    /**
+     * Returns number of millis since the sampler was started, until now
+     * 
+     * @return
+     */
+    public long getMillisFromStart() {
+        return getMillisFromStart(System.currentTimeMillis());
+    }
+
+    /**
+     * Returns the number of millis since the sampler was started and now
+     * 
+     * @param now
+     * @return Number of millis between start of sampler and now
+     */
+    public long getMillisFromStart(long now) {
+        return now - samplerStart;
+    }
+
+    /**
+     * Outputs the time between start of sampler and now, use this to measure startup time and similar
+     * 
+     * @param tag Identifier for sample
+     */
+    public void logTag(String tag) {
+        logTag(tag, samplerStart, System.currentTimeMillis());
+    }
+
+    /**
+     * Outputs the time between start of sampler and endtime
+     * 
+     * @param tag Identifier for sample
+     * @param endTime Time when sample ended
+     */
+    public void logTag(String tag, long endTime) {
+        logTag(tag, samplerStart, endTime);
+    }
+
+    /**
+     * Outputs the time between startTime and endtime
+     * 
+     * @param tag Identifier for sample
+     * @param startTime Time when sample started
+     * @param endTime Time when sample ended
+     */
+    public void logTag(String tag, long startTime, long endTime) {
+        SimpleLogger.d(getClass(), "Sample " + tag + " : " + (endTime - startTime) + " millis.");
     }
 
 }

@@ -250,15 +250,8 @@ public abstract class BaseImageFactory implements ImageFactory {
      * @param destination
      */
     protected void copyPixels_4BYTE_RGBA_TO_RGBA(byte[] source, ByteBuffer destination) {
-        byte[] rgba = new byte[4];
-        int length = source.length;
-        for (int index = 0; index < length;) {
-            rgba[0] = source[index++];
-            rgba[1] = source[index++];
-            rgba[2] = source[index++];
-            rgba[3] = source[index++];
-            destination.put(rgba, 0, rgba.length);
-        }
+        destination.position(0);
+        destination.put(source);
     }
 
     /**
@@ -268,15 +261,18 @@ public abstract class BaseImageFactory implements ImageFactory {
      * @param destination
      */
     protected void copyPixels_4BYTE_RGBA_TO_RGB(byte[] source, ByteBuffer destination) {
-        byte[] rgb = new byte[3];
         int length = source.length;
-        for (int index = 0; index < length;) {
-            rgb[0] = source[index++];
-            rgb[1] = source[index++];
-            rgb[2] = source[index++];
+        byte[] rgb = new byte[(int) (length * 0.75)];
+        int index = 0;
+        int write = 0;
+        while (index < length) {
+            rgb[write++] = source[index++];
+            rgb[write++] = source[index++];
+            rgb[write++] = source[index++];
             index++;
-            destination.put(rgb, 0, rgb.length);
         }
+        destination.position(0);
+        destination.put(rgb);
     }
 
     /**

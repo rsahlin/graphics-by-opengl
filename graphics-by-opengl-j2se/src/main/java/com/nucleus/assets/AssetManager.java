@@ -3,8 +3,10 @@ package com.nucleus.assets;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 import com.nucleus.io.ExternalReference;
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -88,6 +90,7 @@ public class AssetManager {
      * @throws IOException
      */
     protected Texture2D getTexture(NucleusRenderer renderer, Texture2D source) throws IOException {
+        long start = System.currentTimeMillis();
         /**
          * External ref for untextured needs to be "" so it can be store and fetched.
          */
@@ -101,7 +104,10 @@ public class AssetManager {
             // Texture not loaded
             texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), source);
             textures.put(refSource, texture);
+            setExternalReference(texture.getId(), ref);
         }
+        FrameSampler.getInstance().logTag(FrameSampler.CREATE_TEXTURE + " " + source.getName(), start,
+                System.currentTimeMillis());
         return texture;
     }
 
@@ -137,4 +143,10 @@ public class AssetManager {
         }
         return ref;
     }
+
+    public Map getMap(ExternalReference ref) throws IOException {
+
+        return null;
+    }
+
 }
