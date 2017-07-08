@@ -3,7 +3,6 @@ package com.nucleus.scene;
 import java.io.IOException;
 
 import com.nucleus.geometry.MeshFactory;
-import com.nucleus.io.ResourcesData;
 import com.nucleus.renderer.NucleusRenderer;
 
 /**
@@ -25,14 +24,13 @@ public interface NodeFactory {
      * 
      * @param renderer
      * @param meshFactory The mesh factory to use when creating mesh
-     * @param resources The scene data
      * @param source The source node, the returned node shall be the same type
      * @param root The rootnode of the created node
      * @return A new instance of the source node, ready to be rendered/processed
      * @throws IOException If there is an error creating the Node, could be due to problem reading resource or compiling
      * shaders
      */
-    public Node create(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resource, Node source,
+    public Node create(NucleusRenderer renderer, MeshFactory meshFactory, Node source,
             RootNode root)
             throws NodeException;
 
@@ -40,14 +38,13 @@ public interface NodeFactory {
      * Creates the child nodes in from the source node, adding the created children to the parent node.
      * The rootnode of the parent must be copied
      * 
-     * @param resources
      * @param source The source node containing the children to create
      * @param parent The destination where the created child nodes will be added.
      * @param root The rootnode of the created node
      * shaders
      */
-    public void createChildNodes(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resources,
-            Node source, Node parent) throws NodeException;
+    public void createChildNodes(NucleusRenderer renderer, MeshFactory meshFactory, Node source, Node parent)
+            throws NodeException;
 
 
 }

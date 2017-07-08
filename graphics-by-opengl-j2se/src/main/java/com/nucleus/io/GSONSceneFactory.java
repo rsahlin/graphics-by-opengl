@@ -126,7 +126,7 @@ public class GSONSceneFactory implements SceneSerializer {
             RootNode scene = getSceneFromJson(gson, reader);
             long loaded = System.currentTimeMillis();
             FrameSampler.getInstance().logTag(FrameSampler.LOAD_SCENE, start, loaded);
-            RootNode createdRoot = createScene(scene.getResources(), scene.getScene());
+            RootNode createdRoot = createScene(scene.getScene());
             FrameSampler.getInstance().logTag(FrameSampler.CREATE_SCENE, loaded, System.currentTimeMillis());
             return createdRoot;
         } catch (IOException e) {
@@ -169,14 +169,13 @@ public class GSONSceneFactory implements SceneSerializer {
      * Creates {@linkplain RootNode} from the scene node and returns, use this method when importing to create
      * a new instance of the loaded scene.
      * 
-     * @param resource The resources for the scene
      * @param scene The root scene node
      * @return The created scene or null if there is an error.
      * @throws NodeException
      */
-    private RootNode createScene(ResourcesData resources, Node scene) throws NodeException {
-        RootNode root = createInstance(resources);
-        addNodes(resources, root, scene);
+    private RootNode createScene(Node scene) throws NodeException {
+        RootNode root = createInstance();
+        addNodes(root, scene);
         return root;
     }
 
@@ -190,31 +189,18 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     /**
-     * Creates a new root node and copying the resources into the new root.
-     * 
-     * @param resource
-     * @return
-     */
-    protected RootNode createInstance(ResourcesData resource) {
-        RootNode root = createInstance();
-        root.getResources().copy(resource);
-        return root;
-    }
-
-    /**
      * Internal method to create a layer node and add it to the rootnode.
      * 
-     * @param resources The resources in the scene
      * @param root The root node that the created node will be added to.
      * @param node The node to create
      * @return
      * @throws IOException
      */
-    private Node addNodes(ResourcesData resources, RootNode root, Node node) throws NodeException {
-        Node created = nodeFactory.create(renderer, meshFactory, resources, node, root);
+    private Node addNodes(RootNode root, Node node) throws NodeException {
+        Node created = nodeFactory.create(renderer, meshFactory, node, root);
         root.setScene(created);
         setViewFrustum(node, created);
-        nodeFactory.createChildNodes(renderer, meshFactory, resources, node, created);
+        nodeFactory.createChildNodes(renderer, meshFactory, node, created);
         created.onCreated();
         return created;
     }

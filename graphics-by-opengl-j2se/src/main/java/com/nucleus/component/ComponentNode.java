@@ -3,7 +3,6 @@ package com.nucleus.component;
 import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.io.ResourcesData;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
@@ -58,13 +57,12 @@ public class ComponentNode extends Node implements ComponentController {
      * Create the components
      * 
      * @param renderer
-     * @param resources
      * @throws ComponentException
      * If one or more of the components could not be created
      */
-    public void createComponents(NucleusRenderer renderer, ResourcesData resources) throws ComponentException {
+    public void createComponents(NucleusRenderer renderer) throws ComponentException {
         for (Component c : components) {
-            c.create(renderer, resources, this);
+            c.create(renderer, this);
         }
     }
 

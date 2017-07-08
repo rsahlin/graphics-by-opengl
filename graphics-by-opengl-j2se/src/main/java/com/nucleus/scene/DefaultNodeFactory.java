@@ -4,7 +4,6 @@ import java.util.ArrayDeque;
 
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.MeshFactory;
-import com.nucleus.io.ResourcesData;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 
@@ -21,7 +20,7 @@ public class DefaultNodeFactory implements NodeFactory {
     protected ArrayDeque<LayerNode> viewStack = new ArrayDeque<LayerNode>(NucleusRenderer.MIN_STACKELEMENTS);
 
     @Override
-    public Node create(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resources, Node source,
+    public Node create(NucleusRenderer renderer, MeshFactory meshFactory, Node source,
             RootNode root)
             throws NodeException {
         NodeType type = null;
@@ -44,11 +43,11 @@ public class DefaultNodeFactory implements NodeFactory {
     }
 
     @Override
-    public void createChildNodes(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resources,
-            Node source, Node parent) throws NodeException {
+    public void createChildNodes(NucleusRenderer renderer, MeshFactory meshFactory, Node source, Node parent)
+            throws NodeException {
         // Recursively create children
         for (Node nd : source.children) {
-            Node child = createNode(renderer, meshFactory, resources, nd, parent);
+            Node child = createNode(renderer, meshFactory, nd, parent);
             if (child != null) {
                 parent.addChild(child);
             }
@@ -60,15 +59,14 @@ public class DefaultNodeFactory implements NodeFactory {
      * The new node will be returned, it is not added to the parent node - this shall be done by the caller.
      * The new node will have parent as its parent node
      * 
-     * @param resources The scene resources
      * @param source The node source,
      * @param parent The parent node
      * @return The created node, this will be a new instance of the source node ready to be rendered/processed
      */
-    protected Node createNode(NucleusRenderer renderer, MeshFactory meshFactory, ResourcesData resources, Node source,
+    protected Node createNode(NucleusRenderer renderer, MeshFactory meshFactory, Node source,
             Node parent) throws NodeException {
         long start = System.currentTimeMillis();
-        Node created = create(renderer, meshFactory, resources, source, parent.getRootNode());
+        Node created = create(renderer, meshFactory, source, parent.getRootNode());
         FrameSampler.getInstance().logTag(FrameSampler.CREATE_NODE + " " + source.getId(), start,
                 System.currentTimeMillis());
         boolean isViewNode = false;
@@ -78,7 +76,7 @@ public class DefaultNodeFactory implements NodeFactory {
         }
         created.setRootNode(parent.getRootNode());
         setViewFrustum(source, created);
-        createChildNodes(renderer, meshFactory, resources, source, created);
+        createChildNodes(renderer, meshFactory, source, created);
         if (isViewNode) {
             viewStack.pop();
         }

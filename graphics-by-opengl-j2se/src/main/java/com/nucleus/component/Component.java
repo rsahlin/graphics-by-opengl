@@ -3,7 +3,6 @@ package com.nucleus.component;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.common.Type;
 import com.nucleus.io.BaseReference;
-import com.nucleus.io.ResourcesData;
 import com.nucleus.renderer.NucleusRenderer;
 
 /**
@@ -39,11 +38,10 @@ public abstract class Component extends BaseReference {
      * be used.
      * 
      * @param renderer
-     * @param resources
      * @param parent
      * @throws ComponentException If there is an error preventing the component to be created
      */
-    public abstract void create(NucleusRenderer renderer, ResourcesData resources, ComponentNode parent)
+    public abstract void create(NucleusRenderer renderer, ComponentNode parent)
             throws ComponentException;
 
     public String getSystem() {
