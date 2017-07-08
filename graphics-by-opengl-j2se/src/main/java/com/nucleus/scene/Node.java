@@ -38,6 +38,24 @@ public class Node extends BaseReference {
 
     public static final String ONCLICK = "onclick";
 
+    public enum MeshType {
+        /**
+         * Main mesh
+         */
+        MAIN(0),
+        /**
+         * Extra mesh for ui/editing purposes
+         */
+        UI(1);
+        
+        public final int index;
+        
+        MeshType(int index) {
+            this.index = index;
+        }
+        
+    }
+
     /**
      * The states a node can be in, this controls if node is rendered etc.
      * This can be used to skip nodes from being rendered or processed.
@@ -196,12 +214,27 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Retuns the meshes for this node.
+     * Retuns the meshes for this node, THIS IS AN INTERNAL METHOD AND SHOULD NOT BE USED!
+     * TODO renderer needs list of meshes to render, find solution where list of meshes is hidden.
      * 
      * @return List of added meshes
      */
+    @Deprecated
     public ArrayList<Mesh> getMeshes() {
         return meshes;
+    }
+
+    /**
+     * Returns the mesh type, if added with a call to {@link #addMesh(Mesh, MeshType)}
+     * 
+     * @param type
+     * @return Mesh for the specified type or null if not added with a call to {@link #addMesh(Mesh, MeshType)}
+     */
+    public Mesh getMesh(MeshType type) {
+        if (type != null && type.index < meshes.size()) {
+            return meshes.get(type.index);
+        }
+        return null;
     }
 
     /**
@@ -229,8 +262,8 @@ public class Node extends BaseReference {
      * 
      * @param mesh
      */
-    public void addMesh(Mesh mesh) {
-        meshes.add(mesh);
+    public void addMesh(Mesh mesh, MeshType type) {
+        meshes.add(type.index, mesh);
     }
 
     /**
@@ -266,7 +299,7 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Returns the material
+     * Returns the loaded material definition
      * 
      * @return
      */
@@ -323,15 +356,6 @@ public class Node extends BaseReference {
      */
     public void setTransform(Transform source) {
         this.transform = source;
-    }
-
-    /**
-     * Sets the material reference.
-     * 
-     * @param source
-     */
-    public void setMaterial(Material source) {
-        this.material = source;
     }
 
     /**
@@ -581,22 +605,6 @@ public class Node extends BaseReference {
         return null;
     }
 
-    /**
-     * Returns the mesh by the given id from this Node, if a mesh with matching id is not present in the list of meshes
-     * then null is returned.
-     * 
-     * @param id
-     * @return The mesh with matching id or null
-     */
-    public Mesh getMeshById(String id) {
-        for (Mesh m : meshes) {
-            if (id.equals(m.getId())) {
-                return m;
-            }
-        }
-        return null;
-    }
-
     @Override
     public String toString() {
         return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children, state=" + state;
@@ -751,7 +759,7 @@ public class Node extends BaseReference {
      * @return If node is in an enabled state, has bounds and the position is inside then true is returned, otherwise
      * false
      */
-    protected boolean isClicked(float[] position) {
+    protected boolean isInside(float[] position) {
         if (bounds != null && (state == State.ON || state == State.ACTOR)
                 && getProperty(EventHandler.Type.POINTERINPUT.name(), EventManager.FALSE).equals(EventManager.TRUE)) {
             // In order to do pointer intersections the model and view matrix is needed.

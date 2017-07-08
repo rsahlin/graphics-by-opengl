@@ -59,9 +59,12 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
      * @return True if the input event was consumed, false otherwise.
      */
     protected boolean onPointerEvent(Node node, MMIPointerEvent event) {
-        switch (event.getAction()) {
-        case ACTIVE:
-            if (node.isClicked(event.getPointerData().getCurrentPosition())) {
+        if (node.isInside(event.getPointerData().getCurrentPosition())) {
+            if (node instanceof MMIEventListener) {
+                ((MMIEventListener) node).onInputEvent(event);
+            }
+            switch (event.getAction()) {
+            case ACTIVE:
                 SimpleLogger.d(getClass(), "HIT: " + node);
                 String onclick = node.getProperty(ONCLICK);
                 if (onclick != null) {
@@ -72,17 +75,15 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
                     ((ClickListener) node).onClick(event.getPointerData().getCurrentPosition());
                 }
                 return true;
+            case INACTIVE:
+                break;
+            case MOVE:
+                break;
+            case ZOOM:
+                break;
+            default:
+                break;
             }
-            break;
-        case INACTIVE:
-            break;
-        case MOVE:
-            break;
-        case ZOOM:
-            break;
-        default:
-            break;
-
         }
         return false;
     }

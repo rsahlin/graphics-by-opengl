@@ -22,6 +22,7 @@ import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.J2SENodeInputListener;
 import com.nucleus.scene.LayerNode;
+import com.nucleus.scene.Node.MeshType;
 import com.nucleus.scene.NodeController;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewController;
@@ -291,7 +292,7 @@ public class CoreApp {
         float[] kernel = new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 };
         // Convolution.normalize(kernel, kernel, false, 1);
         c.buildMesh(mesh, tex, 0.2f, 0.2f, 0, kernel);
-        node.addMesh(mesh);
+        node.addMesh(mesh, MeshType.MAIN);
         root.setScene(node);
         renderer.beginFrame();
         renderer.render(root);

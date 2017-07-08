@@ -18,6 +18,7 @@ import com.nucleus.renderer.RenderSettings;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.LayerNode;
+import com.nucleus.scene.Node.MeshType;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.TexParameter;
@@ -89,7 +90,7 @@ public class FGLConvolutionTest extends NucleusApplication implements FrameListe
         Texture2D tex = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(),
                 "texture", new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, texParam, 1);
         c.buildMesh(mesh, tex, 1f, 1f, 0, kernel[kernelIndex]);
-        node.addMesh(mesh);
+        node.addMesh(mesh, MeshType.MAIN);
         BaseRootNode root = new BaseRootNode();
         root.setScene(node);
         coreApp.setRootNode(root);
