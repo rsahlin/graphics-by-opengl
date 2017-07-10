@@ -24,9 +24,10 @@ public interface MeshFactory {
      * 
      * @param renderer
      * @param parent The node that the mesh will belong to.
+     * @param type Mesh type to create
      * @return The mesh that can be rendered.
      * @throws IOException If an asset such as texture could not be loaded.
      */
-    public Mesh createMesh(NucleusRenderer renderer, Node parent) throws IOException;
+    public Mesh createMesh(NucleusRenderer renderer, Node parent, Node.MeshType type) throws IOException;
 
 }

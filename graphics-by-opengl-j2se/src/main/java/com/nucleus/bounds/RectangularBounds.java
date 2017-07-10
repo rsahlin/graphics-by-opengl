@@ -34,14 +34,14 @@ public class RectangularBounds extends Bounds {
 
     transient protected float[] collideVector1 = new float[2];
     transient protected float[] collideVector2D = new float[2];
+
+    /**
+     * TODO Move to one array
+     */
     transient protected float[] top = new float[2];
     transient protected float[] left = new float[2];
     transient protected float[] right = new float[2];
     transient protected float[] bottom = new float[2];
-    /**
-     * Store result position + rotated bounding here
-     */
-    // transient protected float[] resultPositions = new float[8];
 
     transient protected float[] tempPositons = new float[8];
     transient protected float[] rotatedBounds = new float[8];
