@@ -431,9 +431,10 @@ public class Node extends BaseReference {
      * 
      * @param child The child to add to this node.
      */
-    public void addChild(Node child) {
+    protected void addChild(Node child) {
         children.add(child);
         child.parent = this;
+        rootNode.registerChild(child);
     }
 
     /**
@@ -442,8 +443,13 @@ public class Node extends BaseReference {
      * @param child The child to remove from this node.
      * @return True if the child was present in the list of children.
      */
-    public boolean removeChild(Node child) {
-        return children.remove(child);
+    protected boolean removeChild(Node child) {
+        if (children.contains(child)) {
+            children.remove(child);
+            rootNode.unregisterChild(child);
+            return true;
+        }
+        return false;
     }
 
     /**

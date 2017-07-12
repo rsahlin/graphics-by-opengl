@@ -50,6 +50,11 @@ public abstract class RootNode {
     transient private ArrayList<Node> visibleNodeList = new ArrayList<>();
 
     /**
+     * Table with all added childnodes and their id.
+     */
+    transient private Hashtable<String, Node> childNodeTable = new Hashtable<>();
+
+    /**
      * Sets the root scene node, this rootnode shall be rootnode of all added children.
      * 
      * @param node
@@ -188,6 +193,35 @@ public abstract class RootNode {
      */
     public ArrayList<Node> getVisibleNodeList() {
         return visibleNodeList;
+    }
+
+    /**
+     * Registers a node as child node (somewhere) on the root node.
+     * After calling this method the ID can be used to locate the node
+     * NOTE - this shall not be called directly
+     * 
+     * @param child
+     * @throws IllegalArgumentException If a node with the same ID is already added to the nodetree
+     */
+    protected void registerChild(Node child) {
+        if (childNodeTable.containsKey(child.getId())) {
+            throw new IllegalArgumentException("Already added child with id:" + child.getId());
+        }
+        childNodeTable.put(child.getId(), child);
+    }
+
+    /**
+     * Unregisters the child from list of nodes within the rootnode
+     * NOTE - this shall not be called directly
+     * 
+     * @param child
+     * @param parent
+     * @throws IllegalArgumentException If the child is not registered with the rootnode
+     */
+    protected void unregisterChild(Node child) {
+        if (childNodeTable.remove(child.getId()) == null) {
+         throw new IllegalArgumentException("Node not registered with root:" + child.getId());   
+        }
     }
 
 }

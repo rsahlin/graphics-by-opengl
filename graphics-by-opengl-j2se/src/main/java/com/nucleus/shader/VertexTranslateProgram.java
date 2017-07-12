@@ -11,10 +11,10 @@ import com.nucleus.texturing.Untextured;
 import com.nucleus.vecmath.Matrix;
 
 /**
- * Program for unlit vertices, shader calculates vertex position with position offset and draws pixels using vertex
- * color.
+ * Program for translated vertices, shader calculates vertex position with position offset
+ * Can be used to draw lines, polygons or similar - objects cannot be independently rotated
  */
-public class UnlitProgram extends ShaderProgram {
+public class VertexTranslateProgram extends ShaderProgram {
 
     /**
      * The shader names used, the variable names used in shader sources MUST be defined here.
@@ -56,7 +56,7 @@ public class UnlitProgram extends ShaderProgram {
         }
     }
 
-    public UnlitProgram(Untextured.Shading shading) {
+    public VertexTranslateProgram(Untextured.Shading shading) {
         super(VARIABLES.values());
         vertexShaderName = PROGRAM_DIRECTORY + shading.name() + VERTEX + SHADER_SOURCE_SUFFIX;
         fragmentShaderName = PROGRAM_DIRECTORY + shading.name() + FRAGMENT + SHADER_SOURCE_SUFFIX;

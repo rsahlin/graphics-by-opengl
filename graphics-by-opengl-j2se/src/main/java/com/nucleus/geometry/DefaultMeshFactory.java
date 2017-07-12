@@ -1,12 +1,22 @@
 package com.nucleus.geometry;
 
+import java.io.IOException;
+
+import com.nucleus.io.ExternalReference;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
+import com.nucleus.shader.ShaderProgram;
 
 public class DefaultMeshFactory implements MeshFactory {
 
     @Override
-    public Mesh createMesh(NucleusRenderer renderer, Node source, Node.MeshType type) {
+    public Mesh createMesh(NucleusRenderer renderer, Node source) {
+        throw new IllegalArgumentException("Not implemented");
+    }
+
+    @Override
+    public Mesh createMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, ExternalReference textureRef)
+            throws IOException {
         throw new IllegalArgumentException("Not implemented");
     }
 

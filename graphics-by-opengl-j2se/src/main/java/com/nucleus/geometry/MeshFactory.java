@@ -2,8 +2,10 @@ package com.nucleus.geometry;
 
 import java.io.IOException;
 
+import com.nucleus.io.ExternalReference;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
+import com.nucleus.shader.ShaderProgram;
 
 /**
  * Factory method for creating Meshes, implement support for different types of Meshes in the implementations of
@@ -24,10 +26,21 @@ public interface MeshFactory {
      * 
      * @param renderer
      * @param parent The node that the mesh will belong to.
-     * @param type Mesh type to create
      * @return The mesh that can be rendered.
      * @throws IOException If an asset such as texture could not be loaded.
      */
-    public Mesh createMesh(NucleusRenderer renderer, Node parent, Node.MeshType type) throws IOException;
+    public Mesh createMesh(NucleusRenderer renderer, Node parent) throws IOException;
+
+    /**
+     * 
+     * @param renderer
+     * @param program
+     * @param mesh
+     * @param textureRef
+     * @return
+     * @throws IOException
+     */
+    public Mesh createMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, ExternalReference textureRef)
+            throws IOException;
 
 }

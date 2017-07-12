@@ -10,6 +10,8 @@ import com.nucleus.io.gson.PostDeserializable;
  */
 public class SwitchNode extends Node implements PostDeserializable {
 
+    private static final int MAX_CHILD_COUNT = 2;
+
     /**
      * The Id of the current active child Node, if null all child nodes will be returned when {@link #getChildren()}
      * is called.
@@ -71,6 +73,9 @@ public class SwitchNode extends Node implements PostDeserializable {
 
     @Override
     public void postDeserialize() {
+        if (children.size() > MAX_CHILD_COUNT) {
+            throw new IllegalArgumentException("SwitchNode does not allow more than " + MAX_CHILD_COUNT + " children");
+        }
         if (active != null) {
             setActive(active);
         }

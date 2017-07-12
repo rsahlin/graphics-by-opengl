@@ -40,7 +40,7 @@ public class NucleusNodeExporter implements NodeExporter {
         }
         for (Node child : scene.getChildren()) {
             NodeExporter exporter2 = nodeExporters.get(child.getType());
-            export.addChild(exporter2.exportNode(child, rootNode));
+            // export.addChild(exporter2.exportNode(child, rootNode));
         }
     }
 
