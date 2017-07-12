@@ -1,8 +1,10 @@
 package com.nucleus.geometry;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.geometry.ElementBuffer.Type;
 import com.nucleus.io.BaseReference;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;
@@ -17,6 +19,43 @@ import com.nucleus.texturing.TiledTexture2D;
  *
  */
 public class Mesh extends BaseReference implements AttributeUpdater {
+
+    public enum Mode {
+        /**
+         * From GL_POINTS
+         */
+        POINTS(GLES20.GL_POINTS),
+        /**
+         * From GL_LINE_STRIP
+         */
+        LINE_STRIP(GLES20.GL_LINE_STRIP),
+        /**
+         * From GL_LINE_LOOP
+         */
+        LINE_LOOP(GLES20.GL_LINE_LOOP),
+        /**
+         * From GL_TRIANGLE_STRIP
+         */
+        TRIANGLE_STRIP(GLES20.GL_TRIANGLE_STRIP),
+        /**
+         * From GL_TRIANGLE_FAN
+         */
+        TRIANGLE_FAN(GLES20.GL_TRIANGLE_FAN),
+        /**
+         * From GL_TRIANGLES
+         */
+        TRIANGLES(GLES20.GL_TRIANGLES),
+        /**
+         * From GL_LINES
+         */
+        LINES(GLES20.GL_LINES);
+
+        public final int mode;
+
+        private Mode(int mode) {
+            this.mode = mode;
+        }
+    }
 
     private final static String NULL_NAMES = "Buffer names is null";
     private final static String NOT_ENOUGH_NAMES = "Not enough buffer names";
@@ -86,7 +125,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     /**
      * Drawmode, if indices is null then glDrawArrays shall be used with this mode
      */
-    transient protected int mode;
+    transient protected Mode mode;
     transient protected Material material;
 
     /**
@@ -107,19 +146,41 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     }
 
     /**
-     * Creates the Mesh to be rendered, after this method returns it shall be possible to render the mesh.
+     * Creates the Mesh to be rendered, creating buffers as needed.
+     * After this method returns it shall be possible to render the mesh although it must be filled with data.
      * The program will be set to the material in this mesh.
+     * The drawmode must be set before rendering the mesh
      * 
-     * @param program
-     * @param texture The texture to use for sprites, must be {@link TiledTexture2D} otherwise tiling will not work.
+     * @param program The shader program to use
+     * @param texture The texture to use, depends on mesh implementation
      * @param material
+     * @param vertexCount Number of vertices to create storage for
+     * @param indiceCount Number of indices in elementbuffer
      * @return
      */
-    public void createMesh(ShaderProgram program, Texture2D texture, Material material) {
+    public void createMesh(ShaderProgram program, Texture2D texture, Material material, int vertexCount,
+            int indiceCount) {
         setTexture(texture, Texture2D.TEXTURE_0);
         this.material = new Material(material);
         mapper = new PropertyMapper(program);
         this.material.setProgram(program);
+        internalCreateBuffers(program, vertexCount, indiceCount);
+    }
+
+    /**
+     * Creates the buffers, vertex and indexbuffers as needed. Attribute and uniform storage.
+     * If texture is {@link TiledTexture2D} then vertice and index storage will be createde for 1 sprite.
+     * Do not call this method directly - it is called from {@link #createMesh(ShaderProgram, Texture2D, Material)}
+     * 
+     * @param program
+     * @param vertexCount Number of vertices to create storage for
+     * @param indiceCount Number of elementbuffer indices
+     * @param drawMode Mesh drawmode
+     */
+    protected void internalCreateBuffers(ShaderProgram program, int vertexCount, int indiceCount) {
+        attributes = program.createAttributeBuffers(this, vertexCount);
+        indices = new ElementBuffer(indiceCount, Type.SHORT);
+        program.setupUniforms(this);
     }
 
     /**
@@ -325,21 +386,21 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     }
 
     /**
-     * Sets the draw mode to use when glDrawArrays is used.
+     * Sets the draw mode to use
      * 
      * @param mode GL drawmode, one of GL_POINTS, GL_LINE_STRIP, GL_LINE_LOOP, GL_LINES, GL_TRIANGLE_STRIP,
      * GL_TRIANGLE_FAN, and GL_TRIANGLES
      */
-    public void setMode(int mode) {
+    public void setMode(Mode mode) {
         this.mode = mode;
     }
 
     /**
-     * Gets the draw mode to use when glDrawArrays is used.
+     * Gets the draw mode to use when drawing this mesh
      * 
-     * @return The GL drawmode for glDrawArrays
+     * @return The GL drawmode for drawing this mesh
      */
-    public int getMode() {
+    public Mode getMode() {
         return mode;
     }
 

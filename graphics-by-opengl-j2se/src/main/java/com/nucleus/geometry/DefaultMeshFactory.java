@@ -15,9 +15,10 @@ public class DefaultMeshFactory implements MeshFactory {
     }
 
     @Override
-    public Mesh createMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, ExternalReference textureRef)
-            throws IOException {
+    public Mesh createMesh(NucleusRenderer renderer, ShaderProgram program, Material material,
+            ExternalReference textureRef, int vertexCount, int indiceCount) throws IOException {
         throw new IllegalArgumentException("Not implemented");
     }
+
 
 }

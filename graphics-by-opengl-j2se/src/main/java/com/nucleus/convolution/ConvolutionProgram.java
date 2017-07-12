@@ -6,6 +6,7 @@ import com.nucleus.geometry.AttributeUpdater.Property;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
+import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.VertexBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
@@ -145,7 +146,7 @@ public class ConvolutionProgram extends ShaderProgram {
         Material material = new Material();
         material.setProgram(program);
         mesh.setupVertices(attributes, material, null);
-        mesh.setMode(GLES20.GL_TRIANGLE_FAN);
+        mesh.setMode(Mode.TRIANGLE_FAN);
         program.setupUniforms(mesh);
     }
 

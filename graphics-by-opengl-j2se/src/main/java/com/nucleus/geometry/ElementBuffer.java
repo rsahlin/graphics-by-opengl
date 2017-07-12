@@ -38,39 +38,6 @@ public class ElementBuffer extends BufferObject {
 
     }
 
-    public enum Mode {
-        /**
-         * From GL_POINTS
-         */
-        POINTS(0),
-        /**
-         * From GL_LINE_STRIP
-         */
-        LINE_STRIP(3),
-        /**
-         * From GL_LINE_LOOP
-         */
-        LINE_LOOP(2),
-        /**
-         * From GL_TRIANGLE_STRIP
-         */
-        TRIANGLE_STRIP(5),
-        /**
-         * From GL_TRIANGLE_FAN
-         */
-        TRIANGLE_FAN(6),
-        /**
-         * From GL_TRIANGLES
-         */
-        TRIANGLES(4);
-
-        public final int mode;
-
-        private Mode(int mode) {
-            this.mode = mode;
-        }
-    }
-
     /**
      * The vertex index buffer, contains indexes to vertices to be drawn.
      */
@@ -78,26 +45,20 @@ public class ElementBuffer extends BufferObject {
 
     Type type;
 
-    /**
-     * Drawmode, see openGL definition of glDrawElements()
-     */
-    Mode mode;
     int count;
 
     /**
      * Creates an element buffer with the specified number of indexes, if type is BYTE and count is 10 then a buffer
      * with 10 bytes will be allocated.
      * 
-     * @param mode
      * @param count
      * @param type
-     * @throws IllegalArgumentException if type or mode is null
+     * @throws IllegalArgumentException if type is null
      */
-    public ElementBuffer(Mode mode, int count, Type type) {
-        if (type == null || mode == null) {
+    public ElementBuffer(int count, Type type) {
+        if (type == null) {
             throw new IllegalArgumentException(NULL_TYPE_STR);
         }
-        this.mode = mode;
         this.count = count;
         this.type = type;
         int size = 1;
@@ -130,15 +91,6 @@ public class ElementBuffer extends BufferObject {
      */
     public Type getType() {
         return type;
-    }
-
-    /**
-     * Returns the elementbuffer draw mode, this is what primitives are drawn (triangles, triangle fan, lines etc)
-     * 
-     * @return
-     */
-    public Mode getMode() {
-        return mode;
     }
 
     /**

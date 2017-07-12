@@ -307,14 +307,14 @@ class BaseRenderer implements NucleusRenderer {
         program.bindUniforms(gles, mvMatrix, projectionMatrix, mesh);
 
         if (indices == null) {
-            gles.glDrawArrays(mesh.getMode(), 0, vertices.getVerticeCount());
+            gles.glDrawArrays(mesh.getMode().mode, 0, vertices.getVerticeCount());
             timeKeeper.addDrawArrays(vertices.getVerticeCount());
         } else {
             if (indices.getBufferName() > 0) {
                 gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
-                gles.glDrawElements(indices.getMode().mode, indices.getCount(), indices.getType().type, 0);
+                gles.glDrawElements(mesh.getMode().mode, indices.getCount(), indices.getType().type, 0);
             } else {
-                gles.glDrawElements(indices.getMode().mode, indices.getCount(), indices.getType().type,
+                gles.glDrawElements(mesh.getMode().mode, indices.getCount(), indices.getType().type,
                         indices.getBuffer().position(0));
             }
             timeKeeper.addDrawElements(vertices.getVerticeCount(), indices.getCount());

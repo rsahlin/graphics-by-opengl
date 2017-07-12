@@ -35,12 +35,14 @@ public interface MeshFactory {
      * 
      * @param renderer
      * @param program
-     * @param mesh
+     * @param material
      * @param textureRef
      * @return
      * @throws IOException
      */
-    public Mesh createMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, ExternalReference textureRef)
+    public Mesh createMesh(NucleusRenderer renderer, ShaderProgram program, Material material,
+            ExternalReference textureRef,
+            int vertexCount, int indiceCount)
             throws IOException;
 
 }
