@@ -1,10 +1,13 @@
 package com.nucleus.geometry;
 
+import java.io.IOException;
+
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.geometry.ElementBuffer.Type;
 import com.nucleus.io.BaseReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;
@@ -81,6 +84,111 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
         private BufferIndex(int index) {
             this.index = index;
+        }
+
+    }
+
+    public static class Builder {
+
+        protected NucleusRenderer renderer;
+        protected ShaderProgram program;
+        protected Texture2D texture;
+        protected Material material;
+        protected int vertexCount = -1;
+        protected int indiceCount = 0;
+        protected ElementBuffer.Type indiceBufferType = Type.SHORT;
+        protected Mode mode;
+
+        /**
+         * Creates a new builder
+         * 
+         * @param renderer
+         * @throws IllegalArgumentException If renderer is null
+         */
+        public Builder(NucleusRenderer renderer) {
+            if (renderer == null) {
+                throw new IllegalArgumentException("Renderer may not be null");
+            }
+            this.renderer = renderer;
+        }
+
+        /**
+         * Sets the drawmode for the mesh
+         * 
+         * @param mode
+         * @return
+         */
+        public Builder setMode(Mode mode) {
+            this.mode = mode;
+            return this;
+        }
+
+        /**
+         * Sets the texture to use for the created mesh
+         * 
+         * @param texture
+         * @return
+         */
+        public Builder setTexture(Texture2D texture) {
+            this.texture = texture;
+            return this;
+        }
+
+        /**
+         * Sets the number of vertices the created mesh will have support for
+         * 
+         * @param vertexCount Number of vertices
+         * @return
+         */
+        public Builder setVertexCount(int vertexCount) {
+            this.vertexCount = vertexCount;
+            return this;
+        }
+
+        /**
+         * If specified the mesh will have support for this number of element indices
+         * If created mesh will use drawArrays this shall not be used
+         * 
+         * @param indiceCount
+         * @return
+         */
+        public Builder setIndiceCount(int indiceCount) {
+            this.indiceCount = indiceCount;
+            return this;
+        }
+
+        /**
+         * Sets the material to be used in the mesh
+         * 
+         * @param material
+         * @return
+         */
+        public Builder setMaterial(Material material) {
+            this.material = material;
+            return this;
+        }
+
+        /**
+         * Checks that the needed arguments has been set
+         */
+        protected void validate() {
+            if (texture == null || program == null || vertexCount <= 0 || mode == null || material == null) {
+                throw new IllegalArgumentException("Missing argument when creating mesh: " + texture + ", " + program
+                        + ", " + vertexCount + ", " + mode + ", " + material);
+            }
+        }
+
+        /**
+         * Creates the mesh for the arguments supplied to this builder.
+         * 
+         * @return The mesh
+         * @throws IllegalArgumentException If the needed arguments has not been set
+         */
+        public Mesh create() throws IOException {
+            validate();
+            Mesh mesh = new Mesh();
+            mesh.createMesh(program, texture, material, vertexCount, indiceCount);
+            return mesh;
         }
 
     }
