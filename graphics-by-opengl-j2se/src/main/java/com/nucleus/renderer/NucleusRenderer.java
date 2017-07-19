@@ -256,7 +256,7 @@ public interface NucleusRenderer {
 
     /**
      * Creates the program object, loads and compiles the shader sources and links the program.
-     * TODO Renderer should not create program, treat as asset. Maybe use AssetManager
+     * This method is deprecated and should only be used internally.
      * 
      * @param program
      * @throws RuntimeException If there is an error loading,compiling or linking the program.

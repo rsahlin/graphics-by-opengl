@@ -3,11 +3,11 @@ package com.nucleus.assets;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 
 import com.nucleus.io.ExternalReference;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
@@ -27,11 +27,13 @@ public class AssetManager {
     /**
      * Store textures using the source image name.
      */
-    private HashMap<String, Texture2D> textures = new HashMap<String, Texture2D>();
+    private HashMap<String, Texture2D> textures = new HashMap<>();
     /**
      * Use to convert from object id (texture reference) to name of source (file)
      */
     private Hashtable<String, ExternalReference> sourceNames = new Hashtable<String, ExternalReference>();
+
+    private HashMap<String, ShaderProgram> programs = new HashMap<>();
 
     /**
      * Hide the constructor
@@ -144,9 +146,26 @@ public class AssetManager {
         return ref;
     }
 
-    public Map getMap(ExternalReference ref) throws IOException {
-
-        return null;
+    /**
+     * Returns a loaded and compiled shader program, if the program has not already been loaded and compiled it will be
+     * added to AssetManager
+     * 
+     * @param renderer
+     * @param program
+     * @return An instannce of the ShaderProgram that is loaded and compiled
+     */
+    public ShaderProgram getProgram(NucleusRenderer renderer, ShaderProgram program) {
+        ShaderProgram compiled = programs.get(program.getClass().getCanonicalName());
+        if (compiled != null) {
+            return compiled;
+        }
+        long start = System.currentTimeMillis();
+        renderer.createProgram(program);
+        FrameSampler.getInstance().logTag(FrameSampler.CREATE_SHADER + program.getClass().getSimpleName(), start,
+                System.currentTimeMillis());
+        programs.put(program.getClass().getCanonicalName(), program);
+        return program;
     }
 
 }
+

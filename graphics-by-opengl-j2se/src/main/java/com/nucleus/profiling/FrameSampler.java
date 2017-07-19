@@ -18,6 +18,7 @@ public class FrameSampler {
     public final static String CREATE_SCENE = "CREATE_SCENE";
     public final static String CREATE_NODE = "CREATE_NODE";
     public final static String LOAD_MAP = "LOAD_MAP";
+    public final static String CREATE_SHADER = "CREATE_SHADER";
     /**
      * The whole creation of a texture, load image and copy data, generate mipmaps
      */
