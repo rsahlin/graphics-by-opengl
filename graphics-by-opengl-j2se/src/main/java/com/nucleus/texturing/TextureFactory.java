@@ -112,8 +112,10 @@ public class TextureFactory {
             return new TiledTexture2D();
         case UVTexture2D:
             return new UVTexture2D();
+        case Untextured:
+            return new Untextured();
         default:
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Not implemented support for " + type);
         }
     }
 

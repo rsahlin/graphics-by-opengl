@@ -5,7 +5,6 @@ import java.io.IOException;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
-import com.nucleus.shader.ShaderProgram;
 
 /**
  * Factory method for creating Meshes, implement support for different types of Meshes in the implementations of
@@ -34,15 +33,13 @@ public interface MeshFactory {
     /**
      * 
      * @param renderer
-     * @param program
      * @param material
      * @param textureRef
      * @return
      * @throws IOException
      */
-    public Mesh createMesh(NucleusRenderer renderer, ShaderProgram program, Material material,
-            ExternalReference textureRef,
-            int vertexCount, int indiceCount)
+    public Mesh createMesh(NucleusRenderer renderer, Material material, ExternalReference textureRef, int vertexCount,
+            int indiceCount)
             throws IOException;
 
 }

@@ -86,7 +86,7 @@ public class DefaultNodeFactory implements NodeFactory {
     }
 
     /**
-     * Checks if the node data has viewfrustum data, if it has it is set in the node.
+     * Checks if the source node has viewfrustum, if it has it is set in the node.
      * 
      * @param source The source node containing the viewfrustum
      * @param node Node to check, or null

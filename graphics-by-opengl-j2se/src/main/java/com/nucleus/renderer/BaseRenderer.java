@@ -27,9 +27,12 @@ import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.shader.VertexTranslateProgram;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
+import com.nucleus.texturing.Untextured.Shading;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -100,6 +103,8 @@ class BaseRenderer implements NucleusRenderer {
      */
     protected boolean contextCreated = false;
 
+    private Node lineDrawer;
+
     /**
      * Creates a new renderer using the specified GLES20Wrapper
      * 
@@ -144,6 +149,21 @@ class BaseRenderer implements NucleusRenderer {
         initialized = true;
         this.surfaceConfig = surfaceConfig;
         rendererInfo = new RendererInfo(gles);
+
+        try {
+            lineDrawer = new Node();
+            Mesh.Builder builder = new Mesh.Builder(this);
+            builder.setIndiceCount(600);
+            builder.setVertexCount(400);
+            Material m = new Material();
+            m.setProgram(new VertexTranslateProgram(Shading.flat));
+            Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
+            builder.setMaterial(m);
+            builder.setTexture(tex);
+//            Mesh mesh = builder.create();
+        } finally {
+
+        }
     }
 
 

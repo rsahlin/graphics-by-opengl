@@ -91,7 +91,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     public static class Builder {
 
         protected NucleusRenderer renderer;
-        protected ShaderProgram program;
         protected Texture2D texture;
         protected Material material;
         protected int vertexCount = -1;
@@ -172,9 +171,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * Checks that the needed arguments has been set
          */
         protected void validate() {
-            if (texture == null || program == null || vertexCount <= 0 || mode == null || material == null) {
-                throw new IllegalArgumentException("Missing argument when creating mesh: " + texture + ", " + program
-                        + ", " + vertexCount + ", " + mode + ", " + material);
+            if (texture == null || vertexCount <= 0 || mode == null || material == null) {
+                throw new IllegalArgumentException("Missing argument when creating mesh: " + texture + ", " + ", "
+                        + vertexCount + ", " + mode + ", " + material);
             }
         }
 
@@ -187,7 +186,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         public Mesh create() throws IOException {
             validate();
             Mesh mesh = new Mesh();
-            mesh.createMesh(program, texture, material, vertexCount, indiceCount);
+            mesh.createMesh(texture, material, vertexCount, indiceCount);
             return mesh;
         }
 
@@ -259,17 +258,16 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * The program will be set to the material in this mesh.
      * The drawmode must be set before rendering the mesh
      * 
-     * @param program The shader program to use
      * @param texture The texture to use, depends on mesh implementation
      * @param material
      * @param vertexCount Number of vertices to create storage for
      * @param indiceCount Number of indices in elementbuffer
      * @return
      */
-    public void createMesh(ShaderProgram program, Texture2D texture, Material material, int vertexCount,
-            int indiceCount) {
+    public void createMesh(Texture2D texture, Material material, int vertexCount, int indiceCount) {
         setTexture(texture, Texture2D.TEXTURE_0);
         this.material = new Material(material);
+        ShaderProgram program = material.getProgram();
         mapper = new PropertyMapper(program);
         this.material.setProgram(program);
         internalCreateBuffers(program, vertexCount, indiceCount);
