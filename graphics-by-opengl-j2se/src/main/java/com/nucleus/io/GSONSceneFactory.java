@@ -69,6 +69,7 @@ public class GSONSceneFactory implements SceneSerializer {
         createNodeExporter();
         registerNodeExporters();
         init(renderer, nodeFactory, meshFactory);
+        TypeResolver.getInstance().clear();
         TypeResolver.getInstance().registerTypes(types);
     }
 

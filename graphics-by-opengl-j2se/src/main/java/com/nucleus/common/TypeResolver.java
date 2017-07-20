@@ -100,4 +100,12 @@ public class TypeResolver {
     public Object create(Type<?> type) throws InstantiationException, IllegalAccessException {
         return type.getTypeClass().newInstance();
     }
+
+    /**
+     * Clears all registered types
+     */
+    public void clear() {
+        types.clear();
+    }
+
 }
