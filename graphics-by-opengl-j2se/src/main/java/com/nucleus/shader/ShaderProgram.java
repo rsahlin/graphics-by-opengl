@@ -656,7 +656,9 @@ public abstract class ShaderProgram {
             // variable.setOffset(vm.getOffset());
             shaderVariables[vm.getIndex()] = variable;
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Variable has no mapping: " + variable.getName());
+            throw new IllegalArgumentException(
+                    "Variable has no mapping to shader variable (ie used in shader but not defined in program) : "
+                            + variable.getName());
         }
     }
 

@@ -1,5 +1,6 @@
 package com.nucleus.renderer;
 
+import java.io.IOException;
 import java.nio.Buffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.camera.ViewPort;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
@@ -15,6 +17,7 @@ import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
+import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.VertexBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
@@ -156,13 +159,16 @@ class BaseRenderer implements NucleusRenderer {
             builder.setIndiceCount(600);
             builder.setVertexCount(400);
             Material m = new Material();
-            m.setProgram(new VertexTranslateProgram(Shading.flat));
+            VertexTranslateProgram program = (VertexTranslateProgram) AssetManager.getInstance()
+                    .getProgram(this, new VertexTranslateProgram(Shading.flat));
+            m.setProgram(program);
             Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
             builder.setMaterial(m);
             builder.setTexture(tex);
-//            Mesh mesh = builder.create();
-        } finally {
-
+            builder.setMode(Mode.LINES);
+            Mesh mesh = builder.create();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
