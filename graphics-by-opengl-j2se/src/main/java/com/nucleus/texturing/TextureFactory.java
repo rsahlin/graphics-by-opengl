@@ -159,22 +159,13 @@ public class TextureFactory {
                 .loadTextureMIPMAP(imageFactory, texture);
         try {
             TextureUtils.uploadTextures(gles, GLES20.GL_TEXTURE0, texture, textureID, textureImg);
-            // TODO Do not need to keep images after texture is uploaded
-            texture.setup(textureID, textureImg);
+            texture.setup(textureID, textureImg[0].width, textureImg[0].height);
             SimpleLogger.d(TextureFactory.class, "Uploaded texture " + texture.toString());
+            Image.destroyImages(textureImg);
         } catch (GLException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    /**
-     * Copies the texture data, ie the texture name and image data to the destination.
-     * 
-     * @param source
-     * @param destination
-     */
-    public static void copyTextureData(Texture2D source, Texture2D destination) {
-        destination.setup(source.getName(), source.images);
-    }
 
 }

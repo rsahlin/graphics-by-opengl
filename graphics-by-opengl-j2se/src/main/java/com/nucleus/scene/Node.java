@@ -14,6 +14,7 @@ import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Transform;
@@ -808,6 +809,28 @@ public class Node extends BaseReference {
                 transform != null ? transform.getMatrix() : Matrix.IDENTITY_MATRIX,
                 modelMatrix);
         return modelMatrix;
+    }
+
+    /**
+     * Releases all resources held by this node, calls {@link Mesh#destroy()}
+     * 
+     * @param renderer
+     */
+    public void destroy(NucleusRenderer renderer) {
+        if (meshes != null) {
+            for (Mesh mesh : meshes) {
+                mesh.destroy();
+            }
+            meshes = null;
+        }
+        transform = null;
+        viewFrustum = null;
+        children.clear();
+        bounds = null;
+        properties = null;
+        parent = null;
+        rootNode = null;
+        attributeProducer = null;
     }
 
 }

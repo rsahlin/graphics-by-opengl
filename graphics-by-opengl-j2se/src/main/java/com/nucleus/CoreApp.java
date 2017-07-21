@@ -1,5 +1,6 @@
 package com.nucleus;
 
+import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.component.J2SELogicProcessor;
 import com.nucleus.component.LogicProcessorRunnable;
@@ -200,6 +201,15 @@ public class CoreApp {
      */
     public void surfaceLost() {
         SimpleLogger.d(getClass(), "surfaceLost()");
+    }
+
+    /**
+     * Release all resources used by this application.
+     * Call destroy on AssetManager
+     */
+    public void destroy() {
+        AssetManager.getInstance().destroy(renderer);
+        rootNode.destroy(renderer);
     }
 
     /**

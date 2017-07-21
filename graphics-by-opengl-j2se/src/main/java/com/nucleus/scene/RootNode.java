@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.assets.AssetManager;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 
 /**
@@ -38,7 +40,7 @@ public abstract class RootNode {
      * Set to true when node is added or removed
      */
     transient private boolean updated = false;
-    transient private Hashtable<NodeIterator, ArrayList<Node>> iterators = new Hashtable();
+    transient private Hashtable<NodeIterator, ArrayList<Node>> iterators = new Hashtable<NodeIterator, ArrayList<Node>>();
     /**
      * When a node is rendered it is added to this list, this is for the current frame - will change as nodes are
      * rendered
@@ -222,6 +224,23 @@ public abstract class RootNode {
         if (childNodeTable.remove(child.getId()) == null) {
          throw new IllegalArgumentException("Node not registered with root:" + child.getId());   
         }
+    }
+
+    /**
+     * Release all nodes in the nodetree and destroy the root
+     * Call this when you will not use any of the nodes in the tree.
+     * This will not free any textures or programs - to do that, use the {@link AssetManager}
+     * 
+     * @param renderer
+     */
+    public void destroy(NucleusRenderer renderer) {
+        for (Node node : childNodeTable.values()) {
+            node.destroy(renderer);
+        }
+        scene = null;
+        renderNodeList = null;
+        visibleNodeList = null;
+        childNodeTable = null;
     }
 
 }

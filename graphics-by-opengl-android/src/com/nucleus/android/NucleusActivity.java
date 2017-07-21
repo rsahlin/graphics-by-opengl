@@ -3,7 +3,6 @@ package com.nucleus.android;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.SimpleLogger;
-import com.nucleus.assets.AssetManager;
 import com.nucleus.matrix.android.AndroidMatrixEngine;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
@@ -62,7 +61,7 @@ public class NucleusActivity extends Activity
     public void onDestroy() {
         SimpleLogger.d(getClass(), "onDestroy()");
         super.onDestroy();
-        AssetManager.getInstance().destroy(coreApp.getRenderer());
+        coreApp.destroy();
     }
 
     @Override

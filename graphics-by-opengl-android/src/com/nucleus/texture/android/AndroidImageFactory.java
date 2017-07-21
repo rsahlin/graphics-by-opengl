@@ -29,6 +29,7 @@ public class AndroidImageFactory extends BaseImageFactory implements ImageFactor
         b.copyPixelsToBuffer(bb);
         Image image = new Image(b.getWidth(), b.getHeight(), format);
         copyPixels(bytePixels, ImageFormat.RGBA, image);
+        b.recycle();
         FrameSampler.getInstance().logTag(FrameSampler.COPY_IMAGE + " " + image.getFormat().toString(), loaded,
                 System.currentTimeMillis());
         return image;

@@ -512,7 +512,15 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
     @Override
     public void destroy() {
-        // TODO Release resources
+        texture = null;
+        textureRef = null;
+        uniforms = null;
+        mapper = null;
+        attributeConsumer = null;
+        attributes = null;
+        indices = null;
+        mode = null;
+        material = null;
     }
 
     @Override

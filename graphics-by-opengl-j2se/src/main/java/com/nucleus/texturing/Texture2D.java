@@ -114,10 +114,6 @@ public class Texture2D extends BaseReference {
      * Height of texture in pixels
      */
     transient protected int height;
-    /**
-     * Texture sources, one for each used mip-map level
-     */
-    transient Image[] images;
 
     // TODO Make this private
     @SerializedName(value = TEXTURETYPE)
@@ -170,7 +166,6 @@ public class Texture2D extends BaseReference {
         name = source.name;
         width = source.width;
         height = source.height;
-        images = source.images;
         type = source.type;
         format = source.format;
     }
@@ -205,13 +200,13 @@ public class Texture2D extends BaseReference {
      * The texture(s) will not be uploaded to GL.
      * 
      * @param name
-     * @param images
+     * @param width
+     * @param height
      */
-    protected void setup(int name, Image[] images) {
+    protected void setup(int name, int width, int height) {
         this.name = name;
-        this.images = images;
-        this.width = images[0].width;
-        this.height = images[0].height;
+        this.width = width;
+        this.height = height;
     }
 
     /**
@@ -310,7 +305,7 @@ public class Texture2D extends BaseReference {
         return (textureType + " " + (getId() != null ? getId() : "") + " : " + width + "," + height + " : " + format
                 + " : " + type
                 + ", "
-                + (images != null ? images.length : 0) + " levels");
+                + getLevels() + " levels");
     }
     
     /**
@@ -356,6 +351,16 @@ public class Texture2D extends BaseReference {
         float normalizedHeight = (getHeight() * scaleFactor) / w.getHeight();
         Rectangle rect = new Rectangle(-normalizedWidth / 2, normalizedHeight / 2, normalizedWidth, normalizedHeight);
         return rect;
+    }
+
+    /**
+     * Releases any resource held by this texture, this will not delete texture from GL, this has to be done separately.
+     * If additional data is allocated by the texture, other than the uploaded texture, these resources shall be
+     * released.
+     * 
+     */
+    public void destroy() {
+        // Release any allocated resources other than the uploaded texture.
     }
 
 }

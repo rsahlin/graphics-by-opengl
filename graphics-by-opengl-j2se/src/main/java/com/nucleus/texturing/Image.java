@@ -156,4 +156,25 @@ public class Image extends BufferObject {
         return height;
     }
 
+    /**
+     * Calls destroy() on the array of images
+     * 
+     * @param images
+     */
+    public static void destroyImages(Image[] images) {
+        for (Image image : images) {
+            image.destroy();
+        }
+    }
+
+    /**
+     * Release all resources allocated by this image
+     */
+    public void destroy() {
+        format = null;
+        buffer = null;
+        width = 0;
+        height = 0;
+    }
+
 }
