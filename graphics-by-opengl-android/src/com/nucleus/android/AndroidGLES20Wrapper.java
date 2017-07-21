@@ -38,6 +38,16 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
+    public void glDeleteProgram(int program) {
+        android.opengl.GLES20.glDeleteProgram(program);
+    }
+
+    @Override
+    public void glDeleteTextures(int count, int[] textures, int offset) {
+        android.opengl.GLES20.glDeleteTextures(count, textures, offset);
+    }
+
+    @Override
     public void glGetShaderiv(int shader, int pname, IntBuffer params) {
         android.opengl.GLES20.glGetShaderiv(shader, pname, params);
     }
@@ -213,7 +223,7 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
         android.opengl.GLES20.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
 
     }
-
+    
     @Override
     public void glDrawElements(int mode, int count, int type, Buffer indices) {
         android.opengl.GLES20.glDrawElements(mode, count, type, indices);

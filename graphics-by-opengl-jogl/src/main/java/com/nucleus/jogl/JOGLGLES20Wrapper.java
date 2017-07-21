@@ -117,6 +117,11 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
+    public void glDeleteProgram(int program) {
+        gles.glDeleteProgram(program);
+    }
+
+    @Override
     public void glGetShaderiv(int shader, int pname, IntBuffer params) {
         gles.glGetShaderiv(shader, pname, params);
 
@@ -333,6 +338,11 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
             int type, Buffer pixels) {
         gles.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
 
+    }
+
+    @Override
+    public void glDeleteTextures(int count, int[] textures, int offset) {
+        gles.glDeleteTextures(count, textures, offset);
     }
 
     @Override

@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.io.ExternalReference;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.ShaderProgram;
@@ -157,6 +159,7 @@ public class AssetManager {
     public ShaderProgram getProgram(NucleusRenderer renderer, ShaderProgram program) {
         ShaderProgram compiled = programs.get(program.getClass().getCanonicalName());
         if (compiled != null) {
+            SimpleLogger.d(getClass(), "Returned compiled program for " + program.getClass().getSimpleName());
             return compiled;
         }
         long start = System.currentTimeMillis();
@@ -165,6 +168,38 @@ public class AssetManager {
                 System.currentTimeMillis());
         programs.put(program.getClass().getCanonicalName(), program);
         return program;
+    }
+
+    /**
+     * Removes all references and resources.
+     * 
+     * @param renderer
+     */
+    public void destroy(NucleusRenderer renderer) {
+        SimpleLogger.d(getClass(), "destroy");
+        deletePrograms(renderer.getGLES());
+        deleteTextures(renderer.getGLES());
+        programs.clear();
+        sourceNames.clear();
+        textures.clear();
+    }
+
+    private void deleteTextures(GLES20Wrapper wrapper) {
+        if (textures.size() == 0) {
+            return;
+        }
+        int[] texNames = new int[textures.size()];
+        int i = 0;
+        for (Texture2D texture : textures.values()) {
+            texNames[i++] = texture.getName();
+        }
+        wrapper.glDeleteTextures(texNames.length, texNames, 0);
+    }
+
+    private void deletePrograms(GLES20Wrapper wrapper) {
+        for (ShaderProgram program : programs.values()) {
+            wrapper.glDeleteProgram(program.getProgram());
+        }
     }
 
 }

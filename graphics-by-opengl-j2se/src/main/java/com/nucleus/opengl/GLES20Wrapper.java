@@ -63,6 +63,13 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public abstract int glCreateProgram();
 
     /**
+     * Abstraction for glDeleteProgram()
+     * 
+     * @param program
+     */
+    public abstract void glDeleteProgram(int program);
+
+    /**
      * Abstraction for glGenBuffers()
      * 
      * @param n Number of buffer names to create
@@ -511,6 +518,15 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      */
     public abstract void glTexImage2D(int target, int level, int internalformat, int width, int height, int border,
             int format, int type, Buffer pixels);
+
+    /**
+     * Abstraction for glDeleteTextures()
+     * 
+     * @param count
+     * @param textures
+     * @param offset
+     */
+    public abstract void glDeleteTextures(int count, int[] textures, int offset);
 
     /**
      * Abstraction for glGenerateMipmap

@@ -53,7 +53,8 @@ public class CoreApp {
         /**
          * Create the core renderer and windows, this method is called before GL context is available.
          * Note, this method will only create the underlying renderer of the correct version, it is not guaranteed
-         * that the GL context is created - do not perform any rendering until the {@link CoreApp#contextCreated} or {@link #createCoreApp(int, int)} method
+         * that the GL context is created - do not perform any rendering until the {@link #createCoreApp(int, int)}
+         * method
          * is called.
          * 
          * @param version Version of GLES to use.
@@ -112,10 +113,6 @@ public class CoreApp {
     Thread runnableThread;
     LogicProcessorRunnable logicRunnable;
 
-    /**
-     * Set to true to trigger a call to context created next time {@link #drawFrame()} is called
-     */
-    private volatile boolean contextCreated = false;
     /**
      * Set to true when {@link #contextCreated(int, int)} is called
      */
@@ -203,8 +200,6 @@ public class CoreApp {
      */
     public void surfaceLost() {
         SimpleLogger.d(getClass(), "surfaceLost()");
-        // Will trigger a call to contextCreated next frame.
-        contextCreated = true;
     }
 
     /**

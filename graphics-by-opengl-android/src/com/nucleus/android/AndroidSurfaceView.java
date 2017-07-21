@@ -36,9 +36,10 @@ public class AndroidSurfaceView extends GLSurfaceView
 
 
     private EGL10 egl;
-    private EGLDisplay display;
+    private EGLDisplay eglDisplay;
     private EGLConfig eglConfig;
     private EGLSurface eglSurface;
+    private boolean surfaceDestroyed = false;
     private long lastDraw;
 
     /**
@@ -120,12 +121,14 @@ public class AndroidSurfaceView extends GLSurfaceView
 
     @Override
     public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
+        SimpleLogger.d(getClass(), "chooseConfig()");
         this.egl = egl;
-        this.display = display;
+        this.eglDisplay = display;
         eglConfig = EGLUtils.selectConfig(egl, display, wantedConfig);
         if (eglConfig == null) {
             throw new IllegalArgumentException("No EGL config matching default surface configuration.");
         }
+        surfaceDestroyed = false;
         surfaceConfig = new SurfaceConfiguration();
         EGLUtils.readSurfaceConfig(egl, display, eglConfig, surfaceConfig);
         SimpleLogger.d(getClass(), "chooseConfig() has: " + surfaceConfig.toString());
@@ -165,12 +168,12 @@ public class AndroidSurfaceView extends GLSurfaceView
         SimpleLogger.d(getClass(), "surfaceCreated() " + getWidth() + ", " + getHeight());
         if (surfaceConfig == null) {
             surfaceConfig = new SurfaceConfiguration();
-            EGLUtils.readSurfaceConfig(egl, display, eglConfig, surfaceConfig);
+            EGLUtils.readSurfaceConfig(egl, eglDisplay, eglConfig, surfaceConfig);
             SimpleLogger.d(getClass(),
                     "onSurfaceCreated(EGLConfig) has: " + surfaceConfig.toString());
         }
         coreAppStarter.createCoreApp(getWidth(),  getHeight());
-        egl.eglSwapBuffers(display, eglSurface);
+        egl.eglSwapBuffers(eglDisplay, eglSurface);
         checkEGLError("eglSwapBuffers()");
         // Call contextCreated since the renderer is already initialized and has a created EGL context.
         coreApp.contextCreated(Window.getInstance().getWidth(), Window.getInstance().getHeight());
@@ -195,9 +198,11 @@ public class AndroidSurfaceView extends GLSurfaceView
     @Override
     public void destroySurface(EGL10 egl, EGLDisplay display, EGLSurface surface) {
         SimpleLogger.d(getClass(), "destroySurface()");
-        if (eglSurface != null && display != null) {
-            egl.eglDestroySurface(display, eglSurface);
+        surfaceDestroyed = true;
+        if (surface != null && display != null) {
+            egl.eglDestroySurface(display, surface);
             eglSurface = null;
+            eglDisplay = null;
         }
         if (coreApp != null) {
             coreApp.surfaceLost();

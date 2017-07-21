@@ -674,7 +674,7 @@ public abstract class ShaderProgram {
      * @param fragmentName Name of fragment shader to load, compile and link
      */
     protected void createProgram(GLES20Wrapper gles, String vertexName, String fragmentName) {
-        System.out.println("Creating program for: " + vertexShader + " and " + fragmentShader);
+        SimpleLogger.d(getClass(), "Creating program for: " + vertexName + " and " + fragmentName);
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream vertexStream = null;
         InputStream fragmentStream = null;
@@ -688,6 +688,8 @@ public abstract class ShaderProgram {
             }
             fragmentShader = gles.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
             program = gles.glCreateProgram();
+            SimpleLogger.d(getClass(),
+                    "Program name: " + program + ", vertex: " + vertexShader + " fragment: " + fragmentShader);
             compileShader(gles, vertexStream, vertexShader, vertexName);
             compileShader(gles, fragmentStream, fragmentShader, fragmentName);
             linkProgram(gles, program, vertexShader, fragmentShader);

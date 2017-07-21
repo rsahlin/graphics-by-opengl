@@ -177,7 +177,7 @@ class BaseRenderer implements NucleusRenderer {
     public float beginFrame() {
         deltaTime = timeKeeper.update();
         if (timeKeeper.getSampleDuration() > 3) {
-            System.out.println(BASE_RENDERER_TAG + ": " + timeKeeper.sampleFPS());
+            SimpleLogger.d(getClass(), timeKeeper.sampleFPS());
         }
         try {
             if (renderSettings.getChangeFlag() != RenderSettings.CHANGE_FLAG_NONE) {
@@ -319,7 +319,7 @@ class BaseRenderer implements NucleusRenderer {
         VertexBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         ElementBuffer indices = mesh.getElementBuffer();
         gles.glUseProgram(program.getProgram());
-        GLUtils.handleError(gles, "glUseProgram ");
+        GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
 
         Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
         if (texture != null && texture.textureType != TextureType.Untextured) {
