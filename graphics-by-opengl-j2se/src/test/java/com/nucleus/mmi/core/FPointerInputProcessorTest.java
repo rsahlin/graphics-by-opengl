@@ -1,4 +1,4 @@
-package com.nucleus.mmi;
+package com.nucleus.mmi.core;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -9,7 +9,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.nucleus.mmi.MMIEventListener;
+import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
+import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.vecmath.Vector2D;
 
@@ -155,7 +158,8 @@ public class FPointerInputProcessorTest implements MMIEventListener {
         PointerInputProcessor processor = new PointerInputProcessor();
 
         processor.addMMIListener(this);
-        processor.pointerEvent(PointerAction.DOWN, System.currentTimeMillis(), PointerData.POINTER_1, FIRST_POS);
+        processor.pointerEvent(PointerAction.DOWN, System.currentTimeMillis(),
+                PointerData.POINTER_1, FIRST_POS);
         processor.pointerEvent(PointerAction.MOVE, System.currentTimeMillis(), PointerData.POINTER_1, SECOND_POS);
 
         Assert.assertEquals(2, pointerEvents.size());
@@ -163,7 +167,7 @@ public class FPointerInputProcessorTest implements MMIEventListener {
         Assert.assertEquals(com.nucleus.mmi.MMIPointerEvent.Action.ACTIVE, event.getAction());
         event = pointerEvents.get(1);
         Assert.assertEquals(com.nucleus.mmi.MMIPointerEvent.Action.MOVE, event.getAction());
-        for (PointerData pointer : event.getPointerData().pointerMovement) {
+        for (PointerData pointer : event.getPointerData().getPointers()) {
             Assert.assertEquals(PointerData.POINTER_1, pointer.pointer);
         }
         float[] delta = event.getPointerData().getDelta(2);

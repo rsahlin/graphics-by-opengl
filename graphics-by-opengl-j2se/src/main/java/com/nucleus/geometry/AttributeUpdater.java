@@ -1,5 +1,6 @@
 package com.nucleus.geometry;
 
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.ShaderProgram;
 
 /**
@@ -142,8 +143,10 @@ public interface AttributeUpdater {
 
     /**
      * Release all resources allocated by the implementing class, call this when this object shall not be used anymore.
+     * 
+     * @param renderer
      */
-    public void destroy();
+    public void destroy(NucleusRenderer renderer);
 
     /**
      * Returns the propertymapper to be used to find positions of property attributes.

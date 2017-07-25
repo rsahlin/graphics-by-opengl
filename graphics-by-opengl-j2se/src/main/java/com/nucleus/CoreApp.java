@@ -9,7 +9,7 @@ import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.MMIEventListener;
-import com.nucleus.mmi.PointerInputProcessor;
+import com.nucleus.mmi.core.PointerInputProcessor;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;

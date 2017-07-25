@@ -819,7 +819,7 @@ public class Node extends BaseReference {
     public void destroy(NucleusRenderer renderer) {
         if (meshes != null) {
             for (Mesh mesh : meshes) {
-                mesh.destroy();
+                mesh.destroy(renderer);
             }
             meshes = null;
         }

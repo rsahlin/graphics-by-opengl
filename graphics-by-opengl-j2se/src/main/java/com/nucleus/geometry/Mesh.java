@@ -511,7 +511,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     }
 
     @Override
-    public void destroy() {
+    public void destroy(NucleusRenderer renderer) {
         texture = null;
         textureRef = null;
         uniforms = null;
@@ -521,6 +521,18 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         indices = null;
         mode = null;
         material = null;
+        deleteVBO(renderer);
+    }
+
+    private void deleteVBO(NucleusRenderer renderer) {
+        if (indices.getBufferName() > 0) {
+            renderer.deleteBuffers(1, new int[] { indices.getBufferName() }, 0);
+        }
+        for (VertexBuffer buffer : attributes) {
+            if (buffer.getBufferName() > 0) {
+                renderer.deleteBuffers(1, new int[] { buffer.getBufferName() }, 0);
+            }
+        }
     }
 
     @Override

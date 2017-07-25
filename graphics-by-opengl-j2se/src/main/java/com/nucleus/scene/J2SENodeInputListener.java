@@ -4,11 +4,10 @@ import java.util.ArrayList;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.event.EventManager;
-import com.nucleus.mmi.ClickListener;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
-import com.nucleus.mmi.MMIPointerEvent.Action;
-import com.nucleus.mmi.PointerInputProcessor;
+import com.nucleus.mmi.ObjectInputListener;
+import com.nucleus.mmi.core.PointerInputProcessor;
 import com.nucleus.properties.Property;
 import com.nucleus.scene.Node.State;
 
@@ -20,6 +19,8 @@ import com.nucleus.scene.Node.State;
 public class J2SENodeInputListener implements NodeInputListener, MMIEventListener {
 
     private final RootNode root;
+
+    private float[] down = new float[2];
 
     public J2SENodeInputListener(RootNode root) {
         this.root = root;
@@ -34,10 +35,8 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
             switch (node.getState()) {
             case ON:
             case ACTOR:
-                if (event.getAction() == Action.ACTIVE || event.getAction() == Action.MOVE) {
-                    if (onPointerEvent(node, event)) {
-                        return true;
-                    }
+                if (onPointerEvent(node, event)) {
+                    return true;
                 }
                 break;
             default:
@@ -59,25 +58,31 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
      * @return True if the input event was consumed, false otherwise.
      */
     protected boolean onPointerEvent(Node node, MMIPointerEvent event) {
-        if (node.isInside(event.getPointerData().getCurrentPosition())) {
+        float[] position = event.getPointerData().getCurrentPosition();
+        if (node.isInside(position)) {
             if (node instanceof MMIEventListener) {
                 ((MMIEventListener) node).onInputEvent(event);
             }
             switch (event.getAction()) {
             case ACTIVE:
+                down[0] = position[0];
+                down[1] = position[1];
                 SimpleLogger.d(getClass(), "HIT: " + node);
                 String onclick = node.getProperty(ONCLICK);
                 if (onclick != null) {
                     Property p = Property.create(onclick);
                     EventManager.getInstance().post(node, p.getKey(), p.getValue());
                 }
-                if (node instanceof ClickListener) {
-                    ((ClickListener) node).onClick(event.getPointerData().getCurrentPosition());
+                if (node instanceof ObjectInputListener) {
+                    ((ObjectInputListener) node).onClick(event.getPointerData().getCurrent());
                 }
                 return true;
             case INACTIVE:
                 break;
             case MOVE:
+                if (node instanceof ObjectInputListener) {
+                    ((ObjectInputListener) node).onDrag(event.getPointerData());
+                }
                 break;
             case ZOOM:
                 break;

@@ -1,10 +1,14 @@
-package com.nucleus.mmi;
+package com.nucleus.mmi.core;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.Vertex2D;
+import com.nucleus.mmi.MMIEventListener;
+import com.nucleus.mmi.MMIPointerEvent;
+import com.nucleus.mmi.PointerData;
+import com.nucleus.mmi.PointerMotionData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.vecmath.Vector2D;
 
@@ -16,6 +20,7 @@ import com.nucleus.vecmath.Vector2D;
  */
 public class PointerInputProcessor implements PointerListener {
 
+    
     public final static int MAX_POINTERS = 5;
 
     /**
@@ -52,11 +57,11 @@ public class PointerInputProcessor implements PointerListener {
         }
         scaledPosition[X] = position[X] * transform[X] + transform[2];
         scaledPosition[Y] = position[Y] * transform[Y] + transform[3];
-        PointerData pointerData = new PointerData(action, timestamp, pointer, scaledPosition);
         switch (action) {
         case MOVE:
             addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.MOVE, pointer,
-                    pointerMotionData[pointer]), pointerData);
+                    pointerMotionData[pointer]),
+                    pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition));
             // More than one pointer is or has been active.
             if (pointerCount == 2 && pointer == 1) {
                 processTwoPointers();
@@ -66,7 +71,8 @@ public class PointerInputProcessor implements PointerListener {
             pointerCount = pointer + 1;
             pointerMotionData[pointer] = new PointerMotionData();
             addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ACTIVE, pointer,
-                    pointerMotionData[pointer]), pointerData);
+                    pointerMotionData[pointer]),
+                    pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition));
             break;
         case UP:
             pointerCount--;
@@ -74,7 +80,8 @@ public class PointerInputProcessor implements PointerListener {
                 System.out.println("PointerInputProcessor: ERROR: pointerCount= " + pointerCount);
             }
             addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.INACTIVE, pointer,
-                    pointerMotionData[pointer]), pointerData);
+                    pointerMotionData[pointer]),
+                    pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition));
             break;
         case ZOOM:
             MMIPointerEvent zoom = new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ZOOM, pointer,

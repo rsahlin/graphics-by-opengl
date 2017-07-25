@@ -253,7 +253,8 @@ public abstract class JOGLGLEWindow
             switch (action) {
             case DOWN:
                 // Recording down for multi touch - all pointers will be re-sent when a new finger goes down.
-                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN, e.getWhen(), id,
+                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN,
+                        e.getWhen(), id,
                         new float[] { xpos[i], ypos[i] });
                 break;
             case UP:

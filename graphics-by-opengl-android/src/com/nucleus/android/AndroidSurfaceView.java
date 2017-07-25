@@ -89,7 +89,8 @@ public class AndroidSurfaceView extends GLSurfaceView
             switch (event.getActionMasked()) {
             case MotionEvent.ACTION_POINTER_DOWN:
                 // Recording down for multi touch - all pointers will be re-sent when a new finger goes down.
-                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN, event.getEventTime(), finger,
+                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN,
+                        event.getEventTime(), finger,
                         new float[] { event.getX(i), event.getY(i) });
                 break;
             case MotionEvent.ACTION_DOWN:

@@ -1,6 +1,7 @@
 package com.nucleus.mmi;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.nucleus.mmi.PointerData.PointerAction;
 
@@ -20,10 +21,12 @@ public class PointerMotionData {
 
     /**
      * Adds the pointer data to list.
+     * This shall only be used by the framework - do NOT call this method.
+     * TODO How to hide the method so that it is only visible for PointerInputProcessor
      * 
      * @param data Pointer data
      */
-    void add(PointerData data) {
+    public void add(PointerData data) {
         pointerMovement.add(data);
 
     }
@@ -105,6 +108,29 @@ public class PointerMotionData {
      */
     public PointerData getFirst() {
         return pointerMovement.get(0);
+    }
+
+    /**
+     * Creates pointer data for the specified parameter
+     * 
+     * @param action
+     * @param timestamp
+     * @param pointer
+     * @param position
+     * @return
+     */
+    public PointerData create(PointerAction action, long timestamp, int pointer, float[] position) {
+        return new PointerData(action, timestamp, pointer, position);
+    }
+
+    /**
+     * Returns a list with all pointer data for the current movement.
+     * DO NOT MODIFY THESE VALUES
+     * 
+     * @return
+     */
+    public List<PointerData> getPointers() {
+        return pointerMovement;
     }
 
 }

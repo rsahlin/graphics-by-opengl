@@ -1,10 +1,9 @@
 package com.nucleus.mmi;
 
+import com.nucleus.mmi.core.PointerListener;
+
 /**
  * Data for a pointer input
- * 
- * @author Richard Sahlin
- *
  */
 public class PointerData {
 
