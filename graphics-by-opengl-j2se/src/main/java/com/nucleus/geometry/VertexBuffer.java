@@ -21,18 +21,6 @@ public class VertexBuffer extends BufferObject {
     private final static String ILLEGAL_DATATYPE_STR = "Illegal datatype: ";
 
     /**
-     * Number of vertices for an indexed quad
-     */
-    public final static int INDEXED_QUAD_VERTICES = 4;
-    /**
-     * Number of vertices for a triangle strip quad
-     */
-    public final static int STRIP_QUAD_VERTICES = 4;
-    /**
-     * Number of vertices for a triangle fan quad
-     */
-    public final static int FAN_QUAD_VERTICES = 4;
-    /**
      * Number of components for X,Y,Z
      */
     public final static int XYZ_COMPONENTS = 3;

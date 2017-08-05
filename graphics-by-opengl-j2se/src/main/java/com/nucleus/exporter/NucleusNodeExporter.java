@@ -2,7 +2,7 @@ package com.nucleus.exporter;
 
 import java.util.HashMap;
 
-import com.nucleus.common.Key;
+import com.nucleus.common.Type;
 import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeType;
@@ -20,11 +20,11 @@ public class NucleusNodeExporter implements NodeExporter {
     private HashMap<String, NodeExporter> nodeExporters = new HashMap<String, NodeExporter>();
 
     @Override
-    public void registerNodeExporter(Key type, NodeExporter exporter) {
-        if (nodeExporters.containsKey(type.getKey())) {
-            throw new IllegalArgumentException(ALREADY_REGISTERED_TYPE + type.getKey());
+    public void registerNodeExporter(Type<Node> type, NodeExporter exporter) {
+        if (nodeExporters.containsKey(type.getName())) {
+            throw new IllegalArgumentException(ALREADY_REGISTERED_TYPE + type.getName());
         }
-        nodeExporters.put(type.getKey(), exporter);
+        nodeExporters.put(type.getName(), exporter);
     }
 
     @Override
@@ -57,25 +57,24 @@ public class NucleusNodeExporter implements NodeExporter {
         Node created;
         switch (type) {
         case node:
-            created = source.copy(rootNode);
+            created = source.createInstance(rootNode);
             break;
         case layernode:
-            created = ((LayerNode) source).copy(rootNode);
+            created = ((LayerNode) source).createInstance(rootNode);
             break;
         case switchnode:
-            created = ((SwitchNode) source).copy(rootNode);
+            created = ((SwitchNode) source).createInstance(rootNode);
             break;
         default:
             throw new IllegalArgumentException(NOT_IMPLEMENTED + type);
         }
-        created.setRootNode(rootNode);
         return created;
     }
 
     @Override
-    public void registerNodeExporter(Key[] types, NodeExporter exporter) {
-        for (Key k : types) {
-            registerNodeExporter(k, exporter);
+    public void registerNodeExporter(Type<Node>[] types, NodeExporter exporter) {
+        for (Type<Node> t : types) {
+            registerNodeExporter(t, exporter);
         }
     }
 

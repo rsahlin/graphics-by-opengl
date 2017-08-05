@@ -57,10 +57,23 @@ public class RectangularBounds extends Bounds {
      * @throws ArrayIndexOutOfBoundsException If values does not contain index + 4 or 8 values as needed
      */
     RectangularBounds(float[] values) {
+        create(values);
+    }
+
+    private void create(float[] values) {
         type = Type.RECTANGULAR;
         if (values != null) {
             setBounds(values);
         }
+    }
+
+    /**
+     * Creates rectangulare bounds from a rectangle
+     * 
+     * @param rect
+     */
+    public RectangularBounds(Rectangle rect) {
+        create(rect.getValues());
     }
 
     /**

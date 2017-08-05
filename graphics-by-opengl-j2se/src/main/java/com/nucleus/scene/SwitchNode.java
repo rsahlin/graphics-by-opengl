@@ -19,16 +19,21 @@ public class SwitchNode extends Node implements PostDeserializable {
     @SerializedName("active")
     private String active;
 
-    @Override
-    public SwitchNode createInstance(RootNode root) {
-        SwitchNode node = new SwitchNode();
-        node.setRootNode(root);
-        return node;
+    /**
+     * Used by GSON - do not create nodes using the default constructor!
+     */
+    protected SwitchNode() {
+    }
+    
+    
+    private SwitchNode(RootNode root) {
+        super(root);
+        setType(NodeType.switchnode.name());
     }
 
     @Override
-    public SwitchNode copy(RootNode root) {
-        SwitchNode copy = createInstance(root);
+    public SwitchNode createInstance(RootNode root) {
+        SwitchNode copy = new SwitchNode(root);
         copy.set(this);
         return copy;
     }

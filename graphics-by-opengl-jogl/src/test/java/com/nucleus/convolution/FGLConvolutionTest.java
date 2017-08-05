@@ -79,7 +79,8 @@ public class FGLConvolutionTest extends NucleusApplication implements FrameListe
         ConvolutionProgram c = new ConvolutionProgram();
         uKernel = c.getShaderVariable(ConvolutionProgram.VARIABLES.uKernel);
         c.createProgram(renderer.getGLES());
-        LayerNode node = new LayerNode();
+        BaseRootNode root = new BaseRootNode();
+        LayerNode node = null;
         node.setLayer(Layer.SCENE);
         ViewFrustum vf = new ViewFrustum();
         vf.setOrthoProjection(-0.5f, 0.5f, 0.5f, -0.5f, 0, 10);
@@ -89,9 +90,8 @@ public class FGLConvolutionTest extends NucleusApplication implements FrameListe
                 TexParameter.CLAMP });
         Texture2D tex = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(),
                 "texture", new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, texParam, 1);
-        c.buildMesh(mesh, tex, 1f, 1f, 0, kernel[kernelIndex]);
+        // c.buildMesh(mesh, tex, 1f, 1f, 0, kernel[kernelIndex]);
         node.addMesh(mesh, MeshType.MAIN);
-        BaseRootNode root = new BaseRootNode();
         root.setScene(node);
         coreApp.setRootNode(root);
         renderer.addFrameListener(this);

@@ -1,0 +1,15 @@
+/* Copyright 2017 Richard Sahlin
+ * Vertex shader for normal vertex transform with position for each vertex.
+ * Can be used for instance for line drawing
+ * @author Richard Sahlin
+ */
+ #version 100
+precision mediump float;
+
+uniform sampler2D texture;      //The texture sampler
+varying vec2 vTexCoord;
+
+void main()
+{
+    gl_FragColor = texture2D(texture, vTexCoord);
+}

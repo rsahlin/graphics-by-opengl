@@ -7,6 +7,7 @@ import java.util.Map;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.camera.ViewFrustum;
+import com.nucleus.common.Type;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.geometry.AttributeUpdater.Producer;
@@ -154,9 +155,19 @@ public class Node extends BaseReference {
     transient protected RootNode rootNode;
 
     /**
-     * Creates an empty node, add children and meshes as needed.
+     * Constructor user when loading node from scene
      */
-    public Node() {
+    protected Node() {
+    }
+
+    /**
+     * Creates an empty node, add children and meshes as needed.
+     * 
+     * @param root
+     */
+    protected Node(RootNode root) {
+        setRootNode(root);
+        setType(NodeType.node.name());
     }
 
     /**
@@ -170,32 +181,40 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Creates a new instance of this node.
-     * This will be a new empty instance
-     * TODO - should have rootnode as parameter
-     * 
-     * @param root The root node of the returned instance
-     * @return New instance of this node
-     * @throws IllegalArgumentException If root is null
-     */
-    protected Node createInstance(RootNode root) {
-        Node copy = new Node();
-        copy.setRootNode(root);
-        return copy;
-    }
-
-    /**
      * Creates a new instance of this node, then copies this node into the copy.
      * This is a shallow copy, it does not copy children.
+     * Use this when nodes are loaded
      * 
      * @param root Root of the created node
      * @return New copy of this node, transient values and children will not be copied.
      * @throws IllegalArgumentException If root is null
      */
-    public Node copy(RootNode root) {
-        Node copy = createInstance(root);
+    public Node createInstance(RootNode root) {
+        Node copy = new Node(root);
         copy.set(this);
         return copy;
+    }
+
+    /**
+     * Creates a new, empty, instance of the specified nodeType. The type will be set.
+     * Do not call this method directly, use {@link NodeFactory}
+     * 
+     * @param nodeType
+     * @paran root The root of the created instance
+     * @return
+     * @throws IllegalArgumentException If nodeType or root is null.
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     */
+    public static Node createInstance(Type<Node> nodeType, RootNode root)
+            throws InstantiationException, IllegalAccessException {
+        if (nodeType == null || root == null) {
+            throw new IllegalArgumentException("Null parameter:" + nodeType + ", " + root);
+        }
+        Node node = (Node) nodeType.getTypeClass().newInstance();
+        node.setType(nodeType.getName());
+        node.setRootNode(root);
+        return node;
     }
 
     /**
@@ -487,11 +506,14 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Sets the rootnode for this node, this shall normally not be changed
+     * Sets the rootnode for this node, this shall normally not be changed after it has been set.
+     * This method shall not be called, it is used when a new instance is created using
+     * {@link #createInstance(RootNode)}
      * 
      * @param root
+     * @throws IllegalArgumentException If root is null
      */
-    public void setRootNode(RootNode root) {
+    protected void setRootNode(RootNode root) {
         if (root == null) {
             throw new IllegalArgumentException("Document root can not be null");
         }
@@ -625,6 +647,15 @@ public class Node extends BaseReference {
      */
     public String getType() {
         return type;
+    }
+
+    /**
+     * This shall be set if node is created using {@link #createInstance(RootNode)}
+     * 
+     * @param type
+     */
+    protected void setType(String type) {
+        this.type = type;
     }
 
     /**
@@ -780,17 +811,30 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Set bounds from the specified rectangle, if bounds exist but are not set.
+     * Set bounds from the specified bounds, if bounds exist but are not set.
      * If bounds is null or already set then nothing is done.
      * 
-     * @param rect
+     * @param bounds
      */
-    public void initBounds(Rectangle rect) {
+    public void initBounds(Bounds sourceBounds) {
         Bounds bounds = getBounds();
         if (bounds != null && bounds.getBounds() == null) {
-            // Need to create bounds from rectangle.
-            bounds.setBounds(rect);
+            bounds.setBounds(sourceBounds.getBounds());
         }
+    }
+
+    /**
+     * Sets bounds from the rectangle, if bounds exist but are not set.
+     * If bounds is null or already set then nothing is done.
+     * 
+     * @param rectangle
+     */
+    public void initBounds(Rectangle rectangle) {
+        Bounds bounds = getBounds();
+        if (bounds != null && bounds.getBounds() == null) {
+            bounds.setBounds(rectangle);
+        }
+
     }
 
     /**

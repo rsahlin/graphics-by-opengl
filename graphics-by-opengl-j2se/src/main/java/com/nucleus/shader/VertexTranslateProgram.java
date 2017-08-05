@@ -7,7 +7,7 @@ import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.shader.ShaderVariable.VariableType;
-import com.nucleus.texturing.Untextured;
+import com.nucleus.texturing.Texture2D;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -22,8 +22,9 @@ public class VertexTranslateProgram extends ShaderProgram {
     public enum VARIABLES implements VariableMapping {
         uMVMatrix(0, ShaderVariable.VariableType.UNIFORM, null),
         uProjectionMatrix(1, ShaderVariable.VariableType.UNIFORM, null),
-        aPosition(2, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-        aColor(3, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
+        aColor(2, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+        aPosition(3, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+        aTexCoord(4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES);
 
         private final int index;
         private final VariableType type;
@@ -56,10 +57,13 @@ public class VertexTranslateProgram extends ShaderProgram {
         }
     }
 
-    public VertexTranslateProgram(Untextured.Shading shading) {
+    private Texture2D.Shading shading;
+
+    public VertexTranslateProgram(Texture2D.Shading shading) {
         super(VARIABLES.values());
         vertexShaderName = PROGRAM_DIRECTORY + shading.name() + VERTEX + SHADER_SOURCE_SUFFIX;
         fragmentShaderName = PROGRAM_DIRECTORY + shading.name() + FRAGMENT + SHADER_SOURCE_SUFFIX;
+        this.shading = shading;
     }
 
     @Override
@@ -111,4 +115,10 @@ public class VertexTranslateProgram extends ShaderProgram {
         }
         return -1;
     }
+
+    @Override
+    public String getKey() {
+        return getClass().getCanonicalName() + shading.name();
+    }
+
 }

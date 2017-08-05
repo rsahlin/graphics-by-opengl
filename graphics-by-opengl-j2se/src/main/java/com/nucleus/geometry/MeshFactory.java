@@ -2,7 +2,6 @@ package com.nucleus.geometry;
 
 import java.io.IOException;
 
-import com.nucleus.io.ExternalReference;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
 
@@ -22,6 +21,7 @@ public interface MeshFactory {
      * Creates a mesh for the specified parent node. The scene node shall contain all data necessary for the creating of
      * the mesh.
      * All resources needed for the mesh shall be fetched/loaded as needed.
+     * The returned mesh will have
      * 
      * @param renderer
      * @param parent The node that the mesh will belong to.
@@ -29,17 +29,5 @@ public interface MeshFactory {
      * @throws IOException If an asset such as texture could not be loaded.
      */
     public Mesh createMesh(NucleusRenderer renderer, Node parent) throws IOException;
-
-    /**
-     * 
-     * @param renderer
-     * @param material
-     * @param textureRef
-     * @return
-     * @throws IOException
-     */
-    public Mesh createMesh(NucleusRenderer renderer, Material material, ExternalReference textureRef, int vertexCount,
-            int indiceCount)
-            throws IOException;
 
 }

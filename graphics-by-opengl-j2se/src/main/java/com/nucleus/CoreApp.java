@@ -1,12 +1,14 @@
 package com.nucleus;
 
 import com.nucleus.assets.AssetManager;
-import com.nucleus.camera.ViewFrustum;
 import com.nucleus.component.J2SELogicProcessor;
 import com.nucleus.component.LogicProcessorRunnable;
-import com.nucleus.convolution.ConvolutionProgram;
 import com.nucleus.event.EventManager.EventHandler;
+import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.geometry.RectangleShapeBuilder;
+import com.nucleus.geometry.RectangleShapeBuilder.Configuration;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.core.PointerInputProcessor;
@@ -16,17 +18,18 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
-import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.RenderSettings;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
+import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.J2SENodeInputListener;
-import com.nucleus.scene.LayerNode;
-import com.nucleus.scene.Node.MeshType;
 import com.nucleus.scene.NodeController;
+import com.nucleus.scene.NodeException;
+import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewController;
+import com.nucleus.shader.VertexTranslateProgram;
 import com.nucleus.texturing.TexParameter;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -184,7 +187,7 @@ public class CoreApp {
             try {
                 // The caller shall make sure that buffers are swapped so that the result is visible
                 displaySplash();
-            } catch (GLException e) {
+            } catch (GLException | NodeException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -274,31 +277,31 @@ public class CoreApp {
         inputProcessor.addMMIListener(new J2SENodeInputListener(root));
     }
 
-    public void displaySplash() throws GLException {
+    public void displaySplash() throws GLException, NodeException {
         FrameSampler.getInstance().logTag(FrameSampler.DISPLAY_SPLASH);
         RenderSettings rs = renderer.getRenderSettings();
         rs.setCullFace(GLES20.GL_NONE);
         rs.setDepthFunc(GLES20.GL_NONE);
-        Mesh mesh = new Mesh();
-        ConvolutionProgram c = new ConvolutionProgram();
-        c.createProgram(renderer.getGLES());
-        BaseRootNode root = new BaseRootNode();
-        LayerNode node = new LayerNode();
-        node.setRootNode(root);
-        node.setLayer(Layer.SCENE);
-        ViewFrustum vf = new ViewFrustum();
-        vf.setOrthoProjection(-0.5f, 0.5f, 0.5f, -0.5f, 0, 10);
-        node.setViewFrustum(vf);
+        
+        BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
         TextureParameter texParam = new TextureParameter();
         texParam.setValues(new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST, TexParameter.CLAMP,
-                TexParameter.CLAMP });
-        Texture2D tex = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(),
-                "texture", new ExternalReference("assets/splash.png"), RESOLUTION.HD, texParam, 1);
-        float[] kernel = new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 };
-        // Convolution.normalize(kernel, kernel, false, 1);
-        c.buildMesh(mesh, tex, 0.2f, 0.2f, 0, kernel);
-        node.addMesh(mesh, MeshType.MAIN);
-        root.setScene(node);
+              TexParameter.CLAMP });
+        Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), "texture",
+                new ExternalReference("assets/splash.png"), RESOLUTION.HD, texParam, 1);
+        Mesh.Builder meshBuilder = new Mesh.Builder(renderer);
+        meshBuilder.setElementMode(Mode.TRIANGLES, 4, 6);
+        meshBuilder.setTexture(texture);
+        VertexTranslateProgram vt = (VertexTranslateProgram) AssetManager.getInstance().getProgram(renderer,
+                new VertexTranslateProgram(Texture2D.Shading.textured));
+        Material material = new Material();
+        material.setProgram(vt);
+        Configuration configuration = new Configuration(0.2f,0.2f,0f, 1, 0);
+        RectangleShapeBuilder shapeBuilder = new RectangleShapeBuilder(configuration);
+        meshBuilder.setMaterial(material).setShapeBuilder(shapeBuilder);
+        builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
+                .setNode(NodeType.layernode);
+        RootNode root = builder.create();
         renderer.beginFrame();
         renderer.render(root);
         renderer.endFrame();
@@ -319,7 +322,7 @@ public class CoreApp {
             CoreApp coreApp = new CoreApp(renderer, (ClientApplication) clientClass.newInstance());
             try {
                 coreApp.displaySplash();
-            } catch (GLException e) {
+            } catch (GLException | NodeException e) {
             	throw new RuntimeException(e);
             }
             return coreApp;

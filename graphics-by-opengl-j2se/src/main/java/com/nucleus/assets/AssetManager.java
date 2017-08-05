@@ -154,10 +154,10 @@ public class AssetManager {
      * 
      * @param renderer
      * @param program
-     * @return An instannce of the ShaderProgram that is loaded and compiled
+     * @return An instance of the ShaderProgram that is loaded and compiled
      */
     public ShaderProgram getProgram(NucleusRenderer renderer, ShaderProgram program) {
-        ShaderProgram compiled = programs.get(program.getClass().getCanonicalName());
+        ShaderProgram compiled = programs.get(program.getKey());
         if (compiled != null) {
             SimpleLogger.d(getClass(), "Returned compiled program for " + program.getClass().getSimpleName());
             return compiled;
@@ -166,7 +166,7 @@ public class AssetManager {
         renderer.createProgram(program);
         FrameSampler.getInstance().logTag(FrameSampler.CREATE_SHADER + program.getClass().getSimpleName(), start,
                 System.currentTimeMillis());
-        programs.put(program.getClass().getCanonicalName(), program);
+        programs.put(program.getKey(), program);
         return program;
     }
 

@@ -1,6 +1,6 @@
 package com.nucleus.exporter;
 
-import com.nucleus.common.Key;
+import com.nucleus.common.Type;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
 
@@ -25,7 +25,7 @@ public interface NodeExporter {
      * @throws IllegalArgumentException If a exporter already has been registered for the type
      * @throws NullPointerException If type is null
      */
-    public void registerNodeExporter(Key type, NodeExporter exporter);
+    public void registerNodeExporter(Type<Node> type, NodeExporter exporter);
 
     /**
      * Registers the node exporter for the specified node types.
@@ -37,7 +37,7 @@ public interface NodeExporter {
      * @throws IllegalArgumentException If a exporter already has been registered for the type
      * @throws NullPointerException If type is null
      */
-    public void registerNodeExporter(Key[] types, NodeExporter exporter);
+    public void registerNodeExporter(Type<Node>[] types, NodeExporter exporter);
 
     /**
      * Take the source node, and all children, converts to nodes that can be exported and adds to the rootnode

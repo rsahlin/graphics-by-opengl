@@ -16,11 +16,6 @@ import com.nucleus.vecmath.Rectangle;
  */
 public class Untextured extends Texture2D {
     
-    public enum Shading {
-        flat(),
-        parametric();
-    }
-    
     @SerializedName("shading")
     private Shading shading;
     
@@ -67,14 +62,11 @@ public class Untextured extends Texture2D {
         com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y],
                 z, UV[0], UV[1], quadPositions, 0);
         com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y], z, UV[2], UV[3],
-                quadPositions,
-                vertexStride);
+                quadPositions, vertexStride);
         com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y] - values[HEIGHT],
-                z, UV[4], UV[5], quadPositions,
-                vertexStride * 2);
+                z, UV[4], UV[5], quadPositions, vertexStride * 2);
         com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y] - values[HEIGHT], z, UV[6], UV[7],
-                quadPositions,
-                vertexStride * 3);
+                quadPositions, vertexStride * 3);
         return quadPositions;
     }
 

@@ -28,15 +28,17 @@ public class LayerNode extends Node {
 
     transient ViewController viewController;
 
-    @Override
-    protected LayerNode createInstance(RootNode root) {
-        LayerNode copy = new LayerNode();
-        return copy;
+    protected LayerNode() {
+    }
+
+    private LayerNode(RootNode root) {
+        super(root);
+        setType(NodeType.layernode.name());
     }
 
     @Override
-    public LayerNode copy(RootNode root) {
-        LayerNode copy = createInstance(root);
+    public LayerNode createInstance(RootNode root) {
+        LayerNode copy = new LayerNode(root);
         copy.set(this);
         return copy;
     }

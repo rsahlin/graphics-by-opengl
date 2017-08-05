@@ -6,6 +6,7 @@ import static com.nucleus.vecmath.Rectangle.X;
 import static com.nucleus.vecmath.Rectangle.Y;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.geometry.ShapeBuilder;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
@@ -27,6 +28,12 @@ import com.nucleus.vecmath.Rectangle;
  *
  */
 public class Texture2D extends BaseReference {
+
+    public enum Shading {
+        flat(),
+        parametric(),
+        textured();
+    }
 
     /**
      * Name of the serialized field textureType
@@ -312,11 +319,14 @@ public class Texture2D extends BaseReference {
      * Creates an array of values that define the quad attribute values using this texture.
      * The resulting array can be used to create attributes for a quad using this texture.
      * 
+     * Should not be used - use {@link ShapeBuilder}
+     * 
      * @param rectangle Size of quad
      * @param vertexStride Number of values between vertices
      * @param z Z axis value for quad.
      * @return Array of values needed to render a quad.
      */
+    @Deprecated
     public float[] createQuadArray(Rectangle rectangle, int vertexStride, float z) {
 
         float[] values = rectangle.getValues();

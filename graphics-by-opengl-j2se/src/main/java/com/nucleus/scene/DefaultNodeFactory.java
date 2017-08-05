@@ -1,11 +1,16 @@
 package com.nucleus.scene;
 
+import java.io.IOException;
 import java.util.ArrayDeque;
 
 import com.nucleus.camera.ViewFrustum;
+import com.nucleus.common.Type;
+import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshFactory;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.scene.Node.MeshType;
+import com.nucleus.shader.ShaderProgram;
 
 /**
  * The default node factory implementation
@@ -21,8 +26,10 @@ public class DefaultNodeFactory implements NodeFactory {
 
     @Override
     public Node create(NucleusRenderer renderer, MeshFactory meshFactory, Node source,
-            RootNode root)
-            throws NodeException {
+            RootNode root) throws NodeException {
+        if (source.getType() == null) {
+            throw new NodeException("Type not set in source node - was it created programatically?");
+        }
         NodeType type = null;
         try {
             type = NodeType.valueOf(source.getType());
@@ -30,16 +37,8 @@ public class DefaultNodeFactory implements NodeFactory {
             // This means the node type is not known.
             throw new IllegalArgumentException(ILLEGAL_NODE_TYPE + source.getType());
         }
-        try {
-            Node copy = (Node) type.getTypeClass().newInstance();
-            copy.set(source);
-            copy.setRootNode(root);
-            return copy;
-        } catch (InstantiationException | IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return null;
-        }
+        Node copy = internalCreateNode(renderer, root, source, meshFactory);
+        return copy;
     }
 
     @Override
@@ -74,7 +73,7 @@ public class DefaultNodeFactory implements NodeFactory {
             viewStack.push((LayerNode) created);
             isViewNode = true;
         }
-        created.setRootNode(parent.getRootNode());
+        // created.setRootNode(parent.getRootNode());
         setViewFrustum(source, created);
         createChildNodes(renderer, meshFactory, source, created);
         if (isViewNode) {
@@ -100,6 +99,48 @@ public class DefaultNodeFactory implements NodeFactory {
             return;
         }
         node.setViewFrustum(new ViewFrustum(projection));
+    }
+
+    /**
+     * Internal method to create node
+     * 
+     * @param renderer
+     * @param source
+     * @param meshFactory
+     * @throws NodeException If there is an error creating the node
+     * @return Copy of the source node that will be prepared for usage
+     */
+    protected Node internalCreateNode(NucleusRenderer renderer, RootNode root, Node source, MeshFactory meshFactory)
+            throws NodeException {
+        try {
+            Node node = source.createInstance(root);
+            node.create();
+            // Copy properties from source node into the created node.
+            node.setProperties(source);
+            node.copyTransform(source);
+            Mesh mesh = meshFactory.createMesh(renderer, node);
+            if (mesh != null) {
+                node.addMesh(mesh, MeshType.MAIN);
+            }
+            return node;
+        } catch (IOException e) {
+            throw new NodeException(e);
+        }
+    }
+
+    @Override
+    public Node create(NucleusRenderer renderer, ShaderProgram program , Mesh.Builder builder, Type<Node> nodeType, RootNode root)
+            throws NodeException {
+        try {
+            Node node = Node.createInstance(nodeType, root);
+            Mesh mesh = builder.create();
+            if (mesh != null) {
+                node.addMesh(mesh, MeshType.MAIN);
+            }
+            return node;
+        } catch (InstantiationException | IllegalAccessException | IOException e) {
+            throw new NodeException(e);
+        }
     }
 
 }

@@ -4,7 +4,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 /**
- * Creates the classes from type names, this is for instance used when serializing as a means to use specialised type
+ * Creates the classes from type names, this is for instance used when serializing as a means to use specialized type
  * names instead of implementing classes.
  * As the implementing classes may change, leaving already serialized classnames unusable, use this method to decouple
  * serialized type names from implementing classes.

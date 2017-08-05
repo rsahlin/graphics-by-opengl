@@ -3,8 +3,11 @@ package com.nucleus.geometry;
 import java.io.IOException;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.assets.AssetManager;
+import com.nucleus.bounds.Bounds;
 import com.nucleus.geometry.ElementBuffer.Type;
 import com.nucleus.io.BaseReference;
+import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.renderer.NucleusRenderer;
@@ -97,6 +100,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         protected int indiceCount = 0;
         protected ElementBuffer.Type indiceBufferType = Type.SHORT;
         protected Mode mode;
+        protected ShapeBuilder shapeBuilder;
 
         /**
          * Creates a new builder
@@ -134,25 +138,44 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         }
 
         /**
-         * Sets the number of vertices the created mesh will have support for
+         * Fetches the texture and stores as texture to be used when creating mesh
          * 
-         * @param vertexCount Number of vertices
+         * @param textureRef
          * @return
+         * @throws IOException If the texture could not be loaded
          */
-        public Builder setVertexCount(int vertexCount) {
-            this.vertexCount = vertexCount;
+        public Builder setTexture(ExternalReference textureRef) throws IOException {
+            this.texture = AssetManager.getInstance().getTexture(renderer, textureRef);
             return this;
         }
 
         /**
-         * If specified the mesh will have support for this number of element indices
-         * If created mesh will use drawArrays this shall not be used
+         * Set mode and vertex count for array based drawing - this will not use element (indice) buffer.
+         * ie glDrawArrays() will be used to draw the mesh.
          * 
+         * @param mode The drawmode for vertices
+         * @param vertexCount Number of vertices
+         * @return
+         */
+        public Builder setArrayMode(Mode mode, int vertexCount) {
+            this.vertexCount = vertexCount;
+            this.mode = mode;
+            return this;
+        }
+
+        /**
+         * Set mode, vertexcount and element (indice) count. The created mesh will have vertexbuffer and indice buffer.
+         * When drawn glDrawElements will be used.
+         * 
+         * @param mode
+         * @param vertexCount
          * @param indiceCount
          * @return
          */
-        public Builder setIndiceCount(int indiceCount) {
+        public Builder setElementMode(Mode mode, int vertexCount, int indiceCount) {
             this.indiceCount = indiceCount;
+            this.vertexCount = vertexCount;
+            this.mode = mode;
             return this;
         }
 
@@ -164,6 +187,17 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          */
         public Builder setMaterial(Material material) {
             this.material = material;
+            return this;
+        }
+
+        /**
+         * Sets the shapebuilder to be used when building mesh shape(s)
+         * 
+         * @param shapeBuilder The shape builder, or null
+         * @return
+         */
+        public Builder setShapeBuilder(ShapeBuilder shapeBuilder) {
+            this.shapeBuilder = shapeBuilder;
             return this;
         }
 
@@ -186,8 +220,20 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         public Mesh create() throws IOException {
             validate();
             Mesh mesh = new Mesh();
-            mesh.createMesh(texture, material, vertexCount, indiceCount);
+            mesh.createMesh(texture, material, vertexCount, indiceCount, mode);
+            if (shapeBuilder != null) {
+                shapeBuilder.build(mesh);
+            }
             return mesh;
+        }
+
+        /**
+         * Calculates the bounds covering this mesh.
+         * 
+         * @return
+         */
+        public Bounds createBounds() {
+            return null;
         }
 
     }
@@ -254,18 +300,24 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
     /**
      * Creates the Mesh to be rendered, creating buffers as needed.
-     * After this method returns it shall be possible to render the mesh although it must be filled with data.
+     * After this method returns it shall be possible to render the mesh although it must be filled with data, for
+     * instance using a {@link ShapeBuilder}
      * The program will be set to the material in this mesh.
-     * The drawmode must be set before rendering the mesh
      * 
      * @param texture The texture to use, depends on mesh implementation
      * @param material
      * @param vertexCount Number of vertices to create storage for
      * @param indiceCount Number of indices in elementbuffer
+     * @param mode The drawmode, eg how primitives are drawn
      * @return
+     * @throws IllegalArgumentException If texture, material or mode is null
      */
-    public void createMesh(Texture2D texture, Material material, int vertexCount, int indiceCount) {
+    public void createMesh(Texture2D texture, Material material, int vertexCount, int indiceCount, Mode mode) {
+        if (texture == null || material == null || mode == null) {
+            throw new IllegalArgumentException("Null parameter: " + texture + ", " + material + ", " + mode);
+        }
         setTexture(texture, Texture2D.TEXTURE_0);
+        setMode(mode);
         this.material = new Material(material);
         ShaderProgram program = material.getProgram();
         mapper = new PropertyMapper(program);

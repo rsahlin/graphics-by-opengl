@@ -1,6 +1,6 @@
 package com.nucleus.scene;
 
-import com.nucleus.common.Key;
+import com.nucleus.common.Type;
 
 /**
  * The node types
@@ -8,11 +8,12 @@ import com.nucleus.common.Key;
  * @author Richard Sahlin
  *
  */
-public enum NodeType implements Key {
+public enum NodeType implements Type<Node> {
 
     node(Node.class),
     layernode(LayerNode.class),
-    switchnode(SwitchNode.class);
+    switchnode(SwitchNode.class),
+    linedrawernode(LineDrawerNode.class);
 
     private final Class<?> theClass;
 
@@ -25,12 +26,13 @@ public enum NodeType implements Key {
      * 
      * @return
      */
+    @Override
     public Class<?> getTypeClass() {
         return theClass;
     }
 
     @Override
-    public String getKey() {
+    public String getName() {
         return name();
     }
     

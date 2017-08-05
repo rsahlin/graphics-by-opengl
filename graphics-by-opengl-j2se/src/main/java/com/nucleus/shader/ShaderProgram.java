@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.AttributeUpdater.Property;
@@ -323,7 +324,12 @@ public abstract class ShaderProgram {
      * @return
      */
     public int getAttributesPerVertex() {
-        return attributesPerVertex[BufferIndex.ATTRIBUTES.index];
+        if (attributesPerVertex.length > BufferIndex.ATTRIBUTES.index) {
+            return attributesPerVertex[BufferIndex.ATTRIBUTES.index];
+        } else {
+            // No attribute buffer for this program.
+            return 0;
+        }
     }
 
     /**
@@ -877,6 +883,16 @@ public abstract class ShaderProgram {
         uniforms[offset++] = ambient[1];
         uniforms[offset++] = ambient[2];
         uniforms[offset++] = ambient[3];
+    }
+
+    /**
+     * Returns the key value for this shader program, this is the classname and possible name of shader used.
+     * This method is used by {@link AssetManager} when programs are compiled and stored.
+     * 
+     * @return Key value for this shader program.
+     */
+    public String getKey() {
+        return getClass().getCanonicalName();
     }
 
 }

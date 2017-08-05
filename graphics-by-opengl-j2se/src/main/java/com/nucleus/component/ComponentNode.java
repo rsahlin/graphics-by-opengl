@@ -22,23 +22,18 @@ public class ComponentNode extends Node implements ComponentController {
     @SerializedName("components")
     private ArrayList<Component> components = new ArrayList<>();
 
+    protected ComponentNode() {
+    }
     /**
      * Default constructor
      */
-    public ComponentNode() {
-        super();
+    private ComponentNode(RootNode root) {
+        super(root);
     }
 
     @Override
-    protected ComponentNode createInstance(RootNode root) {
-        ComponentNode node = new ComponentNode();
-        node.setRootNode(root);
-        return node;
-    }
-
-    @Override
-    public Node copy(RootNode root) {
-        ComponentNode copy = createInstance(root);
+    public Node createInstance(RootNode root) {
+        ComponentNode copy = new ComponentNode(root);
         copy.set(this);
         return copy;
     }

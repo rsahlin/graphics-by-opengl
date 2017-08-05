@@ -1,6 +1,5 @@
 package com.nucleus.renderer;
 
-import java.io.IOException;
 import java.nio.Buffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -8,7 +7,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.nucleus.SimpleLogger;
-import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.camera.ViewPort;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
@@ -17,7 +15,6 @@ import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
-import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.VertexBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
@@ -30,12 +27,9 @@ import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.shader.VertexTranslateProgram;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
-import com.nucleus.texturing.Untextured.Shading;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -152,24 +146,25 @@ class BaseRenderer implements NucleusRenderer {
         initialized = true;
         this.surfaceConfig = surfaceConfig;
         rendererInfo = new RendererInfo(gles);
-
-        try {
-            lineDrawer = new Node();
-            Mesh.Builder builder = new Mesh.Builder(this);
-            builder.setIndiceCount(600);
-            builder.setVertexCount(400);
-            Material m = new Material();
-            VertexTranslateProgram program = (VertexTranslateProgram) AssetManager.getInstance()
-                    .getProgram(this, new VertexTranslateProgram(Shading.flat));
-            m.setProgram(program);
-            Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
-            builder.setMaterial(m);
-            builder.setTexture(tex);
-            builder.setMode(Mode.LINES);
-            Mesh mesh = builder.create();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        /**
+         * try {
+         * lineDrawer = new Node();
+         * Mesh.Builder builder = new Mesh.Builder(this);
+         * builder.setIndiceCount(600);
+         * builder.setVertexCount(400);
+         * Material m = new Material();
+         * VertexTranslateProgram program = (VertexTranslateProgram) AssetManager.getInstance()
+         * .getProgram(this, new VertexTranslateProgram(Shading.flat));
+         * m.setProgram(program);
+         * Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
+         * builder.setMaterial(m);
+         * builder.setTexture(tex);
+         * builder.setMode(Mode.LINES);
+         * Mesh mesh = builder.create();
+         * } catch (IOException e) {
+         * throw new RuntimeException(e);
+         * }
+         */
     }
 
 
