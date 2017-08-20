@@ -129,11 +129,13 @@ public class DefaultNodeFactory implements NodeFactory {
     }
 
     @Override
-    public Node create(NucleusRenderer renderer, ShaderProgram program , Mesh.Builder builder, Type<Node> nodeType, RootNode root)
+    public Node create(NucleusRenderer renderer, ShaderProgram program, Mesh.Builder<?> builder, Type<Node> nodeType,
+            RootNode root)
             throws NodeException {
         try {
             Node node = Node.createInstance(nodeType, root);
-            Mesh mesh = builder.create();
+            // TODO Fix generics so that cast is not needed
+            Mesh mesh = (Mesh) builder.create();
             if (mesh != null) {
                 node.addMesh(mesh, MeshType.MAIN);
             }

@@ -91,7 +91,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
     }
 
-    public static class Builder {
+    public static class Builder<T> {
 
         protected NucleusRenderer renderer;
         protected Texture2D texture;
@@ -119,34 +119,44 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * Sets the drawmode for the mesh
          * 
          * @param mode
-         * @return
          */
-        public Builder setMode(Mode mode) {
+        public void setMode(Mode mode) {
             this.mode = mode;
-            return this;
         }
 
         /**
          * Sets the texture to use for the created mesh
          * 
          * @param texture
-         * @return
          */
-        public Builder setTexture(Texture2D texture) {
+        public void setTexture(Texture2D texture) {
             this.texture = texture;
-            return this;
+        }
+
+        /**
+         * Creates the mesh for the arguments supplied to this builder.
+         * 
+         * @return The mesh
+         * @throws IllegalArgumentException If the needed arguments has not been set
+         */
+        public T create() throws IOException {
+            validate();
+            Mesh mesh = new Mesh();
+            mesh.createMesh(texture, material, vertexCount, indiceCount, mode);
+            if (shapeBuilder != null) {
+                shapeBuilder.build(mesh);
+            }
+            return (T) mesh;
         }
 
         /**
          * Fetches the texture and stores as texture to be used when creating mesh
          * 
          * @param textureRef
-         * @return
          * @throws IOException If the texture could not be loaded
          */
-        public Builder setTexture(ExternalReference textureRef) throws IOException {
+        public void setTexture(ExternalReference textureRef) throws IOException {
             this.texture = AssetManager.getInstance().getTexture(renderer, textureRef);
-            return this;
         }
 
         /**
@@ -157,10 +167,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * @param vertexCount Number of vertices
          * @return
          */
-        public Builder setArrayMode(Mode mode, int vertexCount) {
+        public void setArrayMode(Mode mode, int vertexCount) {
             this.vertexCount = vertexCount;
             this.mode = mode;
-            return this;
         }
 
         /**
@@ -170,24 +179,20 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * @param mode
          * @param vertexCount
          * @param indiceCount
-         * @return
          */
-        public Builder setElementMode(Mode mode, int vertexCount, int indiceCount) {
+        public void setElementMode(Mode mode, int vertexCount, int indiceCount) {
             this.indiceCount = indiceCount;
             this.vertexCount = vertexCount;
             this.mode = mode;
-            return this;
         }
 
         /**
          * Sets the material to be used in the mesh
          * 
          * @param material
-         * @return
          */
-        public Builder setMaterial(Material material) {
+        public void setMaterial(Material material) {
             this.material = material;
-            return this;
         }
 
         /**
@@ -196,9 +201,8 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * @param shapeBuilder The shape builder, or null
          * @return
          */
-        public Builder setShapeBuilder(ShapeBuilder shapeBuilder) {
+        public void setShapeBuilder(ShapeBuilder shapeBuilder) {
             this.shapeBuilder = shapeBuilder;
-            return this;
         }
 
         /**
@@ -211,21 +215,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             }
         }
 
-        /**
-         * Creates the mesh for the arguments supplied to this builder.
-         * 
-         * @return The mesh
-         * @throws IllegalArgumentException If the needed arguments has not been set
-         */
-        public Mesh create() throws IOException {
-            validate();
-            Mesh mesh = new Mesh();
-            mesh.createMesh(texture, material, vertexCount, indiceCount, mode);
-            if (shapeBuilder != null) {
-                shapeBuilder.build(mesh);
-            }
-            return mesh;
-        }
 
         /**
          * Calculates the bounds covering this mesh.
@@ -280,6 +269,8 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     transient protected Mode mode;
     transient protected Material material;
+
+    transient private static Builder<Mesh> builder;
 
     /**
      * Creates a new empty mesh, the attribute/index buffers must be prepared before rendering can take place.

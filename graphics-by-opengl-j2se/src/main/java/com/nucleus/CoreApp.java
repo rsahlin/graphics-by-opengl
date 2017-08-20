@@ -289,7 +289,7 @@ public class CoreApp {
               TexParameter.CLAMP });
         Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), "texture",
                 new ExternalReference("assets/splash.png"), RESOLUTION.HD, texParam, 1);
-        Mesh.Builder meshBuilder = new Mesh.Builder(renderer);
+        Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
         meshBuilder.setElementMode(Mode.TRIANGLES, 4, 6);
         meshBuilder.setTexture(texture);
         VertexTranslateProgram vt = (VertexTranslateProgram) AssetManager.getInstance().getProgram(renderer,
@@ -298,7 +298,8 @@ public class CoreApp {
         material.setProgram(vt);
         Configuration configuration = new Configuration(0.2f,0.2f,0f, 1, 0);
         RectangleShapeBuilder shapeBuilder = new RectangleShapeBuilder(configuration);
-        meshBuilder.setMaterial(material).setShapeBuilder(shapeBuilder);
+        meshBuilder.setMaterial(material);
+        meshBuilder.setShapeBuilder(shapeBuilder);
         builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
                 .setNode(NodeType.layernode);
         RootNode root = builder.create();

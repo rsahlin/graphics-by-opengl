@@ -11,7 +11,7 @@ import com.nucleus.shader.ShaderProgram;
  * @author Richard Sahlin
  *
  */
-public class MeshBuilder {
+public class MeshBuilder<T> {
 
     /**
      * Sets 3 component position in the destination array.

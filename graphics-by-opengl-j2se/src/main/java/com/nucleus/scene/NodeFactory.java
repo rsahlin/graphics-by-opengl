@@ -47,7 +47,7 @@ public interface NodeFactory {
      * @return
      * @throws NodeException
      */
-    public Node create(NucleusRenderer renderer, ShaderProgram program, Mesh.Builder builder, Type<Node> nodeType,
+    public Node create(NucleusRenderer renderer, ShaderProgram program, Mesh.Builder<?> builder, Type<Node> nodeType,
             RootNode root) throws NodeException;
 
     /**
