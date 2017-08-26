@@ -2,7 +2,6 @@ package com.nucleus.scene;
 
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
-import com.nucleus.convolution.ConvolutionProgram;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.ShaderProgram;
@@ -66,7 +65,7 @@ public class BaseRootNode extends RootNode {
         public RootNode create() throws NodeException {
             validate();
             BaseRootNode root = new BaseRootNode();
-            Node created = nodeFactory.create(renderer, new ConvolutionProgram(), builder, nodeType, root);
+            Node created = nodeFactory.create(renderer, program, builder, nodeType, root);
             ViewFrustum vf = new ViewFrustum();
             vf.setOrthoProjection(-0.5f, 0.5f, -0.5f, 0.5f, 0, 10);
             created.setViewFrustum(vf);

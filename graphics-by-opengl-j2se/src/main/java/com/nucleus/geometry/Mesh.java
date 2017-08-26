@@ -10,6 +10,7 @@ import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.renderer.BufferObjectsFactory;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.Texture2D;
@@ -91,7 +92,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
     }
 
-    public static class Builder<T> {
+    public static class Builder<T extends Mesh> extends MeshBuilder<Mesh> {
 
         protected NucleusRenderer renderer;
         protected Texture2D texture;
@@ -139,14 +140,22 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * @return The mesh
          * @throws IllegalArgumentException If the needed arguments has not been set
          */
-        public T create() throws IOException {
+        public Mesh create() throws IOException {
             validate();
-            Mesh mesh = new Mesh();
+            Mesh mesh = createMesh();
             mesh.createMesh(texture, material, vertexCount, indiceCount, mode);
             if (shapeBuilder != null) {
                 shapeBuilder.build(mesh);
             }
-            return (T) mesh;
+            if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
+                BufferObjectsFactory.getInstance().createVBOs(renderer, mesh);
+            }
+            return mesh;
+        }
+
+        @Override
+        protected Mesh createMesh() {
+            return new Mesh();
         }
 
         /**
@@ -269,8 +278,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     transient protected Mode mode;
     transient protected Material material;
-
-    transient private static Builder<Mesh> builder;
 
     /**
      * Creates a new empty mesh, the attribute/index buffers must be prepared before rendering can take place.
@@ -515,7 +522,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             indices.setBufferName(names[offset++]);
         }
         for (VertexBuffer b : attributes) {
-            b.setBufferName(names[offset++]);
+            if (b != null) {
+                b.setBufferName(names[offset++]);
+            }
         }
     }
 
@@ -527,9 +536,11 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * @return
      */
     public int getBufferNameCount() {
-        int count = attributes.length;
-        if (indices != null) {
-            count++;
+        int count = indices != null ? 1 : 0;
+        for (VertexBuffer vb : attributes) {
+            if (vb != null) {
+                count++;
+            }
         }
         return count;
     }

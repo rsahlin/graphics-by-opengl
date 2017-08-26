@@ -11,7 +11,14 @@ import com.nucleus.shader.ShaderProgram;
  * @author Richard Sahlin
  *
  */
-public class MeshBuilder<T> {
+public abstract class MeshBuilder<T> {
+
+    /**
+     * Create a new empty instance of a mesh.
+     * 
+     * @return
+     */
+    protected abstract T createMesh();
 
     /**
      * Sets 3 component position in the destination array.

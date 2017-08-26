@@ -3,8 +3,21 @@ package com.nucleus.geometry;
 import static com.nucleus.geometry.VertexBuffer.XYZUV_COMPONENTS;
 
 import com.nucleus.geometry.Mesh.BufferIndex;
+import com.nucleus.texturing.Texture2D;
+import com.nucleus.vecmath.Rectangle;
 
+/**
+ * Use this builder to create rectangles in a mesh.
+ * Will use indexbuffer and vertexbuffer, to use resulting mesh draw using elements.
+ * 
+ *
+ */
 public class RectangleShapeBuilder extends ShapeBuilder {
+
+    /**
+     * Default UV coordinates for a ful texture frame
+     */
+    public final static float[] UV_COORDINATES = new float[] { 0, 0, 1, 0, 1, 1, 0, 1 };
 
     /**
      * Number of vertices for an quad, works with indexed, triangle strip and triangle fan.
@@ -18,14 +31,52 @@ public class RectangleShapeBuilder extends ShapeBuilder {
 
     public static class Configuration {
 
+        /**
+         * Inits the builder to create rectangles with specified width and height, each rectangle will have UV covering
+         * the whole quad.
+         * 
+         * @param width
+         * @param height
+         * @param z
+         * @param count
+         * @param startVertex
+         */
         public Configuration(float width, float height, float z, int count, int startVertex) {
-            this.data = buildQuadPositionsUV(width, height, -width / 2, height / 2, z);
+            this.rectangle = new Rectangle(-width / 2, height / 2, width, height);
+            this.count = count;
+            this.startVertex = startVertex;
+            this.z = z;
+        }
+
+        /**
+         * Inits the builder to create rectangles with the specified Rectangle size
+         * 
+         * @param rectangle
+         * @param z
+         * @param count
+         * @param startVertex
+         */
+        public Configuration(Rectangle rectangle, float z, int count, int startVertex) {
+            this.rectangle = rectangle;
+            this.count = count;
+            this.startVertex = startVertex;
+            this.z = z;
+        }
+
+        /**
+         * Inits the builder to only create indexbuffer, use this for meshes where the rectangle sizes are created later
+         * 
+         * @param count
+         * @param startVertex
+         */
+        public Configuration(int count, int startVertex) {
             this.count = count;
             this.startVertex = startVertex;
         }
 
-        protected float[] data;
+        protected Rectangle rectangle;
         protected int count = 1;
+        protected float z;
         /**
          * Destination vertex offset
          */
@@ -41,11 +92,20 @@ public class RectangleShapeBuilder extends ShapeBuilder {
 
     @Override
     public void build(Mesh mesh) {
+        float[] data = null;
         VertexBuffer attributes = mesh.getVerticeBuffer(BufferIndex.VERTICES);
-        for (int i = 0; i < configuration.count; i++) {
-            attributes.setPositionUV(configuration.data, 0, configuration.startVertex * attributes.getFloatStride(),
-                    configuration.count * QUAD_VERTICES);
-
+        int stride = attributes.getFloatStride();
+        if (configuration.rectangle != null) {
+            data = mesh.getTexture(Texture2D.TEXTURE_0).createQuadArray(configuration.rectangle,
+                    stride, configuration.z);
+        }
+        int startIndex = configuration.startVertex * stride;
+        if (data != null) {
+            stride = stride * QUAD_VERTICES;
+            for (int i = 0; i < configuration.count; i++) {
+                attributes.setPositionUV(data, 0, startIndex, QUAD_VERTICES);
+                startIndex += stride;
+            }
         }
         // Check if indicebuffer shall be built
         ElementBuffer indices = mesh.getElementBuffer();
@@ -68,19 +128,21 @@ public class RectangleShapeBuilder extends ShapeBuilder {
      * @param x X position of first corner
      * @param y Y position of first corner
      * @param z position
-     * @param vertexStride, number of floats to add from one vertex to the next. 5 for a packed array with xyz and uv
+     * @param uv UV coordinates, or null to use default
      * @return array containing 4 vertices for a quad with the specified size, the size of the array will be
      * vertexStride * 4
      */
-    public static float[] buildQuadPositionsUV(float width, float height, float x, float y, float z) {
-
+    public static float[] buildQuadPositionsUV(float width, float height, float x, float y, float z, float[] uv) {
+        if (uv == null) {
+            uv = UV_COORDINATES;
+        }
         float[] quadPositions = new float[XYZUV_COMPONENTS * 4];
-        com.nucleus.geometry.MeshBuilder.setPositionUV(x, y, z, 0, 0, quadPositions, 0);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(width + x, y, z, 1, 0, quadPositions,
+        com.nucleus.geometry.MeshBuilder.setPositionUV(x, y, z, uv[0], uv[1], quadPositions, 0);
+        com.nucleus.geometry.MeshBuilder.setPositionUV(width + x, y, z, uv[2], uv[3], quadPositions,
                 XYZUV_COMPONENTS);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(width + x, y - height, z, 1, 1, quadPositions,
+        com.nucleus.geometry.MeshBuilder.setPositionUV(width + x, y - height, z, uv[4], uv[5], quadPositions,
                 XYZUV_COMPONENTS * 2);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(x, y - height, z, 0, 1, quadPositions,
+        com.nucleus.geometry.MeshBuilder.setPositionUV(x, y - height, z, uv[6], uv[7], quadPositions,
                 XYZUV_COMPONENTS * 3);
 
         return quadPositions;

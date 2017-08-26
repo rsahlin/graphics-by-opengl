@@ -34,6 +34,7 @@ public class ElementBuilder {
         }
 
         ShortBuffer buffer = quadStorage.indices.asShortBuffer();
+        buffer.position(0);
         short[] quadIndices = new short[6];
         for (int i = 0; i < count; i++) {
             quadIndices[0] = (short) index;

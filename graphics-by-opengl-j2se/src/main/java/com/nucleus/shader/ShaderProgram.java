@@ -363,12 +363,15 @@ public abstract class ShaderProgram {
     protected VertexBuffer createAttributeBuffer(BufferIndex index, int verticeCount, Mesh mesh) {
         switch (index) {
         case ATTRIBUTES:
-            VertexBuffer buffer = new VertexBuffer(verticeCount, getAttributesPerVertex(),
-                    GLES20.GL_FLOAT);
-            if (mesh instanceof Consumer) {
-                ((Consumer) mesh).bindAttributeBuffer(buffer);
+            int attrs = getAttributesPerVertex();
+            if (attrs > 0) {
+                VertexBuffer buffer = new VertexBuffer(verticeCount, attrs, GLES20.GL_FLOAT);
+                if (mesh instanceof Consumer) {
+                    ((Consumer) mesh).bindAttributeBuffer(buffer);
+                }
+                return buffer;
             }
-            return buffer;
+            return null;
         case VERTICES:
             return new VertexBuffer(verticeCount, getVertexStride(), GLES20.GL_FLOAT);
         case ATTRIBUTES_STATIC:
@@ -389,8 +392,10 @@ public abstract class ShaderProgram {
     public void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
         for (int i = 0; i < attributeVariables.length; i++) {
             VertexBuffer buffer = mesh.getVerticeBuffer(i);
-            gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attributeVariables[i]);
-            GLUtils.handleError(gles, "glVertexAttribPointers ");
+            if (buffer != null) {
+                gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attributeVariables[i]);
+                GLUtils.handleError(gles, "glVertexAttribPointers ");
+            }
         }
     }
 
