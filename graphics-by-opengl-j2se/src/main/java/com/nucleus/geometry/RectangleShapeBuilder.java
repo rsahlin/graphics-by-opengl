@@ -1,9 +1,14 @@
 package com.nucleus.geometry;
 
 import static com.nucleus.geometry.VertexBuffer.XYZUV_COMPONENTS;
+import static com.nucleus.vecmath.Rectangle.HEIGHT;
+import static com.nucleus.vecmath.Rectangle.WIDTH;
+import static com.nucleus.vecmath.Rectangle.X;
+import static com.nucleus.vecmath.Rectangle.Y;
 
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.TiledTexture2D;
 import com.nucleus.vecmath.Rectangle;
 
 /**
@@ -96,8 +101,8 @@ public class RectangleShapeBuilder extends ShapeBuilder {
         VertexBuffer attributes = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         int stride = attributes.getFloatStride();
         if (configuration.rectangle != null) {
-            data = mesh.getTexture(Texture2D.TEXTURE_0).createQuadArray(configuration.rectangle,
-                    stride, configuration.z);
+            data = createQuadArray(configuration.rectangle, mesh.getTexture(Texture2D.TEXTURE_0), stride,
+                    configuration.z);
         }
         int startIndex = configuration.startVertex * stride;
         if (data != null) {
@@ -146,6 +151,87 @@ public class RectangleShapeBuilder extends ShapeBuilder {
                 XYZUV_COMPONENTS * 3);
 
         return quadPositions;
+    }
+
+    /**
+     * Creates an array of values that define the quad attribute values using the texture.
+     * 
+     * @param rectangle Size of quad
+     * @param texture
+     * @param vertexStride Number of values between vertices
+     * @param z Z axis value for quad.
+     * @return Array of values needed to render a quad.
+     */
+
+    public static float[] createQuadArray(Rectangle rectangle, Texture2D texture, int vertexStride, float z) {
+        float[] values = rectangle.getValues();
+        // TODO Should it be possible to pass UV to this method?
+        if (vertexStride > 4) {
+            return createQuadArrayUV(values, z, vertexStride, createUVCoordinates(texture));
+        } else {
+            return createQuadArray(values, z, vertexStride);
+        }
+    }
+
+    /**
+     * Creates an array of vertex and UV coordinates.
+     * 
+     * @param values x, y, width, height of quad. X, Y is upper left corner.
+     * @param z
+     * @param vertexStride
+     * @param uv
+     * @return Array with vertices and uv for a quad
+     */
+    protected static float[] createQuadArrayUV(float[] values, float z, int vertexStride, float[] uv) {
+        float[] quadPositions = new float[vertexStride * 4];
+        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y], z, uv[0], uv[1], quadPositions, 0);
+        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y], z, uv[2], uv[3],
+                quadPositions,
+                vertexStride);
+        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y] - values[HEIGHT],
+                z, uv[4], uv[5], quadPositions, vertexStride * 2);
+        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y] - values[HEIGHT], z, uv[6], uv[7],
+                quadPositions,
+                vertexStride * 3);
+        return quadPositions;
+    }
+
+    /**
+     * Creates an array of vertex coordinates.
+     * 
+     * @param values x, y, width, height of quad. X, Y is upper left corner.
+     * @param z
+     * @param vertexStride
+     * @return
+     */
+    protected static float[] createQuadArray(float[] values, float z, int vertexStride) {
+        float[] quadPositions = new float[vertexStride * 4];
+        com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y], z, quadPositions, 0);
+        com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y], z,
+                quadPositions, vertexStride);
+        com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y] - values[HEIGHT], z,
+                quadPositions, vertexStride * 2);
+        com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y] - values[HEIGHT], z,
+                quadPositions, vertexStride * 3);
+        return quadPositions;
+    }
+
+    protected static float[] createUVCoordinates(Texture2D texture) {
+        switch (texture.textureType) {
+        case Texture2D:
+            return UV_COORDINATES;
+        case TiledTexture2D:
+            TiledTexture2D t = (TiledTexture2D) texture;
+            float maxU = (1f / (t.getTileWidth()));
+            float maxV = (1f / (t.getTileHeight()));
+            return new float[] { 0, 0, maxU, 0, maxU, maxV, 0, maxV };
+        case UVTexture2D:
+            // Should normally not allocate UV coordinates.
+        case Untextured:
+            // Should normally not allocate UV coordinates.
+        default:
+            throw new IllegalArgumentException("Should not use UV coordinates for texture: " + texture.textureType);
+        }
     }
 
 }

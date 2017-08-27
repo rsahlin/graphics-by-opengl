@@ -1,13 +1,6 @@
 package com.nucleus.texturing;
 
-import static com.nucleus.vecmath.Rectangle.HEIGHT;
-import static com.nucleus.vecmath.Rectangle.WIDTH;
-import static com.nucleus.vecmath.Rectangle.X;
-import static com.nucleus.vecmath.Rectangle.Y;
-
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.geometry.RectangleShapeBuilder;
-import com.nucleus.geometry.ShapeBuilder;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
@@ -316,73 +309,6 @@ public class Texture2D extends BaseReference {
                 + getLevels() + " levels");
     }
     
-    /**
-     * Creates an array of values that define the quad attribute values using this texture.
-     * The resulting array can be used to create attributes for a quad using this texture.
-     * 
-     * Should not be used - use {@link ShapeBuilder}
-     * Texture should only be used to create UV values - for instance as needed by the tiled texture.
-     * 
-     * @param rectangle Size of quad
-     * @param vertexStride Number of values between vertices
-     * @param z Z axis value for quad.
-     * @return Array of values needed to render a quad.
-     */
-    @Deprecated
-    public float[] createQuadArray(Rectangle rectangle, int vertexStride, float z) {
-        float[] values = rectangle.getValues();
-        // TODO Should it be possible to pass UV to this method?
-        if (vertexStride > 4) {
-            return createQuadArrayUV(values, z, vertexStride, RectangleShapeBuilder.UV_COORDINATES);
-        }
-        else
-            return createQuadArray(values, z, vertexStride);
-    }
-
-    /**
-     * Creates an array of vertex and UV coordinates.
-     * 
-     * @param values x, y, width, height of quad. X, Y is upper left corner.
-     * @param z
-     * @param vertexStride
-     * @param uv
-     * @return Array with vertices and uv for a quad
-     */
-    protected float[] createQuadArrayUV(float[] values, float z, int vertexStride, float[] uv) {
-        float[] quadPositions = new float[vertexStride * 4];
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y], z, uv[0], uv[1], quadPositions, 0);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y], z, uv[2], uv[3],
-                quadPositions,
-                vertexStride);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y] - values[HEIGHT],
-                z, uv[4], uv[5], quadPositions, vertexStride * 2);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y] - values[HEIGHT], z, uv[6], uv[7],
-                quadPositions,
-                vertexStride * 3);
-        return quadPositions;
-    }
-
-    /**
-     * Creates an array of vertex and UV coordinates.
-     * 
-     * @param values x, y, width, height of quad. X, Y is upper left corner.
-     * @param z
-     * @param vertexStride
-     * @return
-     */
-    protected float[] createQuadArray(float[] values, float z, int vertexStride) {
-        float[] quadPositions = new float[vertexStride * 4];
-        com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y], z, quadPositions, 0);
-        com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y], z,
-                quadPositions, vertexStride);
-        com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y] - values[HEIGHT], z,
-                quadPositions, vertexStride * 2);
-        com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y] - values[HEIGHT], z,
-                quadPositions, vertexStride * 3);
-        return quadPositions;
-
-    }
-
     /**
      * Calculates a normalized rectangle that covers one frame of this texture, based on size of the Window
      * and the source resolution of this texture.

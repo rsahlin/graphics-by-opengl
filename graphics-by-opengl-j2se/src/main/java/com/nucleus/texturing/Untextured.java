@@ -46,15 +46,6 @@ public class Untextured extends Texture2D {
         return shading;
     }
 
-    @Override
-    public float[] createQuadArray(Rectangle rectangle, int vertexStride, float z) {
-        if (shading == Shading.parametric) {
-            return createQuadPositionsUVIndexed(rectangle, vertexStride, 0,
-                    new float[] { -1, 1, 1, 1, 1, -1, -1, -1 });
-        }
-        return super.createQuadArray(rectangle, vertexStride, z);
-    }
-
     public float[] createQuadPositionsUVIndexed(Rectangle rectangle, int vertexStride, float z, float[] UV) {
         float[] values = rectangle.getValues();
         // TODO How to handle Y axis going other direction?

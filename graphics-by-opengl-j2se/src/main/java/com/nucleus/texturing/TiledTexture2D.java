@@ -1,15 +1,9 @@
 package com.nucleus.texturing;
 
-import static com.nucleus.vecmath.Rectangle.HEIGHT;
-import static com.nucleus.vecmath.Rectangle.WIDTH;
-import static com.nucleus.vecmath.Rectangle.X;
-import static com.nucleus.vecmath.Rectangle.Y;
-
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.vecmath.Axis;
-import com.nucleus.vecmath.Rectangle;
 
 /**
  * A texture that can be used for tiling, ie using a texture atlas where many images/frames are stored
@@ -112,28 +106,6 @@ public class TiledTexture2D extends Texture2D {
      */
     public int[] getTileSize() {
         return tile;
-    }
-
-    @Override
-    public float[] createQuadArray(Rectangle rectangle, int vertexStride, float z) {
-
-        float[] values = rectangle.getValues();
-        // Calc max U and V
-        float maxU = (1f / (getTileWidth()));
-        float maxV = (1f / (getTileHeight()));
-
-        // TODO How to handle Y axis going other direction?
-        float[] quadPositions = new float[vertexStride * 4];
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y],
-                z, 0, 0, quadPositions, 0);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y], z, maxU, 0, quadPositions,
-                vertexStride);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y] - values[HEIGHT],
-                z, maxU, maxV, quadPositions,
-                vertexStride * 2);
-        com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y] - values[HEIGHT], z, 0, maxV, quadPositions,
-                vertexStride * 3);
-        return quadPositions;
     }
 
 }
