@@ -15,6 +15,7 @@ import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
+import com.nucleus.mmi.ObjectInputListener;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Rectangle;
@@ -155,6 +156,11 @@ public class Node extends BaseReference {
     transient protected RootNode rootNode;
 
     /**
+     * Set this to get callbacks on MMI events for this node, handled by {@link NodeInputListener}
+     */
+    transient protected ObjectInputListener objectInputListener;
+
+    /**
      * Constructor user when loading node from scene
      */
     protected Node() {
@@ -264,6 +270,25 @@ public class Node extends BaseReference {
      */
     public Producer getAttributeProducer() {
         return attributeProducer;
+    }
+
+    /**
+     * Returns the {@link ObjectInputListener}, or null if not set.
+     * This method should normally not be called, it is handled by {@link NodeInputListener}
+     * 
+     * @return The {@link ObjectInputListener} for this node or null if not set
+     */
+    protected ObjectInputListener getObjectInputListener() {
+        return objectInputListener;
+    }
+
+    /**
+     * Sets the {@link ObjectInputListener} for this node, to be handle by the {@link NodeInputListener}
+     * 
+     * @param objectInputListener
+     */
+    public void setObjectInputListener(ObjectInputListener objectInputListener) {
+        this.objectInputListener = objectInputListener;
     }
 
     /**

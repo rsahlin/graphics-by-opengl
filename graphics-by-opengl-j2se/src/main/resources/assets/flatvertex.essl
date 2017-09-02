@@ -1,6 +1,6 @@
 /* Copyright 2017 Richard Sahlin
  * Vertex shader for normal vertex transform with position for each vertex.
- * Can be used for instance for line drawing
+ * Can be used for instance for line drawing or drawing quads
  * @author Richard Sahlin
  */
 #version 100

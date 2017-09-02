@@ -63,6 +63,7 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
             if (node instanceof MMIEventListener) {
                 ((MMIEventListener) node).onInputEvent(event);
             }
+            ObjectInputListener listener = node.getObjectInputListener();
             switch (event.getAction()) {
             case ACTIVE:
                 down[0] = position[0];
@@ -73,15 +74,15 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
                     Property p = Property.create(onclick);
                     EventManager.getInstance().post(node, p.getKey(), p.getValue());
                 }
-                if (node instanceof ObjectInputListener) {
-                    ((ObjectInputListener) node).onClick(event.getPointerData().getCurrent());
+                if (listener != null) {
+                    listener.onClick(event.getPointerData().getCurrent());
                 }
                 return true;
             case INACTIVE:
                 break;
             case MOVE:
-                if (node instanceof ObjectInputListener) {
-                    ((ObjectInputListener) node).onDrag(event.getPointerData());
+                if (listener != null) {
+                    listener.onDrag(event.getPointerData());
                 }
                 break;
             case ZOOM:
