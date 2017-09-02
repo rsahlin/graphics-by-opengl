@@ -30,7 +30,6 @@ import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewController;
 import com.nucleus.shader.VertexTranslateProgram;
-import com.nucleus.texturing.TexParameter;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
@@ -307,9 +306,7 @@ public class CoreApp {
         rs.setDepthFunc(GLES20.GL_NONE);
 
         BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
-        TextureParameter texParam = new TextureParameter();
-        texParam.setValues(new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST, TexParameter.CLAMP,
-                TexParameter.CLAMP });
+        TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
         Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), "texture",
                 new ExternalReference("assets/splash.png"), RESOLUTION.HD, texParam, 1);
         Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
@@ -319,10 +316,8 @@ public class CoreApp {
                 new VertexTranslateProgram(Texture2D.Shading.textured));
         Material material = new Material();
         material.setProgram(vt);
-        Configuration configuration = new Configuration(0.2f, 0.2f, 0f, 1, 0);
-        RectangleShapeBuilder shapeBuilder = new RectangleShapeBuilder(configuration);
         meshBuilder.setMaterial(material);
-        meshBuilder.setShapeBuilder(shapeBuilder);
+        meshBuilder.setShapeBuilder(new RectangleShapeBuilder(new Configuration(0.2f, 0.2f, 0f, 1, 0)));
         builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
                 .setNode(NodeType.layernode);
         RootNode root = builder.create();

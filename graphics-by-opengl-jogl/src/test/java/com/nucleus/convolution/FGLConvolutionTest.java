@@ -21,7 +21,6 @@ import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node.MeshType;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.texturing.Convolution;
-import com.nucleus.texturing.TexParameter;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
@@ -85,9 +84,7 @@ public class FGLConvolutionTest extends NucleusApplication implements FrameListe
         ViewFrustum vf = new ViewFrustum();
         vf.setOrthoProjection(-0.5f, 0.5f, 0.5f, -0.5f, 0, 10);
         node.setViewFrustum(vf);
-        TextureParameter texParam = new TextureParameter();
-        texParam.setValues(new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST, TexParameter.CLAMP,
-                TexParameter.CLAMP });
+        TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
         Texture2D tex = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(),
                 "texture", new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, texParam, 1);
         // c.buildMesh(mesh, tex, 1f, 1f, 0, kernel[kernelIndex]);
