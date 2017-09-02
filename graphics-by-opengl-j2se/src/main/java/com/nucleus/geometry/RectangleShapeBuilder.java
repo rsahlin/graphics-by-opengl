@@ -20,7 +20,7 @@ import com.nucleus.vecmath.Rectangle;
 public class RectangleShapeBuilder extends ShapeBuilder {
 
     /**
-     * Default UV coordinates for a ful texture frame
+     * Default UV coordinates for a full texture frame
      */
     public final static float[] UV_COORDINATES = new float[] { 0, 0, 1, 0, 1, 1, 0, 1 };
 

@@ -380,6 +380,7 @@ public abstract class JOGLGLEWindow
             glWindow.setFullscreen(false);
             glWindow.setPosition(50, 50);
         } else {
+            coreApp.setDestroyFlag();
             glWindow.destroy();
             System.exit(0);
         }

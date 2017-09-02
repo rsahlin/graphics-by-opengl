@@ -36,6 +36,7 @@ public class NucleusApplication implements CoreAppStarter, WindowListener {
 
     /**
      * Creates a new application starter with the specified renderer and client main class implementation.
+     * 
      * @param args
      * @param version
      * @param clientClass Must implement {@link ClientApplication}
@@ -44,7 +45,7 @@ public class NucleusApplication implements CoreAppStarter, WindowListener {
     public NucleusApplication(String[] args, Renderers version, Class<?> clientClass) {
         SimpleLogger.setLogger(new J2SELogger());
         if (clientClass == null) {
-        	throw new IllegalArgumentException("ClientClass is null");
+            throw new IllegalArgumentException("ClientClass is null");
         }
         this.clientClass = clientClass;
         setProperties(args);
@@ -101,8 +102,9 @@ public class NucleusApplication implements CoreAppStarter, WindowListener {
 
     @Override
     public void createCoreApp(int width, int height) {
-    	NucleusRenderer renderer = RendererFactory.getRenderer(window.getGLESWrapper(), new J2SEImageFactory(), new J2SEMatrixEngine());
-    	coreApp = CoreApp.createCoreApp(width, height, renderer, clientClass);
+        NucleusRenderer renderer = RendererFactory.getRenderer(window.getGLESWrapper(), new J2SEImageFactory(),
+                new J2SEMatrixEngine());
+        coreApp = CoreApp.createCoreApp(width, height, renderer, clientClass);
         window.setCoreApp(coreApp);
     }
 

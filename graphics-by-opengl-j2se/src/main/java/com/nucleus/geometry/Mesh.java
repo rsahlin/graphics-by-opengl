@@ -579,12 +579,14 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     }
 
     private void deleteVBO(NucleusRenderer renderer) {
-        if (indices.getBufferName() > 0) {
+        if (indices != null && indices.getBufferName() > 0) {
             renderer.deleteBuffers(1, new int[] { indices.getBufferName() }, 0);
         }
-        for (VertexBuffer buffer : attributes) {
-            if (buffer.getBufferName() > 0) {
-                renderer.deleteBuffers(1, new int[] { buffer.getBufferName() }, 0);
+        if (attributes != null) {
+            for (VertexBuffer buffer : attributes) {
+                if (buffer.getBufferName() > 0) {
+                    renderer.deleteBuffers(1, new int[] { buffer.getBufferName() }, 0);
+                }
             }
         }
     }

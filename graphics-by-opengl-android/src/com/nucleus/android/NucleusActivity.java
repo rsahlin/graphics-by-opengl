@@ -59,9 +59,9 @@ public class NucleusActivity extends Activity
 
     @Override
     public void onDestroy() {
+        coreApp.setDestroyFlag();
         SimpleLogger.d(getClass(), "onDestroy()");
         super.onDestroy();
-        coreApp.destroy();
     }
 
     @Override
@@ -92,10 +92,14 @@ public class NucleusActivity extends Activity
     public static void handleThrowable(final Throwable t) {
         throwable = t;
         activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+        @Override
+        public void run() {
+            try {
                 activity.showAlert(activity.getString(R.string.app_name) + " " + activity.getString(R.string.crash),
                         t.toString());
+            } catch (Throwable t2) {
+                throw new RuntimeException(throwable);
+            }
             }
         });
     }

@@ -64,10 +64,12 @@ public class CoreApp {
          * @param version Version of GLES to use.
          */
         public void createCoreWindows(Renderers version);
-        
+
         /**
-         * Create the {@link CoreApp} implementation for the platform, the renderer is now created and has a valid GL context.
-         * Do one time setup - for instance displaying splash and create, but do not initialize the {@link ClientApplication}
+         * Create the {@link CoreApp} implementation for the platform, the renderer is now created and has a valid GL
+         * context.
+         * Do one time setup - for instance displaying splash and create, but do not initialize the
+         * {@link ClientApplication}
          * 
          * @param width The width of the display window
          * @param height The height of the display window
@@ -123,6 +125,11 @@ public class CoreApp {
     private volatile boolean hasCalledCreated = false;
 
     /**
+     * Set to true to release resources after {@link #drawFrame()} has finished.
+     */
+    private volatile boolean destroy = false;
+
+    /**
      * Creates a new Core application with the specified renderer.
      * Call {@link #drawFrame()} to produce frames and call attached {@link FrameListener}
      * 
@@ -131,15 +138,15 @@ public class CoreApp {
      * @throws IllegalArgumentException If renderer has not been initialized or is null, or if clientApp is null
      */
     public CoreApp(NucleusRenderer renderer, ClientApplication clientApp) {
-    	if (renderer == null) {
-    		throw new IllegalArgumentException("Renderer is null");
-    	}
-    	if (clientApp == null) {
-    		throw new IllegalArgumentException("ClientApplication is null");
-    	}
-    	if (!renderer.isInitialized()) {
-    		throw new IllegalArgumentException("Renderer has not been initialized");
-    	}
+        if (renderer == null) {
+            throw new IllegalArgumentException("Renderer is null");
+        }
+        if (clientApp == null) {
+            throw new IllegalArgumentException("ClientApplication is null");
+        }
+        if (!renderer.isInitialized()) {
+            throw new IllegalArgumentException("Renderer has not been initialized");
+        }
         this.renderer = renderer;
         this.clientApp = clientApp;
         logicRunnable = new LogicProcessorRunnable(renderer, new J2SELogicProcessor());
@@ -208,11 +215,22 @@ public class CoreApp {
 
     /**
      * Release all resources used by this application.
-     * Call destroy on AssetManager
+     * Only call this when there is no render in progress and from thread that can acess GL.
+     * Call destroy on AssetManager, set renderer to null and exit threads.
+     * DO NOT USE this class after calling this method.
      */
-    public void destroy() {
+    protected void destroy() {
         AssetManager.getInstance().destroy(renderer);
         rootNode.destroy(renderer);
+        renderer = null;
+        logicRunnable.destroy();
+    }
+
+    /**
+     * Sets the destroy flag to true, this will release all GL resources after {@link #drawFrame()} has finished.
+     */
+    public void setDestroyFlag() {
+        destroy = true;
     }
 
     /**
@@ -224,30 +242,35 @@ public class CoreApp {
         if (!hasCalledCreated) {
             throw new IllegalArgumentException(NOT_CALLED_CREATECONTEXT);
         }
-        try {
-            if (runnableThread != null) {
-                if (!runnableThread.isAlive()) {
-                    runnableThread.start();
-                } else {
-                    synchronized (logicRunnable) {
-                        logicRunnable.notify();
+        // If renderer is null it means CoreApp is destroyed - do nothing.
+        if (renderer != null) {
+            try {
+                if (runnableThread != null) {
+                    if (!runnableThread.isAlive()) {
+                        runnableThread.start();
+                    } else {
+                        synchronized (logicRunnable) {
+                            logicRunnable.notify();
+                        }
                     }
+                } else {
+                    logicRunnable.process(FrameSampler.getInstance().getDelta());
                 }
-            } else {
-                logicRunnable.process(FrameSampler.getInstance().getDelta());
+                renderer.beginFrame();
+                if (rootNode != null) {
+                    renderer.render(rootNode);
+                }
+            } catch (GLException e) {
+                throw new RuntimeException(e);
             }
-            renderer.beginFrame();
+            renderer.endFrame();
             if (rootNode != null) {
-                renderer.render(rootNode);
+                rootNode.swapNodeList();
             }
-        } catch (GLException e) {
-            throw new RuntimeException(e);
+            if (destroy) {
+                destroy();
+            }
         }
-        renderer.endFrame();
-        if (rootNode != null) {
-            rootNode.swapNodeList();
-        }
-
     }
 
     /**
@@ -282,11 +305,11 @@ public class CoreApp {
         RenderSettings rs = renderer.getRenderSettings();
         rs.setCullFace(GLES20.GL_NONE);
         rs.setDepthFunc(GLES20.GL_NONE);
-        
+
         BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
         TextureParameter texParam = new TextureParameter();
         texParam.setValues(new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST, TexParameter.CLAMP,
-              TexParameter.CLAMP });
+                TexParameter.CLAMP });
         Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), "texture",
                 new ExternalReference("assets/splash.png"), RESOLUTION.HD, texParam, 1);
         Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
@@ -296,7 +319,7 @@ public class CoreApp {
                 new VertexTranslateProgram(Texture2D.Shading.textured));
         Material material = new Material();
         material.setProgram(vt);
-        Configuration configuration = new Configuration(0.2f,0.2f,0f, 1, 0);
+        Configuration configuration = new Configuration(0.2f, 0.2f, 0f, 1, 0);
         RectangleShapeBuilder shapeBuilder = new RectangleShapeBuilder(configuration);
         meshBuilder.setMaterial(material);
         meshBuilder.setShapeBuilder(shapeBuilder);
@@ -307,7 +330,7 @@ public class CoreApp {
         renderer.render(root);
         renderer.endFrame();
     }
-    
+
     /**
      * Util method to create the coreapp and display splash. Caller must swapp buffer for splash to be visible.
      * 
@@ -318,18 +341,18 @@ public class CoreApp {
      * @return Instance of {@link CoreApp} with the specified clientclass {@link ClientApplication}
      */
     public static CoreApp createCoreApp(int width, int height, NucleusRenderer renderer, Class<?> clientClass) {
-    	renderer.init(new SurfaceConfiguration(), width, height);
-    	try {
+        renderer.init(new SurfaceConfiguration(), width, height);
+        try {
             CoreApp coreApp = new CoreApp(renderer, (ClientApplication) clientClass.newInstance());
             try {
                 coreApp.displaySplash();
             } catch (GLException | NodeException e) {
-            	throw new RuntimeException(e);
+                throw new RuntimeException(e);
             }
             return coreApp;
-    	} catch (IllegalAccessException |InstantiationException e) {
-    		throw new RuntimeException(e);
-    	}
+        } catch (IllegalAccessException | InstantiationException e) {
+            throw new RuntimeException(e);
+        }
     }
-    
+
 }

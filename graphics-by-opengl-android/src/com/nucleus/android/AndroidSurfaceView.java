@@ -154,7 +154,6 @@ public class AndroidSurfaceView extends GLSurfaceView
         }
         try {
             coreApp.drawFrame();
-
         } catch (Throwable t) {
             handleThrowable(t);
         }
