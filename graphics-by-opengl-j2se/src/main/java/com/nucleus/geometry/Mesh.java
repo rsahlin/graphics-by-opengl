@@ -13,6 +13,8 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.renderer.BufferObjectsFactory;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.shader.ShaderVariable;
+import com.nucleus.shader.VariableMapping;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;
 
@@ -594,6 +596,36 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     @Override
     public PropertyMapper getMapper() {
         return mapper;
+    }
+
+    /**
+     * Sets attribute data for the specified vertex
+     * 
+     * @param index Index to the vertex to set attribute data for
+     * @param mapping The variable to set
+     * @param attribute The data to set, must contain at least 4 values
+     * @param verticeCount The number of vertices to set the attribute to
+     */
+    public void setAttribute4(int index, VariableMapping mapping, float[] attribute, int verticeCount) {
+        ShaderVariable variable = getMaterial().getProgram().getShaderVariable(mapping);
+        setAttribute4(index, variable, attribute, verticeCount);
+    }
+
+    /**
+     * Sets attribute data for the specified vertex
+     * 
+     * @param index Index to the vertex to set attribute data for
+     * @param variable The variable to set
+     * @param attribute The data to set, must contain at least 4 values
+     * @param verticeCount The number of vertices to set the attribute to
+     */
+    public void setAttribute4(int index, ShaderVariable variable, float[] attribute, int verticeCount) {
+        int offset = index * mapper.attributesPerVertex;
+        offset += variable.getOffset();
+        VertexBuffer buffer = getVerticeBuffer(BufferIndex.ATTRIBUTES);
+        if (buffer != null) {
+            buffer.setComponents(attribute, 4, 0, offset, verticeCount);
+        }
     }
 
 }

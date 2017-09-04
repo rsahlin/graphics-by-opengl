@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.camera.ViewPort;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
@@ -15,6 +16,8 @@ import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
+import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.geometry.RectangleShapeBuilder;
 import com.nucleus.geometry.VertexBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
@@ -27,8 +30,11 @@ import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.shader.VertexTranslateProgram;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.Texture2D.Shading;
+import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.vecmath.Matrix;
 
@@ -75,7 +81,6 @@ class BaseRenderer implements NucleusRenderer {
      */
     protected float[] projectionMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
 
-    private float[] tempMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
 
     protected GLES20Wrapper gles;
     protected RenderSettings renderSettings = new RenderSettings();
@@ -100,7 +105,10 @@ class BaseRenderer implements NucleusRenderer {
      */
     protected boolean contextCreated = false;
 
-    private Node lineDrawer;
+    /**
+     * Overlay linedrawer
+     */
+    private Mesh lineDrawer;
 
     /**
      * Creates a new renderer using the specified GLES20Wrapper
@@ -146,25 +154,24 @@ class BaseRenderer implements NucleusRenderer {
         initialized = true;
         this.surfaceConfig = surfaceConfig;
         rendererInfo = new RendererInfo(gles);
-        /**
-         * try {
-         * lineDrawer = new Node();
-         * Mesh.Builder builder = new Mesh.Builder(this);
-         * builder.setIndiceCount(600);
-         * builder.setVertexCount(400);
-         * Material m = new Material();
-         * VertexTranslateProgram program = (VertexTranslateProgram) AssetManager.getInstance()
-         * .getProgram(this, new VertexTranslateProgram(Shading.flat));
-         * m.setProgram(program);
-         * Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
-         * builder.setMaterial(m);
-         * builder.setTexture(tex);
-         * builder.setMode(Mode.LINES);
-         * Mesh mesh = builder.create();
-         * } catch (IOException e) {
-         * throw new RuntimeException(e);
-         * }
-         */
+        try {
+            Mesh.Builder<Mesh> builder = new Mesh.Builder<>(this);
+            builder.setElementMode(Mode.LINES, 4, 8);
+            Material m = new Material();
+            VertexTranslateProgram program = (VertexTranslateProgram) AssetManager.getInstance()
+                    .getProgram(this, new VertexTranslateProgram(Shading.flat));
+            m.setProgram(program);
+            Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
+            builder.setMaterial(m);
+            builder.setTexture(tex);
+            RectangleShapeBuilder.Configuration config = new RectangleShapeBuilder.Configuration(0.5f, 0.5f, 0f, 1, 0);
+            builder.setShapeBuilder(new RectangleShapeBuilder(config));
+            lineDrawer = builder.create();
+            lineDrawer.setAttribute4(0, program.getShaderVariable(VertexTranslateProgram.VARIABLES.aColor),
+                    new float[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, 4);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
 
@@ -251,6 +258,15 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void endFrame() {
+        if (lineDrawer != null) {
+            try {
+                Matrix.orthoM(projectionMatrix, 0, -0.8889f, 0.8889f, -0.5f, 0.5f, 4f, -10f);
+                renderMesh(lineDrawer, mvMatrix, projectionMatrix);
+            } catch (GLException e) {
+                SimpleLogger.d(getClass(), "Exception rendering lines: " + e.getMessage());
+
+            }
+        }
     }
 
     @Override

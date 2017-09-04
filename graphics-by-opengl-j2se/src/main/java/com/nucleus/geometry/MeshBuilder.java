@@ -73,24 +73,6 @@ public abstract class MeshBuilder<T> {
     }
 
     /**
-     * Builds a mesh with a specified number of indexed quads of GL_FLOAT type, the mesh must have an elementbuffer to
-     * index the vertices. The index buffer will be built with indexes, this mesh shall be drawn using indexed mode.
-     * Vertex buffer shall have storage for XYZ and texture UV if used.
-     * 
-     * @param mesh The mesh to build the buffers in, this is the mesh that can be rendered.
-     * @param program The program to use when rendering the mesh, it is stored in the material
-     * @param quadCount Number of quads to put in element (index) buffer, 1 means 6 indexes for 1 quad
-     * This is the max number of quads that can be drawn.
-     * @param quadPositions Array with x,y,z - this is set for each tile. Must contain data for 4 vertices.
-     */
-    public static void buildQuadMeshIndexed(Mesh mesh, ShaderProgram program, int quadCount,
-            float[] quadPositions) {
-        // // Create the indexes
-        ElementBuilder.buildQuadBuffer(mesh.indices, quadCount, 0);
-        buildQuads(mesh, program, quadCount, 0, quadPositions);
-    }
-
-    /**
      * Builds the position data for one or more quads at the specified index in the mesh.
      * The indices must already be created
      * Vertex buffer shall have storage for XYZ and texture UV if used.

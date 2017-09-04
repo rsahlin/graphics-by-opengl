@@ -102,6 +102,7 @@ public class VertexBuffer extends BufferObject {
      * @param vertexIndex Index of first vertex to set.
      * @param verticeCount Number of vertices to store.
      */
+    @Deprecated
     public void setPosition(float[] verticeData, int sourceOffset, int vertexIndex, int verticeCount) {
 
         vertexIndex = vertexIndex * attribFloatStride;
@@ -124,6 +125,7 @@ public class VertexBuffer extends BufferObject {
      * @param destOffset Offset in destination vertex buffer, in floats, where data is stored - normally 0.
      * @param verticeCount Number of vertices to store.
      */
+    @Deprecated
     public void setPositionUV(float[] verticeData, int sourceOffset, int destOffset, int verticeCount) {
         for (int i = 0; i < verticeCount; i++) {
             vertices.position(destOffset);
@@ -138,10 +140,10 @@ public class VertexBuffer extends BufferObject {
      * to step from one vertice to the next
      * 
      * @param data
-     * @param componentCount
+     * @param componentCount Number of components (values) to set, 1 to set one float
      * @param sourceOffset
      * @param destOffset
-     * @param verticeCount
+     * @param verticeCount Number of vertices to set the components to
      */
     public void setComponents(float[] data, int componentCount, int sourceOffset, int destOffset, int verticeCount) {
         for (int i = 0; i < verticeCount; i++) {
@@ -150,7 +152,7 @@ public class VertexBuffer extends BufferObject {
             sourceOffset += componentCount;
             destOffset += attribFloatStride;
         }
-
+        dirty = true;
     }
 
     /**

@@ -288,7 +288,10 @@ public abstract class ShaderProgram {
                 array = new ArrayList<ShaderVariable>();
                 svPerBuffer.put(vm.getBufferIndex(), array);
             }
-            array.add(getShaderVariable(vm));
+            ShaderVariable sv = getShaderVariable(vm);
+            if (sv != null) {
+                array.add(getShaderVariable(vm));
+            }
         }
         for (BufferIndex key : svPerBuffer.keySet()) {
             ArrayList<ShaderVariable> defined = svPerBuffer.get(key);
