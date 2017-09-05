@@ -221,7 +221,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          */
         protected void validate() {
             if (texture == null || vertexCount <= 0 || mode == null || material == null) {
-                throw new IllegalArgumentException("Missing argument when creating mesh: " + texture + ", " + ", "
+                throw new IllegalArgumentException("Missing argument when creating mesh: " + texture + ", "
                         + vertexCount + ", " + mode + ", " + material);
             }
         }

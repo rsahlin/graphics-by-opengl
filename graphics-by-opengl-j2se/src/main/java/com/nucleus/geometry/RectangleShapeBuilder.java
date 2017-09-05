@@ -96,12 +96,12 @@ public class RectangleShapeBuilder extends ShapeBuilder {
 
     @Override
     public void build(Mesh mesh) {
-        float[] data = null;
         VertexBuffer attributes = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         int stride = attributes.getFloatStride();
+        float[] data = new float[stride * QUAD_VERTICES];
         if (configuration.rectangle != null) {
-            data = createQuadArray(configuration.rectangle, mesh.getTexture(Texture2D.TEXTURE_0), stride,
-                    configuration.z);
+            createQuadArray(configuration.rectangle, mesh.getTexture(Texture2D.TEXTURE_0), stride,
+                    configuration.z, data);
         }
         int startIndex = configuration.startVertex * stride;
         if (data != null) {
@@ -130,22 +130,41 @@ public class RectangleShapeBuilder extends ShapeBuilder {
 
     /**
      * Creates an array of values that define the quad attribute values using the texture.
-     * If vertex stride > 4 and texture type
+     * If vertex stride > 4 and texture type is not untextured then UV array is created.
      * 
      * @param rectangle Size of quad
-     * @param texture
+     * @param texture Texture or null
      * @param vertexStride Number of values between vertices
      * @param z Z axis value for quad.
-     * @return Array of values needed to render a quad.
+     * @destination Values where quad array positions, and optional uv, are written.
      */
-
-    public static float[] createQuadArray(Rectangle rectangle, Texture2D texture, int vertexStride, float z) {
+    public static void createQuadArray(Rectangle rectangle, Texture2D texture, int vertexStride, float z,
+            float[] destination) {
         float[] values = rectangle.getValues();
         // TODO Should it be possible to pass UV to this method?
-        if (vertexStride > 4 && texture.textureType != TextureType.Untextured) {
-            return createQuadArray(values, z, vertexStride, createUVCoordinates(texture));
+        if (vertexStride > 4 && texture != null && texture.textureType != TextureType.Untextured) {
+            createQuadArray(values, z, vertexStride, createUVCoordinates(texture), destination);
         } else {
-            return createQuadArray(values, z, vertexStride, null);
+            createQuadArray(values, z, vertexStride, null, destination);
+        }
+    }
+
+    /**
+     * Creates an array of values that define the quad attribute values using the texture.
+     * If vertex stride > 4 and texture type is not untextured then UV array is created.
+     * 
+     * @param rectangle Size of quad
+     * @param texture Texture or null
+     * @param vertexStride Number of values between vertices
+     * @param z Z axis value for quad.
+     * @param destination The created array with quad positions, must contain 4 * vertexStride values
+     */
+    public static void createQuadArray(float[] values, Texture2D texture, int vertexStride, float z,
+            float[] destination) {
+        if (vertexStride > 4 && texture != null && texture.textureType != TextureType.Untextured) {
+            createQuadArray(values, z, vertexStride, createUVCoordinates(texture), destination);
+        } else {
+            createQuadArray(values, z, vertexStride, null, destination);
         }
     }
 
@@ -156,30 +175,29 @@ public class RectangleShapeBuilder extends ShapeBuilder {
      * @param z
      * @param vertexStride
      * @param uv Optional UV or null if not used
-     * @return Array with vertices and uv for a quad
+     * @param destination Result is written here, must contain 4 * vertexStride values
      */
-    protected static float[] createQuadArray(float[] values, float z, int vertexStride, float[] uv) {
-        float[] quadPositions = new float[vertexStride * 4];
+    protected static void createQuadArray(float[] values, float z, int vertexStride, float[] uv,
+            float[] destination) {
         if (uv != null) {
-            com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y], z, uv[0], uv[1], quadPositions, 0);
+            com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y], z, uv[0], uv[1], destination, 0);
             com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y], z, uv[2], uv[3],
-                    quadPositions,
+                    destination,
                     vertexStride);
             com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y] - values[HEIGHT],
-                    z, uv[4], uv[5], quadPositions, vertexStride * 2);
+                    z, uv[4], uv[5], destination, vertexStride * 2);
             com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y] - values[HEIGHT], z, uv[6], uv[7],
-                    quadPositions,
+                    destination,
                     vertexStride * 3);
         } else {
-            com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y], z, quadPositions, 0);
+            com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y], z, destination, 0);
             com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y], z,
-                    quadPositions, vertexStride);
+                    destination, vertexStride);
             com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y] - values[HEIGHT], z,
-                    quadPositions, vertexStride * 2);
+                    destination, vertexStride * 2);
             com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y] - values[HEIGHT], z,
-                    quadPositions, vertexStride * 3);
+                    destination, vertexStride * 3);
         }
-        return quadPositions;
     }
 
     /**
