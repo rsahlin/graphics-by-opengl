@@ -7,23 +7,36 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.opengl.GLESWrapper;
 
 /**
- * Window for a GLES2 renderer, this class must create the correct {@link GLESWrapper}
+ * Window for a GLES 2/3 renderer, this class must create the correct {@link GLESWrapper}
  * 
  * @author Richard Sahlin
  *
  */
-public class JOGLGLES20Window extends JOGLGLEWindow {
+public class JOGLGLESWindow extends JOGLGLWindow {
 
-    public JOGLGLES20Window(int width, int height, boolean undecorated, boolean fullscreen,
-            CoreAppStarter coreAppStarter,
-            int swapInterval) {
-        super(width, height, undecorated, fullscreen, GLProfile.get(GLProfile.GL2ES2), coreAppStarter, swapInterval);
+    protected JOGLGLES20Wrapper glesWrapper;
+    protected String glProfile;
+
+    /**
+     * 
+     * @param profile GLProfile
+     * @param width
+     * @param height
+     * @param undecorated
+     * @param fullscreen
+     * @param coreAppStarter
+     * @param swapInterval
+     */
+    public JOGLGLESWindow(String profile, int width, int height, boolean undecorated, boolean fullscreen,
+            CoreAppStarter coreAppStarter, int swapInterval) {
+        super(width, height, undecorated, fullscreen, GLProfile.get(profile), coreAppStarter, swapInterval);
+        glProfile = profile;
     }
 
     @Override
     public void display(GLAutoDrawable drawable) {
         if (glesWrapper != null) {
-            ((JOGLGLES20Wrapper) glesWrapper).freeNames();
+            glesWrapper.freeNames();
         }
         super.display(drawable);
     }
@@ -38,7 +51,14 @@ public class JOGLGLES20Window extends JOGLGLEWindow {
     public void init(GLAutoDrawable drawable) {
     	SimpleLogger.d(getClass(), "init()");
         if (glesWrapper == null) {
-            glesWrapper = new JOGLGLES20Wrapper(drawable.getGL().getGL2ES2());
+            switch (glProfile) {
+            case GLProfile.GL2ES2:
+                glesWrapper = new JOGLGLES20Wrapper(drawable.getGL().getGL2ES2());
+                break;
+            case GLProfile.GL4ES3:
+                glesWrapper = new JOGLGLES30Wrapper(drawable.getGL().getGL4ES3());
+                break;
+            }
         }
         super.init(drawable);
     }

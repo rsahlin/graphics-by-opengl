@@ -1,5 +1,6 @@
 package com.nucleus.jogl;
 
+import com.jogamp.opengl.GLProfile;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.CoreApp.CoreAppStarter;
@@ -25,7 +26,7 @@ public class NucleusApplication implements CoreAppStarter, WindowListener {
     public static final String WINDOW_UNDECORATED_KEY = "WINDOW-UNDECORATED";
     public static final String FULLSCREEN_KEY = "FULLSCREEN";
 
-    protected JOGLGLES20Window window;
+    protected JOGLGLESWindow window;
     protected CoreApp coreApp;
     protected Class<?> clientClass;
     protected int swapInterval = 1;
@@ -82,7 +83,8 @@ public class NucleusApplication implements CoreAppStarter, WindowListener {
     }
 
     private void createGLES20Window() {
-        window = new JOGLGLES20Window(windowWidth, windowHeight, windowUndecorated, fullscreen, this, swapInterval);
+        window = new JOGLGLESWindow(GLProfile.GL4ES3, windowWidth, windowHeight, windowUndecorated, fullscreen, this,
+                swapInterval);
         window.setGLEVentListener();
         window.setWindowListener(this);
         // Setting window to visible will trigger the GLEventListener, on the same or another thread.

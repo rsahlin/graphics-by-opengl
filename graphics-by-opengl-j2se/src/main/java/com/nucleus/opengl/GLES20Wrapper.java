@@ -312,12 +312,14 @@ public abstract class GLES20Wrapper extends GLESWrapper {
 
     /**
      * Abstraction for glDrawElements()
+     * Use VBO's
      * 
      * @param mode
      * @param count
      * @param type
      * @param indices
      */
+    @Deprecated
     public abstract void glDrawElements(int mode, int count, int type, Buffer indices);
 
     /**
@@ -474,6 +476,13 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param mode
      */
     public abstract void glCullFace(int mode);
+
+    /**
+     * Abstraction for glLineWidth()
+     * 
+     * @param width
+     */
+    public abstract void glLineWidth(float width);
 
     /**
      * Abstraction for glDepthFunc()

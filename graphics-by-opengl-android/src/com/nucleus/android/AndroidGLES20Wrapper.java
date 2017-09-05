@@ -313,5 +313,11 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     public void glFinish() {
         android.opengl.GLES20.glFinish();
     }
+
+    @Override
+    public void glLineWidth(float width) {
+        android.opengl.GLES20.glLineWidth(width);
+    }
+
 }
 

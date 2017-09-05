@@ -33,7 +33,7 @@ import com.nucleus.renderer.Window;
  * has GL access. This is normally done in the {@link #display(GLAutoDrawable)} method.
  *
  */
-public abstract class JOGLGLEWindow
+public abstract class JOGLGLWindow
         implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener, KeyListener {
 
     /**
@@ -58,18 +58,6 @@ public abstract class JOGLGLEWindow
     protected Frame frame;
     protected GLWindow glWindow;
     WindowListener windowListener;
-    protected GLESWrapper glesWrapper;
-
-    /**
-     * Creates a new JOGL window with the specified {@link CoreAppStarter}
-     * @param width
-     * @param height
-     * @param glProfile
-     * @param coreAppStarter
-     * @throws IllegalArgumentException If coreAppStarter is null
-     */
-    public JOGLGLEWindow(int width, int height, GLProfile glProfile, CoreApp.CoreAppStarter coreAppStarter) {
-    }
 
     /**
      * Creates a new JOGL window with the specified {@link CoreAppStarter} and swapinterval
@@ -83,7 +71,7 @@ public abstract class JOGLGLEWindow
      * @param swapInterval
      * @throws IllegalArgumentException If coreAppStarter is null
      */
-    public JOGLGLEWindow(int width, int height, boolean undecorated, boolean fullscreen, GLProfile glProfile,
+    public JOGLGLWindow(int width, int height, boolean undecorated, boolean fullscreen, GLProfile glProfile,
             CoreApp.CoreAppStarter coreAppStarter, int swapInterval) {
         this.swapInterval = swapInterval;
         this.undecorated = undecorated;

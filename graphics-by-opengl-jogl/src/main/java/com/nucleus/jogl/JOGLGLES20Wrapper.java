@@ -418,4 +418,9 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
         gles.glFinish();
     }
 
+    @Override
+    public void glLineWidth(float width) {
+        gles.glLineWidth(width);
+    }
+
 }

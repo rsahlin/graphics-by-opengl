@@ -261,10 +261,10 @@ class BaseRenderer implements NucleusRenderer {
         if (lineDrawer != null) {
             try {
                 Matrix.orthoM(projectionMatrix, 0, -0.8889f, 0.8889f, -0.5f, 0.5f, 4f, -10f);
+                gles.glLineWidth(1.0f);
                 renderMesh(lineDrawer, mvMatrix, projectionMatrix);
             } catch (GLException e) {
                 SimpleLogger.d(getClass(), "Exception rendering lines: " + e.getMessage());
-
             }
         }
     }
@@ -353,6 +353,8 @@ class BaseRenderer implements NucleusRenderer {
             } else {
                 gles.glDrawElements(mesh.getMode().mode, indices.getCount(), indices.getType().type,
                         indices.getBuffer().position(0));
+                SimpleLogger.d(getClass(),
+                        "Warning - using old method with Buffer to draw elements, use VBO's instead");
             }
             timeKeeper.addDrawElements(vertices.getVerticeCount(), indices.getCount());
         }
