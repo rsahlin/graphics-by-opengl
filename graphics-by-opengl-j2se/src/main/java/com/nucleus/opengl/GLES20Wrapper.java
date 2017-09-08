@@ -405,7 +405,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param pname
      * @param params
      */
-    public abstract void glGetIntegerv(int pname, int[] params, int offset);
+    public abstract void glGetIntegerv(int pname, int[] params);
 
     /**
      * Abstraction for glUniform4fv()

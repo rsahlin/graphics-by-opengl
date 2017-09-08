@@ -32,14 +32,17 @@ public class RendererInfo {
         version = gles.glGetString(GLES20.GL_VERSION);
         renderer = gles.glGetString(GLES20.GL_RENDERER);
         shadingLanguageVersion = gles.glGetString(GLES20.GL_SHADING_LANGUAGE_VERSION);
-        StringTokenizer st = new StringTokenizer(gles.glGetString(GLES20.GL_EXTENSIONS), " ");
-        while (st.hasMoreTokens()) {
-            String extension = st.nextToken();
-            extensions.add(extension);
-            System.out.println("Extension: " + extension);
+        String glString = gles.glGetString(GLES20.GL_EXTENSIONS);
+        if (glString != null) {
+            StringTokenizer st = new StringTokenizer(glString, " ");
+            while (st.hasMoreTokens()) {
+                String extension = st.nextToken();
+                extensions.add(extension);
+                System.out.println("Extension: " + extension);
+            }
         }
         int[] param = new int[1];
-        gles.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, param, 0);
+        gles.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, param);
         maxTextureSize = param[0];
         System.out.println("GLInfo:\n" + "GLES Version: " + version + " with shading language "
                 + shadingLanguageVersion + "\n" + vendor + " " + renderer + ", max texture size: " + maxTextureSize);

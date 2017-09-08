@@ -5,7 +5,7 @@ import org.junit.Test;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.jogl.NucleusApplication;
+import com.nucleus.jogl.JOGLApplication;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.opengl.GLESWrapper.GLES20;
@@ -25,7 +25,7 @@ import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
 
-public class FGLConvolutionTest extends NucleusApplication implements FrameListener,
+public class FGLConvolutionTest extends JOGLApplication implements FrameListener,
         MMIEventListener {
 
     private final static float[] kernel1 = new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 };

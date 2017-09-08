@@ -274,8 +274,8 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glGetIntegerv(int pname, int[] params, int offset) {
-        gles.glGetIntegerv(pname, params, offset);
+    public void glGetIntegerv(int pname, int[] params) {
+        gles.glGetIntegerv(pname, params, 0);
 
     }
 

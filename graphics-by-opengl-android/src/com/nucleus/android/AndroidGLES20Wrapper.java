@@ -250,8 +250,8 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glGetIntegerv(int pname, int[] params, int offset) {
-        android.opengl.GLES20.glGetIntegerv(pname, params, offset);
+    public void glGetIntegerv(int pname, int[] params) {
+        android.opengl.GLES20.glGetIntegerv(pname, params, 0);
     }
 
     @Override

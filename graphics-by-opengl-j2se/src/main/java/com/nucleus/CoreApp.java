@@ -18,6 +18,7 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
+import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.RenderSettings;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
@@ -35,13 +36,14 @@ import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
 
 /**
+ * The platform agnostic application, this is the main app for J2SE platform independent code.
  * Base application, use this to get the objects needed to start and run an application.
  * Used by JOGL and Android implementations to share objects that are platform agnostic.
  * 
  * @author Richard Sahlin
  *
  */
-public class CoreApp {
+public class CoreApp implements RenderContextListener {
 
     private final static String NOT_CALLED_CREATECONTEXT = "Must call contextCreated() before rendering.";
 
@@ -177,15 +179,7 @@ public class CoreApp {
         return inputProcessor;
     }
 
-    /**
-     * Call this to signal that EGL context was created, if this is the first time context is created then display the
-     * splash screen.
-     * Will initialize the renderer and call {@link NucleusRenderer# (int, int)}
-     * Must be called before {@link #drawFrame()} is called.
-     * 
-     * @param width Width of gl surface
-     * @param height Height of gl surface
-     */
+    @Override
     public void contextCreated(int width, int height) {
         hasCalledCreated = true;
         if (!getRenderer().isInitialized()) {

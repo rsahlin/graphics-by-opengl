@@ -1,4 +1,4 @@
-package com.nucleus.jogl;
+package com.nucleus;
 
 /**
  * Callback for window resize

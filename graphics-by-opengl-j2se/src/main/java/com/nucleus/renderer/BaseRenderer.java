@@ -143,6 +143,7 @@ class BaseRenderer implements NucleusRenderer {
         initialized = true;
         this.surfaceConfig = surfaceConfig;
         rendererInfo = new RendererInfo(gles);
+        gles.glLineWidth(1f);
     }
 
 

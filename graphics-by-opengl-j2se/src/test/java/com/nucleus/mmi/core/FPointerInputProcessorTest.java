@@ -9,6 +9,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.nucleus.BaseTestCase;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
@@ -16,7 +17,7 @@ import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.vecmath.Vector2D;
 
-public class FPointerInputProcessorTest implements MMIEventListener {
+public class FPointerInputProcessorTest extends BaseTestCase implements MMIEventListener {
 
     protected List<MMIPointerEvent> pointerEvents = new ArrayList<MMIPointerEvent>();
     protected final static float[] FIRST_POS = new float[] { 100f, 200f };

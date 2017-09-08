@@ -4,17 +4,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.nucleus.camera.ViewFrustum.Projection;
-import com.nucleus.vecmath.Matrix;
 
 public class FViewFrustumTest {
-
-    @Test
-    public void testCreate() {
-        // Tests that the frustum is created and holds the proper data.
-        ViewFrustum vf = new ViewFrustum();
-        Assert.assertEquals(Matrix.MATRIX_ELEMENTS, vf.getMatrix().length);
-        Assert.assertEquals(ViewFrustum.PROJECTION_SIZE, vf.getValues().length);
-    }
 
     @Test
     public void testSetProjection() {

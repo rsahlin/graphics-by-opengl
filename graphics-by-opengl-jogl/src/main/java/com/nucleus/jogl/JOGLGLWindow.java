@@ -19,7 +19,9 @@ import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.Animator;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
+import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
+import com.nucleus.WindowListener;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.opengl.GLESWrapper;
@@ -33,7 +35,7 @@ import com.nucleus.renderer.Window;
  * has GL access. This is normally done in the {@link #display(GLAutoDrawable)} method.
  *
  */
-public abstract class JOGLGLWindow
+public abstract class JOGLGLWindow extends J2SEWindow
         implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener, KeyListener {
 
     /**
@@ -49,10 +51,6 @@ public abstract class JOGLGLWindow
     private boolean mouseConfined = false;
     private int swapInterval = 1;
     protected volatile boolean contextCreated = false;
-    /**
-     * Use an interface instead of CoreApp
-     */
-    protected CoreApp coreApp;
     protected CoreApp.CoreAppStarter coreAppStarter;
     protected GLCanvas canvas;
     protected Frame frame;
@@ -73,6 +71,7 @@ public abstract class JOGLGLWindow
      */
     public JOGLGLWindow(int width, int height, boolean undecorated, boolean fullscreen, GLProfile glProfile,
             CoreApp.CoreAppStarter coreAppStarter, int swapInterval) {
+        super(coreAppStarter, width, height);
         this.swapInterval = swapInterval;
         this.undecorated = undecorated;
         this.fullscreen = fullscreen;
@@ -151,16 +150,6 @@ public abstract class JOGLGLWindow
         }
     }
 
-    /**
-     * Sets the CoreApp in this window.
-     * This is used to drive rendering in the {@link #display(GLAutoDrawable)} method.
-     * 
-     * @param coreApp
-     */
-    public void setCoreApp(CoreApp coreApp) {
-        this.coreApp = coreApp;
-    }
-
     public void setGLEVentListener() {
         if (glWindow != null) {
             glWindow.addGLEventListener(this);
@@ -188,6 +177,7 @@ public abstract class JOGLGLWindow
      * called by the system.
      * This normally means that the window has not been made visible.
      */
+    @Override
     public abstract GLESWrapper getGLESWrapper();
 
     @Override
