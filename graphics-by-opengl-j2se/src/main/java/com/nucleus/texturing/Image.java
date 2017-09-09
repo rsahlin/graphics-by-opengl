@@ -3,6 +3,7 @@ package com.nucleus.texturing;
 import java.awt.image.BufferedImage;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import com.nucleus.ErrorMessage;
 import com.nucleus.geometry.BufferObject;
@@ -113,7 +114,7 @@ public class Image extends BufferObject {
         case LUMINANCE:
         case ALPHA:
             sizeInBytes = width * height * format.size;
-            buffer = ByteBuffer.allocateDirect(sizeInBytes);
+            buffer = ByteBuffer.allocateDirect(sizeInBytes).order(ByteOrder.nativeOrder());
             break;
         default:
             throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE + ", " + format);

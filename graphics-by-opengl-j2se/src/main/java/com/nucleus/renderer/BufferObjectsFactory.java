@@ -28,9 +28,6 @@ public class BufferObjectsFactory {
         return instance;
     }
 
-    private final static float[] debug_float_data = new float[32];
-    private final static short[] debug_short_data = new short[32];
-
     /**
      * Creates the vbos for the specified mesh, the buffer objects will be stored in the contained buffers in the mesh.
      * After this call the mesh can be rendered using the specified buffer objects (VBO)
@@ -42,7 +39,7 @@ public class BufferObjectsFactory {
         int vboCount = mesh.getBufferNameCount();
         // TODO Need a way to tie the allocated buffer names to the element/vertex buffers
         int[] names = new int[vboCount];
-        renderer.genBuffers(vboCount, names, 0);
+        renderer.genBuffers(names);
         mesh.setBufferNames(0, names, 0);
         ElementBuffer indices = mesh.getElementBuffer();
         for (VertexBuffer attribs : mesh.getVerticeBuffers()) {

@@ -2,6 +2,8 @@ package com.nucleus.shader;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -503,12 +505,12 @@ public abstract class ShaderProgram {
         for (int i = 0; i < count; i++) {
             switch (type) {
             case ATTRIBUTE:
-                gles.glGetActiveAttrib(program, i, nameBuffer.length, written, NAME_LENGTH_OFFSET, written,
-                        SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer, 0);
+                gles.glGetActiveAttrib(program, i, written, NAME_LENGTH_OFFSET, written,
+                        SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
                 break;
             case UNIFORM:
-                gles.glGetActiveUniform(program, i, nameBuffer.length, written, NAME_LENGTH_OFFSET, written,
-                        SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer, 0);
+                gles.glGetActiveUniform(program, i, written, NAME_LENGTH_OFFSET, written,
+                        SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + type);
@@ -593,10 +595,11 @@ public abstract class ShaderProgram {
      * @throws GLException
      */
     public void checkCompileStatus(GLES20Wrapper gles, int shader, String sourceName) throws GLException {
-        IntBuffer compileStatus = IntBuffer.allocate(1);
+        IntBuffer compileStatus = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
         gles.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compileStatus);
         if (compileStatus.get(0) != GLES20.GL_TRUE) {
-            throw new GLException(COMPILE_SHADER_ERROR + sourceName + "\n" + gles.glGetShaderInfoLog(shader),
+            throw new GLException(COMPILE_SHADER_ERROR + sourceName + " : " + compileStatus.get(0) + "\n"
+                    + gles.glGetShaderInfoLog(shader),
                     GLES20.GL_FALSE);
         }
     }

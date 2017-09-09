@@ -14,7 +14,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
     /**
      * To select GLFW or JAWT window
      */
-    private static final String WINDOW_TYPE_KEY = "windowType";
+    private static final String WINDOW_TYPE_KEY = "WINDOWTYPE";
 
     public enum WindowType {
         GLFW(),
@@ -37,6 +37,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
         switch (windowType) {
         case GLFW:
             createCoreApp(windowWidth, windowHeight);
+            ((GLFWWindow) window).swapBuffers();
             coreApp.contextCreated(windowWidth, windowHeight);
             break;
         default:

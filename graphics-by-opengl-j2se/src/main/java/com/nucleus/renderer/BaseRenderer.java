@@ -416,8 +416,8 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void genBuffers(int count, int[] names, int offset) {
-        gles.glGenBuffers(count, names, offset);
+    public void genBuffers(int[] names) {
+        gles.glGenBuffers(names);
     }
 
     @Override

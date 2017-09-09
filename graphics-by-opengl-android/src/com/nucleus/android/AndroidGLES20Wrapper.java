@@ -43,8 +43,8 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glDeleteTextures(int count, int[] textures, int offset) {
-        android.opengl.GLES20.glDeleteTextures(count, textures, offset);
+    public void glDeleteTextures(int[] textures) {
+        android.opengl.GLES20.glDeleteTextures(textures.length, textures, 0);
     }
 
     @Override
@@ -63,14 +63,14 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glGetActiveAttrib(int program, int index, int nameSize, int[] length, int lengthOffset, int[] size,
-            int sizeOffset, int[] type, int typeOffset, byte[] name, int nameOffset) {
+    public void glGetActiveAttrib(int program, int index, int[] length, int lengthOffset, int[] size,
+            int sizeOffset, int[] type, int typeOffset, byte[] name) {
         // Fix for some stupid devices that can't write into the same destination array.
         int[] l = new int[1];
         int[] t = new int[1];
         int[] s = new int[1];
-        android.opengl.GLES20.glGetActiveAttrib(program, index, nameSize, l, 0, s, 0, t,
-                0, name, nameOffset);
+        android.opengl.GLES20.glGetActiveAttrib(program, index, name.length, l, 0, s, 0, t,
+                0, name, 0);
         length[lengthOffset] = l[0];
         type[typeOffset] = t[0];
         size[sizeOffset] = s[0];
@@ -122,14 +122,14 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glGetActiveUniform(int program, int index, int nameSize, int[] length, int lengthOffset, int[] size,
-            int sizeOffset, int[] type, int typeOffset, byte[] name, int nameOffset) {
+    public void glGetActiveUniform(int program, int index, int[] length, int lengthOffset, int[] size,
+            int sizeOffset, int[] type, int typeOffset, byte[] name) {
         // Fix for some stupid devices that can't write into the same destination array.
         int[] l = new int[1];
         int[] t = new int[1];
         int[] s = new int[1];
-        android.opengl.GLES20.glGetActiveUniform(program, index, nameSize, l, 0, s, 0, t,
-                0, name, nameOffset);
+        android.opengl.GLES20.glGetActiveUniform(program, index, name.length, l, 0, s, 0, t,
+                0, name, 0);
         length[lengthOffset] = l[0];
         type[typeOffset] = t[0];
         size[sizeOffset] = s[0];
@@ -158,8 +158,8 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glGenTextures(int count, int[] textures, int offset) {
-        android.opengl.GLES20.glGenTextures(count, textures, offset);
+    public void glGenTextures(int[] textures) {
+        android.opengl.GLES20.glGenTextures(textures.length, textures, 0);
     }
 
     @Override
@@ -255,8 +255,8 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glGenBuffers(int n, int[] buffers, int offset) {
-        android.opengl.GLES20.glGenBuffers(n, buffers, offset);
+    public void glGenBuffers(int[] buffers) {
+        android.opengl.GLES20.glGenBuffers(buffers.length, buffers, 0);
     }
 
     @Override

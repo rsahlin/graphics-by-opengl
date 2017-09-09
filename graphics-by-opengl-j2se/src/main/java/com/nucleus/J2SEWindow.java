@@ -49,13 +49,23 @@ public abstract class J2SEWindow {
     }
 
     /**
-     * Call this when GL context is created to create core app and prepare it.
+     * Call this to create the core app, call this before calling {@link #internalContextCreated(int, int)}
+     * 
+     * @param width
+     * @param height
+     */
+    protected void internalCreateCoreApp(int width, int height) {
+        coreAppStarter.createCoreApp(width, height);
+    }
+
+    /**
+     * Call this when GL context is created to create core app and prepare it, shall be called after
+     * {@link #internalContextCreated(int, int)}
      * 
      * @param width
      * @param height
      */
     protected void internalContextCreated(int width, int height) {
-        coreAppStarter.createCoreApp(width, height);
         coreApp.contextCreated(width, height);
     }
 

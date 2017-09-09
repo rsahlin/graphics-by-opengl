@@ -72,11 +72,9 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     /**
      * Abstraction for glGenBuffers()
      * 
-     * @param n Number of buffer names to create
      * @param buffers Storage for buffer names
-     * @param offset Offset into buffers where names are put
      */
-    public abstract void glGenBuffers(int n, int[] buffers, int offset);
+    public abstract void glGenBuffers(int[] buffers);
 
     /**
      * Abstraction for glDeleteBuffers()
@@ -136,7 +134,6 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * 
      * @param program
      * @param index
-     * @param nameSize Max size of name
      * @param length Result buffer for length
      * @param lengthOffset
      * @param size
@@ -144,18 +141,15 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param type
      * @param typeOffset
      * @param name
-     * @param nameOffset
      */
-    public abstract void glGetActiveAttrib(int program, int index, int nameSize, int[] length, int lengthOffset,
-            int[] size,
-            int sizeOffset, int[] type, int typeOffset, byte[] name, int nameOffset);
+    public abstract void glGetActiveAttrib(int program, int index, int[] length, int lengthOffset,
+            int[] size, int sizeOffset, int[] type, int typeOffset, byte[] name);
 
     /**
      * Abstraction for glGetActiveUniform()
      * 
      * @param program
      * @param index
-     * @param nameSize Max length of name
      * @param length Destination for length
      * @param lengthOffset
      * @param size
@@ -163,11 +157,9 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param type
      * @param typeOffset
      * @param name
-     * @param nameOffset
      */
-    public abstract void glGetActiveUniform(int program, int index, int nameSize, int[] length, int lengthOffset,
-            int[] size,
-            int sizeOffset, int[] type, int typeOffset, byte[] name, int nameOffset);
+    public abstract void glGetActiveUniform(int program, int index, int[] length, int lengthOffset,
+            int[] size, int sizeOffset, int[] type, int typeOffset, byte[] name);
 
     /**
      * Abstraction for glGetUniformLocation()
@@ -370,11 +362,9 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     /**
      * Abstraction for glGenTextures()
      * 
-     * @param count
      * @param textures
-     * @param offset
      */
-    public abstract void glGenTextures(int count, int[] textures, int offset);
+    public abstract void glGenTextures(int[] textures);
 
     /**
      * Abstraction for glActiveTexture()
@@ -532,11 +522,9 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     /**
      * Abstraction for glDeleteTextures()
      * 
-     * @param count
      * @param textures
-     * @param offset
      */
-    public abstract void glDeleteTextures(int count, int[] textures, int offset);
+    public abstract void glDeleteTextures(int[] textures);
 
     /**
      * Abstraction for glGenerateMipmap

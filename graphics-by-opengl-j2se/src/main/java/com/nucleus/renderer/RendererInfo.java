@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 
@@ -44,7 +45,7 @@ public class RendererInfo {
         int[] param = new int[1];
         gles.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, param);
         maxTextureSize = param[0];
-        System.out.println("GLInfo:\n" + "GLES Version: " + version + " with shading language "
+        SimpleLogger.d(getClass(), "GLInfo:\n" + "GLES Version: " + version + " with shading language "
                 + shadingLanguageVersion + "\n" + vendor + " " + renderer + ", max texture size: " + maxTextureSize);
 
     }

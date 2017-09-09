@@ -32,8 +32,10 @@ import static org.lwjgl.system.windows.GDI32.SwapBuffers;
 import java.awt.Canvas;
 import java.awt.Graphics;
 
-import org.lwjgl.opengl.GLCapabilities;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengles.GLES;
+import org.lwjgl.opengles.GLESCapabilities;
+import org.lwjgl.system.Configuration;
 import org.lwjgl.system.jawt.JAWT;
 import org.lwjgl.system.jawt.JAWTDrawingSurface;
 import org.lwjgl.system.jawt.JAWTDrawingSurfaceInfo;
@@ -57,7 +59,7 @@ public class LWJGLCanvas extends Canvas {
 
     private long hglrc;
 
-    private GLCapabilities caps;
+    private GLESCapabilities caps;
     RenderContextListener listener;
     int width;
     int height;
@@ -113,7 +115,7 @@ public class LWJGLCanvas extends Canvas {
                                 throw new IllegalStateException("wglMakeCurrent() failed");
                             }
 
-                            // GL.setCapabilities(caps);
+                            GLES.setCapabilities(caps);
                         }
                         // Call core app to draw
                         SwapBuffers(hdc);
@@ -172,12 +174,13 @@ public class LWJGLCanvas extends Canvas {
         if (hglrc == NULL) {
             throw new IllegalStateException("wglCreateContext() failed");
         }
-
         if (!wglMakeCurrent(hdc, hglrc)) {
             throw new IllegalStateException("wglMakeCurrent() failed");
         }
-
-        GLES.createCapabilities();
+        // Bypasses the default create() method.
+        Configuration.OPENGLES_EXPLICIT_INIT.set(true);
+        GLES.create(GL.getFunctionProvider());
+        caps = GLES.createCapabilities();
         listener.contextCreated(width, height);
     }
 

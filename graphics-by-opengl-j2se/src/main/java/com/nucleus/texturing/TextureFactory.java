@@ -152,7 +152,7 @@ public class TextureFactory {
             return;
         }
         int[] textures = new int[1];
-        gles.glGenTextures(1, textures, 0);
+        gles.glGenTextures(textures);
 
         int textureID = textures[0];
         Image[] textureImg = TextureUtils

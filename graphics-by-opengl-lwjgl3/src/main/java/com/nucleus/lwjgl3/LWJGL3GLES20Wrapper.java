@@ -2,6 +2,8 @@ package com.nucleus.lwjgl3;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES20Wrapper;
@@ -44,8 +46,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glGenBuffers(int n, int[] buffers, int offset) {
-        // TODO handle count and offset
+    public void glGenBuffers(int[] buffers) {
         org.lwjgl.opengles.GLES20.glGenBuffers(buffers);
     }
 
@@ -62,7 +63,13 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glBufferData(int target, int size, Buffer data, int usage) {
-        org.lwjgl.opengles.GLES20.glBufferData(target, (ByteBuffer) data, usage);
+        if (data instanceof ByteBuffer) {
+            org.lwjgl.opengles.GLES20.glBufferData(target, (ByteBuffer) data, usage);
+        } else {
+            if (data instanceof FloatBuffer) {
+                org.lwjgl.opengles.GLES20.glBufferData(target, (FloatBuffer) data, usage);
+            }
+        }
     }
 
     @Override
@@ -77,20 +84,63 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glGetProgramiv(int program, int pname, int[] params, int offset) {
-        // TODO handle offset
-        org.lwjgl.opengles.GLES20.glGetProgramiv(program, pname, params);
+        IntBuffer v = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        org.lwjgl.opengles.GLES20.glGetProgramiv(program, pname, v);
+        toArray(v, params, offset);
     }
 
     @Override
-    public void glGetActiveAttrib(int program, int index, int nameSize, int[] length, int lengthOffset, int[] size,
-            int sizeOffset, int[] type, int typeOffset, byte[] name, int nameOffset) {
-        throw new IllegalArgumentException();
+    public void glGetActiveAttrib(int program, int index, int[] length, int lengthOffset, int[] size,
+            int sizeOffset, int[] type, int typeOffset, byte[] name) {
+        IntBuffer lengthBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer sizeBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer typeBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        ByteBuffer nameBuffer = ByteBuffer.allocateDirect(name.length).order(ByteOrder.nativeOrder());
+        org.lwjgl.opengles.GLES20.glGetActiveAttrib(program, index, lengthBuffer, sizeBuffer, typeBuffer, nameBuffer);
+        toArray((IntBuffer) lengthBuffer.rewind(), length, lengthOffset);
+        toArray((IntBuffer) sizeBuffer.rewind(), size, sizeOffset);
+        toArray((IntBuffer) typeBuffer.rewind(), type, typeOffset);
+        toArray((ByteBuffer) nameBuffer.rewind(), name, 0);
+    }
+
+    /**
+     * Copies the data from the source intbuffer to the destination
+     * 
+     * @param source
+     * @param dest
+     * @param destOffset
+     */
+    private void toArray(IntBuffer source, int[] dest, int destOffset) {
+        while (source.hasRemaining()) {
+            dest[destOffset++] = source.get();
+        }
+    }
+
+    /**
+     * Copies the data from the source bytebuffer to the destination
+     * 
+     * @param source
+     * @param dest
+     * @param destOffset
+     */
+    private void toArray(ByteBuffer source, byte[] dest, int destOffset) {
+        while (source.hasRemaining()) {
+            dest[destOffset++] = source.get();
+        }
     }
 
     @Override
-    public void glGetActiveUniform(int program, int index, int nameSize, int[] length, int lengthOffset, int[] size,
-            int sizeOffset, int[] type, int typeOffset, byte[] name, int nameOffset) {
-        throw new IllegalArgumentException();
+    public void glGetActiveUniform(int program, int index, int[] length, int lengthOffset, int[] size,
+            int sizeOffset, int[] type, int typeOffset, byte[] name) {
+        IntBuffer lengthBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer sizeBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer typeBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        ByteBuffer nameBuffer = ByteBuffer.allocateDirect(name.length).order(ByteOrder.nativeOrder());
+        org.lwjgl.opengles.GLES20.glGetActiveUniform(program, index, lengthBuffer, sizeBuffer, typeBuffer, nameBuffer);
+        toArray((IntBuffer) lengthBuffer.rewind(), length, lengthOffset);
+        toArray((IntBuffer) sizeBuffer.rewind(), size, sizeOffset);
+        toArray((IntBuffer) typeBuffer.rewind(), type, typeOffset);
+        toArray((ByteBuffer) nameBuffer.rewind(), name, 0);
     }
 
     @Override
@@ -110,68 +160,64 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, Buffer ptr) {
-        // TODO Auto-generated method stub
+        org.lwjgl.opengles.GLES20.glVertexAttribPointer(index, size, type, normalized, stride, (FloatBuffer) ptr);
 
     }
 
     @Override
     public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, int offset) {
-        // TODO Auto-generated method stub
-
+        org.lwjgl.opengles.GLES20.glVertexAttribPointer(index, size, type, normalized, stride, offset);
     }
 
     @Override
     public void glEnableVertexAttribArray(int index) {
-        // TODO Auto-generated method stub
+        org.lwjgl.opengles.GLES20.glEnableVertexAttribArray(index);
+    }
 
+    private FloatBuffer toFloatBuffer(float[] data, int length, int offset) {
+        FloatBuffer fb = ByteBuffer.allocateDirect(length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        fb.put(data, offset, length);
+        return fb;
     }
 
     @Override
     public void glUniformMatrix4fv(int location, int count, boolean transpose, float[] v, int offset) {
-        // TODO Auto-generated method stub
-
+        org.lwjgl.opengles.GLES20.glUniformMatrix4fv(location, transpose, toFloatBuffer(v, count * 16, offset));
     }
 
     @Override
     public void glUniformMatrix3fv(int location, int count, boolean transpose, float[] v, int offset) {
-        // TODO Auto-generated method stub
-
+        org.lwjgl.opengles.GLES20.glUniformMatrix3fv(location, transpose, toFloatBuffer(v, count * 12, offset));
     }
 
     @Override
     public void glUniformMatrix2fv(int location, int count, boolean transpose, float[] v, int offset) {
-        // TODO Auto-generated method stub
-
+        org.lwjgl.opengles.GLES20.glUniformMatrix2fv(location, transpose, toFloatBuffer(v, count * 8, offset));
     }
 
     @Override
     public void glDrawArrays(int mode, int first, int count) {
-        // TODO Auto-generated method stub
-
+        org.lwjgl.opengles.GLES20.glDrawArrays(mode, first, count);
     }
 
     @Override
     public void glDrawElements(int mode, int count, int type, Buffer indices) {
-        // TODO Auto-generated method stub
-
+        org.lwjgl.opengles.GLES20.glDrawElements(mode, type, (ByteBuffer) indices);
     }
 
     @Override
     public void glDrawElements(int mode, int count, int type, int offset) {
-        // TODO Auto-generated method stub
-
+        org.lwjgl.opengles.GLES20.glDrawElements(mode, count, type, offset);
     }
 
     @Override
     public void glBindAttribLocation(int program, int index, String name) {
-        // TODO Auto-generated method stub
-
+        org.lwjgl.opengles.GLES20.glBindAttribLocation(program, index, name);
     }
 
     @Override
     public void glViewport(int x, int y, int width, int height) {
-        // TODO Auto-generated method stub
-
+        org.lwjgl.opengles.GLES20.glViewport(x, y, width, height);
     }
 
     @Override
@@ -185,8 +231,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glGenTextures(int count, int[] textures, int offset) {
-        // TODO handle count and offset
+    public void glGenTextures(int[] textures) {
         org.lwjgl.opengles.GLES20.glGenTextures(textures);
     }
 
@@ -297,8 +342,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glDeleteTextures(int count, int[] textures, int offset) {
-        // TODO handle count and offset
+    public void glDeleteTextures(int[] textures) {
         org.lwjgl.opengles.GLES20.glDeleteTextures(textures);
     }
 

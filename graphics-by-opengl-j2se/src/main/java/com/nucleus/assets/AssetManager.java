@@ -193,7 +193,7 @@ public class AssetManager {
         for (Texture2D texture : textures.values()) {
             texNames[i++] = texture.getName();
         }
-        wrapper.glDeleteTextures(texNames.length,  texNames,  0);
+        wrapper.glDeleteTextures(texNames);
     }
 
     private void deletePrograms(GLES20Wrapper wrapper) {

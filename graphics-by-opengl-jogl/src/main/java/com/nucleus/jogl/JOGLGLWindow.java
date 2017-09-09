@@ -25,7 +25,6 @@ import com.nucleus.WindowListener;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.opengl.GLESWrapper;
-import com.nucleus.renderer.Window;
 
 /**
  * 
@@ -51,7 +50,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
     private boolean mouseConfined = false;
     private int swapInterval = 1;
     protected volatile boolean contextCreated = false;
-    protected CoreApp.CoreAppStarter coreAppStarter;
     protected GLCanvas canvas;
     protected Frame frame;
     protected GLWindow glWindow;
@@ -75,18 +73,18 @@ public abstract class JOGLGLWindow extends J2SEWindow
         this.swapInterval = swapInterval;
         this.undecorated = undecorated;
         this.fullscreen = fullscreen;
-    	create(width, height, glProfile, coreAppStarter);
+        create(width, height, glProfile, coreAppStarter);
     }
 
     private void create(int width, int height, GLProfile glProfile, CoreApp.CoreAppStarter coreAppStarter) {
-    	if (coreAppStarter == null) {
-    		throw new IllegalArgumentException("CoreAppStarter is null");
-    	}
-    	this.coreAppStarter = coreAppStarter;
+        if (coreAppStarter == null) {
+            throw new IllegalArgumentException("CoreAppStarter is null");
+        }
+        this.coreAppStarter = coreAppStarter;
         windowSize = new Dimension(width, height);
         createNEWTWindow(width, height, glProfile);
     }
-    
+
     /**
      * Creates the JOGL display and OpenGLES
      * 
@@ -104,7 +102,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
         glWindow = GLWindow.create(glCapabilities);
         glWindow.setUndecorated(undecorated);
         InsetsImmutable insets = glWindow.getInsets();
-        glWindow.setSize( undecorated ? windowSize.getWidth() : windowSize.getWidth() + insets.getTotalWidth(),
+        glWindow.setSize(undecorated ? windowSize.getWidth() : windowSize.getWidth() + insets.getTotalWidth(),
                 undecorated ? windowSize.getHeight() : windowSize.getHeight() + insets.getTotalHeight());
         glWindow.setAlwaysOnTop(alwaysOnTop);
         glWindow.setFullscreen(fullscreen);
@@ -182,11 +180,10 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void init(GLAutoDrawable drawable) {
-    	coreAppStarter.createCoreApp(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
+        internalCreateCoreApp(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
         drawable.swapBuffers();
         drawable.getGL().setSwapInterval(swapInterval);
-        // Call contextCreated since the renderer is already initialized and has a created EGL context.
-        coreApp.contextCreated(Window.getInstance().getWidth(), Window.getInstance().getHeight());
+        internalContextCreated(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
     }
 
     @Override

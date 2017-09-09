@@ -267,11 +267,9 @@ public interface NucleusRenderer {
     /**
      * Generate GL named object buffers
      * 
-     * @param count Number of named buffers to create
      * @param names Destination for buffer names
-     * @param offset Offset into names
      */
-    public void genBuffers(int count, int[] names, int offset);
+    public void genBuffers(int[] names);
 
     /**
      * Deletes the named object buffers generated with a call to {@link #genBuffers(int, int[], int)}
