@@ -19,13 +19,12 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener {
 
     public JAWTWindow(CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
         super(coreAppStarter, width, height);
-        init(width, height, coreAppStarter);
+        init(coreAppStarter, width, height);
     }
 
-    private void init(int width, int height, CoreApp.CoreAppStarter coreAppStarter) {
+    private void init(CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
         canvas = new LWJGLCanvas(this, width, height);
         final JFrame frame = new JFrame("JAWT Demo");
-        this.coreAppStarter = coreAppStarter;
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -54,7 +53,13 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener {
     @Override
     public void contextCreated(int width, int height) {
         coreAppStarter.createCoreApp(width, height);
-        coreApp.contextCreated(width, height);
+        internalContextCreated(width, height);
+    }
+
+    @Override
+    public void setCoreApp(CoreApp coreApp) {
+        super.setCoreApp(coreApp);
+        canvas.setCoreApp(coreApp);
     }
 
 }

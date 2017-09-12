@@ -2,6 +2,7 @@ package com.nucleus.geometry;
 
 import java.io.IOException;
 
+import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
 
@@ -27,7 +28,9 @@ public interface MeshFactory {
      * @param parent The node that the mesh will belong to.
      * @return The mesh that can be rendered.
      * @throws IOException If an asset such as texture could not be loaded.
+     * @throws GLException If there is a GL relate error, for instance when setting VBO data
+     * 
      */
-    public Mesh createMesh(NucleusRenderer renderer, Node parent) throws IOException;
+    public Mesh createMesh(NucleusRenderer renderer, Node parent) throws IOException, GLException;
 
 }

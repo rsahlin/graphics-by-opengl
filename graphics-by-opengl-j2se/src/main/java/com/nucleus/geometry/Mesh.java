@@ -10,6 +10,7 @@ import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.BufferObjectsFactory;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.ShaderProgram;
@@ -141,8 +142,10 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * 
          * @return The mesh
          * @throws IllegalArgumentException If the needed arguments has not been set
+         * @throws IOException If there is an error loading data, for instance texture
+         * @throws GLException If there is a problem calling GL, for instance when setting VBO data
          */
-        public Mesh create() throws IOException {
+        public Mesh create() throws IOException, GLException {
             validate();
             Mesh mesh = createMesh();
             mesh.createMesh(texture, material, vertexCount, indiceCount, mode);

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.nucleus.assets.AssetManager;
 import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.LineDrawerNode;
@@ -18,7 +19,7 @@ import com.nucleus.texturing.TextureType;
 public class DefaultMeshFactory implements MeshFactory {
 
     @Override
-    public Mesh createMesh(NucleusRenderer renderer, Node parent) throws IOException {
+    public Mesh createMesh(NucleusRenderer renderer, Node parent) throws IOException, GLException {
         
         if (parent instanceof LineDrawerNode) {
             Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);

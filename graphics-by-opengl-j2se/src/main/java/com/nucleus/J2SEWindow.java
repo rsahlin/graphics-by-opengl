@@ -50,23 +50,36 @@ public abstract class J2SEWindow {
 
     /**
      * Call this to create the core app, call this before calling {@link #internalContextCreated(int, int)}
+     * This will display the splash screen - if needed make sure to swap buffers after calling this method to show the
+     * splash.
      * 
      * @param width
      * @param height
      */
-    protected void internalCreateCoreApp(int width, int height) {
+    public void internalCreateCoreApp(int width, int height) {
         coreAppStarter.createCoreApp(width, height);
     }
 
     /**
      * Call this when GL context is created to create core app and prepare it, shall be called after
      * {@link #internalContextCreated(int, int)}
+     * This will load the scene and allocate objects, after this method returns the CoreApp shall be driven by calling
+     * {@link CoreApp#drawFrame()}
      * 
      * @param width
      * @param height
      */
-    protected void internalContextCreated(int width, int height) {
+    public void internalContextCreated(int width, int height) {
         coreApp.contextCreated(width, height);
+    }
+
+    /**
+     * Used to drive rendering for window types that does not provide paint callbacks.
+     * Call this method until app should stop
+     * Override in subclasses
+     */
+    public void drawFrame() {
+
     }
 
 }

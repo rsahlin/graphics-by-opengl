@@ -27,7 +27,6 @@ import static org.lwjgl.system.windows.GDI32.PFD_MAIN_PLANE;
 import static org.lwjgl.system.windows.GDI32.PFD_SUPPORT_OPENGL;
 import static org.lwjgl.system.windows.GDI32.PFD_TYPE_RGBA;
 import static org.lwjgl.system.windows.GDI32.SetPixelFormat;
-import static org.lwjgl.system.windows.GDI32.SwapBuffers;
 
 import java.awt.Canvas;
 import java.awt.Graphics;
@@ -40,10 +39,13 @@ import org.lwjgl.system.jawt.JAWT;
 import org.lwjgl.system.jawt.JAWTDrawingSurface;
 import org.lwjgl.system.jawt.JAWTDrawingSurfaceInfo;
 import org.lwjgl.system.jawt.JAWTWin32DrawingSurfaceInfo;
+import org.lwjgl.system.windows.GDI32;
 import org.lwjgl.system.windows.PIXELFORMATDESCRIPTOR;
 import org.lwjgl.system.windows.WinBase;
 
-import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.CoreApp;
+import com.nucleus.J2SEWindow;
+import com.nucleus.SimpleLogger;
 
 /**
  * A Canvas component that uses OpenGL for rendering.
@@ -60,20 +62,21 @@ public class LWJGLCanvas extends Canvas {
     private long hglrc;
 
     private GLESCapabilities caps;
-    RenderContextListener listener;
+    J2SEWindow window;
+    CoreApp coreApp;
     int width;
     int height;
 
-    public LWJGLCanvas(RenderContextListener listener, int width, int height) {
+    public LWJGLCanvas(J2SEWindow window, int width, int height) {
         awt = JAWT.calloc();
         awt.version(JAWT_VERSION_1_4);
         if (!JAWT_GetAWT(awt)) {
             throw new RuntimeException("GetAWT failed");
         }
-        if (listener == null) {
-            throw new IllegalArgumentException("Listener is null");
+        if (window == null) {
+            throw new IllegalArgumentException("Window is null");
         }
-        this.listener = listener;
+        this.window = window;
         this.width = width;
         this.height = height;
         setSize(width, height);
@@ -109,7 +112,12 @@ public class LWJGLCanvas extends Canvas {
                     long hdc = dsi_win.hdc();
                     if (hdc != NULL) {
                         if (hglrc == NULL) {
-                            createContext(dsi_win);
+                            try {
+                                createContext(dsi_win);
+                            } catch (Throwable t) {
+                                this.setVisible(false);
+                                throw new IllegalArgumentException("Could not create context:", t);
+                            }
                         } else {
                             if (!wglMakeCurrent(hdc, hglrc)) {
                                 throw new IllegalStateException("wglMakeCurrent() failed");
@@ -117,9 +125,12 @@ public class LWJGLCanvas extends Canvas {
 
                             GLES.setCapabilities(caps);
                         }
-                        // Call core app to draw
-                        SwapBuffers(hdc);
-
+                        if (coreApp != null) {
+                            coreApp.drawFrame();
+                            GDI32.SwapBuffers(hdc);
+                        } else {
+                            SimpleLogger.d(getClass(), "CoreApp is null");
+                        }
                         // wglMakeCurrent(NULL, NULL);
                         // GL.setCapabilities(null);
                     }
@@ -169,19 +180,24 @@ public class LWJGLCanvas extends Canvas {
             }
         }
 
-        hglrc = wglCreateContext(hdc);
+        long context = wglCreateContext(hdc);
 
-        if (hglrc == NULL) {
+        if (context == NULL) {
             throw new IllegalStateException("wglCreateContext() failed");
         }
-        if (!wglMakeCurrent(hdc, hglrc)) {
+        if (!wglMakeCurrent(hdc, context)) {
             throw new IllegalStateException("wglMakeCurrent() failed");
         }
-        // Bypasses the default create() method.
-        Configuration.OPENGLES_EXPLICIT_INIT.set(true);
-        GLES.create(GL.getFunctionProvider());
-        caps = GLES.createCapabilities();
-        listener.contextCreated(width, height);
+        if (caps == null) {
+            // Bypasses the default create() method.
+            Configuration.OPENGLES_EXPLICIT_INIT.set(true);
+            GLES.create(GL.getFunctionProvider());
+            caps = GLES.createCapabilities();
+            window.internalCreateCoreApp(width, height);
+            GDI32.SwapBuffers(hdc);
+            window.internalContextCreated(width, height);
+        }
+        hglrc = context;
     }
 
     public void destroy() {
@@ -190,6 +206,10 @@ public class LWJGLCanvas extends Canvas {
         if (hglrc != NULL) {
             wglDeleteContext(hglrc);
         }
+    }
+
+    protected void setCoreApp(CoreApp coreApp) {
+        this.coreApp = coreApp;
     }
 
 }

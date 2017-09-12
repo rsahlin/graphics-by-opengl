@@ -16,6 +16,8 @@ public class LWJGL3Application extends J2SEWindowApplication {
      */
     private static final String WINDOW_TYPE_KEY = "WINDOWTYPE";
 
+    private boolean running = false;
+
     public enum WindowType {
         GLFW(),
         JAWT();
@@ -85,6 +87,23 @@ public class LWJGL3Application extends J2SEWindowApplication {
 
     @Override
     public void windowClosed() {
+    }
+
+    /**
+     * Call this method after instantiation to drive rendering if it is not driven by paint() method from window.
+     * Will automatically exit if window type is one that drives rendering via paint()
+     */
+
+    public void run() {
+        switch (windowType) {
+        case GLFW:
+            running = true;
+            while (running) {
+                window.drawFrame();
+            }
+            break;
+        default:
+        }
     }
 
 }

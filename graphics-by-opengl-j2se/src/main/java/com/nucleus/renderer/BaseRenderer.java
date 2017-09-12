@@ -182,7 +182,6 @@ class BaseRenderer implements NucleusRenderer {
      * @throws GLException
      */
     private void setRenderSetting(RenderSettings setting) throws GLException {
-
         int flags = setting.getChangeFlag();
         if ((flags & RenderSettings.CHANGE_FLAG_CLEARCOLOR) != 0) {
             float[] clear = setting.getClearColor();
@@ -225,7 +224,6 @@ class BaseRenderer implements NucleusRenderer {
             
         }
         GLUtils.handleError(gles, "setRenderSettings ");
-
     }
 
     @Override

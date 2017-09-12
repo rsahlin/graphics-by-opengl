@@ -7,6 +7,7 @@ import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshFactory;
+import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node.MeshType;
@@ -123,7 +124,7 @@ public class DefaultNodeFactory implements NodeFactory {
                 node.addMesh(mesh, MeshType.MAIN);
             }
             return node;
-        } catch (IOException e) {
+        } catch (IOException | GLException e) {
             throw new NodeException(e);
         }
     }
@@ -140,7 +141,7 @@ public class DefaultNodeFactory implements NodeFactory {
                 node.addMesh(mesh, MeshType.MAIN);
             }
             return node;
-        } catch (InstantiationException | IllegalAccessException | IOException e) {
+        } catch (InstantiationException | IllegalAccessException | IOException | GLException e) {
             throw new NodeException(e);
         }
     }

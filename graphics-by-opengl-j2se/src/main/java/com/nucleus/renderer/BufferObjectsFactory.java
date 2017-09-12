@@ -5,6 +5,8 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.VertexBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.GLUtils;
 
 /**
  * This class takes care of allocation and release of buffer objects
@@ -34,8 +36,9 @@ public class BufferObjectsFactory {
      * 
      * @param renderer
      * @param mesh
+     * @throws GLException If there is an error setting buffer data
      */
-    public void createVBOs(NucleusRenderer renderer, Mesh mesh) {
+    public void createVBOs(NucleusRenderer renderer, Mesh mesh) throws GLException {
         int vboCount = mesh.getBufferNameCount();
         // TODO Need a way to tie the allocated buffer names to the element/vertex buffers
         int[] names = new int[vboCount];
@@ -56,6 +59,7 @@ public class BufferObjectsFactory {
                     indices.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
             indices.setDirty(false);
         }
+        GLUtils.handleError(renderer.getGLES(), "createVBOs ");
     }
 
 }
