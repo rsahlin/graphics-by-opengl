@@ -166,10 +166,9 @@ class BaseRenderer implements NucleusRenderer {
             gles.glClear(clearFunc);
         }
         for (FrameListener listener : frameListeners) {
+            listener.processFrame(timeKeeper.getDelta());
             listener.updateGLData();
         }
-        // matrixEngine.setProjectionMatrix(viewFrustum);
-        // mvpMatrix = getViewFrustum().getProjectionMatrix();
         this.modelMatrix = null;
 
         return deltaTime;

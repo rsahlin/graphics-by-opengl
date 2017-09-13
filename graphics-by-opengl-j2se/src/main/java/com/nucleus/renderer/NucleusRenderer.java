@@ -78,6 +78,7 @@ public interface NucleusRenderer {
      * @author Richard Sahlin
      *
      */
+    @Deprecated
     public interface FrameListener {
         /**
          * Called when a new frame shall be processed (by the logic)
