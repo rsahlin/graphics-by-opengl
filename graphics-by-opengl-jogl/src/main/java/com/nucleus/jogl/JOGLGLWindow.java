@@ -224,23 +224,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
         int[] ypos = e.getAllY();
         int count = e.getPointerCount();
         for (int i = 0; i < count; i++) {
-            short id = e.getPointerId(i);
-            switch (action) {
-            case DOWN:
-                // Recording down for multi touch - all pointers will be re-sent when a new finger goes down.
-                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN,
-                        e.getWhen(), id,
-                        new float[] { xpos[i], ypos[i] });
-                break;
-            case UP:
-                coreApp.getInputProcessor().pointerEvent(PointerAction.UP, e.getWhen(), id, new float[] {
-                        xpos[i], ypos[i] });
-                break;
-            case MOVE:
-                coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, e.getWhen(), id, new float[] {
-                        xpos[i], ypos[i] });
-            default:
-            }
+            handleMouseEvent(xpos[i], ypos[i], e.getPointerId(i), e.getWhen(), action);
         }
     }
 

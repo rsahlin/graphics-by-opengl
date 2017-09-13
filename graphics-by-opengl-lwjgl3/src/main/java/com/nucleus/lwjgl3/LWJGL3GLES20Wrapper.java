@@ -66,14 +66,12 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glBufferData(int target, int size, Buffer data, int usage) {
-        if (data instanceof ByteBuffer) {
+        if (data instanceof FloatBuffer) {
+            org.lwjgl.opengles.GLES20.glBufferData(target, (FloatBuffer) data, usage);
+        } else if (data instanceof ByteBuffer) {
             org.lwjgl.opengles.GLES20.glBufferData(target, (ByteBuffer) data, usage);
         } else {
-            if (data instanceof FloatBuffer) {
-                org.lwjgl.opengles.GLES20.glBufferData(target, (FloatBuffer) data, usage);
-            } else {
-                throw new IllegalArgumentException("Not handled");
-            }
+            throw new IllegalArgumentException("Not handled");
         }
     }
 

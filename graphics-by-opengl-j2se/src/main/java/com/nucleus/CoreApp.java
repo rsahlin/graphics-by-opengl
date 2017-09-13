@@ -15,7 +15,6 @@ import com.nucleus.mmi.core.PointerInputProcessor;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
@@ -236,8 +235,6 @@ public class CoreApp implements RenderContextListener {
         if (!hasCalledCreated) {
             throw new IllegalArgumentException(NOT_CALLED_CREATECONTEXT);
         }
-        renderer.getRenderSettings().getClearColor()[1] += 0.01f;
-        renderer.getRenderSettings().setChangeFlag(RenderSettings.CHANGE_FLAG_CLEARCOLOR);
         // If renderer is null it means CoreApp is destroyed - do nothing.
         if (renderer != null) {
             try {
@@ -318,7 +315,6 @@ public class CoreApp implements RenderContextListener {
         builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
                 .setNode(NodeType.layernode);
         RootNode root = builder.create();
-        GLUtils.handleError(renderer.getGLES(), "setRenderSettings ");
         renderer.beginFrame();
         renderer.render(root);
         renderer.endFrame();

@@ -1,5 +1,6 @@
 package com.nucleus;
 
+import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
@@ -62,7 +63,7 @@ public abstract class J2SEWindow {
 
     /**
      * Call this when GL context is created to create core app and prepare it, shall be called after
-     * {@link #internalContextCreated(int, int)}
+     * {@link #internalCreateCoreApp(int, int)}
      * This will load the scene and allocate objects, after this method returns the CoreApp shall be driven by calling
      * {@link CoreApp#drawFrame()}
      * 
@@ -80,6 +81,33 @@ public abstract class J2SEWindow {
      */
     public void drawFrame() {
 
+    }
+
+    /**
+     * Handles a pointer action, this will pass on the pointer event to app.
+     * 
+     * @param xpos
+     * @param ypos
+     * @param pointer The pointer index, 0 and upwards
+     * @param timestamp
+     * @param action
+     */
+    protected void handleMouseEvent(int xpos, int ypos, int pointer, long timestamp, PointerAction action) {
+        switch (action) {
+        case DOWN:
+            coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN,
+                    timestamp, pointer,
+                    new float[] { xpos, ypos });
+            break;
+        case UP:
+            coreApp.getInputProcessor().pointerEvent(PointerAction.UP, timestamp, pointer, new float[] {
+                    xpos, ypos });
+            break;
+        case MOVE:
+            coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, timestamp, pointer, new float[] {
+                    xpos, ypos });
+        default:
+        }
     }
 
 }
