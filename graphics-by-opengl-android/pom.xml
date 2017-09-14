@@ -27,8 +27,10 @@
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                </configuration>
+                   <configuration>
+                       <source>1.7</source>
+                       <target>1.7</target>
+                   </configuration>
             </plugin>
         </plugins>
         <pluginManagement>
