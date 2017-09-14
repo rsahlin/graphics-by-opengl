@@ -117,6 +117,11 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
+    public void glDeleteProgram(int program) {
+        gles.glDeleteProgram(program);
+    }
+
+    @Override
     public void glGetShaderiv(int shader, int pname, IntBuffer params) {
         gles.glGetShaderiv(shader, pname, params);
 
@@ -135,18 +140,18 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glGetActiveAttrib(int program, int index, int bufsize, int[] length, int lengthOffset, int[] size,
-            int sizeOffset, int[] type, int typeOffset, byte[] name, int nameOffset) {
-        gles.glGetActiveAttrib(program, index, bufsize, length, lengthOffset, size, sizeOffset, type, typeOffset,
-                name, nameOffset);
+    public void glGetActiveAttrib(int program, int index, int[] length, int lengthOffset, int[] size,
+            int sizeOffset, int[] type, int typeOffset, byte[] name) {
+        gles.glGetActiveAttrib(program, index, name.length, length, lengthOffset, size, sizeOffset, type, typeOffset,
+                name, 0);
 
     }
 
     @Override
-    public void glGetActiveUniform(int program, int index, int bufsize, int[] length, int lengthOffset, int[] size,
-            int sizeOffset, int[] type, int typeOffset, byte[] name, int nameOffset) {
-        gles.glGetActiveUniform(program, index, bufsize, length, lengthOffset, size, sizeOffset, type, typeOffset,
-                name, nameOffset);
+    public void glGetActiveUniform(int program, int index, int[] length, int lengthOffset, int[] size,
+            int sizeOffset, int[] type, int typeOffset, byte[] name) {
+        gles.glGetActiveUniform(program, index, name.length, length, lengthOffset, size, sizeOffset, type, typeOffset,
+                name, 0);
 
     }
 
@@ -246,8 +251,8 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glGenTextures(int count, int[] textures, int offset) {
-        gles.glGenTextures(count, textures, offset);
+    public void glGenTextures(int[] textures) {
+        gles.glGenTextures(textures.length, textures, 0);
 
     }
 
@@ -269,8 +274,8 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glGetIntegerv(int pname, int[] params, int offset) {
-        gles.glGetIntegerv(pname, params, offset);
+    public void glGetIntegerv(int pname, int[] params) {
+        gles.glGetIntegerv(pname, params, 0);
 
     }
 
@@ -336,6 +341,11 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
+    public void glDeleteTextures(int[] textures) {
+        gles.glDeleteTextures(textures.length, textures, 0);
+    }
+
+    @Override
     public void glBlendEquationSeparate(int modeRGB, int modeAlpha) {
         gles.glBlendEquationSeparate(modeRGB, modeAlpha);
 
@@ -348,8 +358,8 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glGenBuffers(int n, int[] buffers, int offset) {
-        gles.glGenBuffers(n, buffers, offset);
+    public void glGenBuffers(int[] buffers) {
+        gles.glGenBuffers(buffers.length, buffers, 0);
     }
 
     @Override
@@ -406,6 +416,11 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glFinish() {
         gles.glFinish();
+    }
+
+    @Override
+    public void glLineWidth(float width) {
+        gles.glLineWidth(width);
     }
 
 }

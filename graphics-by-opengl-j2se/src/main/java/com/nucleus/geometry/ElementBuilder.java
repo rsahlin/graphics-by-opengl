@@ -16,12 +16,9 @@ public class ElementBuilder {
      * Builds an element buffer for quads, ie 4 separate vertices are used to create one quad (2 triangles)
      * There is no sharing of vertices between the quads, ie each quad is separated.
      * Only supports ElementBuffer of type SHORT
-     * Triangles are built clockwise:
-     * 1-2
-     * --3
-     * 
-     * 1--
-     * 4-3
+     * Triangles are built this order
+     * 1-2-3
+     * 1-4-3
      * 
      * @param quadStorage
      * @param count Number of quads to build
@@ -34,6 +31,7 @@ public class ElementBuilder {
         }
 
         ShortBuffer buffer = quadStorage.indices.asShortBuffer();
+        buffer.position(0);
         short[] quadIndices = new short[6];
         for (int i = 0; i < count; i++) {
             quadIndices[0] = (short) index;
@@ -43,6 +41,42 @@ public class ElementBuilder {
             quadIndices[4] = (short) (index + 2);
             quadIndices[5] = (short) (index + 3);
             buffer.put(quadIndices, 0, 6);
+            index += 4;
+        }
+
+        return quadStorage;
+    }
+
+    /**
+     * Builds an element buffer for a line quad, ie 4 lines
+     * There is no sharing of vertices between the lines, each line is separated.
+     * Only supports ElementBuffer of type SHORT
+     * Lines are built using this order
+     * 0-1,1-2,2-3,3-0
+     * 
+     * @param quadStorage
+     * @param count Number of quads to build
+     * @param index First vertex to index
+     * @return The ElementBuffer containing the quad indices
+     */
+    public static ElementBuffer buildQuadLineBuffer(ElementBuffer quadStorage, int count, int index) {
+        if (quadStorage.type == Type.BYTE) {
+            throw new IllegalArgumentException("Invalid type " + quadStorage.type);
+        }
+
+        ShortBuffer buffer = quadStorage.indices.asShortBuffer();
+        buffer.position(0);
+        short[] quadIndices = new short[8];
+        for (int i = 0; i < count; i++) {
+            quadIndices[0] = (short) index;
+            quadIndices[1] = (short) (index + 1);
+            quadIndices[2] = (short) (index + 1);
+            quadIndices[3] = (short) (index + 2);
+            quadIndices[4] = (short) (index + 2);
+            quadIndices[5] = (short) (index + 3);
+            quadIndices[6] = (short) (index + 3);
+            quadIndices[7] = (short) index;
+            buffer.put(quadIndices, 0, 8);
             index += 4;
         }
 

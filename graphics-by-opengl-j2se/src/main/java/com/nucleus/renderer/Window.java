@@ -1,5 +1,7 @@
 package com.nucleus.renderer;
 
+import com.nucleus.SimpleLogger;
+
 /**
  * The size of the renderable area, this is a singleton class since only one instance of GL is supported.
  * 
@@ -38,6 +40,7 @@ public class Window {
      * @param height
      */
     protected void setSize(int width, int height) {
+        SimpleLogger.d(getClass(), "setSize() " + width + ", " + height);
         this.width = width;
         this.height = height;
     }

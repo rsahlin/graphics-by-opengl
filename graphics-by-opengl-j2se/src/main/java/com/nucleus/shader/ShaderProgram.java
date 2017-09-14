@@ -2,12 +2,15 @@ package com.nucleus.shader;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.AttributeUpdater.Property;
@@ -15,6 +18,7 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.VertexBuffer;
 import com.nucleus.io.StreamUtils;
+import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
@@ -127,6 +131,8 @@ public abstract class ShaderProgram {
      * Calculated in create program
      */
     protected ShaderVariable[][] attributeVariables;
+
+    protected GlobalLight globalLight = GlobalLight.getInstance();
     /**
      * The size of each buffer for the attribute variables
      */
@@ -284,7 +290,10 @@ public abstract class ShaderProgram {
                 array = new ArrayList<ShaderVariable>();
                 svPerBuffer.put(vm.getBufferIndex(), array);
             }
-            array.add(getShaderVariable(vm));
+            ShaderVariable sv = getShaderVariable(vm);
+            if (sv != null) {
+                array.add(getShaderVariable(vm));
+            }
         }
         for (BufferIndex key : svPerBuffer.keySet()) {
             ArrayList<ShaderVariable> defined = svPerBuffer.get(key);
@@ -320,7 +329,12 @@ public abstract class ShaderProgram {
      * @return
      */
     public int getAttributesPerVertex() {
-        return attributesPerVertex[BufferIndex.ATTRIBUTES.index];
+        if (attributesPerVertex.length > BufferIndex.ATTRIBUTES.index) {
+            return attributesPerVertex[BufferIndex.ATTRIBUTES.index];
+        } else {
+            // No attribute buffer for this program.
+            return 0;
+        }
     }
 
     /**
@@ -354,12 +368,15 @@ public abstract class ShaderProgram {
     protected VertexBuffer createAttributeBuffer(BufferIndex index, int verticeCount, Mesh mesh) {
         switch (index) {
         case ATTRIBUTES:
-            VertexBuffer buffer = new VertexBuffer(verticeCount, getAttributesPerVertex(),
-                    GLES20.GL_FLOAT);
-            if (mesh instanceof Consumer) {
-                ((Consumer) mesh).bindAttributeBuffer(buffer);
+            int attrs = getAttributesPerVertex();
+            if (attrs > 0) {
+                VertexBuffer buffer = new VertexBuffer(verticeCount, attrs, GLES20.GL_FLOAT);
+                if (mesh instanceof Consumer) {
+                    ((Consumer) mesh).bindAttributeBuffer(buffer);
+                }
+                return buffer;
             }
-            return buffer;
+            return null;
         case VERTICES:
             return new VertexBuffer(verticeCount, getVertexStride(), GLES20.GL_FLOAT);
         case ATTRIBUTES_STATIC:
@@ -380,8 +397,10 @@ public abstract class ShaderProgram {
     public void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
         for (int i = 0; i < attributeVariables.length; i++) {
             VertexBuffer buffer = mesh.getVerticeBuffer(i);
-            gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attributeVariables[i]);
-            GLUtils.handleError(gles, "glVertexAttribPointers ");
+            if (buffer != null) {
+                gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attributeVariables[i]);
+                GLUtils.handleError(gles, "glVertexAttribPointers ");
+            }
         }
     }
 
@@ -486,12 +505,12 @@ public abstract class ShaderProgram {
         for (int i = 0; i < count; i++) {
             switch (type) {
             case ATTRIBUTE:
-                gles.glGetActiveAttrib(program, i, nameBuffer.length, written, NAME_LENGTH_OFFSET, written,
-                        SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer, 0);
+                gles.glGetActiveAttrib(program, i, written, NAME_LENGTH_OFFSET, written,
+                        SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
                 break;
             case UNIFORM:
-                gles.glGetActiveUniform(program, i, nameBuffer.length, written, NAME_LENGTH_OFFSET, written,
-                        SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer, 0);
+                gles.glGetActiveUniform(program, i, written, NAME_LENGTH_OFFSET, written,
+                        SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + type);
@@ -576,10 +595,11 @@ public abstract class ShaderProgram {
      * @throws GLException
      */
     public void checkCompileStatus(GLES20Wrapper gles, int shader, String sourceName) throws GLException {
-        IntBuffer compileStatus = IntBuffer.allocate(1);
+        IntBuffer compileStatus = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
         gles.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compileStatus);
         if (compileStatus.get(0) != GLES20.GL_TRUE) {
-            throw new GLException(COMPILE_SHADER_ERROR + sourceName + "\n" + gles.glGetShaderInfoLog(shader),
+            throw new GLException(COMPILE_SHADER_ERROR + sourceName + " : " + compileStatus.get(0) + "\n"
+                    + gles.glGetShaderInfoLog(shader),
                     GLES20.GL_FALSE);
         }
     }
@@ -653,7 +673,9 @@ public abstract class ShaderProgram {
             // variable.setOffset(vm.getOffset());
             shaderVariables[vm.getIndex()] = variable;
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Variable has no mapping: " + variable.getName());
+            throw new IllegalArgumentException(
+                    "Variable has no mapping to shader variable (ie used in shader but not defined in program) : "
+                            + variable.getName());
         }
     }
 
@@ -669,7 +691,7 @@ public abstract class ShaderProgram {
      * @param fragmentName Name of fragment shader to load, compile and link
      */
     protected void createProgram(GLES20Wrapper gles, String vertexName, String fragmentName) {
-        System.out.println("Creating program for: " + vertexShader + " and " + fragmentShader);
+        SimpleLogger.d(getClass(), "Creating program for: " + vertexName + " and " + fragmentName);
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream vertexStream = null;
         InputStream fragmentStream = null;
@@ -683,6 +705,8 @@ public abstract class ShaderProgram {
             }
             fragmentShader = gles.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
             program = gles.glCreateProgram();
+            SimpleLogger.d(getClass(),
+                    "Program name: " + program + ", vertex: " + vertexShader + " fragment: " + fragmentShader);
             compileShader(gles, vertexStream, vertexShader, vertexName);
             compileShader(gles, fragmentStream, fragmentShader, fragmentName);
             linkProgram(gles, program, vertexShader, fragmentShader);
@@ -856,4 +880,30 @@ public abstract class ShaderProgram {
         uniforms[screenSizeOffset++] = Window.getInstance().getWidth();
         uniforms[screenSizeOffset++] = Window.getInstance().getHeight();
     }
+
+    /**
+     * Sets the ambient light color in uniform data
+     * 
+     * @param uniforms
+     * @param uniformAmbient
+     * @param material
+     */
+    protected void setAmbient(float[] uniforms, ShaderVariable uniformAmbient, float[] ambient) {
+        int offset = uniformAmbient.getOffset();
+        uniforms[offset++] = ambient[0];
+        uniforms[offset++] = ambient[1];
+        uniforms[offset++] = ambient[2];
+        uniforms[offset++] = ambient[3];
+    }
+
+    /**
+     * Returns the key value for this shader program, this is the classname and possible name of shader used.
+     * This method is used by {@link AssetManager} when programs are compiled and stored.
+     * 
+     * @return Key value for this shader program.
+     */
+    public String getKey() {
+        return getClass().getCanonicalName();
+    }
+
 }

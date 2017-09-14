@@ -1,17 +1,13 @@
 package com.nucleus.exporter;
 
 import java.util.HashMap;
-import java.util.List;
 
-import com.nucleus.assets.AssetManager;
-import com.nucleus.common.Key;
-import com.nucleus.geometry.Mesh;
-import com.nucleus.scene.ViewNode;
+import com.nucleus.common.Type;
+import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.SwitchNode;
-import com.nucleus.texturing.Texture2D;
 
 public class NucleusNodeExporter implements NodeExporter {
 
@@ -24,11 +20,11 @@ public class NucleusNodeExporter implements NodeExporter {
     private HashMap<String, NodeExporter> nodeExporters = new HashMap<String, NodeExporter>();
 
     @Override
-    public void registerNodeExporter(Key type, NodeExporter exporter) {
-        if (nodeExporters.containsKey(type.getKey())) {
-            throw new IllegalArgumentException(ALREADY_REGISTERED_TYPE + type.getKey());
+    public void registerNodeExporter(Type<Node> type, NodeExporter exporter) {
+        if (nodeExporters.containsKey(type.getName())) {
+            throw new IllegalArgumentException(ALREADY_REGISTERED_TYPE + type.getName());
         }
-        nodeExporters.put(type.getKey(), exporter);
+        nodeExporters.put(type.getName(), exporter);
     }
 
     @Override
@@ -44,7 +40,7 @@ public class NucleusNodeExporter implements NodeExporter {
         }
         for (Node child : scene.getChildren()) {
             NodeExporter exporter2 = nodeExporters.get(child.getType());
-            export.addChild(exporter2.exportNode(child, rootNode));
+            // export.addChild(exporter2.exportNode(child, rootNode));
         }
     }
 
@@ -54,55 +50,6 @@ public class NucleusNodeExporter implements NodeExporter {
 
     }
 
-    /**
-     * Exports a mesh to scenedata
-     * This will currently only export the texture(s)
-     * 
-     * @param mesh
-     * @param sceneData
-     */
-    protected void exportMesh(Mesh mesh, RootNode sceneData) {
-        exportTextures(mesh.getTextures(), sceneData);
-    }
-
-    /**
-     * Exports the meshes to scenedata
-     * 
-     * 
-     * @param meshes
-     * @param sceneData
-     */
-    protected void exportMeshes(List<Mesh> meshes, RootNode sceneData) {
-        for (Mesh mesh : meshes) {
-            exportMesh(mesh, sceneData);
-        }
-    }
-
-    /**
-     * Exports the textures texture to scenedata, this will lookup the external reference for the specified texture
-     * and add the texture to scenedata.
-     * 
-     * @param texture
-     * @param sceneData
-     */
-    protected void exportTextures(Texture2D[] texture, RootNode sceneData) {
-        for (Texture2D t : texture) {
-            exportTexture(t, sceneData);
-        }
-
-    }
-
-    /**
-     * Exports the textures texture to scenedata, this will lookup the external reference for the specified texture
-     * and add the texture to scenedata.
-     * 
-     * @param texture The texture to export, will be added to scenedata after the external reference has been set.
-     * @param sceneData
-     */
-    protected void exportTexture(Texture2D texture, RootNode sceneData) {
-        texture.setExternalReference(AssetManager.getInstance().getSourceReference(texture.getId()));
-        sceneData.addResource(texture);
-    }
 
     @Override
     public Node exportNode(Node source, RootNode rootNode) {
@@ -110,25 +57,24 @@ public class NucleusNodeExporter implements NodeExporter {
         Node created;
         switch (type) {
         case node:
-            created = source.copy();
+            created = source.createInstance(rootNode);
             break;
-        case viewnode:
-            created = ((ViewNode) source).copy();
+        case layernode:
+            created = ((LayerNode) source).createInstance(rootNode);
             break;
         case switchnode:
-            created = ((SwitchNode) source).copy();
+            created = ((SwitchNode) source).createInstance(rootNode);
             break;
         default:
             throw new IllegalArgumentException(NOT_IMPLEMENTED + type);
         }
-        created.setRootNode(rootNode);
         return created;
     }
 
     @Override
-    public void registerNodeExporter(Key[] types, NodeExporter exporter) {
-        for (Key k : types) {
-            registerNodeExporter(k, exporter);
+    public void registerNodeExporter(Type<Node>[] types, NodeExporter exporter) {
+        for (Type<Node> t : types) {
+            registerNodeExporter(t, exporter);
         }
     }
 

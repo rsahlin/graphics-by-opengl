@@ -19,15 +19,16 @@ import com.nucleus.exporter.NucleusNodeExporter;
 import com.nucleus.geometry.MeshFactory;
 import com.nucleus.io.gson.BoundsDeserializer;
 import com.nucleus.io.gson.NucleusNodeDeserializer;
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
+import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
-import com.nucleus.scene.ViewNode;
 
 /**
  * GSON Serializer for nucleus scenegraph.
@@ -38,7 +39,7 @@ import com.nucleus.scene.ViewNode;
  */
 public class GSONSceneFactory implements SceneSerializer {
 
-    protected ArrayDeque<ViewNode> viewStack = new ArrayDeque<ViewNode>(NucleusRenderer.MIN_STACKELEMENTS);
+    protected ArrayDeque<LayerNode> viewStack = new ArrayDeque<LayerNode>(NucleusRenderer.MIN_STACKELEMENTS);
     private NucleusNodeDeserializer nodeDeserializer = new NucleusNodeDeserializer();
 
     private final static String ERROR_CLOSING_STREAM = "Error closing stream:";
@@ -68,6 +69,7 @@ public class GSONSceneFactory implements SceneSerializer {
         createNodeExporter();
         registerNodeExporters();
         init(renderer, nodeFactory, meshFactory);
+        TypeResolver.getInstance().clear();
         TypeResolver.getInstance().registerTypes(types);
     }
 
@@ -92,7 +94,8 @@ public class GSONSceneFactory implements SceneSerializer {
         ClassLoader loader = getClass().getClassLoader();
         InputStream is = loader.getResourceAsStream(filename);
         try {
-            return importScene(is);
+            RootNode scene = importScene(is);
+            return scene;
         } finally {
             if (is != null) {
                 try {
@@ -114,6 +117,7 @@ public class GSONSceneFactory implements SceneSerializer {
             throw new IllegalArgumentException(NULL_PARAMETER_ERROR + "inputstream");
         }
         try {
+            long start = System.currentTimeMillis();
             Reader reader = new InputStreamReader(is, "UTF-8");
             GsonBuilder builder = new GsonBuilder();
             // First register type adapters - then call GsonBuilder.create() to build a Gson instance
@@ -121,7 +125,10 @@ public class GSONSceneFactory implements SceneSerializer {
             registerTypeAdapter(builder);
             setGson(builder.create());
             RootNode scene = getSceneFromJson(gson, reader);
-            RootNode createdRoot = createScene(scene.getResources(), scene.getScene());
+            long loaded = System.currentTimeMillis();
+            FrameSampler.getInstance().logTag(FrameSampler.LOAD_SCENE, start, loaded);
+            RootNode createdRoot = createScene(scene.getScene());
+            FrameSampler.getInstance().logTag(FrameSampler.CREATE_SCENE, loaded, System.currentTimeMillis());
             return createdRoot;
         } catch (IOException e) {
             throw new NodeException(e);
@@ -163,14 +170,13 @@ public class GSONSceneFactory implements SceneSerializer {
      * Creates {@linkplain RootNode} from the scene node and returns, use this method when importing to create
      * a new instance of the loaded scene.
      * 
-     * @param resource The resources for the scene
      * @param scene The root scene node
      * @return The created scene or null if there is an error.
      * @throws NodeException
      */
-    private RootNode createScene(ResourcesData resources, Node scene) throws NodeException {
-        RootNode root = createInstance(resources);
-        addNodes(resources, root, scene);
+    private RootNode createScene(Node scene) throws NodeException {
+        RootNode root = createInstance();
+        addNodes(root, scene);
         return root;
     }
 
@@ -184,31 +190,18 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     /**
-     * Creates a new root node and copying the resources into the new root.
-     * 
-     * @param resource
-     * @return
-     */
-    protected RootNode createInstance(ResourcesData resource) {
-        RootNode root = createInstance();
-        root.getResources().copy(resource);
-        return root;
-    }
-
-    /**
      * Internal method to create a layer node and add it to the rootnode.
      * 
-     * @param resources The resources in the scene
      * @param root The root node that the created node will be added to.
      * @param node The node to create
      * @return
      * @throws IOException
      */
-    private Node addNodes(ResourcesData resources, RootNode root, Node node) throws NodeException {
-        Node created = nodeFactory.create(renderer, meshFactory, resources, node);
+    private Node addNodes(RootNode root, Node node) throws NodeException {
+        Node created = nodeFactory.create(renderer, meshFactory, node, root);
         root.setScene(created);
         setViewFrustum(node, created);
-        nodeFactory.createChildNodes(renderer, meshFactory, resources, node, created);
+        nodeFactory.createChildNodes(renderer, meshFactory, node, created);
         created.onCreated();
         return created;
     }

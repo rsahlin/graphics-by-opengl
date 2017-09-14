@@ -2,7 +2,7 @@ package com.nucleus.geometry;
 
 import java.io.IOException;
 
-import com.nucleus.io.ResourcesData;
+import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
 
@@ -11,6 +11,7 @@ import com.nucleus.scene.Node;
  * this interface and use with the NodeFactory.
  * The factory methods shall allocate buffers and shader programs as needed.
  * It shall be possible to render the returned mesh.
+ * TODO - Make sure that meshes are not created by calling new Mesh() - use factory instead.
  * 
  * @author Richard Sahlin
  *
@@ -21,13 +22,15 @@ public interface MeshFactory {
      * Creates a mesh for the specified parent node. The scene node shall contain all data necessary for the creating of
      * the mesh.
      * All resources needed for the mesh shall be fetched/loaded as needed.
+     * The returned mesh will have
      * 
      * @param renderer
      * @param parent The node that the mesh will belong to.
-     * @param resources The resources in the scene
      * @return The mesh that can be rendered.
      * @throws IOException If an asset such as texture could not be loaded.
+     * @throws GLException If there is a GL relate error, for instance when setting VBO data
+     * 
      */
-    public Mesh createMesh(NucleusRenderer renderer, Node parent, ResourcesData resources) throws IOException;
+    public Mesh createMesh(NucleusRenderer renderer, Node parent) throws IOException, GLException;
 
 }

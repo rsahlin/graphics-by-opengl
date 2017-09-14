@@ -17,7 +17,7 @@ public class BaseReference implements Reference {
     private String id;
 
     @SerializedName("externalReference")
-    private ExternalReference externalReference = new ExternalReference("");
+    private ExternalReference externalReference;
 
     /**
      * Default constructor
@@ -67,7 +67,7 @@ public class BaseReference implements Reference {
     }
 
     /**
-     * Returns the external reference for this texture
+     * Returns the external reference for this object
      * 
      * @return
      */

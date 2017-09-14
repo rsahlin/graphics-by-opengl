@@ -10,6 +10,8 @@ import com.nucleus.io.gson.PostDeserializable;
  */
 public class SwitchNode extends Node implements PostDeserializable {
 
+    private static final int MAX_CHILD_COUNT = 2;
+
     /**
      * The Id of the current active child Node, if null all child nodes will be returned when {@link #getChildren()}
      * is called.
@@ -17,14 +19,21 @@ public class SwitchNode extends Node implements PostDeserializable {
     @SerializedName("active")
     private String active;
 
-    @Override
-    public SwitchNode createInstance() {
-        return new SwitchNode();
+    /**
+     * Used by GSON - do not create nodes using the default constructor!
+     */
+    protected SwitchNode() {
+    }
+    
+    
+    private SwitchNode(RootNode root) {
+        super(root);
+        setType(NodeType.switchnode.name());
     }
 
     @Override
-    public SwitchNode copy() {
-        SwitchNode copy = createInstance();
+    public SwitchNode createInstance(RootNode root) {
+        SwitchNode copy = new SwitchNode(root);
         copy.set(this);
         return copy;
     }
@@ -51,7 +60,7 @@ public class SwitchNode extends Node implements PostDeserializable {
     }
 
     /**
-     * Sets the active node in the children.
+     * Sets the active child node, will only alter children in this node
      * Next call to {@link #getChildren()} will return a list containing the node with the matching id.
      * 
      * @param activeId Id of the child node to set as active, all other children will be inactive
@@ -69,6 +78,9 @@ public class SwitchNode extends Node implements PostDeserializable {
 
     @Override
     public void postDeserialize() {
+        if (children.size() > MAX_CHILD_COUNT) {
+            throw new IllegalArgumentException("SwitchNode does not allow more than " + MAX_CHILD_COUNT + " children");
+        }
         if (active != null) {
             setActive(active);
         }

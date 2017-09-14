@@ -6,20 +6,19 @@ import java.util.Map;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.bounds.Bounds;
-import com.nucleus.bounds.BoundsFactory;
 import com.nucleus.camera.ViewFrustum;
+import com.nucleus.common.Type;
+import com.nucleus.event.EventManager;
+import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.mmi.MMIEventListener;
-import com.nucleus.mmi.MMIPointerEvent;
-import com.nucleus.mmi.MMIPointerEvent.Action;
-import com.nucleus.properties.EventManager;
-import com.nucleus.properties.EventManager.EventHandler;
-import com.nucleus.properties.Property;
+import com.nucleus.mmi.ObjectInputListener;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.vecmath.Matrix;
+import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Transform;
 
 /**
@@ -35,14 +34,35 @@ import com.nucleus.vecmath.Transform;
  * @author Richard Sahlin
  *
  */
-public class Node extends BaseReference implements MMIEventListener {
+public class Node extends BaseReference {
 
     public static final String STATE = "state";
     public static final String TYPE = "type";
 
+    public static final String ONCLICK = "onclick";
+
+    public enum MeshType {
+        /**
+         * Main mesh
+         */
+        MAIN(0),
+        /**
+         * Extra mesh for ui/editing purposes
+         */
+        UI(1);
+        
+        public final int index;
+        
+        MeshType(int index) {
+            this.index = index;
+        }
+        
+    }
+
     /**
-     * The states a node can be in, this controlls if node is rendered etc.
+     * The states a node can be in, this controls if node is rendered etc.
      * This can be used to skip nodes from being rendered or processed.
+     * Enum values are bitwise
      * 
      * @author Richard Sahlin
      *
@@ -60,13 +80,13 @@ public class Node extends BaseReference implements MMIEventListener {
         /**
          * Node is rendered, but no actors processed
          */
-        RENDER(3),
+        RENDER(4),
         /**
          * Node is not rendered, but actors processed
          */
-        ACTOR(4);
+        ACTOR(8);
 
-        private final int value;
+        public final int value;
 
         private State(int value) {
             this.value = value;
@@ -136,9 +156,24 @@ public class Node extends BaseReference implements MMIEventListener {
     transient protected RootNode rootNode;
 
     /**
-     * Creates an empty node, add children and meshes as needed.
+     * Set this to get callbacks on MMI events for this node, handled by {@link NodeInputListener}
      */
-    public Node() {
+    transient protected ObjectInputListener objectInputListener;
+
+    /**
+     * Constructor user when loading node from scene
+     */
+    protected Node() {
+    }
+
+    /**
+     * Creates an empty node, add children and meshes as needed.
+     * 
+     * @param root
+     */
+    protected Node(RootNode root) {
+        setRootNode(root);
+        setType(NodeType.node.name());
     }
 
     /**
@@ -152,27 +187,40 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Creates a new instance of this node.
-     * This will be a new empty instance
+     * Creates a new instance of this node, then copies this node into the copy.
+     * This is a shallow copy, it does not copy children.
+     * Use this when nodes are loaded
      * 
-     * @return New instance of this node
+     * @param root Root of the created node
+     * @return New copy of this node, transient values and children will not be copied.
      * @throws IllegalArgumentException If root is null
      */
-    public Node createInstance() {
-        Node copy = new Node();
+    public Node createInstance(RootNode root) {
+        Node copy = new Node(root);
+        copy.set(this);
         return copy;
     }
 
     /**
-     * Creates a new instance of this node, then copies this node into the copy.
-     * This is a shallow copy, it does not copy children.
+     * Creates a new, empty, instance of the specified nodeType. The type will be set.
+     * Do not call this method directly, use {@link NodeFactory}
      * 
-     * @return New copy of this node, transient values and children will not be copied.
+     * @param nodeType
+     * @paran root The root of the created instance
+     * @return
+     * @throws IllegalArgumentException If nodeType or root is null.
+     * @throws InstantiationException
+     * @throws IllegalAccessException
      */
-    public Node copy() {
-        Node copy = createInstance();
-        copy.set(this);
-        return copy;
+    public static Node createInstance(Type<Node> nodeType, RootNode root)
+            throws InstantiationException, IllegalAccessException {
+        if (nodeType == null || root == null) {
+            throw new IllegalArgumentException("Null parameter:" + nodeType + ", " + root);
+        }
+        Node node = (Node) nodeType.getTypeClass().newInstance();
+        node.setType(nodeType.getName());
+        node.setRootNode(root);
+        return node;
     }
 
     /**
@@ -192,12 +240,27 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Retuns the meshes for this node.
+     * Retuns the meshes for this node, THIS IS AN INTERNAL METHOD AND SHOULD NOT BE USED!
+     * TODO renderer needs list of meshes to render, find solution where list of meshes is hidden.
      * 
      * @return List of added meshes
      */
+    @Deprecated
     public ArrayList<Mesh> getMeshes() {
         return meshes;
+    }
+
+    /**
+     * Returns the mesh type, if added with a call to {@link #addMesh(Mesh, MeshType)}
+     * 
+     * @param type
+     * @return Mesh for the specified type or null if not added with a call to {@link #addMesh(Mesh, MeshType)}
+     */
+    public Mesh getMesh(MeshType type) {
+        if (type != null && type.index < meshes.size()) {
+            return meshes.get(type.index);
+        }
+        return null;
     }
 
     /**
@@ -207,6 +270,25 @@ public class Node extends BaseReference implements MMIEventListener {
      */
     public Producer getAttributeProducer() {
         return attributeProducer;
+    }
+
+    /**
+     * Returns the {@link ObjectInputListener}, or null if not set.
+     * This method should normally not be called, it is handled by {@link NodeInputListener}
+     * 
+     * @return The {@link ObjectInputListener} for this node or null if not set
+     */
+    protected ObjectInputListener getObjectInputListener() {
+        return objectInputListener;
+    }
+
+    /**
+     * Sets the {@link ObjectInputListener} for this node, to be handle by the {@link NodeInputListener}
+     * 
+     * @param objectInputListener
+     */
+    public void setObjectInputListener(ObjectInputListener objectInputListener) {
+        this.objectInputListener = objectInputListener;
     }
 
     /**
@@ -225,8 +307,8 @@ public class Node extends BaseReference implements MMIEventListener {
      * 
      * @param mesh
      */
-    public void addMesh(Mesh mesh) {
-        meshes.add(mesh);
+    public void addMesh(Mesh mesh, MeshType type) {
+        meshes.add(type.index, mesh);
     }
 
     /**
@@ -262,7 +344,7 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Returns the material
+     * Returns the loaded material definition
      * 
      * @return
      */
@@ -322,15 +404,6 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Sets the material reference.
-     * 
-     * @param source
-     */
-    public void setMaterial(Material source) {
-        this.material = source;
-    }
-
-    /**
      * Fetches the projection matrix, if set.
      * 
      * @return Projection matrix for this node and childnodes, or null
@@ -372,18 +445,18 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Returns the first (closest from this node) {@linkplain ViewNode} parent.
-     * The search starts with the parent node of this node, if that is not a {@linkplain ViewNode} that nodes parent
+     * Returns the first (closest from this node) {@linkplain LayerNode} parent.
+     * The search starts with the parent node of this node, if that is not a {@linkplain LayerNode} that nodes parent
      * is checked, continuing until root node.
      * 
      * @return The view parent of this node, or null if none could be found
      */
-    public ViewNode getViewParent() {
+    public LayerNode getViewParent() {
         if (parent == null) {
             return null;
         }
-        if (NodeType.viewnode.name().equals(parent.getType())) {
-            return (ViewNode) parent;
+        if (NodeType.layernode.name().equals(parent.getType())) {
+            return (LayerNode) parent;
         }
         return parent.getViewParent();
     }
@@ -403,9 +476,10 @@ public class Node extends BaseReference implements MMIEventListener {
      * 
      * @param child The child to add to this node.
      */
-    public void addChild(Node child) {
+    protected void addChild(Node child) {
         children.add(child);
         child.parent = this;
+        rootNode.registerChild(child);
     }
 
     /**
@@ -414,8 +488,13 @@ public class Node extends BaseReference implements MMIEventListener {
      * @param child The child to remove from this node.
      * @return True if the child was present in the list of children.
      */
-    public boolean removeChild(Node child) {
-        return children.remove(child);
+    protected boolean removeChild(Node child) {
+        if (children.contains(child)) {
+            children.remove(child);
+            rootNode.unregisterChild(child);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -452,11 +531,14 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Sets the rootnode for this node, this shall normally not be changed
+     * Sets the rootnode for this node, this shall normally not be changed after it has been set.
+     * This method shall not be called, it is used when a new instance is created using
+     * {@link #createInstance(RootNode)}
      * 
      * @param root
+     * @throws IllegalArgumentException If root is null
      */
-    public void setRootNode(RootNode root) {
+    protected void setRootNode(RootNode root) {
         if (root == null) {
             throw new IllegalArgumentException("Document root can not be null");
         }
@@ -577,25 +659,9 @@ public class Node extends BaseReference implements MMIEventListener {
         return null;
     }
 
-    /**
-     * Returns the mesh by the given id from this Node, if a mesh with matching id is not present in the list of meshes
-     * then null is returned.
-     * 
-     * @param id
-     * @return The mesh with matching id or null
-     */
-    public Mesh getMeshById(String id) {
-        for (Mesh m : meshes) {
-            if (id.equals(m.getId())) {
-                return m;
-            }
-        }
-        return null;
-    }
-
     @Override
     public String toString() {
-        return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children";
+        return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children, state=" + state;
     }
 
     /**
@@ -609,6 +675,15 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
+     * This shall be set if node is created using {@link #createInstance(RootNode)}
+     * 
+     * @param type
+     */
+    protected void setType(String type) {
+        this.type = type;
+    }
+
+    /**
      * Returns the bounds for this node if set, otherwise null
      * 
      * @return
@@ -618,7 +693,7 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Returns the state of the node, the specifies if the node is on or off.
+     * Returns the state of the node, the specifies if the node is on or off, only actor or only render
      * 
      * @return The state, or null if not set
      */
@@ -627,12 +702,15 @@ public class Node extends BaseReference implements MMIEventListener {
     }
 
     /**
-     * Sets the state of this node
+     * Sets the state of this node and all children.
      * 
      * @param state
      */
     public void setState(State state) {
         this.state = state;
+        for (Node n : children) {
+            n.setState(state);
+        }
     }
 
     /**
@@ -702,7 +780,7 @@ public class Node extends BaseReference implements MMIEventListener {
      * @param source
      */
     public void copyBounds(Bounds source) {
-        bounds = BoundsFactory.create(source.getType(), source.getBounds());
+        bounds = Bounds.create(source.getType(), source.getBounds());
     }
 
     /**
@@ -734,67 +812,94 @@ public class Node extends BaseReference implements MMIEventListener {
      * of this node has been created.
      */
     public void onCreated() {
-        setObjectProperties();
     }
 
     /**
-     * Internal method, sets all properties with a call for each property to
-     * {@linkplain EventManager#sendObjectEvent(Object, String, String)} with the node as object
-     * This shall be called from the {@link #onCreated()} method
+     * Checks if this node is hit by the position.
+     * If {@value State#ON} or {@value State#ACTOR} then the bounds are checked for intersection by the point.
      * 
+     * @param position
+     * @return If node is in an enabled state, has bounds and the position is inside then true is returned, otherwise
+     * false
      */
-    private void setObjectProperties() {
-        if (properties != null) {
-            for (String key : properties.keySet()) {
-                EventManager.getInstance().sendObjectEvent(this, key, properties.get(key));
-            }
-        }
-    }
-
-    @Override
-    public void inputEvent(MMIPointerEvent event) {
-        if (event.getAction() == Action.ACTIVE || event.getAction() == Action.MOVE) {
-            checkNode(event);
-        }
-    }
-
-    /**
-     * Checks this node and children for pointer event.
-     * 
-     * @param event
-     * @return True if there was an event that was inside a node, ie a 'hit'
-     */
-    protected boolean checkNode(MMIPointerEvent event) {
-        if (bounds != null
+    protected boolean isInside(float[] position) {
+        if (bounds != null && (state == State.ON || state == State.ACTOR)
                 && getProperty(EventHandler.Type.POINTERINPUT.name(), EventManager.FALSE).equals(EventManager.TRUE)) {
-            ViewNode viewNode = getViewParent();
-            // If ViewNode parent does not exist the identitymatrix is used
-            float[] mv = Matrix.createMatrix();
-            if (viewNode != null) {
-                // In order to do pointer intersections the model and view matrix is needed.
-                // For this to work it is important that the view keeps the same orientation of axis as OpenGL (right
-                // and up)
-                Matrix.mul4(viewNode.getView().getMatrix(), modelMatrix, mv);
-            } else {
-                Matrix.setIdentity(mv, 0);
-            }
-            bounds.transform(mv, 0);
-            if (bounds.isPointInside(event.getPointerData().getCurrentPosition(), 0)) {
-                System.out.println("HIT");
-                String onclick = getProperty("onclick");
-                if (onclick != null) {
-                    Property p = Property.create(onclick);
-                    EventManager.getInstance().sendObjectEvent(this, p.getKey(), p.getValue());
-                }
-                return true;
-            }
-        }
-        for (Node n : getChildren()) {
-            if (n.checkNode(event)) {
-                return true;
-            }
+            // In order to do pointer intersections the model and view matrix is needed.
+            // For this to work it is important that the view keeps the same orientation of axis as OpenGL (right
+            // and up)
+            // Matrix.mul4(viewNode.getTransform().getMatrix(), modelMatrix, mv);
+            bounds.transform(modelMatrix, 0);
+            return bounds.isPointInside(position, 0);
         }
         return false;
+    }
+
+    /**
+     * Set bounds from the specified bounds, if bounds exist but are not set.
+     * If bounds is null or already set then nothing is done.
+     * 
+     * @param bounds
+     */
+    public void initBounds(Bounds sourceBounds) {
+        Bounds bounds = getBounds();
+        if (bounds != null && bounds.getBounds() == null) {
+            bounds.setBounds(sourceBounds.getBounds());
+        }
+    }
+
+    /**
+     * Sets bounds from the rectangle, if bounds exist but are not set.
+     * If bounds is null or already set then nothing is done.
+     * 
+     * @param rectangle
+     */
+    public void initBounds(Rectangle rectangle) {
+        Bounds bounds = getBounds();
+        if (bounds != null && bounds.getBounds() == null) {
+            bounds.setBounds(rectangle);
+        }
+
+    }
+
+    /**
+     * Multiply the concatenated model matrix with this nodes transform matrix and store in this nodes model matrix
+     * If this node does not have a transform an identity matrix is used.
+     * 
+     * @param concatModel The concatenated model matrix
+     * @return The node matrix - concatModel * this nodes transform
+     */
+    public float[] concatModelMatrix(float[] concatModel) {
+        if (concatModel == null) {
+            Matrix.setIdentity(modelMatrix, 0);
+            return modelMatrix;
+        }
+        Matrix.mul4(concatModel,
+                transform != null ? transform.getMatrix() : Matrix.IDENTITY_MATRIX,
+                modelMatrix);
+        return modelMatrix;
+    }
+
+    /**
+     * Releases all resources held by this node, calls {@link Mesh#destroy()}
+     * 
+     * @param renderer
+     */
+    public void destroy(NucleusRenderer renderer) {
+        if (meshes != null) {
+            for (Mesh mesh : meshes) {
+                mesh.destroy(renderer);
+            }
+            meshes = null;
+        }
+        transform = null;
+        viewFrustum = null;
+        children.clear();
+        bounds = null;
+        properties = null;
+        parent = null;
+        rootNode = null;
+        attributeProducer = null;
     }
 
 }

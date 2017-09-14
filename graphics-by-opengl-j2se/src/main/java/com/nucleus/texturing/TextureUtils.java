@@ -8,6 +8,7 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.texturing.Image.ImageFormat;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.Texture2D.Type;
@@ -24,7 +25,9 @@ public class TextureUtils {
     /**
      * Loads an image into several mip-map levels, the same image will be scaled to produce the
      * different mip-map levels.
-     * TODO: Add method to ImageFactory to scale existing image - currently re-loads image and scales.
+     * If the value of {@link Texture2D#getLevels()} is > 1 and the texture parameters are set to support mipmap then
+     * the mip levels are generated.
+     * To automatically generate mipmaps, just set the texture parameters to support mipmap.
      * 
      * @param imageFactory ImageFactory to use when creating/scaling image
      * @param texture The texture source object
@@ -33,8 +36,13 @@ public class TextureUtils {
     public static Image[] loadTextureMIPMAP(ImageFactory imageFactory, Texture2D texture) {
 
         try {
+            long start = System.currentTimeMillis();
             ImageFormat imageFormat = getImageFormat(texture);
             Image image = imageFactory.createImage(texture.getExternalReference().getSource(), imageFormat);
+            long loaded = System.currentTimeMillis();
+            FrameSampler.getInstance()
+                    .logTag(FrameSampler.CREATE_IMAGE + " " + texture.getExternalReference().getSource(), start,
+                            loaded);
             int width = image.getWidth();
             int height = image.getHeight();
             int levels = texture.getLevels();
@@ -56,6 +64,7 @@ public class TextureUtils {
                             scaledHeight, imageFormat);
                 }
             }
+            FrameSampler.getInstance().logTag(FrameSampler.GENERATE_MIPMAPS, loaded, System.currentTimeMillis());
             return images;
         } catch (IOException e) {
             throw new RuntimeException(e);

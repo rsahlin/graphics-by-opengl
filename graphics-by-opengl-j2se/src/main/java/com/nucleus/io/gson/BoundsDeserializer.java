@@ -9,7 +9,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.nucleus.bounds.Bounds;
-import com.nucleus.bounds.BoundsFactory;
 
 public class BoundsDeserializer implements JsonDeserializer<Bounds> {
 
@@ -27,7 +26,7 @@ public class BoundsDeserializer implements JsonDeserializer<Bounds> {
                 values[i] = array.get(i).getAsFloat();
             }
         }
-        return BoundsFactory.create(t, values);
+        return Bounds.create(t, values);
     }
 
 }

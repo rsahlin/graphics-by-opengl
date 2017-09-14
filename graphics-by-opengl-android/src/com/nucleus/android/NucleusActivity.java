@@ -57,6 +57,19 @@ public class NucleusActivity extends Activity
         super.onResume();
     }
 
+    @Override
+    public void onDestroy() {
+        coreApp.setDestroyFlag();
+        SimpleLogger.d(getClass(), "onDestroy()");
+        super.onDestroy();
+    }
+
+    @Override
+    public void onStart() {
+        SimpleLogger.d(getClass(), "onStart()");
+        super.onStart();
+    }
+
     /**
      * Setup this activity with a new GLSurfaceView create with the specified renderer
      * When this method returns the created view is the active content view (ie visible)
@@ -79,10 +92,14 @@ public class NucleusActivity extends Activity
     public static void handleThrowable(final Throwable t) {
         throwable = t;
         activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+        @Override
+        public void run() {
+            try {
                 activity.showAlert(activity.getString(R.string.app_name) + " " + activity.getString(R.string.crash),
                         t.toString());
+            } catch (Throwable t2) {
+                throw new RuntimeException(throwable);
+            }
             }
         });
     }

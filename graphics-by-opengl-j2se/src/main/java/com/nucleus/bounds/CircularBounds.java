@@ -1,5 +1,6 @@
 package com.nucleus.bounds;
 
+import com.nucleus.vecmath.Rectangle;
 
 /**
  * 2 Dimensional circular bounds, the bounds is 3 values, x,y and radius.
@@ -35,11 +36,19 @@ public class CircularBounds extends Bounds {
     private void create(float[] values) {
         type = Type.CIRCULAR;
         bounds = new float[3];
+    }
+
+    @Override
+    public void setBounds(float[] values) {
         bounds[X_INDEX] = values[X_INDEX];
         bounds[Y_INDEX] = values[Y_INDEX];
         bounds[RADIUS_INDEX] = values[RADIUS_INDEX];
     }
 
+    @Override
+    public void setBounds(Rectangle rectangle) {
+        throw new IllegalArgumentException("Not implemented");
+    }
 
     @Override
     public boolean isPointInside(float[] position, int index) {

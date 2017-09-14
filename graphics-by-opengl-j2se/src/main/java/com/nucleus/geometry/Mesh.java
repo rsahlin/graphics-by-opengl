@@ -1,9 +1,21 @@
 package com.nucleus.geometry;
 
+import java.io.IOException;
+
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.assets.AssetManager;
+import com.nucleus.bounds.Bounds;
+import com.nucleus.geometry.ElementBuffer.Type;
 import com.nucleus.io.BaseReference;
+import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.BufferObjectsFactory;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.shader.ShaderVariable;
+import com.nucleus.shader.VariableMapping;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;
 
@@ -17,6 +29,43 @@ import com.nucleus.texturing.TiledTexture2D;
  *
  */
 public class Mesh extends BaseReference implements AttributeUpdater {
+
+    public enum Mode {
+        /**
+         * From GL_POINTS
+         */
+        POINTS(GLES20.GL_POINTS),
+        /**
+         * From GL_LINE_STRIP
+         */
+        LINE_STRIP(GLES20.GL_LINE_STRIP),
+        /**
+         * From GL_LINE_LOOP
+         */
+        LINE_LOOP(GLES20.GL_LINE_LOOP),
+        /**
+         * From GL_TRIANGLE_STRIP
+         */
+        TRIANGLE_STRIP(GLES20.GL_TRIANGLE_STRIP),
+        /**
+         * From GL_TRIANGLE_FAN
+         */
+        TRIANGLE_FAN(GLES20.GL_TRIANGLE_FAN),
+        /**
+         * From GL_TRIANGLES
+         */
+        TRIANGLES(GLES20.GL_TRIANGLES),
+        /**
+         * From GL_LINES
+         */
+        LINES(GLES20.GL_LINES);
+
+        public final int mode;
+
+        private Mode(int mode) {
+            this.mode = mode;
+        }
+    }
 
     private final static String NULL_NAMES = "Buffer names is null";
     private final static String NOT_ENOUGH_NAMES = "Not enough buffer names";
@@ -42,6 +91,152 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
         private BufferIndex(int index) {
             this.index = index;
+        }
+
+    }
+
+    public static class Builder<T extends Mesh> extends MeshBuilder<Mesh> {
+
+        protected NucleusRenderer renderer;
+        protected Texture2D texture;
+        protected Material material;
+        protected int vertexCount = -1;
+        protected int indiceCount = 0;
+        protected ElementBuffer.Type indiceBufferType = Type.SHORT;
+        protected Mode mode;
+        protected ShapeBuilder shapeBuilder;
+
+        /**
+         * Creates a new builder
+         * 
+         * @param renderer
+         * @throws IllegalArgumentException If renderer is null
+         */
+        public Builder(NucleusRenderer renderer) {
+            if (renderer == null) {
+                throw new IllegalArgumentException("Renderer may not be null");
+            }
+            this.renderer = renderer;
+        }
+
+        /**
+         * Sets the drawmode for the mesh
+         * 
+         * @param mode
+         */
+        public void setMode(Mode mode) {
+            this.mode = mode;
+        }
+
+        /**
+         * Sets the texture to use for the created mesh
+         * 
+         * @param texture
+         */
+        public void setTexture(Texture2D texture) {
+            this.texture = texture;
+        }
+
+        /**
+         * Creates the mesh for the arguments supplied to this builder.
+         * 
+         * @return The mesh
+         * @throws IllegalArgumentException If the needed arguments has not been set
+         * @throws IOException If there is an error loading data, for instance texture
+         * @throws GLException If there is a problem calling GL, for instance when setting VBO data
+         */
+        public Mesh create() throws IOException, GLException {
+            validate();
+            Mesh mesh = createMesh();
+            mesh.createMesh(texture, material, vertexCount, indiceCount, mode);
+            if (shapeBuilder != null) {
+                shapeBuilder.build(mesh);
+            }
+            if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
+                BufferObjectsFactory.getInstance().createVBOs(renderer, mesh);
+            }
+            return mesh;
+        }
+
+        @Override
+        protected Mesh createMesh() {
+            return new Mesh();
+        }
+
+        /**
+         * Fetches the texture and stores as texture to be used when creating mesh
+         * 
+         * @param textureRef
+         * @throws IOException If the texture could not be loaded
+         */
+        public void setTexture(ExternalReference textureRef) throws IOException {
+            this.texture = AssetManager.getInstance().getTexture(renderer, textureRef);
+        }
+
+        /**
+         * Set mode and vertex count for array based drawing - this will not use element (indice) buffer.
+         * ie glDrawArrays() will be used to draw the mesh.
+         * 
+         * @param mode The drawmode for vertices
+         * @param vertexCount Number of vertices
+         * @return
+         */
+        public void setArrayMode(Mode mode, int vertexCount) {
+            this.vertexCount = vertexCount;
+            this.mode = mode;
+        }
+
+        /**
+         * Set mode, vertexcount and element (indice) count. The created mesh will have vertexbuffer and indice buffer.
+         * When drawn glDrawElements will be used.
+         * 
+         * @param mode
+         * @param vertexCount
+         * @param indiceCount
+         */
+        public void setElementMode(Mode mode, int vertexCount, int indiceCount) {
+            this.indiceCount = indiceCount;
+            this.vertexCount = vertexCount;
+            this.mode = mode;
+        }
+
+        /**
+         * Sets the material to be used in the mesh
+         * 
+         * @param material
+         */
+        public void setMaterial(Material material) {
+            this.material = material;
+        }
+
+        /**
+         * Sets the shapebuilder to be used when building mesh shape(s)
+         * 
+         * @param shapeBuilder The shape builder, or null
+         * @return
+         */
+        public void setShapeBuilder(ShapeBuilder shapeBuilder) {
+            this.shapeBuilder = shapeBuilder;
+        }
+
+        /**
+         * Checks that the needed arguments has been set
+         */
+        protected void validate() {
+            if (texture == null || vertexCount <= 0 || mode == null || material == null) {
+                throw new IllegalArgumentException("Missing argument when creating mesh: " + texture + ", "
+                        + vertexCount + ", " + mode + ", " + material);
+            }
+        }
+
+
+        /**
+         * Calculates the bounds covering this mesh.
+         * 
+         * @return
+         */
+        public Bounds createBounds() {
+            return null;
         }
 
     }
@@ -86,7 +281,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     /**
      * Drawmode, if indices is null then glDrawArrays shall be used with this mode
      */
-    transient protected int mode;
+    transient protected Mode mode;
     transient protected Material material;
 
     /**
@@ -107,19 +302,46 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     }
 
     /**
-     * Creates the Mesh to be rendered, after this method returns it shall be possible to render the mesh.
+     * Creates the Mesh to be rendered, creating buffers as needed.
+     * After this method returns it shall be possible to render the mesh although it must be filled with data, for
+     * instance using a {@link ShapeBuilder}
      * The program will be set to the material in this mesh.
      * 
-     * @param program
-     * @param texture The texture to use for sprites, must be {@link TiledTexture2D} otherwise tiling will not work.
+     * @param texture The texture to use, depends on mesh implementation
      * @param material
+     * @param vertexCount Number of vertices to create storage for
+     * @param indiceCount Number of indices in elementbuffer
+     * @param mode The drawmode, eg how primitives are drawn
      * @return
+     * @throws IllegalArgumentException If texture, material or mode is null
      */
-    public void createMesh(ShaderProgram program, Texture2D texture, Material material) {
+    public void createMesh(Texture2D texture, Material material, int vertexCount, int indiceCount, Mode mode) {
+        if (texture == null || material == null || mode == null) {
+            throw new IllegalArgumentException("Null parameter: " + texture + ", " + material + ", " + mode);
+        }
         setTexture(texture, Texture2D.TEXTURE_0);
+        setMode(mode);
         this.material = new Material(material);
+        ShaderProgram program = material.getProgram();
         mapper = new PropertyMapper(program);
         this.material.setProgram(program);
+        internalCreateBuffers(program, vertexCount, indiceCount);
+    }
+
+    /**
+     * Creates the buffers, vertex and indexbuffers as needed. Attribute and uniform storage.
+     * If texture is {@link TiledTexture2D} then vertice and index storage will be createde for 1 sprite.
+     * Do not call this method directly - it is called from {@link #createMesh(ShaderProgram, Texture2D, Material)}
+     * 
+     * @param program
+     * @param vertexCount Number of vertices to create storage for
+     * @param indiceCount Number of elementbuffer indices
+     * @param drawMode Mesh drawmode
+     */
+    protected void internalCreateBuffers(ShaderProgram program, int vertexCount, int indiceCount) {
+        attributes = program.createAttributeBuffers(this, vertexCount);
+        indices = new ElementBuffer(indiceCount, Type.SHORT);
+        program.setupUniforms(this);
     }
 
     /**
@@ -305,7 +527,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             indices.setBufferName(names[offset++]);
         }
         for (VertexBuffer b : attributes) {
-            b.setBufferName(names[offset++]);
+            if (b != null) {
+                b.setBufferName(names[offset++]);
+            }
         }
     }
 
@@ -317,40 +541,94 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * @return
      */
     public int getBufferNameCount() {
-        int count = attributes.length;
-        if (indices != null) {
-            count++;
+        int count = indices != null ? 1 : 0;
+        for (VertexBuffer vb : attributes) {
+            if (vb != null) {
+                count++;
+            }
         }
         return count;
     }
 
     /**
-     * Sets the draw mode to use when glDrawArrays is used.
+     * Sets the draw mode to use
      * 
      * @param mode GL drawmode, one of GL_POINTS, GL_LINE_STRIP, GL_LINE_LOOP, GL_LINES, GL_TRIANGLE_STRIP,
      * GL_TRIANGLE_FAN, and GL_TRIANGLES
      */
-    public void setMode(int mode) {
+    public void setMode(Mode mode) {
         this.mode = mode;
     }
 
     /**
-     * Gets the draw mode to use when glDrawArrays is used.
+     * Gets the draw mode to use when drawing this mesh
      * 
-     * @return The GL drawmode for glDrawArrays
+     * @return The GL drawmode for drawing this mesh
      */
-    public int getMode() {
+    public Mode getMode() {
         return mode;
     }
 
     @Override
-    public void destroy() {
-        // TODO Release resources
+    public void destroy(NucleusRenderer renderer) {
+        texture = null;
+        textureRef = null;
+        uniforms = null;
+        mapper = null;
+        attributeConsumer = null;
+        attributes = null;
+        indices = null;
+        mode = null;
+        material = null;
+        deleteVBO(renderer);
+    }
+
+    private void deleteVBO(NucleusRenderer renderer) {
+        if (indices != null && indices.getBufferName() > 0) {
+            renderer.deleteBuffers(1, new int[] { indices.getBufferName() }, 0);
+        }
+        if (attributes != null) {
+            for (VertexBuffer buffer : attributes) {
+                if (buffer.getBufferName() > 0) {
+                    renderer.deleteBuffers(1, new int[] { buffer.getBufferName() }, 0);
+                }
+            }
+        }
     }
 
     @Override
     public PropertyMapper getMapper() {
         return mapper;
+    }
+
+    /**
+     * Sets attribute data for the specified vertex
+     * 
+     * @param index Index to the vertex to set attribute data for
+     * @param mapping The variable to set
+     * @param attribute The data to set, must contain at least 4 values
+     * @param verticeCount The number of vertices to set the attribute to
+     */
+    public void setAttribute4(int index, VariableMapping mapping, float[] attribute, int verticeCount) {
+        ShaderVariable variable = getMaterial().getProgram().getShaderVariable(mapping);
+        setAttribute4(index, variable, attribute, verticeCount);
+    }
+
+    /**
+     * Sets attribute data for the specified vertex
+     * 
+     * @param index Index to the vertex to set attribute data for
+     * @param variable The variable to set
+     * @param attribute The data to set, must contain at least 4 values
+     * @param verticeCount The number of vertices to set the attribute to
+     */
+    public void setAttribute4(int index, ShaderVariable variable, float[] attribute, int verticeCount) {
+        int offset = index * mapper.attributesPerVertex;
+        offset += variable.getOffset();
+        VertexBuffer buffer = getVerticeBuffer(BufferIndex.ATTRIBUTES);
+        if (buffer != null) {
+            buffer.setComponents(attribute, 4, 0, offset, verticeCount);
+        }
     }
 
 }

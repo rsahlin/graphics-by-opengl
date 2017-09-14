@@ -13,7 +13,10 @@ public enum DataType {
     SHORT(2, 2),
     STRING(3, 0),
     RESOLUTION(4, 0),
-    TEXTURE_PARAMETER(5, 0);
+    TEXTURE_PARAMETER(5, 0),
+    VEC2(6, 8),
+    VEC3(7, 12),
+    VEC4(8, 16);
 
     private final int type;
     private final int size;
@@ -41,6 +44,21 @@ public enum DataType {
      */
     public int getSize() {
         return size;
+    }
+
+    /**
+     * Returns the datatype for the specified type value, or null if not found
+     * 
+     * @param type
+     * @return
+     */
+    public static DataType valueOf(int type) {
+        for (DataType dataType : values()) {
+            if (dataType.getType() == type) {
+                return dataType;
+            }
+        }
+        return null;
     }
 
 }

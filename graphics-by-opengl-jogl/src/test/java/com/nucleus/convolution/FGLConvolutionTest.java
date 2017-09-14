@@ -2,10 +2,15 @@ package com.nucleus.convolution;
 
 import org.junit.Test;
 
-import com.nucleus.camera.ViewFrustum;
+import com.nucleus.CoreApp;
+import com.nucleus.CoreApp.ClientApplication;
+import com.nucleus.assets.AssetManager;
+import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.geometry.RectangleShapeBuilder;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.jogl.NucleusApplication;
+import com.nucleus.jogl.JOGLApplication;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.opengl.GLESWrapper.GLES20;
@@ -13,21 +18,35 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
-import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.RenderSettings;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
-import com.nucleus.scene.ViewNode;
+import com.nucleus.scene.DefaultNodeFactory;
+import com.nucleus.scene.Node.MeshType;
+import com.nucleus.scene.NodeException;
+import com.nucleus.scene.NodeType;
+import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.texturing.Convolution;
-import com.nucleus.texturing.TexParameter;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
 
-public class FGLConvolutionTest extends NucleusApplication implements FrameListener,
+public class FGLConvolutionTest extends JOGLApplication implements FrameListener,
         MMIEventListener {
 
+
+    public static class MyClientApplication implements ClientApplication {
+
+
+        @Override
+        public void init(CoreApp coreApp) {
+
+        }
+
+    }
+    
+    
     private final static float[] kernel1 = new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 };
     private final static float[] kernel2 = new float[] { -1, -1, -1, -1, 8, -1, -1, -1, -1 };
     private final static float[] kernel3 = new float[] { 0, -1, 0, -1, 5, -1, 0, -1, 0 };
@@ -44,12 +63,11 @@ public class FGLConvolutionTest extends NucleusApplication implements FrameListe
     private ShaderVariable uKernel;
 
     public FGLConvolutionTest() {
-        super(new String[] {}, Renderers.GLES20, null);
+        super(new String[] {}, Renderers.GLES20, MyClientApplication.class);
     }
 
     public static void main(String[] args) {
         FGLConvolutionTest main = new FGLConvolutionTest();
-        main.createCoreWindows(Renderers.GLES20);
     }
 
     @Test
@@ -68,32 +86,38 @@ public class FGLConvolutionTest extends NucleusApplication implements FrameListe
     @Override
     public void createCoreApp(int width, int height) {
         super.createCoreApp(width, height);
-        NucleusRenderer renderer = getRenderer();
+        NucleusRenderer renderer = coreApp.getRenderer();
         RenderSettings rs = renderer.getRenderSettings();
         rs.setCullFace(GLES20.GL_NONE);
         rs.setDepthFunc(GLES20.GL_NONE);
         coreApp.getInputProcessor().addMMIListener(this);
 
-        mesh = new Mesh();
-        ConvolutionProgram c = new ConvolutionProgram();
-        uKernel = c.getShaderVariable(ConvolutionProgram.VARIABLES.uKernel);
-        c.createProgram(renderer.getGLES());
-        ViewNode node = new ViewNode();
-        node.setLayer(Layer.SCENE);
-        ViewFrustum vf = new ViewFrustum();
-        vf.setOrthoProjection(-0.5f, 0.5f, 0.5f, -0.5f, 0, 10);
-        node.setViewFrustum(vf);
-        TextureParameter texParam = new TextureParameter();
-        texParam.setValues(new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST, TexParameter.CLAMP,
-                TexParameter.CLAMP });
-        Texture2D tex = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(),
-                "texture", new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, texParam, 1);
-        c.buildMesh(mesh, tex, 1f, 1f, 0, kernel[kernelIndex]);
-        node.addMesh(mesh);
-        BaseRootNode root = new BaseRootNode();
-        root.setScene(node);
-        coreApp.setRootNode(root);
-        renderer.addFrameListener(this);
+        BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
+        TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
+        Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), "texture",
+                new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, texParam, 1);
+        Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
+        meshBuilder.setElementMode(Mode.TRIANGLES, 4, 6);
+        meshBuilder.setTexture(texture);
+        ConvolutionProgram c = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer,
+                new ConvolutionProgram());
+        Material material = new Material();
+        material.setProgram(c);
+        meshBuilder.setMaterial(material);
+        meshBuilder.setShapeBuilder(
+                new RectangleShapeBuilder(new RectangleShapeBuilder.Configuration(1f, 1f, 0f, 1, 0)));
+        builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
+                .setNode(NodeType.layernode);
+        try {
+            RootNode root = builder.create();
+            mesh = root.getScene().getMesh(MeshType.MAIN);
+            uKernel = c.getShaderVariable(ConvolutionProgram.VARIABLES.uKernel);
+            renderer.addFrameListener(this);
+            coreApp.setRootNode(root);
+        } catch (NodeException e) {
+            throw new IllegalArgumentException(e);
+        }
+
     }
 
     @Override
@@ -128,7 +152,7 @@ public class FGLConvolutionTest extends NucleusApplication implements FrameListe
     }
 
     @Override
-    public void inputEvent(MMIPointerEvent event) {
+    public void onInputEvent(MMIPointerEvent event) {
 
         switch (event.getAction()) {
         case ACTIVE:

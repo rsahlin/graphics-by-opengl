@@ -12,6 +12,9 @@ import com.google.gson.annotations.SerializedName;
  */
 public class TextureParameter {
 
+    public static final TexParameter[] DEFAULT_TEXTURE_PARAMETERS = new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST, TexParameter.CLAMP,
+            TexParameter.CLAMP };
+
     public enum Name {
         MIN_FILTER(0),
         MAG_FILTER(1),
@@ -24,6 +27,12 @@ public class TextureParameter {
             this.index = index;
         }
     }
+
+    /**
+     * Texture parameter values, MUST contain 4 values
+     */
+    @SerializedName("values")
+    protected TexParameter[] values;
 
     /**
      * Default constructor
@@ -45,6 +54,10 @@ public class TextureParameter {
         setValues(values);
     }
 
+    public TextureParameter(TexParameter min, TexParameter mag, TexParameter wrapS, TexParameter wrapT) {
+        setValues(values);
+    }
+
     /**
      * Creates a new texture parameter from the source
      * 
@@ -53,12 +66,6 @@ public class TextureParameter {
     public TextureParameter(TextureParameter source) {
         setValues(source);
     }
-
-    /**
-     * Texture parameter values, MUST contain 4 values
-     */
-    @SerializedName("values")
-    protected TexParameter[] values;
 
     /**
      * Copy values from the source texture parameters
@@ -84,8 +91,12 @@ public class TextureParameter {
      * Clears the current values and sets the specified texture parameter values.
      * 
      * @param values The values to set, shall contain min filter, mag filter, wrap s and wrap t
+     * @throws IllegalArgumentException if values is null or does not contain 4 values, or contains invalid values
      */
     public void setValues(TexParameter[] values) {
+        if (values == null || values.length < 4) {
+            throw new IllegalArgumentException("Invalid values:" + values);
+        }
         if (this.values == null) {
             this.values = new TexParameter[Name.values().length];
         }
@@ -93,7 +104,38 @@ public class TextureParameter {
         for (TexParameter p : values) {
             this.values[index++] = p;
         }
+        validateValues();
     }
+
+    /**
+     * Replaces the current values with the specified min, mag, wrapS, wrapT values
+     * 
+     * @param min
+     * @param mag
+     * @param wrapS
+     * @param wrapT
+     * @throws IllegalArgumentException if any of the parameters are invalid
+     */
+    public void setValues(TexParameter min, TexParameter mag, TexParameter wrapS, TexParameter wrapT) {
+        if (values == null) {
+            values = new TexParameter[Name.values().length];
+        }
+        values[Name.MIN_FILTER.index] = min;
+        values[Name.MAG_FILTER.index] = mag;
+        values[Name.WRAP_S.index] = wrapS;
+        values[Name.WRAP_T.index] = wrapT;
+        validateValues();
+    }
+
+    protected void validateValues() {
+        if (!TexParameter.validateMinFilter(values[Name.MIN_FILTER.index])
+                || TexParameter.validateMagFilter(values[Name.MAG_FILTER.index])
+                || !TexParameter.validateWrapMode(values[Name.WRAP_S.index]) || !TexParameter.validateWrapMode(values[Name.WRAP_T.index])) {
+            throw new IllegalArgumentException(
+                    "Invalid texture mode:" + values[0] + ", " + values[1] + ", " + values[2] + ", " + values[3]);
+        }
+    }
+
 
     /**
      * Returns the value for the specified parameter name.

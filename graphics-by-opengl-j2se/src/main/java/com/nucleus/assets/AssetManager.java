@@ -4,13 +4,21 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.io.ExternalReference;
+import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
+import com.nucleus.texturing.TextureType;
 
 /**
  * Loading and unloading assets, mainly textures.
+ * It should normally handle resources that are loaded separately from the main json file using an
+ * {@link ExternalReference} eg data that does not fit within the main file.
+ * 
  * 
  * @author Richard Sahlin
  *
@@ -21,11 +29,13 @@ public class AssetManager {
     /**
      * Store textures using the source image name.
      */
-    private HashMap<String, HashMap<Texture2D, Texture2D>> textures = new HashMap<String, HashMap<Texture2D, Texture2D>>();
+    private HashMap<String, Texture2D> textures = new HashMap<>();
     /**
      * Use to convert from object id (texture reference) to name of source (file)
      */
     private Hashtable<String, ExternalReference> sourceNames = new Hashtable<String, ExternalReference>();
+
+    private HashMap<String, ShaderProgram> programs = new HashMap<>();
 
     /**
      * Hide the constructor
@@ -61,6 +71,8 @@ public class AssetManager {
 
     /**
      * Returns the texture, if the texture has not been loaded it will be loaded and stored in the assetmanager.
+     * If already has been loaded the loaded instance will be returned.
+     * Treat textures as immutable object
      * 
      * @param renderer
      * @param ref
@@ -73,46 +85,52 @@ public class AssetManager {
 
     /**
      * Returns the texture, if the texture has not been loaded it will be loaded and stored in the assetmanager.
+     * If already has been loaded the loaded instance will be returned.
+     * Treat textures as immutable object
      * 
      * @param renderer
-     * @param source
+     * @param source The external ref is used to load a texture
      * @return The texture specifying the external reference to the texture to load and return.
      * @throws IOException
      */
-    public Texture2D getTexture(NucleusRenderer renderer, Texture2D source) throws IOException {
+    protected Texture2D getTexture(NucleusRenderer renderer, Texture2D source) throws IOException {
+        long start = System.currentTimeMillis();
+        /**
+         * External ref for untextured needs to be "" so it can be store and fetched.
+         */
+        if (source.getTextureType() == TextureType.Untextured) {
+            source.setExternalReference(new ExternalReference(""));
+        }
         ExternalReference ref = source.getExternalReference();
         String refSource = ref.getSource();
-        HashMap<Texture2D, Texture2D> classMap = null;
-        classMap = textures.get(refSource);
-        Texture2D texture = null;
-        if (classMap == null) {
-            classMap = new HashMap<Texture2D, Texture2D>();
-            textures.put(refSource, classMap);
-        } else {
-            texture = classMap.get(source);
-            if (texture != null) {
-                return texture;
-            }
-            texture = classMap.entrySet().iterator().next().getKey();
-            Texture2D copy = TextureFactory.createTexture(source);
-            TextureFactory.copyTextureData(texture, copy);
-            putTexture(copy, classMap);
-            return copy;
-        }
+        Texture2D texture = textures.get(refSource);
         if (texture == null) {
+            // Texture not loaded
             texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), source);
-            putTexture(texture, classMap);
+            textures.put(refSource, texture);
+            setExternalReference(texture.getId(), ref);
         }
+        FrameSampler.getInstance().logTag(FrameSampler.CREATE_TEXTURE + " " + source.getName(), start,
+                System.currentTimeMillis());
         return texture;
     }
 
-    private void putTexture(Texture2D texture, HashMap<Texture2D, Texture2D> map) {
-        map.put(texture, texture);
-        sourceNames.put(texture.getId(), texture.getExternalReference());
+    /**
+     * Sets the external reference for the object id
+     * @param id
+     * @param externalReference
+     * @throws IllegalArgumentException If a reference with the specified Id already has been set
+     */
+    private void setExternalReference(String id, ExternalReference externalReference) {
+        if (sourceNames.containsKey(id)) {
+            throw new IllegalArgumentException("Id already added as external reference:" + id);
+        }
+        sourceNames.put(id, externalReference);
+
     }
 
     /**
-     * Returns the source reference for the texture with the specified id, this can be used to fetch texture
+     * Returns the source reference for the object with the specified id, this can be used to fetch object
      * source name from a texture reference/id.
      * If the source reference cannot be found it is considered an error and an exception is thrown.
      * 
@@ -129,4 +147,60 @@ public class AssetManager {
         }
         return ref;
     }
+
+    /**
+     * Returns a loaded and compiled shader program, if the program has not already been loaded and compiled it will be
+     * added to AssetManager
+     * 
+     * @param renderer
+     * @param program
+     * @return An instance of the ShaderProgram that is loaded and compiled
+     */
+    public ShaderProgram getProgram(NucleusRenderer renderer, ShaderProgram program) {
+        ShaderProgram compiled = programs.get(program.getKey());
+        if (compiled != null) {
+            SimpleLogger.d(getClass(), "Returned compiled program for " + program.getClass().getSimpleName());
+            return compiled;
+        }
+        long start = System.currentTimeMillis();
+        renderer.createProgram(program);
+        FrameSampler.getInstance().logTag(FrameSampler.CREATE_SHADER + program.getClass().getSimpleName(), start,
+                System.currentTimeMillis());
+        programs.put(program.getKey(), program);
+        return program;
+    }
+
+    /**
+     * Removes all references and resources.
+     * 
+     * @param renderer
+     */
+    public void destroy(NucleusRenderer renderer) {
+        SimpleLogger.d(getClass(), "destroy");
+        deletePrograms(renderer.getGLES());
+        deleteTextures(renderer.getGLES());
+        programs.clear();
+        sourceNames.clear();
+        textures.clear();
+    }
+
+    private void deleteTextures(GLES20Wrapper wrapper) {
+        if (textures.size() == 0) {
+            return;
+        }
+        int[] texNames = new int[textures.size()];
+        int i = 0;
+        for (Texture2D texture : textures.values()) {
+            texNames[i++] = texture.getName();
+        }
+        wrapper.glDeleteTextures(texNames);
+    }
+
+    private void deletePrograms(GLES20Wrapper wrapper) {
+        for (ShaderProgram program : programs.values()) {
+            wrapper.glDeleteProgram(program.getProgram());
+        }
+    }
+
 }
+

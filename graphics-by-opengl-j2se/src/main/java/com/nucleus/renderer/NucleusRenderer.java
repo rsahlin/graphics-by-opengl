@@ -5,7 +5,6 @@ import java.nio.Buffer;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
-import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
@@ -79,6 +78,7 @@ public interface NucleusRenderer {
      * @author Richard Sahlin
      *
      */
+    @Deprecated
     public interface FrameListener {
         /**
          * Called when a new frame shall be processed (by the logic)
@@ -174,13 +174,6 @@ public interface NucleusRenderer {
     public RenderSettings getRenderSettings();
 
     /**
-     * Fetches a reference to the frame sampler, this can be used to query the current delta interval.
-     * 
-     * @return
-     */
-    public FrameSampler getFrameSampler();
-
-    /**
      * Renders one specific layer or all layers.
      * Uses the current mvp matrix, will call children recursively.
      * This shall be called by the thread driving rendering.
@@ -199,6 +192,7 @@ public interface NucleusRenderer {
 
     /**
      * Renders the node using the current mvp matrix, will call children recursively.
+     * If node is drawn it will be added to {@link RootNode} list of rendered nodes.
      * 
      * @param node The node to be rendered
      * @throws GLException If there is an error in GL while drawing this node.
@@ -263,20 +257,20 @@ public interface NucleusRenderer {
 
     /**
      * Creates the program object, loads and compiles the shader sources and links the program.
+     * This method is deprecated and should only be used internally.
      * 
      * @param program
      * @throws RuntimeException If there is an error loading,compiling or linking the program.
      */
+    @Deprecated
     public void createProgram(ShaderProgram program);
 
     /**
      * Generate GL named object buffers
      * 
-     * @param count Number of named buffers to create
      * @param names Destination for buffer names
-     * @param offset Offset into names
      */
-    public void genBuffers(int count, int[] names, int offset);
+    public void genBuffers(int[] names);
 
     /**
      * Deletes the named object buffers generated with a call to {@link #genBuffers(int, int[], int)}
@@ -328,21 +322,6 @@ public interface NucleusRenderer {
      * @return The projection matrix
      */
     public float[] getProjection();
-
-    /**
-     * Sets the view matrix, this will copy the values from the source matrix.
-     * 
-     * @param matrix The view matrix
-     * @param index Index into array where matrix is
-     */
-    public void setView(float[] matrix, int index);
-
-    /**
-     * Returns the view matrix
-     * 
-     * @return
-     */
-    public float[] getView();
 
     /**
      * Returns the renderer info.

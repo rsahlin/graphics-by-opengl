@@ -29,7 +29,7 @@ repositories {
     jcenter() 
 }
 dependencies {
-	compile 'com.google.code.gson:gson:2.5'
+	compile 'com.google.code.gson:gson:2.8.1'
 	compile 'com.super2k.vecmath:vecmath:0.0.1-SNAPSHOT'
 	testCompile 'junit:junit:4.12'	
 }

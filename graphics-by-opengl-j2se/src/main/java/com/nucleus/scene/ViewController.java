@@ -1,18 +1,19 @@
 package com.nucleus.scene;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.common.StringUtils;
-import com.nucleus.properties.EventManager;
-import com.nucleus.properties.EventManager.EventHandler;
+import com.nucleus.event.EventManager;
+import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.vecmath.Transform;
 
 /**
- * Handles the update of the scene View.
+ * Handles the update of the scene View
  * This class can be registered with {@linkplain EventHandler} to listen for view events.
  * 
  * @author Richard Sahlin
  *
  */
-public class ViewController implements EventHandler {
+public class ViewController implements EventHandler<Node> {
 
     /**
      * The key to register in the property handler for this class
@@ -37,9 +38,9 @@ public class ViewController implements EventHandler {
     }
 
     /**
-     * Creates a new viewcontroller with the specified view.
+     * Creates a new viewcontroller with the specified view transform.
      * 
-     * @param view
+     * @param view The transform that is controlled by this view.
      * @throws IllegalArgumentException If view is null
      */
     public ViewController(Transform view) {
@@ -49,49 +50,37 @@ public class ViewController implements EventHandler {
         this.view = view;
     }
 
-    /**
-     * Registers this class as a eventhandler for the key, if key is null the {@link #HANDLER_KEY} is used.
-     * NOTE! Only register ONE view controller, this shall be called with the
-     * {@link #handleObjectEvent(Object, String, String)} method which will resolve the needed target view transform.
-     * TODO How to make sure only one instance of this class is registered?
-     * TODO Perhaps split viewcontroller into 2 parts, one that handles the "view" property and does not need a target
-     * reference
-     * 
-     * @param key The key to register this controller for, or null to use default.
-     */
+    @Override
     public void registerEventHandler(String key) {
-        EventManager.getInstance().registerCategory(key, this);
+        EventManager.getInstance().register(key, this);
     }
 
     @Override
-    public void handleEvent(String category, String value) {
-        try {
-            Actions action = Actions.valueOf(category);
-            handleAction(action, value);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Could not parse category: " + category);
+    public void handleEvent(Node object, String category, String value) {
+        LayerNode target = object.getViewParent();
+        if (target != null) {
+            try {
+                Actions action = Actions.valueOf(category);
+                handleAction(action, value, target);
+            } catch (IllegalArgumentException e) {
+                System.out.println("Could not parse category: " + category);
+            }
+        } else {
+            SimpleLogger.d(getClass(), "No ViewNode parent in node " + object);
         }
     }
 
-    private void handleAction(Actions action, String data) {
+    private void handleAction(Actions action, String data, LayerNode target) {
         float[] values = StringUtils.getFloatArray(data);
         switch (action) {
         case MOVE:
-            view.addTranslation(values);
+            target.getTransform().addTranslation(values);
             break;
         case MOVETO:
-            view.setTranslate(values);
+            target.getTransform().setTranslate(values);
             break;
         default:
             throw new IllegalArgumentException("Not implemented");
-        }
-    }
-
-    @Override
-    public void handleObjectEvent(Object obj, String category, String value) {
-        ViewNode view = ((Node) obj).getViewParent();
-        if (view != null) {
-            view.getViewController().handleEvent(category, value);
         }
     }
 

@@ -94,7 +94,7 @@ public class TextureFactory {
             InputStreamReader reader = new InputStreamReader(ref.getAsStream());
             return gson.fromJson(reader, Texture2D.class);
         } catch (Exception e) {
-            throw new RuntimeException("Exception reading " + ref.getSource(), e);
+            throw new RuntimeException("Exception reading " + ref.getSource() + " : " + e, e);
         }
     }
 
@@ -112,8 +112,10 @@ public class TextureFactory {
             return new TiledTexture2D();
         case UVTexture2D:
             return new UVTexture2D();
+        case Untextured:
+            return new Untextured();
         default:
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Not implemented support for " + type);
         }
     }
 
@@ -150,29 +152,20 @@ public class TextureFactory {
             return;
         }
         int[] textures = new int[1];
-        gles.glGenTextures(1, textures, 0);
+        gles.glGenTextures(textures);
 
         int textureID = textures[0];
         Image[] textureImg = TextureUtils
                 .loadTextureMIPMAP(imageFactory, texture);
         try {
             TextureUtils.uploadTextures(gles, GLES20.GL_TEXTURE0, texture, textureID, textureImg);
-            // TODO Do not need to keep images after texture is uploaded
-            texture.setup(textureID, textureImg);
+            texture.setup(textureID, textureImg[0].width, textureImg[0].height);
             SimpleLogger.d(TextureFactory.class, "Uploaded texture " + texture.toString());
+            Image.destroyImages(textureImg);
         } catch (GLException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    /**
-     * Copies the texture data, ie the texture name and image data to the destination.
-     * 
-     * @param source
-     * @param destination
-     */
-    public static void copyTextureData(Texture2D source, Texture2D destination) {
-        destination.setup(source.getName(), source.images);
-    }
 
 }

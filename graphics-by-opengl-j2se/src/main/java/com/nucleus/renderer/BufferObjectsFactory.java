@@ -1,15 +1,12 @@
 package com.nucleus.renderer;
 
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.util.Arrays;
-
-import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.VertexBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.GLUtils;
 
 /**
  * This class takes care of allocation and release of buffer objects
@@ -33,41 +30,36 @@ public class BufferObjectsFactory {
         return instance;
     }
 
-    private final static float[] debug_float_data = new float[32];
-    private final static short[] debug_short_data = new short[32];
-
     /**
      * Creates the vbos for the specified mesh, the buffer objects will be stored in the contained buffers in the mesh.
      * After this call the mesh can be rendered using the specified buffer objects (VBO)
      * 
      * @param renderer
      * @param mesh
+     * @throws GLException If there is an error setting buffer data
      */
-    public void createVBOs(NucleusRenderer renderer, Mesh mesh) {
+    public void createVBOs(NucleusRenderer renderer, Mesh mesh) throws GLException {
         int vboCount = mesh.getBufferNameCount();
         // TODO Need a way to tie the allocated buffer names to the element/vertex buffers
         int[] names = new int[vboCount];
-        renderer.genBuffers(vboCount, names, 0);
+        renderer.genBuffers(names);
         mesh.setBufferNames(0, names, 0);
         ElementBuffer indices = mesh.getElementBuffer();
         for (VertexBuffer attribs : mesh.getVerticeBuffers()) {
-            ((FloatBuffer) attribs.getBuffer().position(0)).get(debug_float_data);
-            SimpleLogger.d(BufferObjectsFactory.class,
-                    "Uploading array data to vertex buffer object: " + Arrays.toString(debug_float_data));
-            renderer.bindBuffer(GLESWrapper.GLES20.GL_ARRAY_BUFFER, attribs.getBufferName());
-            renderer.bufferData(GLESWrapper.GLES20.GL_ARRAY_BUFFER, attribs.getSizeInBytes(),
-                    attribs.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
-            attribs.setDirty(false);
+            if (attribs != null) {
+                renderer.bindBuffer(GLESWrapper.GLES20.GL_ARRAY_BUFFER, attribs.getBufferName());
+                renderer.bufferData(GLESWrapper.GLES20.GL_ARRAY_BUFFER, attribs.getSizeInBytes(),
+                        attribs.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
+                attribs.setDirty(false);
+            }
         }
         if (indices != null) {
-            ((ByteBuffer) indices.getBuffer().position(0)).asShortBuffer().get(debug_short_data);
-            SimpleLogger.d(BufferObjectsFactory.class,
-                    "Uploading element data to vertex buffer object: " + Arrays.toString(debug_short_data));
             renderer.bindBuffer(GLESWrapper.GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
             renderer.bufferData(GLESWrapper.GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getSizeInBytes(),
                     indices.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
             indices.setDirty(false);
         }
+        GLUtils.handleError(renderer.getGLES(), "createVBOs ");
     }
 
 }

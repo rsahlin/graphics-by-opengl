@@ -25,15 +25,12 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.State;
-import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
-import com.nucleus.scene.ViewNode;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.vecmath.Matrix;
-import com.nucleus.vecmath.Transform;
 
 /**
  * Platform agnostic renderer, this handles pure render related methods.
@@ -78,7 +75,6 @@ class BaseRenderer implements NucleusRenderer {
      */
     protected float[] projectionMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
 
-    private float[] tempMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
 
     protected GLES20Wrapper gles;
     protected RenderSettings renderSettings = new RenderSettings();
@@ -87,7 +83,7 @@ class BaseRenderer implements NucleusRenderer {
     private Set<RenderContextListener> contextListeners = new HashSet<RenderContextListener>();
     private Set<FrameListener> frameListeners = new HashSet<BaseRenderer.FrameListener>();
 
-    private FrameSampler timeKeeper = new FrameSampler(30);
+    private FrameSampler timeKeeper = FrameSampler.getInstance();
     private float deltaTime;
 
     protected Window window = Window.getInstance();
@@ -147,6 +143,7 @@ class BaseRenderer implements NucleusRenderer {
         initialized = true;
         this.surfaceConfig = surfaceConfig;
         rendererInfo = new RendererInfo(gles);
+        gles.glLineWidth(1f);
     }
 
 
@@ -154,7 +151,7 @@ class BaseRenderer implements NucleusRenderer {
     public float beginFrame() {
         deltaTime = timeKeeper.update();
         if (timeKeeper.getSampleDuration() > 3) {
-            System.out.println(BASE_RENDERER_TAG + ": " + timeKeeper.sampleFPS());
+            SimpleLogger.d(getClass(), timeKeeper.sampleFPS());
         }
         try {
             if (renderSettings.getChangeFlag() != RenderSettings.CHANGE_FLAG_NONE) {
@@ -169,10 +166,9 @@ class BaseRenderer implements NucleusRenderer {
             gles.glClear(clearFunc);
         }
         for (FrameListener listener : frameListeners) {
+            listener.processFrame(timeKeeper.getDelta());
             listener.updateGLData();
         }
-        // matrixEngine.setProjectionMatrix(viewFrustum);
-        // mvpMatrix = getViewFrustum().getProjectionMatrix();
         this.modelMatrix = null;
 
         return deltaTime;
@@ -185,7 +181,6 @@ class BaseRenderer implements NucleusRenderer {
      * @throws GLException
      */
     private void setRenderSetting(RenderSettings setting) throws GLException {
-
         int flags = setting.getChangeFlag();
         if ((flags & RenderSettings.CHANGE_FLAG_CLEARCOLOR) != 0) {
             float[] clear = setting.getClearColor();
@@ -228,41 +223,33 @@ class BaseRenderer implements NucleusRenderer {
             
         }
         GLUtils.handleError(gles, "setRenderSettings ");
-
     }
 
     @Override
     public void endFrame() {
+        /**
+         * if (lineDrawer != null) {
+         * try {
+         * Matrix.orthoM(projectionMatrix, 0, -0.8889f, 0.8889f, -0.5f, 0.5f, 4f, -10f);
+         * gles.glLineWidth(1.0f);
+         * renderMesh(lineDrawer, mvMatrix, projectionMatrix);
+         * } catch (GLException e) {
+         * SimpleLogger.d(getClass(), "Exception rendering lines: " + e.getMessage());
+         * }
+         * }
+         */
     }
 
     @Override
     public void render(Node node) throws GLException {
         State state = node.getState();
         if (state == null || state == State.ON || state == State.RENDER) {
-            if (NodeType.viewnode.name().equals(node.getType())) {
-                Transform view = ((ViewNode) node).getView();
-                if (view != null) {
-                    setView(view.getMatrix(), 0);
-                }
-            }
             // Check for AttributeUpdate producer.
             Producer producer = node.getAttributeProducer();
             if (producer != null) {
                 producer.updateAttributeData();
             }
-            float[] nodeMatrix = node.getModelMatrix();
-            float[] modelMatrix = null;
-            if (node.getTransform() != null) {
-                modelMatrix = node.getTransform().getMatrix();
-            } else {
-                modelMatrix = tempMatrix;
-                Matrix.setIdentity(modelMatrix, 0);
-            }
-            if (this.modelMatrix == null) {
-                System.arraycopy(modelMatrix, 0, nodeMatrix, 0, 16);
-            } else {
-                Matrix.mul4(this.modelMatrix, modelMatrix, nodeMatrix);
-            }
+            float[] nodeMatrix = node.concatModelMatrix(this.modelMatrix);
             // Fetch projection just before render
             float[] projection = node.getProjection();
             if (projection != null) {
@@ -281,6 +268,7 @@ class BaseRenderer implements NucleusRenderer {
             if (projection != null) {
                 this.projectionMatrix = popMatrix(this.projection);
             }
+            node.getRootNode().addRenderedNode(node);
         }
     }
 
@@ -313,7 +301,7 @@ class BaseRenderer implements NucleusRenderer {
         VertexBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         ElementBuffer indices = mesh.getElementBuffer();
         gles.glUseProgram(program.getProgram());
-        GLUtils.handleError(gles, "glUseProgram ");
+        GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
 
         Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
         if (texture != null && texture.textureType != TextureType.Untextured) {
@@ -327,14 +315,14 @@ class BaseRenderer implements NucleusRenderer {
         program.bindUniforms(gles, mvMatrix, projectionMatrix, mesh);
 
         if (indices == null) {
-            gles.glDrawArrays(mesh.getMode(), 0, vertices.getVerticeCount());
+            gles.glDrawArrays(mesh.getMode().mode, 0, vertices.getVerticeCount());
             timeKeeper.addDrawArrays(vertices.getVerticeCount());
         } else {
             if (indices.getBufferName() > 0) {
                 gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
-                gles.glDrawElements(indices.getMode().mode, indices.getCount(), indices.getType().type, 0);
+                gles.glDrawElements(mesh.getMode().mode, indices.getCount(), indices.getType().type, 0);
             } else {
-                gles.glDrawElements(indices.getMode().mode, indices.getCount(), indices.getType().type,
+                gles.glDrawElements(mesh.getMode().mode, indices.getCount(), indices.getType().type,
                         indices.getBuffer().position(0));
             }
             timeKeeper.addDrawElements(vertices.getVerticeCount(), indices.getCount());
@@ -425,8 +413,8 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void genBuffers(int count, int[] names, int offset) {
-        gles.glGenBuffers(count, names, offset);
+    public void genBuffers(int[] names) {
+        gles.glGenBuffers(names);
     }
 
     @Override
@@ -450,11 +438,6 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public FrameSampler getFrameSampler() {
-        return timeKeeper;
-    }
-
-    @Override
     public void resizeWindow(int x, int y, int width, int height) {
         renderSettings.setViewPort(x, y, width, height);
         Window.getInstance().setSize(width, height);
@@ -468,16 +451,6 @@ class BaseRenderer implements NucleusRenderer {
     @Override
     public float[] getProjection() {
         return projectionMatrix;
-    }
-
-    @Override
-    public void setView(float[] matrix, int index) {
-        System.arraycopy(matrix, index, viewMatrix, 0, 16);
-    }
-
-    @Override
-    public float[] getView() {
-        return viewMatrix;
     }
 
     @Override

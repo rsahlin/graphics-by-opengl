@@ -80,7 +80,7 @@ public class RenderSettings {
     /**
      * If depth test is enabled display is cleared to this color at beginFrame()
      */
-    protected float[] clearColor = new float[] { 0.3f, 0.4f, 0.5f, 1f };
+    protected float[] clearColor = new float[] { 0.3f, 0.3f, 0.5f, 1f };
 
     /**
      * Clear stencilbuffer with this value if the STENCIL_BUFFER_BIT is set in the clear flags.
@@ -324,7 +324,9 @@ public class RenderSettings {
     }
 
     /**
-     * Returns the clear color component, red, green, blue, alpha in an array. Red at offset 0.
+     * Returns a reference to the clear color component, red, green, blue, alpha in an array. Red at offset 0.
+     * Do not write to these values without updating the change flag by calling {@link #setChangeFlag(int)}
+     * Otherwise the new color values will not be written to gl.
      * 
      * @return Clear color components.
      */

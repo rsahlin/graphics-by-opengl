@@ -13,6 +13,11 @@ import com.nucleus.shader.ShaderProgram;
  */
 public class Material {
 
+    public static final String BLEND_EQUATION = "blendEquation";
+    public static final String BLEND_FUNC = "blendFunc";
+    public static final String AMBIENT = "ambient";
+    public static final String DIFFUSE = "diffuse";
+
     public enum BlendEquation {
         DISABLED(-1),
         GL_FUNC_ADD(GLES20.GL_FUNC_ADD),
@@ -76,12 +81,17 @@ public class Material {
      */
     transient ShaderProgram program;
 
-    @SerializedName("blendEquation")
+    @SerializedName(BLEND_EQUATION)
     private BlendEquation[] blendEquation = new BlendEquation[] { BlendEquation.GL_FUNC_ADD,
             BlendEquation.GL_FUNC_ADD };
-    @SerializedName("blendFunc")
+    @SerializedName(BLEND_FUNC)
     private BlendFunc[] blendFunction = new BlendFunc[] { BlendFunc.GL_SRC_ALPHA, BlendFunc.GL_ONE_MINUS_SRC_ALPHA,
             BlendFunc.GL_SRC_ALPHA, BlendFunc.GL_DST_ALPHA };
+
+    @SerializedName(AMBIENT)
+    private float[] ambient = new float[] { 1, 1, 1, 1 };
+    @SerializedName(DIFFUSE)
+    private float[] diffuse;
 
     /**
      * Creates a default material
@@ -95,9 +105,7 @@ public class Material {
      * @param source
      */
     public Material(Material source) {
-        setBlendFunc(source.blendFunction);
-        setBlendEquation(source.blendEquation);
-        program = source.program;
+        copy(source);
     }
 
     /**
@@ -122,6 +130,8 @@ public class Material {
         program = source.program;
         setBlendFunc(source.blendFunction);
         setBlendEquation(source.blendEquation);
+        setAmbient(source);
+
     }
 
     /**
@@ -192,4 +202,51 @@ public class Material {
                     blendFunction[3].value);
         }
     }
+
+    /**
+     * Returns the diffuse color, or null if not set.
+     * 
+     * @return
+     */
+    public float[] getDiffuse() {
+        return diffuse;
+    }
+
+    /**
+     * Returns the ambient color, or null of not set.
+     * 
+     * @return
+     */
+    public float[] getAmbient() {
+        return ambient;
+    }
+
+    /**
+     * Copies the ambient value from the source, if source is null or does not have ambient, nothing is done.
+     * 
+     * @param source
+     */
+    public void setAmbient(Material source) {
+        if (source != null && source.getAmbient() != null) {
+            setAmbient(source.getAmbient(), 0);
+        }
+    }
+
+    /**
+     * Sets the ambient RGBA values from source array
+     * 
+     * @param ambient
+     * @param index
+     * @throws ArrayIndexOutOfBoundsException If there is not room to read 4 values at index
+     */
+    public void setAmbient(float[] ambient, int index) {
+        if (this.ambient == null || this.ambient.length < 4) {
+            this.ambient = new float[4];
+        }
+        this.ambient[0] = ambient[index++];
+        this.ambient[1] = ambient[index++];
+        this.ambient[2] = ambient[index++];
+        this.ambient[3] = ambient[index++];
+    }
+
 }

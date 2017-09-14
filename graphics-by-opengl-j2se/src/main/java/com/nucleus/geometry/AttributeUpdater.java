@@ -1,5 +1,6 @@
 package com.nucleus.geometry;
 
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.ShaderProgram;
 
 /**
@@ -62,6 +63,7 @@ public interface AttributeUpdater {
         public final int frameOffset;
         public final int colorOffset;
         public final int colorSpecularOffset;
+        public final int colorAmbientOffset;
         public final int specularPowerOffset;
         public final int attributesPerVertex;
 
@@ -76,7 +78,8 @@ public interface AttributeUpdater {
             scaleOffset = program.getPropertyOffset(Property.SCALE);
             frameOffset = program.getPropertyOffset(Property.FRAME);
             colorOffset = program.getPropertyOffset(Property.COLOR);
-            colorSpecularOffset = program.getPropertyOffset(Property.COLOR);
+            colorSpecularOffset = program.getPropertyOffset(Property.COLOR_SPECULAR);
+            colorAmbientOffset = program.getPropertyOffset(Property.COLOR_AMBIENT);
             specularPowerOffset = program.getPropertyOffset(Property.SPECULAR_POWER);
             attributesPerVertex = program.getAttributesPerVertex();
         }
@@ -140,8 +143,10 @@ public interface AttributeUpdater {
 
     /**
      * Release all resources allocated by the implementing class, call this when this object shall not be used anymore.
+     * 
+     * @param renderer
      */
-    public void destroy();
+    public void destroy(NucleusRenderer renderer);
 
     /**
      * Returns the propertymapper to be used to find positions of property attributes.

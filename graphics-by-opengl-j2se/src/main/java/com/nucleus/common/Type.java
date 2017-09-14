@@ -17,7 +17,7 @@ public interface Type<T> {
      * 
      * @return
      */
-    public Class<T> getTypeClass();
+    public Class<?> getTypeClass();
 
     /**
      * Returns the name of the type, use this for instance when serializing.

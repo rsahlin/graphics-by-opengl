@@ -1,17 +1,19 @@
 package com.nucleus.scene;
 
-import com.nucleus.properties.EventManager;
-import com.nucleus.properties.EventManager.EventHandler;
+import com.nucleus.event.EventManager;
+import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.properties.Property;
 
 /**
  * Handles node related actions, there shall be only one node controller for each nodetree.
+ * Will be called by {@link Node} when there is a pointer input on a node with bounds and {@link Property} defined with
+ * {@value #HANDLER_KEY}
  * TODO How to check that only one nodecontroller is created for a RootNode
  * 
  * @author Richard Sahlin
  *
  */
-public class NodeController implements EventHandler {
+public class NodeController implements EventHandler<Node> {
 
     /**
      * The key to register in the property handler for this class
@@ -38,8 +40,17 @@ public class NodeController implements EventHandler {
     }
 
     @Override
-    public void handleEvent(String key, String value) {
+    public void handleEvent(Node node, String key, String value) {
+        Actions action = Actions.valueOf(key);
         Property p = Property.create(value);
+        switch (action) {
+        case SWITCH:
+            SwitchNode target = (SwitchNode) root.getScene().getNodeById(p.getKey());
+            if (node != null) {
+                target.setActive(p.getValue());
+            }
+            break;
+        }
     }
 
     /**
@@ -50,22 +61,9 @@ public class NodeController implements EventHandler {
      * 
      * @param key The key to register this controller for, or null to use default.
      */
-    public void registerEventHandler(String key) {
-        EventManager.getInstance().registerCategory(key, this);
-    }
-
     @Override
-    public void handleObjectEvent(Object obj, String category, String value) {
-        Actions action = Actions.valueOf(category);
-        Property p = Property.create(value);
-        switch (action) {
-        case SWITCH:
-            SwitchNode node = (SwitchNode) root.getScene().getNodeById(p.getKey());
-            if (node != null) {
-                node.setActive(p.getValue());
-            }
-            break;
-        }
+    public void registerEventHandler(String key) {
+        EventManager.getInstance().register(key, this);
     }
 
     @Override

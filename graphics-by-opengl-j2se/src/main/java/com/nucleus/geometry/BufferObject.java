@@ -21,7 +21,7 @@ public class BufferObject {
     /**
      * Set to true when data in the buffer changes, means it needs to be uploaded to gl
      */
-    private boolean dirty;
+    protected boolean dirty;
 
     /**
      * Sets the buffer object to use, this must be allocated by GL, or 0 to disable buffer objects.
