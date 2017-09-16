@@ -15,7 +15,7 @@ import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
-import com.nucleus.geometry.VertexBuffer;
+import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
@@ -298,7 +298,7 @@ class BaseRenderer implements NucleusRenderer {
         }
         Material material = mesh.getMaterial();
         ShaderProgram program = material.getProgram();
-        VertexBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
+        AttributeBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         ElementBuffer indices = mesh.getElementBuffer();
         gles.glUseProgram(program.getProgram());
         GLUtils.handleError(gles, "glUseProgram " + program.getProgram());

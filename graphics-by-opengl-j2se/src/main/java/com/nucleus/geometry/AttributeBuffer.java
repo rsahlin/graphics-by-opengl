@@ -9,33 +9,16 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /**
  * Create and hold data for OpenGL vertex arrays, this can for instance be the vertice position, texture coordinates,
- * normal and material data.
+ * normal and material data or any other attribute data.
  * The data is interleaved, meaning that data for one vertex is stored together - as opposed to having separated
  * buffers.
  * 
  * @author Richard Sahlin
  *
  */
-public class VertexBuffer extends BufferObject {
+public class AttributeBuffer extends BufferObject {
 
     private final static String ILLEGAL_DATATYPE_STR = "Illegal datatype: ";
-
-    /**
-     * Number of components for X,Y,Z
-     */
-    public final static int XYZ_COMPONENTS = 3;
-    /**
-     * Number of components for UV
-     */
-    public final static int UV_COMPONENTS = 2;
-    /**
-     * XYZ and UV
-     */
-    public final static int XYZUV_COMPONENTS = 5;
-    /**
-     * Number of indexes for a quad drawn using drawElements (3 * 2)
-     */
-    public final static int QUAD_INDICES = 6;
 
     /**
      * Number of floats to next set of attribute data
@@ -45,7 +28,7 @@ public class VertexBuffer extends BufferObject {
      * Number of bytes to next attrib variable.
      */
     private int attribByteStride;
-    private FloatBuffer vertices;
+    private FloatBuffer attributes;
     private int verticeCount;
     /**
      * Datatype
@@ -61,7 +44,7 @@ public class VertexBuffer extends BufferObject {
      * @param type The datatype GLES20.GL_FLOAT
      * @throws IllegalArgumentException If type is not GLES20.GL_FLOAT
      */
-    public VertexBuffer(int verticeCount, int sizePerVertex, int type) {
+    public AttributeBuffer(int verticeCount, int sizePerVertex, int type) {
         init(verticeCount, sizePerVertex, type);
     }
 
@@ -81,58 +64,14 @@ public class VertexBuffer extends BufferObject {
         this.type = type;
         this.verticeCount = verticeCount;
         sizeInBytes = verticeCount * sizePerVertex * dataSize;
-        vertices = ByteBuffer.allocateDirect(sizeInBytes)
+        attributes = ByteBuffer.allocateDirect(sizeInBytes)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         attribByteStride = sizePerVertex * dataSize;
         attribFloatStride = sizePerVertex;
         System.out
                 .println("Allocated atrribute buffer with " + sizeInBytes + " bytes, sizePerVertices " + sizePerVertex
                         + " dataSize " + dataSize + ", capacity() "
-                        + vertices.capacity());
-    }
-
-    /**
-     * Sets position data from the source array.
-     * After each vertice copied, the vertice stride is used to step in the destination buffer.
-     * This method is not efficient for a large number of triangles.
-     * 
-     * @param triangleData The source data to copy, must hold data for the specified number of triangles.
-     * Data is read in the format X,Y,Z
-     * @param sourceOffset Offset in source where data is read.
-     * @param vertexIndex Index of first vertex to set.
-     * @param verticeCount Number of vertices to store.
-     */
-    @Deprecated
-    public void setPosition(float[] verticeData, int sourceOffset, int vertexIndex, int verticeCount) {
-
-        vertexIndex = vertexIndex * attribFloatStride;
-        for (int i = 0; i < verticeCount; i++) {
-            vertices.position(vertexIndex);
-            vertices.put(verticeData, sourceOffset, XYZ_COMPONENTS);
-            sourceOffset += XYZ_COMPONENTS;
-            vertexIndex += attribFloatStride;
-        }
-    }
-
-    /**
-     * Sets position and UV data from the source array, the format will be XYZUV
-     * After each vertice copied, the attribute stride is used to step in the destination buffer.
-     * This method is not efficient for a large number of triangles.
-     * 
-     * @param triangleData The source data to copy, must hold data for the specified number of triangles.
-     * Data is read in the format X,Y,Z,U,V
-     * @param sourceOffset Offset in source where data is read.
-     * @param destOffset Offset in destination vertex buffer, in floats, where data is stored - normally 0.
-     * @param verticeCount Number of vertices to store.
-     */
-    @Deprecated
-    public void setPositionUV(float[] verticeData, int sourceOffset, int destOffset, int verticeCount) {
-        for (int i = 0; i < verticeCount; i++) {
-            vertices.position(destOffset);
-            vertices.put(verticeData, sourceOffset, XYZUV_COMPONENTS);
-            sourceOffset += XYZUV_COMPONENTS;
-            destOffset += attribFloatStride;
-        }
+                        + attributes.capacity());
     }
 
     /**
@@ -147,30 +86,12 @@ public class VertexBuffer extends BufferObject {
      */
     public void setComponents(float[] data, int componentCount, int sourceOffset, int destOffset, int verticeCount) {
         for (int i = 0; i < verticeCount; i++) {
-            vertices.position(destOffset);
-            vertices.put(data, sourceOffset, componentCount);
+            attributes.position(destOffset);
+            attributes.put(data, sourceOffset, componentCount);
             sourceOffset += componentCount;
             destOffset += attribFloatStride;
         }
         dirty = true;
-    }
-
-    /**
-     * Sets the UV data from the uv array, after each UV has been set the attribute stride in this buffer
-     * will be used to step to the next vertice.
-     * 
-     * @param uv Packed UV coordinates to set.
-     * @param sourceOffset
-     * @param destOffset
-     * @param verticeCount
-     */
-    public void setUV(float[] uv, int sourceOffset, int destOffset, int verticeCount) {
-        for (int i = 0; i < verticeCount; i++) {
-            vertices.position(destOffset);
-            vertices.put(uv, sourceOffset, UV_COMPONENTS);
-            sourceOffset += UV_COMPONENTS;
-            destOffset += attribFloatStride;
-        }
     }
 
     /**
@@ -179,7 +100,7 @@ public class VertexBuffer extends BufferObject {
      * @return
      */
     public Buffer getBuffer() {
-        return vertices;
+        return attributes;
     }
 
     /**
@@ -240,8 +161,8 @@ public class VertexBuffer extends BufferObject {
      * @param length
      */
     public void setArray(float[] array, int sourcePos, int destPos, int length) {
-        vertices.position(sourcePos);
-        vertices.put(array, sourcePos, length);
+        attributes.position(sourcePos);
+        attributes.put(array, sourcePos, length);
     }
 
 

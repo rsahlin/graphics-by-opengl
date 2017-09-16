@@ -276,7 +276,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * The reason to have multiple buffers is for cases where for instance vertex and UV data does not change
      * but other attributes change (per frame).
      */
-    transient protected VertexBuffer[] attributes;
+    transient protected AttributeBuffer[] attributes;
     transient protected ElementBuffer indices;
     /**
      * Drawmode, if indices is null then glDrawArrays shall be used with this mode
@@ -352,7 +352,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * @param texture Texture to set or null
      * @throws IllegalArgumentException If vertices or material is null.
      */
-    public void setupVertices(VertexBuffer[] vertices, Material material, Texture2D texture) {
+    public void setupVertices(AttributeBuffer[] vertices, Material material, Texture2D texture) {
         if (vertices == null || material == null) {
             throw new IllegalArgumentException(NULL_PARAMETER_STR);
         }
@@ -369,7 +369,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * @param attributes Buffers containing vertices/attributes, what this means is specific to the program
      * used to render the mesh.
      */
-    protected void setBuffers(VertexBuffer[] attributes) {
+    protected void setBuffers(AttributeBuffer[] attributes) {
         this.attributes = attributes;
     }
 
@@ -399,7 +399,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * @param buffer Index into the vertex/attribute buffer to return
      * @return The vertexbuffer
      */
-    public VertexBuffer getVerticeBuffer(BufferIndex buffer) {
+    public AttributeBuffer getVerticeBuffer(BufferIndex buffer) {
         return attributes[buffer.index];
     }
 
@@ -409,7 +409,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * @param buffer Index into the vertex/attribute buffer to return
      * @return The vertexbuffer
      */
-    public VertexBuffer getVerticeBuffer(int index) {
+    public AttributeBuffer getVerticeBuffer(int index) {
         return attributes[index];
     }
 
@@ -418,7 +418,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * 
      * @return
      */
-    public VertexBuffer[] getVerticeBuffers() {
+    public AttributeBuffer[] getVerticeBuffers() {
         return attributes;
     }
 
@@ -526,7 +526,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         if (indices != null) {
             indices.setBufferName(names[offset++]);
         }
-        for (VertexBuffer b : attributes) {
+        for (AttributeBuffer b : attributes) {
             if (b != null) {
                 b.setBufferName(names[offset++]);
             }
@@ -542,7 +542,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     public int getBufferNameCount() {
         int count = indices != null ? 1 : 0;
-        for (VertexBuffer vb : attributes) {
+        for (AttributeBuffer vb : attributes) {
             if (vb != null) {
                 count++;
             }
@@ -588,7 +588,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             renderer.deleteBuffers(1, new int[] { indices.getBufferName() }, 0);
         }
         if (attributes != null) {
-            for (VertexBuffer buffer : attributes) {
+            for (AttributeBuffer buffer : attributes) {
                 if (buffer.getBufferName() > 0) {
                     renderer.deleteBuffers(1, new int[] { buffer.getBufferName() }, 0);
                 }
@@ -625,7 +625,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     public void setAttribute4(int index, ShaderVariable variable, float[] attribute, int verticeCount) {
         int offset = index * mapper.attributesPerVertex;
         offset += variable.getOffset();
-        VertexBuffer buffer = getVerticeBuffer(BufferIndex.ATTRIBUTES);
+        AttributeBuffer buffer = getVerticeBuffer(BufferIndex.ATTRIBUTES);
         if (buffer != null) {
             buffer.setComponents(attribute, 4, 0, offset, verticeCount);
         }

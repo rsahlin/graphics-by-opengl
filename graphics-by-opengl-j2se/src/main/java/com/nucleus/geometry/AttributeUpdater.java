@@ -100,7 +100,7 @@ public interface AttributeUpdater {
          * What data and what to copy is implementation specific and depends on the shader program used
          * to render the mesh.
          * 
-         * @throws IllegalArgumentException If {@link #bindAttributeBuffer(VertexBuffer)} has not been called before
+         * @throws IllegalArgumentException If {@link #bindAttributeBuffer(AttributeBuffer)} has not been called before
          * calling this method.
          */
         public void updateAttributeData();
@@ -111,7 +111,7 @@ public interface AttributeUpdater {
          * @return The array containing the attribute data, any changes done here shall be reflected when
          * setAttributeData() is called.
          * Returns the attributedata owned by a component that will be used when the node it is attached to is rendered.
-         * @throws IllegalArgumentException If {@link #bindAttributeBuffer(VertexBuffer)} has not been called before
+         * @throws IllegalArgumentException If {@link #bindAttributeBuffer(AttributeBuffer)} has not been called before
          * calling this method.
          */
         public float[] getAttributeData();
@@ -123,7 +123,7 @@ public interface AttributeUpdater {
          * 
          * @param buffer
          */
-        public void bindAttributeBuffer(VertexBuffer buffer);
+        public void bindAttributeBuffer(AttributeBuffer buffer);
 
     }
 

@@ -16,7 +16,7 @@ import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.AttributeUpdater.Property;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
-import com.nucleus.geometry.VertexBuffer;
+import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
@@ -344,8 +344,8 @@ public abstract class ShaderProgram {
      * @param verticeCount Number of vertices to allocate storage for
      * @return
      */
-    public VertexBuffer[] createAttributeBuffers(Mesh mesh, int verticeCount) {
-        VertexBuffer[] buffers = new VertexBuffer[attributeBufferCount];
+    public AttributeBuffer[] createAttributeBuffers(Mesh mesh, int verticeCount) {
+        AttributeBuffer[] buffers = new AttributeBuffer[attributeBufferCount];
         for (BufferIndex index : BufferIndex.values()) {
             if (index.index >= buffers.length) {
                 break;
@@ -365,12 +365,12 @@ public abstract class ShaderProgram {
      * @param mesh
      * @return The buffer for attribute storage or null if not needed.
      */
-    protected VertexBuffer createAttributeBuffer(BufferIndex index, int verticeCount, Mesh mesh) {
+    protected AttributeBuffer createAttributeBuffer(BufferIndex index, int verticeCount, Mesh mesh) {
         switch (index) {
         case ATTRIBUTES:
             int attrs = getAttributesPerVertex();
             if (attrs > 0) {
-                VertexBuffer buffer = new VertexBuffer(verticeCount, attrs, GLES20.GL_FLOAT);
+                AttributeBuffer buffer = new AttributeBuffer(verticeCount, attrs, GLES20.GL_FLOAT);
                 if (mesh instanceof Consumer) {
                     ((Consumer) mesh).bindAttributeBuffer(buffer);
                 }
@@ -378,7 +378,7 @@ public abstract class ShaderProgram {
             }
             return null;
         case VERTICES:
-            return new VertexBuffer(verticeCount, getVertexStride(), GLES20.GL_FLOAT);
+            return new AttributeBuffer(verticeCount, getVertexStride(), GLES20.GL_FLOAT);
         case ATTRIBUTES_STATIC:
         default:
             throw new IllegalArgumentException("Not implemented");
@@ -396,7 +396,7 @@ public abstract class ShaderProgram {
      */
     public void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
         for (int i = 0; i < attributeVariables.length; i++) {
-            VertexBuffer buffer = mesh.getVerticeBuffer(i);
+            AttributeBuffer buffer = mesh.getVerticeBuffer(i);
             if (buffer != null) {
                 gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attributeVariables[i]);
                 GLUtils.handleError(gles, "glVertexAttribPointers ");

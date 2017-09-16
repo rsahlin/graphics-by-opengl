@@ -5,7 +5,7 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.RectangleShapeBuilder;
 import com.nucleus.geometry.ShapeBuilder;
-import com.nucleus.geometry.VertexBuffer;
+import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.shader.VertexTranslateProgram;
 
 /**
@@ -92,7 +92,7 @@ public class LineDrawerNode extends Node {
      */
     public void setRectangle(int vertice, float[] values, float z, float[] rgba) {
         Mesh mesh = getMesh(MeshType.MAIN);
-        VertexBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
+        AttributeBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         int stride = vertices.getFloatStride();
         int startIndex = vertice * stride;
         RectangleShapeBuilder.createQuadArray(values, null, stride, z, rectangleData);

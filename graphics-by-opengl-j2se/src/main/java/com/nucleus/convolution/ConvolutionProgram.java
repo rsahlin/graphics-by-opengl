@@ -3,7 +3,7 @@ package com.nucleus.convolution;
 import com.nucleus.geometry.AttributeUpdater.Property;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
-import com.nucleus.geometry.VertexBuffer;
+import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
@@ -77,7 +77,7 @@ public class ConvolutionProgram extends ShaderProgram {
 
     @Override
     public void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
-        VertexBuffer buffer = mesh.getVerticeBuffer(BufferIndex.VERTICES);
+        AttributeBuffer buffer = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attributeVariables[BufferIndex.VERTICES.index]);
         GLUtils.handleError(gles, "glVertexAttribPointers ");
 

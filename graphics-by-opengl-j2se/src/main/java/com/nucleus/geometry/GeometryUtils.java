@@ -10,13 +10,13 @@ import java.nio.FloatBuffer;
  */
 public class GeometryUtils {
     /**
-     * Same as calling {@link #calculateBounds2D(VertexBuffer, int)} with the vertice count and first
+     * Same as calling {@link #calculateBounds2D(AttributeBuffer, int)} with the vertice count and first
      * rewinding the buffer.
      * 
      * @param vertices
      * @return
      */
-    public static float[] calculateBounds2D(VertexBuffer vertices) {
+    public static float[] calculateBounds2D(AttributeBuffer vertices) {
         vertices.getBuffer().rewind();
         return calculateBounds2D(vertices, vertices.getVerticeCount());
     }
@@ -28,7 +28,7 @@ public class GeometryUtils {
      * @param count Number of vertices to include in calculation
      * @return Array with the smallest and largest corner (x1y1x2y2)
      */
-    public static float[] calculateBounds2D(VertexBuffer vertices, int count) {
+    public static float[] calculateBounds2D(AttributeBuffer vertices, int count) {
         float[] result = null;
         int stride = (vertices.getByteStride() / 4);
         float[] values = new float[stride];

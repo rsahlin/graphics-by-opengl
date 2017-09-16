@@ -3,7 +3,7 @@ package com.nucleus.opengl;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
 
-import com.nucleus.geometry.VertexBuffer;
+import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.shader.ShaderVariable;
 
 /**
@@ -223,7 +223,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param position Position in buffer where the data for this attribute is.
      * @param attrib Array of attributes to set
      */
-    public void glVertexAttribPointer(VertexBuffer buffer, int target, ShaderVariable[] attribs) {
+    public void glVertexAttribPointer(AttributeBuffer buffer, int target, ShaderVariable[] attribs) {
         if (buffer.getBufferName() > 0) {
             glBindBuffer(target, buffer.getBufferName());
             if (buffer.isDirty()) {

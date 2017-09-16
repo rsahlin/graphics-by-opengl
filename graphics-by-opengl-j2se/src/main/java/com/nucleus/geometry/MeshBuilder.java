@@ -86,7 +86,7 @@ public abstract class MeshBuilder<T> {
      */
     public static void buildQuads(Mesh mesh, ShaderProgram program, int quadCount, int index,
             float[] quadPositions) {
-        VertexBuffer buffer = mesh.attributes[BufferIndex.VERTICES.index];
+        AttributeBuffer buffer = mesh.attributes[BufferIndex.VERTICES.index];
         // TODO do not fetch vertices, call buffer.setPosition()
         float[] vertices = new float[buffer.getFloatStride() * quadCount * 4];
         int destPos = 0;
@@ -95,7 +95,7 @@ public abstract class MeshBuilder<T> {
             destPos += quadPositions.length;
         }
         int components = quadPositions.length / RectangleShapeBuilder.QUAD_VERTICES;
-        VertexBuffer vb = mesh.attributes[BufferIndex.VERTICES.index];
+        AttributeBuffer vb = mesh.attributes[BufferIndex.VERTICES.index];
         vb.setComponents(vertices,
                 components, 0, index * components * RectangleShapeBuilder.QUAD_VERTICES,
                 quadCount * RectangleShapeBuilder.QUAD_VERTICES);
