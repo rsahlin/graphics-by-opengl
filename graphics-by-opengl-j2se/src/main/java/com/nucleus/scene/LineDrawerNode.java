@@ -36,9 +36,11 @@ public class LineDrawerNode extends Node {
 
 
     /**
-     * Constructor used when loading node from scene
+     * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
      */
+    @Deprecated
     protected LineDrawerNode() {
+    	super();
     }
 
     /**
@@ -47,8 +49,8 @@ public class LineDrawerNode extends Node {
      * @param root
      */
     protected LineDrawerNode(RootNode root) {
+    	super(root, NodeTypes.linedrawernode);
         setRootNode(root);
-        setType(NodeType.linedrawernode.name());
     }
 
     /**

@@ -8,6 +8,7 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
+import com.nucleus.component.ComponentNode;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.geometry.AttributeUpdater.Producer;
@@ -36,6 +37,43 @@ import com.nucleus.vecmath.Transform;
  */
 public class Node extends BaseReference {
 
+	/**
+	 * Known node types
+	 */
+	public enum NodeTypes implements Type<Node> {
+		
+	    node(Node.class),
+	    layernode(LayerNode.class),
+	    switchnode(SwitchNode.class),
+	    linedrawernode(LineDrawerNode.class),
+	    renderpass(RenderPass.class),
+	    componentnode(ComponentNode.class);
+		
+
+	    private final Class<?> theClass;
+
+	    private NodeTypes(Class<?> theClass) {
+	        this.theClass = theClass;
+	    }
+
+	    /**
+	     * Returns the class to instantiate for the different types
+	     * 
+	     * @return
+	     */
+	    @Override
+	    public Class<?> getTypeClass() {
+	        return theClass;
+	    }
+
+	    @Override
+	    public String getName() {
+	        return name();
+	    }
+		
+	}
+	
+	
     public static final String STATE = "state";
     public static final String TYPE = "type";
 
@@ -161,7 +199,7 @@ public class Node extends BaseReference {
     transient protected ObjectInputListener objectInputListener;
 
     /**
-     * Constructor user when loading node from scene
+     * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
      */
     protected Node() {
     }
@@ -170,10 +208,11 @@ public class Node extends BaseReference {
      * Creates an empty node, add children and meshes as needed.
      * 
      * @param root
+     * @param type
      */
-    protected Node(RootNode root) {
+    protected Node(RootNode root, Type<Node> type) {
         setRootNode(root);
-        setType(NodeType.node.name());
+        setType(type);
     }
 
     /**
@@ -196,7 +235,7 @@ public class Node extends BaseReference {
      * @throws IllegalArgumentException If root is null
      */
     public Node createInstance(RootNode root) {
-        Node copy = new Node(root);
+        Node copy = new Node(root, NodeTypes.node);
         copy.set(this);
         return copy;
     }
@@ -218,7 +257,7 @@ public class Node extends BaseReference {
             throw new IllegalArgumentException("Null parameter:" + nodeType + ", " + root);
         }
         Node node = (Node) nodeType.getTypeClass().newInstance();
-        node.setType(nodeType.getName());
+        node.setType(nodeType);
         node.setRootNode(root);
         return node;
     }
@@ -455,7 +494,7 @@ public class Node extends BaseReference {
         if (parent == null) {
             return null;
         }
-        if (NodeType.layernode.name().equals(parent.getType())) {
+        if (NodeTypes.layernode.name().equals(parent.getType())) {
             return (LayerNode) parent;
         }
         return parent.getViewParent();
@@ -475,8 +514,12 @@ public class Node extends BaseReference {
      * The child node's parent will be set to this node.
      * 
      * @param child The child to add to this node.
+     * @throws IllegalArgumentException If child id is null
      */
     protected void addChild(Node child) {
+    	if (child.getId() == null) {
+    		throw new IllegalArgumentException("Node id is null");
+    	}
         children.add(child);
         child.parent = this;
         rootNode.registerChild(child);
@@ -679,8 +722,8 @@ public class Node extends BaseReference {
      * 
      * @param type
      */
-    protected void setType(String type) {
-        this.type = type;
+    protected void setType(Type<Node> type) {
+        this.type = type.getName();
     }
 
     /**

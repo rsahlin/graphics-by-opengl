@@ -27,8 +27,8 @@ import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.NodeFactory;
-import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
+import com.nucleus.scene.Node.NodeTypes;
 
 /**
  * GSON Serializer for nucleus scenegraph.
@@ -170,11 +170,11 @@ public class GSONSceneFactory implements SceneSerializer {
      * Creates {@linkplain RootNode} from the scene node and returns, use this method when importing to create
      * a new instance of the loaded scene.
      * 
-     * @param scene The root scene node
-     * @return The created scene or null if there is an error.
+     * @param scene The root node scenes
+     * @return The created scenes or null if there is an error.
      * @throws NodeException
      */
-    private RootNode createScene(Node scene) throws NodeException {
+    private RootNode createScene(List<Node> scene) throws NodeException {
         RootNode root = createInstance();
         addNodes(root, scene);
         return root;
@@ -193,17 +193,18 @@ public class GSONSceneFactory implements SceneSerializer {
      * Internal method to create a layer node and add it to the rootnode.
      * 
      * @param root The root node that the created node will be added to.
-     * @param node The node to create
+     * @param children The root childnodes to create
      * @return
      * @throws IOException
      */
-    private Node addNodes(RootNode root, Node node) throws NodeException {
-        Node created = nodeFactory.create(renderer, meshFactory, node, root);
-        root.setScene(created);
-        setViewFrustum(node, created);
-        nodeFactory.createChildNodes(renderer, meshFactory, node, created);
-        created.onCreated();
-        return created;
+    private void addNodes(RootNode root, List<Node> children) throws NodeException {
+    	for (Node node : children) {
+            Node created = nodeFactory.create(renderer, meshFactory, node, root);
+            root.addChild(created);
+            setViewFrustum(node, created);
+            nodeFactory.createChildNodes(renderer, meshFactory, node, created);
+            created.onCreated();
+    	}
     }
 
     /**
@@ -213,6 +214,7 @@ public class GSONSceneFactory implements SceneSerializer {
      * @param node Node to check, or null
      */
     protected void setViewFrustum(Node source, Node node) {
+    	//TODO Should this be done here?
         if (node == null) {
             return;
         }
@@ -261,7 +263,7 @@ public class GSONSceneFactory implements SceneSerializer {
      * Registers the nodetypes and nodeexporter for the scenfactory, implement in subclasses and call super.
      */
     protected void registerNodeExporters() {
-        nodeExporter.registerNodeExporter(NodeType.values(), new NucleusNodeExporter());
+        nodeExporter.registerNodeExporter(NodeTypes.values(), new NucleusNodeExporter());
     }
 
     /**

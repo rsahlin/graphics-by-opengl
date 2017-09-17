@@ -45,7 +45,7 @@ public class NodeController implements EventHandler<Node> {
         Property p = Property.create(value);
         switch (action) {
         case SWITCH:
-            SwitchNode target = (SwitchNode) root.getScene().getNodeById(p.getKey());
+            SwitchNode target = (SwitchNode) root.getNodeById(p.getKey());
             if (node != null) {
                 target.setActive(p.getValue());
             }

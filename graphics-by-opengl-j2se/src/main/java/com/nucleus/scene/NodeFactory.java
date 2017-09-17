@@ -1,5 +1,7 @@
 package com.nucleus.scene;
 
+import java.util.List;
+
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshFactory;
@@ -47,7 +49,7 @@ public interface NodeFactory {
      * @return
      * @throws NodeException
      */
-    public Node create(NucleusRenderer renderer, ShaderProgram program, Mesh.Builder builder, Type<Node> nodeType,
+    public Node create(NucleusRenderer renderer, ShaderProgram program, Mesh.Builder<Mesh> builder, Type<Node> nodeType,
             RootNode root) throws NodeException;
 
     /**

@@ -18,13 +18,13 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
-import com.nucleus.renderer.RenderSettings;
+import com.nucleus.renderer.RenderState;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.Node.MeshType;
+import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.NodeException;
-import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.texturing.Convolution;
@@ -34,7 +34,6 @@ import com.nucleus.texturing.TextureParameter;
 
 public class FGLConvolutionTest extends JOGLApplication implements FrameListener,
         MMIEventListener {
-
 
     public static class MyClientApplication implements ClientApplication {
 
@@ -87,9 +86,6 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
     public void createCoreApp(int width, int height) {
         super.createCoreApp(width, height);
         NucleusRenderer renderer = coreApp.getRenderer();
-        RenderSettings rs = renderer.getRenderSettings();
-        rs.setCullFace(GLES20.GL_NONE);
-        rs.setDepthFunc(GLES20.GL_NONE);
         coreApp.getInputProcessor().addMMIListener(this);
 
         BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
@@ -107,10 +103,10 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         meshBuilder.setShapeBuilder(
                 new RectangleShapeBuilder(new RectangleShapeBuilder.Configuration(1f, 1f, 0f, 1, 0)));
         builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
-                .setNode(NodeType.layernode);
+                .setNode(NodeTypes.layernode);
         try {
             RootNode root = builder.create();
-            mesh = root.getScene().getMesh(MeshType.MAIN);
+            mesh = root.getNodeByType(NodeTypes.layernode).getMesh(MeshType.MAIN);
             uKernel = c.getShaderVariable(ConvolutionProgram.VARIABLES.uKernel);
             renderer.addFrameListener(this);
             coreApp.setRootNode(root);

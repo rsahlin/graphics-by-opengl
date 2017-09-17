@@ -2,11 +2,14 @@ package com.nucleus.scene;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
+import com.nucleus.common.Type;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
+import com.nucleus.scene.Node.NodeTypes;
 
 /**
  * Starting point of a nodetree, the root has a collection of nodes the each represent a scene.
@@ -34,7 +37,7 @@ public abstract class RootNode {
     }
 
     @SerializedName("scene")
-    private Node scene;
+    private java.util.List<Node> scene;
 
     /**
      * Set to true when node is added or removed
@@ -63,17 +66,26 @@ public abstract class RootNode {
      * @throws IllegalArgumentException If a node has already been set with a call to this method, or rootnode is not
      * set in scene
      */
-    public void setScene(Node scene) {
+    public void setScene(List<Node> scene) {
         if (this.scene != null) {
-            throw new IllegalArgumentException("Scene node has already been set");
+            throw new IllegalArgumentException("Scene has already been set");
         }
-        if (scene.getRootNode() == null) {
-            throw new IllegalArgumentException("Node does not have a root node: " + scene);
-        }
+    	//TODO Verify that children has rootnode set
         this.scene = scene;
-        scene.parent = null;
     }
 
+    /**
+     * Adds a child to the root
+     * @param child
+     */
+    public void addChild(Node child) {
+    	if (scene == null) {
+    		scene = new ArrayList<>();
+    	}
+    	//TODO Verify that child has rootnode set
+    	scene.add(child);
+    }
+    
     /**
      * Creates a new instance of RootNode, implement in RootNode subclasses to return the implementation instance.
      * 
@@ -81,7 +93,7 @@ public abstract class RootNode {
      */
     public abstract RootNode createInstance();
 
-    public Node getScene() {
+    public List<Node> getScene() {
         return scene;
     }
 
@@ -95,7 +107,13 @@ public abstract class RootNode {
         if (scene == null) {
             return null;
         }
-        return getViewNode(layer, scene);
+        for (Node node : scene) {
+        	LayerNode layerNode = getViewNode(layer, node);
+        	if (layerNode != null) {
+        		return layerNode;
+        	}
+        }
+        return null;
     }
 
     private LayerNode getViewNode(Layer layer, Node node) {
@@ -104,7 +122,7 @@ public abstract class RootNode {
 
     private LayerNode getViewNode(Layer layer, ArrayList<Node> children) {
         for (Node n : children) {
-            if (n.getType().equals(NodeType.layernode.name())) {
+            if (n.getType().equals(NodeTypes.layernode.name())) {
                 if (((LayerNode) n).getLayer() == layer) {
                     return (LayerNode) n;
                 }
@@ -243,4 +261,34 @@ public abstract class RootNode {
         childNodeTable = null;
     }
 
+    /**
+     * Searches through the scene children and looks for the first node with matching id.
+     * @param id
+     * @return
+     */
+    public Node getNodeById(String id) {
+    	for (Node node : scene) {
+    		Node n = node.getNodeById(id);
+    		if (n != null) {
+    			return n;
+    		}
+    	}
+    	return null;
+    }
+    
+    /**
+     * Searches through the scene children and looks for the first node with matching type.
+     * @param type
+     * @return
+     */
+    public Node getNodeByType(Type<Node> type) {
+    	for (Node node : scene) {
+    		Node n = node.getNodeByType(type.getName());
+    		if (n != null) {
+    			return n;
+    		}
+    	}
+    	return null;
+    }
+    
 }

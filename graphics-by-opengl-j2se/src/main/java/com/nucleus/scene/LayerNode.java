@@ -28,12 +28,15 @@ public class LayerNode extends Node {
 
     transient ViewController viewController;
 
+    /**
+     * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
+     */
+    @Deprecated
     protected LayerNode() {
     }
 
     private LayerNode(RootNode root) {
-        super(root);
-        setType(NodeType.layernode.name());
+        super(root, NodeTypes.layernode);
     }
 
     @Override
@@ -92,7 +95,7 @@ public class LayerNode extends Node {
             Matrix.setIdentity(modelMatrix, 0);
             return modelMatrix;
         }
-        return transform.getMatrix();
+        return transform != null ? transform.getMatrix() : concatModel;
     }
 
 }

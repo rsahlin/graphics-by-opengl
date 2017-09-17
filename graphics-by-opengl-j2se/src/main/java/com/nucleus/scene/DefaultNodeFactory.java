@@ -2,6 +2,8 @@ package com.nucleus.scene;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
@@ -11,6 +13,7 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node.MeshType;
+import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.shader.ShaderProgram;
 
 /**
@@ -31,9 +34,8 @@ public class DefaultNodeFactory implements NodeFactory {
         if (source.getType() == null) {
             throw new NodeException("Type not set in source node - was it created programatically?");
         }
-        NodeType type = null;
         try {
-            type = NodeType.valueOf(source.getType());
+        	NodeTypes type = NodeTypes.valueOf(source.getType());
         } catch (IllegalArgumentException e) {
             // This means the node type is not known.
             throw new IllegalArgumentException(ILLEGAL_NODE_TYPE + source.getType());
@@ -70,7 +72,7 @@ public class DefaultNodeFactory implements NodeFactory {
         FrameSampler.getInstance().logTag(FrameSampler.CREATE_NODE + " " + source.getId(), start,
                 System.currentTimeMillis());
         boolean isViewNode = false;
-        if (NodeType.layernode.name().equals(created.getType())) {
+        if (NodeTypes.layernode.name().equals(created.getType())) {
             viewStack.push((LayerNode) created);
             isViewNode = true;
         }
@@ -130,9 +132,8 @@ public class DefaultNodeFactory implements NodeFactory {
     }
 
     @Override
-    public Node create(NucleusRenderer renderer, ShaderProgram program, Mesh.Builder builder, Type<Node> nodeType,
-            RootNode root)
-            throws NodeException {
+    public Node create(NucleusRenderer renderer, ShaderProgram program, Mesh.Builder<Mesh> builder, Type<Node> nodeType,
+            RootNode root) throws NodeException {
         try {
             Node node = Node.createInstance(nodeType, root);
             // TODO Fix generics so that cast is not needed

@@ -8,7 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.nucleus.scene.Node;
-import com.nucleus.scene.NodeType;
+import com.nucleus.scene.Node.NodeTypes;
 
 /**
  * Implementation of graphics-by-opengl node deserialization, this shall return the correct Node implementations
@@ -26,7 +26,7 @@ public class NucleusNodeDeserializer extends NucleusDeserializer implements Json
             throws JsonParseException {
 
         JsonObject obj = json.getAsJsonObject();
-        NodeType t = NodeType.valueOf(obj.get(Node.TYPE).getAsString());
+        NodeTypes t = NodeTypes.valueOf(obj.get(Node.TYPE).getAsString());
         Node node = (Node) gson.fromJson(json, t.getTypeClass());
         postDeserialize(node);
         return node;

@@ -4,6 +4,7 @@ import java.nio.Buffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.nucleus.SimpleLogger;
@@ -24,6 +25,8 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.RenderPass;
+import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
@@ -77,7 +80,6 @@ class BaseRenderer implements NucleusRenderer {
 
 
     protected GLES20Wrapper gles;
-    protected RenderSettings renderSettings = new RenderSettings();
     protected ImageFactory imageFactory;
     protected MatrixEngine matrixEngine;
     private Set<RenderContextListener> contextListeners = new HashSet<RenderContextListener>();
@@ -153,18 +155,6 @@ class BaseRenderer implements NucleusRenderer {
         if (timeKeeper.getSampleDuration() > 3) {
             SimpleLogger.d(getClass(), timeKeeper.sampleFPS());
         }
-        try {
-            if (renderSettings.getChangeFlag() != RenderSettings.CHANGE_FLAG_NONE) {
-                setRenderSetting(renderSettings);
-                renderSettings.setChangeFlag(RenderSettings.CHANGE_FLAG_NONE);
-            }
-        } catch (GLException e) {
-            throw new RuntimeException(e);
-        }
-        int clearFunc = renderSettings.getClearFunction();
-        if (clearFunc != GLES20.GL_NONE) {
-            gles.glClear(clearFunc);
-        }
         for (FrameListener listener : frameListeners) {
             listener.processFrame(timeKeeper.getDelta());
             listener.updateGLData();
@@ -173,54 +163,48 @@ class BaseRenderer implements NucleusRenderer {
 
         return deltaTime;
     }
-
+    
     /**
      * Internal method to apply the rendersettings.
      * 
-     * @param setting
+     * @param state
      * @throws GLException
      */
-    private void setRenderSetting(RenderSettings setting) throws GLException {
-        int flags = setting.getChangeFlag();
-        if ((flags & RenderSettings.CHANGE_FLAG_CLEARCOLOR) != 0) {
-            float[] clear = setting.getClearColor();
+    private void setRenderState(RenderState state) throws GLException {
+        int flags = state.getChangeFlag();
+        if ((flags & RenderState.CHANGE_FLAG_CLEARCOLOR) != 0) {
+            float[] clear = state.getClearColor();
             gles.glClearColor(clear[0], clear[1], clear[2], clear[3]);
         }
-        if ((flags & RenderSettings.CHANGE_FLAG_CULLFACE) != 0) {
+        if ((flags & RenderState.CHANGE_FLAG_CULLFACE) != 0) {
             // Set GL values.
-            if (setting.getCullFace() != GLES20.GL_NONE) {
+            if (state.getCullFace() != GLES20.GL_NONE) {
                 gles.glEnable(GLES20.GL_CULL_FACE);
-                gles.glCullFace(setting.getCullFace());
+                gles.glCullFace(state.getCullFace());
             } else {
                 gles.glDisable(GLES20.GL_CULL_FACE);
             }
         }
-        if ((flags & RenderSettings.CHANGE_FLAG_DEPTH) != 0) {
-            if (setting.getDepthFunc() != GLES20.GL_NONE) {
+        if ((flags & RenderState.CHANGE_FLAG_DEPTH) != 0) {
+            if (state.getDepthFunc() != GLES20.GL_NONE) {
                 gles.glEnable(GLES20.GL_DEPTH_TEST);
-                gles.glDepthFunc(setting.getDepthFunc());
+                gles.glDepthFunc(state.getDepthFunc());
                 gles.glDepthMask(true);
-                gles.glClearDepthf(setting.getClearDepth());
-                gles.glDepthRangef(setting.getDepthRangeNear(), setting.getDepthRangeFar());
+                gles.glClearDepthf(state.getClearDepth());
+                gles.glDepthRangef(state.getDepthRangeNear(), state.getDepthRangeFar());
             } else {
                 gles.glDisable(GLES20.GL_DEPTH_TEST);
                 gles.glDepthMask(false);
             }
         }
-        if ((flags & RenderSettings.CHANGE_FLAG_MULTISAMPLE) != 0) {
+        if ((flags & RenderState.CHANGE_FLAG_MULTISAMPLE) != 0) {
             if (rendererInfo.hasExtensionSupport(GLESWrapper.GLES_EXTENSIONS.MULTISAMPLE_EXT.name())) {
-                if (surfaceConfig != null && surfaceConfig.getSamples() > 1 && setting.isMultisampling()) {
+                if (surfaceConfig != null && surfaceConfig.getSamples() > 1 && state.isMultisampling()) {
                     gles.glEnable(GLES_EXTENSIONS.MULTISAMPLE_EXT.value);
                 } else {
                     gles.glDisable(GLES_EXTENSIONS.MULTISAMPLE_EXT.value);
                 }
             }
-        }
-        if ((flags & RenderSettings.CHANGE_FLAG_VIEWPORT) != 0) {
-            int[] view = renderSettings.getViewPort();
-            gles.glViewport(view[ViewPort.VIEWPORT_X], view[ViewPort.VIEWPORT_Y],
-                    view[ViewPort.VIEWPORT_WIDTH], view[ViewPort.VIEWPORT_HEIGHT]);
-            
         }
         GLUtils.handleError(gles, "setRenderSettings ");
     }
@@ -244,34 +228,60 @@ class BaseRenderer implements NucleusRenderer {
     public void render(Node node) throws GLException {
         State state = node.getState();
         if (state == null || state == State.ON || state == State.RENDER) {
-            // Check for AttributeUpdate producer.
-            Producer producer = node.getAttributeProducer();
-            if (producer != null) {
-                producer.updateAttributeData();
-            }
-            float[] nodeMatrix = node.concatModelMatrix(this.modelMatrix);
-            // Fetch projection just before render
-            float[] projection = node.getProjection();
-            if (projection != null) {
-                pushMatrix(this.projection, this.projectionMatrix);
-                this.projectionMatrix = projection;
-            }
-            Matrix.mul4(nodeMatrix, viewMatrix, mvMatrix);
-            // Matrix.mul4(mvMatrix, projectionMatrix);
-            renderMeshes(node.getMeshes(), mvMatrix, projectionMatrix);
-            this.modelMatrix = nodeMatrix;
-            for (Node n : node.getChildren()) {
-                pushMatrix(matrixStack, this.modelMatrix);
-                render(n);
-                this.modelMatrix = popMatrix(matrixStack);
-            }
-            if (projection != null) {
-                this.projectionMatrix = popMatrix(this.projection);
-            }
-            node.getRootNode().addRenderedNode(node);
+        	if (node.getType().equals(NodeTypes.renderpass.name())) {
+        		//Renderpass node - set renderstate
+        		internalRender((RenderPass) node);
+        	} else {
+        		internalRender(node);
+        	}
         }
     }
 
+    private void internalRender(Node node) throws GLException {
+        // Check for AttributeUpdate producer.
+        Producer producer = node.getAttributeProducer();
+        if (producer != null) {
+            producer.updateAttributeData();
+        }
+        float[] nodeMatrix = node.concatModelMatrix(this.modelMatrix);
+        // Fetch projection just before render
+        float[] projection = node.getProjection();
+        if (projection != null) {
+            pushMatrix(this.projection, this.projectionMatrix);
+            this.projectionMatrix = projection;
+        }
+        Matrix.mul4(nodeMatrix, viewMatrix, mvMatrix);
+        // Matrix.mul4(mvMatrix, projectionMatrix);
+        renderMeshes(node.getMeshes(), mvMatrix, projectionMatrix);
+        this.modelMatrix = nodeMatrix;
+        for (Node n : node.getChildren()) {
+            pushMatrix(matrixStack, this.modelMatrix);
+            render(n);
+            this.modelMatrix = popMatrix(matrixStack);
+        }
+        if (projection != null) {
+            this.projectionMatrix = popMatrix(this.projection);
+        }
+        node.getRootNode().addRenderedNode(node);
+    	
+    }
+    
+    private void internalRender(RenderPass node) throws GLException {
+    	RenderState state = node.getRenderState();
+    	if (state != null) {
+        	if (state.getChangeFlag() != RenderState.CHANGE_FLAG_NONE) {
+        		setRenderState(state);
+        		state.setChangeFlag(RenderState.CHANGE_FLAG_NONE);
+            }
+	        int clearFunc = state.getClearFunction();
+	        if (clearFunc != GLES20.GL_NONE) {
+	            gles.glClear(clearFunc);
+	        }
+    	}
+    	//Once the renderstate and targets have been set - render the contents.
+    	internalRender((Node) node);
+    }
+    
     protected void renderMeshes(ArrayList<Mesh> meshes, float[] mvMatrix, float[] projectionMatrix) throws GLException {
         for (Mesh mesh : meshes) {
             renderMesh(mesh, mvMatrix, projectionMatrix);
@@ -400,8 +410,11 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(RootNode root) throws GLException {
-        if (root.getScene() != null) {
-            render(root.getScene());
+    	List<Node> scene = root.getScene();
+        if (scene != null) {
+        	for (Node node : scene) {
+                render(node);
+        	}
         }
     }
 
@@ -432,14 +445,10 @@ class BaseRenderer implements NucleusRenderer {
         gles.glBufferData(target, size, data, usage);
     }
 
-    @Override
-    public RenderSettings getRenderSettings() {
-        return renderSettings;
-    }
 
     @Override
     public void resizeWindow(int x, int y, int width, int height) {
-        renderSettings.setViewPort(x, y, width, height);
+        gles.glViewport(x, y, width, height);
         Window.getInstance().setSize(width, height);
     }
 

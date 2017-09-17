@@ -1,6 +1,6 @@
 package com.nucleus.renderer;
 
-import com.nucleus.camera.ViewPort;
+import com.google.gson.annotations.SerializedName;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /* Copyright 2015 Richard Sahlin
@@ -17,26 +17,37 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
  */
 
 /**
- * Class that holds the runtime render settings, this is depth test, culling, cull-face, dither
+ * Class that holds the runtime render states, this is depth test, culling, cull-face, dither
  * and other options related to geometry/rasterization.
+ * This class can be serialized using GSON
  * 
  * @author Richard Sahlin
  *
  */
-public class RenderSettings {
+public class RenderState {
 
+	public static final String MULTISAMPLING = "multisampling";
+	public static final String DEPTHFUNC = "depthFunc";
+	public static final String DEPTHRANGE_NEAR = "depthRangeNear";
+	public static final String DEPTHRANGE_FAR = "depthRangeFar";
+	public static final String CLEARDEPTH = "clearDepth";
+	public static final String CLEARCOLOR = "clearColor";
+	public static final String CLEARSTENCIL = "clearStencil";
+	public static final String CULLFACE = "cullFace";
+	public static final String CLEARFLAGS = "clearFlags";
+	
+	
     protected final static String INVALID_CULLFACE_STR = "Invalid cullFace:";
     protected final static String INVALID_CLEARFLAG_STR = "Invalid clearFlag:";
     protected final static String INVALID_DEPTHFUNC_STR = "Invalid depthFunc:";
     protected final static String INVALID_CLEARCOLOR_STR = "Invalid clear color array.";
 
-    public final static int DEFAULT_DEPTHFUNC = GLES20.GL_LEQUAL;
+    public final static int DEFAULT_DEPTHFUNC = GLES20.GL_NONE;
     public final static float DEFAULT_DEPTHRANGE_NEAR = 0.000001f;
     public final static float DEFAULT_DEPTHRANGE_FAR = 1f;
     public final static float DEFAULT_CLEARDEPTH = DEFAULT_DEPTHRANGE_FAR;
-    public final static int DEFAULT_CULLFACE = GLES20.GL_BACK;
-    public final static int DEFAULT_CLEARFLAG = GLES20.GL_COLOR_BUFFER_BIT |
-            GLES20.GL_DEPTH_BUFFER_BIT;
+    public final static int DEFAULT_CULLFACE = GLES20.GL_NONE;
+    public final static int DEFAULT_CLEARFLAG = GLES20.GL_COLOR_BUFFER_BIT;
     public final static boolean DEFAULT_MULTISAMPLING = false;
 
     public final static int CHANGE_FLAG_ALL = -1; // Flag that all values should be updated
@@ -45,78 +56,80 @@ public class RenderSettings {
     public final static int CHANGE_FLAG_DEPTH = 2; // Depth related functions has changed.
     public final static int CHANGE_FLAG_CULLFACE = 4; // Cullface has changed
     public final static int CHANGE_FLAG_MULTISAMPLE = 8; // Multisample has changed
-    public final static int CHANGE_FLAG_VIEWPORT = 16; // viewport has changed
 
     /**
      * What parameters have changed, used for some settings.
      */
-    private int changeFlag = CHANGE_FLAG_ALL;
+    transient private int changeFlag = CHANGE_FLAG_ALL;
 
     /**
      * Should multisampling be enabled, default is true - must also be supported in the surface (EGL)
      */
+    @SerializedName(MULTISAMPLING)
     protected boolean enableMultisampling = DEFAULT_MULTISAMPLING;
 
     /**
      * Depth func used if depth test is enabled, default is less or equal.
      */
+    @SerializedName(DEPTHFUNC)
     protected int depthFunc = DEFAULT_DEPTHFUNC;
 
     /**
      * Near value for depthrange
      */
+    @SerializedName(DEPTHRANGE_NEAR)
     protected float depthRangeNear = DEFAULT_DEPTHRANGE_NEAR;
 
     /**
      * Far value for depthrange.
      */
+    @SerializedName(DEPTHRANGE_FAR)
     protected float depthRangeFar = DEFAULT_DEPTHRANGE_FAR;
 
     /**
      * Depth clear value.
      */
+    @SerializedName(CLEARDEPTH)
     protected float clearDepth = DEFAULT_CLEARDEPTH;
 
     /**
      * If depth test is enabled display is cleared to this color at beginFrame()
      */
+    @SerializedName(CLEARCOLOR)
     protected float[] clearColor = new float[] { 0.3f, 0.3f, 0.5f, 1f };
 
     /**
      * Clear stencilbuffer with this value if the STENCIL_BUFFER_BIT is set in the clear flags.
      */
+    @SerializedName(CLEARSTENCIL)
     protected int clearStencil = 0;
 
     /**
      * If culling is enabled, what faces should be culled.
-     *
      */
+    @SerializedName(CULLFACE)
     protected int cullFace = DEFAULT_CULLFACE;
 
     /**
      * This value is read in Renderer.beginFrame() and used to decide if buffer should be cleared
      * Defaults to clearing depth and color-buffer.
      */
+    @SerializedName(CLEARFLAGS)
     protected int clearFlags = DEFAULT_CLEARFLAG;
 
     /**
-     * The viewport setting
-     */
-    protected ViewPort viewPort = new ViewPort();
-
-    /**
      * Constructs a new RenderSetting with default values.
-     * Depth function is LEQUAL.
-     * Cull flag is CULL_BACK
-     * Clear flags are COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT
+     * Depth function is disabled.
+     * Cull flag is disable
+     * Clear flags are disabled
      *
      */
-    public RenderSettings() {
+    public RenderState() {
 
     }
 
     /**
-     * Creates a new RenderSettings class with the specified values, other values will default.
+     * Creates a new RenderStates class with the specified values, other values will default.
      * 
      * @param clearFlags Set to what buffers to clear between frames, values are ored together
      * ConstantValues.DEPTH_BUFFER_BIT | ConstantValues.STENCIL_BUFFER_BIT |
@@ -131,7 +144,7 @@ public class RenderSettings {
      * @param multisampling Set to true to enable multisampling, must also be configured in EGL.
      * @throws IllegalArgumentException If clearFlags or cullFace is not valid.
      */
-    public RenderSettings(int clearFlags, int cullFace, boolean depthTest, boolean multisampling) {
+    public RenderState(int clearFlags, int cullFace, boolean depthTest, boolean multisampling) {
         setClearFunction(clearFlags);
         setCullFace(cullFace);
         this.enableMultisampling = multisampling;
@@ -381,28 +394,6 @@ public class RenderSettings {
         }
         this.clearFlags = clearFlags;
 
-    }
-
-    /**
-     * Sets the size, in pixels, for the screen viewport.
-     * 
-     * @param x
-     * @param y
-     * @param width
-     * @param height
-     */
-    public void setViewPort(int x, int y, int width, int height) {
-        viewPort.setViewPort(x, y, width, height);
-        changeFlag |= CHANGE_FLAG_VIEWPORT;
-    }
-
-    /**
-     * Returns the viewport values - DO NOT MODIFY
-     * 
-     * @return
-     */
-    protected int[] getViewPort() {
-        return viewPort.getViewPort();
     }
 
 }

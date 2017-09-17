@@ -3,6 +3,7 @@ package com.nucleus.component;
 import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.common.Type;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
@@ -22,13 +23,17 @@ public class ComponentNode extends Node implements ComponentController {
     @SerializedName("components")
     private ArrayList<Component> components = new ArrayList<>();
 
+    /**
+     * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
+     */
+    @Deprecated
     protected ComponentNode() {
     }
     /**
      * Default constructor
      */
     private ComponentNode(RootNode root) {
-        super(root);
+        super(root, NodeTypes.componentnode);
     }
 
     @Override

@@ -20,7 +20,7 @@ public class BaseRootNode extends RootNode {
         Type<Node> nodeType;
         ShaderProgram program;
         NodeFactory nodeFactory;
-        Mesh.Builder builder;
+        Mesh.Builder<Mesh> builder;
         NucleusRenderer renderer;
 
         public Builder(NucleusRenderer renderer) {
@@ -35,7 +35,7 @@ public class BaseRootNode extends RootNode {
             return this;
         }
 
-        public Builder setMeshBuilder(Mesh.Builder meshBuilder) {
+        public Builder setMeshBuilder(Mesh.Builder<Mesh> meshBuilder) {
             this.builder = meshBuilder;
             return this;
         }
@@ -65,11 +65,14 @@ public class BaseRootNode extends RootNode {
         public RootNode create() throws NodeException {
             validate();
             BaseRootNode root = new BaseRootNode();
+            RenderPass pass = new RenderPass(root);
             Node created = nodeFactory.create(renderer, program, builder, nodeType, root);
             ViewFrustum vf = new ViewFrustum();
             vf.setOrthoProjection(-0.5f, 0.5f, -0.5f, 0.5f, 0, 10);
             created.setViewFrustum(vf);
-            root.setScene(created);
+            created.setId(created.getClass().getSimpleName());
+            pass.addChild(created);
+            root.addChild(pass);
             return root;
         }
 

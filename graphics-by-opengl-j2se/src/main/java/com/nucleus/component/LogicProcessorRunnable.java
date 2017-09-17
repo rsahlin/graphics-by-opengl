@@ -3,6 +3,7 @@ package com.nucleus.component;
 import com.nucleus.CoreApp;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
 
 /**
@@ -46,9 +47,7 @@ public class LogicProcessorRunnable implements Runnable {
         running = true;
         while (running) {
             synchronized (this) {
-                if (rootNode != null) {
-                    logicProcessor.processNode(rootNode.getScene(), FrameSampler.getInstance().getDelta());
-                }
+            	process(FrameSampler.getInstance().getDelta());
                 try {
                     wait();
                 } catch (InterruptedException e) {
@@ -73,7 +72,9 @@ public class LogicProcessorRunnable implements Runnable {
      */
     public void process(float delta) {
         if (rootNode != null) {
-            logicProcessor.processNode(rootNode.getScene(), delta);
+        	for (Node node : rootNode.getScene()) {
+                logicProcessor.processNode(node, delta);
+        	}
         }
     }
 

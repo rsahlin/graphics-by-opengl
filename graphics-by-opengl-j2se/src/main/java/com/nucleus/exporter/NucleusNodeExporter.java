@@ -1,13 +1,14 @@
 package com.nucleus.exporter;
 
 import java.util.HashMap;
+import java.util.List;
 
 import com.nucleus.common.Type;
 import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
-import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.SwitchNode;
+import com.nucleus.scene.Node.NodeTypes;
 
 public class NucleusNodeExporter implements NodeExporter {
 
@@ -29,18 +30,21 @@ public class NucleusNodeExporter implements NodeExporter {
 
     @Override
     public void exportNodes(RootNode source, RootNode rootNode) {
-        Node scene = source.getScene();
-        NodeExporter exporter = nodeExporters.get(scene.getType());
-        Node export = null;
-        if (exporter != null) {
-            export = exporter.exportNode(scene, rootNode);
-            rootNode.setScene(export);
-        } else {
-            throw new IllegalAccessError("Invalid node type: " + scene.getType());
-        }
-        for (Node child : scene.getChildren()) {
-            NodeExporter exporter2 = nodeExporters.get(child.getType());
-            // export.addChild(exporter2.exportNode(child, rootNode));
+        List<Node> children = source.getScene();
+        for (Node node : children) {
+            NodeExporter exporter = nodeExporters.get(node.getType());
+            Node export = null;
+            if (exporter != null) {
+                export = exporter.exportNode(node, rootNode);
+                rootNode.addChild(export);
+            } else {
+                throw new IllegalAccessError("Invalid node type: " + node.getType());
+            }
+            for (Node child : node.getChildren()) {
+                NodeExporter exporter2 = nodeExporters.get(child.getType());
+                // export.addChild(exporter2.exportNode(child, rootNode));
+            }
+        	
         }
     }
 
@@ -53,7 +57,7 @@ public class NucleusNodeExporter implements NodeExporter {
 
     @Override
     public Node exportNode(Node source, RootNode rootNode) {
-        NodeType type = NodeType.valueOf(source.getType());
+        NodeTypes type = NodeTypes.valueOf(source.getType());
         Node created;
         switch (type) {
         case node:

@@ -19,7 +19,7 @@ import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
-import com.nucleus.renderer.RenderSettings;
+import com.nucleus.renderer.RenderState;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
@@ -27,9 +27,9 @@ import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.J2SENodeInputListener;
 import com.nucleus.scene.NodeController;
 import com.nucleus.scene.NodeException;
-import com.nucleus.scene.NodeType;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewController;
+import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.shader.VertexTranslateProgram;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -295,9 +295,6 @@ public class CoreApp implements RenderContextListener {
 
     public void displaySplash() throws GLException, NodeException {
         FrameSampler.getInstance().logTag(FrameSampler.DISPLAY_SPLASH);
-        RenderSettings rs = renderer.getRenderSettings();
-        rs.setCullFace(GLES20.GL_NONE);
-        rs.setDepthFunc(GLES20.GL_NONE);
 
         BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
@@ -313,7 +310,7 @@ public class CoreApp implements RenderContextListener {
         meshBuilder.setMaterial(material);
         meshBuilder.setShapeBuilder(new RectangleShapeBuilder(new Configuration(0.2f, 0.2f, 0f, 1, 0)));
         builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
-                .setNode(NodeType.layernode);
+                .setNode(NodeTypes.layernode);
         RootNode root = builder.create();
         renderer.beginFrame();
         renderer.render(root);
