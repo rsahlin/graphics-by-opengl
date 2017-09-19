@@ -211,17 +211,6 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void endFrame() {
-        /**
-         * if (lineDrawer != null) {
-         * try {
-         * Matrix.orthoM(projectionMatrix, 0, -0.8889f, 0.8889f, -0.5f, 0.5f, 4f, -10f);
-         * gles.glLineWidth(1.0f);
-         * renderMesh(lineDrawer, mvMatrix, projectionMatrix);
-         * } catch (GLException e) {
-         * SimpleLogger.d(getClass(), "Exception rendering lines: " + e.getMessage());
-         * }
-         * }
-         */
     }
 
     @Override

@@ -22,7 +22,6 @@ public class ResourceBias {
         private RESOLUTION(int lines) {
             this.lines = lines;
         }
-
     }
 
     /**
