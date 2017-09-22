@@ -1,5 +1,6 @@
 package com.nucleus.scene;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.properties.Property;
@@ -45,11 +46,10 @@ public class NodeController implements EventHandler<Node> {
         Property p = Property.create(value);
         switch (action) {
         case SWITCH:
-            SwitchNode target = (SwitchNode) root.getNodeById(p.getKey());
-            if (node != null) {
-                target.setActive(p.getValue());
-            }
+            NavigationController.getInstance().setActiveSwitch(root, p.getKey(), p.getValue());
             break;
+        default:
+            SimpleLogger.d(getClass(), "Not handled event action: " + action + " with value: " + value);
         }
     }
 

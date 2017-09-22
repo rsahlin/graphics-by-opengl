@@ -1,5 +1,7 @@
 package com.nucleus;
 
+import java.util.prefs.BackingStoreException;
+
 import com.nucleus.assets.AssetManager;
 import com.nucleus.component.J2SELogicProcessor;
 import com.nucleus.component.LogicProcessorRunnable;
@@ -25,6 +27,7 @@ import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.J2SENodeInputListener;
+import com.nucleus.scene.NavigationController;
 import com.nucleus.scene.NodeController;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.RootNode;
@@ -339,6 +342,19 @@ public class CoreApp implements RenderContextListener {
         } catch (IllegalAccessException | InstantiationException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Handles back navigation - returns true if the app should be closed.
+     * 
+     * @return True if app should be closed as a result of back navigation.
+     */
+    public boolean onBackPressed() {
+        int count = NavigationController.getInstance().popBackStackEntry();
+        if (count == NavigationController.EMPTY) {
+            return true;
+        }
+        return false;
     }
 
 }
