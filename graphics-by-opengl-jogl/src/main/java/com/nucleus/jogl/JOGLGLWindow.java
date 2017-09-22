@@ -337,11 +337,13 @@ public abstract class JOGLGLWindow extends J2SEWindow
         if (fullscreen) {
             fullscreen = false;
             glWindow.setFullscreen(false);
-            glWindow.setPosition(50, 50);
+            glWindow.setPosition(glWindow.getWidth()/ 2, glWindow.getHeight() / 2);
         } else {
-            coreApp.setDestroyFlag();
-            glWindow.destroy();
-            System.exit(0);
+            if (coreApp.onBackPressed()) {
+                coreApp.setDestroyFlag();
+                glWindow.destroy();
+                System.exit(0);
+            }
         }
     }
 

@@ -25,8 +25,7 @@ public class SwitchNode extends Node implements PostDeserializable {
     @Deprecated
     protected SwitchNode() {
     }
-    
-    
+
     private SwitchNode(RootNode root) {
         super(root, NodeTypes.switchnode);
     }
@@ -74,6 +73,15 @@ public class SwitchNode extends Node implements PostDeserializable {
                 child.setState(State.OFF);
             }
         }
+    }
+
+    /**
+     * Returns the id of the active child.
+     * 
+     * @return
+     */
+    protected String getActive() {
+        return active;
     }
 
     @Override
