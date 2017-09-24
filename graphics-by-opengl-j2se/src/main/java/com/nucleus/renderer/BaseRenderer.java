@@ -59,6 +59,8 @@ class BaseRenderer implements NucleusRenderer {
     private final static String NULL_IMAGEFACTORY_ERROR = "ImageFactory is null";
     private final static String NULL_MATRIXENGINE_ERROR = "MatrixEngine is null";
 
+    private final static int FPS_SAMPLER_DELAY = 5;
+
     protected SurfaceConfiguration surfaceConfig;
 
     protected ViewFrustum viewFrustum = new ViewFrustum();
@@ -155,7 +157,7 @@ class BaseRenderer implements NucleusRenderer {
     @Override
     public float beginFrame() {
         deltaTime = timeKeeper.update();
-        if (timeKeeper.getSampleDuration() > 3) {
+        if (timeKeeper.getSampleDuration() > FPS_SAMPLER_DELAY) {
             SimpleLogger.d(getClass(), timeKeeper.sampleFPS());
         }
         for (FrameListener listener : frameListeners) {

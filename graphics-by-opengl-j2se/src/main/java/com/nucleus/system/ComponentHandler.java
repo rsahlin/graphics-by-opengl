@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.nucleus.component.Component;
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RootNode;
 
@@ -51,7 +52,9 @@ public class ComponentHandler {
         if (system == null) {
             throw new IllegalArgumentException("No system registered for type: " + component.getType());
         }
+        long start = java.lang.System.currentTimeMillis();
         system.process(component, deltaTime);
+        FrameSampler.getInstance().addTag(FrameSampler.PROCESSCOMPONENT + component.getId(), start, java.lang.System.currentTimeMillis());
     }
 
     /**
