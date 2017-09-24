@@ -188,19 +188,6 @@ public class FConvolutionTest implements WindowListener {
 
     }
 
-    private Image processImage(Convolution.Kernel kernel, float[] data, String filename) throws IOException {
-        Image img = imageFactory.createImage(filename, ImageFormat.RGBA);
-        return processImage(kernel, data, img);
-    }
-
-    private Image processImage(Convolution.Kernel kernel, float[] data, Image image) {
-        Convolution filter = new Convolution(kernel);
-        filter.set(data, 0, 0, data.length);
-        filter.normalize(false);
-        Image result = filter.process(image);
-        return result;
-    }
-
     private void processImage(Convolution.Kernel kernel, float[] data, Image image, Image destination) {
         Convolution filter = new Convolution(kernel);
         filter.set(data, 0, 0, data.length);

@@ -9,6 +9,7 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.renderer.Window;
 import com.nucleus.texturing.Image.ImageFormat;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.Texture2D.Type;
@@ -34,11 +35,10 @@ public class TextureUtils {
      * @return Array with an image for each mip-map level.
      */
     public static Image[] loadTextureMIPMAP(ImageFactory imageFactory, Texture2D texture) {
-
         try {
             long start = System.currentTimeMillis();
             ImageFormat imageFormat = getImageFormat(texture);
-            Image image = imageFactory.createImage(texture.getExternalReference().getSource(), imageFormat);
+            Image image = loadTextureImage(imageFactory, texture);
             long loaded = System.currentTimeMillis();
             FrameSampler.getInstance()
                     .logTag(FrameSampler.CREATE_IMAGE + " " + texture.getExternalReference().getSource(), start,
@@ -49,26 +49,48 @@ public class TextureUtils {
             if (levels == 0 || !texture.getTexParams().isMipMapFilter()) {
                 levels = 1;
             }
-            if (levels > 1) {
-                levels = (int) Math.floor(Math.log((Math.max(width, height))) / Math.log(2)) + 1;
-            }
+            // Do not use this, mipmaps created when textures are uploaded
+            // if (levels > 1) {
+            // levels = (int) Math.floor(Math.log((Math.max(width, height))) / Math.log(2)) + 1;
+            // }
+            levels = 1;
             Image[] images = new Image[levels];
             images[0] = image;
-            if (levels > 1) {
-                // levels = 1 + (int) Math.floor(Math.log(Math.max(scaledWidth, scaledHeight)));
-                for (int i = 1; i < levels; i++) {
-                    // max(1, floor(w_t/2^i)) x max(1, floor(h_t/2^i))
-                    int scaledWidth = (int) Math.max(1, Math.floor(width / Math.pow(2, i)));
-                    int scaledHeight = (int) Math.max(1, Math.floor(height / Math.pow(2, i)));
-                    images[i] = imageFactory.createScaledImage(images[0], scaledWidth,
-                            scaledHeight, imageFormat);
-                }
-            }
-            FrameSampler.getInstance().logTag(FrameSampler.GENERATE_MIPMAPS, loaded, System.currentTimeMillis());
+            /*
+             * if (levels > 1) {
+             * // levels = 1 + (int) Math.floor(Math.log(Math.max(scaledWidth, scaledHeight)));
+             * for (int i = 1; i < levels; i++) {
+             * // max(1, floor(w_t/2^i)) x max(1, floor(h_t/2^i))
+             * int scaledWidth = (int) Math.max(1, Math.floor(width / Math.pow(2, i)));
+             * int scaledHeight = (int) Math.max(1, Math.floor(height / Math.pow(2, i)));
+             * images[i] = imageFactory.createScaledImage(images[0], scaledWidth,
+             * scaledHeight, imageFormat);
+             * }
+             * }
+             * FrameSampler.getInstance().logTag(FrameSampler.GENERATE_MIPMAPS, loaded, System.currentTimeMillis());
+             */
             return images;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Loads the texture image for the texture, fitting the result for the texture resolution bias and screen resolution
+     * 
+     * @param factory
+     * @param texture
+     * @return
+     * @throws IOException
+     */
+    protected static Image loadTextureImage(ImageFactory factory, Texture2D texture) throws IOException {
+
+        float scale = (float) Window.getInstance().getHeight() / texture.resolution.lines;
+        if (scale < 0.9) {
+            factory.createImage(texture.getExternalReference().getSource(), scale, scale, getImageFormat(texture));
+        }
+        return factory.createImage(texture.getExternalReference().getSource(), getImageFormat(texture));
+
     }
 
     /**
@@ -116,8 +138,10 @@ public class TextureUtils {
             }
         }
         if (textureImages.length == 1 && texture.getTexParams().isMipMapFilter()) {
+            long start = System.currentTimeMillis();
             gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
             SimpleLogger.d(TextureUtils.class, "Generated mipmaps for texture " + texture.getId());
+            FrameSampler.getInstance().logTag(FrameSampler.GENERATE_MIPMAPS, start, System.currentTimeMillis());
         }
     }
 
@@ -133,19 +157,19 @@ public class TextureUtils {
             case ABGR4:
             case RGBA:
             case RGB:
-            return Type.UNSIGNED_BYTE;
+                return Type.UNSIGNED_BYTE;
             case ALPHA:
             case LUMINANCE:
             case LUMINANCE_ALPHA:
-            return Type.UNSIGNED_BYTE;
+                return Type.UNSIGNED_BYTE;
             case RGB565:
-            return Type.UNSIGNED_SHORT_5_6_5;
+                return Type.UNSIGNED_SHORT_5_6_5;
             case RGBA4:
-            return Type.UNSIGNED_SHORT_4_4_4_4;
+                return Type.UNSIGNED_SHORT_4_4_4_4;
             case RGB5_A1:
-            return Type.UNSIGNED_SHORT_5_5_5_1;
+                return Type.UNSIGNED_SHORT_5_5_5_1;
             default:
-            throw new IllegalArgumentException("Not implemented for: " + format);
+                throw new IllegalArgumentException("Not implemented for: " + format);
         }
     }
 
@@ -157,22 +181,22 @@ public class TextureUtils {
      */
     public static Texture2D.Format getFormat(ImageFormat format) {
         switch (format) {
-        case ABGR4:
-        case RGBA4:
-        case RGBA:
-        case RGB5_A1:
-            return Format.RGBA;
-        case ALPHA:
-            return Format.ALPHA;
-        case LUMINANCE:
-            return Format.LUMINANCE;
-        case LUMINANCE_ALPHA:
-            return Format.LUMINANCE_ALPHA;
-        case RGB565:
-        case RGB:
-            return Format.RGB;
-        default:
-            throw new IllegalArgumentException("Not implemented for: " + format);
+            case ABGR4:
+            case RGBA4:
+            case RGBA:
+            case RGB5_A1:
+                return Format.RGBA;
+            case ALPHA:
+                return Format.ALPHA;
+            case LUMINANCE:
+                return Format.LUMINANCE;
+            case LUMINANCE_ALPHA:
+                return Format.LUMINANCE_ALPHA;
+            case RGB565:
+            case RGB:
+                return Format.RGB;
+            default:
+                throw new IllegalArgumentException("Not implemented for: " + format);
         }
     }
 
@@ -191,56 +215,55 @@ public class TextureUtils {
         }
 
         switch (format) {
-        case RGBA:
-            switch (type) {
-            case UNSIGNED_BYTE:
-                return ImageFormat.RGBA;
-            case UNSIGNED_SHORT_4_4_4_4:
-                return ImageFormat.RGBA4;
-            case UNSIGNED_SHORT_5_5_5_1:
-                return ImageFormat.RGB5_A1;
-                default:
-                throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE.message + type);
-            }
-        case RGB:
-            switch (type) {
-            case UNSIGNED_BYTE:
-                return ImageFormat.RGB;
-            case UNSIGNED_SHORT_5_6_5:
-                return ImageFormat.RGB565;
+            case RGBA:
+                switch (type) {
+                    case UNSIGNED_BYTE:
+                        return ImageFormat.RGBA;
+                    case UNSIGNED_SHORT_4_4_4_4:
+                        return ImageFormat.RGBA4;
+                    case UNSIGNED_SHORT_5_5_5_1:
+                        return ImageFormat.RGB5_A1;
+                    default:
+                        throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE.message + type);
+                }
+            case RGB:
+                switch (type) {
+                    case UNSIGNED_BYTE:
+                        return ImageFormat.RGB;
+                    case UNSIGNED_SHORT_5_6_5:
+                        return ImageFormat.RGB565;
+                    default:
+                        throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE.message + type);
+                }
+            case ALPHA:
+                switch (type) {
+                    case UNSIGNED_BYTE:
+                        return ImageFormat.ALPHA;
+                    default:
+                        throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE.message + type);
+                }
+            case LUMINANCE:
+                switch (type) {
+                    case UNSIGNED_BYTE:
+                        return ImageFormat.LUMINANCE;
+                    default:
+                        throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE.message + type);
+                }
+            case LUMINANCE_ALPHA:
+                switch (type) {
+                    case UNSIGNED_BYTE:
+                        return ImageFormat.LUMINANCE_ALPHA;
+                    case UNSIGNED_SHORT_5_5_5_1:
+                        return ImageFormat.RGB5_A1;
+                    case UNSIGNED_SHORT_4_4_4_4:
+                        return ImageFormat.RGBA4;
+                    default:
+                        throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE.message + type);
+                }
             default:
-                throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE.message + type);
-            }
-        case ALPHA:
-            switch (type) {
-            case UNSIGNED_BYTE:
-                return ImageFormat.ALPHA;
-            default:
-                throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE.message + type);
-            }
-        case LUMINANCE:
-            switch (type) {
-            case UNSIGNED_BYTE:
-                return ImageFormat.LUMINANCE;
-            default:
-                throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE.message + type);
-            }
-        case LUMINANCE_ALPHA:
-            switch (type) {
-            case UNSIGNED_BYTE:
-                return ImageFormat.LUMINANCE_ALPHA;
-            case UNSIGNED_SHORT_5_5_5_1:
-                return ImageFormat.RGB5_A1;
-            case UNSIGNED_SHORT_4_4_4_4:
-                return ImageFormat.RGBA4;
-            default:
-                throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE.message + type);
-            }
-            default:
-            throw new IllegalArgumentException(ErrorMessage.INVALID_FORMAT.message);
+                throw new IllegalArgumentException(ErrorMessage.INVALID_FORMAT.message);
         }
 
     }
-
 
 }

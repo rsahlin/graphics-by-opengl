@@ -1,5 +1,9 @@
 package com.nucleus.profiling;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.nucleus.SimpleLogger;
 import com.nucleus.texturing.Image;
 
@@ -19,6 +23,8 @@ public class FrameSampler {
     public final static String CREATE_NODE = "CREATE_NODE";
     public final static String LOAD_MAP = "LOAD_MAP";
     public final static String CREATE_SHADER = "CREATE_SHADER";
+    public final static String LOGICPROCESSOR = "LOGICPROCESSOR";
+    public final static String RENDERNODES = "RENDERNODES";
     /**
      * The whole creation of a texture, load image and copy data, generate mipmaps
      */
@@ -40,6 +46,8 @@ public class FrameSampler {
     public final static int DEFAULT_MIN_FPS = 30;
     private static FrameSampler frameSampler = new FrameSampler();
 
+    private final static int DEFAULT_AVERAGE_VALUES = 60;
+
     /**
      * Start time of sampler
      */
@@ -57,6 +65,7 @@ public class FrameSampler {
     private int drawCalls;
     private long sampleStart;
 
+    private Map<String, ArrayList<Long>> tagTimings = new HashMap<>();
 
     /**
      * Returns the sampler instance
@@ -232,6 +241,36 @@ public class FrameSampler {
      */
     public void logTag(String tag, long startTime, long endTime) {
         SimpleLogger.d(getClass(), "Sample " + tag + " : " + (endTime - startTime) + " millis.");
+    }
+
+    /**
+     * Adds the tag timing, outputs min/max/average at specified interval
+     * 
+     * @param tag
+     * @param startTime
+     * @param endTime
+     */
+    public void addTag(String tag, long startTime, long endTime) {
+        ArrayList<Long> tagTime = tagTimings.get(tag);
+        if (tagTime == null) {
+            tagTime = new ArrayList<>();
+            tagTimings.put(tag, tagTime);
+        }
+        tagTime.add(endTime - startTime);
+        if (tagTime.size() >= DEFAULT_AVERAGE_VALUES) {
+            logAverage(tag, tagTime);
+            tagTime.clear();
+        }
+    }
+
+    private void logAverage(String tag, ArrayList<Long> tagTime) {
+        int size = tagTime.size();
+        long total = 0;
+        for (int i = 0; i < size; i++) {
+            total += tagTime.get(i);
+        }
+        SimpleLogger.d(getClass(), "Average sample " + tag + " : " + total / size + " millis.");
+
     }
 
 }

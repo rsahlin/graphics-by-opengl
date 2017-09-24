@@ -38,9 +38,23 @@ public interface ImageFactory {
      * @param format The image format of the created image (buffer)
      * @return The loaded image.
      * @throws IOException If there is an error loading the image.
-     * @throws IllegalArgumentException If name is null
+     * @throws IllegalArgumentException If name or format is null
      */
     public Image createImage(String name, Image.ImageFormat format) throws IOException;
+
+    /**
+     * Loads an image and scales by a factor in X and Y. Use this method to scale texture based on resolution bias and
+     * screen size
+     * 
+     * @param name
+     * @param scaleX X axis scale factor, 1 = normal scale, 0.5 = half size
+     * @param scaleY Y axis scale factor, 1 = normal scale, 0.5 = half size
+     * @param format
+     * @return The loaded and scaled image
+     * @throws IOException If there is an error loading the image.
+     * @throws IllegalArgumentException If name or format is null, or scaleX or scaleY is zero or less
+     */
+    public Image createImage(String name, float scaleX, float scaleY, Image.ImageFormat format) throws IOException;
 
     /**
      * Creates a scaled copy of the image

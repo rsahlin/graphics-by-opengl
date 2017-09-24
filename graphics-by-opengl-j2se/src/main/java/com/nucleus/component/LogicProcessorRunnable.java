@@ -47,7 +47,7 @@ public class LogicProcessorRunnable implements Runnable {
         running = true;
         while (running) {
             synchronized (this) {
-            	process(FrameSampler.getInstance().getDelta());
+                process(FrameSampler.getInstance().getDelta());
                 try {
                     wait();
                 } catch (InterruptedException e) {
@@ -65,17 +65,19 @@ public class LogicProcessorRunnable implements Runnable {
 
     /**
      * Process the node specified by calling {@link #setRootNode(RootNode)}
-     * Only needed to call this method if thread has not been creted for this class, normally called from the
+     * Only needed to call this method if thread has not been craeted for this class, normally called from the
      * {@link #run()} method.
      * 
      * @param delta
      */
     public void process(float delta) {
+        long start = System.currentTimeMillis();
         if (rootNode != null) {
-        	for (Node node : rootNode.getScene()) {
+            for (Node node : rootNode.getScene()) {
                 logicProcessor.processNode(node, delta);
-        	}
+            }
         }
+        FrameSampler.getInstance().addTag(FrameSampler.LOGICPROCESSOR, start, System.currentTimeMillis());
     }
 
 }

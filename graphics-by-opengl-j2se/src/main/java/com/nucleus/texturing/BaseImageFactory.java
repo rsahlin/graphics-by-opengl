@@ -1,5 +1,6 @@
 package com.nucleus.texturing;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import com.nucleus.ErrorMessage;
@@ -17,6 +18,7 @@ public abstract class BaseImageFactory implements ImageFactory {
 
     protected final static String ILLEGAL_PARAMETER = "Illegal parameter: ";
     protected final static String NULL_PARAMETER = "Null parameter";
+    private final static String INVALID_SCALE = "Invalid scale";
 
     @Override
     public Image createScaledImage(Image source, int width, int height, ImageFormat format) {
@@ -109,6 +111,18 @@ public abstract class BaseImageFactory implements ImageFactory {
         return destination;
     }
 
+    @Override
+    public Image createImage(String name, float scaleX, float scaleY, ImageFormat format) throws IOException {
+        if (name == null || format == null) {
+            throw new IllegalArgumentException(NULL_PARAMETER);
+        }
+        if (scaleX <= 0 || scaleY <= 0) {
+            throw new IllegalArgumentException(INVALID_SCALE);
+        }
+        Image image = createImage(name, format);
+        return createScaledImage(image, (int) (image.width * scaleX), (int) (image.height * scaleY), format);
+    }
+
     private Image sharpen(Image source) {
         Convolution c = new Convolution(Kernel.SIZE_3X3);
         c.set(new float[] { 0.1f, -0.2f, 0.1f, -0.2f, 1.8f, -0.2f, 0.1f, -0.2f, 0.1f }, 0, 0, Kernel.SIZE_3X3.size);
@@ -172,8 +186,8 @@ public abstract class BaseImageFactory implements ImageFactory {
                 copyPixels_4BYTE_RGBA_TO_RGB565(source, buffer);
                 break;
             case RGB5_A1:
-            	copyPixels_4BYTE_RGBA_TO_RGB5551(source, buffer);
-            	break;
+                copyPixels_4BYTE_RGBA_TO_RGB5551(source, buffer);
+                break;
             default:
                 throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
             }
@@ -182,7 +196,6 @@ public abstract class BaseImageFactory implements ImageFactory {
             throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + sourceFormat);
         }
     }
-
 
     /**
      * Copies the 4 byte RGBA to 16 bit luminance alpha
@@ -223,7 +236,7 @@ public abstract class BaseImageFactory implements ImageFactory {
             destination.put(rgb, 0, 2);
         }
     }
-    
+
     protected void copyPixels_4BYTE_RGBA_TO_RGB5551(byte[] source, ByteBuffer destination) {
         byte[] rgb = new byte[2];
         int length = source.length;
@@ -240,8 +253,6 @@ public abstract class BaseImageFactory implements ImageFactory {
             destination.put(rgb, 0, 2);
         }
     }
-    
-    
 
     /**
      * Straight copy from source to destination

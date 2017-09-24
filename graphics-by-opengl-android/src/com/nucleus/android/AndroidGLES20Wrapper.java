@@ -4,6 +4,7 @@ import java.nio.Buffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.profiling.FrameSampler;
 
 public class AndroidGLES20Wrapper extends GLES20Wrapper {
 
@@ -222,7 +223,7 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
             int type, Buffer pixels) {
         android.opengl.GLES20.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
     }
-    
+
     @Override
     public void glDrawElements(int mode, int count, int type, Buffer indices) {
         android.opengl.GLES20.glDrawElements(mode, count, type, indices);
@@ -329,4 +330,3 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
 }
-

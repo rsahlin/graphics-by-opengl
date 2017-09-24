@@ -69,7 +69,7 @@ public abstract class ShaderProgram {
      *
      */
     public enum AttribNameMapping {
-        APPEND(),
+        APPEND(), 
         PREFIX();
     }
 
@@ -404,7 +404,6 @@ public abstract class ShaderProgram {
         }
     }
 
-
     /**
      * Checks the status of the attribute name mapping and if enabled the attributes are bound to locations
      * that correspond to location that is appended or prefixed to the name.
@@ -669,7 +668,7 @@ public abstract class ShaderProgram {
         try {
             VariableMapping vm = getVariableMapping(variable);
             // TODO Offset is set dynamically when dynamicMapShaderOffset() is called - create a setting so that
-            //it is possible to toggle between the two modes.
+            // it is possible to toggle between the two modes.
             // variable.setOffset(vm.getOffset());
             shaderVariables[vm.getIndex()] = variable;
         } catch (IllegalArgumentException e) {
@@ -875,9 +874,11 @@ public abstract class ShaderProgram {
      * @param uniformScreenSize
      */
     protected void setScreenSize(float[] uniforms, ShaderVariable uniformScreenSize) {
-        int screenSizeOffset = uniformScreenSize.getOffset();
-        uniforms[screenSizeOffset++] = Window.getInstance().getWidth();
-        uniforms[screenSizeOffset++] = Window.getInstance().getHeight();
+        if (uniformScreenSize != null) {
+            int screenSizeOffset = uniformScreenSize.getOffset();
+            uniforms[screenSizeOffset++] = Window.getInstance().getWidth();
+            uniforms[screenSizeOffset++] = Window.getInstance().getHeight();
+        }
     }
 
     /**
