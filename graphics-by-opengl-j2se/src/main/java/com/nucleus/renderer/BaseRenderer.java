@@ -255,7 +255,18 @@ class BaseRenderer implements NucleusRenderer {
     	
     }
     
+    private void setupRenderTarget(RenderTarget target) {
+        switch (target.getTarget()) {
+            case FRAMEBUFFER:
+                
+            case TEXTURE:
+                gles.glBin
+        }
+    }
+    
     private void internalRender(RenderPass node) throws GLException {
+        setupRenderTarget(node.getTarget());
+        
     	RenderState state = node.getRenderState();
     	if (state != null) {
         	if (state.getChangeFlag() != RenderState.CHANGE_FLAG_NONE) {
@@ -267,7 +278,6 @@ class BaseRenderer implements NucleusRenderer {
 	            gles.glClear(clearFunc);
 	        }
     	}
-    	//Once the renderstate and targets have been set - render the contents.
     	internalRender((Node) node);
     }
     

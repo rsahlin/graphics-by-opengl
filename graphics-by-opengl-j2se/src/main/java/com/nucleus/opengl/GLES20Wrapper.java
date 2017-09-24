@@ -18,6 +18,18 @@ import com.nucleus.shader.ShaderVariable;
 public abstract class GLES20Wrapper extends GLESWrapper {
 
     /**
+     * Abstraction for glFrameBufferTexture2D
+     */
+    public abstract void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level);
+
+    /**
+     * Abstraction for glGenFrameBuffers
+     * @param buffers
+     */
+    public abstract void glGenFramebuffers(int[] buffers);
+
+    
+    /**
      * Abstraction for glAttachShader()
      * 
      * @param program
