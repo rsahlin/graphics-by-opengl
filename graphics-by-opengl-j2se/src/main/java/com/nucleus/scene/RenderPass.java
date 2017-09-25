@@ -9,36 +9,51 @@ import com.nucleus.renderer.RenderTarget;
  */
 public class RenderPass extends Node {
 
-	private RenderTarget target = new RenderTarget();
-	private RenderState renderState = new RenderState();
-	
+    private RenderTarget target;
+    private RenderState renderState;
+
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
      */
     @Deprecated
-	protected RenderPass() {
-		super();
-	}
+    protected RenderPass() {
+        super();
+    }
 
     @Override
     public RenderPass createInstance(RootNode root) {
-    	RenderPass copy = new RenderPass(root);
+        RenderPass copy = new RenderPass(root);
         copy.set(this);
         return copy;
+    }
+
+    public void set(RenderPass source) {
+        super.set(source);
+        this.target = source.target;
+        this.renderState = source.renderState;
     }
     
     /**
      * @param root
      */
-	public RenderPass(RootNode root) {
-		super(root, NodeTypes.renderpass);
-	}
-	
-	public RenderTarget getTarget() {
-		return target;
-	}
-	public RenderState getRenderState() {
-		return renderState;
-	}
-	
+    public RenderPass(RootNode root) {
+        super(root, NodeTypes.renderpass);
+    }
+
+    public RenderTarget getTarget() {
+        return target;
+    }
+
+    public RenderState getRenderState() {
+        return renderState;
+    }
+    
+    public void setTarget(RenderTarget renderTarget) {
+        this.target = renderTarget;
+    }
+    
+    public void setRenderState(RenderState renderState) {
+        this.renderState = renderState;
+    }
+
 }

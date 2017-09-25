@@ -71,11 +71,15 @@ public class RenderTarget {
     }
     
     @SerializedName(TARGET)
-    private Target target = Target.FRAMEBUFFER;
+    private Target target;
     @SerializedName(ATTACHEMENT)
-    private static AttachementData[] attachements = new AttachementData[] {new AttachementData(Attachement.COLOR, new float[] {0.5f,0.5f}, ImageFormat.RGB.name())};
+    private AttachementData[] attachements = new AttachementData[] {new AttachementData(Attachement.COLOR, new float[] {0.5f,0.5f}, ImageFormat.RGB.name())};
 
     transient private int name = Constants.NO_VALUE;
+    
+    public RenderTarget() {
+        target = Target.FRAMEBUFFER;
+    }
     
     public Target getTarget() {
         return target;

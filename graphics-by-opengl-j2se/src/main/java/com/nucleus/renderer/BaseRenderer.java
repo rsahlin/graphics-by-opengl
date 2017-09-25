@@ -9,7 +9,6 @@ import java.util.Set;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.camera.ViewFrustum;
-import com.nucleus.camera.ViewPort;
 import com.nucleus.common.Constants;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Producer;
@@ -260,7 +259,7 @@ class BaseRenderer implements NucleusRenderer {
 
     }
 
-    private void setupRenderTarget(RenderTarget target) {
+    private void setupRenderTarget(RenderTarget target) throws GLException {
         switch (target.getTarget()) {
             case FRAMEBUFFER:
                 break;
@@ -272,9 +271,8 @@ class BaseRenderer implements NucleusRenderer {
         }
     }
 
-    private void setupTextureRenderTarget(RenderTarget target) {
+    private void setupTextureRenderTarget(RenderTarget target) throws GLException {
         if (target.getName() == Constants.NO_VALUE) {
-            
             AttachementData ad = target.getAttachement(Attachement.COLOR);
             int w = (int) (Window.getInstance().getWidth() * ad.getScale()[0]);
             int h = (int) (Window.getInstance().getHeight() * ad.getScale()[1]);
@@ -286,6 +284,7 @@ class BaseRenderer implements NucleusRenderer {
             Texture2D.Format texFormat = TextureUtils.getFormat(format);
             Texture2D.Type texType = TextureUtils.getType(format);
             gles.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, texFormat.format, w, h, 0, texFormat.format, texType.type, null);
+            GLUtils.handleError(gles, "glTexImage2D");
         }
         
     }

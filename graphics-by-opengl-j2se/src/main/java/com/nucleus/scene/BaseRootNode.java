@@ -4,6 +4,8 @@ import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.RenderState;
+import com.nucleus.renderer.RenderTarget;
 import com.nucleus.shader.ShaderProgram;
 
 /**
@@ -66,6 +68,8 @@ public class BaseRootNode extends RootNode {
             validate();
             BaseRootNode root = new BaseRootNode();
             RenderPass pass = new RenderPass(root);
+            pass.setTarget(new RenderTarget());
+            pass.setRenderState(new RenderState());
             Node created = nodeFactory.create(renderer, program, builder, nodeType, root);
             ViewFrustum vf = new ViewFrustum();
             vf.setOrthoProjection(-0.5f, 0.5f, -0.5f, 0.5f, 0, 10);
