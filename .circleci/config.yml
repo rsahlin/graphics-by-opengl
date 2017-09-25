@@ -1,0 +1,10 @@
+version: 2
+jobs:
+   build:
+     docker:
+       - image: circleci/openjdk:8-jdk-browsers
+       - image: buildpack-deps:trusty
+     steps:
+       - checkout
+       - run: mvn compile
+
