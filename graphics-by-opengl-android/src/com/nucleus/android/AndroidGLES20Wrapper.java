@@ -221,7 +221,6 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     public void glTexImage2D(int target, int level, int internalformat, int width, int height, int border, int format,
             int type, Buffer pixels) {
         android.opengl.GLES20.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
-
     }
     
     @Override
@@ -317,6 +316,16 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glLineWidth(float width) {
         android.opengl.GLES20.glLineWidth(width);
+    }
+
+    @Override
+    public void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level) {
+        android.opengl.GLES20.glFramebufferTexture2D(target, attachment, textarget, texture, level);
+    }
+
+    @Override
+    public void glGenFramebuffers(int[] buffers) {
+        android.opengl.GLES20.glGenFramebuffers(buffers.length, buffers, 0);
     }
 
 }

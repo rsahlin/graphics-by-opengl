@@ -10,7 +10,6 @@ import java.util.Set;
 import com.nucleus.SimpleLogger;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.camera.ViewPort;
-import com.nucleus.common.Constants;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.ElementBuffer;
@@ -25,19 +24,15 @@ import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
-import com.nucleus.renderer.RenderTarget.Attachement;
-import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RenderPass;
 import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.texturing.Image.ImageFormat;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
-import com.nucleus.texturing.TextureUtils;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -82,6 +77,7 @@ class BaseRenderer implements NucleusRenderer {
      * The current projection matrix
      */
     protected float[] projectionMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
+
 
     protected GLES20Wrapper gles;
     protected ImageFactory imageFactory;
@@ -152,6 +148,7 @@ class BaseRenderer implements NucleusRenderer {
         gles.glLineWidth(1f);
     }
 
+
     @Override
     public float beginFrame() {
         deltaTime = timeKeeper.update();
@@ -166,7 +163,7 @@ class BaseRenderer implements NucleusRenderer {
 
         return deltaTime;
     }
-
+    
     /**
      * Internal method to apply the rendersettings.
      * 
@@ -220,12 +217,12 @@ class BaseRenderer implements NucleusRenderer {
     public void render(Node node) throws GLException {
         State state = node.getState();
         if (state == null || state == State.ON || state == State.RENDER) {
-            if (node.getType().equals(NodeTypes.renderpass.name())) {
-                // Renderpass node - set renderstate
-                internalRender((RenderPass) node);
-            } else {
-                internalRender(node);
-            }
+        	if (node.getType().equals(NodeTypes.renderpass.name())) {
+        		//Renderpass node - set renderstate
+        		internalRender((RenderPass) node);
+        	} else {
+        		internalRender(node);
+        	}
         }
     }
 
@@ -255,42 +252,38 @@ class BaseRenderer implements NucleusRenderer {
             this.projectionMatrix = popMatrix(this.projection);
         }
         node.getRootNode().addRenderedNode(node);
-
+    	
     }
+<<<<<<< HEAD
+    
+    private void internalRender(RenderPass node) throws GLException {
+    	RenderState state = node.getRenderState();
+    	if (state != null) {
+        	if (state.getChangeFlag() != RenderState.CHANGE_FLAG_NONE) {
+        		setRenderState(state);
+        		state.setChangeFlag(RenderState.CHANGE_FLAG_NONE);
+            }
+	        int clearFunc = state.getClearFunction();
+	        if (clearFunc != GLES20.GL_NONE) {
+	            gles.glClear(clearFunc);
+	        }
+    	}
+    	//Once the renderstate and targets have been set - render the contents.
+    	internalRender((Node) node);
+=======
 
     private void setupRenderTarget(RenderTarget target) {
         switch (target.getTarget()) {
             case FRAMEBUFFER:
-                break;
+                
             case TEXTURE:
-                setupTextureRenderTarget(target);
-                break;
-        default:
-            throw new IllegalArgumentException("Not implemented");
+                gles.glBin
         }
     }
-
-    private void setupTextureRenderTarget(RenderTarget target) {
-        if (target.getName() == Constants.NO_VALUE) {
-            
-            AttachementData ad = target.getAttachement(Attachement.COLOR);
-            int w = (int) (Window.getInstance().getWidth() * ad.getScale()[0]);
-            int h = (int) (Window.getInstance().getHeight() * ad.getScale()[1]);
-            int[] name = new int[1];
-            gles.glGenTextures(name);
-            target.setName(name[0]);
-            gles.glBindTexture(GLES20.GL_TEXTURE_2D, name[0]);
-            ImageFormat format = ImageFormat.valueOf(ad.getFormat());
-            Texture2D.Format texFormat = TextureUtils.getFormat(format);
-            Texture2D.Type texType = TextureUtils.getType(format);
-            gles.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, texFormat.format, w, h, 0, texFormat.format, texType.type, null);
-        }
-        
-    }
-
+    
     private void internalRender(RenderPass node) throws GLException {
         setupRenderTarget(node.getTarget());
-
+        
         RenderState state = node.getRenderState();
         if (state != null) {
             if (state.getChangeFlag() != RenderState.CHANGE_FLAG_NONE) {
@@ -303,8 +296,9 @@ class BaseRenderer implements NucleusRenderer {
             }
         }
         internalRender((Node) node);
+>>>>>>> Start implement support for rendertarget
     }
-
+    
     protected void renderMeshes(ArrayList<Mesh> meshes, float[] mvMatrix, float[] projectionMatrix) throws GLException {
         for (Mesh mesh : meshes) {
             renderMesh(mesh, mvMatrix, projectionMatrix);
@@ -433,11 +427,11 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(RootNode root) throws GLException {
-        List<Node> scene = root.getScene();
+    	List<Node> scene = root.getScene();
         if (scene != null) {
-            for (Node node : scene) {
+        	for (Node node : scene) {
                 render(node);
-            }
+        	}
         }
     }
 
@@ -467,6 +461,7 @@ class BaseRenderer implements NucleusRenderer {
     public void bufferData(int target, int size, Buffer data, int usage) {
         gles.glBufferData(target, size, data, usage);
     }
+
 
     @Override
     public void resizeWindow(int x, int y, int width, int height) {

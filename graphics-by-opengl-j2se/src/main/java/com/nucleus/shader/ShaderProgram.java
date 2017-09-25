@@ -816,7 +816,6 @@ public abstract class ShaderProgram {
      * Use this to fetch the size per attribute for the different buffers.
      * 
      * @param variables
-     * @param type
      * @param index
      * @return
      */

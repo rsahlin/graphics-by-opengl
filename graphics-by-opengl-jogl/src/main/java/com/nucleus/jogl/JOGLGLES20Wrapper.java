@@ -423,4 +423,14 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
         gles.glLineWidth(width);
     }
 
+    @Override
+    public void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level) {
+        gles.glFramebufferTexture2D(target,  attachment,  textarget,  texture,  level);
+    }
+
+    @Override
+    public void glGenFramebuffers(int[] buffers) {
+        gles.glGenFramebuffers(buffers.length, buffers, 0);
+    }
+
 }
