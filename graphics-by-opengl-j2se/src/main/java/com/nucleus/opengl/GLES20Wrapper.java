@@ -31,6 +31,10 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      */
     public abstract void glGenFramebuffers(int[] buffers);
 
+    /**
+     * Abstraction for glBindFramebuffer
+     */
+    public abstract void glBindFramebuffer(int target, int framebuffer);
     
     /**
      * Abstraction for glAttachShader()

@@ -392,4 +392,9 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
         return org.lwjgl.opengles.GLES20.glCheckFramebufferStatus(target);
     }
 
+    @Override
+    public void glBindFramebuffer(int target, int framebuffer) {
+        org.lwjgl.opengles.GLES20.glBindFramebuffer(target, framebuffer);
+    }
+
 }

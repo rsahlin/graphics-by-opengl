@@ -46,6 +46,11 @@ public class RenderTarget {
          * The format, this depends on type of attachement
          */
         private String format;
+        /**
+         * The scale of the target, compared to Window size, in x and y axis
+         */
+        private float[] scale;
+        transient private int[] size;
         
         public AttachementData() {
             
@@ -58,21 +63,41 @@ public class RenderTarget {
         public String getFormat() {
             return format;
         }
+        /**
+         * Returns the x and y axis scale, if set.
+         * @return X and Y axis scale, or null if not set
+         */
+        public float[] getScale() {
+            return scale;
+        }
+
+        /**
+         * Calculates the size of the rendertarget, based on Window size and scale
+         */
+        private void calculateSize( ) {
+            size = new int[] {(int) (Window.getInstance().getWidth() * scale[0]), (int) (Window.getInstance().getHeight() * scale[1])};
+        }
+
+        public int[] getSize() {
+            if (size == null) {
+                calculateSize();
+            }
+            return size;
+        }
         
     }
     
     @SerializedName(TARGET)
     private Target target;
-    /**
-     * The scale of the target, compared to Window size, in x and y axis
-     */
-    private float[] scale;
     
     @SerializedName(ATTACHEMENTS)
     private ArrayList<AttachementData> attachements;
 
+    /**
+     * Name of the destination texture or renderbuffer
+     */
     transient private int name = Constants.NO_VALUE;
-    transient private int[] size;
+    transient private int framebufferName = Constants.NO_VALUE;
     
     public RenderTarget() {
         target = Target.FRAMEBUFFER;
@@ -98,6 +123,15 @@ public class RenderTarget {
         this.name = name;
     }
     
+    public void setFramebufferName(int framebufferName) {
+        this.framebufferName = framebufferName;
+    }
+    
+    public int getFramebufferName() {
+        return framebufferName;
+    }
+    
+    
     /**
      * Returns the attachement data for the attachement, or null if not set
      * @param attachement
@@ -114,27 +148,5 @@ public class RenderTarget {
         }
         return null;
     }
-    /**
-     * Returns the x and y axis scale, if set.
-     * @return X and Y axis scale, or null if not set
-     */
-    public float[] getScale() {
-        return scale;
-    }
-
-    /**
-     * Calculates the size of the rendertarget, based on Window size and scale
-     */
-    private void calculateSize( ) {
-        size = new int[] {(int) (Window.getInstance().getWidth() * scale[0]), (int) (Window.getInstance().getHeight() * scale[1])};
-    }
-
-    public int[] getSize() {
-        if (size == null) {
-            calculateSize();
-        }
-        return size;
-    }
-    
     
 }

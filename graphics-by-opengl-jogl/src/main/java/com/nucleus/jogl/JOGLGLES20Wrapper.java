@@ -438,4 +438,9 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
         return gles.glCheckFramebufferStatus(target);
     }
 
+    @Override
+    public void glBindFramebuffer(int target, int framebuffer) {
+        gles.glBindFramebuffer(target, framebuffer);
+    }
+
 }
