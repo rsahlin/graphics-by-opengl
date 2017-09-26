@@ -329,4 +329,9 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
         android.opengl.GLES20.glGenFramebuffers(buffers.length, buffers, 0);
     }
 
+    @Override
+    public int glCheckFramebufferStatus(int target) {
+        return android.opengl.GLES20.glCheckFramebufferStatus(target);
+    }
+    
 }

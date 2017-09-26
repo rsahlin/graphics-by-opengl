@@ -1,5 +1,7 @@
 package com.nucleus.renderer;
 
+import java.util.ArrayList;
+
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.common.Constants;
 import com.nucleus.opengl.GLESWrapper.GLES20;
@@ -14,7 +16,7 @@ public class RenderTarget {
 
     private static final String TARGET = "target";
     private static final String NAME = "name";
-    private static final String ATTACHEMENT = "attachement";
+    private static final String ATTACHEMENTS = "attachements";
 
     
     
@@ -41,29 +43,18 @@ public class RenderTarget {
         
         private Attachement attachement;
         /**
-         * The scale of the attachement, compared to Window size
-         */
-        private float[] scale;
-        /**
          * The format, this depends on type of attachement
          */
         private String format;
+        
         public AttachementData() {
             
         }
-        public AttachementData(Attachement attachement, float[] scale, String format) {
+        public AttachementData(Attachement attachement, String format) {
             this.attachement = attachement;
-            this.scale = new float[] {scale[0], scale[1]};
             this.format = format;
         }
         
-        /**
-         * Returns the x and y axis scale, if set.
-         * @return X and Y axis scale, or null if not set
-         */
-        public float[] getScale() {
-            return scale;
-        }
         public String getFormat() {
             return format;
         }
@@ -72,10 +63,16 @@ public class RenderTarget {
     
     @SerializedName(TARGET)
     private Target target;
-    @SerializedName(ATTACHEMENT)
-    private AttachementData[] attachements = new AttachementData[] {new AttachementData(Attachement.COLOR, new float[] {0.5f,0.5f}, ImageFormat.RGB.name())};
+    /**
+     * The scale of the target, compared to Window size, in x and y axis
+     */
+    private float[] scale;
+    
+    @SerializedName(ATTACHEMENTS)
+    private ArrayList<AttachementData> attachements;
 
     transient private int name = Constants.NO_VALUE;
+    transient private int[] size;
     
     public RenderTarget() {
         target = Target.FRAMEBUFFER;
@@ -101,15 +98,6 @@ public class RenderTarget {
         this.name = name;
     }
     
-
-    /**
-     * Returns the attachements
-     * @return Attachements or null if not set
-     */
-    public AttachementData[] getAttachements() {
-        return attachements;
-    }
-
     /**
      * Returns the attachement data for the attachement, or null if not set
      * @param attachement
@@ -126,5 +114,27 @@ public class RenderTarget {
         }
         return null;
     }
+    /**
+     * Returns the x and y axis scale, if set.
+     * @return X and Y axis scale, or null if not set
+     */
+    public float[] getScale() {
+        return scale;
+    }
+
+    /**
+     * Calculates the size of the rendertarget, based on Window size and scale
+     */
+    private void calculateSize( ) {
+        size = new int[] {(int) (Window.getInstance().getWidth() * scale[0]), (int) (Window.getInstance().getHeight() * scale[1])};
+    }
+
+    public int[] getSize() {
+        if (size == null) {
+            calculateSize();
+        }
+        return size;
+    }
+    
     
 }

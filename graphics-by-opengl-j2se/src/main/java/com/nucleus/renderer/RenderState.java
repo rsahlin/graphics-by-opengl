@@ -96,7 +96,7 @@ public class RenderState {
      * If depth test is enabled display is cleared to this color at beginFrame()
      */
     @SerializedName(CLEARCOLOR)
-    protected float[] clearColor = new float[] { 0.3f, 0.3f, 0.5f, 1f };
+    protected float[] clearColor = new float[] { 1f, 1f, 1f, 1f };
 
     /**
      * Clear stencilbuffer with this value if the STENCIL_BUFFER_BIT is set in the clear flags.

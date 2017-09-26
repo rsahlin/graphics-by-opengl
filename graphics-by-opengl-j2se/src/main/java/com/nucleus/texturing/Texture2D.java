@@ -282,24 +282,6 @@ public class Texture2D extends BaseReference {
         return format;
     }
 
-    /**
-     * Sets the texture parameter values for this texture to OpenGL, call this to set the correct texture parameters
-     * when rendering.
-     * 
-     * @param gles
-     */
-    public void uploadTexParameters(GLES20Wrapper gles) throws GLException {
-
-        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
-                texParameters.getValue(Name.MIN_FILTER).value);
-        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
-                texParameters.getValue(Name.MAG_FILTER).value);
-        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
-                texParameters.getValue(Name.WRAP_S).value);
-        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
-                texParameters.getValue(Name.WRAP_T).value);
-        GLUtils.handleError(gles, "glTexParameteri ");
-    }
 
     @Override
     public String toString() {

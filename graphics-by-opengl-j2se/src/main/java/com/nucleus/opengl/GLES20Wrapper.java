@@ -4,7 +4,10 @@ import java.nio.Buffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.geometry.AttributeBuffer;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.shader.ShaderVariable;
+import com.nucleus.texturing.TextureParameter;
+import com.nucleus.texturing.TextureParameter.Name;
 
 /**
  * Abstraction for OpenGL GLES 2.X, this is used for platform independent usage of GLES functions.
@@ -567,4 +570,31 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * Abstraction for glFinish()
      */
     public abstract void glFinish();
+    
+    /**
+     * Abstraction for glCheckFramebufferStatus(target);
+     * @param target 
+     * @return
+     */
+    public abstract int glCheckFramebufferStatus(int target);
+
+    /**
+     * Sets the texture parameter values for the texture parameter to OpenGL, call this to set the correct texture parameters
+     * when rendering.
+     * 
+     * @param gles
+     */
+    public void uploadTexParameters(TextureParameter texParameters) throws GLException {
+        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
+                texParameters.getValue(Name.MIN_FILTER).value);
+        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
+                texParameters.getValue(Name.MAG_FILTER).value);
+        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
+                texParameters.getValue(Name.WRAP_S).value);
+        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
+                texParameters.getValue(Name.WRAP_T).value);
+        GLUtils.handleError(this, "glTexParameteri ");
+    }
+
+    
 }
