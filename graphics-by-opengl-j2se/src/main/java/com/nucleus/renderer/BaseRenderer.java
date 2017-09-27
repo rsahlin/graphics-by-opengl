@@ -26,6 +26,7 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
+import com.nucleus.renderer.RenderTarget.Target;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RenderPass;
 import com.nucleus.scene.Node.NodeTypes;
@@ -262,6 +263,9 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     private void setupRenderTarget(RenderTarget target) throws GLException {
+        if (target.getBufferObjectName() == Constants.NO_VALUE) {
+            setupBuffers(target);
+        }
         switch (target.getTarget()) {
             case FRAMEBUFFER:
                 break;
@@ -274,32 +278,65 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     private void setupTextureRenderTarget(RenderTarget target) throws GLException {
-        if (target.getName() == Constants.NO_VALUE) {
-            AttachementData ad = target.getAttachement(Attachement.COLOR);
-            if (ad != null) {
-                target.setName(createTexture(target));
-                target.setFramebufferName(createFramebuffer());
-            }
-        } else {
-            gles.glActiveTexture(GLES20.GL_TEXTURE0);
-            gles.glBindTexture(GLES20.GL_TEXTURE_2D, target.getName());
-            GLUtils.handleError(gles, "glBindTexture");
-            TextureParameter texParams = new TextureParameter(
-                    new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST, TexParameter.CLAMP,
-                            TexParameter.CLAMP });
-            gles.uploadTexParameters(texParams);
-            gles.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, target.getFramebufferName());
-            gles.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D,
-                    target.getName(), 0);
-            GLUtils.handleError(gles, "glFramebufferTexture");
-            gles.glDisable(GLES20.GL_DEPTH_TEST);
-            GLUtils.handleError(gles, "glFramebufferTexture");
-            if (gles.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER) != GLES20.GL_FRAMEBUFFER_COMPLETE) {
-                throw new IllegalArgumentException("Could not setup render target");
+        gles.glActiveTexture(GLES20.GL_TEXTURE0);
+        gles.glBindTexture(GLES20.GL_TEXTURE_2D, target.getTargetName());
+        GLUtils.handleError(gles, "glBindTexture");
+        TextureParameter texParams = new TextureParameter(
+                new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST, TexParameter.CLAMP,
+                        TexParameter.CLAMP });
+        gles.uploadTexParameters(texParams);
+        gles.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, target.getBufferObjectName());
+        gles.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D,
+                target.getTargetName(), 0);
+        GLUtils.handleError(gles, "glFramebufferTexture");
+        gles.glDisable(GLES20.GL_DEPTH_TEST);
+        GLUtils.handleError(gles, "glFramebufferTexture");
+        if (gles.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER) != GLES20.GL_FRAMEBUFFER_COMPLETE) {
+            throw new IllegalArgumentException("Could not setup render target");
+        }
+    }
+
+    /**
+     * Creates and initializes the buffers needed for the rendertarget
+     * @param target
+     */
+    private void setupBuffers(RenderTarget target) throws GLException {
+        if (target.getBufferObjectName() == Constants.NO_VALUE) {
+            target.setFramebufferName(createFramebuffer());
+        }
+        for (AttachementData ad : target.getAttachements()) {
+            switch (ad.getAttachement()) {
+                case COLOR:
+                    setupColorBuffer(ad, target.getTarget());
+                    break;
+                case DEPTH:
+                    setupDepthBuffer(ad, target.getTarget());
+                    break;
+                case STENCIL:
+                    setupStencilBuffer(ad, target.getTarget());
+                    break;
             }
         }
     }
 
+    /**
+     * Initializes the buffer needed for the color buffer attachement
+     * Currently only supports render to texture
+     * @param attachementData
+     * @param target
+     * @throws GLException
+     */
+    private void setupColorBuffer(AttachementData attachementData, Target target) throws GLException {
+        attachementData.setBufferName(createTexture(attachementData));
+    }
+    private void setupDepthBuffer(AttachementData attachementData, Target target) throws GLException {
+        attachementData.setBufferName(createTexture(attachementData));
+
+    }
+    private void setupStencilBuffer(AttachementData attachementData, Target target) throws GLException {
+        attachementData.setBufferName(createTexture(attachementData));
+    }
+    
     private int createFramebuffer() {
         final int[] frameBuffer = new int[1];
         gles.glGenFramebuffers(frameBuffer);
@@ -310,18 +347,17 @@ class BaseRenderer implements NucleusRenderer {
      * Creates a texture name and texture image for the attachement data
      * Will create texture image based on the scale factor in the attachement data
      * 
-     * @target
+     * @param attachementData
      * @return Texture object name
      * @throws GLException
      */
-    private int createTexture(RenderTarget target) throws GLException {
-        AttachementData ad = target.getAttachement(Attachement.COLOR);
-        int[] size = ad.getSize();
+    private int createTexture(AttachementData attachementData) throws GLException {
+        int[] size = attachementData.getSize();
         int[] name = new int[1];
         gles.glGenTextures(name);
         gles.glActiveTexture(GLES20.GL_TEXTURE0);
         gles.glBindTexture(GLES20.GL_TEXTURE_2D, name[0]);
-        ImageFormat format = ImageFormat.valueOf(ad.getFormat());
+        ImageFormat format = ImageFormat.valueOf(attachementData.getFormat());
         Texture2D.Format texFormat = TextureUtils.getFormat(format);
         Texture2D.Type texType = TextureUtils.getType(format);
         gles.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, texFormat.format, size[0], size[1], 0, texFormat.format,

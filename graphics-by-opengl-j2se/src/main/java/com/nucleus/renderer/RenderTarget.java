@@ -43,7 +43,8 @@ public class RenderTarget {
         
         private Attachement attachement;
         /**
-         * The format, this depends on type of attachement
+         * The format, this depends on what the {@link Attachement} is.
+         * 
          */
         private String format;
         /**
@@ -51,6 +52,10 @@ public class RenderTarget {
          */
         private float[] scale;
         transient private int[] size;
+        /**
+         * Name of the attachement buffer
+         */
+        transient private int bufferName = Constants.NO_VALUE;
         
         public AttachementData() {
             
@@ -58,6 +63,14 @@ public class RenderTarget {
         public AttachementData(Attachement attachement, String format) {
             this.attachement = attachement;
             this.format = format;
+        }
+        
+        /**
+         * Returns the attachement point
+         * @return
+         */
+        public Attachement getAttachement() {
+            return attachement;
         }
         
         public String getFormat() {
@@ -71,6 +84,13 @@ public class RenderTarget {
             return scale;
         }
 
+        public int getBufferName() {
+            return bufferName;
+        }
+        public void setBufferName(int name) {
+            this.bufferName = name;
+        }
+        
         /**
          * Calculates the size of the rendertarget, based on Window size and scale
          */
@@ -94,10 +114,13 @@ public class RenderTarget {
     private ArrayList<AttachementData> attachements;
 
     /**
-     * Name of the destination texture or renderbuffer
+     * Name of the destination texture/renderbuffer/framebuffer
      */
-    transient private int name = Constants.NO_VALUE;
-    transient private int framebufferName = Constants.NO_VALUE;
+    transient private int targetName = Constants.NO_VALUE;
+    /**
+     * Name of the buffer object the target is attached to
+     */
+    transient private int bufferObjectName = Constants.NO_VALUE;
     
     public RenderTarget() {
         target = Target.FRAMEBUFFER;
@@ -111,24 +134,24 @@ public class RenderTarget {
      * Returns the target buffer name, 
      * @return
      */
-    public int getName() {
-        return name;
+    public int getTargetName() {
+        return targetName;
     }
     
     /**
      * Sets the name of the buffer object
      * @param name Generated buffer/texture object name
      */
-    public void setName(int name) {
-        this.name = name;
+    public void setTargetName(int name) {
+        this.targetName = name;
     }
     
     public void setFramebufferName(int framebufferName) {
-        this.framebufferName = framebufferName;
+        this.bufferObjectName = framebufferName;
     }
     
-    public int getFramebufferName() {
-        return framebufferName;
+    public int getBufferObjectName() {
+        return bufferObjectName;
     }
     
     
@@ -147,6 +170,10 @@ public class RenderTarget {
             }
         }
         return null;
+    }
+    
+    public ArrayList<AttachementData> getAttachements() {
+        return attachements;
     }
     
 }
