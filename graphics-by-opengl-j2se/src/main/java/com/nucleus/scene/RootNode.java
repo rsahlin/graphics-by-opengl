@@ -85,8 +85,8 @@ public abstract class RootNode {
         if (scene == null) {
             scene = new ArrayList<>();
         }
-        if (child.getRootNode() == null) {
-            throw new IllegalArgumentException("Node does not have root node set" + child.getId());
+        if (child.getRootNode() == null || child.getId() == null) {
+            throw new IllegalArgumentException("Null parameter, root=" + child.getRootNode() + ", id=" + child.getId());
         }
         registerChild(child);
         scene.add(child);

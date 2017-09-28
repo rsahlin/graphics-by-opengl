@@ -74,6 +74,7 @@ public class BaseRootNode extends RootNode {
             validate();
             BaseRootNode root = new BaseRootNode();
             RenderPass pass = new RenderPass(root);
+            pass.setId("RenderPass");
             pass.setTarget(new RenderTarget(Target.FRAMEBUFFER, null));
             pass.setRenderState(new RenderState());
             Node created = nodeFactory.create(renderer, program, builder, nodeType, root);
