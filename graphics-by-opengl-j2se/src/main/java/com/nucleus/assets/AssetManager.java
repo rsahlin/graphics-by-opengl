@@ -7,12 +7,23 @@ import java.util.Hashtable;
 import com.nucleus.SimpleLogger;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLUtils;
+import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.RenderTarget;
+import com.nucleus.renderer.RenderTarget.Attachement;
+import com.nucleus.renderer.RenderTarget.AttachementData;
+import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.texturing.TexParameter;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
+import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureType;
+import com.nucleus.texturing.TextureUtils;
+import com.nucleus.texturing.Image.ImageFormat;
 
 /**
  * Loading and unloading assets, mainly textures.
@@ -84,6 +95,36 @@ public class AssetManager {
     }
 
     /**
+     * Returns the texture for the rendertarget attachement, if not already create it will be created and store in the
+     * assetmanager with id taken from renderTarget and attachement
+     * If already created the instance will be returned.
+     * 
+     * @param renderer
+     * @param renderTarget The rendertarget that this texture is to be used for
+     * @param attachement The attachement point for the texture
+     * @return
+     */
+    public Texture2D createTexture(NucleusRenderer renderer, RenderTarget renderTarget, AttachementData attachement)
+            throws GLException {
+        if (renderTarget.getId() == null) {
+            throw new IllegalArgumentException("RenderTarget must have an id");
+        }
+        Texture2D texture = textures.get(renderTarget.getAttachementId(attachement));
+        if (texture == null) {
+            TextureType type = TextureType.Texture2D;
+            RESOLUTION resolution = RESOLUTION.HD;
+            int[] size = attachement.getSize();
+            TextureParameter texParams = new TextureParameter(
+                    new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST, TexParameter.CLAMP,
+                            TexParameter.CLAMP });
+            ImageFormat format = ImageFormat.valueOf(attachement.getFormat());
+            texture = TextureFactory.createTexture(renderer.getGLES(), type, resolution, size, format, texParams);
+            textures.put(renderTarget.getAttachementId(attachement), texture);
+        }
+        return texture;
+    }
+
+    /**
      * Returns the texture, if the texture has not been loaded it will be loaded and stored in the assetmanager.
      * If already has been loaded the loaded instance will be returned.
      * Treat textures as immutable object
@@ -96,7 +137,7 @@ public class AssetManager {
     protected Texture2D getTexture(NucleusRenderer renderer, Texture2D source) throws IOException {
         long start = System.currentTimeMillis();
         /**
-         * External ref for untextured needs to be "" so it can be store and fetched.
+         * External ref for untextured needs to be "" so it can be stored and fetched.
          */
         if (source.getTextureType() == TextureType.Untextured) {
             source.setExternalReference(new ExternalReference(""));
@@ -117,6 +158,7 @@ public class AssetManager {
 
     /**
      * Sets the external reference for the object id
+     * 
      * @param id
      * @param externalReference
      * @throws IllegalArgumentException If a reference with the specified Id already has been set
@@ -203,4 +245,3 @@ public class AssetManager {
     }
 
 }
-

@@ -22,11 +22,18 @@ public class RenderPass extends Node {
 
     @Override
     public RenderPass createInstance(RootNode root) {
+        if (getId() == null) {
+            throw new IllegalArgumentException("RenderPass must have id");
+        }
         RenderPass copy = new RenderPass(root);
         copy.set(this);
         return copy;
     }
 
+    /**
+     * Copies the data from the source renderpass
+     * @param source
+     */
     public void set(RenderPass source) {
         super.set(source);
         this.target = source.target;

@@ -37,43 +37,41 @@ import com.nucleus.vecmath.Transform;
  */
 public class Node extends BaseReference {
 
-	/**
-	 * Known node types
-	 */
-	public enum NodeTypes implements Type<Node> {
-		
-	    node(Node.class),
-	    layernode(LayerNode.class),
-	    switchnode(SwitchNode.class),
-	    linedrawernode(LineDrawerNode.class),
-	    renderpass(RenderPass.class),
-	    componentnode(ComponentNode.class);
-		
+    /**
+     * Known node types
+     */
+    public enum NodeTypes implements Type<Node> {
 
-	    private final Class<?> theClass;
+        node(Node.class),
+        layernode(LayerNode.class),
+        switchnode(SwitchNode.class),
+        linedrawernode(LineDrawerNode.class),
+        renderpass(RenderPass.class),
+        componentnode(ComponentNode.class);
 
-	    private NodeTypes(Class<?> theClass) {
-	        this.theClass = theClass;
-	    }
+        private final Class<?> theClass;
 
-	    /**
-	     * Returns the class to instantiate for the different types
-	     * 
-	     * @return
-	     */
-	    @Override
-	    public Class<?> getTypeClass() {
-	        return theClass;
-	    }
+        private NodeTypes(Class<?> theClass) {
+            this.theClass = theClass;
+        }
 
-	    @Override
-	    public String getName() {
-	        return name();
-	    }
-		
-	}
-	
-	
+        /**
+         * Returns the class to instantiate for the different types
+         * 
+         * @return
+         */
+        @Override
+        public Class<?> getTypeClass() {
+            return theClass;
+        }
+
+        @Override
+        public String getName() {
+            return name();
+        }
+
+    }
+
     public static final String STATE = "state";
     public static final String TYPE = "type";
 
@@ -88,13 +86,13 @@ public class Node extends BaseReference {
          * Extra mesh for ui/editing purposes
          */
         UI(1);
-        
+
         public final int index;
-        
+
         MeshType(int index) {
             this.index = index;
         }
-        
+
     }
 
     /**
@@ -514,12 +512,12 @@ public class Node extends BaseReference {
      * The child node's parent will be set to this node.
      * 
      * @param child The child to add to this node.
-     * @throws IllegalArgumentException If child id is null
+     * @throws IllegalArgumentException If child id is null, or if a node with the same id already has been added.
      */
     protected void addChild(Node child) {
-    	if (child.getId() == null) {
-    		throw new IllegalArgumentException("Node id is null");
-    	}
+        if (child.getId() == null) {
+            throw new IllegalArgumentException("Node id is null");
+        }
         children.add(child);
         child.parent = this;
         rootNode.registerChild(child);

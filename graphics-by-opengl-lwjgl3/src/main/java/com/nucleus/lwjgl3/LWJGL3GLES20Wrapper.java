@@ -397,4 +397,9 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
         org.lwjgl.opengles.GLES20.glBindFramebuffer(target, framebuffer);
     }
 
+    @Override
+    public void glColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
+        org.lwjgl.opengles.GLES20.glColorMask(red, green, blue, alpha);
+    }
+
 }

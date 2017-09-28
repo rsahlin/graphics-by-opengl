@@ -11,7 +11,9 @@ import com.nucleus.io.gson.TextureDeserializer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.GLUtils;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
+import com.nucleus.texturing.Image.ImageFormat;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.Texture2D.Type;
 
@@ -25,6 +27,32 @@ import com.nucleus.texturing.Texture2D.Type;
  */
 public class TextureFactory {
 
+    /**
+     * Creates a new empty texture
+     * @param gles
+     * @param type
+     * @param resolution
+     * @param size
+     * @param format Image format
+     * @param texParams
+     * @return
+     */
+    public static Texture2D createTexture(GLES20Wrapper gles, TextureType type, RESOLUTION resolution, int[] size, ImageFormat format, TextureParameter texParams) throws GLException{
+        Texture2D result = createTexture(type);
+        int[] name = new int[1];
+        gles.glGenTextures(name);
+        gles.glActiveTexture(GLES20.GL_TEXTURE0);
+        gles.glBindTexture(GLES20.GL_TEXTURE_2D, name[0]);
+        Texture2D.Format texFormat = TextureUtils.getFormat(format);
+        Texture2D.Type texType = TextureUtils.getType(format);
+        gles.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, texFormat.format, size[0], size[1], 0, texFormat.format,
+                texType.type, null);
+        GLUtils.handleError(gles, "glTexImage2D");
+        result.setup(resolution, texParams, 0, TextureUtils.getFormat(format), TextureUtils.getType(format));
+        result.setup(name[0], size[0], size[1]);
+        return result;
+    }
+    
     /**
      * Creates a texture for the specified image,
      * The texture will be uploaded to GL using the specified texture object name, if several mip-map levels are

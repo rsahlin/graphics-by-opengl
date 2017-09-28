@@ -338,5 +338,10 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     public void glBindFramebuffer(int target, int framebuffer) {
         android.opengl.GLES20.glBindFramebuffer(target, framebuffer);
     }
+
+    @Override
+    public void glColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
+        android.opengl.GLES20.glColorMask(red, green, blue, alpha);
+    }
     
 }

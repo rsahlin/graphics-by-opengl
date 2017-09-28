@@ -443,4 +443,9 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
         gles.glBindFramebuffer(target, framebuffer);
     }
 
+    @Override
+    public void glColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
+        gles.glColorMask(red, green, blue, alpha);
+    }
+
 }

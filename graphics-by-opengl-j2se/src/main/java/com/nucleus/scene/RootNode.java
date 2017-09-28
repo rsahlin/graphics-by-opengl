@@ -70,22 +70,28 @@ public abstract class RootNode {
         if (this.scene != null) {
             throw new IllegalArgumentException("Scene has already been set");
         }
-    	//TODO Verify that children has rootnode set
+        // TODO Verify that children has rootnode set
         this.scene = scene;
     }
 
     /**
      * Adds a child to the root
+     * 
      * @param child
+     * @throws IllegalArgumentException If child does not have the root node set, or if a child already has been added
+     * with the same id
      */
     public void addChild(Node child) {
-    	if (scene == null) {
-    		scene = new ArrayList<>();
-    	}
-    	//TODO Verify that child has rootnode set
-    	scene.add(child);
+        if (scene == null) {
+            scene = new ArrayList<>();
+        }
+        if (child.getRootNode() == null) {
+            throw new IllegalArgumentException("Node does not have root node set" + child.getId());
+        }
+        registerChild(child);
+        scene.add(child);
     }
-    
+
     /**
      * Creates a new instance of RootNode, implement in RootNode subclasses to return the implementation instance.
      * 
@@ -108,10 +114,10 @@ public abstract class RootNode {
             return null;
         }
         for (Node node : scene) {
-        	LayerNode layerNode = getViewNode(layer, node);
-        	if (layerNode != null) {
-        		return layerNode;
-        	}
+            LayerNode layerNode = getViewNode(layer, node);
+            if (layerNode != null) {
+                return layerNode;
+            }
         }
         return null;
     }
@@ -137,7 +143,7 @@ public abstract class RootNode {
         }
         return null;
     }
-    
+
     /**
      * Call this when a node is added or removed to the nodetree.
      */
@@ -204,7 +210,6 @@ public abstract class RootNode {
         renderNodeList = new ArrayList<>();
     }
 
-
     /**
      * Returns list of visible nodes, this is the list of nodes that have been rendered and is currently visible.
      * DO NOT MODIFY THIS LIST
@@ -218,7 +223,7 @@ public abstract class RootNode {
     /**
      * Registers a node as child node (somewhere) on the root node.
      * After calling this method the ID can be used to locate the node
-     * NOTE - this shall not be called directly
+     * NOTE - this shall not be called directly by clients - its called from the {@link Node#addChild(Node)} method
      * 
      * @param child
      * @throws IllegalArgumentException If a node with the same ID is already added to the nodetree
@@ -240,7 +245,7 @@ public abstract class RootNode {
      */
     protected void unregisterChild(Node child) {
         if (childNodeTable.remove(child.getId()) == null) {
-         throw new IllegalArgumentException("Node not registered with root:" + child.getId());   
+            throw new IllegalArgumentException("Node not registered with root:" + child.getId());
         }
     }
 
@@ -263,32 +268,34 @@ public abstract class RootNode {
 
     /**
      * Searches through the scene children and looks for the first node with matching id.
+     * 
      * @param id
      * @return
      */
     public Node getNodeById(String id) {
-    	for (Node node : scene) {
-    		Node n = node.getNodeById(id);
-    		if (n != null) {
-    			return n;
-    		}
-    	}
-    	return null;
+        for (Node node : scene) {
+            Node n = node.getNodeById(id);
+            if (n != null) {
+                return n;
+            }
+        }
+        return null;
     }
-    
+
     /**
      * Searches through the scene children and looks for the first node with matching type.
+     * 
      * @param type
      * @return
      */
     public Node getNodeByType(Type<Node> type) {
-    	for (Node node : scene) {
-    		Node n = node.getNodeByType(type.getName());
-    		if (n != null) {
-    			return n;
-    		}
-    	}
-    	return null;
+        for (Node node : scene) {
+            Node n = node.getNodeByType(type.getName());
+            if (n != null) {
+                return n;
+            }
+        }
+        return null;
     }
-    
+
 }

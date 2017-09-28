@@ -1,12 +1,18 @@
 package com.nucleus.scene;
 
+import java.util.ArrayList;
+
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderState;
 import com.nucleus.renderer.RenderTarget;
+import com.nucleus.renderer.RenderTarget.Attachement;
+import com.nucleus.renderer.RenderTarget.AttachementData;
+import com.nucleus.renderer.RenderTarget.Target;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.texturing.Image.ImageFormat;
 
 /**
  * Implementation of RootNode, this can be used to construct simple nodetrees
@@ -68,7 +74,7 @@ public class BaseRootNode extends RootNode {
             validate();
             BaseRootNode root = new BaseRootNode();
             RenderPass pass = new RenderPass(root);
-            pass.setTarget(new RenderTarget());
+            pass.setTarget(new RenderTarget(Target.FRAMEBUFFER, null));
             pass.setRenderState(new RenderState());
             Node created = nodeFactory.create(renderer, program, builder, nodeType, root);
             ViewFrustum vf = new ViewFrustum();

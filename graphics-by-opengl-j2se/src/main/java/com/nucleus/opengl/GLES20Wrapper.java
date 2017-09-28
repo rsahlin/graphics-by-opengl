@@ -459,6 +459,15 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public abstract void glClearColor(float red, float green, float blue, float alpha);
 
     /**
+     * Abstraction for glColorMask
+     * @param red
+     * @param green
+     * @param blue
+     * @param alpha
+     */
+    public abstract void glColorMask(boolean red, boolean green, boolean blue, boolean alpha);
+    
+    /**
      * Abstraction for glClear()
      * 
      * @param mask

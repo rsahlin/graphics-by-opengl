@@ -195,10 +195,27 @@ public class Texture2D extends BaseReference {
         this.type = type;
     }
 
-
+    /**
+     * Sets the resolution, filter, mipmap format and type, use this when constructing an empty texture object and
+     * filling it with data.
+     * @param resolution
+     * @param params
+     * @param mipmap
+     * @param format
+     * @param type
+     */
+    protected void setup(RESOLUTION resolution, TextureParameter params, int mipmap, Format format, Type type) {
+        this.resolution = resolution;
+        this.texParameters = params;
+        this.mipmap = mipmap;
+        this.format = format;
+        this.type = type;
+    }
+    
     /**
      * Sets the texture object name (for GL), the images (buffers) to use and the resolution of textures.
      * The texture(s) will not be uploaded to GL.
+     * Use this to set the size and texture name after image has been loaded.
      * 
      * @param name
      * @param width

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Constants;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
@@ -263,33 +264,66 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     private void setupRenderTarget(RenderTarget target) throws GLException {
-        if (target.getBufferObjectName() == Constants.NO_VALUE) {
-            setupBuffers(target);
+        if (target.getFramebufferName() == Constants.NO_VALUE) {
+            createBuffers(target);
         }
         switch (target.getTarget()) {
             case FRAMEBUFFER:
                 break;
             case TEXTURE:
-                setupTextureRenderTarget(target);
+                bindTextureFramebuffer(target);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented");
         }
     }
 
-    private void setupTextureRenderTarget(RenderTarget target) throws GLException {
-        gles.glActiveTexture(GLES20.GL_TEXTURE0);
-        gles.glBindTexture(GLES20.GL_TEXTURE_2D, target.getTargetName());
-        GLUtils.handleError(gles, "glBindTexture");
-        TextureParameter texParams = new TextureParameter(
-                new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST, TexParameter.CLAMP,
-                        TexParameter.CLAMP });
-        gles.uploadTexParameters(texParams);
-        gles.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, target.getBufferObjectName());
-        gles.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D,
-                target.getTargetName(), 0);
-        GLUtils.handleError(gles, "glFramebufferTexture");
-        gles.glDisable(GLES20.GL_DEPTH_TEST);
+    /**
+     * Binds the specified attachement points as framebuffer render targets
+     * 
+     * @param target
+     */
+    private void bindTextureFramebuffer(RenderTarget target) throws GLException {
+        // Loop through all attachments and setup, if not defined in rendertarget then disable
+        for (Attachement a : Attachement.values()) {
+            bindTextureFramebuffer(target, a);
+        }
+    }
+
+    /**
+     * Bind the texture as rendertarget for the specified attachement point
+     * 
+     * @param target
+     * @param attachement
+     * @throws GLException
+     */
+    private void bindTextureFramebuffer(RenderTarget target, Attachement attachement) throws GLException {
+        AttachementData ad = target.getAttachement(attachement);
+        if (ad == null) {
+            // Disable
+            SimpleLogger.d(getClass(), "Disabling " + attachement);
+            switch (attachement) {
+                case COLOR:
+                    gles.glColorMask(false, false, false, false);
+                    break;
+                case DEPTH:
+                    gles.glDisable(GLES20.GL_DEPTH_TEST);
+                    break;
+                case STENCIL:
+                    gles.glDisable(GLES20.GL_STENCIL_TEST);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Not implemented for " + attachement);
+
+            }
+            GLUtils.handleError(gles, "glDisable " + attachement);
+            return;
+        }
+        Texture2D texture = ad.getTexture();
+        prepareTexture(texture);
+        gles.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, target.getFramebufferName());
+        gles.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, attachement.value, GLES20.GL_TEXTURE_2D,
+                target.getFramebufferName(), 0);
         GLUtils.handleError(gles, "glFramebufferTexture");
         if (gles.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER) != GLES20.GL_FRAMEBUFFER_COMPLETE) {
             throw new IllegalArgumentException("Could not setup render target");
@@ -298,45 +332,55 @@ class BaseRenderer implements NucleusRenderer {
 
     /**
      * Creates and initializes the buffers needed for the rendertarget
+     * 
      * @param target
      */
-    private void setupBuffers(RenderTarget target) throws GLException {
-        if (target.getBufferObjectName() == Constants.NO_VALUE) {
-            target.setFramebufferName(createFramebuffer());
-        }
-        for (AttachementData ad : target.getAttachements()) {
-            switch (ad.getAttachement()) {
-                case COLOR:
-                    setupColorBuffer(ad, target.getTarget());
-                    break;
-                case DEPTH:
-                    setupDepthBuffer(ad, target.getTarget());
-                    break;
-                case STENCIL:
-                    setupStencilBuffer(ad, target.getTarget());
-                    break;
+    private void createBuffers(RenderTarget target) throws GLException {
+        ArrayList<AttachementData> attachements = target.getAttachements();
+        if (attachements == null) {
+            // Revert to platform buffers
+            bindWindowFramebuffer();
+        } else {
+            if (target.getFramebufferName() == Constants.NO_VALUE) {
+                target.setFramebufferName(createFramebuffer());
+            }
+            for (AttachementData ad : target.getAttachements()) {
+                switch (ad.getAttachement()) {
+                    case COLOR:
+                    case DEPTH:
+                    case STENCIL:
+                        createAttachementBuffer(target, ad);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Not implemented");
+                }
             }
         }
     }
 
+    private void bindWindowFramebuffer() {
+        gles.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+    }
+
     /**
-     * Initializes the buffer needed for the color buffer attachement
+     * Initializes the buffer needed for the attachement
      * Currently only supports render to texture
+     * 
+     * @param renderTarget
      * @param attachementData
-     * @param target
      * @throws GLException
      */
-    private void setupColorBuffer(AttachementData attachementData, Target target) throws GLException {
-        attachementData.setBufferName(createTexture(attachementData));
+    private void createAttachementBuffer(RenderTarget renderTarget, AttachementData attachementData)
+            throws GLException {
+        switch (renderTarget.getTarget()) {
+            case TEXTURE:
+                attachementData.setTexture(createTexture(renderTarget, attachementData));
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for target:" + renderTarget.getTargetName());
+        }
     }
-    private void setupDepthBuffer(AttachementData attachementData, Target target) throws GLException {
-        attachementData.setBufferName(createTexture(attachementData));
 
-    }
-    private void setupStencilBuffer(AttachementData attachementData, Target target) throws GLException {
-        attachementData.setBufferName(createTexture(attachementData));
-    }
-    
     private int createFramebuffer() {
         final int[] frameBuffer = new int[1];
         gles.glGenFramebuffers(frameBuffer);
@@ -347,23 +391,13 @@ class BaseRenderer implements NucleusRenderer {
      * Creates a texture name and texture image for the attachement data
      * Will create texture image based on the scale factor in the attachement data
      * 
+     * @param renderTarget
      * @param attachementData
      * @return Texture object name
      * @throws GLException
      */
-    private int createTexture(AttachementData attachementData) throws GLException {
-        int[] size = attachementData.getSize();
-        int[] name = new int[1];
-        gles.glGenTextures(name);
-        gles.glActiveTexture(GLES20.GL_TEXTURE0);
-        gles.glBindTexture(GLES20.GL_TEXTURE_2D, name[0]);
-        ImageFormat format = ImageFormat.valueOf(attachementData.getFormat());
-        Texture2D.Format texFormat = TextureUtils.getFormat(format);
-        Texture2D.Type texType = TextureUtils.getType(format);
-        gles.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, texFormat.format, size[0], size[1], 0, texFormat.format,
-                texType.type, null);
-        GLUtils.handleError(gles, "glTexImage2D");
-        return name[0];
+    private Texture2D createTexture(RenderTarget renderTarget, AttachementData attachementData) throws GLException {
+        return AssetManager.getInstance().createTexture(this, renderTarget, attachementData);
     }
 
     private void internalRender(RenderPass node) throws GLException {
@@ -415,12 +449,7 @@ class BaseRenderer implements NucleusRenderer {
         GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
 
         Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
-        if (texture != null && texture.textureType != TextureType.Untextured) {
-            int textureID = texture.getName();
-            gles.glActiveTexture(GLES20.GL_TEXTURE0);
-            gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
-            gles.uploadTexParameters(texture.getTexParams());
-        }
+        prepareTexture(texture);
         material.setBlendModeSeparate(gles);
         program.bindAttributes(gles, mesh);
         program.bindUniforms(gles, mvMatrix, projectionMatrix, mesh);
@@ -441,6 +470,20 @@ class BaseRenderer implements NucleusRenderer {
         GLUtils.handleError(gles, "glDrawArrays ");
     }
 
+    /**
+     * Activates texturing, binds the texture and sets texture parameters
+     * @param texture
+     */
+    private void prepareTexture(Texture2D texture) throws GLException {
+        if (texture != null && texture.textureType != TextureType.Untextured) {
+            int textureID = texture.getName();
+            gles.glActiveTexture(GLES20.GL_TEXTURE0);
+            gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
+            gles.uploadTexParameters(texture.getTexParams());
+        }
+        
+    }
+    
     @Override
     public boolean isInitialized() {
         return initialized;
