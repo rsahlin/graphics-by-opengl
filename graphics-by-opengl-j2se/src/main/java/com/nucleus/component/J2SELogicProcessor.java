@@ -1,8 +1,10 @@
 package com.nucleus.component;
 
+import com.nucleus.bounds.Bounds;
 import com.nucleus.component.ComponentController.ComponentState;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.State;
+import com.nucleus.scene.RootNode;
 
 /**
  * Logic processor implementation
@@ -12,17 +14,35 @@ import com.nucleus.scene.Node.State;
  */
 public class J2SELogicProcessor implements LogicProcessor {
 
+    Bounds bounds;
+    
+    @Override
+    public void processRoot(RootNode root, float delta) {
+        bounds = root.getBounds();
+        //Todo need to update bounds to view
+        Node rootNode = root.getNodeById(RootNode.ROOTNODE_ID);
+        
+        for (Node node : root.getScene()) {
+            processNode(node, delta);
+        }
+        
+    }
+    
     @Override
     public void processNode(Node node, float deltaTime) {
          if (node == null) {
             return;
         }
-        if (node instanceof ComponentNode) {
-            ComponentNode actorNode = (ComponentNode) node;
-            if (actorNode.getControllerState() == ComponentState.CREATED) {
-                actorNode.init();
+        //Setup 
+        if (!cullNode(node)) {
+            //TODO check node type instead
+            if (node instanceof ComponentNode) {
+                ComponentNode actorNode = (ComponentNode) node;
+                if (actorNode.getControllerState() == ComponentState.CREATED) {
+                    actorNode.init();
+                }
+                actorNode.processComponents(deltaTime);
             }
-            actorNode.processComponents(deltaTime);
         }
         // Process children
         for (Node child : node.getChildren()) {
@@ -32,4 +52,16 @@ public class J2SELogicProcessor implements LogicProcessor {
         }
     }
 
+    /**
+     * Checks if this node is within bounds, if so return true, otherwise return false
+     * @param node
+     * @return True if this nodes bounds are outside cull area, false if inside or no bounds.
+     */
+    protected boolean cullNode(Node node) {
+        if (bounds == null) {
+            return false;
+        }
+        return node.cullNode(bounds);
+    }
+    
 }

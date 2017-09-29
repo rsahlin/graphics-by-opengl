@@ -40,7 +40,8 @@ import com.nucleus.scene.Node.NodeTypes;
 public class GSONSceneFactory implements SceneSerializer {
 
     protected ArrayDeque<LayerNode> viewStack = new ArrayDeque<LayerNode>(NucleusRenderer.MIN_STACKELEMENTS);
-    private NucleusNodeDeserializer nodeDeserializer = new NucleusNodeDeserializer();
+    protected NucleusNodeDeserializer nodeDeserializer;
+    protected BoundsDeserializer boundsDeserializer = new BoundsDeserializer();
 
     private final static String ERROR_CLOSING_STREAM = "Error closing stream:";
     private final static String NULL_PARAMETER_ERROR = "Parameter is null: ";
@@ -73,6 +74,15 @@ public class GSONSceneFactory implements SceneSerializer {
         TypeResolver.getInstance().registerTypes(types);
     }
 
+    /**
+     * Creates the instance of the {@link NucleusNodeDeserializer} to be used, called from constructor
+     * Override in sublcasses to change
+     */
+    protected void createNodeDeserializer() {
+        nodeDeserializer = new NucleusNodeDeserializer();
+        ;
+    }
+
     @Override
     public void init(NucleusRenderer renderer, NodeFactory nodeFactory, MeshFactory meshFactory) {
         if (renderer == null) {
@@ -87,6 +97,7 @@ public class GSONSceneFactory implements SceneSerializer {
         this.renderer = renderer;
         this.nodeFactory = nodeFactory;
         this.meshFactory = meshFactory;
+        createNodeDeserializer();
     }
 
     @Override
@@ -141,7 +152,7 @@ public class GSONSceneFactory implements SceneSerializer {
      * @param builder
      */
     protected void registerTypeAdapter(GsonBuilder builder) {
-        builder.registerTypeAdapter(Bounds.class, new BoundsDeserializer());
+        builder.registerTypeAdapter(Bounds.class, boundsDeserializer);
         builder.registerTypeAdapter(Node.class, nodeDeserializer);
     }
 
@@ -198,13 +209,13 @@ public class GSONSceneFactory implements SceneSerializer {
      * @throws IOException
      */
     private void addNodes(RootNode root, List<Node> children) throws NodeException {
-    	for (Node node : children) {
+        for (Node node : children) {
             Node created = nodeFactory.create(renderer, meshFactory, node, root);
             root.addChild(created);
             setViewFrustum(node, created);
             nodeFactory.createChildNodes(renderer, meshFactory, node, created);
             created.onCreated();
-    	}
+        }
     }
 
     /**
@@ -214,7 +225,7 @@ public class GSONSceneFactory implements SceneSerializer {
      * @param node Node to check, or null
      */
     protected void setViewFrustum(Node source, Node node) {
-    	//TODO Should this be done here?
+        // TODO Should this be done here?
         if (node == null) {
             return;
         }
@@ -274,6 +285,8 @@ public class GSONSceneFactory implements SceneSerializer {
     protected void setGson(Gson gson) {
         this.gson = gson;
         nodeDeserializer.setGson(gson);
+        boundsDeserializer.setGson(gson);
+
     }
 
 }

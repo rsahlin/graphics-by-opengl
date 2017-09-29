@@ -6,10 +6,13 @@ import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
+import com.nucleus.bounds.Bounds;
 import com.nucleus.common.Type;
+import com.nucleus.io.gson.PostDeserializable;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.scene.Node.NodeTypes;
+import com.nucleus.vecmath.Rectangle;
 
 /**
  * Starting point of a nodetree, the root has a collection of nodes the each represent a scene.
@@ -24,6 +27,14 @@ import com.nucleus.scene.Node.NodeTypes;
  */
 public abstract class RootNode {
 
+    private static final String SCENE = "scene";
+    private static final String BOUNDS = "bounds";
+
+    /**
+     * Default id for the root node
+     */
+    public static final String ROOTNODE_ID = "rootnode";
+    
     /**
      * Pre defined ids that can be used for scenes and make it more convenient find a scene.
      * 
@@ -36,8 +47,10 @@ public abstract class RootNode {
         about(),
     }
 
-    @SerializedName("scene")
+    @SerializedName(SCENE)
     private java.util.List<Node> scene;
+    @SerializedName(BOUNDS)
+    private Bounds bounds;
 
     /**
      * Set to true when node is added or removed
@@ -101,6 +114,15 @@ public abstract class RootNode {
 
     public List<Node> getScene() {
         return scene;
+    }
+
+    /**
+     * Returns the root bounds
+     * 
+     * @return
+     */
+    public Bounds getBounds() {
+        return bounds;
     }
 
     /**

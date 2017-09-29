@@ -2,6 +2,13 @@ package com.nucleus.bounds;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.ErrorMessage;
+import com.nucleus.common.Type;
+import com.nucleus.component.ComponentNode;
+import com.nucleus.scene.LayerNode;
+import com.nucleus.scene.LineDrawerNode;
+import com.nucleus.scene.Node;
+import com.nucleus.scene.RenderPass;
+import com.nucleus.scene.SwitchNode;
 import com.nucleus.vecmath.Rectangle;
 
 /**
@@ -17,31 +24,41 @@ import com.nucleus.vecmath.Rectangle;
  */
 public abstract class Bounds {
 
-    public enum SerializeNames {
-        /**
-         * Must be aligned with the type SerializedName
-         */
-        type(),
-        /**
-         * Must be aligned with the bounds SerializedName
-         */
-        bounds();
-    }
-
+    public static final String BOUNDS = "bounds";
+    public static final String TYPE = "type";
+    
     /**
      * The type of bounds
      * 
      * @author Richard Sahlin
      *
      */
-    public enum Type {
-        CIRCULAR(1), RECTANGULAR(2);
+    public enum Type implements com.nucleus.common.Type<Bounds> {
+        CIRCULAR(CircularBounds.class),
+        RECTANGULAR(RectangularBounds.class);
 
-        private final int value;
+        private final Class<?> theClass;
 
-        private Type(int value) {
-            this.value = value;
+        private Type(Class<?> theClass) {
+            this.theClass = theClass;
         }
+
+        /**
+         * Returns the class to instantiate for the different types
+         * 
+         * @return
+         */
+        @Override
+        public Class<?> getTypeClass() {
+            return theClass;
+        }
+
+        @Override
+        public String getName() {
+            return name();
+        }
+        
+        
     }
 
     /**
@@ -53,14 +70,14 @@ public abstract class Bounds {
     /**
      * The type of bounds object
      */
-    @SerializedName("type")
+    @SerializedName(TYPE)
     protected Type type;
     /**
      * The bounds data, this is implementation specific.
      * For a circular bounds this is one value.
      * For rectangle bounds it is 8 values, this is the bounds without position.
      */
-    @SerializedName("bounds")
+    @SerializedName(BOUNDS)
     protected float[] bounds;
 
     /**
@@ -153,12 +170,12 @@ public abstract class Bounds {
             throw new IllegalAccessError("Type is null");
         }
         switch (type) {
-        case CIRCULAR:
-            return new CircularBounds(bounds);
-        case RECTANGULAR:
-            return new RectangularBounds(bounds);
-        default:
-            throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + type);
+            case CIRCULAR:
+                return new CircularBounds(bounds);
+            case RECTANGULAR:
+                return new RectangularBounds(bounds);
+            default:
+                throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + type);
         }
     }
 

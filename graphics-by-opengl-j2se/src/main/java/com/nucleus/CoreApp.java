@@ -120,6 +120,7 @@ public class CoreApp implements RenderContextListener {
      */
     protected PointerInputProcessor inputProcessor = new PointerInputProcessor();
 
+    boolean enableMultiThread = false;
     Thread runnableThread;
     LogicProcessorRunnable logicRunnable;
 
@@ -153,8 +154,9 @@ public class CoreApp implements RenderContextListener {
         }
         this.renderer = renderer;
         this.clientApp = clientApp;
+        
         logicRunnable = new LogicProcessorRunnable(renderer, new J2SELogicProcessor());
-        if (Runtime.getRuntime().availableProcessors() > 1) {
+        if (Runtime.getRuntime().availableProcessors() > 1 && enableMultiThread) {
             System.out.println("Started extra process for logic processing, number of processors: "
                     + Runtime.getRuntime().availableProcessors());
             runnableThread = new Thread(logicRunnable);

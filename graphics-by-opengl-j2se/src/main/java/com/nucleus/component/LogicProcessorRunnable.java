@@ -64,20 +64,18 @@ public class LogicProcessorRunnable implements Runnable {
     }
 
     /**
-     * Process the node specified by calling {@link #setRootNode(RootNode)}
+     * Process the root node specified by calling {@link #setRootNode(RootNode)}
      * Only needed to call this method if thread has not been craeted for this class, normally called from the
      * {@link #run()} method.
      * 
      * @param delta
      */
     public void process(float delta) {
-        long start = System.currentTimeMillis();
         if (rootNode != null) {
-            for (Node node : rootNode.getScene()) {
-                logicProcessor.processNode(node, delta);
-            }
+            long start = System.currentTimeMillis();
+            logicProcessor.processRoot(rootNode, delta);
+            FrameSampler.getInstance().addTag(FrameSampler.LOGICPROCESSOR, start, System.currentTimeMillis());
         }
-        FrameSampler.getInstance().addTag(FrameSampler.LOGICPROCESSOR, start, System.currentTimeMillis());
     }
 
 }

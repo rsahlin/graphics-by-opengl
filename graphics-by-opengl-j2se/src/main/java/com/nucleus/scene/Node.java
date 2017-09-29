@@ -6,6 +6,8 @@ import java.util.Map;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.bounds.Bounds;
+import com.nucleus.bounds.CircularBounds;
+import com.nucleus.bounds.RectangularBounds;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.component.ComponentNode;
@@ -941,6 +943,29 @@ public class Node extends BaseReference {
         parent = null;
         rootNode = null;
         attributeProducer = null;
+    }
+
+    /**
+     * Checks if this node should be culled, returns true if this node is culled.
+     * It is up to the node implementations to decide if children should be checked, default behavior is to not call
+     * {@link #cullNode(Bounds)} on children, ie they should be culled separately.
+     * 
+     * @param cullBounds The bounds to check against
+     * @return True if the node should be culled
+     */
+    public boolean cullNode(Bounds cullBounds) {
+        boolean cull = false;
+        if (bounds != null) {
+            switch (getBounds().getType()) {
+                case CIRCULAR:
+                    cull = !cullBounds.isCircularInside((CircularBounds) bounds);
+                case RECTANGULAR:
+                    cull = !cullBounds.isRectangleInside((RectangularBounds) bounds);
+                default:
+                    throw new IllegalArgumentException("Not implemented for bounds " + bounds.getType());
+            }
+        }
+        return cull;
     }
 
 }
