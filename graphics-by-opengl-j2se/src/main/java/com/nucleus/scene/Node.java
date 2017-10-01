@@ -166,7 +166,7 @@ public class Node extends BaseReference {
     private Material material;
 
     @SerializedName(RENDERPASS)
-    private RenderPass renderPass;
+    private ArrayList<RenderPass> renderPass;
     
     @SerializedName(STATE)
     private State state = State.ON;
@@ -457,6 +457,17 @@ public class Node extends BaseReference {
     }
 
     /**
+     * Copies the renderpass from the source
+     * @param source
+     */
+    public void copyRenderPass(Node source) {
+        if (source.getRenderPass() != null) {
+            renderPass = new ArrayList<>();
+            renderPass.addAll(source.getRenderPass());
+        }
+    }
+    
+    /**
      * Copies the transform from the source node, if the transform in the source is null then this nodes transform
      * is set to null as well.
      * 
@@ -626,7 +637,7 @@ public class Node extends BaseReference {
         textureRef = source.textureRef;
         state = source.state;
         this.pass = source.pass;
-        this.renderPass = source.renderPass;
+        copyRenderPass(source);
         copyTransform(source);
         copyViewFrustum(source);
         copyMaterial(source);
@@ -1102,16 +1113,16 @@ public class Node extends BaseReference {
         this.pass = pass;
     }
     
-    protected void setRenderPass(RenderPass renderPass) {
-        this.renderPass = renderPass;
-    }
-    
     /**
-     * Returns the renderpass definition, or null if not defined. 
+     * Returns the renderpasses definition, or null if not defined. 
      * @return
      */
-    public RenderPass getRenderPass() {
+    public ArrayList<RenderPass> getRenderPass() {
         return renderPass;
+    }
+ 
+    public void setRenderPass(ArrayList<RenderPass> renderPass) {
+        this.renderPass = renderPass;
     }
     
 }

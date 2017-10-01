@@ -1,5 +1,7 @@
 package com.nucleus.scene;
 
+import java.util.ArrayList;
+
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
@@ -80,7 +82,9 @@ public class BaseRootNode extends RootNode {
             created.setViewFrustum(vf);
             created.setId(created.getClass().getSimpleName());
             created.setPass(Pass.ALL);
-            created.setRenderPass(pass);
+            ArrayList<RenderPass> rp = new ArrayList();
+            rp.add(pass);
+            created.setRenderPass(rp);
             root.addChild(created);
             return root;
         }

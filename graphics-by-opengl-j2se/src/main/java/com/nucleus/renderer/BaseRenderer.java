@@ -229,8 +229,16 @@ class BaseRenderer implements NucleusRenderer {
         if (node.getPass() != null && (pass.getFlags() & node.getPass().getFlags()) != 0) {
             State state = node.getState();
             if (state == null || state == State.ON || state == State.RENDER) {
-                setRenderPass(node);
-                internalRender(node);
+                pass = node.getPass();
+                ArrayList<RenderPass> renderPasses = node.getRenderPass();
+                if (renderPasses != null) {
+                    for (RenderPass renderPass : renderPasses) {
+                        setRenderPass(renderPass);
+                        internalRender(node);
+                    }
+                } else {
+                    internalRender(node);
+                }
             }
          }
     }
@@ -401,21 +409,17 @@ class BaseRenderer implements NucleusRenderer {
         return AssetManager.getInstance().createTexture(this, renderTarget, attachementData);
     }
 
-    private void setRenderPass(Node node) throws GLException {
-        RenderPass renderPass = node.getRenderPass();
-        if (renderPass != null) {
-            pass = node.getPass();
-            setupRenderTarget(renderPass.getTarget());
-            RenderState state = renderPass.getRenderState();
-            if (state != null) {
-                if (state.getChangeFlag() != RenderState.CHANGE_FLAG_NONE) {
-                    setRenderState(state);
-                    state.setChangeFlag(RenderState.CHANGE_FLAG_NONE);
-                }
-                int clearFunc = state.getClearFunction();
-                if (clearFunc != GLES20.GL_NONE) {
-                    gles.glClear(clearFunc);
-                }
+    private void setRenderPass(RenderPass renderPass) throws GLException {
+        setupRenderTarget(renderPass.getTarget());
+        RenderState state = renderPass.getRenderState();
+        if (state != null) {
+            if (state.getChangeFlag() != RenderState.CHANGE_FLAG_NONE) {
+                setRenderState(state);
+                state.setChangeFlag(RenderState.CHANGE_FLAG_NONE);
+            }
+            int clearFunc = state.getClearFunction();
+            if (clearFunc != GLES20.GL_NONE) {
+                gles.glClear(clearFunc);
             }
         }
     }
