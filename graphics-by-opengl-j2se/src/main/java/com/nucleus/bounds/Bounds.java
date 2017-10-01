@@ -2,13 +2,6 @@ package com.nucleus.bounds;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.ErrorMessage;
-import com.nucleus.common.Type;
-import com.nucleus.component.ComponentNode;
-import com.nucleus.scene.LayerNode;
-import com.nucleus.scene.LineDrawerNode;
-import com.nucleus.scene.Node;
-import com.nucleus.scene.RenderPass;
-import com.nucleus.scene.SwitchNode;
 import com.nucleus.vecmath.Rectangle;
 
 /**

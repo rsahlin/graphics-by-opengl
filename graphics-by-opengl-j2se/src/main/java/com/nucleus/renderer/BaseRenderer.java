@@ -29,7 +29,6 @@ import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.renderer.RenderTarget.Target;
 import com.nucleus.scene.Node;
-import com.nucleus.scene.RenderPass;
 import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
@@ -70,6 +69,7 @@ class BaseRenderer implements NucleusRenderer {
 
     protected ArrayDeque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<float[]> projection = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
+    protected ArrayDeque<Pass> renderPassStack = new ArrayDeque<>();
     /**
      * The current concatenated modelview matrix
      */
@@ -88,6 +88,7 @@ class BaseRenderer implements NucleusRenderer {
      */
     protected float[] projectionMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
 
+    protected Pass pass;
     protected GLES20Wrapper gles;
     protected ImageFactory imageFactory;
     protected MatrixEngine matrixEngine;
@@ -159,6 +160,8 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public float beginFrame() {
+        pass = Pass.UNDEFINED;
+        renderPassStack.clear();
         deltaTime = timeKeeper.update();
         if (timeKeeper.getSampleDuration() > FPS_SAMPLER_DELAY) {
             SimpleLogger.d(getClass(), timeKeeper.sampleFPS());
@@ -223,15 +226,13 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(Node node) throws GLException {
-        State state = node.getState();
-        if (state == null || state == State.ON || state == State.RENDER) {
-            if (node.getType().equals(NodeTypes.renderpass.name())) {
-                // Renderpass node - set renderstate
-                internalRender((RenderPass) node);
-            } else {
+        if (node.getPass() != null && (pass.getFlags() & node.getPass().getFlags()) != 0) {
+            State state = node.getState();
+            if (state == null || state == State.ON || state == State.RENDER) {
+                setRenderPass(node);
                 internalRender(node);
             }
-        }
+         }
     }
 
     private void internalRender(Node node) throws GLException {
@@ -400,21 +401,23 @@ class BaseRenderer implements NucleusRenderer {
         return AssetManager.getInstance().createTexture(this, renderTarget, attachementData);
     }
 
-    private void internalRender(RenderPass node) throws GLException {
-        setupRenderTarget(node.getTarget());
-
-        RenderState state = node.getRenderState();
-        if (state != null) {
-            if (state.getChangeFlag() != RenderState.CHANGE_FLAG_NONE) {
-                setRenderState(state);
-                state.setChangeFlag(RenderState.CHANGE_FLAG_NONE);
-            }
-            int clearFunc = state.getClearFunction();
-            if (clearFunc != GLES20.GL_NONE) {
-                gles.glClear(clearFunc);
+    private void setRenderPass(Node node) throws GLException {
+        RenderPass renderPass = node.getRenderPass();
+        if (renderPass != null) {
+            pass = node.getPass();
+            setupRenderTarget(renderPass.getTarget());
+            RenderState state = renderPass.getRenderState();
+            if (state != null) {
+                if (state.getChangeFlag() != RenderState.CHANGE_FLAG_NONE) {
+                    setRenderState(state);
+                    state.setChangeFlag(RenderState.CHANGE_FLAG_NONE);
+                }
+                int clearFunc = state.getClearFunction();
+                if (clearFunc != GLES20.GL_NONE) {
+                    gles.glClear(clearFunc);
+                }
             }
         }
-        internalRender((Node) node);
     }
 
     protected void renderMeshes(ArrayList<Mesh> meshes, float[] mvMatrix, float[] projectionMatrix) throws GLException {
@@ -554,7 +557,7 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(RootNode root) throws GLException {
-        List<Node> scene = root.getScene();
+        List<Node> scene = root.getChildren();
         if (scene != null) {
             for (Node node : scene) {
                 render(node);

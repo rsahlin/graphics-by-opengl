@@ -2,6 +2,7 @@ package com.nucleus.component;
 
 import com.nucleus.bounds.Bounds;
 import com.nucleus.component.ComponentController.ComponentState;
+import com.nucleus.renderer.Pass;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
@@ -22,7 +23,7 @@ public class J2SELogicProcessor implements LogicProcessor {
         //Todo need to update bounds to view
         Node rootNode = root.getNodeById(RootNode.ROOTNODE_ID);
         
-        for (Node node : root.getScene()) {
+        for (Node node : root.getChildren()) {
             processNode(node, delta);
         }
         
@@ -61,7 +62,7 @@ public class J2SELogicProcessor implements LogicProcessor {
         if (bounds == null) {
             return false;
         }
-        return node.cullNode(bounds);
+        return node.cullNode(bounds, Pass.LOGIC);
     }
     
 }

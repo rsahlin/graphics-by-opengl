@@ -20,6 +20,10 @@ import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.ObjectInputListener;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.Pass;
+import com.nucleus.renderer.RenderPass;
+import com.nucleus.renderer.NucleusRenderer.Layer;
+import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Transform;
@@ -48,8 +52,8 @@ public class Node extends BaseReference {
         layernode(LayerNode.class),
         switchnode(SwitchNode.class),
         linedrawernode(LineDrawerNode.class),
-        renderpass(RenderPass.class),
-        componentnode(ComponentNode.class);
+        componentnode(ComponentNode.class),
+        rootnode(BaseRootNode.class);
 
         private final Class<?> theClass;
 
@@ -76,6 +80,15 @@ public class Node extends BaseReference {
 
     public static final String STATE = "state";
     public static final String TYPE = "type";
+    public static final String TRANSFORM = "transform";
+    public static final String VIEWFRUSTUM = "viewFrustum";
+    public static final String CHILDREN = "children";
+    public static final String BOUNDS = "bounds";
+    public static final String MATERIAL = "material";
+    public static final String RENDERPASS = "renderPass";
+    public static final String TEXTUREREF = "textureRef";
+    public static final String PROPERTIES = "properties";
+    public static final String PASS = "pass";
 
     public static final String ONCLICK = "onclick";
 
@@ -134,24 +147,27 @@ public class Node extends BaseReference {
 
     @SerializedName(TYPE)
     private String type;
-    @SerializedName("transform")
+    @SerializedName(TRANSFORM)
     protected Transform transform;
-    @SerializedName("viewFrustum")
+    @SerializedName(VIEWFRUSTUM)
     private ViewFrustum viewFrustum;
     /**
      * The childnodes shall always be processed/rendered in the order they are defined.
      * This makes it possible to treat the children as a list that is rendered in a set order.
      * Rearranging the children will alter the render order.
      */
-    @SerializedName("children")
+    @SerializedName(CHILDREN)
     protected ArrayList<Node> children = new ArrayList<Node>();
 
-    @SerializedName("bounds")
+    @SerializedName(BOUNDS)
     private Bounds bounds;
 
-    @SerializedName("material")
+    @SerializedName(MATERIAL)
     private Material material;
 
+    @SerializedName(RENDERPASS)
+    private RenderPass renderPass;
+    
     @SerializedName(STATE)
     private State state = State.ON;
 
@@ -159,14 +175,20 @@ public class Node extends BaseReference {
      * Reference to texture, used when importing / exporting.
      * No runtime meaning
      */
-    @SerializedName("textureRef")
+    @SerializedName(TEXTUREREF)
     private ExternalReference textureRef;
 
     /**
      * Properties for this node
      */
-    @SerializedName("properties")
+    @SerializedName(PROPERTIES)
     private Map<String, String> properties;
+
+    /**
+     * One or more passes that this Node should be used in.
+     */
+    @SerializedName(PASS)
+    private Pass pass = Pass.ALL;
 
     /**
      * Optional projection Matrix for the node, this will affect all child nodes.
@@ -191,7 +213,7 @@ public class Node extends BaseReference {
     /**
      * The root node
      */
-    transient protected RootNode rootNode;
+    transient private RootNode rootNode;
 
     /**
      * Set this to get callbacks on MMI events for this node, handled by {@link NodeInputListener}
@@ -214,6 +236,21 @@ public class Node extends BaseReference {
         setRootNode(root);
         setType(type);
     }
+    
+    /**
+     * Creates an empty node, add children and meshes as needed.
+     * 
+     * @param root
+     * @param type
+     * @param pass
+     */
+    protected Node(RootNode root, Type<Node> type, Pass pass) {
+        setRootNode(root);
+        setType(type);
+        this.pass = pass;
+    }
+    
+    
 
     /**
      * Creates an empty node with unique (for the scene) Id.
@@ -350,6 +387,7 @@ public class Node extends BaseReference {
         meshes.add(type.index, mesh);
     }
 
+    
     /**
      * Removes the mesh from this node, if present.
      * If many meshes are added this method may have a performance impact.
@@ -514,17 +552,35 @@ public class Node extends BaseReference {
      * The child node's parent will be set to this node.
      * 
      * @param child The child to add to this node.
-     * @throws IllegalArgumentException If child id is null, or if a node with the same id already has been added.
+     * @throws IllegalArgumentException If child does not have the root node, or id set, or if a child already has been added
+     * with the same id
      */
-    protected void addChild(Node child) {
-        if (child.getId() == null) {
-            throw new IllegalArgumentException("Node id is null");
+    public void addChild(Node child) {
+        if (child.getRootNode() == null || child.getId() == null) {
+            throw new IllegalArgumentException("Null parameter, root=" + child.getRootNode() + ", id=" + child.getId());
         }
         children.add(child);
         child.parent = this;
-        rootNode.registerChild(child);
+        registerChild(child);
     }
 
+    /**
+     * Registers the node as a child in the rootnode
+     * @param child
+     * @throws IllegalArgumentException If a node with the same ID is already added to the nodetree
+     */
+    protected void registerChild(Node child) {
+        rootNode.registerChild(child);
+    }
+    
+    /**
+     * Unregisters the node as child in the rootnode
+     * @param child
+     */
+    protected void unregisterChild(Node child) {
+        rootNode.unregisterChild(child);
+    }
+    
     /**
      * Removes the child from this node if it is present.
      * 
@@ -534,7 +590,7 @@ public class Node extends BaseReference {
     protected boolean removeChild(Node child) {
         if (children.contains(child)) {
             children.remove(child);
-            rootNode.unregisterChild(child);
+            unregisterChild(child);
             return true;
         }
         return false;
@@ -547,8 +603,11 @@ public class Node extends BaseReference {
      * This makes it possible to treat the children as a list that is rendered in a set order.
      * Rearranging the children will alter the render order.
      * 
+     * This method is deprecated - TODO use custom Enumerator or Iterator instead
+     * 
      * @return The list of children.
      */
+    @Deprecated
     public ArrayList<Node> getChildren() {
         return children;
     }
@@ -566,6 +625,8 @@ public class Node extends BaseReference {
         type = source.type;
         textureRef = source.textureRef;
         state = source.state;
+        this.pass = source.pass;
+        this.renderPass = source.renderPass;
         copyTransform(source);
         copyViewFrustum(source);
         copyMaterial(source);
@@ -667,6 +728,44 @@ public class Node extends BaseReference {
     }
 
     /**
+     * Returns the first matching viewnode, this is a conveniance method to find node with view
+     * 
+     * @param layer Which layer the ViewNode to return belongs to.
+     * @return The viewnode or null if not found
+     */
+    public LayerNode getViewNode(Layer layer) {
+        for (Node node : children) {
+            LayerNode layerNode = getViewNode(layer, node);
+            if (layerNode != null) {
+                return layerNode;
+            }
+        }
+        return null;
+    }
+    private LayerNode getViewNode(Layer layer, Node node) {
+        return getViewNode(layer, node.getChildren());
+    }
+
+    private LayerNode getViewNode(Layer layer, ArrayList<Node> children) {
+        for (Node n : children) {
+            if (n.getType().equals(NodeTypes.layernode.name())) {
+                if (((LayerNode) n).getLayer() == layer) {
+                    return (LayerNode) n;
+                }
+            }
+        }
+        // Search through children recusively
+        for (Node n : children) {
+            LayerNode view = getViewNode(layer, n);
+            if (view != null) {
+                return view;
+            }
+        }
+        return null;
+    }
+    
+    
+    /**
      * Returns the first node with matching type, or null if none found.
      * This method will search through the active children.
      * 
@@ -686,6 +785,23 @@ public class Node extends BaseReference {
         return null;
     }
 
+    /**
+     * Searches through the scene children and looks for the first node with matching type.
+     * 
+     * @param type
+     * @return
+     */
+    public Node getNodeByType(Type<Node> type) {
+        for (Node node : children) {
+            Node n = node.getNodeByType(type.getName());
+            if (n != null) {
+                return n;
+            }
+        }
+        return null;
+    }
+    
+    
     /**
      * Returns the child node with matching id from this node, children are not searched recursively.
      * TODO Shall this method call getChildren() which will return only on-switched nodes?
@@ -951,9 +1067,10 @@ public class Node extends BaseReference {
      * {@link #cullNode(Bounds)} on children, ie they should be culled separately.
      * 
      * @param cullBounds The bounds to check against
+     * @param pass The renderpass to cull this node for
      * @return True if the node should be culled
      */
-    public boolean cullNode(Bounds cullBounds) {
+    public boolean cullNode(Bounds cullBounds, Pass pass) {
         boolean cull = false;
         if (bounds != null) {
             switch (getBounds().getType()) {
@@ -968,4 +1085,33 @@ public class Node extends BaseReference {
         return cull;
     }
 
+    /**
+     * Returns the Pass(es) that this node should be used in, if this is a {@link RenderPassNode} node then this
+     * defines the current pass.
+     * @return
+     */
+    public Pass getPass() {
+        return pass;
+    }
+
+    /**
+     * Sets the renderpass this node is active in.
+     * @param pass
+     */
+    protected void setPass(Pass pass) {
+        this.pass = pass;
+    }
+    
+    protected void setRenderPass(RenderPass renderPass) {
+        this.renderPass = renderPass;
+    }
+    
+    /**
+     * Returns the renderpass definition, or null if not defined. 
+     * @return
+     */
+    public RenderPass getRenderPass() {
+        return renderPass;
+    }
+    
 }

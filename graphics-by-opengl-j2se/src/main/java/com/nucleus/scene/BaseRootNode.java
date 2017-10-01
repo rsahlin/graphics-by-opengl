@@ -1,18 +1,15 @@
 package com.nucleus.scene;
 
-import java.util.ArrayList;
-
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.Pass;
+import com.nucleus.renderer.RenderPass;
 import com.nucleus.renderer.RenderState;
 import com.nucleus.renderer.RenderTarget;
-import com.nucleus.renderer.RenderTarget.Attachement;
-import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.renderer.RenderTarget.Target;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.texturing.Image.ImageFormat;
 
 /**
  * Implementation of RootNode, this can be used to construct simple nodetrees
@@ -73,7 +70,7 @@ public class BaseRootNode extends RootNode {
         public RootNode create() throws NodeException {
             validate();
             BaseRootNode root = new BaseRootNode();
-            RenderPass pass = new RenderPass(root);
+            RenderPass pass = new RenderPass();
             pass.setId("RenderPass");
             pass.setTarget(new RenderTarget(Target.FRAMEBUFFER, null));
             pass.setRenderState(new RenderState());
@@ -82,8 +79,9 @@ public class BaseRootNode extends RootNode {
             vf.setOrthoProjection(-0.5f, 0.5f, -0.5f, 0.5f, 0, 10);
             created.setViewFrustum(vf);
             created.setId(created.getClass().getSimpleName());
-            pass.addChild(created);
-            root.addChild(pass);
+            created.setPass(Pass.ALL);
+            created.setRenderPass(pass);
+            root.addChild(created);
             return root;
         }
 
@@ -96,6 +94,12 @@ public class BaseRootNode extends RootNode {
 
     }
 
+    /**
+     * TODO Move construction
+     */
+    @Deprecated
+    public BaseRootNode() {
+    }
 
     @Override
     public RootNode createInstance() {

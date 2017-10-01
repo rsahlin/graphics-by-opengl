@@ -120,8 +120,6 @@ public class CoreApp implements RenderContextListener {
      */
     protected PointerInputProcessor inputProcessor = new PointerInputProcessor();
 
-    boolean enableMultiThread = false;
-    Thread runnableThread;
     LogicProcessorRunnable logicRunnable;
 
     /**
@@ -155,14 +153,7 @@ public class CoreApp implements RenderContextListener {
         this.renderer = renderer;
         this.clientApp = clientApp;
         
-        logicRunnable = new LogicProcessorRunnable(renderer, new J2SELogicProcessor());
-        if (Runtime.getRuntime().availableProcessors() > 1 && enableMultiThread) {
-            System.out.println("Started extra process for logic processing, number of processors: "
-                    + Runtime.getRuntime().availableProcessors());
-            runnableThread = new Thread(logicRunnable);
-        } else {
-            System.out.println("Running everything on one thread.");
-        }
+        logicRunnable = new LogicProcessorRunnable(renderer, new J2SELogicProcessor(), false);
 
     }
 
@@ -243,17 +234,8 @@ public class CoreApp implements RenderContextListener {
         // If renderer is null it means CoreApp is destroyed - do nothing.
         if (renderer != null) {
             try {
-                if (runnableThread != null) {
-                    if (!runnableThread.isAlive()) {
-                        runnableThread.start();
-                    } else {
-                        synchronized (logicRunnable) {
-                            logicRunnable.notify();
-                        }
-                    }
-                } else {
-                    logicRunnable.process(FrameSampler.getInstance().getDelta());
-                }
+                //If multiple threads used this method will return immediately
+                logicRunnable.process(rootNode,FrameSampler.getInstance().getDelta());
                 renderer.beginFrame();
                 if (rootNode != null) {
                     renderer.render(rootNode);
