@@ -82,7 +82,7 @@ public class BaseRootNode extends RootNode {
             created.setViewFrustum(vf);
             created.setId(created.getClass().getSimpleName());
             created.setPass(Pass.ALL);
-            ArrayList<RenderPass> rp = new ArrayList();
+            ArrayList<RenderPass> rp = new ArrayList<>();
             rp.add(pass);
             created.setRenderPass(rp);
             root.addChild(created);

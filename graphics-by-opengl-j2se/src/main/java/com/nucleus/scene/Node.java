@@ -2,7 +2,9 @@ package com.nucleus.scene;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.bounds.Bounds;
@@ -457,13 +459,23 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Copies the renderpass from the source
-     * @param source
+     * Sets the renderpass in this node, removing any existing renderpasses.
+     * Checks that the renderpasses are valid
+     * @param renderPass, or null to remove renderpass
      */
-    public void copyRenderPass(Node source) {
-        if (source.getRenderPass() != null) {
-            renderPass = new ArrayList<>();
-            renderPass.addAll(source.getRenderPass());
+    protected void setRenderPass(ArrayList<RenderPass> renderPass) {
+        if (renderPass != null) {
+            this.renderPass = new ArrayList<>();
+            Set<String> ids = new HashSet<>();
+            for (RenderPass rp : renderPass) {
+                if (rp.getId() != null && ids.contains(rp.getId())) {
+                    throw new IllegalArgumentException("Already contains renderpass with id: " + rp.getId());
+                }
+                ids.add(rp.getId());
+                this.renderPass.add(rp);
+            }
+        } else {
+            this.renderPass = null;
         }
     }
     
@@ -637,7 +649,7 @@ public class Node extends BaseReference {
         textureRef = source.textureRef;
         state = source.state;
         this.pass = source.pass;
-        copyRenderPass(source);
+        setRenderPass(source.getRenderPass());
         copyTransform(source);
         copyViewFrustum(source);
         copyMaterial(source);
@@ -1119,10 +1131,6 @@ public class Node extends BaseReference {
      */
     public ArrayList<RenderPass> getRenderPass() {
         return renderPass;
-    }
- 
-    public void setRenderPass(ArrayList<RenderPass> renderPass) {
-        this.renderPass = renderPass;
     }
     
 }

@@ -386,7 +386,7 @@ class BaseRenderer implements NucleusRenderer {
                 attachementData.setTexture(createTexture(renderTarget, attachementData));
                 break;
             default:
-                throw new IllegalArgumentException("Not implemented for target:" + renderTarget.getTargetName());
+                throw new IllegalArgumentException("Not implemented for target:" + renderTarget.getTarget());
         }
     }
 
