@@ -34,6 +34,7 @@ import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewController;
 import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.shader.VertexTranslateProgram;
+import com.nucleus.system.ComponentHandler;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
@@ -267,6 +268,7 @@ public class CoreApp implements RenderContextListener {
         vc.registerEventHandler(null);
         NodeController nc = new NodeController(node);
         nc.registerEventHandler(null);
+        ComponentHandler.getInstance().initSystems(node, renderer);
 
     }
 
