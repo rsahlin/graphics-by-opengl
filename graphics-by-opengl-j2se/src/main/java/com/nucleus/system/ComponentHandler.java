@@ -64,9 +64,9 @@ public class ComponentHandler {
      * @throws IllegalArgumentException If no system is registered for the component (type)
      */
     public void processComponent(Component component, float deltaTime) {
-        System system = componentSystem.get(component.getType());
+        System system = componentSystem.get(component.getSystem());
         if (system == null) {
-            throw new IllegalArgumentException("No system registered for type: " + component.getType());
+            throw new IllegalArgumentException("No system registered for " + component.getSystem() + " componentId: " + component.getId());
         }
         long start = java.lang.System.currentTimeMillis();
         system.process(component, deltaTime);
