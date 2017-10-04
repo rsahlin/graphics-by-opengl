@@ -140,7 +140,6 @@ public class AssetManager {
      * @throws IOException
      */
     protected Texture2D getTexture(NucleusRenderer renderer, Texture2D source) throws IOException {
-        long start = System.currentTimeMillis();
         /**
          * External ref for untextured needs to be "" so it can be stored and fetched.
          */
@@ -148,17 +147,28 @@ public class AssetManager {
             source.setExternalReference(new ExternalReference(""));
         }
         ExternalReference ref = source.getExternalReference();
-        String refSource = ref.getSource();
-        Texture2D texture = textures.get(refSource);
-        if (texture == null) {
-            // Texture not loaded
-            texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), source);
-            textures.put(refSource, texture);
-            setExternalReference(texture.getId(), ref);
+        String refId = ref.getIdReference();
+        if (refId != null) {
+            Texture2D texture = textures.get(refId);
+            if (texture != null) {
+                return texture;
+            }
+            textures.put(refId, source);
+            return source;
+        } else {
+            String refSource = ref.getSource();
+            Texture2D texture = textures.get(refSource);
+            if (texture == null) {
+                long start = System.currentTimeMillis();
+                // Texture not loaded
+                texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), source);
+                textures.put(refSource, texture);
+                setExternalReference(texture.getId(), ref);
+                FrameSampler.getInstance().logTag(FrameSampler.CREATE_TEXTURE + " " + texture.getName(), start,
+                        System.currentTimeMillis());
+            }
+            return texture;
         }
-        FrameSampler.getInstance().logTag(FrameSampler.CREATE_TEXTURE + " " + texture.getName(), start,
-                System.currentTimeMillis());
-        return texture;
     }
 
     protected Texture2D getTextureFromId(NucleusRenderer renderer, String id) {
