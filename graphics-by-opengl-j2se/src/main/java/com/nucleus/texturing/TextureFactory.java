@@ -114,6 +114,13 @@ public class TextureFactory {
         }
     }
 
+    /**
+     * Creates an empty Texture object from the external reference, before calling this make sure the reference
+     * is not an id reference.
+     * @param ref
+     * @return
+     * @throws FileNotFoundException
+     */
     public static Texture2D createTexture(ExternalReference ref) throws FileNotFoundException {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(Texture2D.class, new TextureDeserializer());

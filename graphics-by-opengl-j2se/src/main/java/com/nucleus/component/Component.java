@@ -60,6 +60,7 @@ public abstract class Component extends BaseReference {
 
     public void set(Component source) {
         this.type = source.type;
+        this.system = source.system;
         this.setId(source.getId());
     }
 

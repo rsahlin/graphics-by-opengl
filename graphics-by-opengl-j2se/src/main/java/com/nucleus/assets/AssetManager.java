@@ -91,7 +91,12 @@ public class AssetManager {
      * @throws IOException
      */
     public Texture2D getTexture(NucleusRenderer renderer, ExternalReference ref) throws IOException {
-        return getTexture(renderer, TextureFactory.createTexture(ref));
+        String idRef = ref.getIdReference();
+        if (idRef != null) {
+            return getTextureFromId(renderer, idRef);
+        } else {
+            return getTexture(renderer, TextureFactory.createTexture(ref));
+        }
     }
 
     /**
@@ -151,11 +156,24 @@ public class AssetManager {
             textures.put(refSource, texture);
             setExternalReference(texture.getId(), ref);
         }
-        FrameSampler.getInstance().logTag(FrameSampler.CREATE_TEXTURE + " " + source.getName(), start,
+        FrameSampler.getInstance().logTag(FrameSampler.CREATE_TEXTURE + " " + texture.getName(), start,
                 System.currentTimeMillis());
         return texture;
     }
 
+    protected Texture2D getTextureFromId(NucleusRenderer renderer, String id) {
+        long start = System.currentTimeMillis();
+        Texture2D texture = textures.get(id);
+        if (texture == null) {
+            //Could not find texture
+            throw new IllegalArgumentException("No texture with id " + id);
+        }
+        FrameSampler.getInstance().logTag(FrameSampler.CREATE_TEXTURE + " " + texture.getName(), start,
+                System.currentTimeMillis());
+        return texture;
+        
+    }
+    
     /**
      * Sets the external reference for the object id
      * 
