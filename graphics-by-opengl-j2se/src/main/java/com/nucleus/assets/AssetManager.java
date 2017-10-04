@@ -165,8 +165,7 @@ public class AssetManager {
         long start = System.currentTimeMillis();
         Texture2D texture = textures.get(id);
         if (texture == null) {
-            //Could not find texture
-            throw new IllegalArgumentException("No texture with id " + id);
+            return null;
         }
         FrameSampler.getInstance().logTag(FrameSampler.CREATE_TEXTURE + " " + texture.getName(), start,
                 System.currentTimeMillis());
