@@ -16,6 +16,11 @@ public class Window {
     int height;
 
     /**
+     * The display resolution, ie the full resolution of the display
+     */
+    int[] screenSize;
+    
+    /**
      * Hide instantiation from clients.
      */
     private Window() {
@@ -46,6 +51,17 @@ public class Window {
     }
 
     /**
+     * Sets the size of the screen, ie total number of pixels on display - may be bigger than window size.
+     * Do not call this method directly, it is initialized by implementations (JOGL, Android, LWJGL)
+     * @param width
+     * @param height
+     */
+    public void setScreenSize(int width, int height) {
+        SimpleLogger.d(getClass(), "setScreenSize() " + width + ", " + height);
+        this.screenSize = new int[] {width, height};
+    }
+    
+    /**
      * Returns the width of the visible window
      * 
      * @return Width in pixels.
@@ -62,5 +78,13 @@ public class Window {
     public int getHeight() {
         return height;
     }
-
+    
+    /**
+     * Returns the total display size
+     * @return
+     */
+    public int[] getScreenSize() {
+        return screenSize;
+    }
+    
 }

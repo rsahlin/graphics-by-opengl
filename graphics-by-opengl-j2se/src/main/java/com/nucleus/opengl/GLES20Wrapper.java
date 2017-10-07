@@ -5,7 +5,9 @@ import java.nio.IntBuffer;
 
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.shader.ShaderVariable;
+import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureParameter.Name;
 
@@ -609,5 +611,23 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         GLUtils.handleError(this, "glTexParameteri ");
     }
 
+    /**
+     * Binds the frambebuffer texture target.
+     * @param texture
+     * @param fbName
+     * @param attachement
+     * @param textureName
+     * @throws GLException
+     */
+    public void bindFramebufferTexture(Texture2D texture, int fbName, Attachement attachement) throws GLException {
+        glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fbName);
+        glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, attachement.value, GLES20.GL_TEXTURE_2D,
+                texture.getName(), 0);
+        GLUtils.handleError(this, "glFramebufferTexture");
+        if (glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER) != GLES20.GL_FRAMEBUFFER_COMPLETE) {
+            throw new IllegalArgumentException("Could not setup render target");
+        }
+    }
+    
     
 }

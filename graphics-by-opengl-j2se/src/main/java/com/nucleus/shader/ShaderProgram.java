@@ -861,6 +861,9 @@ public abstract class ShaderProgram {
      */
     protected void setTextureUniforms(TiledTexture2D texture, float[] destination, ShaderVariable variable,
             int offset) {
+        if (texture.getWidth() == 0 || texture.getHeight() == 0) {
+            SimpleLogger.d(getClass(), "ERROR! Texture size is 0: " + texture.getWidth() + ", " + texture.getHeight());
+        }
         offset += variable.getOffset();
         destination[offset++] = (((float) texture.getWidth()) / texture.getTileWidth()) / (texture.getWidth());
         destination[offset++] = (((float) texture.getHeight()) / texture.getTileHeight()) / (texture.getHeight());

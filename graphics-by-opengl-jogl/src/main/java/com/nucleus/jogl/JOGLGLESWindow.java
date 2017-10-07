@@ -43,21 +43,21 @@ public class JOGLGLESWindow extends JOGLGLWindow {
 
     @Override
     public void dispose(GLAutoDrawable drawable) {
-    	SimpleLogger.d(getClass(), "dispose()");
+        SimpleLogger.d(getClass(), "dispose()");
         System.exit(0);
     }
 
     @Override
     public void init(GLAutoDrawable drawable) {
-    	SimpleLogger.d(getClass(), "init()");
+        SimpleLogger.d(getClass(), "init()");
         if (glesWrapper == null) {
             switch (glProfile) {
-            case GLProfile.GL2ES2:
-                glesWrapper = new JOGLGLES20Wrapper(drawable.getGL().getGL2ES2());
-                break;
-            case GLProfile.GL4ES3:
-                glesWrapper = new JOGLGLES30Wrapper(drawable.getGL().getGL4ES3());
-                break;
+                case GLProfile.GL2ES2:
+                    glesWrapper = new JOGLGLES20Wrapper(drawable.getGL().getGL2ES2());
+                    break;
+                case GLProfile.GL4ES3:
+                    glesWrapper = new JOGLGLES30Wrapper(drawable.getGL().getGL4ES3());
+                    break;
             }
         }
         super.init(drawable);
@@ -65,7 +65,7 @@ public class JOGLGLESWindow extends JOGLGLWindow {
 
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-    	SimpleLogger.d(getClass(), "reshape(" + x + "," + y + " : " + width + "," + height + ")");
+        SimpleLogger.d(getClass(), "reshape(" + x + "," + y + " : " + width + "," + height + ")");
         super.reshape(drawable, x, y, width, height);
     }
 

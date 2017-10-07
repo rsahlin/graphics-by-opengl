@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import com.nucleus.ErrorMessage;
 import com.nucleus.SimpleLogger;
+import com.nucleus.assets.AssetManager;
+import com.nucleus.common.Constants;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
@@ -94,31 +96,28 @@ public class TextureUtils {
     }
 
     /**
-     * Sets the active texture, binds texName and calls glTexImage2D on the images in the array where
-     * mip-map level will be same as the image index.
+     * Uploads the image(s) to the texture, checks if mipmaps should be created.
      * 
      * @param gles GLES20Wrapper for GL calls
      * @param unit Texture unit number (active texture)
-     * @param texture The texture object
-     * @param texName Name of texture object
+     * @param texture The texture object, shall have texture name set
      * @param textureImages Array with one or more images to send to GL. If more than
      * one image is specified then multiple mip-map levels will be set.
      * Level 0 shall be at index 0
      * @throws GLException If there is an error uploading the textures
      * @throws IllegalArgumentException If multiple mipmaps provided but texture min filter is not _MIPMAP_
      */
-    public static void uploadTextures(GLES20Wrapper gles, int unit, Texture2D texture, int texName,
-            Image[] textureImages)
+    public static void uploadTextures(GLES20Wrapper gles, int unit, Texture2D texture, Image[] textureImages)
             throws GLException {
-        if (textureImages.length > 1 && !texture.getTexParams().isMipMapFilter()) {
+        gles.glBindTexture(GLES20.GL_TEXTURE_2D, texture.getName());
+        boolean isMipMapParams = texture.getTexParams().isMipMapFilter();
+        if ((textureImages.length > 1 && !isMipMapParams) || (texture.getLevels() > 1 && !isMipMapParams)) {
             throw new IllegalArgumentException(
                     "Multiple mipmap images but wrong min filter " + texture.getTexParams().getValue(Name.MIN_FILTER));
         }
         int level = 0;
         int format;
         int type;
-        gles.glActiveTexture(unit);
-        gles.glBindTexture(GLES20.GL_TEXTURE_2D, texName);
         for (Image textureImg : textureImages) {
             if (textureImg != null) {
                 if (texture.getFormat() == null || texture.getType() == null) {
@@ -138,6 +137,9 @@ public class TextureUtils {
             }
         }
         if (textureImages.length == 1 && texture.getTexParams().isMipMapFilter()) {
+            if (texture.getLevels() < 2) {
+                throw new IllegalArgumentException("Texture " + texture.getId() + " has mipmap filter params but levels is " + texture.getLevels());
+            }
             long start = System.currentTimeMillis();
             gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
             SimpleLogger.d(TextureUtils.class, "Generated mipmaps for texture " + texture.getId());
@@ -145,6 +147,35 @@ public class TextureUtils {
         }
     }
 
+    /**
+     * Activates texturing, binds the texture and sets texture parameters
+     * Checks if texture is an id (dynamic) reference and sets the texture name if not present.
+     * 
+     * @paran gles
+     * @param texture
+     */
+    static void prepareTexture(GLES20Wrapper gles, Texture2D texture) throws GLException {
+        gles.glActiveTexture(GLES20.GL_TEXTURE0);
+        if (texture != null && texture.textureType != TextureType.Untextured) {
+            int textureID = texture.getName();
+            if (textureID == Constants.NO_VALUE && texture.getExternalReference().isIdReference()) {
+                //Texture has no texture object - and is id reference
+                //Should only be used for dynamic textures, eg ones that depend on define in existing node
+                AssetManager.getInstance().getIdReference(texture);
+                textureID = texture.getName();
+                gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
+                gles.uploadTexParameters(texture.getTexParams());
+                GLUtils.handleError(gles, "glBindTexture()");
+            } else {
+                gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
+                gles.uploadTexParameters(texture.getTexParams());
+                GLUtils.handleError(gles, "glBindTexture()");
+            }
+        }
+    }
+
+    
+    
     /**
      * Return the GL texture type for the specified format.
      * 

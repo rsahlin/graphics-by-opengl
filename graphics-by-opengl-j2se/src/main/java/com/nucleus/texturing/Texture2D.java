@@ -1,15 +1,11 @@
 package com.nucleus.texturing;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.common.Constants;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
-import com.nucleus.texturing.TextureParameter.Name;
 import com.nucleus.vecmath.Rectangle;
 
 /**
@@ -23,6 +19,9 @@ import com.nucleus.vecmath.Rectangle;
  */
 public class Texture2D extends BaseReference {
 
+    public static final String RESOLUTION = "resolution";
+    public static final String MIPMAP = "mipmap";
+    
     public enum Shading {
         flat(),
         parametric(),
@@ -82,8 +81,8 @@ public class Texture2D extends BaseReference {
      */
     @SerializedName("resolution")
     RESOLUTION resolution;
-    @SerializedName("mipmap")
-    private int mipmap;
+    @SerializedName(MIPMAP)
+    private int levels;
 
     /**
      * Texture parameter values.
@@ -106,7 +105,7 @@ public class Texture2D extends BaseReference {
      * The texture name, this is a loose reference to the allocated texture name.
      * It is up to the caller to allocate and release texture names.
      */
-    transient protected int name;
+    transient protected int name = Constants.NO_VALUE;
     /**
      * Width of texture in pixels
      */
@@ -155,7 +154,7 @@ public class Texture2D extends BaseReference {
      * 
      * @param source
      */
-    protected void set(Texture2D source) {
+    public void set(Texture2D source) {
         super.set(source);
         resolution = source.resolution;
         if (source.getTexParams() != null) {
@@ -163,7 +162,7 @@ public class Texture2D extends BaseReference {
         } else {
             texParameters = null;
         }
-        mipmap = source.mipmap;
+        levels = source.levels;
         name = source.name;
         width = source.width;
         height = source.height;
@@ -178,19 +177,19 @@ public class Texture2D extends BaseReference {
      * @param externalReference The texture image reference
      * @param resolution The target resolution for the texture
      * @param params Texture parameters, min/mag filter wrap s/t
-     * @param mipmap Number of mipmap levels
+     * @param levels Number of mipmap levels
      * @param format The texture format
      * @param type The texture type 
      */
     protected Texture2D(String id, ExternalReference externalReference, RESOLUTION resolution,
-            TextureParameter params, int mipmap, Format format, Type type) {
+            TextureParameter params, int levels, Format format, Type type) {
         super(id);
         textureType = TextureType.valueOf(getClass().getSimpleName());
         setExternalReference(externalReference);
         this.resolution = resolution;
         texParameters = new TextureParameter(params);
         this.texParameters.setValues(params);
-        this.mipmap = mipmap;
+        this.levels = levels;
         this.format = format;
         this.type = type;
     }
@@ -200,33 +199,55 @@ public class Texture2D extends BaseReference {
      * filling it with data.
      * @param resolution
      * @param params
-     * @param mipmap
+     * @param levels
      * @param format
      * @param type
      */
-    protected void setup(RESOLUTION resolution, TextureParameter params, int mipmap, Format format, Type type) {
+    protected void setup(RESOLUTION resolution, TextureParameter params, int levels, Format format, Type type) {
         this.resolution = resolution;
         this.texParameters = params;
-        this.mipmap = mipmap;
+        this.levels = levels;
         this.format = format;
         this.type = type;
     }
     
     /**
-     * Sets the texture object name (for GL), the images (buffers) to use and the resolution of textures.
+     * Sets the texture size.
      * The texture(s) will not be uploaded to GL.
      * Use this to set the size and texture name after image has been loaded.
      * 
-     * @param name
      * @param width
      * @param height
      */
-    protected void setup(int name, int width, int height) {
-        this.name = name;
+    protected void setup(int width, int height) {
         this.width = width;
         this.height = height;
     }
 
+    /**
+     * Sets the texture object name (for GL)
+     * The texture(s) will not be uploaded to GL.
+     * 
+     * @param name
+     */
+    protected void setup(int name) {
+        this.name = name;
+    }
+    
+    
+    /**
+     * Copies the transient values (texture object name, width, height) and the texture format values into this class.
+     * Use this to copy an instance of an existing texture but to a new type or with different texture parameters.
+     * @param source
+     */
+    protected void copyInstance(Texture2D source) {
+        this.name = source.name;
+        this.width = source.width;
+        this.height = source.height;
+        this.format = source.format;
+        this.type = source.type;
+    }
+    
     /**
      * Returns the texture parameters to use with this texture.
      * 
@@ -278,7 +299,7 @@ public class Texture2D extends BaseReference {
      * @return
      */
     public int getLevels() {
-        return mipmap;
+        return levels;
     }
 
     /**
@@ -339,4 +360,20 @@ public class Texture2D extends BaseReference {
         // Release any allocated resources other than the uploaded texture.
     }
 
+    /**
+     * Checks the texture parameters and mipmap levels for consistensy
+     * @return
+     */
+    public boolean validateTextureParameters() {
+        //If untextured return true;
+        if (textureType == TextureType.Untextured) {
+            return true;
+        }
+        boolean isMipMapParams = getTexParams().isMipMapFilter();
+        if ((levels > 1 && !isMipMapParams) || (levels < 2 && isMipMapParams)) {
+            return false;
+        }
+        return true;
+    }
+    
 }

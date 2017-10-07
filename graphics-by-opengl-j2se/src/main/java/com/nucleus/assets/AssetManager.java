@@ -93,14 +93,29 @@ public class AssetManager {
     public Texture2D getTexture(NucleusRenderer renderer, ExternalReference ref) throws IOException {
         String idRef = ref.getIdReference();
         if (idRef != null) {
-            return getTextureFromId(renderer, idRef);
+            return getTexture(idRef);
         } else {
             return getTexture(renderer, TextureFactory.createTexture(ref));
         }
     }
 
     /**
-     * Returns the texture for the rendertarget attachement, if not already create it will be created and store in the
+     * If the reference texture is id reference and the reference is registered then the texture data is copied into
+     * the reference, overwriting transient values and non-set (null) values.
+     * @param reference
+     */
+    public void getIdReference(Texture2D reference) {
+        if (reference != null && reference.getExternalReference().isIdReference()) {
+            Texture2D source = getTexture(reference.getExternalReference().getIdReference());
+            if (source == null) {
+                return;
+            }
+            TextureFactory.copyTextureInstance(source, reference);
+        }
+    }
+    
+    /**
+     * Returns the texture for the rendertarget attachement, if not already create it will be created and stored in the
      * assetmanager with id taken from renderTarget and attachement
      * If already created the instance will be returned.
      * 
@@ -116,6 +131,7 @@ public class AssetManager {
         }
         Texture2D texture = textures.get(renderTarget.getAttachementId(attachement));
         if (texture == null) {
+            //TODO - What values should be used when creating the texture?
             TextureType type = TextureType.Texture2D;
             RESOLUTION resolution = RESOLUTION.HD;
             int[] size = attachement.getSize();
@@ -124,6 +140,7 @@ public class AssetManager {
                             TexParameter.CLAMP });
             ImageFormat format = ImageFormat.valueOf(attachement.getFormat());
             texture = TextureFactory.createTexture(renderer.getGLES(), type, resolution, size, format, texParams);
+            texture.setId(renderTarget.getAttachementId(attachement));
             textures.put(renderTarget.getAttachementId(attachement), texture);
         }
         return texture;
@@ -153,7 +170,7 @@ public class AssetManager {
             if (texture != null) {
                 return texture;
             }
-            textures.put(refId, source);
+            textures.put(source.getExternalReference().getSource(), source);
             return source;
         } else {
             String refSource = ref.getSource();
@@ -171,14 +188,16 @@ public class AssetManager {
         }
     }
 
-    protected Texture2D getTextureFromId(NucleusRenderer renderer, String id) {
-        long start = System.currentTimeMillis();
+    /**
+     * Fetches a texture from map of registered textures
+     * @param id Id of the texture, ususally the external source path.
+     * @return The texture, or null if not registered
+     */
+    protected Texture2D getTexture(String id) {
         Texture2D texture = textures.get(id);
         if (texture == null) {
             return null;
         }
-        FrameSampler.getInstance().logTag(FrameSampler.CREATE_TEXTURE + " " + texture.getName(), start,
-                System.currentTimeMillis());
         return texture;
         
     }

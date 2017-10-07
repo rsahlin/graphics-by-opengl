@@ -278,6 +278,8 @@ class BaseRenderer implements NucleusRenderer {
         }
         switch (target.getTarget()) {
             case FRAMEBUFFER:
+                // Revert to platform buffers
+                bindWindowFramebuffer();
                 break;
             case TEXTURE:
                 bindTextureFramebuffer(target);
@@ -330,13 +332,8 @@ class BaseRenderer implements NucleusRenderer {
         }
         Texture2D texture = ad.getTexture();
         prepareTexture(texture);
-        gles.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, target.getFramebufferName());
-        gles.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, attachement.value, GLES20.GL_TEXTURE_2D,
-                target.getFramebufferName(), 0);
-        GLUtils.handleError(gles, "glFramebufferTexture");
-        if (gles.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER) != GLES20.GL_FRAMEBUFFER_COMPLETE) {
-            throw new IllegalArgumentException("Could not setup render target");
-        }
+        gles.bindFramebufferTexture(texture, target.getFramebufferName(), attachement);
+        gles.glViewport(0, 0, texture.getWidth(), texture.getHeight());
     }
 
     /**
@@ -347,8 +344,8 @@ class BaseRenderer implements NucleusRenderer {
     private void createBuffers(RenderTarget target) throws GLException {
         ArrayList<AttachementData> attachements = target.getAttachements();
         if (attachements == null) {
-            // Revert to platform buffers
-            bindWindowFramebuffer();
+            //No attachements - what does this mean?
+            SimpleLogger.d(getClass(), "No attachements");
         } else {
             if (target.getFramebufferName() == Constants.NO_VALUE) {
                 target.setFramebufferName(createFramebuffer());
@@ -369,6 +366,7 @@ class BaseRenderer implements NucleusRenderer {
 
     private void bindWindowFramebuffer() {
         gles.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+        gles.glViewport(0, 0, window.width, window.height);
     }
 
     /**
@@ -413,10 +411,10 @@ class BaseRenderer implements NucleusRenderer {
         setupRenderTarget(renderPass.getTarget());
         RenderState state = renderPass.getRenderState();
         if (state != null) {
-            if (state.getChangeFlag() != RenderState.CHANGE_FLAG_NONE) {
-                setRenderState(state);
-                state.setChangeFlag(RenderState.CHANGE_FLAG_NONE);
-            }
+            //TODO - check diff between renderpasses and only update accordingly
+            state.setChangeFlag(RenderState.CHANGE_FLAG_ALL);
+            setRenderState(state);
+            state.setChangeFlag(RenderState.CHANGE_FLAG_NONE);
             int clearFunc = state.getClearFunction();
             if (clearFunc != GLES20.GL_NONE) {
                 gles.glClear(clearFunc);
@@ -484,11 +482,19 @@ class BaseRenderer implements NucleusRenderer {
     private void prepareTexture(Texture2D texture) throws GLException {
         if (texture != null && texture.textureType != TextureType.Untextured) {
             int textureID = texture.getName();
-            gles.glActiveTexture(GLES20.GL_TEXTURE0);
-            gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
-            gles.uploadTexParameters(texture.getTexParams());
+            if (textureID == Constants.NO_VALUE && texture.getExternalReference().isIdReference()) {
+                //Texture has no texture object - and is id reference
+                //Should only be used for dynamic textures, eg ones that depend on define in existing node
+                AssetManager.getInstance().getIdReference(texture);
+                textureID = texture.getName();
+                gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
+                gles.uploadTexParameters(texture.getTexParams());
+                GLUtils.handleError(gles, "glBindTexture()");
+            } else {
+                gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
+                GLUtils.handleError(gles, "glBindTexture()");
+            }
         }
-        
     }
     
     @Override
@@ -598,7 +604,6 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void resizeWindow(int x, int y, int width, int height) {
-        gles.glViewport(x, y, width, height);
         Window.getInstance().setSize(width, height);
     }
 
