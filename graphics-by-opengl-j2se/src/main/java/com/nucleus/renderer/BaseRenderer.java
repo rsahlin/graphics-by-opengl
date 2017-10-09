@@ -273,13 +273,12 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     private void setupRenderTarget(RenderTarget target) throws GLException {
-        if (target.getFramebufferName() == Constants.NO_VALUE) {
+        if (target.getFramebufferName() == Constants.NO_VALUE && target.getAttachements() != null) {
             createBuffers(target);
         }
         switch (target.getTarget()) {
             case FRAMEBUFFER:
-                // Revert to platform buffers
-                bindWindowFramebuffer();
+                bindFramebuffer(target);
                 break;
             case TEXTURE:
                 bindTextureFramebuffer(target);
@@ -311,31 +310,55 @@ class BaseRenderer implements NucleusRenderer {
     private void bindTextureFramebuffer(RenderTarget target, Attachement attachement) throws GLException {
         AttachementData ad = target.getAttachement(attachement);
         if (ad == null) {
-            // Disable
-            SimpleLogger.d(getClass(), "Disabling " + attachement);
-            switch (attachement) {
-                case COLOR:
-                    gles.glColorMask(false, false, false, false);
-                    break;
-                case DEPTH:
-                    gles.glDisable(GLES20.GL_DEPTH_TEST);
-                    break;
-                case STENCIL:
-                    gles.glDisable(GLES20.GL_STENCIL_TEST);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Not implemented for " + attachement);
-
-            }
-            GLUtils.handleError(gles, "glDisable " + attachement);
-            return;
+            disable(attachement);
+        } else {
+            Texture2D texture = ad.getTexture();
+            bindTexture(texture);
+            gles.bindFramebufferTexture(texture, target.getFramebufferName(), attachement);
+            gles.glViewport(0, 0, texture.getWidth(), texture.getHeight());
+            enable(attachement);
         }
-        Texture2D texture = ad.getTexture();
-        prepareTexture(texture);
-        gles.bindFramebufferTexture(texture, target.getFramebufferName(), attachement);
-        gles.glViewport(0, 0, texture.getWidth(), texture.getHeight());
     }
 
+    private void disable(Attachement attachement) throws GLException {
+        switch (attachement) {
+            case COLOR:
+                gles.glColorMask(false, false, false, false);
+                break;
+            case DEPTH:
+                gles.glDisable(GLES20.GL_DEPTH_TEST);
+                break;
+            case STENCIL:
+                gles.glDisable(GLES20.GL_STENCIL_TEST);
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + attachement);
+
+        }
+        GLUtils.handleError(gles, "glDisable " + attachement);
+    }
+
+    private void enable(Attachement attachement) throws GLException {
+        switch (attachement) {
+            case COLOR:
+                gles.glColorMask(true, true, true, true);
+                break;
+            case DEPTH:
+                gles.glEnable(GLES20.GL_DEPTH_TEST);
+                gles.glDepthMask(true);
+                break;
+            case STENCIL:
+                gles.glEnable(GLES20.GL_STENCIL_TEST);
+                gles.glDepthMask(true);
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + attachement);
+
+        }
+        GLUtils.handleError(gles, "glDisable " + attachement);
+        
+    }
+    
     /**
      * Creates and initializes the buffers needed for the rendertarget
      * 
@@ -364,9 +387,19 @@ class BaseRenderer implements NucleusRenderer {
         }
     }
 
-    private void bindWindowFramebuffer() {
-        gles.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-        gles.glViewport(0, 0, window.width, window.height);
+    /**
+     * Binds framebuffer
+     * @param target
+     */
+    private void bindFramebuffer(RenderTarget target) throws GLException {
+        if (target == null || target.getAttachements() == null || target.getAttachements().size() == 0) {
+            //Bind default windowbuffer
+            gles.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+            gles.glViewport(0, 0, window.width, window.height);
+            enable(Attachement.COLOR);
+        } else {
+            throw new IllegalArgumentException("Not implemented");
+        }
     }
 
     /**
@@ -408,17 +441,19 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     private void setRenderPass(RenderPass renderPass) throws GLException {
-        setupRenderTarget(renderPass.getTarget());
+        //First set state so that rendertargets can override enable/disable writing to buffers
         RenderState state = renderPass.getRenderState();
         if (state != null) {
             //TODO - check diff between renderpasses and only update accordingly
             state.setChangeFlag(RenderState.CHANGE_FLAG_ALL);
             setRenderState(state);
             state.setChangeFlag(RenderState.CHANGE_FLAG_NONE);
-            int clearFunc = state.getClearFunction();
-            if (clearFunc != GLES20.GL_NONE) {
-                gles.glClear(clearFunc);
-            }
+        }
+        setupRenderTarget(renderPass.getTarget());
+        //Clear buffer according to settings
+        int clearFunc = state.getClearFunction();
+        if (clearFunc != GLES20.GL_NONE) {
+            gles.glClear(clearFunc);
         }
     }
 
@@ -454,7 +489,7 @@ class BaseRenderer implements NucleusRenderer {
         GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
 
         Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
-        prepareTexture(texture);
+        bindTexture(texture);
         material.setBlendModeSeparate(gles);
         program.bindAttributes(gles, mesh);
         program.bindUniforms(gles, mvMatrix, projectionMatrix, mesh);
@@ -476,10 +511,10 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     /**
-     * Activates texturing, binds the texture and sets texture parameters
+     * binds the texture, if texture reference is dynamic id the reference is fetched.
      * @param texture
      */
-    private void prepareTexture(Texture2D texture) throws GLException {
+    private void bindTexture(Texture2D texture) throws GLException {
         if (texture != null && texture.textureType != TextureType.Untextured) {
             int textureID = texture.getName();
             if (textureID == Constants.NO_VALUE && texture.getExternalReference().isIdReference()) {

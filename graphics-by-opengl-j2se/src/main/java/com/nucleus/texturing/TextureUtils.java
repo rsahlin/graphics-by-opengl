@@ -8,6 +8,7 @@ import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
@@ -97,6 +98,7 @@ public class TextureUtils {
 
     /**
      * Uploads the image(s) to the texture, checks if mipmaps should be created.
+     * The size of the image will be set in the texture
      * 
      * @param gles GLES20Wrapper for GL calls
      * @param unit Texture unit number (active texture)
@@ -116,20 +118,14 @@ public class TextureUtils {
                     "Multiple mipmap images but wrong min filter " + texture.getTexParams().getValue(Name.MIN_FILTER));
         }
         int level = 0;
-        int format;
-        int type;
+        texture.setup(textureImages[0].width, textureImages[0].height);
         for (Image textureImg : textureImages) {
             if (textureImg != null) {
                 if (texture.getFormat() == null || texture.getType() == null) {
                     throw new IllegalArgumentException("Texture format or type is null for id " + texture.getId()
                             + " : " + texture.getFormat() + ", " + texture.getType());
                 }
-                format = texture.getFormat().format;
-                type = texture.getType().type;
-                gles.glTexImage2D(GLES20.GL_TEXTURE_2D, level, format,
-                        textureImg.getWidth(),
-                        textureImg.getHeight(), 0, format, type,
-                        textureImg.getBuffer().position(0));
+                gles.texImage(texture, textureImg, level);
                 GLUtils.handleError(gles, "texImage2D");
                 level++;
             } else {
@@ -199,6 +195,13 @@ public class TextureUtils {
                 return Type.UNSIGNED_SHORT_4_4_4_4;
             case RGB5_A1:
                 return Type.UNSIGNED_SHORT_5_5_5_1;
+            case DEPTH_16:
+                return Type.UNSIGNED_SHORT;
+            case DEPTH_24:
+                return Type.UNSIGNED_INT;
+            case DEPTH_32F:
+                return Type.FLOAT;
+            
             default:
                 throw new IllegalArgumentException("Not implemented for: " + format);
         }
@@ -226,11 +229,42 @@ public class TextureUtils {
             case RGB565:
             case RGB:
                 return Format.RGB;
+            case DEPTH_16:
+            case DEPTH_24:
+            case DEPTH_32F:
+                return Format.DEPTH_COMPONENT;
             default:
                 throw new IllegalArgumentException("Not implemented for: " + format);
         }
     }
 
+    /**
+     * Returns the internal format for the texture - only needed on GLES 3.0 and above
+     * @param texture
+     * @return The internal format
+     */
+    public static int getInternalFormat(Texture2D texture) {
+        switch (texture.getFormat()) {
+            case DEPTH_COMPONENT:
+                return getDepthComponentFormat(texture.getType());
+                default:
+                    return texture.getFormat().format;
+        }
+    }
+    
+    public static int getDepthComponentFormat(Texture2D.Type type) {
+        switch (type) {
+            case UNSIGNED_SHORT:
+                return GLES20.GL_DEPTH_COMPONENT16;
+            case UNSIGNED_INT:
+                return GLES30.GL_DEPTH_COMPONENT24;
+            case FLOAT:
+                return GLES20.GL_FLOAT;
+                default:
+                throw new IllegalArgumentException("Invalid type: " + type);
+        }
+    }
+    
     /**
      * Returns the ImageFormat that fits for the texture format and type.
      * If format or type is not defined then the default value is choosen, normally RGBA 32 bit.

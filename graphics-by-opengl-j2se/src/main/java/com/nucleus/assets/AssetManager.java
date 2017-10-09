@@ -108,9 +108,12 @@ public class AssetManager {
         if (reference != null && reference.getExternalReference().isIdReference()) {
             Texture2D source = getTexture(reference.getExternalReference().getIdReference());
             if (source == null) {
-                return;
+                throw new IllegalArgumentException("Could not find texture with id reference: " + reference.getExternalReference().getIdReference());
             }
             TextureFactory.copyTextureInstance(source, reference);
+        } else {
+            //What should be done?
+            SimpleLogger.d(getClass(), "Called getIdReference with null reference:");
         }
     }
     

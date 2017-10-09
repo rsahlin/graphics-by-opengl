@@ -50,14 +50,11 @@ public class TextureFactory {
     public static Texture2D createTexture(GLES20Wrapper gles, TextureType type, RESOLUTION resolution, int[] size,
             ImageFormat format, TextureParameter texParams) throws GLException {
         Texture2D result = createTexture(type);
-        Texture2D.Format texFormat = TextureUtils.getFormat(format);
-        Texture2D.Type texType = TextureUtils.getType(format);
         result.setup(resolution, texParams, 1, TextureUtils.getFormat(format), TextureUtils.getType(format));
         result.setup(size[0], size[1]);
         createTextureName(gles,  result);
         TextureUtils.prepareTexture(gles, result);
-        gles.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, texFormat.format, size[0], size[1], 0, texFormat.format,
-                texType.type, null);
+        gles.texImage(result);
         GLUtils.handleError(gles, "glTexImage2D");
         return result;
     }
@@ -214,7 +211,6 @@ public class TextureFactory {
         try {
             TextureUtils.prepareTexture(gles, texture);
             TextureUtils.uploadTextures(gles, GLES20.GL_TEXTURE0, texture, textureImg);
-            texture.setup(textureImg[0].width, textureImg[0].height);
             SimpleLogger.d(TextureFactory.class, "Uploaded texture " + texture.toString());
             Image.destroyImages(textureImg);
         } catch (GLException e) {

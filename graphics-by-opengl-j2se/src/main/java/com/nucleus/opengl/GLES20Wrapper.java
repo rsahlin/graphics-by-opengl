@@ -7,8 +7,10 @@ import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.shader.ShaderVariable;
+import com.nucleus.texturing.Image;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureParameter;
+import com.nucleus.texturing.TextureUtils;
 import com.nucleus.texturing.TextureParameter.Name;
 
 /**
@@ -535,6 +537,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
 
     /**
      * Abstraction for glTexImage2D()
+     * Use {@link #texImage(Texture2D)} instead to get support for different OpenGLES versions
      * 
      * @param target
      * @param level
@@ -546,6 +549,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param type
      * @param pixels
      */
+    @Deprecated
     public abstract void glTexImage2D(int target, int level, int internalformat, int width, int height, int border,
             int format, int type, Buffer pixels);
 
@@ -612,7 +616,8 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     }
 
     /**
-     * Binds the frambebuffer texture target.
+     * Binds the frambebuffer texture target - this is used to create different behavior depending
+     * on the OpenGL ES implementation (2.X vs 3.X)
      * @param texture
      * @param fbName
      * @param attachement
@@ -625,8 +630,29 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                 texture.getName(), 0);
         GLUtils.handleError(this, "glFramebufferTexture");
         if (glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER) != GLES20.GL_FRAMEBUFFER_COMPLETE) {
-            throw new IllegalArgumentException("Could not setup render target");
+            throw new IllegalArgumentException("Framebuffer status not complete");
         }
+    }
+    /**
+     * Creates texture buffer - use this method in favour of calling glTexImage directly since
+     * this method will handle texture format differences between GL versions.
+     * @param texture
+     */
+    public void texImage(Texture2D texture) {
+        glTexImage2D(GLES20.GL_TEXTURE_2D, 0, TextureUtils.getInternalFormat(texture), texture.getWidth(), texture.getHeight(), 0, texture.getFormat().format,
+                texture.getType().type, null);
+    }
+
+    /**
+     * Upload texture - use this method in favour of calling glTexImage directly since
+     * this method will handle texture format differences between GL versions.
+     * @param texture
+     * @param image
+     * @param level
+     */
+    public void texImage(Texture2D texture, Image image, int level) {
+        glTexImage2D(GLES20.GL_TEXTURE_2D, level, TextureUtils.getInternalFormat(texture), texture.getWidth(), texture.getHeight(), 0, texture.getFormat().format,
+                texture.getType().type, image.getBuffer().position(0));
     }
     
     

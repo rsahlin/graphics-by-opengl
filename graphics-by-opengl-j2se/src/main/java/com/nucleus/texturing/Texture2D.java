@@ -4,6 +4,8 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.common.Constants;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
+import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.vecmath.Rectangle;
@@ -44,7 +46,8 @@ public class Texture2D extends BaseReference {
         RGB(0x1907),
         RGBA(0x1908),
         LUMINANCE(0x1909),
-        LUMINANCE_ALPHA(0x190A);
+        LUMINANCE_ALPHA(0x190A),
+        DEPTH_COMPONENT(0x1902);
 
         public final int format;
 
@@ -53,6 +56,21 @@ public class Texture2D extends BaseReference {
         }
     }
 
+    /**
+     * Internal GL formats, needed on GL 3 and up
+     */
+    public enum InternalFormat {
+        DEPTH_COMPONENT16(GLES20.GL_DEPTH_COMPONENT16),
+        DEPTH_COMPONENT24(GLES30.GL_DEPTH_COMPONENT24),
+        DEPTH_COMPONENT32F(GLES30.GL_DEPTH_COMPONENT32F);
+        
+        public final int internalFormat;
+        
+        private InternalFormat(int internalFormat) {
+            this.internalFormat = internalFormat;
+        }
+    }
+    
     /**
      * The GL texture types
      * 
@@ -63,7 +81,10 @@ public class Texture2D extends BaseReference {
         UNSIGNED_BYTE(0x1401),
         UNSIGNED_SHORT_5_6_5(0x8363),
         UNSIGNED_SHORT_4_4_4_4(0x8033),
-        UNSIGNED_SHORT_5_5_5_1(0x8034);
+        UNSIGNED_SHORT_5_5_5_1(0x8034),
+        UNSIGNED_SHORT(0x1403),
+        UNSIGNED_INT(0x1405),
+        FLOAT(0x1406);
 
         public final int type;
 
