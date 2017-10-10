@@ -18,11 +18,11 @@
 #version 100
 
 uniform mat4 uMVPMatrix;
-attribute vec3 aPosition;
+attribute vec3 aTranslate;
 attribute vec2 aTexCoord;
 varying vec2 vTexCoord;
 
 void main() {
-    gl_Position = uMVPMatrix * vec4(aPosition,1.0);
+    gl_Position = uMVPMatrix * vec4(aTranslate,1.0);
     vTexCoord = aTexCoord;
 }

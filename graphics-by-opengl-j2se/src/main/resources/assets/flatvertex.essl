@@ -11,13 +11,14 @@ uniform mat4 uProjectionMatrix;
 uniform vec4 uAmbientLight;
 uniform vec4 uDiffuseLight;
 
-attribute vec3 aPosition; //Position of vertex, offset from matrix
+attribute vec3 aTranslate; //Position of vertex, offset from matrix
+attribute vec3 aVertex;
 attribute vec4 aColor;
 
 varying vec4 color;
 
 void main() {
-    vec4 pos = uMVMatrix * vec4(aPosition, 1.0);
+    vec4 pos = uMVMatrix * vec4(aVertex + aTranslate, 1.0);
     gl_Position = uProjectionMatrix * pos;
     color = aColor;
 }

@@ -21,7 +21,7 @@ public class ConvolutionProgram extends ShaderProgram {
     protected enum VARIABLES implements VariableMapping {
         uMVPMatrix(0, ShaderVariable.VariableType.UNIFORM, null),
         uKernel(1, ShaderVariable.VariableType.UNIFORM, null),
-        aPosition(2, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+        aTranslate(2, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
         aTexCoord(3, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES);
 
         private final int index;

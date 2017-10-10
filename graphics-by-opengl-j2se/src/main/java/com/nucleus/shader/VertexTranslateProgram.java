@@ -3,10 +3,8 @@ package com.nucleus.shader;
 import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.AttributeUpdater.Property;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
-import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.vecmath.Matrix;
 
@@ -16,51 +14,10 @@ import com.nucleus.vecmath.Matrix;
  */
 public class VertexTranslateProgram extends ShaderProgram {
 
-    /**
-     * The shader names used, the variable names used in shader sources MUST be defined here.
-     */
-    public enum VARIABLES implements VariableMapping {
-        uMVMatrix(0, ShaderVariable.VariableType.UNIFORM, null),
-        uProjectionMatrix(1, ShaderVariable.VariableType.UNIFORM, null),
-        aColor(2, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-        aPosition(3, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-        aTexCoord(4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES);
-
-        private final int index;
-        private final VariableType type;
-        private final BufferIndex bufferIndex;
-
-        /**
-         * @param index Index of the shader variable
-         * @param type Type of variable
-         * @param bufferIndex Index of buffer in mesh that holds the variable data
-         */
-        private VARIABLES(int index, VariableType type, BufferIndex bufferIndex) {
-            this.index = index;
-            this.type = type;
-            this.bufferIndex = bufferIndex;
-        }
-
-        @Override
-        public int getIndex() {
-            return index;
-        }
-
-        @Override
-        public VariableType getType() {
-            return type;
-        }
-
-        @Override
-        public BufferIndex getBufferIndex() {
-            return bufferIndex;
-        }
-    }
-
     private Texture2D.Shading shading;
 
     public VertexTranslateProgram(Texture2D.Shading shading) {
-        super(VARIABLES.values());
+        super(ShaderVariables.values());
         vertexShaderName = PROGRAM_DIRECTORY + shading.name() + VERTEX + SHADER_SOURCE_SUFFIX;
         fragmentShaderName = PROGRAM_DIRECTORY + shading.name() + FRAGMENT + SHADER_SOURCE_SUFFIX;
         this.shading = shading;
@@ -68,12 +25,12 @@ public class VertexTranslateProgram extends ShaderProgram {
 
     @Override
     public VariableMapping getVariableMapping(ShaderVariable variable) {
-        return VARIABLES.valueOf(getVariableName(variable));
+        return ShaderVariables.valueOf(getVariableName(variable));
     }
 
     @Override
     public int getVariableCount() {
-        return VARIABLES.values().length;
+        return ShaderVariables.values().length;
     }
 
     @Override
@@ -81,10 +38,10 @@ public class VertexTranslateProgram extends ShaderProgram {
             throws GLException {
         // Refresh the uniform matrix
         // TODO prefetch the offsets for the shader variables and store in array.
-        System.arraycopy(modelviewMatrix, 0, mesh.getUniforms(), shaderVariables[VARIABLES.uMVMatrix.index].getOffset(),
+        System.arraycopy(modelviewMatrix, 0, mesh.getUniforms(), shaderVariables[ShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(projectionMatrix, 0, mesh.getUniforms(),
-                shaderVariables[VARIABLES.uProjectionMatrix.index].getOffset(),
+                shaderVariables[ShaderVariables.uProjectionMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         bindUniforms(gles, uniforms, mesh.getUniforms());
     }
@@ -100,10 +57,10 @@ public class VertexTranslateProgram extends ShaderProgram {
         ShaderVariable v = null;
         switch (property) {
         case TRANSLATE:
-            v = shaderVariables[VARIABLES.aPosition.index];
+            v = shaderVariables[ShaderVariables.aTranslate.index];
             break;
         case COLOR:
-            v = shaderVariables[VARIABLES.aColor.index];
+            v = shaderVariables[ShaderVariables.aColor.index];
             break;
         default:
         }
