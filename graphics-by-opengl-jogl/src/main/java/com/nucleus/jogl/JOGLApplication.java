@@ -32,9 +32,19 @@ public class JOGLApplication extends J2SEWindowApplication implements WindowList
     }
 
     @Override
-    protected J2SEWindow createGLES20Window() {
-        window = new JOGLGLESWindow(GLProfile.GL4ES3, windowWidth, windowHeight, windowUndecorated, fullscreen, this,
-                swapInterval);
+    protected J2SEWindow createWindow(Renderers version) {
+        switch (version) {
+            case GLES20:
+                window = new JOGLGLESWindow(GLProfile.GL2ES2, windowWidth, windowHeight, windowUndecorated, fullscreen, this,
+                        swapInterval);
+                break;
+            case GLES30:
+                window = new JOGLGLESWindow(GLProfile.GL4ES3, windowWidth, windowHeight, windowUndecorated, fullscreen, this,
+                        swapInterval);
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + version);
+        }
         window.setGLEVentListener();
         window.setWindowListener(this);
         // Setting window to visible will trigger the GLEventListener, on the same or another thread.

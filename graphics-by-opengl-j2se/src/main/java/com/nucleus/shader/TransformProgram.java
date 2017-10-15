@@ -8,41 +8,30 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.vecmath.Matrix;
 
 /**
- * First shadow pass, render all geometry using vertex shader and light matrix then output distance to light in depth buffer
- *
+ * Program for transformed vertices, shader calculates vertex position with position offset, rotation and scale
+ * Can be used to draw lines, polygons or similar
  */
-public class ShadowPass1Program extends ShaderProgram {
+public class TransformProgram extends ShaderProgram {
 
     /**
      * Name of this shader - TODO where should this be defined?
      */
-    protected static final String VERTEX_NAME = "transform";
-    protected static final String FRAGMENT_NAME = "shadow1";
+    protected static final String NAME = "Transform";
     
-    
-    public ShadowPass1Program() {
+    public TransformProgram() {
         super(ShaderVariables.values());
-        vertexShaderName = PROGRAM_DIRECTORY + VERTEX_NAME + VERTEX + SHADER_SOURCE_SUFFIX;
-        fragmentShaderName = PROGRAM_DIRECTORY + FRAGMENT_NAME + FRAGMENT + SHADER_SOURCE_SUFFIX;
+        vertexShaderName = PROGRAM_DIRECTORY + NAME + VERTEX + SHADER_SOURCE_SUFFIX;
+        fragmentShaderName = PROGRAM_DIRECTORY + NAME + FRAGMENT + SHADER_SOURCE_SUFFIX;
     }
-
+    
     @Override
     public void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, float[] projectionMatrix, Mesh mesh)
             throws GLException {
-        
-        //Modelview is facing into screen.
-        float[] lightPOV = new float[16];
-        float[] result = new float[16];
-        Matrix.setIdentityM(lightPOV, 0);
-        float[] lightVector = globalLight.getLightVector();
-        Matrix.setRotateEulerM(result, 0, lightVector[0], lightVector[1], lightVector[2]);
-        Matrix.orthoM(lightPOV, 0, -0.8889f,0.8889f,-0.5f,0.5f,-10f,10f);
-        Matrix.mul4(result, lightPOV);
         // Refresh the uniform matrix
         // TODO prefetch the offsets for the shader variables and store in array.
         System.arraycopy(modelviewMatrix, 0, mesh.getUniforms(), shaderVariables[ShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(result, 0, mesh.getUniforms(),
+        System.arraycopy(projectionMatrix, 0, mesh.getUniforms(),
                 shaderVariables[ShaderVariables.uProjectionMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         bindUniforms(gles, uniforms, mesh.getUniforms());

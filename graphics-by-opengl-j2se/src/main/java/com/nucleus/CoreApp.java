@@ -33,7 +33,7 @@ import com.nucleus.scene.NodeException;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewController;
 import com.nucleus.scene.Node.NodeTypes;
-import com.nucleus.shader.VertexTranslateProgram;
+import com.nucleus.shader.TranslateProgram;
 import com.nucleus.system.ComponentHandler;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -292,8 +292,8 @@ public class CoreApp implements RenderContextListener {
         Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
         meshBuilder.setElementMode(Mode.TRIANGLES, 4, 6);
         meshBuilder.setTexture(texture);
-        VertexTranslateProgram vt = (VertexTranslateProgram) AssetManager.getInstance().getProgram(renderer,
-                new VertexTranslateProgram(Texture2D.Shading.textured));
+        TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(renderer,
+                new TranslateProgram(Texture2D.Shading.textured));
         Material material = new Material();
         material.setProgram(vt);
         meshBuilder.setMaterial(material);

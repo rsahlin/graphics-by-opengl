@@ -24,10 +24,15 @@ public class Texture2D extends BaseReference {
     public static final String RESOLUTION = "resolution";
     public static final String MIPMAP = "mipmap";
     
+    /**
+     * TODO - is this really a property of the texture, maybe move to ShaderProgram?
+     */
     public enum Shading {
         flat(),
         parametric(),
-        textured();
+        textured(),
+        shadow1(),
+        shadow2();
     }
 
     /**

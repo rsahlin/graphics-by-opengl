@@ -13,10 +13,13 @@ import com.nucleus.exporter.Reference;
  */
 public class BaseReference implements Reference {
 
-    @SerializedName("id")
+    public static final String ID = "id";
+    public static final String EXTERNAL_REFERENCE = "externalReference"; 
+    
+    @SerializedName(ID)
     private String id;
 
-    @SerializedName("externalReference")
+    @SerializedName(EXTERNAL_REFERENCE)
     private ExternalReference externalReference;
 
     /**

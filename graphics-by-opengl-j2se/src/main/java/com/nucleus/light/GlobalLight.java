@@ -7,6 +7,11 @@ package com.nucleus.light;
 public class GlobalLight {
 
     private float[] ambient = new float[] { 1f, 1f, 1f, 1 };
+    
+    /**
+     * Direction of global light vector.
+     */
+    private float[] lightVector = new float[] { 0,0,0};
 
     private static GlobalLight globalLight = new GlobalLight();
 
@@ -27,5 +32,14 @@ public class GlobalLight {
     public float[] getAmbient() {
         return ambient;
     }
+    
+    /**
+     * Returns the direction of the global light
+     * @return
+     */
+    public float[] getLightVector() {
+        return lightVector;
+    }
+    
 
 }

@@ -25,6 +25,7 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.Window;
 import com.nucleus.shader.ShaderVariable.VariableType;
+import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;
 
 /**
@@ -146,28 +147,14 @@ public abstract class ShaderProgram {
      */
     protected String vertexShaderName;
     protected String fragmentShaderName;
+    //Optional
+    protected Texture2D.Shading shading;
 
     /**
      * Unmapped variable types, by default Sampler2D is added to avoid having to add Sampler2D variables.
      * Sampler is set by activating textures and uploading textures not by attribute or uniform.
      */
     protected List<Integer> unMappedTypes = new ArrayList<>();
-
-    /**
-     * Returns the variable mapping for the shader variable, the mapping is used to find buffer index and offsets.
-     * 
-     * @param variable The shader variable to get the variable mapping for.
-     * @throws IllegalArgumentException If the shader variable has no variable mapping in the subclass.
-     * @throws NullPointerException If variable is null
-     */
-    public abstract VariableMapping getVariableMapping(ShaderVariable variable);
-
-    /**
-     * Creates uniform storage and sets values as needed by the program
-     * 
-     * @param mesh
-     */
-    public abstract void setupUniforms(Mesh mesh);
 
     /**
      * Sets the uniforms needed by the program, this will make the binding between the shader and uniforms
@@ -179,14 +166,6 @@ public abstract class ShaderProgram {
      */
     public abstract void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, float[] projectionMatrix, Mesh mesh)
             throws GLException;
-
-    /**
-     * Returns the number of defined attribute + uniform variables in the program.
-     * This is to make it easier when developing so that temporarily unused variabled do not need to be removed.
-     * 
-     * @return Number of defined variables in the shader program, all variables do not need to be used.
-     */
-    public abstract int getVariableCount();
 
     /**
      * Returns the offset within an attribute buffer where the property is, this is used to set specific properties
@@ -201,18 +180,74 @@ public abstract class ShaderProgram {
     public abstract int getPropertyOffset(Property property);
 
     /**
-     * Creates a new ShaderProgram
+     * Returns the variable mapping for the shader variable, the mapping is used to find buffer index and offsets.
+     * 
+     * @param variable The shader variable to get the variable mapping for.
+     * @throws IllegalArgumentException If the shader variable has no variable mapping in the subclass.
+     * @throws NullPointerException If variable is null
+     */
+    public VariableMapping getVariableMapping(ShaderVariable variable) {
+        return ShaderVariables.valueOf(getVariableName(variable));
+    }
+
+    /**
+     * Returns the number of defined attribute + uniform variables in the program.
+     * This is to make it easier when developing so that temporarily unused variabled do not need to be removed.
+     * 
+     * @return Number of defined variables in the shader program, all variables do not need to be used.
+     */
+    public int getVariableCount() {
+        return ShaderVariables.values().length;
+    }
+
+    /**
+     * Creates uniform storage and sets values as needed by the program
+     * 
+     * @param mesh
+     */
+    public void setupUniforms(Mesh mesh) {
+        createUniformStorage(mesh, shaderVariables);
+    }
+    
+    /**
+     * Creates a new shader program for the specified shading - used by subclasses
+     * @param shading
+     * @param mapping
+     */
+    protected ShaderProgram(Texture2D.Shading shading, VariableMapping[] mapping) {
+        super();
+        setMapping(mapping);
+        setShaderSource(shading);
+    }
+    
+    /**
+     * Creates a new ShaderProgram with the variable mapping, used by subclasses to create instance of shader.
      * 
      * @param mapping The variable mapping as defined by the subclass, this holds information of where uniform and
      * attribute data is
      */
     protected ShaderProgram(VariableMapping[] mapping) {
         super();
+        setMapping(mapping);
+    }
+    
+    private void setMapping(VariableMapping[] mapping) {
         unMappedTypes.add(GLES20.GL_SAMPLER_2D);
         setUniformMapping(mapping);
         setAttributeMapping(mapping);
     }
 
+    /**
+     * Sets the shading and the name of the vertex/fragment shaders
+     * @param shading
+     */
+    private void setShaderSource(Texture2D.Shading shading) {
+        //TODO - need a name together with shading to connect to shader, eg 'Translate', 'Transform' or 'Shadow'
+        vertexShaderName = PROGRAM_DIRECTORY + shading.name() + VERTEX + SHADER_SOURCE_SUFFIX;
+        fragmentShaderName = PROGRAM_DIRECTORY + shading.name() + FRAGMENT + SHADER_SOURCE_SUFFIX;
+        this.shading = shading;
+    }
+    
     /**
      * Returns the number of attribute buffers - as found when calling {@link #createProgram(GLES20Wrapper)}
      * 
@@ -906,7 +941,7 @@ public abstract class ShaderProgram {
      * @return Key value for this shader program.
      */
     public String getKey() {
-        return getClass().getCanonicalName();
+        return getClass().getCanonicalName() + (shading != null ? shading.name() : "");
     }
 
 }

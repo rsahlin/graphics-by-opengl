@@ -37,9 +37,10 @@ public abstract class J2SEWindow {
     }
 
     /**
-     * Returns the {@link GLESWrapper}
+     * Returns the {@link GLESWrapper} this must be created in subclasses
      * 
      * @return The GLES wrapper or null if not created
+     * This may mean that the window has not been made visible.
      */
     public GLESWrapper getGLESWrapper() {
         return wrapper;

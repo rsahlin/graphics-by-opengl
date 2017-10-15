@@ -8,7 +8,8 @@ public abstract class GLESWrapper {
      *
      */
     public enum Renderers {
-        GLES20();
+        GLES20(),
+        GLES30();
 
         private Renderers() {
         };

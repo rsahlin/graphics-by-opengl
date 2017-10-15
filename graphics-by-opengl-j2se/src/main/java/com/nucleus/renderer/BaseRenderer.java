@@ -33,6 +33,8 @@ import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.shader.ShadowPass1Program;
+import com.nucleus.shader.TransformProgram;
 import com.nucleus.texturing.Image.ImageFormat;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.TexParameter;
@@ -70,6 +72,9 @@ class BaseRenderer implements NucleusRenderer {
     protected ArrayDeque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<float[]> projection = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<Pass> renderPassStack = new ArrayDeque<>();
+    //TODO - move this into a class together with render pass deque so that access of stack and current pass
+    //is handled consistently
+    private Pass currentPass;
     /**
      * The current concatenated modelview matrix
      */
@@ -88,7 +93,6 @@ class BaseRenderer implements NucleusRenderer {
      */
     protected float[] projectionMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
 
-    protected Pass pass;
     protected GLES20Wrapper gles;
     protected ImageFactory imageFactory;
     protected MatrixEngine matrixEngine;
@@ -119,7 +123,7 @@ class BaseRenderer implements NucleusRenderer {
      * TODO Remove parameters from constructor and move to setter methods, this is in order for injection to be more
      * straightforward
      */
-    protected BaseRenderer(GLES20Wrapper gles, ImageFactory imageFactory, MatrixEngine matrixEngine) {
+    BaseRenderer(GLES20Wrapper gles, ImageFactory imageFactory, MatrixEngine matrixEngine) {
         if (gles == null) {
             throw new IllegalArgumentException(NULL_GLESWRAPPER_ERROR);
         }
@@ -160,8 +164,8 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public float beginFrame() {
-        pass = Pass.UNDEFINED;
         renderPassStack.clear();
+        pushPass(Pass.UNDEFINED);
         deltaTime = timeKeeper.update();
         if (timeKeeper.getSampleDuration() > FPS_SAMPLER_DELAY) {
             SimpleLogger.d(getClass(), timeKeeper.sampleFPS());
@@ -175,6 +179,24 @@ class BaseRenderer implements NucleusRenderer {
         return deltaTime;
     }
 
+    /**
+     * Pushes the pass and also sets the {@link #currentPass}
+     * @param pass
+     */
+    protected void pushPass(Pass pass) {
+        renderPassStack.push(pass);
+        currentPass = pass;
+    }
+
+    /**
+     * Pops a pass from the stack, setting the popped pass in {@link #currentPass}
+     * @return The popped pass or null if stack empty.
+     */
+    protected Pass popPass() {
+        currentPass = renderPassStack.pop();
+        return currentPass;
+    }
+    
     /**
      * Internal method to apply the rendersettings.
      * 
@@ -226,15 +248,17 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(Node node) throws GLException {
-        if (node.getPass() != null && (pass.getFlags() & node.getPass().getFlags()) != 0) {
+        if (node.getPass() != null && (currentPass.getFlags() & node.getPass().getFlags()) != 0) {
             State state = node.getState();
             if (state == null || state == State.ON || state == State.RENDER) {
-                pass = node.getPass();
+                renderPassStack.push(node.getPass());
                 ArrayList<RenderPass> renderPasses = node.getRenderPass();
                 if (renderPasses != null) {
                     for (RenderPass renderPass : renderPasses) {
+                        pushPass(renderPass.getPass());
                         setRenderPass(renderPass);
                         internalRender(node);
+                        popPass();
                     }
                 } else {
                     internalRender(node);
@@ -482,18 +506,18 @@ class BaseRenderer implements NucleusRenderer {
             updater.updateAttributeData();
         }
         Material material = mesh.getMaterial();
-        ShaderProgram program = material.getProgram();
-        AttributeBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
-        ElementBuffer indices = mesh.getElementBuffer();
+        ShaderProgram program = getProgram(material, currentPass);
         gles.glUseProgram(program.getProgram());
         GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
 
-        Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
-        bindTexture(texture);
         material.setBlendModeSeparate(gles);
         program.bindAttributes(gles, mesh);
         program.bindUniforms(gles, mvMatrix, projectionMatrix, mesh);
-
+        
+        AttributeBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
+        ElementBuffer indices = mesh.getElementBuffer();
+        Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
+        bindTexture(texture);
         if (indices == null) {
             gles.glDrawArrays(mesh.getMode().mode, 0, vertices.getVerticeCount());
             timeKeeper.addDrawArrays(vertices.getVerticeCount());
@@ -511,15 +535,36 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     /**
+     * 
+     * @param material
+     * @param pass The currently defined pass
+     * @return
+     */
+    private ShaderProgram getProgram(Material material, Pass pass) {
+        switch (pass) {
+            case UNDEFINED:
+            case ALL:
+            case MAIN:
+                return material.getProgram();
+            case SHADOW:
+                return AssetManager.getInstance().getProgram(this, new ShadowPass1Program());
+                default:
+            throw new IllegalArgumentException("Invalid pass " + pass);
+        }
+        
+    }
+    
+    /**
      * binds the texture, if texture reference is dynamic id the reference is fetched.
      * @param texture
      */
     private void bindTexture(Texture2D texture) throws GLException {
+        int textureID = texture.getName();
         if (texture != null && texture.textureType != TextureType.Untextured) {
-            int textureID = texture.getName();
             if (textureID == Constants.NO_VALUE && texture.getExternalReference().isIdReference()) {
                 //Texture has no texture object - and is id reference
                 //Should only be used for dynamic textures, eg ones that depend on define in existing node
+                //TODO - try to move outside of frame render loop
                 AssetManager.getInstance().getIdReference(texture);
                 textureID = texture.getName();
                 gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);

@@ -25,7 +25,7 @@ public abstract class Component extends BaseReference {
 
     @SerializedName(SYSTEM)
     private String system;
-
+    
     /**
      * Used to create a new instance of a component
      * 

@@ -72,10 +72,12 @@ public class BaseRootNode extends RootNode {
         public RootNode create() throws NodeException {
             validate();
             BaseRootNode root = new BaseRootNode();
+            //TODO the builder should handle creation of renderpass in a more generic way.
             RenderPass pass = new RenderPass();
             pass.setId("RenderPass");
             pass.setTarget(new RenderTarget(Target.FRAMEBUFFER, null));
             pass.setRenderState(new RenderState());
+            pass.setPass(Pass.MAIN);
             Node created = nodeFactory.create(renderer, program, builder, nodeType, root);
             ViewFrustum vf = new ViewFrustum();
             vf.setOrthoProjection(-0.5f, 0.5f, -0.5f, 0.5f, 0, 10);

@@ -240,21 +240,6 @@ public class Node extends BaseReference {
     }
     
     /**
-     * Creates an empty node, add children and meshes as needed.
-     * 
-     * @param root
-     * @param type
-     * @param pass
-     */
-    protected Node(RootNode root, Type<Node> type, Pass pass) {
-        setRootNode(root);
-        setType(type);
-        this.pass = pass;
-    }
-    
-    
-
-    /**
      * Creates an empty node with unique (for the scene) Id.
      * The uniqueness of the id is NOT checked.
      * 
@@ -843,7 +828,7 @@ public class Node extends BaseReference {
 
     @Override
     public String toString() {
-        return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children, state=" + state;
+        return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children, pass=" + pass + ", state=" + state;
     }
 
     /**
@@ -1109,8 +1094,7 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Returns the Pass(es) that this node should be used in, if this is a {@link RenderPassNode} node then this
-     * defines the current pass.
+     * Returns the Pass(es) that this node should be used in
      * @return
      */
     public Pass getPass() {

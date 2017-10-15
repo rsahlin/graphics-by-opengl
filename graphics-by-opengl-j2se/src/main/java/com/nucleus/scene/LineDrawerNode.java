@@ -7,7 +7,7 @@ import com.nucleus.geometry.RectangleShapeBuilder;
 import com.nucleus.geometry.ShapeBuilder;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.shader.ShaderVariables;
-import com.nucleus.shader.VertexTranslateProgram;
+import com.nucleus.shader.TranslateProgram;
 
 /**
  * Contains a mesh that draws lines

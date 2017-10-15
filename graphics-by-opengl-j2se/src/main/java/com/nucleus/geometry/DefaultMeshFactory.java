@@ -11,7 +11,7 @@ import com.nucleus.scene.LineDrawerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.SwitchNode;
-import com.nucleus.shader.VertexTranslateProgram;
+import com.nucleus.shader.TranslateProgram;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.texturing.TextureFactory;
@@ -28,8 +28,8 @@ public class DefaultMeshFactory implements MeshFactory {
                 int count = ((LineDrawerNode) parent).getLineCount();
                 builder.setElementMode(Mode.LINES, count, count * 2);
                 Material m = new Material();
-                VertexTranslateProgram program = (VertexTranslateProgram) AssetManager.getInstance()
-                        .getProgram(renderer, new VertexTranslateProgram(Shading.flat));
+                TranslateProgram program = (TranslateProgram) AssetManager.getInstance()
+                        .getProgram(renderer, new TranslateProgram(Shading.flat));
                 m.setProgram(program);
                 Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
                 builder.setMaterial(m);

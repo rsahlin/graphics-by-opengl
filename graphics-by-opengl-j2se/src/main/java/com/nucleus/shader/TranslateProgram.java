@@ -10,17 +10,13 @@ import com.nucleus.vecmath.Matrix;
 
 /**
  * Program for translated vertices, shader calculates vertex position with position offset
- * Can be used to draw lines, polygons or similar - objects cannot be independently rotated
+ * Can be used to draw lines, polygons or similar - objects cannot be independently rotated or scaled
+ * - use {@link TransformProgram} 
  */
-public class VertexTranslateProgram extends ShaderProgram {
+public class TranslateProgram extends ShaderProgram {
 
-    private Texture2D.Shading shading;
-
-    public VertexTranslateProgram(Texture2D.Shading shading) {
-        super(ShaderVariables.values());
-        vertexShaderName = PROGRAM_DIRECTORY + shading.name() + VERTEX + SHADER_SOURCE_SUFFIX;
-        fragmentShaderName = PROGRAM_DIRECTORY + shading.name() + FRAGMENT + SHADER_SOURCE_SUFFIX;
-        this.shading = shading;
+    public TranslateProgram(Texture2D.Shading shading) {
+        super(shading, ShaderVariables.values());
     }
 
     @Override
@@ -51,7 +47,6 @@ public class VertexTranslateProgram extends ShaderProgram {
         createUniformStorage(mesh, shaderVariables);
     }
 
-
     @Override
     public int getPropertyOffset(Property property) {
         ShaderVariable v = null;
@@ -71,11 +66,6 @@ public class VertexTranslateProgram extends ShaderProgram {
 
         }
         return -1;
-    }
-
-    @Override
-    public String getKey() {
-        return getClass().getCanonicalName() + shading.name();
     }
 
 }
