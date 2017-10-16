@@ -541,17 +541,7 @@ class BaseRenderer implements NucleusRenderer {
      * @return
      */
     private ShaderProgram getProgram(Material material, Pass pass) {
-        switch (pass) {
-            case UNDEFINED:
-            case ALL:
-            case MAIN:
-                return material.getProgram();
-            case SHADOW:
-                return AssetManager.getInstance().getProgram(this, new ShadowPass1Program());
-                default:
-            throw new IllegalArgumentException("Invalid pass " + pass);
-        }
-        
+        return material.getProgram().getProgram(this, pass, null);
     }
     
     /**

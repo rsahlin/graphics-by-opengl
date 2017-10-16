@@ -3,15 +3,20 @@ package com.nucleus.convolution;
 import com.nucleus.geometry.AttributeUpdater.Property;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.Pass;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderVariable;
+import com.nucleus.shader.ShadowPass1Program;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.shader.VariableMapping;
+import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.vecmath.Matrix;
 
 public class ConvolutionProgram extends ShaderProgram {
@@ -97,8 +102,15 @@ public class ConvolutionProgram extends ShaderProgram {
     }
 
     @Override
-    public int getPropertyOffset(Property property) {
-        // TODO Auto-generated method stub
-        return 0;
+    public ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Shading shading) {
+        switch (pass) {
+            case UNDEFINED:
+            case ALL:
+            case MAIN:
+                return this;
+                default:
+            throw new IllegalArgumentException("Invalid pass " + pass);
+        }
     }
+
 }

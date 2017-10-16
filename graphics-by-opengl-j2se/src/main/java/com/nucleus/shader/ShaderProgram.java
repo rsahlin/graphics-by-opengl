@@ -23,6 +23,8 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
@@ -168,6 +170,15 @@ public abstract class ShaderProgram {
             throws GLException;
 
     /**
+     * Returns the program for the specified pass and shading, this is used to resolve the correct
+     * program for different passes
+     * @param renderer
+     * @param pass
+     * @param shading
+     */
+    public abstract ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Texture2D.Shading shading);
+    
+    /**
      * Returns the offset within an attribute buffer where the property is, this is used to set specific properties
      * of a vertex.
      * This will be the same for all vertices, you only need to fetch this once. It will not change as long
@@ -177,7 +188,34 @@ public abstract class ShaderProgram {
      * @return Offset into attribute (buffer) where the storage for the specified property is, or -1 if the property
      * is not supported.
      */
-    public abstract int getPropertyOffset(Property property);
+    public int getPropertyOffset(Property property) {
+        ShaderVariable v = null;
+        switch (property) {
+        case TRANSLATE:
+            v = shaderVariables[ShaderVariables.aTranslate.index];
+            break;
+        case ROTATE:
+            v = shaderVariables[ShaderVariables.aRotate.index];
+            break;
+        case SCALE:
+            v = shaderVariables[ShaderVariables.aScale.index];
+            break;
+        case FRAME:
+            v = shaderVariables[ShaderVariables.aFrameData.index];
+            break;
+        case COLOR_AMBIENT:
+        case COLOR:
+            v = shaderVariables[ShaderVariables.aColor.index];
+            break;
+        default:
+        }
+        if (v != null) {
+            return v.getOffset();
+        } else {
+            SimpleLogger.d(getClass(), "No ShaderVariable for " + property);
+        }
+        return -1;
+    }
 
     /**
      * Returns the variable mapping for the shader variable, the mapping is used to find buffer index and offsets.
@@ -229,9 +267,10 @@ public abstract class ShaderProgram {
     protected ShaderProgram(VariableMapping[] mapping) {
         super();
         setMapping(mapping);
+        setShaderSource(null);
     }
     
-    private void setMapping(VariableMapping[] mapping) {
+    protected void setMapping(VariableMapping[] mapping) {
         unMappedTypes.add(GLES20.GL_SAMPLER_2D);
         setUniformMapping(mapping);
         setAttributeMapping(mapping);
@@ -241,7 +280,7 @@ public abstract class ShaderProgram {
      * Sets the shading and the name of the vertex/fragment shaders
      * @param shading
      */
-    private void setShaderSource(Texture2D.Shading shading) {
+    protected void setShaderSource(Texture2D.Shading shading) {
         //TODO - need a name together with shading to connect to shader, eg 'Translate', 'Transform' or 'Shadow'
         vertexShaderName = PROGRAM_DIRECTORY + shading.name() + VERTEX + SHADER_SOURCE_SUFFIX;
         fragmentShaderName = PROGRAM_DIRECTORY + shading.name() + FRAGMENT + SHADER_SOURCE_SUFFIX;
@@ -944,4 +983,5 @@ public abstract class ShaderProgram {
         return getClass().getCanonicalName() + (shading != null ? shading.name() : "");
     }
 
+    
 }

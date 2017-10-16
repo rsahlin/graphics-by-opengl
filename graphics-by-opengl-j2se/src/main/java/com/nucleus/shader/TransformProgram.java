@@ -2,9 +2,14 @@ package com.nucleus.shader;
 
 import com.nucleus.geometry.AttributeUpdater.Property;
 import com.nucleus.SimpleLogger;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.Pass;
+import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -20,6 +25,14 @@ public class TransformProgram extends ShaderProgram {
     
     public TransformProgram() {
         super(ShaderVariables.values());
+    }
+    
+    protected TransformProgram(VariableMapping[] mapping) {
+        super(mapping);
+    }
+    
+    @Override
+    protected void setShaderSource(Texture2D.Shading shading) {
         vertexShaderName = PROGRAM_DIRECTORY + NAME + VERTEX + SHADER_SOURCE_SUFFIX;
         fragmentShaderName = PROGRAM_DIRECTORY + NAME + FRAGMENT + SHADER_SOURCE_SUFFIX;
     }
@@ -39,27 +52,17 @@ public class TransformProgram extends ShaderProgram {
     }
 
     @Override
-    public int getPropertyOffset(Property property) {
-        ShaderVariable v = null;
-        switch (property) {
-        case TRANSLATE:
-            v = shaderVariables[ShaderVariables.aTranslate.index];
-            break;
-        case ROTATE:
-            v = shaderVariables[ShaderVariables.aRotate.index];
-            break;
-        case SCALE:
-            v = shaderVariables[ShaderVariables.aScale.index];
-            break;
-        default:
+    public ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Shading shading) {
+        switch (pass) {
+            case UNDEFINED:
+            case ALL:
+            case MAIN:
+                return this;
+            case SHADOW:
+                return AssetManager.getInstance().getProgram(renderer, new ShadowPass1Program());
+                default:
+            throw new IllegalArgumentException("Invalid pass " + pass);
         }
-        if (v != null) {
-            return v.getOffset();
-        } else {
-            SimpleLogger.d(getClass(), "No ShaderVariable for " + property);
-            
-        }
-        return -1;
     }
 
 }
