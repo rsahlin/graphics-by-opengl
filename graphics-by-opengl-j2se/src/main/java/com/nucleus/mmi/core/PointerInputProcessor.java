@@ -8,8 +8,8 @@ import com.nucleus.geometry.Vertex2D;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.PointerData;
-import com.nucleus.mmi.PointerMotionData;
 import com.nucleus.mmi.PointerData.PointerAction;
+import com.nucleus.mmi.PointerMotionData;
 import com.nucleus.vecmath.Vector2D;
 
 /**
@@ -84,6 +84,9 @@ public class PointerInputProcessor implements PointerListener {
                     pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition));
             break;
         case ZOOM:
+                if (pointerMotionData[pointer] == null) {
+                    pointerMotionData[pointer] = new PointerMotionData();
+                }
             MMIPointerEvent zoom = new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ZOOM, pointer,
                     pointerMotionData[pointer]);
             zoom.setZoom(position[X] * transform[X], position[Y] * transform[Y]);

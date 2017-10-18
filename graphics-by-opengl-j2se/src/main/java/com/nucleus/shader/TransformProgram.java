@@ -1,7 +1,5 @@
 package com.nucleus.shader;
 
-import com.nucleus.geometry.AttributeUpdater.Property;
-import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
@@ -42,12 +40,13 @@ public class TransformProgram extends ShaderProgram {
             throws GLException {
         // Refresh the uniform matrix
         // TODO prefetch the offsets for the shader variables and store in array.
-        System.arraycopy(modelviewMatrix, 0, mesh.getUniforms(), shaderVariables[ShaderVariables.uMVMatrix.index].getOffset(),
+        System.arraycopy(modelviewMatrix, 0, getUniforms(),
+                shaderVariables[ShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(projectionMatrix, 0, mesh.getUniforms(),
+        System.arraycopy(projectionMatrix, 0, getUniforms(),
                 shaderVariables[ShaderVariables.uProjectionMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
-        bindUniforms(gles, uniforms, mesh.getUniforms());
+        bindUniforms(gles, sourceUniforms, getUniforms());
         
     }
 
@@ -64,5 +63,6 @@ public class TransformProgram extends ShaderProgram {
             throw new IllegalArgumentException("Invalid pass " + pass);
         }
     }
+
 
 }

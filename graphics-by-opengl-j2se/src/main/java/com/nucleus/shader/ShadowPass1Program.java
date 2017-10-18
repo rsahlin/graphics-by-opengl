@@ -1,9 +1,7 @@
 package com.nucleus.shader;
 
-import com.nucleus.geometry.AttributeUpdater.Property;
-import com.nucleus.light.GlobalLight;
-import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.texturing.Texture2D;
@@ -40,12 +38,13 @@ public class ShadowPass1Program extends TransformProgram {
     public void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, float[] projectionMatrix, Mesh mesh)
             throws GLException {
         // Refresh the uniform matrix
-        System.arraycopy(modelviewMatrix, 0, mesh.getUniforms(), shaderVariables[ShaderVariables.uMVMatrix.index].getOffset(),
+        System.arraycopy(modelviewMatrix, 0, getUniforms(),
+                shaderVariables[ShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(getLightMatrix(), 0, mesh.getUniforms(),
+        System.arraycopy(getLightMatrix(), 0, getUniforms(),
                 shaderVariables[ShaderVariables.uProjectionMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
-        bindUniforms(gles, uniforms, mesh.getUniforms());
+        bindUniforms(gles, sourceUniforms, getUniforms());
     }
 
     public static float[] getLightMatrix() {

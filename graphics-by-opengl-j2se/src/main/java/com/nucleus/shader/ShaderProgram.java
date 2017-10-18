@@ -11,12 +11,12 @@ import java.util.List;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
+import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.AttributeUpdater.Property;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
-import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
@@ -142,7 +142,12 @@ public abstract class ShaderProgram {
     protected int[] attributesPerVertex;
     protected VariableMapping[] attributes; // List of attributes defined by a program
     protected int attributeBufferCount; // Number of buffers used by attributes
-    protected VariableMapping[] uniforms; // List of uniforms defined by a program
+    protected VariableMapping[] sourceUniforms; // List of uniforms defined by a program
+
+    /**
+     * Uniforms, used when rendering this Mesh depending on what ShaderProgram is used.
+     */
+    transient protected float[] uniforms;
 
     /**
      * The following fields MUST be set by subclasses
@@ -237,15 +242,6 @@ public abstract class ShaderProgram {
     public int getVariableCount() {
         return ShaderVariables.values().length;
     }
-
-    /**
-     * Creates uniform storage and sets values as needed by the program
-     * 
-     * @param mesh
-     */
-    public void setupUniforms(Mesh mesh) {
-        createUniformStorage(mesh, shaderVariables);
-    }
     
     /**
      * Creates a new shader program for the specified shading - used by subclasses
@@ -308,7 +304,7 @@ public abstract class ShaderProgram {
                 uniformList.add(v);
             }
         }
-        uniforms = uniformList.toArray(new VariableMapping[uniformList.size()]);
+        sourceUniforms = uniformList.toArray(new VariableMapping[uniformList.size()]);
     }
 
     /**
@@ -785,6 +781,7 @@ public abstract class ShaderProgram {
             linkProgram(gles, program, vertexShader, fragmentShader);
             fetchProgramInfo(gles);
             bindAttributeNames(gles);
+            createUniformStorage(shaderVariables);
         } catch (IOException e) {
             if (vertexStream == null) {
                 throw new RuntimeException("Could not load " + vertexName);
@@ -846,18 +843,17 @@ public abstract class ShaderProgram {
      * This will create the float array storage in the mesh, indexing must be done by the apropriate program
      * when uniform variables are set before rendering.
      * 
-     * @param mesh
      * @param variables Shader variables, attribute variables are ignored
      */
-    protected void createUniformStorage(Mesh mesh, ShaderVariable[] variables) {
+    protected void createUniformStorage(ShaderVariable[] variables) {
 
         int uniformSize = 0;
         if (variables != null) {
             uniformSize = getVariableSize(variables, VariableType.UNIFORM);
             if (uniformSize > 0) {
-                mesh.setUniforms(new float[uniformSize]);
+                setUniforms(new float[uniformSize]);
             } else {
-                SimpleLogger.d(getClass(), "No uniform size for mesh id " + mesh.getId());
+                SimpleLogger.d(getClass(), "No uniforms used");
             }
         } else {
             throw new IllegalArgumentException("Shader variables is null, forgot to call createProgram()?");
@@ -983,5 +979,24 @@ public abstract class ShaderProgram {
         return getClass().getCanonicalName() + (shading != null ? shading.name() : "");
     }
 
+    /**
+     * Returns one or more defined uniform vectors used when rendering.
+     * 
+     * @return One or more uniform vector as used by the shader program implementation
+     */
+    public float[] getUniforms() {
+        return uniforms;
+    }
+
+    /**
+     * Sets a reference to an array with float values that can be used by when rendering this Mesh.
+     * Note that the use of uniforms is depending on the shader program used.
+     * 
+     * @param uniforms Values to reference in this class, note that values are NOT copied.
+     * 
+     */
+    public void setUniforms(float[] uniforms) {
+        this.uniforms = uniforms;
+    }
     
 }

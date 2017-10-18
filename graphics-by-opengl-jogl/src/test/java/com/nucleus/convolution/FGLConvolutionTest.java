@@ -13,12 +13,10 @@ import com.nucleus.io.ExternalReference;
 import com.nucleus.jogl.JOGLApplication;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
-import com.nucleus.renderer.RenderState;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
@@ -60,6 +58,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
     int counter = 0;
     long start = 0;
     private ShaderVariable uKernel;
+    private ConvolutionProgram program;
 
     public FGLConvolutionTest() {
         super(new String[] {}, Renderers.GLES20, MyClientApplication.class);
@@ -95,10 +94,10 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
         meshBuilder.setElementMode(Mode.TRIANGLES, 4, 6);
         meshBuilder.setTexture(texture);
-        ConvolutionProgram c = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer,
+        program = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer,
                 new ConvolutionProgram());
         Material material = new Material();
-        material.setProgram(c);
+        material.setProgram(program);
         meshBuilder.setMaterial(material);
         meshBuilder.setShapeBuilder(
                 new RectangleShapeBuilder(new RectangleShapeBuilder.Configuration(1f, 1f, 0f, 1, 0)));
@@ -107,7 +106,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         try {
             RootNode root = builder.create();
             mesh = root.getNodeByType(NodeTypes.layernode).getMesh(MeshType.MAIN);
-            uKernel = c.getShaderVariable(ConvolutionProgram.VARIABLES.uKernel);
+            uKernel = program.getShaderVariable(ConvolutionProgram.VARIABLES.uKernel);
             renderer.addFrameListener(this);
             coreApp.setRootNode(root);
         } catch (NodeException e) {
@@ -142,7 +141,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
             counter = 0;
         }
         Convolution.normalize(kernel[kernelIndex], normalizedKernel, absNormalize[kernelIndex], factor);
-        System.arraycopy(normalizedKernel, 0, mesh.getUniforms(), uKernel.getOffset(),
+        System.arraycopy(normalizedKernel, 0, program.getUniforms(), uKernel.getOffset(),
                 normalizedKernel.length);
 
     }

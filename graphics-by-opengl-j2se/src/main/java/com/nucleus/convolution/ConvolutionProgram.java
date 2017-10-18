@@ -1,10 +1,8 @@
 package com.nucleus.convolution;
 
-import com.nucleus.geometry.AttributeUpdater.Property;
+import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
-import com.nucleus.assets.AssetManager;
-import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
@@ -13,7 +11,6 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderVariable;
-import com.nucleus.shader.ShadowPass1Program;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.shader.VariableMapping;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -92,13 +89,8 @@ public class ConvolutionProgram extends ShaderProgram {
     public void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, float[] projectionMatrix, Mesh mesh)
             throws GLException {
         Matrix.mul4(modelviewMatrix, projectionMatrix);
-        System.arraycopy(modelviewMatrix, 0, mesh.getUniforms(), 0, Matrix.MATRIX_ELEMENTS);
-        bindUniforms(gles, uniforms, mesh.getUniforms());
-    }
-
-    @Override
-    public void setupUniforms(Mesh mesh) {
-        createUniformStorage(mesh, shaderVariables);
+        System.arraycopy(modelviewMatrix, 0, getUniforms(), 0, Matrix.MATRIX_ELEMENTS);
+        bindUniforms(gles, sourceUniforms, getUniforms());
     }
 
     @Override

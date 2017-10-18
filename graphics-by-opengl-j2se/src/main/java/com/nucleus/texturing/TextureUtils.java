@@ -87,7 +87,7 @@ public class TextureUtils {
      * @throws IOException
      */
     protected static Image loadTextureImage(ImageFactory factory, Texture2D texture) throws IOException {
-
+        SimpleLogger.d(TextureUtils.class, "Loading image " + texture.getExternalReference().getSource());
         float scale = (float) Window.getInstance().getHeight() / texture.resolution.lines;
         if (scale < 0.9) {
             factory.createImage(texture.getExternalReference().getSource(), scale, scale, getImageFormat(texture));

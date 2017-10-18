@@ -13,21 +13,25 @@ public enum ShaderVariables implements VariableMapping {
      * Projection matrix that can be applied after snapping to screen coordinates
      */
     uProjectionMatrix(1, ShaderVariable.VariableType.UNIFORM, null),
-    uScreenSize(2, ShaderVariable.VariableType.UNIFORM, null),
+    /**
+     * The light pov
+     */
+    uLightMatrix(2, ShaderVariable.VariableType.UNIFORM, null),
+    uScreenSize(3, ShaderVariable.VariableType.UNIFORM, null),
     /**
      * Normally texture width, height and frames per line
      */
-    uTextureData(3, ShaderVariable.VariableType.UNIFORM, null),
-    uAmbientLight(4, ShaderVariable.VariableType.UNIFORM, null),
-    uDiffuseLight(5, ShaderVariable.VariableType.UNIFORM, null),
-    aVertex(6, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-    aTexCoord(7, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-    aTranslate(8, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aRotate(9, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aScale(10, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aColor(11, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aFrameData(12, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aData1(13, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
+    uTextureData(4, ShaderVariable.VariableType.UNIFORM, null),
+    uAmbientLight(5, ShaderVariable.VariableType.UNIFORM, null),
+    uDiffuseLight(6, ShaderVariable.VariableType.UNIFORM, null),
+    aVertex(7, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+    aTexCoord(8, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+    aTranslate(9, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aRotate(10, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aScale(11, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aColor(12, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aFrameData(13, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aData1(14, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
     
     public final int index;
     public final VariableType type;

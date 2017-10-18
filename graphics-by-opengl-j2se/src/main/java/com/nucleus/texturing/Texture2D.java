@@ -346,6 +346,15 @@ public class Texture2D extends BaseReference {
         return format;
     }
 
+    /**
+     * Returns the number of frames defined in the texture - subclasses must override this
+     * if they support multiple frames. For instance tiled texture
+     * 
+     * @return Number of frames in the texture
+     */
+    public int getFrameCount() {
+        return 1;
+    }
 
     @Override
     public String toString() {

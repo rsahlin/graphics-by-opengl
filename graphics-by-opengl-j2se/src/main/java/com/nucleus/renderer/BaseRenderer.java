@@ -11,13 +11,13 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Constants;
+import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
-import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
@@ -27,21 +27,13 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
-import com.nucleus.renderer.RenderTarget.Target;
 import com.nucleus.scene.Node;
-import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.shader.ShadowPass1Program;
-import com.nucleus.shader.TransformProgram;
-import com.nucleus.texturing.Image.ImageFormat;
 import com.nucleus.texturing.ImageFactory;
-import com.nucleus.texturing.TexParameter;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureType;
-import com.nucleus.texturing.TextureUtils;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -227,7 +219,8 @@ class BaseRenderer implements NucleusRenderer {
                 gles.glDepthRangef(state.getDepthRangeNear(), state.getDepthRangeFar());
             } else {
                 gles.glDisable(GLES20.GL_DEPTH_TEST);
-                gles.glDepthMask(false);
+                gles.glDepthMask(true);
+                gles.glDepthRangef(state.getDepthRangeNear(), state.getDepthRangeFar());
             }
         }
         if ((flags & RenderState.CHANGE_FLAG_MULTISAMPLE) != 0) {

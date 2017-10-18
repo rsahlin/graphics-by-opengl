@@ -40,5 +40,10 @@ public class UVTexture2D extends Texture2D {
     public UVAtlas getUVAtlas() {
         return UVAtlas;
     }
+    
+    @Override
+    public int getFrameCount() {
+        return UVAtlas.getFrameCount();
+    }
 
 }
