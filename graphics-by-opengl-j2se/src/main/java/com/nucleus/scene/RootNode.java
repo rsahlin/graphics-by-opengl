@@ -4,12 +4,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
-import com.nucleus.common.Type;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.NucleusRenderer.Layer;
-import com.nucleus.scene.Node.NodeTypes;
 
 /**
  * Starting point of a nodetree, the root has a collection of nodes the each represent a scene.
@@ -22,8 +18,13 @@ import com.nucleus.scene.Node.NodeTypes;
  * @author Richard Sahlin
  *
  */
-public abstract class RootNode {
+public abstract class RootNode extends Node {
 
+    /**
+     * Default id for the root node
+     */
+    public static final String ROOTNODE_ID = "rootnode";
+    
     /**
      * Pre defined ids that can be used for scenes and make it more convenient find a scene.
      * 
@@ -35,9 +36,6 @@ public abstract class RootNode {
         game(),
         about(),
     }
-
-    @SerializedName("scene")
-    private java.util.List<Node> scene;
 
     /**
      * Set to true when node is added or removed
@@ -59,33 +57,28 @@ public abstract class RootNode {
      */
     transient private Hashtable<String, Node> childNodeTable = new Hashtable<>();
 
+    protected RootNode() {
+        super();
+        setType(NodeTypes.rootnode);
+    }
+    
     /**
      * Sets the root scene node, this rootnode shall be rootnode of all added children.
+     * This is the same as adding the scene by calling {@link #addChild(Node)} on each of the children.
      * 
      * @param node
      * @throws IllegalArgumentException If a node has already been set with a call to this method, or rootnode is not
      * set in scene
      */
     public void setScene(List<Node> scene) {
-        if (this.scene != null) {
-            throw new IllegalArgumentException("Scene has already been set");
+        if (scene == null) {
+            throw new IllegalArgumentException("Scene is null");
         }
-    	//TODO Verify that children has rootnode set
-        this.scene = scene;
+        for (Node node : scene) {
+            addChild(node);
+        }
     }
 
-    /**
-     * Adds a child to the root
-     * @param child
-     */
-    public void addChild(Node child) {
-    	if (scene == null) {
-    		scene = new ArrayList<>();
-    	}
-    	//TODO Verify that child has rootnode set
-    	scene.add(child);
-    }
-    
     /**
      * Creates a new instance of RootNode, implement in RootNode subclasses to return the implementation instance.
      * 
@@ -93,51 +86,6 @@ public abstract class RootNode {
      */
     public abstract RootNode createInstance();
 
-    public List<Node> getScene() {
-        return scene;
-    }
-
-    /**
-     * Returns the first matching viewnode, this is a conveniance method to find node with view
-     * 
-     * @param layer Which layer the ViewNode to return belongs to.
-     * @return The viewnode or null if not found
-     */
-    public LayerNode getViewNode(Layer layer) {
-        if (scene == null) {
-            return null;
-        }
-        for (Node node : scene) {
-        	LayerNode layerNode = getViewNode(layer, node);
-        	if (layerNode != null) {
-        		return layerNode;
-        	}
-        }
-        return null;
-    }
-
-    private LayerNode getViewNode(Layer layer, Node node) {
-        return getViewNode(layer, node.getChildren());
-    }
-
-    private LayerNode getViewNode(Layer layer, ArrayList<Node> children) {
-        for (Node n : children) {
-            if (n.getType().equals(NodeTypes.layernode.name())) {
-                if (((LayerNode) n).getLayer() == layer) {
-                    return (LayerNode) n;
-                }
-            }
-        }
-        // Search through children recusively
-        for (Node n : children) {
-            LayerNode view = getViewNode(layer, n);
-            if (view != null) {
-                return view;
-            }
-        }
-        return null;
-    }
-    
     /**
      * Call this when a node is added or removed to the nodetree.
      */
@@ -204,7 +152,6 @@ public abstract class RootNode {
         renderNodeList = new ArrayList<>();
     }
 
-
     /**
      * Returns list of visible nodes, this is the list of nodes that have been rendered and is currently visible.
      * DO NOT MODIFY THIS LIST
@@ -218,7 +165,7 @@ public abstract class RootNode {
     /**
      * Registers a node as child node (somewhere) on the root node.
      * After calling this method the ID can be used to locate the node
-     * NOTE - this shall not be called directly
+     * NOTE - this shall not be called directly by clients - its called from the {@link Node#addChild(Node)} method
      * 
      * @param child
      * @throws IllegalArgumentException If a node with the same ID is already added to the nodetree
@@ -229,7 +176,7 @@ public abstract class RootNode {
         }
         childNodeTable.put(child.getId(), child);
     }
-
+    
     /**
      * Unregisters the child from list of nodes within the rootnode
      * NOTE - this shall not be called directly
@@ -240,7 +187,7 @@ public abstract class RootNode {
      */
     protected void unregisterChild(Node child) {
         if (childNodeTable.remove(child.getId()) == null) {
-         throw new IllegalArgumentException("Node not registered with root:" + child.getId());   
+            throw new IllegalArgumentException("Node not registered with root:" + child.getId());
         }
     }
 
@@ -255,40 +202,9 @@ public abstract class RootNode {
         for (Node node : childNodeTable.values()) {
             node.destroy(renderer);
         }
-        scene = null;
         renderNodeList = null;
         visibleNodeList = null;
         childNodeTable = null;
     }
 
-    /**
-     * Searches through the scene children and looks for the first node with matching id.
-     * @param id
-     * @return
-     */
-    public Node getNodeById(String id) {
-    	for (Node node : scene) {
-    		Node n = node.getNodeById(id);
-    		if (n != null) {
-    			return n;
-    		}
-    	}
-    	return null;
-    }
-    
-    /**
-     * Searches through the scene children and looks for the first node with matching type.
-     * @param type
-     * @return
-     */
-    public Node getNodeByType(Type<Node> type) {
-    	for (Node node : scene) {
-    		Node n = node.getNodeByType(type.getName());
-    		if (n != null) {
-    			return n;
-    		}
-    	}
-    	return null;
-    }
-    
 }

@@ -1,17 +1,19 @@
 package com.nucleus.convolution;
 
-import com.nucleus.geometry.AttributeUpdater.Property;
+import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
-import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.Pass;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.shader.VariableMapping;
+import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.vecmath.Matrix;
 
 public class ConvolutionProgram extends ShaderProgram {
@@ -21,7 +23,7 @@ public class ConvolutionProgram extends ShaderProgram {
     protected enum VARIABLES implements VariableMapping {
         uMVPMatrix(0, ShaderVariable.VariableType.UNIFORM, null),
         uKernel(1, ShaderVariable.VariableType.UNIFORM, null),
-        aPosition(2, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+        aTranslate(2, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
         aTexCoord(3, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES);
 
         private final int index;
@@ -87,18 +89,20 @@ public class ConvolutionProgram extends ShaderProgram {
     public void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, float[] projectionMatrix, Mesh mesh)
             throws GLException {
         Matrix.mul4(modelviewMatrix, projectionMatrix);
-        System.arraycopy(modelviewMatrix, 0, mesh.getUniforms(), 0, Matrix.MATRIX_ELEMENTS);
-        bindUniforms(gles, uniforms, mesh.getUniforms());
+        System.arraycopy(modelviewMatrix, 0, getUniforms(), 0, Matrix.MATRIX_ELEMENTS);
+        bindUniforms(gles, sourceUniforms, getUniforms());
     }
 
     @Override
-    public void setupUniforms(Mesh mesh) {
-        createUniformStorage(mesh, shaderVariables);
+    public ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Shading shading) {
+        switch (pass) {
+            case UNDEFINED:
+            case ALL:
+            case MAIN:
+                return this;
+                default:
+            throw new IllegalArgumentException("Invalid pass " + pass);
+        }
     }
 
-    @Override
-    public int getPropertyOffset(Property property) {
-        // TODO Auto-generated method stub
-        return 0;
-    }
 }

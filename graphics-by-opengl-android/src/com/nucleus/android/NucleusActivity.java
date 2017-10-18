@@ -4,6 +4,7 @@ import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.SimpleLogger;
 import com.nucleus.matrix.android.AndroidMatrixEngine;
+import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RendererFactory;
@@ -14,8 +15,10 @@ import com.super2k.nucleus.android.R;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
@@ -26,7 +29,7 @@ import android.view.WindowManager.LayoutParams;
  * @author Richard Sahlin
  *
  */
-public class NucleusActivity extends Activity
+public abstract class NucleusActivity extends Activity
         implements DialogInterface.OnClickListener, CoreAppStarter {
 
     /**
@@ -38,6 +41,7 @@ public class NucleusActivity extends Activity
 
     protected CoreApp coreApp;
     protected Class<?> clientClass;
+    protected GLESWrapper gles;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -48,7 +52,7 @@ public class NucleusActivity extends Activity
         }
         activity = this;
         super.onCreate(savedInstanceState);
-        createCoreWindows(Renderers.GLES20);
+        createCoreWindows(getRenderVersion());
     }
 
     @Override
@@ -80,24 +84,49 @@ public class NucleusActivity extends Activity
     }
 
     /**
+     * Returns the version of the renderer to use
+     * @return
+     */
+    public abstract Renderers getRenderVersion();
+    
+    /**
      * Setup this activity with a new GLSurfaceView create with the specified renderer
      * When this method returns the created view is the active content view (ie visible)
      * 
+     * @param version
      * @param rendermode
      * @param layoutParams
      * @param windowFeature
      */
-    private void setup(int rendermode, int layoutParams, int windowFeature) {
+    private void setup(Renderers version, int rendermode, int layoutParams, int windowFeature) {
         SurfaceConfiguration surfaceConfig = new SurfaceConfiguration();
         // TODO This shall be set on a per project basis
+        createWrapper(version);
         surfaceConfig.setSamples(16);
         mGLView = new AndroidSurfaceView(surfaceConfig, getApplicationContext(), this);
         mGLView.setRenderMode(rendermode);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(mGLView);
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        com.nucleus.renderer.Window.getInstance().setScreenSize(size.x, size.y);
     }
 
+    private void createWrapper(Renderers version) {
+        switch (version) {
+            case GLES20:
+                gles = new AndroidGLES20Wrapper();
+                break;
+            case GLES30:
+                gles = new AndriodGLES30Wrapper();
+                break;
+                default:
+                    throw new IllegalArgumentException("Not implemented for version:" + version);
+        }
+    }
+    
     public static void handleThrowable(final Throwable t) {
         throwable = t;
         activity.runOnUiThread(new Runnable() {
@@ -140,13 +169,13 @@ public class NucleusActivity extends Activity
 
     @Override
     public void createCoreWindows(Renderers version) {
-        setup(GLSurfaceView.RENDERMODE_CONTINUOUSLY, LayoutParams.FLAG_FULLSCREEN,
+        setup(version, GLSurfaceView.RENDERMODE_CONTINUOUSLY, LayoutParams.FLAG_FULLSCREEN,
                 Window.FEATURE_NO_TITLE);
     }
 
     @Override
     public void createCoreApp(int width, int height) {
-        NucleusRenderer renderer = RendererFactory.getRenderer(new AndroidGLES20Wrapper(), new AndroidImageFactory(),
+        NucleusRenderer renderer = RendererFactory.getRenderer(gles, new AndroidImageFactory(),
                 new AndroidMatrixEngine());
         coreApp = CoreApp.createCoreApp(width, height, renderer, clientClass);
         mGLView.setCoreApp(coreApp);

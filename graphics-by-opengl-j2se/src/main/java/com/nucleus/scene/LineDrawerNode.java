@@ -6,7 +6,8 @@ import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.RectangleShapeBuilder;
 import com.nucleus.geometry.ShapeBuilder;
 import com.nucleus.geometry.AttributeBuffer;
-import com.nucleus.shader.VertexTranslateProgram;
+import com.nucleus.shader.ShaderVariables;
+import com.nucleus.shader.TranslateProgram;
 
 /**
  * Contains a mesh that draws lines
@@ -99,8 +100,7 @@ public class LineDrawerNode extends Node {
         int startIndex = vertice * stride;
         RectangleShapeBuilder.createQuadArray(values, null, stride, z, rectangleData);
         vertices.setComponents(rectangleData, 3, 0, startIndex, 4);
-        mesh.setAttribute4(0,
-                VertexTranslateProgram.VARIABLES.aColor, rgba, 4);
+        mesh.setAttribute4(0, ShaderVariables.aColor, rgba, 4);
     }
 
 }

@@ -257,10 +257,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     protected String textureRef;
 
     /**
-     * Uniforms, used when rendering this Mesh depending on what ShaderProgram is used.
-     */
-    transient protected float[] uniforms;
-    /**
      * The mapper used to find positions of property attributes.
      */
     protected transient PropertyMapper mapper;
@@ -329,7 +325,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     }
 
     /**
-     * Creates the buffers, vertex and indexbuffers as needed. Attribute and uniform storage.
+     * Creates the buffers, vertex and indexbuffers as needed - and sets the static data in uniforms
      * If texture is {@link TiledTexture2D} then vertice and index storage will be createde for 1 sprite.
      * Do not call this method directly - it is called from {@link #createMesh(ShaderProgram, Texture2D, Material)}
      * 
@@ -341,7 +337,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     protected void internalCreateBuffers(ShaderProgram program, int vertexCount, int indiceCount) {
         attributes = program.createAttributeBuffers(this, vertexCount);
         indices = new ElementBuffer(indiceCount, Type.SHORT);
-        program.setupUniforms(this);
     }
 
     /**
@@ -462,26 +457,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         return texture;
     }
 
-    /**
-     * Returns one or more defined uniform vectors used when rendering.
-     * 
-     * @return One or more uniform vector as used by the shader program implementation
-     */
-    public float[] getUniforms() {
-        return uniforms;
-    }
-
-    /**
-     * Sets a reference to an array with float values that can be used by when rendering this Mesh.
-     * Note that the use of uniforms is depending on the shader program used.
-     * 
-     * @param uniforms Values to reference in this class, note that values are NOT copied.
-     * 
-     */
-    public void setUniforms(float[] uniforms) {
-        this.uniforms = uniforms;
-    }
-
 
     /**
      * Sets the attribute updater for this mesh, use this for meshes where the attribute data must be updated each
@@ -573,7 +548,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     public void destroy(NucleusRenderer renderer) {
         texture = null;
         textureRef = null;
-        uniforms = null;
         mapper = null;
         attributeConsumer = null;
         attributes = null;

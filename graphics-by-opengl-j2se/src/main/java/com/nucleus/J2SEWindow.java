@@ -1,9 +1,13 @@
 package com.nucleus;
 
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.renderer.Window;
 
 /**
  * Window that connects to the underlying GL.
@@ -27,12 +31,16 @@ public abstract class J2SEWindow {
         this.coreAppStarter = coreAppStarter;
         this.width = width;
         this.height = height;
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        Window.getInstance().setScreenSize(gd.getDisplayMode().getWidth(), gd.getDisplayMode().getHeight());
+
     }
 
     /**
-     * Returns the {@link GLESWrapper}
+     * Returns the {@link GLESWrapper} this must be created in subclasses
      * 
      * @return The GLES wrapper or null if not created
+     * This may mean that the window has not been made visible.
      */
     public GLESWrapper getGLESWrapper() {
         return wrapper;
@@ -94,19 +102,19 @@ public abstract class J2SEWindow {
      */
     protected void handleMouseEvent(int xpos, int ypos, int pointer, long timestamp, PointerAction action) {
         switch (action) {
-        case DOWN:
-            coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN,
-                    timestamp, pointer,
-                    new float[] { xpos, ypos });
-            break;
-        case UP:
-            coreApp.getInputProcessor().pointerEvent(PointerAction.UP, timestamp, pointer, new float[] {
-                    xpos, ypos });
-            break;
-        case MOVE:
-            coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, timestamp, pointer, new float[] {
-                    xpos, ypos });
-        default:
+            case DOWN:
+                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN,
+                        timestamp, pointer,
+                        new float[] { xpos, ypos });
+                break;
+            case UP:
+                coreApp.getInputProcessor().pointerEvent(PointerAction.UP, timestamp, pointer, new float[] {
+                        xpos, ypos });
+                break;
+            case MOVE:
+                coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, timestamp, pointer, new float[] {
+                        xpos, ypos });
+            default:
         }
     }
 

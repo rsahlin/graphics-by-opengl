@@ -1,15 +1,13 @@
 package com.nucleus.texturing;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.common.Constants;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.GLUtils;
+import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
-import com.nucleus.texturing.TextureParameter.Name;
 import com.nucleus.vecmath.Rectangle;
 
 /**
@@ -23,10 +21,18 @@ import com.nucleus.vecmath.Rectangle;
  */
 public class Texture2D extends BaseReference {
 
+    public static final String RESOLUTION = "resolution";
+    public static final String MIPMAP = "mipmap";
+    
+    /**
+     * TODO - is this really a property of the texture, maybe move to ShaderProgram?
+     */
     public enum Shading {
         flat(),
         parametric(),
-        textured();
+        textured(),
+        shadow1(),
+        shadow2();
     }
 
     /**
@@ -45,7 +51,8 @@ public class Texture2D extends BaseReference {
         RGB(0x1907),
         RGBA(0x1908),
         LUMINANCE(0x1909),
-        LUMINANCE_ALPHA(0x190A);
+        LUMINANCE_ALPHA(0x190A),
+        DEPTH_COMPONENT(0x1902);
 
         public final int format;
 
@@ -54,6 +61,21 @@ public class Texture2D extends BaseReference {
         }
     }
 
+    /**
+     * Internal GL formats, needed on GL 3 and up
+     */
+    public enum InternalFormat {
+        DEPTH_COMPONENT16(GLES20.GL_DEPTH_COMPONENT16),
+        DEPTH_COMPONENT24(GLES30.GL_DEPTH_COMPONENT24),
+        DEPTH_COMPONENT32F(GLES30.GL_DEPTH_COMPONENT32F);
+        
+        public final int internalFormat;
+        
+        private InternalFormat(int internalFormat) {
+            this.internalFormat = internalFormat;
+        }
+    }
+    
     /**
      * The GL texture types
      * 
@@ -64,7 +86,10 @@ public class Texture2D extends BaseReference {
         UNSIGNED_BYTE(0x1401),
         UNSIGNED_SHORT_5_6_5(0x8363),
         UNSIGNED_SHORT_4_4_4_4(0x8033),
-        UNSIGNED_SHORT_5_5_5_1(0x8034);
+        UNSIGNED_SHORT_5_5_5_1(0x8034),
+        UNSIGNED_SHORT(0x1403),
+        UNSIGNED_INT(0x1405),
+        FLOAT(0x1406);
 
         public final int type;
 
@@ -82,8 +107,8 @@ public class Texture2D extends BaseReference {
      */
     @SerializedName("resolution")
     RESOLUTION resolution;
-    @SerializedName("mipmap")
-    private int mipmap;
+    @SerializedName(MIPMAP)
+    private int levels;
 
     /**
      * Texture parameter values.
@@ -106,7 +131,7 @@ public class Texture2D extends BaseReference {
      * The texture name, this is a loose reference to the allocated texture name.
      * It is up to the caller to allocate and release texture names.
      */
-    transient protected int name;
+    transient protected int name = Constants.NO_VALUE;
     /**
      * Width of texture in pixels
      */
@@ -155,7 +180,7 @@ public class Texture2D extends BaseReference {
      * 
      * @param source
      */
-    protected void set(Texture2D source) {
+    public void set(Texture2D source) {
         super.set(source);
         resolution = source.resolution;
         if (source.getTexParams() != null) {
@@ -163,7 +188,7 @@ public class Texture2D extends BaseReference {
         } else {
             texParameters = null;
         }
-        mipmap = source.mipmap;
+        levels = source.levels;
         name = source.name;
         width = source.width;
         height = source.height;
@@ -178,38 +203,77 @@ public class Texture2D extends BaseReference {
      * @param externalReference The texture image reference
      * @param resolution The target resolution for the texture
      * @param params Texture parameters, min/mag filter wrap s/t
-     * @param mipmap Number of mipmap levels
+     * @param levels Number of mipmap levels
      * @param format The texture format
      * @param type The texture type 
      */
     protected Texture2D(String id, ExternalReference externalReference, RESOLUTION resolution,
-            TextureParameter params, int mipmap, Format format, Type type) {
+            TextureParameter params, int levels, Format format, Type type) {
         super(id);
         textureType = TextureType.valueOf(getClass().getSimpleName());
         setExternalReference(externalReference);
         this.resolution = resolution;
         texParameters = new TextureParameter(params);
         this.texParameters.setValues(params);
-        this.mipmap = mipmap;
+        this.levels = levels;
         this.format = format;
         this.type = type;
     }
 
-
     /**
-     * Sets the texture object name (for GL), the images (buffers) to use and the resolution of textures.
+     * Sets the resolution, filter, mipmap format and type, use this when constructing an empty texture object and
+     * filling it with data.
+     * @param resolution
+     * @param params
+     * @param levels
+     * @param format
+     * @param type
+     */
+    protected void setup(RESOLUTION resolution, TextureParameter params, int levels, Format format, Type type) {
+        this.resolution = resolution;
+        this.texParameters = params;
+        this.levels = levels;
+        this.format = format;
+        this.type = type;
+    }
+    
+    /**
+     * Sets the texture size.
      * The texture(s) will not be uploaded to GL.
+     * Use this to set the size and texture name after image has been loaded.
      * 
-     * @param name
      * @param width
      * @param height
      */
-    protected void setup(int name, int width, int height) {
-        this.name = name;
+    protected void setup(int width, int height) {
         this.width = width;
         this.height = height;
     }
 
+    /**
+     * Sets the texture object name (for GL)
+     * The texture(s) will not be uploaded to GL.
+     * 
+     * @param name
+     */
+    protected void setup(int name) {
+        this.name = name;
+    }
+    
+    
+    /**
+     * Copies the transient values (texture object name, width, height) and the texture format values into this class.
+     * Use this to copy an instance of an existing texture but to a new type or with different texture parameters.
+     * @param source
+     */
+    protected void copyInstance(Texture2D source) {
+        this.name = source.name;
+        this.width = source.width;
+        this.height = source.height;
+        this.format = source.format;
+        this.type = source.type;
+    }
+    
     /**
      * Returns the texture parameters to use with this texture.
      * 
@@ -261,7 +325,7 @@ public class Texture2D extends BaseReference {
      * @return
      */
     public int getLevels() {
-        return mipmap;
+        return levels;
     }
 
     /**
@@ -283,22 +347,13 @@ public class Texture2D extends BaseReference {
     }
 
     /**
-     * Sets the texture parameter values for this texture to OpenGL, call this to set the correct texture parameters
-     * when rendering.
+     * Returns the number of frames defined in the texture - subclasses must override this
+     * if they support multiple frames. For instance tiled texture
      * 
-     * @param gles
+     * @return Number of frames in the texture
      */
-    public void uploadTexParameters(GLES20Wrapper gles) throws GLException {
-
-        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
-                texParameters.getValue(Name.MIN_FILTER).value);
-        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
-                texParameters.getValue(Name.MAG_FILTER).value);
-        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
-                texParameters.getValue(Name.WRAP_S).value);
-        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
-                texParameters.getValue(Name.WRAP_T).value);
-        GLUtils.handleError(gles, "glTexParameteri ");
+    public int getFrameCount() {
+        return 1;
     }
 
     @Override
@@ -340,4 +395,20 @@ public class Texture2D extends BaseReference {
         // Release any allocated resources other than the uploaded texture.
     }
 
+    /**
+     * Checks the texture parameters and mipmap levels for consistensy
+     * @return
+     */
+    public boolean validateTextureParameters() {
+        //If untextured return true;
+        if (textureType == TextureType.Untextured) {
+            return true;
+        }
+        boolean isMipMapParams = getTexParams().isMipMapFilter();
+        if ((levels > 1 && !isMipMapParams) || (levels < 2 && isMipMapParams)) {
+            return false;
+        }
+        return true;
+    }
+    
 }

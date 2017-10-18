@@ -1,4 +1,4 @@
-/* Copyright 2015 Richard Sahlin
+/* Copyright 2017 Richard Sahlin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,17 +12,13 @@
  */
 
  /**
- * Fragment shader for convolution kernel
+ * Fragment shader for shadow pass 1
  * @author Richard Sahlin
  */
 #version 100
+precision mediump float;
 
-uniform mat4 uMVPMatrix;
-attribute vec3 aTranslate;
-attribute vec2 aTexCoord;
-varying vec2 vTexCoord;
-
-void main() {
-    gl_Position = uMVPMatrix * vec4(aTranslate,1.0);
-    vTexCoord = aTexCoord;
+void main()
+{
+    gl_FragColor = vec4(1,0,0,1);
 }

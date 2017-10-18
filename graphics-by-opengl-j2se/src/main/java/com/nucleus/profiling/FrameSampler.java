@@ -1,5 +1,8 @@
 package com.nucleus.profiling;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.nucleus.SimpleLogger;
 import com.nucleus.texturing.Image;
 
@@ -12,6 +15,51 @@ import com.nucleus.texturing.Image;
  */
 public class FrameSampler {
 
+    public static class Sample {
+        int total;
+        int max;
+        int min;
+        int count;
+
+        public Sample(int millis) {
+            total = millis;
+            max = millis;
+            min = millis;
+            count = 1;
+        }
+
+        public void add(int millis) {
+            total += millis;
+            if (max < millis) {
+                max = millis;
+            }
+            if (min > millis) {
+                min = millis;
+            }
+            count++;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        public int getAverage() {
+            return total / count;
+        }
+
+        public void reset() {
+            total = 0;
+            max = 0;
+            min = Integer.MAX_VALUE;
+            count = 0;
+        }
+
+        public String toString() {
+            return "Average: " + getAverage() + " Max: " + max + " Min: " + min;
+        }
+
+    }
+
     public final static String DISPLAY_SPLASH = "DISPLAY_SPLASH";
     public final static String SET_ROOT_NODE = "SET_ROOT_NODE";
     public final static String LOAD_SCENE = "LOAD_SCENE";
@@ -19,6 +67,9 @@ public class FrameSampler {
     public final static String CREATE_NODE = "CREATE_NODE";
     public final static String LOAD_MAP = "LOAD_MAP";
     public final static String CREATE_SHADER = "CREATE_SHADER";
+    public final static String LOGICPROCESSOR = "LOGICPROCESSOR";
+    public final static String PROCESSCOMPONENT = "PROCESSCOMPONENT";
+    public final static String RENDERNODES = "RENDERNODES";
     /**
      * The whole creation of a texture, load image and copy data, generate mipmaps
      */
@@ -40,6 +91,8 @@ public class FrameSampler {
     public final static int DEFAULT_MIN_FPS = 30;
     private static FrameSampler frameSampler = new FrameSampler();
 
+    private final static int DEFAULT_AVERAGE_VALUES = 300;
+
     /**
      * Start time of sampler
      */
@@ -57,6 +110,7 @@ public class FrameSampler {
     private int drawCalls;
     private long sampleStart;
 
+    private Map<String, Sample> tagTimings = new HashMap<>();
 
     /**
      * Returns the sampler instance
@@ -232,6 +286,32 @@ public class FrameSampler {
      */
     public void logTag(String tag, long startTime, long endTime) {
         SimpleLogger.d(getClass(), "Sample " + tag + " : " + (endTime - startTime) + " millis.");
+    }
+
+    /**
+     * Adds the tag timing, outputs min/max/average at specified interval
+     * 
+     * @param tag
+     * @param startTime
+     * @param endTime
+     */
+    public void addTag(String tag, long startTime, long endTime) {
+        Sample sample = tagTimings.get(tag);
+        int millis = (int) (endTime - startTime);
+        if (sample == null) {
+            sample = new Sample(millis);
+            tagTimings.put(tag, sample);
+        } else {
+            sample.add(millis);
+            if (sample.getCount() >= DEFAULT_AVERAGE_VALUES) {
+                logAverage(tag, sample);
+                sample.reset();
+            }
+        }
+    }
+
+    private void logAverage(String tag, Sample sample) {
+        SimpleLogger.d(getClass(), "Sampler tag " + tag + " : " + sample.toString());
     }
 
 }

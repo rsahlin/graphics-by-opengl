@@ -33,7 +33,8 @@ import com.nucleus.scene.NodeException;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewController;
 import com.nucleus.scene.Node.NodeTypes;
-import com.nucleus.shader.VertexTranslateProgram;
+import com.nucleus.shader.TranslateProgram;
+import com.nucleus.system.ComponentHandler;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
@@ -120,7 +121,6 @@ public class CoreApp implements RenderContextListener {
      */
     protected PointerInputProcessor inputProcessor = new PointerInputProcessor();
 
-    Thread runnableThread;
     LogicProcessorRunnable logicRunnable;
 
     /**
@@ -153,14 +153,8 @@ public class CoreApp implements RenderContextListener {
         }
         this.renderer = renderer;
         this.clientApp = clientApp;
-        logicRunnable = new LogicProcessorRunnable(renderer, new J2SELogicProcessor());
-        if (Runtime.getRuntime().availableProcessors() > 1) {
-            System.out.println("Started extra process for logic processing, number of processors: "
-                    + Runtime.getRuntime().availableProcessors());
-            runnableThread = new Thread(logicRunnable);
-        } else {
-            System.out.println("Running everything on one thread.");
-        }
+        
+        logicRunnable = new LogicProcessorRunnable(renderer, new J2SELogicProcessor(), false);
 
     }
 
@@ -241,17 +235,8 @@ public class CoreApp implements RenderContextListener {
         // If renderer is null it means CoreApp is destroyed - do nothing.
         if (renderer != null) {
             try {
-                if (runnableThread != null) {
-                    if (!runnableThread.isAlive()) {
-                        runnableThread.start();
-                    } else {
-                        synchronized (logicRunnable) {
-                            logicRunnable.notify();
-                        }
-                    }
-                } else {
-                    logicRunnable.process(FrameSampler.getInstance().getDelta());
-                }
+                //If multiple threads used this method will return immediately
+                logicRunnable.process(rootNode,FrameSampler.getInstance().getDelta());
                 renderer.beginFrame();
                 if (rootNode != null) {
                     renderer.render(rootNode);
@@ -283,6 +268,7 @@ public class CoreApp implements RenderContextListener {
         vc.registerEventHandler(null);
         NodeController nc = new NodeController(node);
         nc.registerEventHandler(null);
+        ComponentHandler.getInstance().initSystems(node, renderer);
 
     }
 
@@ -306,8 +292,8 @@ public class CoreApp implements RenderContextListener {
         Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
         meshBuilder.setElementMode(Mode.TRIANGLES, 4, 6);
         meshBuilder.setTexture(texture);
-        VertexTranslateProgram vt = (VertexTranslateProgram) AssetManager.getInstance().getProgram(renderer,
-                new VertexTranslateProgram(Texture2D.Shading.textured));
+        TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(renderer,
+                new TranslateProgram(Texture2D.Shading.textured));
         Material material = new Material();
         material.setProgram(vt);
         meshBuilder.setMaterial(material);

@@ -1,9 +1,16 @@
 package com.nucleus.scene;
 
+import java.util.ArrayList;
+
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.Pass;
+import com.nucleus.renderer.RenderPass;
+import com.nucleus.renderer.RenderState;
+import com.nucleus.renderer.RenderTarget;
+import com.nucleus.renderer.RenderTarget.Target;
 import com.nucleus.shader.ShaderProgram;
 
 /**
@@ -65,14 +72,22 @@ public class BaseRootNode extends RootNode {
         public RootNode create() throws NodeException {
             validate();
             BaseRootNode root = new BaseRootNode();
-            RenderPass pass = new RenderPass(root);
+            //TODO the builder should handle creation of renderpass in a more generic way.
+            RenderPass pass = new RenderPass();
+            pass.setId("RenderPass");
+            pass.setTarget(new RenderTarget(Target.FRAMEBUFFER, null));
+            pass.setRenderState(new RenderState());
+            pass.setPass(Pass.MAIN);
             Node created = nodeFactory.create(renderer, program, builder, nodeType, root);
             ViewFrustum vf = new ViewFrustum();
             vf.setOrthoProjection(-0.5f, 0.5f, -0.5f, 0.5f, 0, 10);
             created.setViewFrustum(vf);
             created.setId(created.getClass().getSimpleName());
-            pass.addChild(created);
-            root.addChild(pass);
+            created.setPass(Pass.ALL);
+            ArrayList<RenderPass> rp = new ArrayList<>();
+            rp.add(pass);
+            created.setRenderPass(rp);
+            root.addChild(created);
             return root;
         }
 
@@ -85,6 +100,12 @@ public class BaseRootNode extends RootNode {
 
     }
 
+    /**
+     * TODO Move construction
+     */
+    @Deprecated
+    public BaseRootNode() {
+    }
 
     @Override
     public RootNode createInstance() {

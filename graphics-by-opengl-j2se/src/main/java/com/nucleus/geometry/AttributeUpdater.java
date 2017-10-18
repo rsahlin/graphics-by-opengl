@@ -2,6 +2,7 @@ package com.nucleus.geometry;
 
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.system.System;
 
 /**
  * For usecases where the attribute data needs to be updated (in the mesh), ie it is not sufficient to set static
@@ -129,10 +130,12 @@ public interface AttributeUpdater {
 
     /**
      * For objects producing attribute data, normally Actor/Sprite
+     * Use {@link System} instead
      * 
      * @author Richard Sahlin
      *
      */
+    @Deprecated
     public interface Producer {
         /**
          * Update the attribute buffers according to the object producing the attribute data, this is normally

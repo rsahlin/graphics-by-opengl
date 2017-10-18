@@ -30,7 +30,7 @@ public class NucleusNodeExporter implements NodeExporter {
 
     @Override
     public void exportNodes(RootNode source, RootNode rootNode) {
-        List<Node> children = source.getScene();
+        List<Node> children = source.getChildren();
         for (Node node : children) {
             NodeExporter exporter = nodeExporters.get(node.getType());
             Node export = null;

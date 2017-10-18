@@ -3,7 +3,6 @@ package com.nucleus.component;
 import com.nucleus.CoreApp;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
 
 /**
@@ -16,6 +15,7 @@ public class LogicProcessorRunnable implements Runnable {
     private static final String NULL_PARAMETER = "Parameter is null:";
     private RootNode rootNode;
     private NucleusRenderer renderer;
+    Thread runnableThread;
     private LogicProcessor logicProcessor;
     private boolean running = false;
 
@@ -23,12 +23,21 @@ public class LogicProcessorRunnable implements Runnable {
      * Creates a new runnable that can be used to call processing of logic in a separate thread.
      * 
      */
-    public LogicProcessorRunnable(NucleusRenderer renderer, LogicProcessor logicProcessor) {
+    public LogicProcessorRunnable(NucleusRenderer renderer, LogicProcessor logicProcessor, boolean enableMultiThread) {
         if (renderer == null || logicProcessor == null) {
             throw new IllegalArgumentException(NULL_PARAMETER + renderer + ", " + logicProcessor);
         }
         this.renderer = renderer;
         this.logicProcessor = logicProcessor;
+        //TODO Create thread manager that handles available thread, lease thread instead of creating here
+        if (Runtime.getRuntime().availableProcessors() > 1 && enableMultiThread) {
+            System.out.println("Started extra process for logic processing, number of processors: "
+                    + Runtime.getRuntime().availableProcessors());
+            runnableThread = new Thread(this);
+        } else {
+            System.out.println("Running everything on one thread.");
+        }
+        
     }
 
     /**
@@ -47,7 +56,7 @@ public class LogicProcessorRunnable implements Runnable {
         running = true;
         while (running) {
             synchronized (this) {
-            	process(FrameSampler.getInstance().getDelta());
+                internalProcessNode(rootNode, FrameSampler.getInstance().getDelta());
                 try {
                     wait();
                 } catch (InterruptedException e) {
@@ -63,19 +72,33 @@ public class LogicProcessorRunnable implements Runnable {
         Thread.currentThread().interrupt();
     }
 
-    /**
-     * Process the node specified by calling {@link #setRootNode(RootNode)}
-     * Only needed to call this method if thread has not been creted for this class, normally called from the
-     * {@link #run()} method.
-     * 
-     * @param delta
-     */
-    public void process(float delta) {
+    private void internalProcessNode(RootNode rootNode, float delta) {
         if (rootNode != null) {
-        	for (Node node : rootNode.getScene()) {
-                logicProcessor.processNode(node, delta);
-        	}
+            long start = System.currentTimeMillis();
+            logicProcessor.processRoot(rootNode, delta);
+            FrameSampler.getInstance().addTag(FrameSampler.LOGICPROCESSOR, start, System.currentTimeMillis());
         }
     }
-
+    
+    /**
+     * Process the root node, updating behavior
+     * 
+     * @param rootNode
+     * @param delta
+     */
+    public void process(RootNode rootNode, float delta) {
+        this.rootNode = rootNode;
+        if (runnableThread != null) {
+            
+            if (!runnableThread.isAlive()) {
+                runnableThread.start();
+            } else {
+                synchronized (this) {
+                    notify();
+                }
+            }
+        } else {
+            internalProcessNode(rootNode,FrameSampler.getInstance().getDelta());
+        }
+    }
 }

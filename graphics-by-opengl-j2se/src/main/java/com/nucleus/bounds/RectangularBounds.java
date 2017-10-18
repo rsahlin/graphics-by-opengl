@@ -4,6 +4,8 @@ import static com.nucleus.vecmath.VecMath.X;
 import static com.nucleus.vecmath.VecMath.Y;
 import static com.nucleus.vecmath.VecMath.Z;
 
+import com.google.gson.annotations.SerializedName;
+import com.nucleus.io.gson.PostDeserializable;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Vector2D;
@@ -16,8 +18,9 @@ import com.nucleus.vecmath.Vector3D;
  * @author Richard Sahlin
  *
  */
-public class RectangularBounds extends Bounds {
+public class RectangularBounds extends Bounds implements PostDeserializable {
 
+    private static final String RECTANGLE = "rectangle";
     /**
      * Number of data values for this bounds.
      */
@@ -46,6 +49,12 @@ public class RectangularBounds extends Bounds {
     transient protected float[] tempPositons = new float[8];
     transient protected float[] rotatedBounds = new float[8];
 
+    /**
+     * Used to init the bounds from a rectangle
+     */
+    @SerializedName(RECTANGLE)
+    private Rectangle rectangle;
+    
     /**
      * Creates a new bounds from an array of values.
      * If the array contains 4 values, bounds will be created from upper left corner (x1,y1) and width + height
@@ -362,6 +371,14 @@ public class RectangularBounds extends Bounds {
     public void transform(float[] matrix, int index) {
         Matrix.transformVec2(matrix, index, bounds, rotatedBounds, 4);
         updated = true;
+    }
+
+    @Override
+    public void postDeserialize() {
+        //Check if bounds should be initialized from Rectangle
+        if (rectangle != null) {
+            setFromRectangle(rectangle.getValues());
+        }
     }
 
 

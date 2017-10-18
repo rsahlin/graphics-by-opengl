@@ -377,4 +377,29 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
         org.lwjgl.opengles.GLES20.glFinish();
     }
 
+    @Override
+    public void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level) {
+        org.lwjgl.opengles.GLES20.glFramebufferTexture2D(target, attachment, textarget, texture, level);
+    }
+
+    @Override
+    public void glGenFramebuffers(int[] buffers) {
+        org.lwjgl.opengles.GLES20.glGenFramebuffers(buffers);
+    }
+
+    @Override
+    public int glCheckFramebufferStatus(int target) {
+        return org.lwjgl.opengles.GLES20.glCheckFramebufferStatus(target);
+    }
+
+    @Override
+    public void glBindFramebuffer(int target, int framebuffer) {
+        org.lwjgl.opengles.GLES20.glBindFramebuffer(target, framebuffer);
+    }
+
+    @Override
+    public void glColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
+        org.lwjgl.opengles.GLES20.glColorMask(red, green, blue, alpha);
+    }
+
 }

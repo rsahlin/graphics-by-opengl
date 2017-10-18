@@ -7,12 +7,23 @@ import java.util.Hashtable;
 import com.nucleus.SimpleLogger;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLUtils;
+import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.RenderTarget;
+import com.nucleus.renderer.RenderTarget.Attachement;
+import com.nucleus.renderer.RenderTarget.AttachementData;
+import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.texturing.TexParameter;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
+import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureType;
+import com.nucleus.texturing.TextureUtils;
+import com.nucleus.texturing.Image.ImageFormat;
 
 /**
  * Loading and unloading assets, mainly textures.
@@ -80,7 +91,62 @@ public class AssetManager {
      * @throws IOException
      */
     public Texture2D getTexture(NucleusRenderer renderer, ExternalReference ref) throws IOException {
-        return getTexture(renderer, TextureFactory.createTexture(ref));
+        String idRef = ref.getIdReference();
+        if (idRef != null) {
+            return getTexture(idRef);
+        } else {
+            return getTexture(renderer, TextureFactory.createTexture(ref));
+        }
+    }
+
+    /**
+     * If the reference texture is id reference and the reference is registered then the texture data is copied into
+     * the reference, overwriting transient values and non-set (null) values.
+     * @param reference
+     */
+    public void getIdReference(Texture2D reference) {
+        if (reference != null && reference.getExternalReference().isIdReference()) {
+            Texture2D source = getTexture(reference.getExternalReference().getIdReference());
+            if (source == null) {
+                throw new IllegalArgumentException("Could not find texture with id reference: " + reference.getExternalReference().getIdReference());
+            }
+            TextureFactory.copyTextureInstance(source, reference);
+        } else {
+            //What should be done?
+            SimpleLogger.d(getClass(), "Called getIdReference with null reference:");
+        }
+    }
+    
+    /**
+     * Returns the texture for the rendertarget attachement, if not already create it will be created and stored in the
+     * assetmanager with id taken from renderTarget and attachement
+     * If already created the instance will be returned.
+     * 
+     * @param renderer
+     * @param renderTarget The rendertarget that this texture is to be used for
+     * @param attachement The attachement point for the texture
+     * @return
+     */
+    public Texture2D createTexture(NucleusRenderer renderer, RenderTarget renderTarget, AttachementData attachement)
+            throws GLException {
+        if (renderTarget.getId() == null) {
+            throw new IllegalArgumentException("RenderTarget must have an id");
+        }
+        Texture2D texture = textures.get(renderTarget.getAttachementId(attachement));
+        if (texture == null) {
+            //TODO - What values should be used when creating the texture?
+            TextureType type = TextureType.Texture2D;
+            RESOLUTION resolution = RESOLUTION.HD;
+            int[] size = attachement.getSize();
+            TextureParameter texParams = new TextureParameter(
+                    new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST, TexParameter.CLAMP,
+                            TexParameter.CLAMP });
+            ImageFormat format = ImageFormat.valueOf(attachement.getFormat());
+            texture = TextureFactory.createTexture(renderer.getGLES(), type, resolution, size, format, texParams);
+            texture.setId(renderTarget.getAttachementId(attachement));
+            textures.put(renderTarget.getAttachementId(attachement), texture);
+        }
+        return texture;
     }
 
     /**
@@ -94,29 +160,54 @@ public class AssetManager {
      * @throws IOException
      */
     protected Texture2D getTexture(NucleusRenderer renderer, Texture2D source) throws IOException {
-        long start = System.currentTimeMillis();
         /**
-         * External ref for untextured needs to be "" so it can be store and fetched.
+         * External ref for untextured needs to be "" so it can be stored and fetched.
          */
         if (source.getTextureType() == TextureType.Untextured) {
             source.setExternalReference(new ExternalReference(""));
         }
         ExternalReference ref = source.getExternalReference();
-        String refSource = ref.getSource();
-        Texture2D texture = textures.get(refSource);
-        if (texture == null) {
-            // Texture not loaded
-            texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), source);
-            textures.put(refSource, texture);
-            setExternalReference(texture.getId(), ref);
+        String refId = ref.getIdReference();
+        if (refId != null) {
+            Texture2D texture = textures.get(refId);
+            if (texture != null) {
+                return texture;
+            }
+            textures.put(source.getExternalReference().getSource(), source);
+            return source;
+        } else {
+            String refSource = ref.getSource();
+            Texture2D texture = textures.get(refSource);
+            if (texture == null) {
+                long start = System.currentTimeMillis();
+                // Texture not loaded
+                texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), source);
+                textures.put(refSource, texture);
+                setExternalReference(texture.getId(), ref);
+                FrameSampler.getInstance().logTag(FrameSampler.CREATE_TEXTURE + " " + texture.getName(), start,
+                        System.currentTimeMillis());
+            }
+            return texture;
         }
-        FrameSampler.getInstance().logTag(FrameSampler.CREATE_TEXTURE + " " + source.getName(), start,
-                System.currentTimeMillis());
-        return texture;
     }
 
     /**
+     * Fetches a texture from map of registered textures
+     * @param id Id of the texture, ususally the external source path.
+     * @return The texture, or null if not registered
+     */
+    protected Texture2D getTexture(String id) {
+        Texture2D texture = textures.get(id);
+        if (texture == null) {
+            return null;
+        }
+        return texture;
+        
+    }
+    
+    /**
      * Sets the external reference for the object id
+     * 
      * @param id
      * @param externalReference
      * @throws IllegalArgumentException If a reference with the specified Id already has been set
@@ -203,4 +294,3 @@ public class AssetManager {
     }
 
 }
-

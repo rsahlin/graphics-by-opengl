@@ -108,4 +108,9 @@ public class TiledTexture2D extends Texture2D {
         return tile;
     }
 
+    @Override
+    public int getFrameCount() {
+        return tile[0] * tile[1];
+    }
+
 }

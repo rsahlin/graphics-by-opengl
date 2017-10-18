@@ -4,7 +4,14 @@ import java.nio.Buffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.geometry.AttributeBuffer;
+import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.shader.ShaderVariable;
+import com.nucleus.texturing.Image;
+import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.TextureParameter;
+import com.nucleus.texturing.TextureUtils;
+import com.nucleus.texturing.TextureParameter.Name;
 
 /**
  * Abstraction for OpenGL GLES 2.X, this is used for platform independent usage of GLES functions.
@@ -17,6 +24,22 @@ import com.nucleus.shader.ShaderVariable;
  */
 public abstract class GLES20Wrapper extends GLESWrapper {
 
+    /**
+     * Abstraction for glFrameBufferTexture2D
+     */
+    public abstract void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level);
+
+    /**
+     * Abstraction for glGenFrameBuffers
+     * @param buffers
+     */
+    public abstract void glGenFramebuffers(int[] buffers);
+
+    /**
+     * Abstraction for glBindFramebuffer
+     */
+    public abstract void glBindFramebuffer(int target, int framebuffer);
+    
     /**
      * Abstraction for glAttachShader()
      * 
@@ -440,6 +463,15 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public abstract void glClearColor(float red, float green, float blue, float alpha);
 
     /**
+     * Abstraction for glColorMask
+     * @param red
+     * @param green
+     * @param blue
+     * @param alpha
+     */
+    public abstract void glColorMask(boolean red, boolean green, boolean blue, boolean alpha);
+    
+    /**
      * Abstraction for glClear()
      * 
      * @param mask
@@ -505,6 +537,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
 
     /**
      * Abstraction for glTexImage2D()
+     * Use {@link #texImage(Texture2D)} instead to get support for different OpenGLES versions
      * 
      * @param target
      * @param level
@@ -516,6 +549,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param type
      * @param pixels
      */
+    @Deprecated
     public abstract void glTexImage2D(int target, int level, int internalformat, int width, int height, int border,
             int format, int type, Buffer pixels);
 
@@ -555,4 +589,71 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * Abstraction for glFinish()
      */
     public abstract void glFinish();
+    
+    /**
+     * Abstraction for glCheckFramebufferStatus(target);
+     * @param target 
+     * @return
+     */
+    public abstract int glCheckFramebufferStatus(int target);
+
+    /**
+     * Sets the texture parameter values for the texture parameter to OpenGL, call this to set the correct texture parameters
+     * when rendering.
+     * 
+     * @param gles
+     */
+    public void uploadTexParameters(TextureParameter texParameters) throws GLException {
+        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
+                texParameters.getValue(Name.MIN_FILTER).value);
+        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
+                texParameters.getValue(Name.MAG_FILTER).value);
+        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
+                texParameters.getValue(Name.WRAP_S).value);
+        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
+                texParameters.getValue(Name.WRAP_T).value);
+        GLUtils.handleError(this, "glTexParameteri ");
+    }
+
+    /**
+     * Binds the frambebuffer texture target - this is used to create different behavior depending
+     * on the OpenGL ES implementation (2.X vs 3.X)
+     * @param texture
+     * @param fbName
+     * @param attachement
+     * @param textureName
+     * @throws GLException
+     */
+    public void bindFramebufferTexture(Texture2D texture, int fbName, Attachement attachement) throws GLException {
+        glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fbName);
+        glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, attachement.value, GLES20.GL_TEXTURE_2D,
+                texture.getName(), 0);
+        GLUtils.handleError(this, "glFramebufferTexture");
+        if (glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER) != GLES20.GL_FRAMEBUFFER_COMPLETE) {
+            throw new IllegalArgumentException("Framebuffer status not complete");
+        }
+    }
+    /**
+     * Creates texture buffer - use this method in favour of calling glTexImage directly since
+     * this method will handle texture format differences between GL versions.
+     * @param texture
+     */
+    public void texImage(Texture2D texture) {
+        glTexImage2D(GLES20.GL_TEXTURE_2D, 0, TextureUtils.getInternalFormat(texture), texture.getWidth(), texture.getHeight(), 0, texture.getFormat().format,
+                texture.getType().type, null);
+    }
+
+    /**
+     * Upload texture - use this method in favour of calling glTexImage directly since
+     * this method will handle texture format differences between GL versions.
+     * @param texture
+     * @param image
+     * @param level
+     */
+    public void texImage(Texture2D texture, Image image, int level) {
+        glTexImage2D(GLES20.GL_TEXTURE_2D, level, TextureUtils.getInternalFormat(texture), texture.getWidth(), texture.getHeight(), 0, texture.getFormat().format,
+                texture.getType().type, image.getBuffer().position(0));
+    }
+    
+    
 }
