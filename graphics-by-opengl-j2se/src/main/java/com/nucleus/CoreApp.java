@@ -1,7 +1,5 @@
 package com.nucleus;
 
-import java.util.prefs.BackingStoreException;
-
 import com.nucleus.assets.AssetManager;
 import com.nucleus.component.J2SELogicProcessor;
 import com.nucleus.component.LogicProcessorRunnable;
@@ -10,29 +8,27 @@ import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.RectangleShapeBuilder;
-import com.nucleus.geometry.RectangleShapeBuilder.Configuration;
+import com.nucleus.geometry.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.core.PointerInputProcessor;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
-import com.nucleus.renderer.RenderState;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.J2SENodeInputListener;
 import com.nucleus.scene.NavigationController;
+import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.NodeController;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewController;
-import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.shader.TranslateProgram;
 import com.nucleus.system.ComponentHandler;
 import com.nucleus.texturing.Texture2D;
@@ -297,7 +293,7 @@ public class CoreApp implements RenderContextListener {
         Material material = new Material();
         material.setProgram(vt);
         meshBuilder.setMaterial(material);
-        meshBuilder.setShapeBuilder(new RectangleShapeBuilder(new Configuration(0.2f, 0.2f, 0f, 1, 0)));
+        meshBuilder.setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(0.2f, 0.2f, 0f, 1, 0)));
         builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
                 .setNode(NodeTypes.layernode);
         RootNode root = builder.create();

@@ -91,6 +91,19 @@ public class PointerMotionData {
     }
 
     /**
+     * Returns the n'th pointer data, or null if no data
+     * 
+     * @param n
+     * @return
+     */
+    public PointerData get(int n) {
+        if (pointerMovement.size() > n) {
+            return pointerMovement.get(n);
+        }
+        return null;
+    }
+
+    /**
      * Returns the latest pointer data.
      * NOTE! This is a reference to the values. Do not modify!
      * 
@@ -131,6 +144,15 @@ public class PointerMotionData {
      */
     public List<PointerData> getPointers() {
         return pointerMovement;
+    }
+
+    /**
+     * Returns the number of pointer data, ie number of touch inputs
+     * 
+     * @return
+     */
+    public int getCount() {
+        return pointerMovement.size();
     }
 
 }
