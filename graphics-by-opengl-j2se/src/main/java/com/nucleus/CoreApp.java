@@ -45,7 +45,8 @@ import com.nucleus.texturing.TextureParameter;
  */
 public class CoreApp implements RenderContextListener {
 
-    private final static String NOT_CALLED_CREATECONTEXT = "Must call contextCreated() before rendering.";
+    private static final String NOT_CALLED_CREATECONTEXT = "Must call contextCreated() before rendering.";
+    private static final String SPLASH_FILENAME = "assets/splash.png";
 
     /**
      * Interface for the core app to create the objects needed.
@@ -284,7 +285,7 @@ public class CoreApp implements RenderContextListener {
         BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
         Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), "texture",
-                new ExternalReference("assets/splash.png"), RESOLUTION.HD, texParam, 1);
+                new ExternalReference(SPLASH_FILENAME), RESOLUTION.HD, texParam, 1);
         Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
         meshBuilder.setElementMode(Mode.TRIANGLES, 4, 6);
         meshBuilder.setTexture(texture);
