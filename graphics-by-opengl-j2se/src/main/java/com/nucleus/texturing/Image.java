@@ -58,7 +58,19 @@ public class Image extends BufferObject {
         /**
          * 8 bit alpha format
          */
-        ALPHA(0x1906, 1);
+        ALPHA(0x1906, 1),
+        /**
+         * Depth texture 16
+         */
+        DEPTH_16(0x1403,2),
+        /**
+         * Depth texture 24 bits
+         */
+        DEPTH_24(0x1405, 3),
+        /**
+         * Float depth texture
+         */
+        DEPTH_32F(0x1406,4);
 
         public final int type;
         public final int size;

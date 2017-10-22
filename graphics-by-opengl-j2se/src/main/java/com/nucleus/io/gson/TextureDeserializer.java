@@ -8,9 +8,15 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 
+/**
+ * Serializer for texture objects read from JSON
+ * DO NOT USE THIS CLASS DIRECTLY - go through {@link AssetManager} to handle textures
+ *
+ */
 public class TextureDeserializer implements JsonDeserializer<Texture2D> {
 
     @Override

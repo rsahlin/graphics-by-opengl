@@ -31,7 +31,6 @@ public class BreadthFirstNodeIterator extends NodeIterator {
         if (children == null) {
             children = start.getChildren();
         }
-        
         return null;
     }
 

@@ -22,14 +22,12 @@ import com.nucleus.texturing.Image.ImageFormat;
  */
 public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
 
-    private final static String NULL_PARAMETER = "Null parameter";
-
     public J2SEImageFactory() {
     }
 
     @Override
     public Image createImage(String name, Image.ImageFormat format) throws IOException {
-        if (name == null) {
+        if (name == null || format == null) {
             throw new IllegalArgumentException(NULL_PARAMETER);
         }
         ClassLoader classLoader = getClass().getClassLoader();
@@ -96,19 +94,5 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
             throw new IllegalArgumentException("Not implemented");
         }
     }
-
-    /**
-     * Copies the pixels from the source to the destination doing a format conversion if needed.
-     * This will copy the whole image in a packed manner, it will not take width or height into consideration.
-     * 
-     * @param source
-     * @param sourceFormat
-     * @param destination
-     * @param destinationFormat
-     */
-    public void copyPixels(int[] source, PixelFormat sourceFormat, IntBuffer destination, ImageFormat destinationFormat) {
-
-    }
-
 
 }

@@ -10,7 +10,7 @@ import com.nucleus.renderer.RendererFactory;
 import com.nucleus.texturing.J2SEImageFactory;
 
 /**
- * Base class for J2SE Windowd application, use this for implementations that need to create a window
+ * Base class for J2SE Windowed application, use this for implementations that need to create a window
  *
  */
 public abstract class J2SEWindowApplication implements CoreAppStarter, WindowListener {
@@ -89,17 +89,16 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
 
     }
 
-    protected abstract J2SEWindow createGLES20Window();
+    /**
+     * Create and setup the window implementation based on the renderer version
+     * The returned window shall be ready to be used.
+     * @return
+     */
+    protected abstract J2SEWindow createWindow(Renderers version);
 
     @Override
     public void createCoreWindows(Renderers version) {
-        switch (version) {
-        case GLES20:
-            j2seWindow = createGLES20Window();
-            break;
-        default:
-            throw new IllegalArgumentException("Not implemented for version " + version);
-        }
+        j2seWindow = createWindow(version);
     }
 
     @Override

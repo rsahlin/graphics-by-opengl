@@ -11,20 +11,23 @@ import java.util.List;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
+import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.AttributeUpdater.Property;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
-import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
 import com.nucleus.shader.ShaderVariable.VariableType;
+import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;
 
 /**
@@ -69,7 +72,7 @@ public abstract class ShaderProgram {
      *
      */
     public enum AttribNameMapping {
-        APPEND(),
+        APPEND(), 
         PREFIX();
     }
 
@@ -139,35 +142,26 @@ public abstract class ShaderProgram {
     protected int[] attributesPerVertex;
     protected VariableMapping[] attributes; // List of attributes defined by a program
     protected int attributeBufferCount; // Number of buffers used by attributes
-    protected VariableMapping[] uniforms; // List of uniforms defined by a program
+    protected VariableMapping[] sourceUniforms; // List of uniforms defined by a program
+
+    /**
+     * Uniforms, used when rendering this Mesh depending on what ShaderProgram is used.
+     */
+    transient protected float[] uniforms;
 
     /**
      * The following fields MUST be set by subclasses
      */
     protected String vertexShaderName;
     protected String fragmentShaderName;
+    //Optional
+    protected Texture2D.Shading shading;
 
     /**
      * Unmapped variable types, by default Sampler2D is added to avoid having to add Sampler2D variables.
      * Sampler is set by activating textures and uploading textures not by attribute or uniform.
      */
     protected List<Integer> unMappedTypes = new ArrayList<>();
-
-    /**
-     * Returns the variable mapping for the shader variable, the mapping is used to find buffer index and offsets.
-     * 
-     * @param variable The shader variable to get the variable mapping for.
-     * @throws IllegalArgumentException If the shader variable has no variable mapping in the subclass.
-     * @throws NullPointerException If variable is null
-     */
-    public abstract VariableMapping getVariableMapping(ShaderVariable variable);
-
-    /**
-     * Creates uniform storage and sets values as needed by the program
-     * 
-     * @param mesh
-     */
-    public abstract void setupUniforms(Mesh mesh);
 
     /**
      * Sets the uniforms needed by the program, this will make the binding between the shader and uniforms
@@ -181,13 +175,14 @@ public abstract class ShaderProgram {
             throws GLException;
 
     /**
-     * Returns the number of defined attribute + uniform variables in the program.
-     * This is to make it easier when developing so that temporarily unused variabled do not need to be removed.
-     * 
-     * @return Number of defined variables in the shader program, all variables do not need to be used.
+     * Returns the program for the specified pass and shading, this is used to resolve the correct
+     * program for different passes
+     * @param renderer
+     * @param pass
+     * @param shading
      */
-    public abstract int getVariableCount();
-
+    public abstract ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Texture2D.Shading shading);
+    
     /**
      * Returns the offset within an attribute buffer where the property is, this is used to set specific properties
      * of a vertex.
@@ -198,21 +193,96 @@ public abstract class ShaderProgram {
      * @return Offset into attribute (buffer) where the storage for the specified property is, or -1 if the property
      * is not supported.
      */
-    public abstract int getPropertyOffset(Property property);
+    public int getPropertyOffset(Property property) {
+        ShaderVariable v = null;
+        switch (property) {
+        case TRANSLATE:
+            v = shaderVariables[ShaderVariables.aTranslate.index];
+            break;
+        case ROTATE:
+            v = shaderVariables[ShaderVariables.aRotate.index];
+            break;
+        case SCALE:
+            v = shaderVariables[ShaderVariables.aScale.index];
+            break;
+        case FRAME:
+            v = shaderVariables[ShaderVariables.aFrameData.index];
+            break;
+        case COLOR_AMBIENT:
+        case COLOR:
+            v = shaderVariables[ShaderVariables.aColor.index];
+            break;
+        default:
+        }
+        if (v != null) {
+            return v.getOffset();
+        } else {
+            SimpleLogger.d(getClass(), "No ShaderVariable for " + property);
+        }
+        return -1;
+    }
 
     /**
-     * Creates a new ShaderProgram
+     * Returns the variable mapping for the shader variable, the mapping is used to find buffer index and offsets.
+     * 
+     * @param variable The shader variable to get the variable mapping for.
+     * @throws IllegalArgumentException If the shader variable has no variable mapping in the subclass.
+     * @throws NullPointerException If variable is null
+     */
+    public VariableMapping getVariableMapping(ShaderVariable variable) {
+        return ShaderVariables.valueOf(getVariableName(variable));
+    }
+
+    /**
+     * Returns the number of defined attribute + uniform variables in the program.
+     * This is to make it easier when developing so that temporarily unused variabled do not need to be removed.
+     * 
+     * @return Number of defined variables in the shader program, all variables do not need to be used.
+     */
+    public int getVariableCount() {
+        return ShaderVariables.values().length;
+    }
+    
+    /**
+     * Creates a new shader program for the specified shading - used by subclasses
+     * @param shading
+     * @param mapping
+     */
+    protected ShaderProgram(Texture2D.Shading shading, VariableMapping[] mapping) {
+        super();
+        setMapping(mapping);
+        setShaderSource(shading);
+    }
+    
+    /**
+     * Creates a new ShaderProgram with the variable mapping, used by subclasses to create instance of shader.
      * 
      * @param mapping The variable mapping as defined by the subclass, this holds information of where uniform and
      * attribute data is
      */
     protected ShaderProgram(VariableMapping[] mapping) {
         super();
+        setMapping(mapping);
+        setShaderSource(null);
+    }
+    
+    protected void setMapping(VariableMapping[] mapping) {
         unMappedTypes.add(GLES20.GL_SAMPLER_2D);
         setUniformMapping(mapping);
         setAttributeMapping(mapping);
     }
 
+    /**
+     * Sets the shading and the name of the vertex/fragment shaders
+     * @param shading
+     */
+    protected void setShaderSource(Texture2D.Shading shading) {
+        //TODO - need a name together with shading to connect to shader, eg 'Translate', 'Transform' or 'Shadow'
+        vertexShaderName = PROGRAM_DIRECTORY + shading.name() + VERTEX + SHADER_SOURCE_SUFFIX;
+        fragmentShaderName = PROGRAM_DIRECTORY + shading.name() + FRAGMENT + SHADER_SOURCE_SUFFIX;
+        this.shading = shading;
+    }
+    
     /**
      * Returns the number of attribute buffers - as found when calling {@link #createProgram(GLES20Wrapper)}
      * 
@@ -234,7 +304,7 @@ public abstract class ShaderProgram {
                 uniformList.add(v);
             }
         }
-        uniforms = uniformList.toArray(new VariableMapping[uniformList.size()]);
+        sourceUniforms = uniformList.toArray(new VariableMapping[uniformList.size()]);
     }
 
     /**
@@ -403,7 +473,6 @@ public abstract class ShaderProgram {
             }
         }
     }
-
 
     /**
      * Checks the status of the attribute name mapping and if enabled the attributes are bound to locations
@@ -669,12 +738,12 @@ public abstract class ShaderProgram {
         try {
             VariableMapping vm = getVariableMapping(variable);
             // TODO Offset is set dynamically when dynamicMapShaderOffset() is called - create a setting so that
-            //it is possible to toggle between the two modes.
+            // it is possible to toggle between the two modes.
             // variable.setOffset(vm.getOffset());
             shaderVariables[vm.getIndex()] = variable;
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
-                    "Variable has no mapping to shader variable (ie used in shader but not defined in program) : "
+                    "Variable has no mapping to shader variable (ie used in shader but not defined in program " + getClass().getSimpleName() + ") : "
                             + variable.getName());
         }
     }
@@ -712,6 +781,7 @@ public abstract class ShaderProgram {
             linkProgram(gles, program, vertexShader, fragmentShader);
             fetchProgramInfo(gles);
             bindAttributeNames(gles);
+            createUniformStorage(shaderVariables);
         } catch (IOException e) {
             if (vertexStream == null) {
                 throw new RuntimeException("Could not load " + vertexName);
@@ -773,18 +843,17 @@ public abstract class ShaderProgram {
      * This will create the float array storage in the mesh, indexing must be done by the apropriate program
      * when uniform variables are set before rendering.
      * 
-     * @param mesh
      * @param variables Shader variables, attribute variables are ignored
      */
-    protected void createUniformStorage(Mesh mesh, ShaderVariable[] variables) {
+    protected void createUniformStorage(ShaderVariable[] variables) {
 
         int uniformSize = 0;
         if (variables != null) {
             uniformSize = getVariableSize(variables, VariableType.UNIFORM);
             if (uniformSize > 0) {
-                mesh.setUniforms(new float[uniformSize]);
+                setUniforms(new float[uniformSize]);
             } else {
-                SimpleLogger.d(getClass(), "No uniform size for mesh id " + mesh.getId());
+                SimpleLogger.d(getClass(), "No uniforms used");
             }
         } else {
             throw new IllegalArgumentException("Shader variables is null, forgot to call createProgram()?");
@@ -816,7 +885,6 @@ public abstract class ShaderProgram {
      * Use this to fetch the size per attribute for the different buffers.
      * 
      * @param variables
-     * @param type
      * @param index
      * @return
      */
@@ -863,6 +931,9 @@ public abstract class ShaderProgram {
      */
     protected void setTextureUniforms(TiledTexture2D texture, float[] destination, ShaderVariable variable,
             int offset) {
+        if (texture.getWidth() == 0 || texture.getHeight() == 0) {
+            SimpleLogger.d(getClass(), "ERROR! Texture size is 0: " + texture.getWidth() + ", " + texture.getHeight());
+        }
         offset += variable.getOffset();
         destination[offset++] = (((float) texture.getWidth()) / texture.getTileWidth()) / (texture.getWidth());
         destination[offset++] = (((float) texture.getHeight()) / texture.getTileHeight()) / (texture.getHeight());
@@ -876,9 +947,11 @@ public abstract class ShaderProgram {
      * @param uniformScreenSize
      */
     protected void setScreenSize(float[] uniforms, ShaderVariable uniformScreenSize) {
-        int screenSizeOffset = uniformScreenSize.getOffset();
-        uniforms[screenSizeOffset++] = Window.getInstance().getWidth();
-        uniforms[screenSizeOffset++] = Window.getInstance().getHeight();
+        if (uniformScreenSize != null) {
+            int screenSizeOffset = uniformScreenSize.getOffset();
+            uniforms[screenSizeOffset++] = Window.getInstance().getWidth();
+            uniforms[screenSizeOffset++] = Window.getInstance().getHeight();
+        }
     }
 
     /**
@@ -903,7 +976,27 @@ public abstract class ShaderProgram {
      * @return Key value for this shader program.
      */
     public String getKey() {
-        return getClass().getCanonicalName();
+        return getClass().getCanonicalName() + (shading != null ? shading.name() : "");
     }
 
+    /**
+     * Returns one or more defined uniform vectors used when rendering.
+     * 
+     * @return One or more uniform vector as used by the shader program implementation
+     */
+    public float[] getUniforms() {
+        return uniforms;
+    }
+
+    /**
+     * Sets a reference to an array with float values that can be used by when rendering this Mesh.
+     * Note that the use of uniforms is depending on the shader program used.
+     * 
+     * @param uniforms Values to reference in this class, note that values are NOT copied.
+     * 
+     */
+    public void setUniforms(float[] uniforms) {
+        this.uniforms = uniforms;
+    }
+    
 }

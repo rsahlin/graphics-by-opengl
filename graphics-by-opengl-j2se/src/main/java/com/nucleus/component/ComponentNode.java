@@ -8,6 +8,7 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
 import com.nucleus.system.ComponentHandler;
+import com.nucleus.system.System;
 
 /**
  * For nodes that contain component objects.
@@ -54,15 +55,22 @@ public class ComponentNode extends Node implements ComponentController {
     }
 
     /**
-     * Create the components
+     * Create the components, the {@link System} needed by the component will be created and registered with the {@link ComponentHandler}
      * 
      * @param renderer
      * @throws ComponentException
      * If one or more of the components could not be created
      */
     public void createComponents(NucleusRenderer renderer) throws ComponentException {
-        for (Component c : components) {
-            c.create(renderer, this);
+        ComponentHandler handler = ComponentHandler.getInstance();
+        try {
+            for (Component c : components) {
+                c.create(renderer, this);
+                handler.createSystem(c);
+                handler.registerComponent(c);
+            }
+        } catch (InstantiationException  | IllegalAccessException e) {
+            throw new ComponentException(e);
         }
     }
 

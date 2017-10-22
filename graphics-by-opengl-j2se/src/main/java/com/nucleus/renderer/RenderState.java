@@ -43,11 +43,11 @@ public class RenderState {
     protected final static String INVALID_CLEARCOLOR_STR = "Invalid clear color array.";
 
     public final static int DEFAULT_DEPTHFUNC = GLES20.GL_NONE;
-    public final static float DEFAULT_DEPTHRANGE_NEAR = 0.000001f;
-    public final static float DEFAULT_DEPTHRANGE_FAR = 1f;
+    public final static float DEFAULT_DEPTHRANGE_NEAR = 0.5f;
+    public final static float DEFAULT_DEPTHRANGE_FAR = 10f;
     public final static float DEFAULT_CLEARDEPTH = DEFAULT_DEPTHRANGE_FAR;
     public final static int DEFAULT_CULLFACE = GLES20.GL_NONE;
-    public final static int DEFAULT_CLEARFLAG = GLES20.GL_COLOR_BUFFER_BIT;
+    public final static int DEFAULT_CLEARFLAG = GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT;
     public final static boolean DEFAULT_MULTISAMPLING = false;
 
     public final static int CHANGE_FLAG_ALL = -1; // Flag that all values should be updated
@@ -96,7 +96,7 @@ public class RenderState {
      * If depth test is enabled display is cleared to this color at beginFrame()
      */
     @SerializedName(CLEARCOLOR)
-    protected float[] clearColor = new float[] { 0.3f, 0.3f, 0.5f, 1f };
+    protected float[] clearColor = new float[] { 1f, 1f, 1f, 1f };
 
     /**
      * Clear stencilbuffer with this value if the STENCIL_BUFFER_BIT is set in the clear flags.
@@ -111,7 +111,7 @@ public class RenderState {
     protected int cullFace = DEFAULT_CULLFACE;
 
     /**
-     * This value is read in Renderer.beginFrame() and used to decide if buffer should be cleared
+     * This value is read in when setting up a renderpass, used to decide if buffer should be cleared
      * Defaults to clearing depth and color-buffer.
      */
     @SerializedName(CLEARFLAGS)

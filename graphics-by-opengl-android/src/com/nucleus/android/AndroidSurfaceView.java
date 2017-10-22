@@ -34,7 +34,6 @@ public class AndroidSurfaceView extends GLSurfaceView
 
     private final int EGL_CONTEXT_CLIENT_VERSION = 0x3098; // EGL 1.3 to set client version
 
-
     private EGL10 egl;
     private EGLDisplay eglDisplay;
     private EGLConfig eglConfig;
@@ -53,21 +52,22 @@ public class AndroidSurfaceView extends GLSurfaceView
     private SurfaceConfiguration wantedConfig = new SurfaceConfiguration();
 
     CoreApp.CoreAppStarter coreAppStarter;
-    
+
     /**
      * Creates a new surface view for GL, this class will be used for Renderer, will choose EGL config based on
      * configuration
      * 
      * @param wantedConfig The wanted surface config
      * @param context
-     * @param clientClass Must implement {@link ClientApplication}
+     * @param coreAppStarter
      * @throws IllegalArgumentException If clientClass is null
      */
-    public AndroidSurfaceView(SurfaceConfiguration wantedConfig, Context context, CoreApp.CoreAppStarter coreAppStarter) {
+    public AndroidSurfaceView(SurfaceConfiguration wantedConfig, Context context,
+            CoreApp.CoreAppStarter coreAppStarter) {
         super(context);
-    	if (coreAppStarter == null) {
-    		throw new IllegalArgumentException("CoreAppStarter is null");
-    	}
+        if (coreAppStarter == null) {
+            throw new IllegalArgumentException("CoreAppStarter is null");
+        }
         this.coreAppStarter = coreAppStarter;
         setEGLWindowSurfaceFactory(this);
         this.wantedConfig = wantedConfig;
@@ -87,33 +87,34 @@ public class AndroidSurfaceView extends GLSurfaceView
             int finger = event.getPointerId(i);
             int actionFinger = event.getActionIndex();
             switch (event.getActionMasked()) {
-            case MotionEvent.ACTION_POINTER_DOWN:
-                // Recording down for multi touch - all pointers will be re-sent when a new finger goes down.
-                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN,
-                        event.getEventTime(), finger,
-                        new float[] { event.getX(i), event.getY(i) });
-                break;
-            case MotionEvent.ACTION_DOWN:
-                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN, event.getEventTime(), finger,
-                        new float[] { event.getX(i), event.getY(i) });
-                break;
-            case MotionEvent.ACTION_POINTER_UP:
-                if (finger == 0) {
-                    coreApp.getInputProcessor().pointerEvent(PointerAction.UP, event.getEventTime(), actionFinger,
+                case MotionEvent.ACTION_POINTER_DOWN:
+                    // Recording down for multi touch - all pointers will be re-sent when a new finger goes down.
+                    coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN,
+                            event.getEventTime(), finger,
+                            new float[] { event.getX(i), event.getY(i) });
+                    break;
+                case MotionEvent.ACTION_DOWN:
+                    coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN, event.getEventTime(), finger,
+                            new float[] { event.getX(i), event.getY(i) });
+                    break;
+                case MotionEvent.ACTION_POINTER_UP:
+                    if (finger == 0) {
+                        coreApp.getInputProcessor().pointerEvent(PointerAction.UP, event.getEventTime(), actionFinger,
+                                new float[] {
+                                        event.getX(i), event.getY(i) });
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    coreApp.getInputProcessor().pointerEvent(PointerAction.UP, event.getEventTime(), finger,
                             new float[] {
-                            event.getX(i), event.getY(i) });
-                }
-                break;
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                coreApp.getInputProcessor().pointerEvent(PointerAction.UP, event.getEventTime(), finger, new float[] {
-                        event.getX(i), event.getY(i) });
-                break;
-            case MotionEvent.ACTION_MOVE:
-                coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, event.getEventTime(), finger,
-                        new float[] { event.getX(i), event.getY(i) });
-                break;
-            default:
+                                    event.getX(i), event.getY(i) });
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, event.getEventTime(), finger,
+                            new float[] { event.getX(i), event.getY(i) });
+                    break;
+                default:
             }
         }
         requestRender();
@@ -172,7 +173,7 @@ public class AndroidSurfaceView extends GLSurfaceView
             SimpleLogger.d(getClass(),
                     "onSurfaceCreated(EGLConfig) has: " + surfaceConfig.toString());
         }
-        coreAppStarter.createCoreApp(getWidth(),  getHeight());
+        coreAppStarter.createCoreApp(getWidth(), getHeight());
         egl.eglSwapBuffers(eglDisplay, eglSurface);
         checkEGLError("eglSwapBuffers()");
         // Call contextCreated since the renderer is already initialized and has a created EGL context.

@@ -63,7 +63,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
     }
 
     @Override
-    protected J2SEWindow createGLES20Window() {
+    protected J2SEWindow createWindow(Renderers version) {
         switch (windowType) {
         case GLFW:
             window = new GLFWWindow(this, windowWidth, windowHeight);
@@ -73,7 +73,6 @@ public class LWJGL3Application extends J2SEWindowApplication {
             break;
         default:
             throw new IllegalArgumentException("Not implemented for " + windowType);
-
         }
         return window;
     }

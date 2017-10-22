@@ -167,17 +167,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     }
 
-    /**
-     * Returns the GLESWrapper for this window - must be created by subclasses in the
-     * {@link #init(com.jogamp.opengl.GLAutoDrawable)} method.
-     * 
-     * @return The GLESWrapper for this window, or null if {@link #init(com.jogamp.opengl.GLAutoDrawable)} has not been
-     * called by the system.
-     * This normally means that the window has not been made visible.
-     */
-    @Override
-    public abstract GLESWrapper getGLESWrapper();
-
     @Override
     public void init(GLAutoDrawable drawable) {
         internalCreateCoreApp(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());

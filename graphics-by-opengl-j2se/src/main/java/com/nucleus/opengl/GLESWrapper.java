@@ -8,7 +8,8 @@ public abstract class GLESWrapper {
      *
      */
     public enum Renderers {
-        GLES20();
+        GLES20(),
+        GLES30();
 
         private Renderers() {
         };
@@ -342,6 +343,11 @@ public abstract class GLESWrapper {
 
     }
 
+    public abstract class GLES30 {
+        public static final int GL_DEPTH_COMPONENT24 = 0x81A6;
+        public static final int GL_DEPTH_COMPONENT32F = 0x8CAC; 
+    }
+    
     /**
      * GLES extensions
      * 
