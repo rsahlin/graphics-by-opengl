@@ -8,7 +8,6 @@ import javax.microedition.khronos.egl.EGLSurface;
 import javax.microedition.khronos.opengles.GL10;
 
 import com.nucleus.CoreApp;
-import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.renderer.SurfaceConfiguration;
@@ -83,39 +82,32 @@ public class AndroidSurfaceView extends GLSurfaceView
             return true;
         }
         int count = event.getPointerCount();
-        for (int i = 0; i < count; i++) {
-            int finger = event.getPointerId(i);
-            int actionFinger = event.getActionIndex();
-            switch (event.getActionMasked()) {
-                case MotionEvent.ACTION_POINTER_DOWN:
-                    // Recording down for multi touch - all pointers will be re-sent when a new finger goes down.
-                    coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN,
-                            event.getEventTime(), finger,
-                            new float[] { event.getX(i), event.getY(i) });
-                    break;
-                case MotionEvent.ACTION_DOWN:
-                    coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN, event.getEventTime(), finger,
-                            new float[] { event.getX(i), event.getY(i) });
-                    break;
-                case MotionEvent.ACTION_POINTER_UP:
-                    if (finger == 0) {
-                        coreApp.getInputProcessor().pointerEvent(PointerAction.UP, event.getEventTime(), actionFinger,
-                                new float[] {
-                                        event.getX(i), event.getY(i) });
-                    }
-                    break;
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    coreApp.getInputProcessor().pointerEvent(PointerAction.UP, event.getEventTime(), finger,
-                            new float[] {
-                                    event.getX(i), event.getY(i) });
-                    break;
-                case MotionEvent.ACTION_MOVE:
+        int index = event.getActionIndex();
+        int finger = event.getPointerId(index);
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_POINTER_DOWN:
+            case MotionEvent.ACTION_DOWN:
+                // This is the first pointer, or multitouch pointer going down.
+                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN,
+                        event.getEventTime(), finger,
+                        new float[] { event.getX(index), event.getY(index) });
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                // This is multitouch or the last pointer going up
+                coreApp.getInputProcessor().pointerEvent(PointerAction.UP, event.getEventTime(), finger,
+                        new float[] {
+                                event.getX(index), event.getY(index) });
+                break;
+            case MotionEvent.ACTION_MOVE:
+                for (int i = 0; i < count; i++) {
+                    finger = event.getPointerId(i);
                     coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, event.getEventTime(), finger,
                             new float[] { event.getX(i), event.getY(i) });
-                    break;
-                default:
-            }
+                }
+                break;
+            default:
         }
         requestRender();
         return true;
