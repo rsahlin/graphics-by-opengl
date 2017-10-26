@@ -183,6 +183,11 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
+    public void glUniform1iv(int location, int count, int[] v0, int offset) {
+        android.opengl.GLES20.glUniform1iv(location, count, v0, offset);
+    }
+
+    @Override
     public void glUniform2fv(int location, int count, float[] v, int offset) {
         android.opengl.GLES20.glUniform2fv(location, count, v, offset);
     }
