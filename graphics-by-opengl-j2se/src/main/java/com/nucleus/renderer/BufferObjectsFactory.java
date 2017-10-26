@@ -1,8 +1,8 @@
 package com.nucleus.renderer;
 
+import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLException;
@@ -49,7 +49,7 @@ public class BufferObjectsFactory {
             if (attribs != null) {
                 renderer.bindBuffer(GLESWrapper.GLES20.GL_ARRAY_BUFFER, attribs.getBufferName());
                 renderer.bufferData(GLESWrapper.GLES20.GL_ARRAY_BUFFER, attribs.getSizeInBytes(),
-                        attribs.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
+                        attribs.getBuffer().position(0), GLESWrapper.GLES20.GL_DYNAMIC_DRAW);
                 attribs.setDirty(false);
             }
         }

@@ -15,17 +15,15 @@ import com.nucleus.common.Type;
 import com.nucleus.component.ComponentNode;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
-import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.ObjectInputListener;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
-import com.nucleus.renderer.NucleusRenderer.Layer;
-import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Transform;
@@ -203,10 +201,6 @@ public class Node extends BaseReference {
      */
     transient float[] modelMatrix = Matrix.createMatrix();
     transient ArrayList<Mesh> meshes = new ArrayList<Mesh>();
-    /**
-     * Optional AttributeUpdate producer, used for instance by spritemesh nodes
-     */
-    transient Producer attributeProducer;
 
     /**
      * The parent node, this shall be set when node is added as child
@@ -298,6 +292,7 @@ public class Node extends BaseReference {
 
     /**
      * Creates the transient values needed in runtime - implement in subclasses
+     * This method is called after the mesh has been created.
      */
     public void create() {
     }
@@ -327,15 +322,6 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Returns the attribute producer, or null if not set
-     * 
-     * @return
-     */
-    public Producer getAttributeProducer() {
-        return attributeProducer;
-    }
-
-    /**
      * Returns the {@link ObjectInputListener}, or null if not set.
      * This method should normally not be called, it is handled by {@link NodeInputListener}
      * 
@@ -352,17 +338,6 @@ public class Node extends BaseReference {
      */
     public void setObjectInputListener(ObjectInputListener objectInputListener) {
         this.objectInputListener = objectInputListener;
-    }
-
-    /**
-     * Sets the attribute producer, this is used by nodes where the attribute data needs to be updated before rendering.
-     * The producer will be called by the renderer before the mesh is rendered, but after the completion of the
-     * previous frame.
-     * 
-     * @param producer
-     */
-    public void setAttributeProducer(Producer producer) {
-        this.attributeProducer = producer;
     }
 
     /**
@@ -408,9 +383,9 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Returns the loaded material definition
+     * Returns the loaded material definition for the Node
      * 
-     * @return
+     * @return Material defined for the Node or null
      */
     public Material getMaterial() {
         return material;
@@ -1066,7 +1041,6 @@ public class Node extends BaseReference {
         properties = null;
         parent = null;
         rootNode = null;
-        attributeProducer = null;
     }
 
     /**

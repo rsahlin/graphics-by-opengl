@@ -24,10 +24,6 @@ public class ShadowPass1Program extends TransformProgram {
         super(ShaderVariables.values());
     }
     
-    protected ShadowPass1Program(VariableMapping[] mapping) {
-        super(mapping);
-    }
-    
     @Override
     protected void setShaderSource(Texture2D.Shading shading) {
         vertexShaderName = PROGRAM_DIRECTORY + VERTEX_NAME + VERTEX + SHADER_SOURCE_SUFFIX;
@@ -37,14 +33,14 @@ public class ShadowPass1Program extends TransformProgram {
     @Override
     public void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, float[] projectionMatrix, Mesh mesh)
             throws GLException {
-        // Refresh the uniform matrix
+        // Refresh the uniform matrix using the light matrix
         System.arraycopy(modelviewMatrix, 0, getUniforms(),
                 shaderVariables[ShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(getLightMatrix(), 0, getUniforms(),
                 shaderVariables[ShaderVariables.uProjectionMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
-        bindUniforms(gles, sourceUniforms, getUniforms());
+        setUniforms(gles, sourceUniforms);
     }
 
     public static float[] getLightMatrix() {

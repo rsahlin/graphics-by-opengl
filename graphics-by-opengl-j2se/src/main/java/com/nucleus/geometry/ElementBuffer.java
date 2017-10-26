@@ -45,7 +45,20 @@ public class ElementBuffer extends BufferObject {
 
     Type type;
 
+    /**
+     * Number of indices in this buffer
+     */
     int count;
+
+    /**
+     * Number of elements to draw
+     */
+    int drawCount;
+
+    /**
+     * Offset to first element
+     */
+    int offset;
 
     /**
      * Creates an element buffer with the specified number of indexes, if type is BYTE and count is 10 then a buffer
@@ -60,6 +73,7 @@ public class ElementBuffer extends BufferObject {
             throw new IllegalArgumentException(NULL_TYPE_STR);
         }
         this.count = count;
+        drawCount = count;
         this.type = type;
         int size = 1;
         switch (type) {
@@ -83,6 +97,40 @@ public class ElementBuffer extends BufferObject {
     public int getCount() {
         return count;
     }
+
+    /**
+     * Returns the number of elements to draw - this is set to the same as the element count when the buffer
+     * is created
+     * 
+     * @return
+     */
+    public int getDrawCount() {
+        return drawCount;
+    }
+
+    /**
+     * Returns the offset to the first element (indice) to draw
+     * 
+     * @return
+     */
+    public int getOffset() {
+        return offset;
+    }
+
+    /**
+     * Sets the number of elements to draw and the offset to first element.
+     * offset + drawCount must be less or equal to count.
+     * 
+     * @param drawCount Number of elements to draw (indices)
+     * @param offset First element to draw
+     */
+    public void setDrawCount(int drawCount, int offset) {
+        if ((drawCount + offset) <= count) {
+            this.drawCount = drawCount;
+            this.offset = offset;
+        }
+    }
+
 
     /**
      * Returns the type of data stored in this buffer

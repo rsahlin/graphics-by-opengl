@@ -96,11 +96,22 @@ public class AttributeBuffer extends BufferObject {
 
     /**
      * Returns the underlying Buffer holding vertex buffer array data.
+     * NOTE!
+     * Take care when writing to the buffer as it may clash with copy to gl.
      * 
      * @return
      */
     public Buffer getBuffer() {
         return attributes;
+    }
+
+    /**
+     * returns the capacity of the underlying buffer
+     * 
+     * @return
+     */
+    public int getCapacity() {
+        return attributes.capacity();
     }
 
     /**
@@ -161,9 +172,47 @@ public class AttributeBuffer extends BufferObject {
      * @param length
      */
     public void setArray(float[] array, int sourcePos, int destPos, int length) {
-        attributes.position(sourcePos);
+        attributes.position(destPos);
         attributes.put(array, sourcePos, length);
     }
 
+    /**
+     * Same as calling {@link #calculateBounds2D(int)} with the vertice count and first
+     * rewinding the buffer.
+     * 
+     * @param vertices
+     * @return
+     */
+    public float[] calculateBounds2D() {
+        attributes.rewind();
+        return calculateBounds2D(verticeCount);
+    }
+
+    /**
+     * Calculates the axis aligned 2D bounds for vertices in this buffer, starting at the current position.
+     * 
+     * @param count Number of vertices to include in calculation
+     * @return Array with the smallest and largest corner (x1y1x2y2)
+     */
+    public float[] calculateBounds2D(int count) {
+        float[] result = null;
+        int stride = (attribByteStride / 4);
+        float[] values = new float[stride];
+        FloatBuffer buffer = attributes;
+        for (int i = 0; i < count; i++) {
+            buffer.get(values);
+            if (result == null) {
+                result = new float[4];
+                System.arraycopy(values, 0, result, 0, 2);
+                System.arraycopy(values, 0, result, 2, 2);
+            } else {
+                result[0] = Math.min(values[0], result[0]);
+                result[1] = Math.min(values[1], result[1]);
+                result[2] = Math.max(values[2], result[2]);
+                result[3] = Math.max(values[3], result[3]);
+            }
+        }
+        return result;
+    }
 
 }

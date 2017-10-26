@@ -7,31 +7,32 @@ import com.nucleus.shader.ShaderVariable.VariableType;
  * The shader names used
  */
 public enum ShaderVariables implements VariableMapping {
-    
-    uMVMatrix(0, ShaderVariable.VariableType.UNIFORM, null),
+    uTexture(0, ShaderVariable.VariableType.UNIFORM, null),
+    uShadowTexture(1, ShaderVariable.VariableType.UNIFORM, null),
+    uMVMatrix(2, ShaderVariable.VariableType.UNIFORM, null),
     /**
      * Projection matrix that can be applied after snapping to screen coordinates
      */
-    uProjectionMatrix(1, ShaderVariable.VariableType.UNIFORM, null),
+    uProjectionMatrix(3, ShaderVariable.VariableType.UNIFORM, null),
     /**
      * The light pov
      */
-    uLightMatrix(2, ShaderVariable.VariableType.UNIFORM, null),
-    uScreenSize(3, ShaderVariable.VariableType.UNIFORM, null),
+    uLightMatrix(4, ShaderVariable.VariableType.UNIFORM, null),
+    uScreenSize(5, ShaderVariable.VariableType.UNIFORM, null),
     /**
      * Normally texture width, height and frames per line
      */
-    uTextureData(4, ShaderVariable.VariableType.UNIFORM, null),
-    uAmbientLight(5, ShaderVariable.VariableType.UNIFORM, null),
-    uDiffuseLight(6, ShaderVariable.VariableType.UNIFORM, null),
-    aVertex(7, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-    aTexCoord(8, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-    aTranslate(9, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aRotate(10, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aScale(11, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aColor(12, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aFrameData(13, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aData1(14, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
+    uTextureData(6, ShaderVariable.VariableType.UNIFORM, null),
+    uAmbientLight(7, ShaderVariable.VariableType.UNIFORM, null),
+    uDiffuseLight(8, ShaderVariable.VariableType.UNIFORM, null),
+    aVertex(9, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+    aTexCoord(10, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+    aTranslate(11, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aRotate(12, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aScale(13, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aColor(14, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aFrameData(15, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aData1(16, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
     
     public final int index;
     public final VariableType type;

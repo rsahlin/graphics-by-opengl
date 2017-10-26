@@ -197,6 +197,14 @@ public class Texture2D extends BaseReference {
     }
 
     /**
+     * Sets the reference to texture parameters, this will not upload texture parameters
+     * 
+     * @param parameters Reference to texture parameters
+     */
+    public void set(TextureParameter parameters) {
+        this.texParameters = parameters;
+    }
+    /**
      * Creates a texture with the specified id, external ref, target resolution and mipmap levels
      * 
      * @param id The id of the texture, not the GL texture name.

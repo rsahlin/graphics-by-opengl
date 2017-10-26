@@ -250,7 +250,6 @@ public class AssetManager {
     public ShaderProgram getProgram(NucleusRenderer renderer, ShaderProgram program) {
         ShaderProgram compiled = programs.get(program.getKey());
         if (compiled != null) {
-            SimpleLogger.d(getClass(), "Returned compiled program for " + program.getClass().getSimpleName());
             return compiled;
         }
         long start = System.currentTimeMillis();

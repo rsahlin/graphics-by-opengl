@@ -13,7 +13,6 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
-import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.AttributeUpdater.Property;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
@@ -28,7 +27,9 @@ import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.texturing.TiledTexture2D;
+import com.nucleus.vecmath.Matrix;
 
 /**
  * This class handles loading, compiling and linking of OpenGL ES shader programs.
@@ -148,6 +149,10 @@ public abstract class ShaderProgram {
      * Uniforms, used when rendering this Mesh depending on what ShaderProgram is used.
      */
     transient protected float[] uniforms;
+    /**
+     * Samplers (texture units)
+     */
+    transient protected int[] samplers;
 
     /**
      * The following fields MUST be set by subclasses
@@ -158,21 +163,9 @@ public abstract class ShaderProgram {
     protected Texture2D.Shading shading;
 
     /**
-     * Unmapped variable types, by default Sampler2D is added to avoid having to add Sampler2D variables.
-     * Sampler is set by activating textures and uploading textures not by attribute or uniform.
+     * Unmapped variable types
      */
     protected List<Integer> unMappedTypes = new ArrayList<>();
-
-    /**
-     * Sets the uniforms needed by the program, this will make the binding between the shader and uniforms
-     * 
-     * @param gles
-     * @param modelviewMatrix The matrix to use for the modelview transform
-     * @param projectionMatrix The projection matrix
-     * @param mesh
-     */
-    public abstract void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, float[] projectionMatrix, Mesh mesh)
-            throws GLException;
 
     /**
      * Returns the program for the specified pass and shading, this is used to resolve the correct
@@ -250,6 +243,7 @@ public abstract class ShaderProgram {
      */
     protected ShaderProgram(Texture2D.Shading shading, VariableMapping[] mapping) {
         super();
+        this.shading = shading;
         setMapping(mapping);
         setShaderSource(shading);
     }
@@ -267,7 +261,6 @@ public abstract class ShaderProgram {
     }
     
     protected void setMapping(VariableMapping[] mapping) {
-        unMappedTypes.add(GLES20.GL_SAMPLER_2D);
         setUniformMapping(mapping);
         setAttributeMapping(mapping);
     }
@@ -280,7 +273,6 @@ public abstract class ShaderProgram {
         //TODO - need a name together with shading to connect to shader, eg 'Translate', 'Transform' or 'Shadow'
         vertexShaderName = PROGRAM_DIRECTORY + shading.name() + VERTEX + SHADER_SOURCE_SUFFIX;
         fragmentShaderName = PROGRAM_DIRECTORY + shading.name() + FRAGMENT + SHADER_SOURCE_SUFFIX;
-        this.shading = shading;
     }
     
     /**
@@ -375,10 +367,16 @@ public abstract class ShaderProgram {
 
     private void dynamicMapShaderOffset(ShaderVariable[] variables, VariableType type) {
         int offset = 0;
+        int samplerOffset = 0;
         for (ShaderVariable v : variables) {
             if (v != null && v.getType() == type) {
-                v.setOffset(offset);
-                offset += v.getSizeInFloats();
+                if (v.getDataType() == GLES20.GL_SAMPLER_2D) {
+                    v.setOffset(samplerOffset);
+                    samplerOffset += v.getSizeInFloats();
+                } else {
+                    v.setOffset(offset);
+                    offset += v.getSizeInFloats();
+                }
             }
         }
     }
@@ -798,43 +796,38 @@ public abstract class ShaderProgram {
      * 
      * @param gles
      * @param variable Shader variable to set uniform data for, datatype and size is read.
-     * @param uniform Data for the uniform to set.
      * @param offset Offset into uniform array where data starts.
      * @throws GLException If there is an error setting a uniform to GL
      */
-    protected final void setUniform(GLES20Wrapper gles, ShaderVariable variable, float[] uniform, int offset)
+    protected final void setUniform(GLES20Wrapper gles, ShaderVariable variable, int offset)
             throws GLException {
 
         switch (variable.getDataType()) {
         case GLES20.GL_FLOAT_VEC2:
-            gles.glUniform2fv(variable.getLocation(), variable.getSize(), uniform, offset);
+                gles.glUniform2fv(variable.getLocation(), variable.getSize(), uniforms, offset);
             break;
         case GLES20.GL_FLOAT_VEC3:
-            gles.glUniform3fv(variable.getLocation(), variable.getSize(), uniform, offset);
+                gles.glUniform3fv(variable.getLocation(), variable.getSize(), uniforms, offset);
             break;
         case GLES20.GL_FLOAT_VEC4:
-            gles.glUniform4fv(variable.getLocation(), variable.getSize(), uniform, offset);
+                gles.glUniform4fv(variable.getLocation(), variable.getSize(), uniforms, offset);
             break;
         case GLES20.GL_FLOAT_MAT2:
-            gles.glUniformMatrix2fv(variable.getLocation(), variable.getSize(), false, uniform, offset);
+                gles.glUniformMatrix2fv(variable.getLocation(), variable.getSize(), false, uniforms, offset);
             break;
         case GLES20.GL_FLOAT_MAT3:
-            gles.glUniformMatrix3fv(variable.getLocation(), variable.getSize(), false, uniform, offset);
+                gles.glUniformMatrix3fv(variable.getLocation(), variable.getSize(), false, uniforms, offset);
             break;
         case GLES20.GL_FLOAT_MAT4:
-            gles.glUniformMatrix4fv(variable.getLocation(), variable.getSize(), false, uniform, offset);
+                gles.glUniformMatrix4fv(variable.getLocation(), variable.getSize(), false, uniforms, offset);
             break;
+        case GLES20.GL_SAMPLER_2D:
+                gles.glUniform1iv(variable.getLocation(), variable.getSize(), samplers, offset);
+                break;
+        default:
+                throw new IllegalArgumentException("Not implemented for dataType: " + variable.getDataType());
         }
         GLUtils.handleError(gles, "setVectorUniform(), dataType: " + variable.getDataType());
-
-    }
-
-    /**
-     * Creates the attribute storage needed in the mesh for this shader program.
-     * 
-     * @param mesh
-     */
-    protected void createAttributeData(Producer producer) {
 
     }
 
@@ -848,10 +841,12 @@ public abstract class ShaderProgram {
     protected void createUniformStorage(ShaderVariable[] variables) {
 
         int uniformSize = 0;
+        int samplerSize = 0;
         if (variables != null) {
+            samplerSize = getSamplerSize(variables);
             uniformSize = getVariableSize(variables, VariableType.UNIFORM);
             if (uniformSize > 0) {
-                setUniforms(new float[uniformSize]);
+                createUniforms(new float[uniformSize], new int[samplerSize]);
             } else {
                 SimpleLogger.d(getClass(), "No uniforms used");
             }
@@ -861,8 +856,9 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Returns the size of all the shader varibles of the specified type, either ATTRIBUTE or UNIFORM
-     * For uniforms this corresponds to the total size buffer size needed.
+     * Returns the size of all the shader variables of the specified type, either ATTRIBUTE or UNIFORM
+     * EXCLUDING the size of Sampler2D variables.
+     * For uniforms this corresponds to the total size buffer size needed - the size of Sampler2D variables.
      * For attributes this corresponds to the total buffer size needed, normally attribute data is put in
      * dynamic and static buffers.
      * 
@@ -873,11 +869,28 @@ public abstract class ShaderProgram {
     protected int getVariableSize(ShaderVariable[] variables, VariableType type) {
         int size = 0;
         for (ShaderVariable v : variables) {
-            if (v != null && v.getType() == type) {
+            if (v != null && v.getType() == type && v.getDataType() != GLES20.GL_SAMPLER_2D) {
                 size += v.getSizeInFloats();
             }
         }
         return size;
+    }
+
+    /**
+     * Returns the size of Sampler2D variables
+     * 
+     * @param variables
+     * @return
+     */
+    protected int getSamplerSize(ShaderVariable[] variables) {
+        int size = 0;
+        for (ShaderVariable v : variables) {
+            if (v != null && v.getType() == VariableType.UNIFORM && v.getDataType() == GLES20.GL_SAMPLER_2D) {
+                size += v.getSizeInFloats();
+            }
+        }
+        return size;
+
     }
 
     /**
@@ -902,20 +915,40 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Sets the data for the uniforms needed by the program - the default implementation will set the modelview and
+     * projection matrices.
+     * 
+     * @param gles
+     * @param modelviewMatrix The matrix to use for the modelview transform
+     * @param projectionMatrix The projection matrix
+     * @param mesh
+     */
+    public void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, float[] projectionMatrix, Mesh mesh)
+            throws GLException {
+        // Refresh the uniform matrixes
+        System.arraycopy(modelviewMatrix, 0, uniforms,
+                shaderVariables[ShaderVariables.uMVMatrix.index].getOffset(),
+                Matrix.MATRIX_ELEMENTS);
+        System.arraycopy(projectionMatrix, 0, uniforms,
+                shaderVariables[ShaderVariables.uProjectionMatrix.index].getOffset(),
+                Matrix.MATRIX_ELEMENTS);
+    }
+    
+    
+    /**
      * Internal method, sets the uniform data from the uniform data into the mapping provided by the attribute mapping.
      * 
      * @param gles
      * @param uniformMapping Variable mapping for the uniform data
-     * @param uniformData The uniform data
      * @throws GLException
      */
-    protected void bindUniforms(GLES20Wrapper gles, VariableMapping[] uniformMapping, float[] uniformData)
+    protected void setUniforms(GLES20Wrapper gles, VariableMapping[] uniformMapping)
             throws GLException {
         for (VariableMapping am : uniformMapping) {
             ShaderVariable v = getShaderVariable(am);
             // If null then declared in program but not used, silently ignore
             if (v != null) {
-                setUniform(gles, v, uniformData, v.getOffset());
+                setUniform(gles, v, v.getOffset());
             }
         }
     }
@@ -980,6 +1013,15 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Returns the shading that this program supports
+     * 
+     * @return
+     */
+    public Shading getShading() {
+        return shading;
+    }
+
+    /**
      * Returns one or more defined uniform vectors used when rendering.
      * 
      * @return One or more uniform vector as used by the shader program implementation
@@ -993,10 +1035,12 @@ public abstract class ShaderProgram {
      * Note that the use of uniforms is depending on the shader program used.
      * 
      * @param uniforms Values to reference in this class, note that values are NOT copied.
+     * @param samplers Sampler (texture unit) values
      * 
      */
-    public void setUniforms(float[] uniforms) {
+    private void createUniforms(float[] uniforms, int[] samplers) {
         this.uniforms = uniforms;
+        this.samplers = samplers;
     }
     
 }

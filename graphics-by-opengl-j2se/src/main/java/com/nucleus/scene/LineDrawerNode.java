@@ -2,6 +2,8 @@ package com.nucleus.scene;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.geometry.AttributeBuffer;
+import com.nucleus.geometry.AttributeUpdater;
+import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.LineShapeBuilder;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
@@ -15,7 +17,7 @@ import com.nucleus.shader.ShaderVariables;
  * Default is to draw rectangles
  * This is not performance optimal for many lines, use only if a few lines are drawn in the UI.
  */
-public class LineDrawerNode extends Node {
+public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
 
     public enum LineMode {
         RECTANGLE(),
@@ -34,6 +36,9 @@ public class LineDrawerNode extends Node {
     private int lineCount;
     @SerializedName(LINE_MODE)
     private LineMode lineMode = LineMode.RECTANGLE;
+
+    transient private float[] attributes;
+    transient AttributeBuffer buffer;
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -78,6 +83,13 @@ public class LineDrawerNode extends Node {
         return copy;
     }
 
+    @Override
+    public void create() {
+        Mesh mesh = getMesh(MeshType.MAIN);
+        mesh.setAttributeUpdater(this);
+        bindAttributeBuffer(mesh.getVerticeBuffer(BufferIndex.ATTRIBUTES));
+    }
+
     public void set(LineDrawerNode source) {
         super.set(source);
         lineCount = source.lineCount;
@@ -120,21 +132,55 @@ public class LineDrawerNode extends Node {
      * @param vertice
      * @param first x,y,z values for first vertice
      * @param second x,y,z values for second vertice
+     * @param z
      * @param rgba Color for 2 vertices
      */
-    public void setLine(int vertice, float[] first, float[] second, float[] rgba) {
-        Mesh mesh = getMesh(MeshType.MAIN);
-        AttributeBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
-        int stride = vertices.getFloatStride();
-        int startIndex = vertice * stride;
-        rectangleData[0] = first[0];
-        rectangleData[1] = first[1];
-        rectangleData[2] = 1;
-        rectangleData[3] = second[0];
-        rectangleData[4] = second[1];
-        rectangleData[5] = 1;
-        vertices.setComponents(rectangleData, 3, 0, startIndex, 2);
-        mesh.setAttribute4(vertice, ShaderVariables.aColor, rgba, 2);
+    public void setLine(int vertice, float[] first, float[] second, float z, float[] rgba) {
+        int offset = buffer.getFloatStride() * vertice;
+        int translate = getMesh(MeshType.MAIN).getMaterial().getProgram().getShaderVariable(ShaderVariables.aTranslate)
+                .getOffset();
+        int color = getMesh(MeshType.MAIN).getMaterial().getProgram().getShaderVariable(ShaderVariables.aColor)
+                .getOffset();
+
+        attributes[offset + translate] = first[0];
+        attributes[offset + translate + 1] = first[1];
+        attributes[offset + translate + 2] = z;
+        attributes[offset + color] = rgba[3];
+        attributes[offset + color + 1] = rgba[2];
+        attributes[offset + color + 2] = rgba[1];
+        attributes[offset + color + 3] = rgba[0];
+        offset += buffer.getFloatStride();
+        attributes[offset + translate] = second[0];
+        attributes[offset + translate + 1] = second[1];
+        attributes[offset + translate + 2] = z;
+        attributes[offset + color] = rgba[3];
+        attributes[offset + color + 1] = rgba[2];
+        attributes[offset + color + 2] = rgba[1];
+        attributes[offset + color + 3] = rgba[0];
+
+        getMesh(MeshType.MAIN).setAttribute4(vertice, ShaderVariables.aColor, rgba, 2);
+    }
+
+
+    @Override
+    public void updateAttributeData() {
+        if (attributes == null || buffer == null) {
+            throw new IllegalArgumentException(Consumer.BUFFER_NOT_BOUND);
+        }
+        buffer.setArray(attributes, 0, 0, attributes.length);
+        buffer.setDirty(true);
+
+    }
+
+    @Override
+    public float[] getAttributeData() {
+        return attributes;
+    }
+
+    @Override
+    public void bindAttributeBuffer(AttributeBuffer buffer) {
+        attributes = new float[buffer.getCapacity()];
+        this.buffer = buffer;
     }
 
 }
