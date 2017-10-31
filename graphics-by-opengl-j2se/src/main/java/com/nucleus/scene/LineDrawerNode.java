@@ -210,10 +210,10 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         attributes[translate++] = pos[0];
         attributes[translate++] = pos[1];
         attributes[translate] = z;
-        attributes[color++] = rgba[3];
-        attributes[color++] = rgba[2];
+        attributes[color++] = rgba[0];
         attributes[color++] = rgba[1];
-        attributes[color] = rgba[0];
+        attributes[color++] = rgba[2];
+        attributes[color] = rgba[3];
 
     }
 

@@ -966,7 +966,8 @@ public class Node extends BaseReference {
      */
     protected boolean isInside(float[] position) {
         if (bounds != null && (state == State.ON || state == State.ACTOR)
-                && getProperty(EventHandler.Type.POINTERINPUT.name(), EventManager.FALSE).equals(EventManager.TRUE)) {
+                && getProperty(EventHandler.EventType.POINTERINPUT.name(), EventManager.FALSE)
+                        .equals(EventManager.TRUE)) {
             // In order to do pointer intersections the model and view matrix is needed.
             // For this to work it is important that the view keeps the same orientation of axis as OpenGL (right
             // and up)

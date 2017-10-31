@@ -65,6 +65,7 @@ public abstract class NucleusActivity extends Activity
     public void onBackPressed() {
         if (coreApp != null) {
             if (coreApp.onBackPressed()) {
+                coreApp.setDestroyFlag();
                 finish();
             }
         }

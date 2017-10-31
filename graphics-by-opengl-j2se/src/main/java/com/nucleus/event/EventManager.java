@@ -33,7 +33,7 @@ public class EventManager {
      */
     public interface EventHandler<T> {
 
-        public enum Type {
+        public enum EventType {
             /**
              * The event is pointer input
              */
