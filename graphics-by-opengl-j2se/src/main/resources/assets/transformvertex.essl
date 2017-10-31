@@ -30,8 +30,6 @@ attribute vec2 aScale;
 
 varying vec2 vTexCoord;
 
-precision mediump float;
-
 mat2 calculateTransformMatrix();
 
 void main() {

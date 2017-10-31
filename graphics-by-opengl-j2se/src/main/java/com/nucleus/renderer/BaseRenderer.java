@@ -26,7 +26,9 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
+import com.nucleus.scene.LineDrawerNode;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
@@ -150,7 +152,6 @@ class BaseRenderer implements NucleusRenderer {
         initialized = true;
         this.surfaceConfig = surfaceConfig;
         rendererInfo = new RendererInfo(gles);
-        gles.glLineWidth(1f);
     }
 
     @Override
@@ -268,7 +269,9 @@ class BaseRenderer implements NucleusRenderer {
             this.projectionMatrix = projection;
         }
         Matrix.mul4(nodeMatrix, viewMatrix, mvMatrix);
-        // Matrix.mul4(mvMatrix, projectionMatrix);
+        if (node.getType().equals(NodeTypes.linedrawernode.name())) {
+            gles.glLineWidth(((LineDrawerNode) node).getLineWidth());
+        }
         renderMeshes(node.getMeshes(), mvMatrix, projectionMatrix);
         this.modelMatrix = nodeMatrix;
         for (Node n : node.getChildren()) {
@@ -506,18 +509,18 @@ class BaseRenderer implements NucleusRenderer {
         Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
         bindTexture(texture);
         if (indices == null) {
-            gles.glDrawArrays(mesh.getMode().mode, 0, vertices.getVerticeCount());
-            timeKeeper.addDrawArrays(vertices.getVerticeCount());
+            gles.glDrawArrays(mesh.getMode().mode, mesh.getOffset(), mesh.getDrawCount());
+            timeKeeper.addDrawArrays(mesh.getDrawCount());
         } else {
             if (indices.getBufferName() > 0) {
                 gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
-                gles.glDrawElements(mesh.getMode().mode, indices.getDrawCount(), indices.getType().type,
-                        indices.getOffset());
+                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
+                        mesh.getOffset());
             } else {
-                gles.glDrawElements(mesh.getMode().mode, indices.getDrawCount(), indices.getType().type,
-                        indices.getBuffer().position(indices.getOffset()));
+                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
+                        indices.getBuffer().position(mesh.getOffset()));
             }
-            timeKeeper.addDrawElements(vertices.getVerticeCount(), indices.getDrawCount());
+            timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
         }
         GLUtils.handleError(gles, "glDrawArrays ");
     }

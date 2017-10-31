@@ -6,6 +6,7 @@ import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLDisplay;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.renderer.SurfaceConfiguration;
 
 public class EGLUtils {
@@ -89,13 +90,27 @@ public class EGLUtils {
     public final static EGLConfig selectConfig(EGL10 egl, EGLDisplay eglDisplay, EGLConfig[] configs, int count,
             SurfaceConfiguration wantedConfig) {
         if (wantedConfig.getSamples() > 1) {
-            System.out.println("Select config with >= " + wantedConfig.getSamples());
+            SimpleLogger.d(EGLUtils.class, "Select config with >= " + wantedConfig.getSamples());
+            // Fetch a list with configs that have at least two samples
             ArrayList<EGLConfig> sortedlist = filterByAttributeGreaterEqual(egl, eglDisplay, configs, EGL10.EGL_SAMPLES,
-                    1);
+                    2);
+            SimpleLogger.d(EGLUtils.class, "Found " + sortedlist.size() + " configs with samples.");
             EGLConfig chosen = null;
             for (EGLConfig conf : sortedlist) {
-                if (getEGLConfigAttrib(egl, eglDisplay, conf, EGL10.EGL_SAMPLES) <= wantedConfig.getSamples()) {
+                int currentSamples = getEGLConfigAttrib(egl, eglDisplay, conf, EGL10.EGL_SAMPLES);
+                if (currentSamples == wantedConfig.getSamples()) {
+                    return chosen;
+                }
+                if (chosen == null) {
                     chosen = conf;
+                } else {
+                    int chosenSamples = getEGLConfigAttrib(egl, eglDisplay, chosen, EGL10.EGL_SAMPLES);
+                    if (chosenSamples < currentSamples || chosenSamples > wantedConfig.getSamples()) {
+                        if (currentSamples < wantedConfig.getSamples()) {
+                            chosen = conf;
+                            SimpleLogger.d(EGLUtils.class, "Picking config with " + currentSamples + " samples");
+                        }
+                    }
                 }
             }
             if (chosen != null) {

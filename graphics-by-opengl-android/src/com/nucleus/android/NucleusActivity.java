@@ -90,6 +90,13 @@ public abstract class NucleusActivity extends Activity
     public abstract Renderers getRenderVersion();
     
     /**
+     * Returns the number of samples to use for the EGL config.
+     * 
+     * @return
+     */
+    public abstract int getSamples();
+
+    /**
      * Setup this activity with a new GLSurfaceView create with the specified renderer
      * When this method returns the created view is the active content view (ie visible)
      * 
@@ -100,9 +107,8 @@ public abstract class NucleusActivity extends Activity
      */
     private void setup(Renderers version, int rendermode, int layoutParams, int windowFeature) {
         SurfaceConfiguration surfaceConfig = new SurfaceConfiguration();
-        // TODO This shall be set on a per project basis
         createWrapper(version);
-        surfaceConfig.setSamples(16);
+        surfaceConfig.setSamples(getSamples());
         mGLView = new AndroidSurfaceView(surfaceConfig, getApplicationContext(), this);
         mGLView.setRenderMode(rendermode);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);

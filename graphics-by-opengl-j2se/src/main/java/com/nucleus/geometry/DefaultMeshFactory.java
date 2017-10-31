@@ -26,7 +26,10 @@ public class DefaultMeshFactory implements MeshFactory {
                 int count = lineDrawer.getLineCount();
                 switch (lineDrawer.getLineMode()) {
                     case LINES:
-                        builder.setElementMode(Mode.LINES, count * 2, count * 4);
+                        builder.setArrayMode(Mode.LINES, count * 2);
+                        break;
+                    case LINE_STRIP:
+                        builder.setArrayMode(Mode.LINE_STRIP, count * 2);
                         break;
                     case RECTANGLE:
                         // Rectangle shares vertices, 4 vertices per rectangle

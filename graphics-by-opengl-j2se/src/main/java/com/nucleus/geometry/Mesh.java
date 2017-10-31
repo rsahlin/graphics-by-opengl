@@ -275,6 +275,15 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     transient protected AttributeBuffer[] attributes;
     transient protected ElementBuffer indices;
     /**
+     * Number of elements to draw
+     */
+    transient int drawCount;
+    /**
+     * Offset to first element
+     */
+    transient int offset;
+
+    /**
      * Drawmode, if indices is null then glDrawArrays shall be used with this mode
      */
     transient protected Mode mode;
@@ -339,7 +348,12 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     protected void internalCreateBuffers(ShaderProgram program, int vertexCount, int indiceCount) {
         attributes = program.createAttributeBuffers(this, vertexCount);
-        indices = new ElementBuffer(indiceCount, Type.SHORT);
+        if (indiceCount > 0) {
+            indices = new ElementBuffer(indiceCount, Type.SHORT);
+            setDrawCount(indiceCount, 0);
+        } else {
+            setDrawCount(vertexCount, 0);
+        }
     }
 
     /**
@@ -606,6 +620,44 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         if (buffer != null) {
             buffer.setComponents(attribute, 4, 0, offset, verticeCount);
         }
+    }
+
+    /**
+     * Sets the number of elements/vertices to draw and the offset to first element.
+     * offset + drawCount must be less or equal to count.
+     * TODO - Unify this with the usage in ElementBuffer
+     * 
+     * @param drawCount Number of elements to draw (indices)
+     * @param offset First element to draw
+     */
+    public void setDrawCount(int drawCount, int offset) {
+        ElementBuffer buffer = getElementBuffer();
+        int max = getVerticeBuffer(BufferIndex.VERTICES).getVerticeCount();
+        if (buffer != null && buffer.getCount() > 0) {
+            max = buffer.getCount();
+        }
+        this.drawCount = Math.min(drawCount, max);
+        this.offset = offset;
+    }
+
+    /**
+     * Returns the number of vertices to draw - this is set to the same as the vertice count when the buffer
+     * is created
+     * TODO - Unify this with the usage in ElementBuffer
+     * 
+     * @return
+     */
+    public int getDrawCount() {
+        return drawCount;
+    }
+
+    /**
+     * Returns the offset to the first vertice to draw
+     * 
+     * @return
+     */
+    public int getOffset() {
+        return offset;
     }
 
 }

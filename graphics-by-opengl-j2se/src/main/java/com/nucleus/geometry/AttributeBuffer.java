@@ -30,6 +30,7 @@ public class AttributeBuffer extends BufferObject {
     private int attribByteStride;
     private FloatBuffer attributes;
     private int verticeCount;
+
     /**
      * Datatype
      */
@@ -214,5 +215,6 @@ public class AttributeBuffer extends BufferObject {
         }
         return result;
     }
+
 
 }
