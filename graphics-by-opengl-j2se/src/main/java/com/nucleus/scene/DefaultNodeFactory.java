@@ -115,9 +115,6 @@ public class DefaultNodeFactory implements NodeFactory {
             throws NodeException {
         try {
             Node node = source.createInstance(root);
-            // Copy properties from source node into the created node.
-            node.setProperties(source);
-            node.copyTransform(source);
             Mesh mesh = meshFactory.createMesh(renderer, node);
             if (mesh != null) {
                 node.addMesh(mesh, MeshType.MAIN);

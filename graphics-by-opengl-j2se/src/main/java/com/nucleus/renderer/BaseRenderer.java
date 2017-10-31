@@ -35,6 +35,7 @@ import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
+import com.nucleus.texturing.TextureUtils;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -538,7 +539,10 @@ class BaseRenderer implements NucleusRenderer {
     
     /**
      * binds the texture, if texture reference is dynamic id the reference is fetched.
+     * TODO This should use the method in {@link TextureUtils#prepareTexture(GLES20Wrapper, Texture2D)}
+     * 
      * @param texture
+     * 
      */
     private void bindTexture(Texture2D texture) throws GLException {
         int textureID = texture.getName();
