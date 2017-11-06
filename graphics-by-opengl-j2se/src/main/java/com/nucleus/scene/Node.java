@@ -455,7 +455,7 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Sets the source transform as a referrence.
+     * Sets the source transform as a reference.
      * 
      * @param source The transform reference, may be null.
      */

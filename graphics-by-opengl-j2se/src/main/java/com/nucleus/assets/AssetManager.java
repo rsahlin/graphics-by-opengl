@@ -7,23 +7,19 @@ import java.util.Hashtable;
 import com.nucleus.SimpleLogger;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLUtils;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderTarget;
-import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.texturing.Image.ImageFormat;
 import com.nucleus.texturing.TexParameter;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureType;
-import com.nucleus.texturing.TextureUtils;
-import com.nucleus.texturing.Image.ImageFormat;
 
 /**
  * Loading and unloading assets, mainly textures.
@@ -167,6 +163,9 @@ public class AssetManager {
             source.setExternalReference(new ExternalReference(""));
         }
         ExternalReference ref = source.getExternalReference();
+        if (ref == null) {
+            throw new IllegalArgumentException("No external reference for texture id: " + source.getId());
+        }
         String refId = ref.getIdReference();
         if (refId != null) {
             Texture2D texture = textures.get(refId);

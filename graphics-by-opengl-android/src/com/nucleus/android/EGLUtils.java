@@ -99,7 +99,7 @@ public class EGLUtils {
             for (EGLConfig conf : sortedlist) {
                 int currentSamples = getEGLConfigAttrib(egl, eglDisplay, conf, EGL10.EGL_SAMPLES);
                 if (currentSamples == wantedConfig.getSamples()) {
-                    return chosen;
+                    return conf;
                 }
                 if (chosen == null) {
                     chosen = conf;

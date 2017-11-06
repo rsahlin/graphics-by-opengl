@@ -50,7 +50,7 @@ public class ShadowPass1Program extends TransformProgram {
         Matrix.setIdentityM(lightPOV, 0);
         float[] lightVector = GlobalLight.getInstance().getLightVector();
         Matrix.setRotateEulerM(result, 0, lightVector[0], lightVector[1], lightVector[2]);
-        Matrix.orthoM(lightPOV, 0, -0.8889f,0.8889f,-0.5f,0.5f,-10f,10f);
+        Matrix.orthoM(lightPOV, 0, -0.8889f, 0.8889f, -0.5f, 0.5f, 0f, 10f);
         Matrix.mul4(result, lightPOV);
         return result;
     }

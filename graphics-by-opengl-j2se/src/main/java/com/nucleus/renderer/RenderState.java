@@ -26,17 +26,16 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
  */
 public class RenderState {
 
-	public static final String MULTISAMPLING = "multisampling";
-	public static final String DEPTHFUNC = "depthFunc";
-	public static final String DEPTHRANGE_NEAR = "depthRangeNear";
-	public static final String DEPTHRANGE_FAR = "depthRangeFar";
-	public static final String CLEARDEPTH = "clearDepth";
-	public static final String CLEARCOLOR = "clearColor";
-	public static final String CLEARSTENCIL = "clearStencil";
-	public static final String CULLFACE = "cullFace";
-	public static final String CLEARFLAGS = "clearFlags";
-	
-	
+    public static final String MULTISAMPLING = "multisampling";
+    public static final String DEPTHFUNC = "depthFunc";
+    public static final String DEPTHRANGE_NEAR = "depthRangeNear";
+    public static final String DEPTHRANGE_FAR = "depthRangeFar";
+    public static final String CLEARDEPTH = "clearDepth";
+    public static final String CLEARCOLOR = "clearColor";
+    public static final String CLEARSTENCIL = "clearStencil";
+    public static final String CULLFACE = "cullFace";
+    public static final String CLEARFLAGS = "clearFlags";
+
     protected final static String INVALID_CULLFACE_STR = "Invalid cullFace:";
     protected final static String INVALID_CLEARFLAG_STR = "Invalid clearFlag:";
     protected final static String INVALID_DEPTHFUNC_STR = "Invalid depthFunc:";
@@ -44,7 +43,7 @@ public class RenderState {
 
     public final static int DEFAULT_DEPTHFUNC = GLES20.GL_NONE;
     public final static float DEFAULT_DEPTHRANGE_NEAR = 0.5f;
-    public final static float DEFAULT_DEPTHRANGE_FAR = 10f;
+    public final static float DEFAULT_DEPTHRANGE_FAR = 5f;
     public final static float DEFAULT_CLEARDEPTH = DEFAULT_DEPTHRANGE_FAR;
     public final static int DEFAULT_CULLFACE = GLES20.GL_NONE;
     public final static int DEFAULT_CLEARFLAG = GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT;
@@ -150,8 +149,7 @@ public class RenderState {
         this.enableMultisampling = multisampling;
         if (depthTest) {
             depthFunc = GLES20.GL_LEQUAL;
-        }
-        else {
+        } else {
             depthFunc = GLES20.GL_NONE;
         }
 
@@ -207,17 +205,17 @@ public class RenderState {
      */
     public void setDepthFunc(int depthFunc) {
         switch (depthFunc) {
-        case GLES20.GL_NONE:
-        case GLES20.GL_NEVER:
-        case GLES20.GL_LESS:
-        case GLES20.GL_EQUAL:
-        case GLES20.GL_LEQUAL:
-        case GLES20.GL_GREATER:
-        case GLES20.GL_GEQUAL:
-        case GLES20.GL_ALWAYS:
-            break;
-        default:
-            throw new IllegalArgumentException(INVALID_DEPTHFUNC_STR);
+            case GLES20.GL_NONE:
+            case GLES20.GL_NEVER:
+            case GLES20.GL_LESS:
+            case GLES20.GL_EQUAL:
+            case GLES20.GL_LEQUAL:
+            case GLES20.GL_GREATER:
+            case GLES20.GL_GEQUAL:
+            case GLES20.GL_ALWAYS:
+                break;
+            default:
+                throw new IllegalArgumentException(INVALID_DEPTHFUNC_STR);
         }
         changeFlag |= CHANGE_FLAG_DEPTH;
         this.depthFunc = depthFunc;
