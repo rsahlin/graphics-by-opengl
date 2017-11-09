@@ -42,7 +42,7 @@ public class RenderState {
     protected final static String INVALID_CLEARCOLOR_STR = "Invalid clear color array.";
 
     public final static int DEFAULT_DEPTHFUNC = GLES20.GL_NONE;
-    public final static float DEFAULT_DEPTHRANGE_NEAR = 0.5f;
+    public final static float DEFAULT_DEPTHRANGE_NEAR = 0.01f;
     public final static float DEFAULT_DEPTHRANGE_FAR = 5f;
     public final static float DEFAULT_CLEARDEPTH = DEFAULT_DEPTHRANGE_FAR;
     public final static int DEFAULT_CULLFACE = GLES20.GL_NONE;

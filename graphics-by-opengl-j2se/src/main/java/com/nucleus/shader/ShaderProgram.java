@@ -1076,4 +1076,10 @@ public abstract class ShaderProgram {
         this.samplers = samplers;
     }
     
+    @Override
+    public String toString() {
+        return vertexShaderName + " (" + vertexShader + ") / " + fragmentShaderName + " (" + fragmentShader
+                + ") shading: " + shading;
+    }
+
 }
