@@ -144,40 +144,42 @@ public class ShaderVariable {
      */
     public int getSizeInFloats() {
         switch (dataType) {
-        case GLES20.GL_FLOAT:
-            return size;
-        case GLES20.GL_FLOAT_VEC2:
-            return 2 * size;
-        case GLES20.GL_FLOAT_VEC3:
-            return 3 * size;
-        case GLES20.GL_FLOAT_VEC4:
-            return 4 * size;
-        case GLES20.GL_FLOAT_MAT2:
-            return 4 * size;
-        case GLES20.GL_FLOAT_MAT3:
-            return 9 * size;
-        case GLES20.GL_FLOAT_MAT4:
-            return 16 * size;
+            case GLES20.GL_FLOAT:
+                return size;
+            case GLES20.GL_FLOAT_VEC2:
+                return 2 * size;
+            case GLES20.GL_FLOAT_VEC3:
+                return 3 * size;
+            case GLES20.GL_FLOAT_VEC4:
+                return 4 * size;
+            case GLES20.GL_FLOAT_MAT2:
+                return 4 * size;
+            case GLES20.GL_FLOAT_MAT3:
+                return 9 * size;
+            case GLES20.GL_FLOAT_MAT4:
+                return 16 * size;
+            case GLES20.GL_SAMPLER_2D:
+                return size;
         }
         throw new IllegalArgumentException(ILLEGAL_DATATYPE_ERROR + dataType);
     }
 
     public int getComponentCount() {
         switch (dataType) {
-        case GLES20.GL_FLOAT:
-            return 1;
-        case GLES20.GL_FLOAT_VEC2:
-            return 2;
-        case GLES20.GL_FLOAT_VEC3:
-            return 3;
-        case GLES20.GL_FLOAT_VEC4:
-            return 4;
-        case GLES20.GL_FLOAT_MAT2:
-            return 2;
-        case GLES20.GL_FLOAT_MAT3:
-            return 3;
-        case GLES20.GL_FLOAT_MAT4:
-            return 4;
+            case GLES20.GL_FLOAT:
+                return 1;
+            case GLES20.GL_FLOAT_VEC2:
+                return 2;
+            case GLES20.GL_FLOAT_VEC3:
+                return 3;
+            case GLES20.GL_FLOAT_VEC4:
+                return 4;
+            case GLES20.GL_FLOAT_MAT2:
+                return 2;
+            case GLES20.GL_FLOAT_MAT3:
+                return 3;
+            case GLES20.GL_FLOAT_MAT4:
+                return 4;
         }
         throw new IllegalArgumentException(ILLEGAL_DATATYPE_ERROR + dataType);
     }

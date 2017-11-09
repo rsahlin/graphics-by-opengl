@@ -100,7 +100,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         material.setProgram(program);
         meshBuilder.setMaterial(material);
         meshBuilder.setShapeBuilder(
-                new RectangleShapeBuilder(new RectangleShapeBuilder.Configuration(1f, 1f, 0f, 1, 0)));
+                new RectangleShapeBuilder(new RectangleShapeBuilder.RectangleConfiguration(1f, 1f, 0f, 1, 0)));
         builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
                 .setNode(NodeTypes.layernode);
         try {

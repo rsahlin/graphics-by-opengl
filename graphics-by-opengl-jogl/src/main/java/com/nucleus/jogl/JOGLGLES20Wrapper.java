@@ -292,6 +292,11 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
+    public void glUniform1iv(int location, int count, int[] v0, int offset) {
+        gles.glUniform1iv(location, count, v0, offset);
+    }
+
+    @Override
     public void glUniform2fv(int location, int count, float[] v, int offset) {
         gles.glUniform2fv(location, count, v, offset);
 

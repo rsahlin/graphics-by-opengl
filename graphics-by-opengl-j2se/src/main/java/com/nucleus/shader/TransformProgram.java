@@ -8,7 +8,6 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
-import com.nucleus.vecmath.Matrix;
 
 /**
  * Program for transformed vertices, shader calculates vertex position with position offset, rotation and scale
@@ -19,14 +18,10 @@ public class TransformProgram extends ShaderProgram {
     /**
      * Name of this shader - TODO where should this be defined?
      */
-    protected static final String NAME = "Transform";
+    protected static final String NAME = "transform";
     
-    public TransformProgram() {
-        super(ShaderVariables.values());
-    }
-    
-    protected TransformProgram(VariableMapping[] mapping) {
-        super(mapping);
+    protected TransformProgram(Texture2D.Shading shading, VariableMapping[] mapping) {
+        super(shading, mapping);
     }
     
     @Override
@@ -38,15 +33,8 @@ public class TransformProgram extends ShaderProgram {
     @Override
     public void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, float[] projectionMatrix, Mesh mesh)
             throws GLException {
-        // Refresh the uniform matrix
-        // TODO prefetch the offsets for the shader variables and store in array.
-        System.arraycopy(modelviewMatrix, 0, getUniforms(),
-                shaderVariables[ShaderVariables.uMVMatrix.index].getOffset(),
-                Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(projectionMatrix, 0, getUniforms(),
-                shaderVariables[ShaderVariables.uProjectionMatrix.index].getOffset(),
-                Matrix.MATRIX_ELEMENTS);
-        bindUniforms(gles, sourceUniforms, getUniforms());
+        super.bindUniforms(gles, modelviewMatrix, projectionMatrix, mesh);
+        setUniforms(gles, sourceUniforms);
         
     }
 
@@ -58,7 +46,7 @@ public class TransformProgram extends ShaderProgram {
             case MAIN:
                 return this;
             case SHADOW:
-                return AssetManager.getInstance().getProgram(renderer, new ShadowPass1Program());
+                return AssetManager.getInstance().getProgram(renderer, new ShadowPass1Program(shading));
                 default:
             throw new IllegalArgumentException("Invalid pass " + pass);
         }

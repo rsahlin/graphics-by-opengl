@@ -10,7 +10,16 @@ import com.nucleus.geometry.ElementBuffer.Type;
  * @author Richard Sahlin
  *
  */
-public class ElementBuilder {
+public abstract class ElementBuilder extends ShapeBuilder {
+
+    /**
+     * Builds the element buffer if present in the mesh
+     * 
+     * @param mesh The mesh to build the element buffer in
+     * @param count Number of shapes, this could differ from number of vertices
+     * @param startVertex First vertex index
+     */
+    public abstract void buildElements(Mesh mesh, int count, int startVertex);
 
     /**
      * Builds an element buffer for quads, ie 4 separate vertices are used to create one quad (2 triangles)
@@ -25,7 +34,7 @@ public class ElementBuilder {
      * @param index First vertex to index
      * @return The ElementBuffer containing the quad indices
      */
-    public static ElementBuffer buildQuadBuffer(ElementBuffer quadStorage, int count, int index) {
+    public ElementBuffer buildQuadBuffer(ElementBuffer quadStorage, int count, int index) {
         if (quadStorage.type == Type.BYTE) {
             throw new IllegalArgumentException("Invalid type " + quadStorage.type);
         }
@@ -59,7 +68,7 @@ public class ElementBuilder {
      * @param index First vertex to index
      * @return The ElementBuffer containing the quad indices
      */
-    public static ElementBuffer buildQuadLineBuffer(ElementBuffer quadStorage, int count, int index) {
+    public ElementBuffer buildQuadLineBuffer(ElementBuffer quadStorage, int count, int index) {
         if (quadStorage.type == Type.BYTE) {
             throw new IllegalArgumentException("Invalid type " + quadStorage.type);
         }
@@ -81,6 +90,34 @@ public class ElementBuilder {
         }
 
         return quadStorage;
+    }
+
+    /**
+     * Builds an element buffer for separate lines
+     * There is no sharing of vertices between the lines, each line is separated.
+     * Only supports ElementBuffer of type SHORT
+     * 
+     * @param lineStorage
+     * @param count Number of lines to build
+     * @param index First vertex to index
+     * @return The ElementBuffer containing the line indices
+     */
+    public ElementBuffer buildLinesBuffer(ElementBuffer lineStorage, int count, int index) {
+        if (lineStorage.type != Type.SHORT) {
+            throw new IllegalArgumentException("Invalid type " + lineStorage.type);
+        }
+
+        ShortBuffer buffer = lineStorage.indices.asShortBuffer();
+        buffer.position(0);
+        short[] quadIndices = new short[2];
+        for (int i = 0; i < count; i++) {
+            quadIndices[0] = (short) index;
+            quadIndices[1] = (short) (index + 1);
+            buffer.put(quadIndices, 0, 2);
+            index += 2;
+        }
+
+        return lineStorage;
     }
 
 }

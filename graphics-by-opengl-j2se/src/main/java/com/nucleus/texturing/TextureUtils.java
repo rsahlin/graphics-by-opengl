@@ -150,7 +150,7 @@ public class TextureUtils {
      * @paran gles
      * @param texture
      */
-    static void prepareTexture(GLES20Wrapper gles, Texture2D texture) throws GLException {
+    public static void prepareTexture(GLES20Wrapper gles, Texture2D texture) throws GLException {
         gles.glActiveTexture(GLES20.GL_TEXTURE0);
         if (texture != null && texture.textureType != TextureType.Untextured) {
             int textureID = texture.getName();

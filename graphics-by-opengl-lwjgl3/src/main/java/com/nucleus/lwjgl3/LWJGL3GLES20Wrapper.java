@@ -279,6 +279,11 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
+    public void glUniform1iv(int location, int count, int[] v0, int offset) {
+        org.lwjgl.opengles.GLES20.glUniform1iv(location, toIntBuffer(v0, count, offset));
+    }
+
+    @Override
     public void glUniform2fv(int location, int count, float[] v, int offset) {
         org.lwjgl.opengles.GLES20.glUniform2fv(location, toFloatBuffer(v, 2 * count, offset));
 

@@ -13,7 +13,6 @@ import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Constants;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
-import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
@@ -27,13 +26,16 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
+import com.nucleus.scene.LineDrawerNode;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
+import com.nucleus.texturing.TextureUtils;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -151,7 +153,6 @@ class BaseRenderer implements NucleusRenderer {
         initialized = true;
         this.surfaceConfig = surfaceConfig;
         rendererInfo = new RendererInfo(gles);
-        gles.glLineWidth(1f);
     }
 
     @Override
@@ -261,11 +262,6 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     private void internalRender(Node node) throws GLException {
-        // Check for AttributeUpdate producer.
-        Producer producer = node.getAttributeProducer();
-        if (producer != null) {
-            producer.updateAttributeData();
-        }
         float[] nodeMatrix = node.concatModelMatrix(this.modelMatrix);
         // Fetch projection just before render
         float[] projection = node.getProjection();
@@ -274,7 +270,9 @@ class BaseRenderer implements NucleusRenderer {
             this.projectionMatrix = projection;
         }
         Matrix.mul4(nodeMatrix, viewMatrix, mvMatrix);
-        // Matrix.mul4(mvMatrix, projectionMatrix);
+        if (node.getType().equals(NodeTypes.linedrawernode.name())) {
+            gles.glLineWidth(((LineDrawerNode) node).getLineWidth());
+        }
         renderMeshes(node.getMeshes(), mvMatrix, projectionMatrix);
         this.modelMatrix = nodeMatrix;
         for (Node n : node.getChildren()) {
@@ -512,17 +510,18 @@ class BaseRenderer implements NucleusRenderer {
         Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
         bindTexture(texture);
         if (indices == null) {
-            gles.glDrawArrays(mesh.getMode().mode, 0, vertices.getVerticeCount());
-            timeKeeper.addDrawArrays(vertices.getVerticeCount());
+            gles.glDrawArrays(mesh.getMode().mode, mesh.getOffset(), mesh.getDrawCount());
+            timeKeeper.addDrawArrays(mesh.getDrawCount());
         } else {
             if (indices.getBufferName() > 0) {
                 gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
-                gles.glDrawElements(mesh.getMode().mode, indices.getCount(), indices.getType().type, 0);
+                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
+                        mesh.getOffset());
             } else {
-                gles.glDrawElements(mesh.getMode().mode, indices.getCount(), indices.getType().type,
-                        indices.getBuffer().position(0));
+                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
+                        indices.getBuffer().position(mesh.getOffset()));
             }
-            timeKeeper.addDrawElements(vertices.getVerticeCount(), indices.getCount());
+            timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
         }
         GLUtils.handleError(gles, "glDrawArrays ");
     }
@@ -534,12 +533,16 @@ class BaseRenderer implements NucleusRenderer {
      * @return
      */
     private ShaderProgram getProgram(Material material, Pass pass) {
-        return material.getProgram().getProgram(this, pass, null);
+        ShaderProgram program = material.getProgram();
+        return program.getProgram(this, pass, program.getShading());
     }
     
     /**
      * binds the texture, if texture reference is dynamic id the reference is fetched.
+     * TODO This should use the method in {@link TextureUtils#prepareTexture(GLES20Wrapper, Texture2D)}
+     * 
      * @param texture
+     * 
      */
     private void bindTexture(Texture2D texture) throws GLException {
         int textureID = texture.getName();

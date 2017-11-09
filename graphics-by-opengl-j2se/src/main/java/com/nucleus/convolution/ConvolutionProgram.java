@@ -90,7 +90,7 @@ public class ConvolutionProgram extends ShaderProgram {
             throws GLException {
         Matrix.mul4(modelviewMatrix, projectionMatrix);
         System.arraycopy(modelviewMatrix, 0, getUniforms(), 0, Matrix.MATRIX_ELEMENTS);
-        bindUniforms(gles, sourceUniforms, getUniforms());
+        setUniforms(gles, sourceUniforms);
     }
 
     @Override

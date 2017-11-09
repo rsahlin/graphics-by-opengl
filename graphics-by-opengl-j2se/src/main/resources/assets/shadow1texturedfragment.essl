@@ -18,7 +18,14 @@
 #version 100
 precision mediump float;
 
+uniform sampler2D uTexture;      //The texture sampler
+varying vec2 vTexCoord;
+
 void main()
 {
-    gl_FragColor = vec4(1,0,0,1);
+    if (texture2D(uTexture, vTexCoord).a > 1.0) {
+        discard;
+    } else {
+        gl_FragColor = vec4(1,1,1,1);
+    }
 }

@@ -26,35 +26,17 @@ uniform vec2 uScreenSize; //Width and height of screen
 attribute vec3 aVertex; //vertex position
 attribute vec3 aTranslate; //sprite x, sprite y, sprite z
 attribute vec3 aRotate;
-attribute vec2 aScale;
+attribute vec3 aScale;
 
 varying vec2 vTexCoord;
 
-precision mediump float;
-
-mat2 calculateTransformMatrix();
+/**
+ * From commonvertex.essl
+ */
+mat3 calculateTransformMatrix(vec3 rotate, vec3 scale);
 
 void main() {
-    vec4 pos = uMVMatrix * (vec4(aTranslate.x, aTranslate.y, aTranslate.z, 1.0) + vec4(calculateTransformMatrix() * vec2(aVertex), aVertex.z, 0.0));
+    vec4 pos = uMVMatrix * (vec4(aTranslate.x, aTranslate.y, aTranslate.z, 1.0) + vec4(calculateTransformMatrix(aRotate, aScale) * aVertex, 0.0));
     gl_Position = uProjectionMatrix * pos;
-}
-/**
- * Returns a matrix with z axis rotation set from attribute aRotate.z, x and y axis scale.
- * @return Matrix with z axis rotation set from aRotate.z, scale from aScale.x + aScale.y
- */
-mat2 calculateTransformMatrix(){
-    
-    mat2 modelview = mat2(1);
-
-    //Rotate
-    float cz = cos(aRotate.z);
-    float sz = sin(aRotate.z);
-
-    modelview[1][1]  =  cz * aScale.y;
-    modelview[1][0]  =  sz * aScale.y;
-
-    modelview[0][1]  =  -sz * aScale.x;
-    modelview[0][0]  = cz * aScale.x;
-        
-    return modelview;
+    vTexCoord = aVertex.st;
 }

@@ -1,7 +1,5 @@
 package com.nucleus;
 
-import java.util.prefs.BackingStoreException;
-
 import com.nucleus.assets.AssetManager;
 import com.nucleus.component.J2SELogicProcessor;
 import com.nucleus.component.LogicProcessorRunnable;
@@ -10,29 +8,27 @@ import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.RectangleShapeBuilder;
-import com.nucleus.geometry.RectangleShapeBuilder.Configuration;
+import com.nucleus.geometry.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.core.PointerInputProcessor;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
-import com.nucleus.renderer.RenderState;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.J2SENodeInputListener;
 import com.nucleus.scene.NavigationController;
+import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.NodeController;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewController;
-import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.shader.TranslateProgram;
 import com.nucleus.system.ComponentHandler;
 import com.nucleus.texturing.Texture2D;
@@ -49,7 +45,8 @@ import com.nucleus.texturing.TextureParameter;
  */
 public class CoreApp implements RenderContextListener {
 
-    private final static String NOT_CALLED_CREATECONTEXT = "Must call contextCreated() before rendering.";
+    private static final String NOT_CALLED_CREATECONTEXT = "Must call contextCreated() before rendering.";
+    private static final String SPLASH_FILENAME = "assets/splash.png";
 
     /**
      * Interface for the core app to create the objects needed.
@@ -288,7 +285,7 @@ public class CoreApp implements RenderContextListener {
         BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
         Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), "texture",
-                new ExternalReference("assets/splash.png"), RESOLUTION.HD, texParam, 1);
+                new ExternalReference(SPLASH_FILENAME), RESOLUTION.HD, texParam, 1);
         Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
         meshBuilder.setElementMode(Mode.TRIANGLES, 4, 6);
         meshBuilder.setTexture(texture);
@@ -297,7 +294,7 @@ public class CoreApp implements RenderContextListener {
         Material material = new Material();
         material.setProgram(vt);
         meshBuilder.setMaterial(material);
-        meshBuilder.setShapeBuilder(new RectangleShapeBuilder(new Configuration(0.2f, 0.2f, 0f, 1, 0)));
+        meshBuilder.setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(0.2f, 0.2f, 0f, 1, 0)));
         builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
                 .setNode(NodeTypes.layernode);
         RootNode root = builder.create();

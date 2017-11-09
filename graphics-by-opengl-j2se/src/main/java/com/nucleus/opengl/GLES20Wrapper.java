@@ -4,14 +4,13 @@ import java.nio.Buffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.geometry.AttributeBuffer;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.texturing.Image;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureParameter;
-import com.nucleus.texturing.TextureUtils;
 import com.nucleus.texturing.TextureParameter.Name;
+import com.nucleus.texturing.TextureUtils;
 
 /**
  * Abstraction for OpenGL GLES 2.X, this is used for platform independent usage of GLES functions.
@@ -251,7 +250,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             glBindBuffer(target, buffer.getBufferName());
             if (buffer.isDirty()) {
                 glBufferData(target, buffer.getSizeInBytes(), buffer.getBuffer().position(0),
-                        GLES20.GL_STATIC_DRAW);
+                        GLES20.GL_DYNAMIC_DRAW);
                 buffer.setDirty(false);
             }
             for (ShaderVariable a : attribs) {
@@ -261,7 +260,6 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                             buffer.getByteStride(), a.getOffset() * 4);
                 }
             }
-
         } else {
             for (ShaderVariable a : attribs) {
                 if (a != null) {
@@ -315,6 +313,16 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param offset
      */
     public abstract void glUniformMatrix2fv(int location, int count, boolean transpose, float[] v, int offset);
+
+    /**
+     * Abstraction for glUniform1iv();
+     * 
+     * @param location
+     * @param count
+     * @param v0
+     * @param offset
+     */
+    public abstract void glUniform1iv(int location, int count, int[] v0, int offset);
 
     /**
      * Abstraction for glDrawArrays()

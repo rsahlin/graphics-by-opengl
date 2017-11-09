@@ -17,7 +17,7 @@ import com.nucleus.vecmath.Rectangle;
  * 
  *
  */
-public class RectangleShapeBuilder extends ShapeBuilder {
+public class RectangleShapeBuilder extends ElementBuilder {
 
     public static final float DEFAULT_Z = 0;
     /**
@@ -35,7 +35,7 @@ public class RectangleShapeBuilder extends ShapeBuilder {
      */
     public final static int QUAD_ELEMENTS = 6;
 
-    public static class Configuration {
+    public static class RectangleConfiguration extends Configuration {
 
         /**
          * Inits the builder to create rectangles with specified width and height, each rectangle will have UV covering
@@ -44,13 +44,12 @@ public class RectangleShapeBuilder extends ShapeBuilder {
          * @param width
          * @param height
          * @param z
-         * @param count
+         * @param count Number of rectangles
          * @param startVertex
          */
-        public Configuration(float width, float height, float z, int count, int startVertex) {
+        public RectangleConfiguration(float width, float height, float z, int count, int startVertex) {
+            super(count * QUAD_VERTICES, startVertex);
             this.rectangle = new Rectangle(-width / 2, height / 2, width, height);
-            this.count = count;
-            this.startVertex = startVertex;
             this.z = z;
         }
 
@@ -62,10 +61,9 @@ public class RectangleShapeBuilder extends ShapeBuilder {
          * @param count
          * @param startVertex
          */
-        public Configuration(Rectangle rectangle, float z, int count, int startVertex) {
+        public RectangleConfiguration(Rectangle rectangle, float z, int count, int startVertex) {
+            super(count * QUAD_VERTICES, startVertex);
             this.rectangle = rectangle;
-            this.count = count;
-            this.startVertex = startVertex;
             this.z = z;
         }
 
@@ -75,23 +73,26 @@ public class RectangleShapeBuilder extends ShapeBuilder {
          * @param count Number of rectangles
          * @param startVertex Start vertex for the builder
          */
-        public Configuration(int count, int startVertex) {
-            this.count = count;
-            this.startVertex = startVertex;
+        public RectangleConfiguration(int count, int startVertex) {
+            super(count * QUAD_VERTICES, startVertex);
+        }
+
+        /**
+         * Returns the number of rectangles
+         * 
+         * @return
+         */
+        public int getRectangleCount() {
+            return vertexCount >>> 2;
         }
 
         protected Rectangle rectangle;
-        protected int count = 1;
         protected float z;
-        /**
-         * Destination vertex offset
-         */
-        protected int startVertex = 0;
     }
 
-    private Configuration configuration;
+    private RectangleConfiguration configuration;
 
-    public RectangleShapeBuilder(Configuration configuration) {
+    public RectangleShapeBuilder(RectangleConfiguration configuration) {
         this.configuration = configuration;
     }
 
@@ -105,28 +106,16 @@ public class RectangleShapeBuilder extends ShapeBuilder {
                     configuration.z, data);
         }
         int startIndex = configuration.startVertex * stride;
+        int count = configuration.getRectangleCount();
         if (data != null) {
             int components = data.length / QUAD_VERTICES;
             stride = stride * QUAD_VERTICES;
-            for (int i = 0; i < configuration.count; i++) {
+            for (int i = 0; i < count; i++) {
                 attributes.setComponents(data, components, 0, startIndex, QUAD_VERTICES);
                 startIndex += stride;
             }
         }
-        // Check if indicebuffer shall be built
-        ElementBuffer indices = mesh.getElementBuffer();
-        if (indices != null) {
-            switch (mesh.getMode()) {
-                case LINES:
-                ElementBuilder.buildQuadLineBuffer(indices, configuration.count, configuration.startVertex);
-                break;
-                case TRIANGLES:
-                ElementBuilder.buildQuadBuffer(indices, configuration.count, configuration.startVertex);
-                break;
-            default:
-                throw new IllegalArgumentException("Not implemented for " + mesh.getMode());
-            }
-        }
+        buildElements(mesh, count, configuration.startVertex);
     }
 
     /**
@@ -210,17 +199,35 @@ public class RectangleShapeBuilder extends ShapeBuilder {
      */
     protected static float[] createUVCoordinates(Texture2D texture) {
         switch (texture.textureType) {
-        case Texture2D:
-            return UV_COORDINATES;
-        case TiledTexture2D:
-            TiledTexture2D t = (TiledTexture2D) texture;
-            float maxU = (1f / (t.getTileWidth()));
-            float maxV = (1f / (t.getTileHeight()));
-            return new float[] { 0, 0, maxU, 0, maxU, maxV, 0, maxV };
-        case UVTexture2D:
-        case Untextured:
-        default:
-            return null;
+            case Texture2D:
+                return UV_COORDINATES;
+            case TiledTexture2D:
+                TiledTexture2D t = (TiledTexture2D) texture;
+                float maxU = (1f / (t.getTileWidth()));
+                float maxV = (1f / (t.getTileHeight()));
+                return new float[] { 0, 0, maxU, 0, maxU, maxV, 0, maxV };
+            case UVTexture2D:
+            case Untextured:
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public void buildElements(Mesh mesh, int count, int startVertex) {
+        // Check if indicebuffer shall be built
+        ElementBuffer indices = mesh.getElementBuffer();
+        if (indices != null) {
+            switch (mesh.getMode()) {
+                case LINES:
+                    buildQuadLineBuffer(indices, count, startVertex);
+                    break;
+                case TRIANGLES:
+                    buildQuadBuffer(indices, count, startVertex);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Not implemented for " + mesh.getMode());
+            }
         }
     }
 

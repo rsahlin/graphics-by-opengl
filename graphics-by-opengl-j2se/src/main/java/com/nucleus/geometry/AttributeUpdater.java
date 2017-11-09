@@ -2,7 +2,6 @@ package com.nucleus.geometry;
 
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.system.System;
 
 /**
  * For usecases where the attribute data needs to be updated (in the mesh), ie it is not sufficient to set static
@@ -101,6 +100,7 @@ public interface AttributeUpdater {
          * What data and what to copy is implementation specific and depends on the shader program used
          * to render the mesh.
          * 
+         * 
          * @throws IllegalArgumentException If {@link #bindAttributeBuffer(AttributeBuffer)} has not been called before
          * calling this method.
          */
@@ -110,7 +110,7 @@ public interface AttributeUpdater {
          * Returns the generic attribute data as an array reference
          * 
          * @return The array containing the attribute data, any changes done here shall be reflected when
-         * setAttributeData() is called.
+         * {@link #updateAttributeData()} is called.
          * Returns the attributedata owned by a component that will be used when the node it is attached to is rendered.
          * @throws IllegalArgumentException If {@link #bindAttributeBuffer(AttributeBuffer)} has not been called before
          * calling this method.
@@ -120,28 +120,12 @@ public interface AttributeUpdater {
         /**
          * Binds the attribute buffer to be used as a destination when set attribute data is called.
          * This method must be called before calling {@link #updateAttributeData()}.
-         * Implementations may need to allocate buffers.
+         * Implementations may need to allocate buffers and save a reference to the attribute buffer.
          * 
-         * @param buffer
+         * @param buffer The buffer that shall be updated when {@link #updateAttributeData()} is called
          */
         public void bindAttributeBuffer(AttributeBuffer buffer);
 
-    }
-
-    /**
-     * For objects producing attribute data, normally Actor/Sprite
-     * Use {@link System} instead
-     * 
-     * @author Richard Sahlin
-     *
-     */
-    @Deprecated
-    public interface Producer {
-        /**
-         * Update the attribute buffers according to the object producing the attribute data, this is normally
-         * implemented by Nodes that hold the actors (that are using the Mesh(es) that needs the attributes updated.
-         */
-        public void updateAttributeData();
     }
 
     /**

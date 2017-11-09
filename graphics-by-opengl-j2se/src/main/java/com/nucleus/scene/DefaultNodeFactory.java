@@ -2,8 +2,6 @@ package com.nucleus.scene;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
@@ -117,14 +115,11 @@ public class DefaultNodeFactory implements NodeFactory {
             throws NodeException {
         try {
             Node node = source.createInstance(root);
-            node.create();
-            // Copy properties from source node into the created node.
-            node.setProperties(source);
-            node.copyTransform(source);
             Mesh mesh = meshFactory.createMesh(renderer, node);
             if (mesh != null) {
                 node.addMesh(mesh, MeshType.MAIN);
             }
+            node.create();
             return node;
         } catch (IOException | GLException e) {
             throw new NodeException(e);

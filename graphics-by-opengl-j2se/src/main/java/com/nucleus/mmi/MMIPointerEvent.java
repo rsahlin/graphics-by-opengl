@@ -98,4 +98,13 @@ public class MMIPointerEvent {
         return action;
     }
 
+    /**
+     * Returns the finger number for this event
+     * 
+     * @return Finger number, 0 and up
+     */
+    public int getFinger() {
+        return finger;
+    }
+
 }

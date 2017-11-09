@@ -72,7 +72,11 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
                 String onclick = node.getProperty(ONCLICK);
                 if (onclick != null) {
                     Property p = Property.create(onclick);
-                    EventManager.getInstance().post(node, p.getKey(), p.getValue());
+                        if (p != null) {
+                            EventManager.getInstance().post(node, p.getKey(), p.getValue());
+                        } else {
+                            SimpleLogger.d(getClass(), "Invalid property for node " + node.getId() + " : " + onclick);
+                        }
                 }
                 if (listener != null) {
                     listener.onClick(event.getPointerData().getCurrent());
