@@ -1,0 +1,20 @@
+/**
+ * Returns a matrix with z axis rotation set from attribute aRotate.z, x and y axis scale.
+ * @return Matrix with z axis rotation set from aRotate.z, scale from aScale.x + aScale.y
+ */
+ 
+mat2 calculate2DTransformMatrix(vec3 rotate, vec2 scale){
+    
+    mat2 modelview = mat2(1);
+    //Rotate
+    float cz = cos(rotate.z);
+    float sz = sin(rotate.z);
+    
+    modelview[1][1]  =  cz * scale.y;
+    modelview[1][0]  =  sz * scale.y;
+
+    modelview[0][1]  =  -sz * scale.x;
+    modelview[0][0]  = cz * scale.x;
+        
+    return modelview;
+}

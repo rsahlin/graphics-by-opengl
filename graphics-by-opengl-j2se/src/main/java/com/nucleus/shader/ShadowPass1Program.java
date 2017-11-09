@@ -19,15 +19,19 @@ public class ShadowPass1Program extends TransformProgram {
     protected static final String VERTEX_NAME = "transform";
     protected static final String FRAGMENT_NAME = "shadow1";
     
-    
-    public ShadowPass1Program() {
-        super(ShaderVariables.values());
+    /**
+     * TODO Look into the shader programs using this constructor - maybe they can be unified?
+     * 
+     * @param shading
+     */
+    public ShadowPass1Program(Texture2D.Shading shading) {
+        super(shading, ShaderVariables.values());
     }
     
     @Override
     protected void setShaderSource(Texture2D.Shading shading) {
         vertexShaderName = PROGRAM_DIRECTORY + VERTEX_NAME + VERTEX + SHADER_SOURCE_SUFFIX;
-        fragmentShaderName = PROGRAM_DIRECTORY + FRAGMENT_NAME + FRAGMENT + SHADER_SOURCE_SUFFIX;
+        fragmentShaderName = PROGRAM_DIRECTORY + FRAGMENT_NAME + shading.name() + FRAGMENT + SHADER_SOURCE_SUFFIX;
     }
 
     @Override
@@ -47,7 +51,6 @@ public class ShadowPass1Program extends TransformProgram {
         //Modelview is facing into screen.
         float[] lightPOV = new float[16];
         float[] result = new float[16];
-        Matrix.setIdentityM(lightPOV, 0);
         float[] lightVector = GlobalLight.getInstance().getLightVector();
         Matrix.setRotateEulerM(result, 0, lightVector[0], lightVector[1], lightVector[2]);
         Matrix.orthoM(lightPOV, 0, -0.8889f, 0.8889f, -0.5f, 0.5f, 0f, 10f);

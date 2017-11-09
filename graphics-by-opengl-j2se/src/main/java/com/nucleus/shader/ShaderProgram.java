@@ -45,6 +45,7 @@ public abstract class ShaderProgram {
 
     public static final String PROGRAM_DIRECTORY = "assets/";
     public static final String SHADER_SOURCE_SUFFIX = ".essl";
+    public static final String COMMON_VERTEX_SHADER = "commonvertex" + SHADER_SOURCE_SUFFIX;
     public static final String FRAGMENT = "fragment";
     public static final String VERTEX = "vertex";
     protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
@@ -121,6 +122,8 @@ public abstract class ShaderProgram {
      * The GL fragment shader object
      */
     private int fragmentShader = -1;
+
+    protected static ArrayList<Integer> commonVertexShaders;
 
     /**
      * This is the main array holding all active shader variables
@@ -615,20 +618,54 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Links the specified vertex and fragment shader to the specified program.
+     * Links the specified vertex and fragment shaders to the specified program.
      * 
      * @param gles GLES20 platform specific wrapper.
      * @param program
      * @param vertexShader
+     * @param commonVertexShaders List with shared vertex shaders or null
      * @param fragmentShader
      * @throws GLException If the program could not be linked with the shaders.
      */
-    public void linkProgram(GLES20Wrapper gles, int program, int vertexShader, int fragmentShader) throws GLException {
+    public void linkProgram(GLES20Wrapper gles, int program, int vertexShader, ArrayList<Integer> commonVertexShaders,
+            int fragmentShader) throws GLException {
+        if (commonVertexShaders != null) {
+            for (Integer shader : commonVertexShaders) {
+                gles.glAttachShader(program, shader);
+            }
+        }
         gles.glAttachShader(program, vertexShader);
         gles.glAttachShader(program, fragmentShader);
         gles.glLinkProgram(program);
         System.out.println(gles.glGetProgramInfoLog(program));
         GLUtils.handleError(gles, LINK_PROGRAM_ERROR);
+    }
+
+    /**
+     * Creates the shader name, attaches the source and compiles the shader.
+     * 
+     * @param gles
+     * @param sourceName
+     * @param type
+     * @return The created shader
+     * @throws GLException If there is an reading from stream, etting or compiling shader source.
+     */
+    public int compileShader(GLES20Wrapper gles, String sourceName, int type) throws GLException {
+        int shader = gles.glCreateShader(type);
+        if (vertexShader == 0) {
+            throw new GLException(CREATE_SHADER_ERROR, GLES20.GL_NO_ERROR);
+        }
+        try {
+            compileShader(gles, getClass().getClassLoader().getResourceAsStream(sourceName), shader, sourceName);
+        } catch (IOException e) {
+            switch (type) {
+                case GLES20.GL_VERTEX_SHADER:
+                    throw new RuntimeException("Could not load vertex shader " + sourceName);
+                default:
+                    throw new RuntimeException("Could not load fragment shader" + sourceName);
+            }
+        }
+        return shader;
     }
 
     /**
@@ -639,8 +676,7 @@ public abstract class ShaderProgram {
      * @param shaderStream Inputstream to the shader source.
      * @param shader OpenGL object to compile the shader to.
      * @param sourceName Name of the sourcefile - this is used for error reporting.
-     * @throws IOException If there is an error reading from stream
-     * @throws GLException If there is an error setting or compiling shader source.
+     * @throws GLException If there is an reading from stream, etting or compiling shader source.
      */
     public void compileShader(GLES20Wrapper gles, InputStream shaderStream, int shader, String sourceName)
             throws IOException, GLException {
@@ -759,36 +795,33 @@ public abstract class ShaderProgram {
      */
     protected void createProgram(GLES20Wrapper gles, String vertexName, String fragmentName) {
         SimpleLogger.d(getClass(), "Creating program for: " + vertexName + " and " + fragmentName);
-        ClassLoader classLoader = getClass().getClassLoader();
-        InputStream vertexStream = null;
-        InputStream fragmentStream = null;
         try {
-            vertexStream = classLoader.getResourceAsStream(vertexName);
-            fragmentStream = classLoader.getResourceAsStream(fragmentName);
-            vertexShader = gles.glCreateShader(GLES20.GL_VERTEX_SHADER);
-            if (vertexShader == 0) {
-                // Only need to check first source for 0. At least GL has current context.
-                throw new GLException(CREATE_SHADER_ERROR, GLES20.GL_NO_ERROR);
+            if (commonVertexShaders == null) {
+                createCommonVertexShaders(gles);
             }
-            fragmentShader = gles.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
             program = gles.glCreateProgram();
             SimpleLogger.d(getClass(),
                     "Program name: " + program + ", vertex: " + vertexShader + " fragment: " + fragmentShader);
-            compileShader(gles, vertexStream, vertexShader, vertexName);
-            compileShader(gles, fragmentStream, fragmentShader, fragmentName);
-            linkProgram(gles, program, vertexShader, fragmentShader);
+            vertexShader = compileShader(gles, vertexName, GLES20.GL_VERTEX_SHADER);
+            fragmentShader = compileShader(gles, fragmentName, GLES20.GL_FRAGMENT_SHADER);
+            linkProgram(gles, program, vertexShader, commonVertexShaders, fragmentShader);
             fetchProgramInfo(gles);
             bindAttributeNames(gles);
             createUniformStorage(shaderVariables);
-        } catch (IOException e) {
-            if (vertexStream == null) {
-                throw new RuntimeException("Could not load " + vertexName);
-            } else {
-                throw new RuntimeException("Could not load " + fragmentName);
-            }
         } catch (GLException e) {
             throw new RuntimeException(e.toString());
         }
+    }
+
+    /**
+     * Creates the common vertex shaders that can be used to share functions between shaders.
+     * 
+     * @param gles
+     * @throws GLException
+     */
+    protected void createCommonVertexShaders(GLES20Wrapper gles) throws GLException {
+        commonVertexShaders = new ArrayList<>();
+        commonVertexShaders.add(compileShader(gles, PROGRAM_DIRECTORY + COMMON_VERTEX_SHADER, GLES20.GL_VERTEX_SHADER));
     }
 
     /**

@@ -20,8 +20,8 @@ public class TransformProgram extends ShaderProgram {
      */
     protected static final String NAME = "transform";
     
-    protected TransformProgram(VariableMapping[] mapping) {
-        super(mapping);
+    protected TransformProgram(Texture2D.Shading shading, VariableMapping[] mapping) {
+        super(shading, mapping);
     }
     
     @Override
@@ -46,7 +46,7 @@ public class TransformProgram extends ShaderProgram {
             case MAIN:
                 return this;
             case SHADOW:
-                return AssetManager.getInstance().getProgram(renderer, new ShadowPass1Program());
+                return AssetManager.getInstance().getProgram(renderer, new ShadowPass1Program(shading));
                 default:
             throw new IllegalArgumentException("Invalid pass " + pass);
         }

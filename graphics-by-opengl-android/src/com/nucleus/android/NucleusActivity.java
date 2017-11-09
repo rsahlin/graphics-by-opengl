@@ -9,9 +9,11 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RendererFactory;
 import com.nucleus.renderer.SurfaceConfiguration;
+import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.texture.android.AndroidImageFactory;
 import com.super2k.nucleus.android.R;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -19,6 +21,7 @@ import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.Display;
+import android.view.Display.Mode;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
@@ -186,5 +189,24 @@ public abstract class NucleusActivity extends Activity
                 new AndroidMatrixEngine());
         coreApp = CoreApp.createCoreApp(width, height, renderer, clientClass);
         mGLView.setCoreApp(coreApp);
+    }
+
+    @TargetApi(23)
+    protected Mode get4KMode() {
+        Mode closest = null;
+        Mode[] modes = getWindowManager().getDefaultDisplay().getSupportedModes();
+        SimpleLogger.d(getClass(), "Found " + modes.length + " modes.");
+        for (Mode mode : modes) {
+            SimpleLogger.d(getClass(), "Found mode with " + mode.getPhysicalHeight() + " lines.");
+            if (mode.getPhysicalHeight() == RESOLUTION.ULTRA_HD.lines) {
+                return mode;
+            }
+            if (mode.getPhysicalHeight() > RESOLUTION.ULTRA_HD.lines) {
+                if (closest == null || closest.getPhysicalHeight() > mode.getPhysicalHeight()) {
+                    closest = mode;
+                }
+            }
+        }
+        return closest;
     }
 }
