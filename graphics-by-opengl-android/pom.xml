@@ -4,11 +4,11 @@
     <parent>
         <groupId>com.super2k.graphics-by-opengl</groupId>
         <artifactId>graphics-by-opengl</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${graphics-by-gl-version}</version>
     </parent>
     <artifactId>graphics-by-opengl-android</artifactId>
     <packaging>apklib</packaging>
-    <name>Graphics By OpenGL APKlib</name>
+    <name>graphics-by-opengl-android</name>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <plugins>
@@ -27,10 +27,10 @@
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                   <configuration>
-                       <source>1.7</source>
-                       <target>1.7</target>
-                   </configuration>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
             </plugin>
         </plugins>
         <pluginManagement>
@@ -72,9 +72,12 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>com.super2k.vecmath</groupId>
+            <artifactId>vecmath</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.super2k.graphics-by-opengl</groupId>
             <artifactId>graphics-by-opengl-j2se</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.google.android</groupId>
