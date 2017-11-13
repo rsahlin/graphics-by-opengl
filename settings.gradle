@@ -1,8 +1,8 @@
 rootProject.name = 'graphics-by-opengl'
-include ':graphics-by-opengl-android'
-include ':graphics-by-opengl-jogl'
 include ':graphics-by-opengl-j2se'
+include ':graphics-by-opengl-jogl'
+include ':graphics-by-opengl-android'
 
+project(':graphics-by-opengl-j2se').projectDir = "$rootDir/graphics-by-opengl-j2se" as File
 project(':graphics-by-opengl-android').projectDir = "$rootDir/graphics-by-opengl-android" as File
 project(':graphics-by-opengl-jogl').projectDir = "$rootDir/graphics-by-opengl-jogl" as File
-project(':graphics-by-opengl-j2se').projectDir = "$rootDir/graphics-by-opengl-j2se" as File

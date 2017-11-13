@@ -10,7 +10,6 @@ tasks.withType(JavaCompile) {
 apply plugin:'java'
 apply plugin: 'maven-publish'
 
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -20,16 +19,17 @@ publishing {
 }
 
 task sourcesAndClasses(type: Jar) {
-   from sourceSets.main.output
-   from sourceSets.main.allJava
+    from sourceSets.main.output
+    from sourceSets.main.allJava
 }
+
 
 repositories {
     mavenLocal()
-    jcenter() 
+    jcenter()
 }
 dependencies {
 	compile 'com.google.code.gson:gson:2.8.1'
 	compile 'com.super2k.vecmath:vecmath:0.0.1-SNAPSHOT'
-	testCompile 'junit:junit:4.12'	
+	testCompile 'junit:junit:4.12'
 }

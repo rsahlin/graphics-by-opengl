@@ -10,20 +10,22 @@ tasks.withType(JavaCompile) {
 buildscript {
     repositories {
         jcenter()
+        mavenCentral()
+        google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.2'
+        classpath 'com.android.tools.build:gradle:3.0.0'
 	}
 }
 
+repositories {
+    mavenCentral()
+    jcenter()
+    google()
+}
 
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
-
-repositories {
-    mavenLocal()
-    jcenter()
-}
 
 publishing {
     publications {
@@ -33,15 +35,10 @@ publishing {
             version '0.0.1-SNAPSHOT'
         }
     }
-    repositories {
-        mavenLocal()
-    }
-    
 }
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.0'
     lintOptions {
         disable 'MissingTranslation'
     }
@@ -53,8 +50,8 @@ android {
             res.srcDirs = ['res']
             assets.srcDirs = ['res']
         }
-	}    
-    
+	}
+
     defaultConfig {
         minSdkVersion 19
         versionCode 1
@@ -70,11 +67,11 @@ android {
 }
 
 dependencies {
-	compile 'com.google.android.gms:play-services:10.0.1'
-    compile 'com.android.support:multidex:1.0.0'
-    compile 'com.super2k.graphics-by-opengl:graphics-by-opengl-j2se:0.0.1-SNAPSHOT'
-    testCompile 'junit:junit:4.12'
-    testCompile "org.mockito:mockito-core:2.+"
+	implementation 'com.google.android.gms:play-services:10.0.1'
+    implementation 'com.android.support:multidex:1.0.2'
+    implementation 'com.super2k.graphics-by-opengl:graphics-by-opengl-j2se:0.0.1-SNAPSHOT'
+    testImplementation 'junit:junit:4.12'
+    testImplementation "org.mockito:mockito-core:2.+"
 }
 
 //apply plugin: 'com.google.gms.google-services'
