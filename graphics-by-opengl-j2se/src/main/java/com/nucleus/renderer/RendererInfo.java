@@ -1,10 +1,9 @@
 package com.nucleus.renderer;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.StringUtils;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 
@@ -20,7 +19,7 @@ public class RendererInfo {
     private String renderer;
     private String version;
     private String shadingLanguageVersion;
-    private List<String> extensions = new ArrayList<String>();
+    private List<String> extensions;
     private int maxTextureSize;
 
     /**
@@ -35,19 +34,14 @@ public class RendererInfo {
         shadingLanguageVersion = gles.glGetString(GLES20.GL_SHADING_LANGUAGE_VERSION);
         String glString = gles.glGetString(GLES20.GL_EXTENSIONS);
         if (glString != null) {
-            StringTokenizer st = new StringTokenizer(glString, " ");
-            while (st.hasMoreTokens()) {
-                String extension = st.nextToken();
-                extensions.add(extension);
-                System.out.println("Extension: " + extension);
-            }
+            extensions = StringUtils.getList(glString, " ");
         }
         int[] param = new int[1];
         gles.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, param);
         maxTextureSize = param[0];
         SimpleLogger.d(getClass(), "GLInfo:\n" + "GLES Version: " + version + " with shading language "
                 + shadingLanguageVersion + "\n" + vendor + " " + renderer + ", max texture size: " + maxTextureSize);
-
+        StringUtils.logList(getClass().getCanonicalName(), extensions);
     }
 
     /**

@@ -35,7 +35,7 @@ public class JOGLGLESWindow extends JOGLGLWindow {
     @Override
     public void display(GLAutoDrawable drawable) {
         if (wrapper != null) {
-            ((JOGLGLES20Wrapper) wrapper).freeNames();
+            JOGLGLESUtils.freeNames();
         }
         super.display(drawable);
     }

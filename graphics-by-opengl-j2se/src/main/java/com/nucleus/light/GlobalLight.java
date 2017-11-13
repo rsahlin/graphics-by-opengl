@@ -11,7 +11,7 @@ public class GlobalLight {
     /**
      * Direction of global light vector.
      */
-    private float[] lightVector = new float[] { 30f, 0, 0 };
+    private float[] lightVector = new float[] { 40f, 0, 0 };
 
     private static GlobalLight globalLight = new GlobalLight();
 

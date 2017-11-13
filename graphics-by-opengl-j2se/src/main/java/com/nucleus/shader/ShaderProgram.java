@@ -16,9 +16,9 @@ import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Property;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
-import com.nucleus.io.StreamUtils;
 import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
@@ -49,6 +49,7 @@ public abstract class ShaderProgram {
     public static final String FRAGMENT = "fragment";
     public static final String VERTEX = "vertex";
     protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
+
     /**
      * Number of vertices per sprite - this is for a quad that is created using element buffer.
      */
@@ -123,8 +124,6 @@ public abstract class ShaderProgram {
      */
     private int fragmentShader = -1;
 
-    protected static ArrayList<Integer> commonVertexShaders;
-
     /**
      * This is the main array holding all active shader variables
      * It is set when {@link #addShaderVariable(ShaderVariable)} is called.
@@ -147,6 +146,8 @@ public abstract class ShaderProgram {
     protected VariableMapping[] attributes; // List of attributes defined by a program
     protected int attributeBufferCount; // Number of buffers used by attributes
     protected VariableMapping[] sourceUniforms; // List of uniforms defined by a program
+    protected ArrayList<Integer> commonVertexShaders;
+    protected ArrayList<String> commonVertexSources;
 
     /**
      * Uniforms, used when rendering this Mesh depending on what ShaderProgram is used.
@@ -671,6 +672,7 @@ public abstract class ShaderProgram {
     /**
      * Compiles the shader from the specified inputstream, the inputstream is not closed after reading.
      * It is up to the caller to close the stream.
+     * The GL version will be appended to the source, calling {@link GLESWrapper#getShaderVersion()}
      * 
      * @param gles GLES20 platform specific wrapper.
      * @param shaderStream Inputstream to the shader source.
@@ -680,8 +682,16 @@ public abstract class ShaderProgram {
      */
     public void compileShader(GLES20Wrapper gles, InputStream shaderStream, int shader, String sourceName)
             throws IOException, GLException {
-        String shaderStr = new String(StreamUtils.readFromStream(shaderStream));
-        gles.glShaderSource(shader, shaderStr);
+        if (gles.getShaderVersion() == GLES20Wrapper.SHADING_LANGUAGE_100) {
+            compileShader(gles, gles.getVersionedShaderSource(shaderStream) + getCommonVertexSources(), shader,
+                    sourceName);
+        } else {
+            compileShader(gles, gles.getVersionedShaderSource(shaderStream), shader, sourceName);
+        }
+    }
+
+    private void compileShader(GLES20Wrapper gles, String source, int shader, String sourceName) throws GLException {
+        gles.glShaderSource(shader, source);
         GLUtils.handleError(gles, SHADER_SOURCE_ERROR + sourceName);
         gles.glCompileShader(shader);
         GLUtils.handleError(gles, COMPILE_SHADER_ERROR + sourceName);
@@ -796,7 +806,7 @@ public abstract class ShaderProgram {
     protected void createProgram(GLES20Wrapper gles, String vertexName, String fragmentName) {
         SimpleLogger.d(getClass(), "Creating program for: " + vertexName + " and " + fragmentName);
         try {
-            if (commonVertexShaders == null) {
+            if (commonVertexShaders == null && commonVertexSources == null) {
                 createCommonVertexShaders(gles);
             }
             program = gles.glCreateProgram();
@@ -808,21 +818,11 @@ public abstract class ShaderProgram {
             fetchProgramInfo(gles);
             bindAttributeNames(gles);
             createUniformStorage(shaderVariables);
-        } catch (GLException e) {
+        } catch (GLException | IOException e) {
             throw new RuntimeException(e.toString());
         }
     }
 
-    /**
-     * Creates the common vertex shaders that can be used to share functions between shaders.
-     * 
-     * @param gles
-     * @throws GLException
-     */
-    protected void createCommonVertexShaders(GLES20Wrapper gles) throws GLException {
-        commonVertexShaders = new ArrayList<>();
-        commonVertexShaders.add(compileShader(gles, PROGRAM_DIRECTORY + COMMON_VERTEX_SHADER, GLES20.GL_VERTEX_SHADER));
-    }
 
     /**
      * Sets one of more float uniforms for the specified variable, supports VEC2, VEC3, VEC4 and MAT2, MAT3, MAT4 types
@@ -951,18 +951,22 @@ public abstract class ShaderProgram {
      * Sets the data for the uniforms needed by the program - the default implementation will set the modelview and
      * projection matrices.
      * 
+     * TODO use array for modelview, projection and renderpass matrices
+     * 
      * @param gles
+     * @param matrices modelview, projection and renderpas matrices
      * @param modelviewMatrix The matrix to use for the modelview transform
      * @param projectionMatrix The projection matrix
+     * @param renderPassMatrix Optional renderpass matrix, for instance shadow matrix
      * @param mesh
      */
-    public void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, float[] projectionMatrix, Mesh mesh)
+    public void bindUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
             throws GLException {
         // Refresh the uniform matrixes
-        System.arraycopy(modelviewMatrix, 0, uniforms,
+        System.arraycopy(matrices[0], 0, uniforms,
                 shaderVariables[ShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(projectionMatrix, 0, uniforms,
+        System.arraycopy(matrices[1], 0, uniforms,
                 shaderVariables[ShaderVariables.uProjectionMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
@@ -1082,4 +1086,48 @@ public abstract class ShaderProgram {
                 + ") shading: " + shading;
     }
 
+    /**
+     * Creates the common vertex shaders that can be used to share functions between shaders.
+     * 
+     * @param gles
+     * @throws GLException
+     */
+    private void createCommonVertexShaders(GLES20Wrapper gles) throws GLException, IOException {
+        String[] sourceNames = new String[] { PROGRAM_DIRECTORY + COMMON_VERTEX_SHADER };
+        if (gles.getShaderVersion() != GLES20Wrapper.SHADING_LANGUAGE_100) {
+            // Compile into shader names and link
+            commonVertexShaders = new ArrayList<>();
+            for (String source : sourceNames) {
+                commonVertexShaders
+                        .add(compileShader(gles, source, GLES20.GL_VERTEX_SHADER));
+            }
+        } else {
+            createCommonVertexSources(gles, sourceNames);
+        }
+    }
+
+    /**
+     * Creates the common vertex shaders that can be used to share functions between shaders.
+     * If version is gles 2 then collect the source and append when compiling shaders, otherwise compile
+     * separately.
+     * 
+     * @param gles
+     * @param vertexSourceNames Array with vertex shader sources
+     * @throws IOException
+     */
+    public void createCommonVertexSources(GLES20Wrapper gles, String[] vertexSourceNames) throws IOException {
+        commonVertexSources = new ArrayList<>();
+        for (String name : vertexSourceNames) {
+            commonVertexSources.add(new String(gles.getVersionedShaderSource(getClass().getClassLoader()
+                    .getResourceAsStream(name))));
+        }
+    }
+
+    private String getCommonVertexSources() {
+        String result = new String();
+        for (String source : commonVertexSources) {
+            result += source;
+        }
+        return result;
+    }
 }

@@ -3,7 +3,6 @@
  * Can be used for instance for line drawing
  * @author Richard Sahlin
  */
- #version 100
 precision mediump float;
 
 uniform sampler2D uTexture;      //The texture sampler

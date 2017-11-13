@@ -13,6 +13,8 @@ import com.nucleus.vecmath.Matrix;
  */
 public class ViewFrustum {
 
+    public static final String VIEWFRUSTUM = "viewFrustum";
+
     public enum Projection {
         PERSPECTIVE(),
         ORTHOGONAL();

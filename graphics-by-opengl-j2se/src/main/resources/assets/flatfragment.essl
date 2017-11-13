@@ -15,7 +15,6 @@
  * Fragment shader for tiled sprite renderer
  * @author Richard Sahlin
  */
-#version 100
 precision mediump float;
 
 uniform sampler2D uTexture;      //The texture sampler

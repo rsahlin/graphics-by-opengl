@@ -86,10 +86,10 @@ public class ConvolutionProgram extends ShaderProgram {
     }
 
     @Override
-    public void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, float[] projectionMatrix, Mesh mesh)
+    public void bindUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
             throws GLException {
-        Matrix.mul4(modelviewMatrix, projectionMatrix);
-        System.arraycopy(modelviewMatrix, 0, getUniforms(), 0, Matrix.MATRIX_ELEMENTS);
+        Matrix.mul4(matrices[0], matrices[1]);
+        System.arraycopy(matrices[0], 0, getUniforms(), 0, Matrix.MATRIX_ELEMENTS);
         setUniforms(gles, sourceUniforms);
     }
 

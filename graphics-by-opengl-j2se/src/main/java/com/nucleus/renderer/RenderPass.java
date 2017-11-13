@@ -1,6 +1,7 @@
 package com.nucleus.renderer;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.camera.ViewFrustum;
 import com.nucleus.io.BaseReference;
 
 /**
@@ -9,6 +10,7 @@ import com.nucleus.io.BaseReference;
  */
 public class RenderPass extends BaseReference {
     
+    public static final String RENDERPASS = "renderPass";
     public static final String TARGET = "target";
     public static final String RENDERSTATE = "renderState";
     public static final String PASS = "pass";
@@ -18,6 +20,8 @@ public class RenderPass extends BaseReference {
      */
     @SerializedName(TARGET)
     private RenderTarget target;
+    @SerializedName(ViewFrustum.VIEWFRUSTUM)
+    private ViewFrustum viewFrustum;
     /**
      * Render state for the target
      */
@@ -62,5 +66,13 @@ public class RenderPass extends BaseReference {
         return pass;
     }
     
+    /**
+     * Returns the viewfrustum to be used when rendering to this renderpass
+     * 
+     * @return
+     */
+    public ViewFrustum getViewFrustum() {
+        return viewFrustum;
+    }
     
 }

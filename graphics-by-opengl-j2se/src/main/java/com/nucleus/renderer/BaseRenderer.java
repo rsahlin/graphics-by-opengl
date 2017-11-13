@@ -32,6 +32,7 @@ import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.shader.ShadowPass1Program;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
@@ -66,26 +67,23 @@ class BaseRenderer implements NucleusRenderer {
     protected ArrayDeque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<float[]> projection = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<Pass> renderPassStack = new ArrayDeque<>();
-    //TODO - move this into a class together with render pass deque so that access of stack and current pass
-    //is handled consistently
+    // TODO - move this into a class together with render pass deque so that access of stack and current pass
+    // is handled consistently
     private Pass currentPass;
-    /**
-     * The current concatenated modelview matrix
-     */
-    protected float[] mvMatrix = Matrix.createMatrix();
     /**
      * Reference to the current modelmatrix, each Node has its own Matrix that is referenced.
      */
     protected float[] modelMatrix;
-
+    /**
+     * The current concatenated modelview matrix
+     * The current projection matrix
+     * Renderpass matric
+     */
+    protected float[][] matrices = new float[3][];
     /**
      * The view matrix
      */
     protected float[] viewMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
-    /**
-     * The current projection matrix
-     */
-    protected float[] projectionMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
 
     protected GLES20Wrapper gles;
     protected ImageFactory imageFactory;
@@ -130,6 +128,9 @@ class BaseRenderer implements NucleusRenderer {
         this.gles = gles;
         this.imageFactory = imageFactory;
         this.matrixEngine = matrixEngine;
+        matrices[0] = Matrix.createMatrix();
+        matrices[1] = Matrix.setIdentity(Matrix.createMatrix(), 0);
+        matrices[2] = Matrix.createMatrix();
     }
 
     @Override
@@ -173,23 +174,27 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     /**
-     * Pushes the pass and also sets the {@link #currentPass}
-     * @param pass
+     * Pushes the current pass and sets {@link #currentPass}
+     * 
+     * @param pass New current pass
      */
     protected void pushPass(Pass pass) {
-        renderPassStack.push(pass);
+        if (currentPass != null) {
+            renderPassStack.push(currentPass);
+        }
         currentPass = pass;
     }
 
     /**
-     * Pops a pass from the stack, setting the popped pass in {@link #currentPass}
-     * @return The popped pass or null if stack empty.
+     * Pops a pass from the stack to {@link #currentPass}
+     * 
+     * @return The popped pass (same as {@link #currentPass} or null if stack empty.
      */
     protected Pass popPass() {
         currentPass = renderPassStack.pop();
         return currentPass;
     }
-    
+
     /**
      * Internal method to apply the rendersettings.
      * 
@@ -242,38 +247,53 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(Node node) throws GLException {
-        if (node.getPass() != null && (currentPass.getFlags() & node.getPass().getFlags()) != 0) {
+        Pass pass = node.getPass();
+        if (pass != null && (currentPass.getFlags() & pass.getFlags()) != 0) {
+            // Node has defined pass and masked with current pass
             State state = node.getState();
             if (state == null || state == State.ON || state == State.RENDER) {
-                renderPassStack.push(node.getPass());
                 ArrayList<RenderPass> renderPasses = node.getRenderPass();
                 if (renderPasses != null) {
                     for (RenderPass renderPass : renderPasses) {
+                        if (renderPass.getViewFrustum() != null) {
+                            Matrix.mul4(ShadowPass1Program.getLightMatrix(matrices[2]),
+                                    renderPass.getViewFrustum().getMatrix());
+                        }
                         pushPass(renderPass.getPass());
                         setRenderPass(renderPass);
+                        // Render node and children
                         internalRender(node);
                         popPass();
                     }
                 } else {
+                    // Render node and children
                     internalRender(node);
                 }
             }
-         }
+        }
     }
 
+    /**
+     * Internal method to render this node and all children,children are recursively rendered
+     * by calling {@link #render(Node)}
+     * 
+     * @param node
+     * @param renderPassMatrix
+     * @throws GLException
+     */
     private void internalRender(Node node) throws GLException {
         float[] nodeMatrix = node.concatModelMatrix(this.modelMatrix);
         // Fetch projection just before render
-        float[] projection = node.getProjection();
+        float[] projection = node.getProjection(currentPass);
         if (projection != null) {
-            pushMatrix(this.projection, this.projectionMatrix);
-            this.projectionMatrix = projection;
+            pushMatrix(this.projection, matrices[1]);
+            matrices[1] = projection;
         }
-        Matrix.mul4(nodeMatrix, viewMatrix, mvMatrix);
+        Matrix.mul4(nodeMatrix, viewMatrix, matrices[0]);
         if (node.getType().equals(NodeTypes.linedrawernode.name())) {
             gles.glLineWidth(((LineDrawerNode) node).getLineWidth());
         }
-        renderMeshes(node.getMeshes(), mvMatrix, projectionMatrix);
+        renderMeshes(node.getMeshes(), matrices);
         this.modelMatrix = nodeMatrix;
         for (Node n : node.getChildren()) {
             pushMatrix(matrixStack, this.modelMatrix);
@@ -281,10 +301,9 @@ class BaseRenderer implements NucleusRenderer {
             this.modelMatrix = popMatrix(matrixStack);
         }
         if (projection != null) {
-            this.projectionMatrix = popMatrix(this.projection);
+            matrices[1] = popMatrix(this.projection);
         }
         node.getRootNode().addRenderedNode(node);
-
     }
 
     private void setupRenderTarget(RenderTarget target) throws GLException {
@@ -371,9 +390,9 @@ class BaseRenderer implements NucleusRenderer {
 
         }
         GLUtils.handleError(gles, "glDisable " + attachement);
-        
+
     }
-    
+
     /**
      * Creates and initializes the buffers needed for the rendertarget
      * 
@@ -382,7 +401,7 @@ class BaseRenderer implements NucleusRenderer {
     private void createBuffers(RenderTarget target) throws GLException {
         ArrayList<AttachementData> attachements = target.getAttachements();
         if (attachements == null) {
-            //No attachements - what does this mean?
+            // No attachements - what does this mean?
             SimpleLogger.d(getClass(), "No attachements");
         } else {
             if (target.getFramebufferName() == Constants.NO_VALUE) {
@@ -404,11 +423,12 @@ class BaseRenderer implements NucleusRenderer {
 
     /**
      * Binds framebuffer
+     * 
      * @param target
      */
     private void bindFramebuffer(RenderTarget target) throws GLException {
         if (target == null || target.getAttachements() == null || target.getAttachements().size() == 0) {
-            //Bind default windowbuffer
+            // Bind default windowbuffer
             gles.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
             gles.glViewport(0, 0, window.width, window.height);
             enable(Attachement.COLOR);
@@ -456,25 +476,25 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     private void setRenderPass(RenderPass renderPass) throws GLException {
-        //First set state so that rendertargets can override enable/disable writing to buffers
+        // First set state so that rendertargets can override enable/disable writing to buffers
         RenderState state = renderPass.getRenderState();
         if (state != null) {
-            //TODO - check diff between renderpasses and only update accordingly
+            // TODO - check diff between renderpasses and only update accordingly
             state.setChangeFlag(RenderState.CHANGE_FLAG_ALL);
             setRenderState(state);
             state.setChangeFlag(RenderState.CHANGE_FLAG_NONE);
         }
         setupRenderTarget(renderPass.getTarget());
-        //Clear buffer according to settings
+        // Clear buffer according to settings
         int clearFunc = state.getClearFunction();
         if (clearFunc != GLES20.GL_NONE) {
             gles.glClear(clearFunc);
         }
     }
 
-    protected void renderMeshes(ArrayList<Mesh> meshes, float[] mvMatrix, float[] projectionMatrix) throws GLException {
+    protected void renderMeshes(ArrayList<Mesh> meshes, float[][] matrices) throws GLException {
         for (Mesh mesh : meshes) {
-            renderMesh(mesh, mvMatrix, projectionMatrix);
+            renderMesh(mesh, matrices);
         }
     }
 
@@ -486,12 +506,14 @@ class BaseRenderer implements NucleusRenderer {
      * drawArrays is called.
      * 
      * @param mesh The mesh to be rendered.
-     * @param mvMatrix accumulated modelview matrix for this mesh, this will be sent to uniform.
-     * @param projectionMatrix The projection matrix, depending on shader this is either concatenated
+     * @param matrices accumulated modelview matrix for this mesh, this will be sent to uniform.
+     * projectionMatrix The projection matrix, depending on shader this is either concatenated
      * with modelview set to unifom.
+     * renderPassMatrix Optional matrix for renderpass
      * @throws GLException If there is an error in GL while drawing this mesh.
      */
-    protected void renderMesh(Mesh mesh, float[] mvMatrix, float[] projectionMatrix) throws GLException {
+    protected void renderMesh(Mesh mesh, float[][] matrices)
+            throws GLException {
         Consumer updater = mesh.getAttributeConsumer();
         if (updater != null) {
             updater.updateAttributeData();
@@ -503,8 +525,8 @@ class BaseRenderer implements NucleusRenderer {
 
         material.setBlendModeSeparate(gles);
         program.bindAttributes(gles, mesh);
-        program.bindUniforms(gles, mvMatrix, projectionMatrix, mesh);
-        
+        program.bindUniforms(gles, matrices, mesh);
+
         AttributeBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         ElementBuffer indices = mesh.getElementBuffer();
         Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
@@ -536,7 +558,7 @@ class BaseRenderer implements NucleusRenderer {
         ShaderProgram program = material.getProgram();
         return program.getProgram(this, pass, program.getShading());
     }
-    
+
     /**
      * binds the texture, if texture reference is dynamic id the reference is fetched.
      * TODO This should use the method in {@link TextureUtils#prepareTexture(GLES20Wrapper, Texture2D)}
@@ -548,9 +570,9 @@ class BaseRenderer implements NucleusRenderer {
         int textureID = texture.getName();
         if (texture != null && texture.textureType != TextureType.Untextured) {
             if (textureID == Constants.NO_VALUE && texture.getExternalReference().isIdReference()) {
-                //Texture has no texture object - and is id reference
-                //Should only be used for dynamic textures, eg ones that depend on define in existing node
-                //TODO - try to move outside of frame render loop
+                // Texture has no texture object - and is id reference
+                // Should only be used for dynamic textures, eg ones that depend on define in existing node
+                // TODO - try to move outside of frame render loop
                 AssetManager.getInstance().getIdReference(texture);
                 textureID = texture.getName();
                 gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
@@ -562,7 +584,7 @@ class BaseRenderer implements NucleusRenderer {
             }
         }
     }
-    
+
     @Override
     public boolean isInitialized() {
         return initialized;
@@ -675,12 +697,7 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void setProjection(float[] matrix, int index) {
-        System.arraycopy(matrix, index, projectionMatrix, 0, 16);
-    }
-
-    @Override
-    public float[] getProjection() {
-        return projectionMatrix;
+        System.arraycopy(matrix, index, matrices[1], 0, 16);
     }
 
     @Override

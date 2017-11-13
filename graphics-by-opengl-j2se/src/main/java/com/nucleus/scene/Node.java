@@ -80,12 +80,7 @@ public class Node extends BaseReference {
 
     public static final String STATE = "state";
     public static final String TYPE = "type";
-    public static final String TRANSFORM = "transform";
-    public static final String VIEWFRUSTUM = "viewFrustum";
     public static final String CHILDREN = "children";
-    public static final String BOUNDS = "bounds";
-    public static final String MATERIAL = "material";
-    public static final String RENDERPASS = "renderPass";
     public static final String TEXTUREREF = "textureRef";
     public static final String PROPERTIES = "properties";
     public static final String PASS = "pass";
@@ -147,9 +142,9 @@ public class Node extends BaseReference {
 
     @SerializedName(TYPE)
     private String type;
-    @SerializedName(TRANSFORM)
+    @SerializedName(Transform.TRANSFORM)
     protected Transform transform;
-    @SerializedName(VIEWFRUSTUM)
+    @SerializedName(ViewFrustum.VIEWFRUSTUM)
     private ViewFrustum viewFrustum;
     /**
      * The childnodes shall always be processed/rendered in the order they are defined.
@@ -159,13 +154,13 @@ public class Node extends BaseReference {
     @SerializedName(CHILDREN)
     protected ArrayList<Node> children = new ArrayList<Node>();
 
-    @SerializedName(BOUNDS)
+    @SerializedName(Bounds.BOUNDS)
     private Bounds bounds;
 
-    @SerializedName(MATERIAL)
+    @SerializedName(Material.MATERIAL)
     private Material material;
 
-    @SerializedName(RENDERPASS)
+    @SerializedName(RenderPass.RENDERPASS)
     private ArrayList<RenderPass> renderPass;
     
     @SerializedName(STATE)
@@ -464,12 +459,28 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Fetches the projection matrix, if set.
+     * Fetches the projection matrix for the specified pass, if set.
      * 
-     * @return Projection matrix for this node and childnodes, or null
+     * @param pass
+     * @return Projection matrix for this node and childnodes, or null if not set
      */
-    public float[] getProjection() {
-        return projection;
+    public float[] getProjection(Pass pass) {
+        switch (pass) {
+            case SHADOW:
+                if (renderPass != null) {
+                    RenderPass p = null;
+                    for (int i = 0; i < renderPass.size(); i++) {
+                        p = renderPass.get(i);
+                        if (p.getPass() == Pass.SHADOW) {
+                            return p.getViewFrustum().getMatrix();
+                        }
+                    }
+                }
+                return null;
+            default:
+                return projection;
+
+        }
     }
 
     /**
@@ -803,7 +814,8 @@ public class Node extends BaseReference {
 
     @Override
     public String toString() {
-        return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children, pass=" + pass + ", state=" + state;
+        return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children, pass=" + pass + ", state=" + state
+                + (renderPass != null ? ", has renderpass" : "") + (bounds != null ? ", has bounds" : "");
     }
 
     /**

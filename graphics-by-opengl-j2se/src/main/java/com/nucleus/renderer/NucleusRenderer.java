@@ -308,14 +308,6 @@ public interface NucleusRenderer {
     public void setProjection(float[] matrix, int index);
 
     /**
-     * Returns the current projection matrix, you should normally not change these values.
-     * The projection matrix is controlled by setting a projection in the Node
-     * 
-     * @return The projection matrix
-     */
-    public float[] getProjection();
-
-    /**
      * Returns the renderer info.
      * This is likely to only be available after the context is created.
      * 

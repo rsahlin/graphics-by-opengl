@@ -113,7 +113,7 @@ public abstract class NucleusActivity extends Activity
         SurfaceConfiguration surfaceConfig = new SurfaceConfiguration();
         createWrapper(version);
         surfaceConfig.setSamples(getSamples());
-        mGLView = new AndroidSurfaceView(surfaceConfig, getApplicationContext(), this);
+        mGLView = new AndroidSurfaceView(surfaceConfig, version, getApplicationContext(), this);
         mGLView.setRenderMode(rendermode);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         requestWindowFeature(Window.FEATURE_NO_TITLE);

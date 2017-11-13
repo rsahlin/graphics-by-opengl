@@ -11,7 +11,22 @@ public class SimpleLogger {
     private static Logger logger;
 
     public interface Logger {
+        /**
+         * Logs a message for the specified class, the class name will be used as tag.
+         * 
+         * @param clazz
+         * @param message
+         */
         public void d(Class clazz, String message);
+
+        /**
+         * Logs a message for the specified tag.
+         * 
+         * @param tag
+         * @param message
+         */
+        public void d(String tag, String message);
+
     }
 
     /**
@@ -32,6 +47,16 @@ public class SimpleLogger {
      */
     public static void d(Class clazz, String message) {
         logger.d(clazz, message);
+    }
+
+    /**
+     * Logs a message for the tag
+     * 
+     * @param tag
+     * @param message
+     */
+    public static void d(String tag, String message) {
+        logger.d(tag, message);
     }
 
 }

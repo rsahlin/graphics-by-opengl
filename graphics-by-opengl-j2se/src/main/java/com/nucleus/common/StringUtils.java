@@ -1,7 +1,10 @@
 package com.nucleus.common;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
+
+import com.nucleus.SimpleLogger;
 
 public class StringUtils {
 
@@ -90,6 +93,13 @@ public class StringUtils {
         return result.toString();
     }
 
+    /**
+     * Returns the list as an array, using delimeter
+     * 
+     * @param str
+     * @param delimiter
+     * @return
+     */
     public static ArrayList<String> getArrayList(String str, String delimiter) {
         ArrayList<String> resultList = new ArrayList<String>();
         StringTokenizer st = new StringTokenizer(str, delimiter);
@@ -97,6 +107,21 @@ public class StringUtils {
             resultList.add(st.nextToken());
         }
         return resultList;
+    }
+
+    /**
+     * Returns the sequence of Strings, using delimiter, as a List
+     * 
+     * @return
+     */
+    public static List<String> getList(String str, String delimiter) {
+        List<String> result = new ArrayList<>();
+        StringTokenizer st = new StringTokenizer(str, delimiter);
+        while (st.hasMoreTokens()) {
+            String extension = st.nextToken();
+            result.add(extension);
+        }
+        return result;
     }
 
     /**
@@ -170,6 +195,18 @@ public class StringUtils {
         }
         result[array.length] = str;
         return result;
+    }
+
+    /**
+     * Logs each String in the list as a log message.
+     * 
+     * @param tag
+     * @param list
+     */
+    public static void logList(String tag, List<String> list) {
+        for (String str : list) {
+            SimpleLogger.d(tag, str);
+        }
     }
 
 }

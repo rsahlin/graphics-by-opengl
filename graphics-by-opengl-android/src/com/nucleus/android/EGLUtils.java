@@ -67,14 +67,22 @@ public class EGLUtils {
      */
     public static void readSurfaceConfig(EGL10 egl, EGLDisplay eglDisplay, EGLConfig config,
             SurfaceConfiguration surfaceConfig) {
-
         surfaceConfig.setRedBits(getEGLConfigAttrib(egl, eglDisplay, config, EGL10.EGL_RED_SIZE));
         surfaceConfig.setGreenBits(getEGLConfigAttrib(egl, eglDisplay, config, EGL10.EGL_GREEN_SIZE));
         surfaceConfig.setBlueBits(getEGLConfigAttrib(egl, eglDisplay, config, EGL10.EGL_BLUE_SIZE));
         surfaceConfig.setAlphaBits(getEGLConfigAttrib(egl, eglDisplay, config, EGL10.EGL_ALPHA_SIZE));
         surfaceConfig.setDepthBits(getEGLConfigAttrib(egl, eglDisplay, config, EGL10.EGL_DEPTH_SIZE));
         surfaceConfig.setSamples(getEGLConfigAttrib(egl, eglDisplay, config, EGL10.EGL_SAMPLES));
+    }
 
+    /**
+     * Sets the egl info 
+     * @param eglDisplay
+     */
+    public static void setEGLInfo(EGL10 egl, EGLDisplay eglDisplay, SurfaceConfiguration surfaceConfig) {
+        surfaceConfig.setInfo(egl.eglQueryString(eglDisplay, EGL10.EGL_VERSION),
+                egl.eglQueryString(eglDisplay, EGL10.EGL_VENDOR),
+                egl.eglQueryString(eglDisplay, EGL10.EGL_EXTENSIONS));
     }
 
     /**

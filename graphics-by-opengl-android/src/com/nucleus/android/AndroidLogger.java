@@ -9,4 +9,9 @@ public class AndroidLogger implements Logger {
     public void d(Class clazz, String message) {
         Log.d(clazz.getCanonicalName(), message);
     }
+
+    @Override
+    public void d(String tag, String message) {
+        Log.d(tag, message);
+    }
 }

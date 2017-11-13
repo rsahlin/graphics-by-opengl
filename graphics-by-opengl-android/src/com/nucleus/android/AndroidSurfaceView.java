@@ -10,6 +10,7 @@ import javax.microedition.khronos.opengles.GL10;
 import com.nucleus.CoreApp;
 import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.PointerData.PointerAction;
+import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.renderer.Window;
 
@@ -58,11 +59,12 @@ public class AndroidSurfaceView extends GLSurfaceView
      * configuration
      * 
      * @param wantedConfig The wanted surface config
+     * @param version Renderer version
      * @param context
      * @param coreAppStarter
      * @throws IllegalArgumentException If clientClass is null
      */
-    public AndroidSurfaceView(SurfaceConfiguration wantedConfig, Context context,
+    public AndroidSurfaceView(SurfaceConfiguration wantedConfig, Renderers version, Context context,
             CoreApp.CoreAppStarter coreAppStarter) {
         super(context);
         if (coreAppStarter == null) {
@@ -71,7 +73,7 @@ public class AndroidSurfaceView extends GLSurfaceView
         this.coreAppStarter = coreAppStarter;
         setEGLWindowSurfaceFactory(this);
         this.wantedConfig = wantedConfig;
-        setEGLContextClientVersion(2);
+        setEGLContextClientVersion(version.major);
         setEGLConfigChooser(this);
         setRenderer(this);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
@@ -129,6 +131,7 @@ public class AndroidSurfaceView extends GLSurfaceView
         surfaceDestroyed = false;
         surfaceConfig = new SurfaceConfiguration();
         EGLUtils.readSurfaceConfig(egl, display, eglConfig, surfaceConfig);
+        EGLUtils.setEGLInfo(egl, display, surfaceConfig);
         SimpleLogger.d(getClass(), "chooseConfig() has: " + surfaceConfig.toString());
 
         return eglConfig;

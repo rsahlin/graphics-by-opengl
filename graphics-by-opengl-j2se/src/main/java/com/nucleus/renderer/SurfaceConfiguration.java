@@ -1,5 +1,10 @@
 package com.nucleus.renderer;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.nucleus.common.StringUtils;
+
 /**
  * Class that specifies the surface configuration, bitdepth, zbufferm samples and other
  * surface specific configurations.
@@ -47,6 +52,13 @@ public class SurfaceConfiguration {
     protected int samples = DEFAULT_SAMPLES;
 
     /**
+     * EGL version
+     */
+    protected String version;
+    protected String vendor;
+    protected List<String> extensions = new ArrayList<String>();
+
+    /**
      * Constructs a SurfaceConfiguration that can used when
      * selecting EGL configuration.
      * All parameters are set to default values.
@@ -64,14 +76,12 @@ public class SurfaceConfiguration {
      * @param samples The number of samples for each pixel.
      */
     public SurfaceConfiguration(int redBits, int greenBits, int blueBits, int alphaBits, int depthBits, int samples) {
-
         this.redBits = redBits;
         this.greenBits = greenBits;
         this.blueBits = blueBits;
         this.alphaBits = alphaBits;
         this.depthBits = depthBits;
         this.samples = samples;
-
     }
 
     /**
@@ -188,8 +198,29 @@ public class SurfaceConfiguration {
     @Override
     public String toString() {
         return "RGBA:" + redBits + ", " + greenBits + ", " + blueBits + ", " + alphaBits + ", Depth: " + depthBits
-                + ", Samples: " + samples;
+                + ", Samples: " + samples + ", Version: " + version + ", Vendor: " + vendor;
+    }
 
+    /**
+     * Sets the egl infp
+     * 
+     * @param version
+     * @param vendor
+     * @param extensions
+     */
+    public void setInfo(String version, String vendor, String extensions) {
+        this.version = version;
+        this.vendor = vendor;
+        this.extensions = StringUtils.getList(extensions, " ");
+    }
+
+    /**
+     * Returns the EGL version.
+     * 
+     * @return
+     */
+    public String getVersion() {
+        return version;
     }
 
 }

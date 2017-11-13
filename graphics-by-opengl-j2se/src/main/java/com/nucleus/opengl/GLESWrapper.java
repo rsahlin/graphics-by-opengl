@@ -1,5 +1,8 @@
 package com.nucleus.opengl;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 public abstract class GLESWrapper {
     /**
      * The supported renderers
@@ -8,10 +11,12 @@ public abstract class GLESWrapper {
      *
      */
     public enum Renderers {
-        GLES20(),
-        GLES30();
+        GLES20(2),
+        GLES30(3);
+        public final int major;
 
-        private Renderers() {
+        private Renderers(int major) {
+            this.major = major;
         };
     }
 
@@ -366,5 +371,21 @@ public abstract class GLESWrapper {
         }
 
     }
+
+    /**
+     * Returns the GLES shader language version.
+     * 
+     * @return '100' for shading language 1.0 and '300' for language version 3
+     */
+    public abstract String getShaderVersion();
+
+    /**
+     * Returns a versioned shader source as String.
+     * 
+     * @param shaderStream
+     * @return
+     * @throws IOException
+     */
+    public abstract String getVersionedShaderSource(InputStream shaderStream) throws IOException;
 
 }

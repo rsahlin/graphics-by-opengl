@@ -16,7 +16,6 @@
  * from attributes
  * @author Richard Sahlin
  */
-#version 100
 
 //Put array declaration after name for GLSL compatibility
 uniform mat4 uMVMatrix;

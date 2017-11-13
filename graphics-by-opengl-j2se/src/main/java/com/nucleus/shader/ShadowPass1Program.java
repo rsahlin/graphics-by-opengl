@@ -35,27 +35,29 @@ public class ShadowPass1Program extends TransformProgram {
     }
 
     @Override
-    public void bindUniforms(GLES20Wrapper gles, float[] modelviewMatrix, float[] projectionMatrix, Mesh mesh)
+    public void bindUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
             throws GLException {
         // Refresh the uniform matrix using the light matrix
-        System.arraycopy(modelviewMatrix, 0, getUniforms(),
+        System.arraycopy(matrices[0], 0, getUniforms(),
                 shaderVariables[ShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(getLightMatrix(), 0, getUniforms(),
+        System.arraycopy(matrices[2], 0, getUniforms(),
                 shaderVariables[ShaderVariables.uProjectionMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         setUniforms(gles, sourceUniforms);
     }
 
-    public static float[] getLightMatrix() {
-        //Modelview is facing into screen.
-        float[] lightPOV = new float[16];
-        float[] result = new float[16];
+    /**
+     * Returns the global light direction matrix using orthographic projection
+     * 
+     * @param matrix The result matrix
+     * @return matrix that contains the global light direction.
+     * 
+     */
+    public static float[] getLightMatrix(float[] matrix) {
         float[] lightVector = GlobalLight.getInstance().getLightVector();
-        Matrix.setRotateEulerM(result, 0, lightVector[0], lightVector[1], lightVector[2]);
-        Matrix.orthoM(lightPOV, 0, -0.8889f, 0.8889f, -0.5f, 0.5f, 0f, 10f);
-        Matrix.mul4(result, lightPOV);
-        return result;
+        Matrix.setRotateEulerM(matrix, 0, lightVector[0], lightVector[1], lightVector[2]);
+        return matrix;
     }
     
 }

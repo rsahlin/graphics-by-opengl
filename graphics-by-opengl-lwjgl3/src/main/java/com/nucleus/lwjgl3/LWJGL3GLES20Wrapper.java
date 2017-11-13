@@ -6,9 +6,9 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLES30Wrapper;
 
-public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
+public class LWJGL3GLES20Wrapper extends GLES30Wrapper {
 
     @Override
     public void glAttachShader(int program, int shader) {

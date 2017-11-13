@@ -347,5 +347,10 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     public void glColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
         android.opengl.GLES20.glColorMask(red, green, blue, alpha);
     }
+
+    @Override
+    public String getShaderVersion() {
+        return GLES20Wrapper.SHADING_LANGUAGE_100;
+    }
     
 }

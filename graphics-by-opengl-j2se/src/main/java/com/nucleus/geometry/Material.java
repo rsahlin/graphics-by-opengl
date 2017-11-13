@@ -13,6 +13,8 @@ import com.nucleus.shader.ShaderProgram;
  */
 public class Material {
 
+    public static final String MATERIAL = "material";
+    
     public static final String BLEND_EQUATION = "blendEquation";
     public static final String BLEND_FUNC = "blendFunc";
     public static final String AMBIENT = "ambient";

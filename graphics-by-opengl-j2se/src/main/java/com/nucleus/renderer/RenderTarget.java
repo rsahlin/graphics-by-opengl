@@ -6,8 +6,8 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.common.Constants;
 import com.nucleus.io.BaseReference;
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Image.ImageFormat;
+import com.nucleus.texturing.Texture2D;
 
 /**
  * Represents a render target, currently only supports window framebuffer
@@ -17,7 +17,6 @@ import com.nucleus.texturing.Image.ImageFormat;
 public class RenderTarget extends BaseReference {
 
     private static final String TARGET = "target";
-    private static final String NAME = "name";
     private static final String ATTACHEMENTS = "attachements";
 
     public enum Attachement {
@@ -146,12 +145,18 @@ public class RenderTarget extends BaseReference {
         this.attachements = attachements;
     }
 
+    /**
+     * Returns the rendertarget
+     * 
+     * @return
+     */
     public Target getTarget() {
         return target;
     }
 
     /**
      * Returns the target buffer name,
+     * name (id) of the destination texture/renderbuffer/framebuffer
      * 
      * @return
      */
@@ -161,6 +166,7 @@ public class RenderTarget extends BaseReference {
 
     /**
      * Sets the name of the buffer object
+     * name (id) of the destination texture/renderbuffer/framebuffer
      * 
      * @param name Generated buffer/texture object name
      */
@@ -168,10 +174,20 @@ public class RenderTarget extends BaseReference {
         this.targetName = name;
     }
 
+    /**
+     * Sets the name (id) of the framebuffer object the target is attached to
+     * 
+     * @param framebufferName Name (id) of the framebuffer object that the target is attached to.
+     */
     public void setFramebufferName(int framebufferName) {
         this.framebufferName = framebufferName;
     }
 
+    /**
+     * Returns the name (id) of the framebuffer object the target is attached to
+     * 
+     * @return
+     */
     public int getFramebufferName() {
         return framebufferName;
     }

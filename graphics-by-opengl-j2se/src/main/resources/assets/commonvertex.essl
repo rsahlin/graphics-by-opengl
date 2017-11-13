@@ -2,6 +2,7 @@
  * Returns a matrix with z axis rotation set from attribute aRotate.z, x and y axis scale.
  * @return Matrix with z axis rotation set from aRotate.z, scale from aScale.x + aScale.y
  */
+
 mat3 calculateTransformMatrix(vec3 rotate, vec3 scale){
     
     mat3 modelview = mat3(1);

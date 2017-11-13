@@ -55,10 +55,12 @@ google-services.json
 
 #Eclipse files
 *.classpath
+*.project
 .classpath
 .settings
 /target/
 .settings/
+
 *.properties
 *.externalToolBuilders
 

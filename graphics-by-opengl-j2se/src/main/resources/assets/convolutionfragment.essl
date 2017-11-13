@@ -15,7 +15,6 @@
  * Fragment shader for 3 X 3 convolution kernel
  * @author Richard Sahlin
  */
-#version 100
 
 precision mediump float;
 uniform sampler2D uTexture;      //The texture sampler

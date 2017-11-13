@@ -1,9 +1,12 @@
 package com.nucleus.opengl;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.geometry.AttributeBuffer;
+import com.nucleus.io.StreamUtils;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.texturing.Image;
@@ -22,6 +25,8 @@ import com.nucleus.texturing.TextureUtils;
  *
  */
 public abstract class GLES20Wrapper extends GLESWrapper {
+
+    public static String SHADING_LANGUAGE_100 = "100";
 
     /**
      * Abstraction for glFrameBufferTexture2D
@@ -663,5 +668,14 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                 texture.getType().type, image.getBuffer().position(0));
     }
     
-    
+    @Override
+    public String getShaderVersion() {
+        return SHADING_LANGUAGE_100;
+    }
+
+    @Override
+    public String getVersionedShaderSource(InputStream shaderStream) throws IOException {
+        return new String(StreamUtils.readFromStream(shaderStream));
+    }
+
 }
