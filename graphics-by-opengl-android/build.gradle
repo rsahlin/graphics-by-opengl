@@ -15,7 +15,8 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.0.0'
-	}
+        classpath 'digital.wup:android-maven-publish:3.1.1'
+    }
 }
 
 repositories {
@@ -25,17 +26,6 @@ repositories {
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'maven-publish'
-
-publishing {
-    publications {
-        android(MavenPublication) {
-            groupId 'com.super2k.graphics-by-opengl'
-            artifactId 'graphics-by-opengl-android'
-            version '0.0.1-SNAPSHOT'
-        }
-    }
-}
 
 android {
     compileSdkVersion 25
@@ -73,6 +63,27 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     testImplementation "org.mockito:mockito-core:2.+"
 }
+
+//apply plugin: 'digital.wup.android-maven-publish'
+apply plugin: 'maven-publish'
+
+task androidSourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId 'com.super2k.graphics-by-opengl'
+            artifactId 'graphics-by-opengl-android'
+            version '0.0.1-SNAPSHOT'
+            artifact bundleRelease
+            artifact(androidSourcesJar)
+        }
+    }
+}
+
 
 //apply plugin: 'com.google.gms.google-services'
 
