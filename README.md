@@ -40,5 +40,5 @@ Maven - update project,or clean build to get rid of any trailing errors.
 
 Gradle - to publish as maven local, perform task for each module:
 graphics-by-opengl-j2se>gradle publishToMavenLocal
-graphics-by-påengl-android>gradle publishToMavenLocal
+graphics-by-opengl-android>gradle publishToMavenLocal
 
