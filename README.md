@@ -22,7 +22,7 @@ graphics-by-opengl-android
 
 contains JOGL and Android implementations.
 
-To use the project in Eclipse, import as Existing Maven project, tested with Eclipse Android Neon
+To use the project in Eclipse, import as Existing Maven project, tested with Eclipse Android Oxygen
 
 ADT needs to be installed.
 
@@ -37,3 +37,8 @@ You may experience problem with non-existing project.properties file
 - I solved by adding an empty project.properties file in the Android project root, chosing 'Properties-Android' and selecting a valid SDK.
 
 Maven - update project,or clean build to get rid of any trailing errors.
+
+Gradle - to publish as maven local, perform task for each module:
+graphics-by-opengl-j2se>gradle publishToMavenLocal
+graphics-by-påengl-android>gradle publishToMavenLocal
+
