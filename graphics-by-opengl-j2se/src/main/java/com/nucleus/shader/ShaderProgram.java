@@ -46,8 +46,8 @@ public abstract class ShaderProgram {
     public static final String PROGRAM_DIRECTORY = "assets/";
     public static final String SHADER_SOURCE_SUFFIX = ".essl";
     public static final String COMMON_VERTEX_SHADER = "commonvertex" + SHADER_SOURCE_SUFFIX;
-    public static final String FRAGMENT = "fragment";
-    public static final String VERTEX = "vertex";
+    public static final String FRAGMENT_TYPE = "fragment";
+    public static final String VERTEX_TYPE = "vertex";
     protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
 
     /**
@@ -112,6 +112,24 @@ public abstract class ShaderProgram {
     protected final static int NAME_LENGTH_OFFSET = 0;
 
     /**
+     * How to get shader name from program:
+     * <optional pass> shading / category / type
+     * Eg:
+     * textureduvspritevertex.essl
+     * flatspritefragment.essl
+     * shadow2textureduvspritevertex.essl
+     */
+    /**
+     * The following fields MUST be set by subclasses
+     */
+    transient protected Pass pass;
+    protected Texture2D.Shading shading;
+    transient protected String category;
+
+    transient protected String vertexShaderName;
+    transient protected String fragmentShaderName;
+
+    /**
      * The GL program object
      */
     private int program = -1;
@@ -157,14 +175,6 @@ public abstract class ShaderProgram {
      * Samplers (texture units)
      */
     transient protected int[] samplers;
-
-    /**
-     * The following fields MUST be set by subclasses
-     */
-    protected String vertexShaderName;
-    protected String fragmentShaderName;
-    //Optional
-    protected Texture2D.Shading shading;
 
     /**
      * Unmapped variable types
@@ -242,26 +252,19 @@ public abstract class ShaderProgram {
     
     /**
      * Creates a new shader program for the specified shading - used by subclasses
-     * @param shading
+     * 
+     * @param pass The pass this shader is for or null if not used
+     * @param category
+     * @param shading The shading or null if not used
      * @param mapping
      */
-    protected ShaderProgram(Texture2D.Shading shading, VariableMapping[] mapping) {
+    protected ShaderProgram(Pass pass, String category, Texture2D.Shading shading, VariableMapping[] mapping) {
         super();
+        this.pass = pass;
+        this.category = category;
         this.shading = shading;
         setMapping(mapping);
         setShaderSource(shading);
-    }
-    
-    /**
-     * Creates a new ShaderProgram with the variable mapping, used by subclasses to create instance of shader.
-     * 
-     * @param mapping The variable mapping as defined by the subclass, this holds information of where uniform and
-     * attribute data is
-     */
-    protected ShaderProgram(VariableMapping[] mapping) {
-        super();
-        setMapping(mapping);
-        setShaderSource(null);
     }
     
     protected void setMapping(VariableMapping[] mapping) {
@@ -275,8 +278,8 @@ public abstract class ShaderProgram {
      */
     protected void setShaderSource(Texture2D.Shading shading) {
         //TODO - need a name together with shading to connect to shader, eg 'Translate', 'Transform' or 'Shadow'
-        vertexShaderName = PROGRAM_DIRECTORY + shading.name() + VERTEX + SHADER_SOURCE_SUFFIX;
-        fragmentShaderName = PROGRAM_DIRECTORY + shading.name() + FRAGMENT + SHADER_SOURCE_SUFFIX;
+        vertexShaderName = PROGRAM_DIRECTORY + shading.name() + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
+        fragmentShaderName = PROGRAM_DIRECTORY + shading.name() + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
     }
     
     /**

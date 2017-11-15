@@ -4,6 +4,7 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.vecmath.Matrix;
 
@@ -22,16 +23,18 @@ public class ShadowPass1Program extends TransformProgram {
     /**
      * TODO Look into the shader programs using this constructor - maybe they can be unified?
      * 
+     * @param pass
+     * @param category
      * @param shading
      */
-    public ShadowPass1Program(Texture2D.Shading shading) {
-        super(shading, ShaderVariables.values());
+    public ShadowPass1Program(Pass pass, String category, Texture2D.Shading shading) {
+        super(pass, category, shading);
     }
-    
+
     @Override
     protected void setShaderSource(Texture2D.Shading shading) {
-        vertexShaderName = PROGRAM_DIRECTORY + VERTEX_NAME + VERTEX + SHADER_SOURCE_SUFFIX;
-        fragmentShaderName = PROGRAM_DIRECTORY + FRAGMENT_NAME + shading.name() + FRAGMENT + SHADER_SOURCE_SUFFIX;
+        vertexShaderName = PROGRAM_DIRECTORY + VERTEX_NAME + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
+        fragmentShaderName = PROGRAM_DIRECTORY + FRAGMENT_NAME + shading.name() + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
     }
 
     @Override
