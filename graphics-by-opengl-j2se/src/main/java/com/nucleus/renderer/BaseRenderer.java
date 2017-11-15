@@ -50,6 +50,20 @@ import com.nucleus.vecmath.Matrix;
  */
 class BaseRenderer implements NucleusRenderer {
 
+    public enum Matrices {
+        MODELVIEW(0),
+        PROJECTION(1),
+        RENDERPASS_1(2),
+        RENDERPASS_2(3);
+
+        public final int index;
+
+        private Matrices(int index) {
+            this.index = index;
+        }
+
+    }
+
     public final static String NOT_INITIALIZED_ERROR = "Not initialized, must call init()";
 
     protected final static String BASE_RENDERER_TAG = "BaseRenderer";
@@ -75,11 +89,9 @@ class BaseRenderer implements NucleusRenderer {
      */
     protected float[] modelMatrix;
     /**
-     * The current concatenated modelview matrix
-     * The current projection matrix
-     * Renderpass matric
+     * see Matrices
      */
-    protected float[][] matrices = new float[3][];
+    protected float[][] matrices = new float[Matrices.values().length][];
     /**
      * The view matrix
      */
@@ -128,9 +140,10 @@ class BaseRenderer implements NucleusRenderer {
         this.gles = gles;
         this.imageFactory = imageFactory;
         this.matrixEngine = matrixEngine;
-        matrices[0] = Matrix.createMatrix();
-        matrices[1] = Matrix.setIdentity(Matrix.createMatrix(), 0);
-        matrices[2] = Matrix.createMatrix();
+        matrices[Matrices.MODELVIEW.index] = Matrix.createMatrix();
+        matrices[Matrices.PROJECTION.index] = Matrix.setIdentity(Matrix.createMatrix(), 0);
+        matrices[Matrices.RENDERPASS_1.index] = Matrix.createMatrix();
+        matrices[Matrices.RENDERPASS_2.index] = Matrix.createMatrix();
     }
 
     @Override
@@ -256,7 +269,7 @@ class BaseRenderer implements NucleusRenderer {
                 if (renderPasses != null) {
                     for (RenderPass renderPass : renderPasses) {
                         if (renderPass.getViewFrustum() != null) {
-                            Matrix.mul4(ShadowPass1Program.getLightMatrix(matrices[2]),
+                            Matrix.mul4(ShadowPass1Program.getLightMatrix(matrices[Matrices.RENDERPASS_1.index]),
                                     renderPass.getViewFrustum().getMatrix());
                         }
                         pushPass(renderPass.getPass());
@@ -286,10 +299,10 @@ class BaseRenderer implements NucleusRenderer {
         // Fetch projection just before render
         float[] projection = node.getProjection(currentPass);
         if (projection != null) {
-            pushMatrix(this.projection, matrices[1]);
-            matrices[1] = projection;
+            pushMatrix(this.projection, matrices[Matrices.PROJECTION.index]);
+            matrices[Matrices.PROJECTION.index] = projection;
         }
-        Matrix.mul4(nodeMatrix, viewMatrix, matrices[0]);
+        Matrix.mul4(nodeMatrix, viewMatrix, matrices[Matrices.MODELVIEW.index]);
         if (node.getType().equals(NodeTypes.linedrawernode.name())) {
             gles.glLineWidth(((LineDrawerNode) node).getLineWidth());
         }
@@ -301,7 +314,7 @@ class BaseRenderer implements NucleusRenderer {
             this.modelMatrix = popMatrix(matrixStack);
         }
         if (projection != null) {
-            matrices[1] = popMatrix(this.projection);
+            matrices[Matrices.PROJECTION.index] = popMatrix(this.projection);
         }
         node.getRootNode().addRenderedNode(node);
     }
@@ -489,6 +502,17 @@ class BaseRenderer implements NucleusRenderer {
         int clearFunc = state.getClearFunction();
         if (clearFunc != GLES20.GL_NONE) {
             gles.glClear(clearFunc);
+        }
+        switch (renderPass.getPass()) {
+            case SHADOW2:
+                // Adjust the light matrix to fit inside texture coordinates
+                Matrix.setIdentity(matrices[Matrices.RENDERPASS_2.index], 0);
+                Matrix.scaleM(matrices[Matrices.RENDERPASS_2.index], 0, 0.5f, 0.5f, 1f);
+                Matrix.translate(matrices[Matrices.RENDERPASS_2.index], 0.5f, 0.5f, 0f);
+                Matrix.mul4(matrices[Matrices.RENDERPASS_1.index], matrices[Matrices.RENDERPASS_2.index]);
+                break;
+            default:
+                // Nothing to do
         }
     }
 
