@@ -75,7 +75,7 @@ public abstract class ShaderProgram {
      *
      */
     public enum AttribNameMapping {
-        APPEND(), 
+        APPEND(),
         PREFIX();
     }
 
@@ -112,22 +112,70 @@ public abstract class ShaderProgram {
     protected final static int NAME_LENGTH_OFFSET = 0;
 
     /**
+     * The function of the shader program
+     * 
      * How to get shader name from program:
      * <optional pass> shading / category / type
      * Eg:
      * textureduvspritevertex.essl
      * flatspritefragment.essl
      * shadow2textureduvspritevertex.essl
+     * TODO maybe put the fields below in an inner class
      */
-    /**
-     * The following fields MUST be set by subclasses
-     */
-    transient protected Pass pass;
-    protected Texture2D.Shading shading;
-    transient protected String category;
+    public class Function {
+        protected Pass pass;
+        protected Texture2D.Shading shading;
+        protected String category;
 
-    transient protected String vertexShaderName;
-    transient protected String fragmentShaderName;
+        public Function(Pass pass, Texture2D.Shading shading, String category) {
+            this.pass = pass;
+            this.shading = shading;
+            this.category = category;
+        }
+
+        /**
+         * Returns the shading used, or null if not relevant
+         * 
+         * @return
+         */
+        public Texture2D.Shading getShading() {
+            return shading;
+        }
+
+        /**
+         * Returns the name of the category of this shader function, for instance sprite, charmap
+         * 
+         * @return The category name of null if not relevant
+         */
+        public String getCategory() {
+            return category;
+        }
+
+        /**
+         * If this shader can only be used in a specific pass, normally only set for passes other than {@link Pass#MAIN}
+         * 
+         * @return Pass that the shader belongs to, or null if not relevant.
+         */
+        public Pass getPass() {
+            return pass;
+        }
+
+        /**
+         * Returns the shader source name, excluding directory prefix and name of shader (vertex/fragment/compute)
+         * 
+         * @return
+         */
+        protected String getShaderSourceName() {
+            return (pass != null ? pass.name().toLowerCase()
+                    : "") + (category != null ? category : "") + (shading != null ? shading.name().toLowerCase() : "");
+        }
+
+    }
+
+    protected Function sourceName;
+    // TODO - remove these and only use sourceName class
+    protected String vertexShaderName;
+    protected String fragmentShaderName;
 
     /**
      * The GL program object
@@ -184,12 +232,13 @@ public abstract class ShaderProgram {
     /**
      * Returns the program for the specified pass and shading, this is used to resolve the correct
      * program for different passes
+     * 
      * @param renderer
      * @param pass
      * @param shading
      */
     public abstract ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Texture2D.Shading shading);
-    
+
     /**
      * Returns the offset within an attribute buffer where the property is, this is used to set specific properties
      * of a vertex.
@@ -203,23 +252,23 @@ public abstract class ShaderProgram {
     public int getPropertyOffset(Property property) {
         ShaderVariable v = null;
         switch (property) {
-        case TRANSLATE:
-            v = shaderVariables[ShaderVariables.aTranslate.index];
-            break;
-        case ROTATE:
-            v = shaderVariables[ShaderVariables.aRotate.index];
-            break;
-        case SCALE:
-            v = shaderVariables[ShaderVariables.aScale.index];
-            break;
-        case FRAME:
-            v = shaderVariables[ShaderVariables.aFrameData.index];
-            break;
-        case COLOR_AMBIENT:
-        case COLOR:
-            v = shaderVariables[ShaderVariables.aColor.index];
-            break;
-        default:
+            case TRANSLATE:
+                v = shaderVariables[ShaderVariables.aTranslate.index];
+                break;
+            case ROTATE:
+                v = shaderVariables[ShaderVariables.aRotate.index];
+                break;
+            case SCALE:
+                v = shaderVariables[ShaderVariables.aScale.index];
+                break;
+            case FRAME:
+                v = shaderVariables[ShaderVariables.aFrameData.index];
+                break;
+            case COLOR_AMBIENT:
+            case COLOR:
+                v = shaderVariables[ShaderVariables.aColor.index];
+                break;
+            default:
         }
         if (v != null) {
             return v.getOffset();
@@ -249,39 +298,36 @@ public abstract class ShaderProgram {
     public int getVariableCount() {
         return ShaderVariables.values().length;
     }
-    
+
     /**
      * Creates a new shader program for the specified shading - used by subclasses
      * 
      * @param pass The pass this shader is for or null if not used
-     * @param category
-     * @param shading The shading or null if not used
+     * @param shading The shading function or null if not used
+     * @param category The category of funciton or null of not used
      * @param mapping
      */
-    protected ShaderProgram(Pass pass, String category, Texture2D.Shading shading, VariableMapping[] mapping) {
-        super();
-        this.pass = pass;
-        this.category = category;
-        this.shading = shading;
+    protected ShaderProgram(Pass pass, Texture2D.Shading shading, String category, VariableMapping[] mapping) {
+        sourceName = new Function(pass, shading, category);
         setMapping(mapping);
-        setShaderSource(shading);
+        setShaderSource();
     }
-    
+
     protected void setMapping(VariableMapping[] mapping) {
         setUniformMapping(mapping);
         setAttributeMapping(mapping);
     }
 
+
     /**
-     * Sets the shading and the name of the vertex/fragment shaders
-     * @param shading
+     * Sets the name of the vertex/fragment shaders
      */
-    protected void setShaderSource(Texture2D.Shading shading) {
-        //TODO - need a name together with shading to connect to shader, eg 'Translate', 'Transform' or 'Shadow'
-        vertexShaderName = PROGRAM_DIRECTORY + shading.name() + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
-        fragmentShaderName = PROGRAM_DIRECTORY + shading.name() + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
+    protected void setShaderSource() {
+        String shaderSourceName = sourceName.getShaderSourceName();
+        vertexShaderName = PROGRAM_DIRECTORY + shaderSourceName + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
+        fragmentShaderName = PROGRAM_DIRECTORY + shaderSourceName + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
     }
-    
+
     /**
      * Returns the number of attribute buffers - as found when calling {@link #createProgram(GLES20Wrapper)}
      * 
@@ -442,21 +488,21 @@ public abstract class ShaderProgram {
      */
     protected AttributeBuffer createAttributeBuffer(BufferIndex index, int verticeCount, Mesh mesh) {
         switch (index) {
-        case ATTRIBUTES:
-            int attrs = getAttributesPerVertex();
-            if (attrs > 0) {
-                AttributeBuffer buffer = new AttributeBuffer(verticeCount, attrs, GLES20.GL_FLOAT);
-                if (mesh instanceof Consumer) {
-                    ((Consumer) mesh).bindAttributeBuffer(buffer);
+            case ATTRIBUTES:
+                int attrs = getAttributesPerVertex();
+                if (attrs > 0) {
+                    AttributeBuffer buffer = new AttributeBuffer(verticeCount, attrs, GLES20.GL_FLOAT);
+                    if (mesh instanceof Consumer) {
+                        ((Consumer) mesh).bindAttributeBuffer(buffer);
+                    }
+                    return buffer;
                 }
-                return buffer;
-            }
-            return null;
-        case VERTICES:
-            return new AttributeBuffer(verticeCount, getVertexStride(), GLES20.GL_FLOAT);
-        case ATTRIBUTES_STATIC:
-        default:
-            throw new IllegalArgumentException("Not implemented");
+                return null;
+            case VERTICES:
+                return new AttributeBuffer(verticeCount, getVertexStride(), GLES20.GL_FLOAT);
+            case ATTRIBUTES_STATIC:
+            default:
+                throw new IllegalArgumentException("Not implemented");
         }
     }
 
@@ -494,13 +540,13 @@ public abstract class ShaderProgram {
             if (attribute.getType() == VariableType.ATTRIBUTE) {
                 int location = 0;
                 switch (attribNameMapping) {
-                case PREFIX:
-                    location = Integer.parseInt(attribute.getName().substring(0, 2));
-                    break;
-                case APPEND:
-                    int length = attribute.getName().length();
-                    location = Integer.parseInt(attribute.getName().substring(length - 2, length));
-                    break;
+                    case PREFIX:
+                        location = Integer.parseInt(attribute.getName().substring(0, 2));
+                        break;
+                    case APPEND:
+                        int length = attribute.getName().length();
+                        location = Integer.parseInt(attribute.getName().substring(length - 2, length));
+                        break;
                 }
                 gles.glBindAttribLocation(program, location, attribute.getName());
                 GLUtils.handleError(gles, BIND_ATTRIBUTE_ERROR);
@@ -578,16 +624,16 @@ public abstract class ShaderProgram {
 
         for (int i = 0; i < count; i++) {
             switch (type) {
-            case ATTRIBUTE:
-                gles.glGetActiveAttrib(program, i, written, NAME_LENGTH_OFFSET, written,
-                        SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
-                break;
-            case UNIFORM:
-                gles.glGetActiveUniform(program, i, written, NAME_LENGTH_OFFSET, written,
-                        SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
-                break;
-            default:
-                throw new IllegalArgumentException("Not implemented for " + type);
+                case ATTRIBUTE:
+                    gles.glGetActiveAttrib(program, i, written, NAME_LENGTH_OFFSET, written,
+                            SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
+                    break;
+                case UNIFORM:
+                    gles.glGetActiveUniform(program, i, written, NAME_LENGTH_OFFSET, written,
+                            SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Not implemented for " + type);
             }
             ShaderVariable variable = new ShaderVariable(type, nameBuffer, written, NAME_LENGTH_OFFSET, SIZE_OFFSET,
                     TYPE_OFFSET);
@@ -609,12 +655,12 @@ public abstract class ShaderProgram {
     private void setVariableLocation(GLES20Wrapper gles, int program, VariableType type, ShaderVariable variable)
             throws GLException {
         switch (type) {
-        case ATTRIBUTE:
-            variable.setLocation(gles.glGetAttribLocation(program, variable.getName()));
-            break;
-        case UNIFORM:
-            variable.setLocation(gles.glGetUniformLocation(program, variable.getName()));
-            break;
+            case ATTRIBUTE:
+                variable.setLocation(gles.glGetAttribLocation(program, variable.getName()));
+                break;
+            case UNIFORM:
+                variable.setLocation(gles.glGetUniformLocation(program, variable.getName()));
+                break;
         }
         if (variable.getLocation() < 0) {
             throw new GLException(VARIABLE_LOCATION_ERROR + variable.getName(), 0);
@@ -790,7 +836,8 @@ public abstract class ShaderProgram {
             shaderVariables[vm.getIndex()] = variable;
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
-                    "Variable has no mapping to shader variable (ie used in shader but not defined in program " + getClass().getSimpleName() + ") : "
+                    "Variable has no mapping to shader variable (ie used in shader but not defined in program "
+                            + getClass().getSimpleName() + ") : "
                             + variable.getName());
         }
     }
@@ -826,7 +873,6 @@ public abstract class ShaderProgram {
         }
     }
 
-
     /**
      * Sets one of more float uniforms for the specified variable, supports VEC2, VEC3, VEC4 and MAT2, MAT3, MAT4 types
      * 
@@ -839,28 +885,28 @@ public abstract class ShaderProgram {
             throws GLException {
 
         switch (variable.getDataType()) {
-        case GLES20.GL_FLOAT_VEC2:
+            case GLES20.GL_FLOAT_VEC2:
                 gles.glUniform2fv(variable.getLocation(), variable.getSize(), uniforms, offset);
-            break;
-        case GLES20.GL_FLOAT_VEC3:
+                break;
+            case GLES20.GL_FLOAT_VEC3:
                 gles.glUniform3fv(variable.getLocation(), variable.getSize(), uniforms, offset);
-            break;
-        case GLES20.GL_FLOAT_VEC4:
+                break;
+            case GLES20.GL_FLOAT_VEC4:
                 gles.glUniform4fv(variable.getLocation(), variable.getSize(), uniforms, offset);
-            break;
-        case GLES20.GL_FLOAT_MAT2:
+                break;
+            case GLES20.GL_FLOAT_MAT2:
                 gles.glUniformMatrix2fv(variable.getLocation(), variable.getSize(), false, uniforms, offset);
-            break;
-        case GLES20.GL_FLOAT_MAT3:
+                break;
+            case GLES20.GL_FLOAT_MAT3:
                 gles.glUniformMatrix3fv(variable.getLocation(), variable.getSize(), false, uniforms, offset);
-            break;
-        case GLES20.GL_FLOAT_MAT4:
+                break;
+            case GLES20.GL_FLOAT_MAT4:
                 gles.glUniformMatrix4fv(variable.getLocation(), variable.getSize(), false, uniforms, offset);
-            break;
-        case GLES20.GL_SAMPLER_2D:
+                break;
+            case GLES20.GL_SAMPLER_2D:
                 gles.glUniform1iv(variable.getLocation(), variable.getSize(), samplers, offset);
                 break;
-        default:
+            default:
                 throw new IllegalArgumentException("Not implemented for dataType: " + variable.getDataType());
         }
         GLUtils.handleError(gles, "setVectorUniform(), dataType: " + variable.getDataType());
@@ -973,8 +1019,7 @@ public abstract class ShaderProgram {
                 shaderVariables[ShaderVariables.uProjectionMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
-    
-    
+
     /**
      * Internal method, sets the uniform data from the uniform data into the mapping provided by the attribute mapping.
      * 
@@ -1049,7 +1094,7 @@ public abstract class ShaderProgram {
      * @return Key value for this shader program.
      */
     public String getKey() {
-        return getClass().getCanonicalName() + (shading != null ? shading.name() : "");
+        return getClass().getCanonicalName() + (sourceName.shading != null ? sourceName.shading.name() : "");
     }
 
     /**
@@ -1058,7 +1103,7 @@ public abstract class ShaderProgram {
      * @return
      */
     public Shading getShading() {
-        return shading;
+        return sourceName.shading;
     }
 
     /**
@@ -1082,11 +1127,11 @@ public abstract class ShaderProgram {
         this.uniforms = uniforms;
         this.samplers = samplers;
     }
-    
+
     @Override
     public String toString() {
         return vertexShaderName + " (" + vertexShader + ") / " + fragmentShaderName + " (" + fragmentShader
-                + ") shading: " + shading;
+                + ") shading: " + sourceName.shading;
     }
 
     /**

@@ -14,27 +14,28 @@ import com.nucleus.vecmath.Matrix;
  */
 public class ShadowPass1Program extends TransformProgram {
 
-    /**
-     * Name of this shader - TODO where should this be defined?
-     */
-    protected static final String VERTEX_NAME = "transform";
-    protected static final String FRAGMENT_NAME = "shadow1";
+    protected static final String CATEGORY = "transform";
+
+    public ShadowPass1Program(Texture2D.Shading shading) {
+        super(Pass.SHADOW1, shading, CATEGORY);
+    }
     
     /**
      * TODO Look into the shader programs using this constructor - maybe they can be unified?
      * 
-     * @param pass
-     * @param category
      * @param shading
+     * @param category
      */
-    public ShadowPass1Program(Pass pass, String category, Texture2D.Shading shading) {
-        super(pass, category, shading);
+    public ShadowPass1Program(Texture2D.Shading shading, String category) {
+        super(Pass.SHADOW1, shading, category);
     }
 
     @Override
-    protected void setShaderSource(Texture2D.Shading shading) {
-        vertexShaderName = PROGRAM_DIRECTORY + VERTEX_NAME + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
-        fragmentShaderName = PROGRAM_DIRECTORY + FRAGMENT_NAME + shading.name() + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
+    protected void setShaderSource() {
+        vertexShaderName = PROGRAM_DIRECTORY + CATEGORY + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
+        fragmentShaderName = PROGRAM_DIRECTORY + Pass.SHADOW1.name().toLowerCase() + sourceName.shading.name()
+                + FRAGMENT_TYPE
+                + SHADER_SOURCE_SUFFIX;
     }
 
     @Override

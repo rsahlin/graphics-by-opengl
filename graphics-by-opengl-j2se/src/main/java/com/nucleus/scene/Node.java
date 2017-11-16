@@ -466,12 +466,12 @@ public class Node extends BaseReference {
      */
     public float[] getProjection(Pass pass) {
         switch (pass) {
-            case SHADOW:
+            case SHADOW1:
                 if (renderPass != null) {
                     RenderPass p = null;
                     for (int i = 0; i < renderPass.size(); i++) {
                         p = renderPass.get(i);
-                        if (p.getPass() == Pass.SHADOW) {
+                        if (p.getPass() == Pass.SHADOW1) {
                             return p.getViewFrustum().getMatrix();
                         }
                     }

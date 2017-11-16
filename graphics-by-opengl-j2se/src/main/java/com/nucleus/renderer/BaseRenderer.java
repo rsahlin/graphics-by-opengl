@@ -490,6 +490,10 @@ class BaseRenderer implements NucleusRenderer {
 
     private void setRenderPass(RenderPass renderPass) throws GLException {
         // First set state so that rendertargets can override enable/disable writing to buffers
+        if (renderPass.getPass() == null || renderPass.getTarget() == null) {
+            throw new IllegalArgumentException(
+                    "RenderPass must contain pass and target:" + renderPass.getPass() + ", " + renderPass.getTarget());
+        }
         RenderState state = renderPass.getRenderState();
         if (state != null) {
             // TODO - check diff between renderpasses and only update accordingly
