@@ -172,7 +172,7 @@ public abstract class ShaderProgram {
 
     }
 
-    protected Function sourceName;
+    protected Function function;
     // TODO - remove these and only use sourceName class
     protected String vertexShaderName;
     protected String fragmentShaderName;
@@ -308,7 +308,7 @@ public abstract class ShaderProgram {
      * @param mapping
      */
     protected ShaderProgram(Pass pass, Texture2D.Shading shading, String category, VariableMapping[] mapping) {
-        sourceName = new Function(pass, shading, category);
+        function = new Function(pass, shading, category);
         setMapping(mapping);
         setShaderSource();
     }
@@ -323,7 +323,7 @@ public abstract class ShaderProgram {
      * Sets the name of the vertex/fragment shaders
      */
     protected void setShaderSource() {
-        String shaderSourceName = sourceName.getShaderSourceName();
+        String shaderSourceName = function.getShaderSourceName();
         vertexShaderName = PROGRAM_DIRECTORY + shaderSourceName + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
         fragmentShaderName = PROGRAM_DIRECTORY + shaderSourceName + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
     }
@@ -710,9 +710,9 @@ public abstract class ShaderProgram {
         } catch (IOException e) {
             switch (type) {
                 case GLES20.GL_VERTEX_SHADER:
-                    throw new RuntimeException("Could not load vertex shader " + sourceName);
+                    throw new RuntimeException("Could not load vertex shader: " + sourceName);
                 default:
-                    throw new RuntimeException("Could not load fragment shader" + sourceName);
+                    throw new RuntimeException("Could not load fragment shader: " + sourceName);
             }
         }
         return shader;
@@ -1094,7 +1094,7 @@ public abstract class ShaderProgram {
      * @return Key value for this shader program.
      */
     public String getKey() {
-        return getClass().getCanonicalName() + (sourceName.shading != null ? sourceName.shading.name() : "");
+        return getClass().getCanonicalName() + (function.shading != null ? function.shading.name() : "");
     }
 
     /**
@@ -1103,7 +1103,7 @@ public abstract class ShaderProgram {
      * @return
      */
     public Shading getShading() {
-        return sourceName.shading;
+        return function.shading;
     }
 
     /**
@@ -1131,7 +1131,7 @@ public abstract class ShaderProgram {
     @Override
     public String toString() {
         return vertexShaderName + " (" + vertexShader + ") / " + fragmentShaderName + " (" + fragmentShader
-                + ") shading: " + sourceName.shading;
+                + ") shading: " + function.shading;
     }
 
     /**

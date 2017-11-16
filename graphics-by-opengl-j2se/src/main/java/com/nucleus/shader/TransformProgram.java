@@ -18,7 +18,7 @@ public class TransformProgram extends ShaderProgram {
     /**
      * Name of this shader - TODO where should this be defined?
      */
-    protected static final String NAME = "transform";
+    protected static final String CATEGORY = "transform";
     
     protected TransformProgram(Pass pass, Texture2D.Shading shading, String category) {
         super(pass, shading, category, ShaderVariables.values());
@@ -26,8 +26,8 @@ public class TransformProgram extends ShaderProgram {
     
     @Override
     protected void setShaderSource() {
-        vertexShaderName = PROGRAM_DIRECTORY + NAME + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
-        fragmentShaderName = PROGRAM_DIRECTORY + NAME + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
+        vertexShaderName = PROGRAM_DIRECTORY + CATEGORY + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
+        fragmentShaderName = PROGRAM_DIRECTORY + CATEGORY + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
     }
     
     @Override
@@ -46,7 +46,7 @@ public class TransformProgram extends ShaderProgram {
             case MAIN:
                 return this;
             case SHADOW1:
-                ShadowPass1Program program = new ShadowPass1Program(shading, null);
+                ShadowPass1Program program = new ShadowPass1Program(shading, CATEGORY);
                 return AssetManager.getInstance().getProgram(renderer, program);
                 default:
             throw new IllegalArgumentException("Invalid pass " + pass);

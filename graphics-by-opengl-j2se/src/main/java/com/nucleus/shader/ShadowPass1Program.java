@@ -13,12 +13,6 @@ import com.nucleus.vecmath.Matrix;
  *
  */
 public class ShadowPass1Program extends TransformProgram {
-
-    protected static final String CATEGORY = "transform";
-
-    public ShadowPass1Program(Texture2D.Shading shading) {
-        super(Pass.SHADOW1, shading, CATEGORY);
-    }
     
     /**
      * TODO Look into the shader programs using this constructor - maybe they can be unified?
@@ -32,8 +26,9 @@ public class ShadowPass1Program extends TransformProgram {
 
     @Override
     protected void setShaderSource() {
-        vertexShaderName = PROGRAM_DIRECTORY + CATEGORY + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
-        fragmentShaderName = PROGRAM_DIRECTORY + Pass.SHADOW1.name().toLowerCase() + sourceName.shading.name()
+        vertexShaderName = PROGRAM_DIRECTORY + "transform" + VERTEX_TYPE
+                + SHADER_SOURCE_SUFFIX;
+        fragmentShaderName = PROGRAM_DIRECTORY + Pass.SHADOW1.name().toLowerCase() + function.shading.name()
                 + FRAGMENT_TYPE
                 + SHADER_SOURCE_SUFFIX;
     }
