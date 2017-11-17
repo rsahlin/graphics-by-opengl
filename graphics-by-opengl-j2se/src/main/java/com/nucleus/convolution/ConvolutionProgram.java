@@ -78,7 +78,7 @@ public class ConvolutionProgram extends ShaderProgram {
     }
 
     @Override
-    public void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
+    public void updateAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
         AttributeBuffer buffer = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attributeVariables[BufferIndex.VERTICES.index]);
         GLUtils.handleError(gles, "glVertexAttribPointers ");
@@ -86,11 +86,11 @@ public class ConvolutionProgram extends ShaderProgram {
     }
 
     @Override
-    public void bindUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
+    public void updateUniforms(GLES20Wrapper gles, float[] uniforms, float[][] matrices, Mesh mesh)
             throws GLException {
         Matrix.mul4(matrices[0], matrices[1]);
         System.arraycopy(matrices[0], 0, getUniforms(), 0, Matrix.MATRIX_ELEMENTS);
-        setUniforms(gles, sourceUniforms);
+        setUniforms(gles, uniforms, sourceUniforms);
     }
 
     @Override
@@ -103,6 +103,10 @@ public class ConvolutionProgram extends ShaderProgram {
                 default:
             throw new IllegalArgumentException("Invalid pass " + pass);
         }
+    }
+
+    @Override
+    public void setUniformData(float[] uniforms, Mesh mesh) {
     }
 
 }

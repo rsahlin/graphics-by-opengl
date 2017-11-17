@@ -515,7 +515,7 @@ public abstract class ShaderProgram {
      * @param gles
      * @param mesh
      */
-    public void bindAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
+    public void updateAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
         for (int i = 0; i < attributeVariables.length; i++) {
             AttributeBuffer buffer = mesh.getVerticeBuffer(i);
             if (buffer != null) {
@@ -997,21 +997,34 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets the data for the uniforms needed by the program - the default implementation will set the modelview and
-     * projection matrices.
-     * 
-     * TODO use array for modelview, projection and renderpass matrices
+     * Calls {@link #setUniformMatrices(float[][], Mesh)} to update uniform matrices.
+     * Then call {@link #setUniformData(float[], Mesh)} to set program specific uniform data
+     * Then sets uniforms to GL by calling {@link #setUniforms(GLES20Wrapper, VariableMapping[])}
+     * When this method returns the uniform data has been uploaded to GL and is ready.
      * 
      * @param gles
+     * @param uniforms The uniform array store - destination
      * @param matrices modelview, projection and renderpas matrices
-     * @param modelviewMatrix The matrix to use for the modelview transform
-     * @param projectionMatrix The projection matrix
-     * @param renderPassMatrix Optional renderpass matrix, for instance shadow matrix
      * @param mesh
      */
-    public void bindUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
+    public void updateUniforms(GLES20Wrapper gles, float[] uniforms, float[][] matrices, Mesh mesh)
             throws GLException {
-        // Refresh the uniform matrixes
+        setUniformMatrices(uniforms, matrices, mesh);
+        setUniformData(uniforms, mesh);
+        setUniforms(gles, uniforms, sourceUniforms);
+    }
+
+    /**
+     * 
+     * Sets the data for the uniforms needed by the program - the default implementation will set the modelview and
+     * projection matrices. Will NOT set uniforms to GL, only update the uniform array store
+     * 
+     * @param uniforms The uniform array store - destination
+     * @param matrices Source matrices
+     * @param mesh
+     */
+    public void setUniformMatrices(float[] uniforms, float[][] matrices, Mesh mesh) {
+        // Refresh the uniform matrixes - default is modelview and projection
         System.arraycopy(matrices[0], 0, uniforms,
                 shaderVariables[ShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
@@ -1021,13 +1034,24 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Internal method, sets the uniform data from the uniform data into the mapping provided by the attribute mapping.
+     * Sets the shader program specific uniform data, subclasses shall set any uniform data
+     * needed - but not matrices which is set in {@link #setUniformMatrices(float[][], Mesh)}
+     * 
+     * @param uniforms The uniform array store - destination
+     * @param mesh
+     */
+    public abstract void setUniformData(float[] uniforms, Mesh mesh);
+
+    /**
+     * Internal method - set uniforms to GL.
+     * Sets the uniform data from the uniform data into the mapping provided by the attribute mapping.
      * 
      * @param gles
+     * @param uniforms Source uniform array store
      * @param uniformMapping Variable mapping for the uniform data
      * @throws GLException
      */
-    protected void setUniforms(GLES20Wrapper gles, VariableMapping[] uniformMapping)
+    protected void setUniforms(GLES20Wrapper gles, float[] uniforms, VariableMapping[] uniformMapping)
             throws GLException {
         for (VariableMapping am : uniformMapping) {
             ShaderVariable v = getShaderVariable(am);
@@ -1043,19 +1067,19 @@ public abstract class ShaderProgram {
      * Use this for programs that use tiled texture behavior.
      * 
      * @param texture
-     * @param destination Will store 1 / tilewidth, 1 / tilewidth, tilewidth, beginning at offset
+     * @param uniforms Will store 1 / tilewidth, 1 / tilewidth, tilewidth, beginning at offset
      * @param variable The shader variable
      * @param offset Offset into destination where fraction is set
      */
-    protected void setTextureUniforms(TiledTexture2D texture, float[] destination, ShaderVariable variable,
+    protected void setTextureUniforms(TiledTexture2D texture, float[] uniforms, ShaderVariable variable,
             int offset) {
         if (texture.getWidth() == 0 || texture.getHeight() == 0) {
             SimpleLogger.d(getClass(), "ERROR! Texture size is 0: " + texture.getWidth() + ", " + texture.getHeight());
         }
         offset += variable.getOffset();
-        destination[offset++] = (((float) texture.getWidth()) / texture.getTileWidth()) / (texture.getWidth());
-        destination[offset++] = (((float) texture.getHeight()) / texture.getTileHeight()) / (texture.getHeight());
-        destination[offset++] = texture.getTileWidth();
+        uniforms[offset++] = (((float) texture.getWidth()) / texture.getTileWidth()) / (texture.getWidth());
+        uniforms[offset++] = (((float) texture.getHeight()) / texture.getTileHeight()) / (texture.getHeight());
+        uniforms[offset++] = texture.getTileWidth();
     }
 
     /**
