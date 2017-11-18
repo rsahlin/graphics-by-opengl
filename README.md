@@ -22,21 +22,23 @@ graphics-by-opengl-android
 
 contains JOGL and Android implementations.
 
-To use the project in Eclipse, import as Existing Maven project, tested with Eclipse Android Oxygen
+To use the project in Eclipse oxygen, import as Existing Maven project, tested with Eclipse Android Oxygen
 
-ADT needs to be installed.
+For graphics-by-opengl-android:
 
-pom file may display error similar to:
+Download Android standalone SDK for windows:
+https://developer.android.com/studio/index.html#downloads - scroll down to 'Get just the command line tools'
 
-Plugin execution not covered by lifecycle configuration: com.simpligility.maven.plugins:android-maven-plugin:4.4.1:emma (execution: default-emma, phase: process-classes)
+Install Andmore maven plugin from Eclipse Marketplace (https://projects.eclipse.org/projects/tools.andmore)
 
-- To resolve this, choose quick fix 'Permanently mark goal emma in pom.xml as ignored in Eclipse build'
-
-You may experience problem with non-existing project.properties file 
-
-- I solved by adding an empty project.properties file in the Android project root, chosing 'Properties-Android' and selecting a valid SDK.
+When prompted for Android for Maven Eclipse (m2e) click to install but exclude:
+Android DDMS
+Android Development Tools
+Android TraceView
+(They should be included with Andmore)
 
 Maven - update project,or clean build to get rid of any trailing errors.
+
 
 Gradle - to publish as maven local, perform task for each module:
 graphics-by-opengl-j2se>gradle publishToMavenLocal
