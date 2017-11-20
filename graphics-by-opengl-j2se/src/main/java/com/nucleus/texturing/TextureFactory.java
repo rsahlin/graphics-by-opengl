@@ -2,6 +2,7 @@ package com.nucleus.texturing;
 
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -134,7 +135,7 @@ public class TextureFactory {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(Texture2D.class, new TextureDeserializer());
         Gson gson = builder.create();
-        InputStreamReader reader = new InputStreamReader(ref.getAsStream());
+        InputStreamReader reader = new InputStreamReader(ref.getAsStream(), StandardCharsets.UTF_8);
         Texture2D texture = gson.fromJson(reader, Texture2D.class);
         if (texture.getId() == null) {
             throw new IllegalArgumentException("Texture object id is null for ref: " + ref.getSource());

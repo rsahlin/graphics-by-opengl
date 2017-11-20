@@ -318,7 +318,6 @@ public abstract class ShaderProgram {
         setAttributeMapping(mapping);
     }
 
-
     /**
      * Sets the name of the vertex/fragment shaders
      */
@@ -1190,8 +1189,8 @@ public abstract class ShaderProgram {
     public void createCommonVertexSources(GLES20Wrapper gles, String[] vertexSourceNames) throws IOException {
         commonVertexSources = new ArrayList<>();
         for (String name : vertexSourceNames) {
-            commonVertexSources.add(new String(gles.getVersionedShaderSource(getClass().getClassLoader()
-                    .getResourceAsStream(name))));
+            commonVertexSources.add(gles.getVersionedShaderSource(getClass().getClassLoader()
+                    .getResourceAsStream(name)));
         }
     }
 

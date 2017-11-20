@@ -20,7 +20,7 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
 
     @Override
     public String getVersionedShaderSource(InputStream shaderStream) throws IOException {
-        return new String(StreamUtils.readFromStream(shaderStream));
+        return StreamUtils.readStringFromStream(shaderStream);
     }
 
 }

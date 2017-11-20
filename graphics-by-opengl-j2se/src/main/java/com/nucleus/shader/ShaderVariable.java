@@ -1,5 +1,6 @@
 package com.nucleus.shader;
 
+import com.nucleus.common.StringUtils;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /**
@@ -86,7 +87,7 @@ public class ShaderVariable {
     ShaderVariable(VariableType type, byte[] name, int[] data, int nameLengthOffset, int sizeOffset,
             int typeOffset) {
         this.type = type;
-        this.name = new String(name, 0, data[nameLengthOffset]);
+        this.name = StringUtils.createString(name, 0, data[nameLengthOffset]);
         size = data[sizeOffset];
         dataType = data[typeOffset];
     }

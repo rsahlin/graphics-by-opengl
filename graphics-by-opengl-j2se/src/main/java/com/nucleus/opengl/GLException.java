@@ -99,7 +99,7 @@ public class GLException extends Throwable {
      */
     @Override
     public String toString() {
-        StringBuffer message = new StringBuffer(getMessage());
+        StringBuilder message = new StringBuilder(getMessage());
         for (int error : errorCodes) {
             Error e = Error.getError(error);
             if (e != null) {

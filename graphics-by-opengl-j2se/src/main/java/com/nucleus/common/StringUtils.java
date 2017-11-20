@@ -1,5 +1,6 @@
 package com.nucleus.common;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -49,7 +50,7 @@ public class StringUtils {
      * @return The resulting String
      */
     public static String getString(String[] strArray, int offset, int count) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < count; i++) {
             if (i > 0) {
                 result.append(DEFAULT_DELIMITER);
@@ -66,7 +67,7 @@ public class StringUtils {
      * @return The int array as a String with values delimitered by ','
      */
     public static String getString(int[] intArray) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < intArray.length; i++) {
             if (i > 0) {
                 result.append(DEFAULT_DELIMITER);
@@ -83,7 +84,7 @@ public class StringUtils {
      * @return The float array as a String with values delimitered by ','
      */
     public static String getString(float[] floatArray) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < floatArray.length; i++) {
             if (i > 0) {
                 result.append(DEFAULT_DELIMITER);
@@ -195,6 +196,19 @@ public class StringUtils {
         }
         result[array.length] = str;
         return result;
+    }
+
+    /**
+     * Creates a String using UTF-8 encoding from the byte array.
+     * Use this method to make sure UTF-8 is used regardless of platform encoding.
+     * 
+     * @param data
+     * @param start
+     * @param length
+     * @return
+     */
+    public static String createString(byte[] data, int start, int length) {
+        return new String(data, start, length, StandardCharsets.UTF_8);
     }
 
     /**
