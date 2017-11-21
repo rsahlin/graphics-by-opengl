@@ -1,17 +1,43 @@
 #graphics-by-opengl
 A Java based API for graphics using OpenGLES.
 
-As this is a multi platform project I use Eclipse Android Neon and import as Maven project.
+As this is a multi platform project I use Eclipse and import as Maven project.
 
 Core functions for graphics rendering in a platform agnostic way using OpenGLES.
 This API is intended as a low level API, using it requires OpenGL knowledge.
 It is intentionally close to OpenGLES, for instance attribute/vertex data classes are using it's memory model. 
 Although it is possible to extend the functionality to cover for instance Direct3D it is not a design consideration.
 Currently includes simple methods for user input/mmi, these functions may be moved in the future. 
-Uses the simple vecmath library for some matrix and vector functions.
+Uses the simple 'vecmath' library for some matrix and vector functions.
 
 Using #graphics-by-opengl makes it possible to develop on J2SE using JOGL (or any other OpenGL ES Java API) without the need to continously using specific target devices.
 This can greatly reduce development times since starting and debugging a J2SE application is much quicker than for instance deploying on Android.
+
+Code style and formatting:
+Follow the Google Java guidelines:
+https://google.github.io/styleguide/javaguide.html
+
+Eclipse:
+Use customformatter.xml
+Open preferences-general-workspace
+
+Make sure Text file encoding is UTF-8
+New text file delimiter - Unix
+
+
+ECLIPSE 
+----------------------------------------------------------------------
+Prerequisites:
+- Maven
+- Eclipse
+- Andmore maven plugin from Eclipse Marketplace (https://projects.eclipse.org/projects/tools.andmore)
+Make sure that you are using Android Andmore and m2e plugins (not the old DDMS/ADT from 'The Android Open Source Project')
+Check by opening 'Help' - 'Install new software' - 'What is already installed?' 
+Uninstall software from 'The Android Opensource Project' and fetch Andmore from Eclipse marketplace.
+- JDK 1.7 or 1.8 (Not 1.9)
+Check with 'javac -version' 
+- Android standalone SDK for windows:
+https://developer.android.com/studio/index.html#downloads - scroll down to 'Get just the command line tools'
 
 graphics-by-opengl-j2se contains all APIs and implementation that is not platform specific
 - the majority of functionality and code should be here.
@@ -22,23 +48,15 @@ graphics-by-opengl-android
 
 contains JOGL and Android implementations.
 
-To use the project in Eclipse oxygen, import as Existing Maven project, tested with Eclipse Android Oxygen
+To use the project in Eclipse, import as Existing Maven project
 
 For graphics-by-opengl-android:
-
-Download Android standalone SDK for windows:
-https://developer.android.com/studio/index.html#downloads - scroll down to 'Get just the command line tools'
-
-Install Andmore maven plugin from Eclipse Marketplace (https://projects.eclipse.org/projects/tools.andmore)
-
-When prompted for Android for Maven Eclipse (m2e) click to install but exclude:
-Android DDMS
-Android Development Tools
-Android TraceView
-(They should be included with Andmore)
-
 Maven - update project,or clean build to get rid of any trailing errors.
 
+
+GRADLE
+
+----------------------------------------------------------------------
 
 Gradle - to publish as maven local, perform task for each module:
 graphics-by-opengl-j2se>gradle publishToMavenLocal
