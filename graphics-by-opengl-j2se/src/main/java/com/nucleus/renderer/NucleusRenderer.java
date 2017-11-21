@@ -192,14 +192,6 @@ public interface NucleusRenderer {
     public void render(Node node) throws GLException;
 
     /**
-     * Call {@link FrameListener#processFrame(float)} for registered FrameListeners to signal that one updated frame
-     * shall be produced
-     * This method may be called from a separate thread from the one doing the rendering.
-     * Implementations must take this into consideration.
-     */
-    public void processFrame();
-
-    /**
      * Returns true if this renderer has been initialized by calling init() when
      * the context is created.
      * 

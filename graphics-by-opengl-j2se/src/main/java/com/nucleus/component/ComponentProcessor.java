@@ -4,17 +4,16 @@ import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
 
 /**
- * Processes the logic contained in the scenegraph
+ * Processes the component logic contained in the scenegraph
  * 
  * @author Richard Sahlin
  *
  */
-public interface LogicProcessor {
+public interface ComponentProcessor {
 
     /**
-     * Starts processing logic for the rootnode, this shall call {@link #processNode(Node, float)} on all of the nodes
-     * that shall
-     * be processed.
+     * Starts processing components for the rootnode, this shall call {@link #processNode(Node, float)} on all of the nodes
+     * that shall be processed.
      * Perform init if needed in this method
      * 
      * @param root

@@ -57,6 +57,10 @@ public class SurfaceConfiguration {
     protected String version;
     protected String vendor;
     protected List<String> extensions = new ArrayList<String>();
+    /**
+     * Optional list with surface attribs
+     */
+    protected List<int[]> surfaceAttribs;
 
     /**
      * Constructs a SurfaceConfiguration that can used when
@@ -197,8 +201,13 @@ public class SurfaceConfiguration {
 
     @Override
     public String toString() {
+        String ext = "";
+        for (String e : extensions) {
+            ext += e + System.lineSeparator();
+        }
         return "RGBA:" + redBits + ", " + greenBits + ", " + blueBits + ", " + alphaBits + ", Depth: " + depthBits
-                + ", Samples: " + samples + ", Version: " + version + ", Vendor: " + vendor;
+                + ", Samples: " + samples + ", Version: " + version + ", Vendor: " + vendor + System.lineSeparator() + 
+                "EGL extensions:" + System.lineSeparator() + ext;
     }
 
     /**
@@ -223,4 +232,24 @@ public class SurfaceConfiguration {
         return version;
     }
 
+    /**
+     * Returns a list with supported EGL extensions
+     * @return
+     */
+    public List<String> getExtensions() {
+        return extensions;
+    }
+    
+    /**
+     * Sets a list of surface attribs to set to EGL
+     * Each int[] shall consist of 2 values: attrib, value 
+     * See https://www.khronos.org/registry/EGL/sdk/docs/man/html/eglSurfaceAttrib.xhtml
+     * 
+     * @param attribs
+     */
+    protected void setSurfaceAttribs(List<int[]> attribs) {
+        this.surfaceAttribs = attribs;
+    }
+    
+    
 }

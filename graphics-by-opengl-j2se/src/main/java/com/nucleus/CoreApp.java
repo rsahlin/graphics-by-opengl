@@ -1,8 +1,8 @@
 package com.nucleus;
 
 import com.nucleus.assets.AssetManager;
-import com.nucleus.component.J2SELogicProcessor;
-import com.nucleus.component.LogicProcessorRunnable;
+import com.nucleus.component.J2SEComponentProcessor;
+import com.nucleus.component.ComponentProcessorRunnable;
 import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
@@ -118,7 +118,7 @@ public class CoreApp implements RenderContextListener {
      */
     protected PointerInputProcessor inputProcessor = new PointerInputProcessor();
 
-    LogicProcessorRunnable logicRunnable;
+    ComponentProcessorRunnable logicRunnable;
 
     /**
      * Set to true when {@link #contextCreated(int, int)} is called
@@ -151,7 +151,7 @@ public class CoreApp implements RenderContextListener {
         this.renderer = renderer;
         this.clientApp = clientApp;
         
-        logicRunnable = new LogicProcessorRunnable(renderer, new J2SELogicProcessor(), false);
+        logicRunnable = new ComponentProcessorRunnable(renderer, new J2SEComponentProcessor(), false);
 
     }
 
@@ -252,7 +252,7 @@ public class CoreApp implements RenderContextListener {
     }
 
     /**
-     * Sets the scene rootnode, this will update the root node in the logic runnable {@linkplain LogicProcessorRunnable}
+     * Sets the scene rootnode, this will update the root node in the logic runnable {@linkplain ComponentProcessorRunnable}
      * A {@linkplain NodeController} will be created for the node and used as {@linkplain EventHandler}
      * 
      * @param node

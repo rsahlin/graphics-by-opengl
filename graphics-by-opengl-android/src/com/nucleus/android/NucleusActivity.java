@@ -89,10 +89,11 @@ public abstract class NucleusActivity extends Activity
 
     /**
      * Returns the version of the renderer to use
+     * 
      * @return
      */
     public abstract Renderers getRenderVersion();
-    
+
     /**
      * Returns the number of samples to use for the EGL config.
      * 
@@ -110,7 +111,7 @@ public abstract class NucleusActivity extends Activity
      * @param windowFeature
      */
     private void setup(Renderers version, int rendermode, int layoutParams, int windowFeature) {
-        SurfaceConfiguration surfaceConfig = new SurfaceConfiguration();
+        SurfaceConfiguration surfaceConfig = createSurfaceConfig();
         createWrapper(version);
         surfaceConfig.setSamples(getSamples());
         mGLView = new AndroidSurfaceView(surfaceConfig, version, getApplicationContext(), this);
@@ -124,6 +125,16 @@ public abstract class NucleusActivity extends Activity
         com.nucleus.renderer.Window.getInstance().setScreenSize(size.x, size.y);
     }
 
+    /**
+     * Creates the wanted EGL surface configuration, creates a default {@link SurfaceConfiguration}
+     * 
+     * @return
+     */
+    protected SurfaceConfiguration createSurfaceConfig() {
+        return new SurfaceConfiguration();
+    }
+
+    
     private void createWrapper(Renderers version) {
         switch (version) {
             case GLES20:
@@ -132,11 +143,11 @@ public abstract class NucleusActivity extends Activity
             case GLES30:
                 gles = new AndriodGLES30Wrapper();
                 break;
-                default:
-                    throw new IllegalArgumentException("Not implemented for version:" + version);
+            default:
+                throw new IllegalArgumentException("Not implemented for version:" + version);
         }
     }
-    
+
     public static void handleThrowable(final Throwable t) {
         throwable = t;
         activity.runOnUiThread(new Runnable() {

@@ -692,13 +692,6 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void processFrame() {
-        for (FrameListener listener : frameListeners) {
-            listener.processFrame(deltaTime);
-        }
-    }
-
-    @Override
     public void genBuffers(int[] names) {
         gles.glGenBuffers(names);
     }

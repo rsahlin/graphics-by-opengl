@@ -6,32 +6,32 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RootNode;
 
 /**
- * User for thread that drives the logic processing if done on cpu.
+ * User for thread that drives the component processing if done on cpu.
  * Can be started on a separate thread or run on main thread.
  *
  */
-public class LogicProcessorRunnable implements Runnable {
+public class ComponentProcessorRunnable implements Runnable {
 
     private static final String NULL_PARAMETER = "Parameter is null:";
     private RootNode rootNode;
     private NucleusRenderer renderer;
     Thread runnableThread;
-    private LogicProcessor logicProcessor;
+    private ComponentProcessor componentProcessor;
     private boolean running = false;
 
     /**
-     * Creates a new runnable that can be used to call processing of logic in a separate thread.
+     * Creates a new runnable that can be used to call component (logic) processing in a separate thread.
      * 
      */
-    public LogicProcessorRunnable(NucleusRenderer renderer, LogicProcessor logicProcessor, boolean enableMultiThread) {
-        if (renderer == null || logicProcessor == null) {
-            throw new IllegalArgumentException(NULL_PARAMETER + renderer + ", " + logicProcessor);
+    public ComponentProcessorRunnable(NucleusRenderer renderer, ComponentProcessor componentProcessor, boolean enableMultiThread) {
+        if (renderer == null || componentProcessor == null) {
+            throw new IllegalArgumentException(NULL_PARAMETER + renderer + ", " + componentProcessor);
         }
         this.renderer = renderer;
-        this.logicProcessor = logicProcessor;
+        this.componentProcessor = componentProcessor;
         //TODO Create thread manager that handles available thread, lease thread instead of creating here
         if (Runtime.getRuntime().availableProcessors() > 1 && enableMultiThread) {
-            System.out.println("Started extra process for logic processing, number of processors: "
+            System.out.println("Started extra process for component processing, number of processors: "
                     + Runtime.getRuntime().availableProcessors());
             runnableThread = new Thread(this);
         } else {
@@ -75,8 +75,8 @@ public class LogicProcessorRunnable implements Runnable {
     private void internalProcessNode(RootNode rootNode, float delta) {
         if (rootNode != null) {
             long start = System.currentTimeMillis();
-            logicProcessor.processRoot(rootNode, delta);
-            FrameSampler.getInstance().addTag(FrameSampler.LOGICPROCESSOR, start, System.currentTimeMillis());
+            componentProcessor.processRoot(rootNode, delta);
+            FrameSampler.getInstance().addTag(FrameSampler.COMPONENTPROCESSOR, start, System.currentTimeMillis());
         }
     }
     

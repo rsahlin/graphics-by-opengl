@@ -163,18 +163,6 @@ public class EGLUtils {
         return "UNKNOWN (" + error + ")";
     }
 
-    public static int[] createMinConfig(EGL10 egl, EGLDisplay display, SurfaceConfiguration wantedConfig) {
-        ArrayList<int[]> eglArray = new ArrayList<int[]>();
-        EGLUtils.setConfig(eglArray, EGL10.EGL_RED_SIZE, wantedConfig.getRedBits());
-        EGLUtils.setConfig(eglArray, EGL10.EGL_GREEN_SIZE, wantedConfig.getGreenBits());
-        EGLUtils.setConfig(eglArray, EGL10.EGL_BLUE_SIZE, wantedConfig.getBlueBits());
-        EGLUtils.setConfig(eglArray, EGL10.EGL_ALPHA_SIZE, wantedConfig.getAlphaBits());
-        EGLUtils.setConfig(eglArray, EGL10.EGL_DEPTH_SIZE, wantedConfig.getDepthBits());
-        EGLUtils.setConfig(eglArray, EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT);
-        EGLUtils.setConfig(eglArray, EGL10.EGL_NONE, EGL10.EGL_NONE);
-        return EGLUtils.getConfigArray(eglArray);
-    }
-
     public static int[] createConfig(EGL10 egl, EGLDisplay display, SurfaceConfiguration wantedConfig) {
         ArrayList<int[]> eglArray = new ArrayList<int[]>();
         EGLUtils.setConfig(eglArray, EGL10.EGL_RED_SIZE, wantedConfig.getRedBits());
@@ -204,7 +192,7 @@ public class EGLUtils {
      * @return
      */
     public static EGLConfig selectConfig(EGL10 egl, EGLDisplay display, SurfaceConfiguration wantedConfig) {
-        int[] configSpec = createMinConfig(egl, display, wantedConfig);
+        int[] configSpec = createConfig(egl, display, wantedConfig);
         EGLConfig[] configs = new EGLConfig[20];
         int[] num_config = new int[1];
         egl.eglChooseConfig(display, configSpec, configs, 20, num_config);

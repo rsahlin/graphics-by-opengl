@@ -50,7 +50,7 @@ public class AndroidSurfaceView extends GLSurfaceView
     /**
      * The wanted surface configuration
      */
-    private SurfaceConfiguration wantedConfig = new SurfaceConfiguration();
+    private SurfaceConfiguration wantedConfig;
 
     CoreApp.CoreAppStarter coreAppStarter;
 
@@ -133,7 +133,7 @@ public class AndroidSurfaceView extends GLSurfaceView
         EGLUtils.readSurfaceConfig(egl, display, eglConfig, surfaceConfig);
         EGLUtils.setEGLInfo(egl, display, surfaceConfig);
         SimpleLogger.d(getClass(), "chooseConfig() has: " + surfaceConfig.toString());
-
+        
         return eglConfig;
     }
 
@@ -166,12 +166,6 @@ public class AndroidSurfaceView extends GLSurfaceView
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         SimpleLogger.d(getClass(), "surfaceCreated() " + getWidth() + ", " + getHeight());
-        if (surfaceConfig == null) {
-            surfaceConfig = new SurfaceConfiguration();
-            EGLUtils.readSurfaceConfig(egl, eglDisplay, eglConfig, surfaceConfig);
-            SimpleLogger.d(getClass(),
-                    "onSurfaceCreated(EGLConfig) has: " + surfaceConfig.toString());
-        }
         coreAppStarter.createCoreApp(getWidth(), getHeight());
         egl.eglSwapBuffers(eglDisplay, eglSurface);
         checkEGLError("eglSwapBuffers()");

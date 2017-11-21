@@ -9,11 +9,12 @@ import com.nucleus.scene.RootNode;
 
 /**
  * Logic processor implementation
+ * TODO - A better name would be ComponentProcessor or ComponentExecutor
  * 
  * @author Richard Sahlin
  *
  */
-public class J2SELogicProcessor implements LogicProcessor {
+public class J2SEComponentProcessor implements ComponentProcessor {
 
     Bounds bounds;
     
@@ -38,11 +39,11 @@ public class J2SELogicProcessor implements LogicProcessor {
         if (!cullNode(node)) {
             //TODO check node type instead
             if (node instanceof ComponentNode) {
-                ComponentNode actorNode = (ComponentNode) node;
-                if (actorNode.getControllerState() == ComponentState.CREATED) {
-                    actorNode.init();
+                ComponentNode componentNode = (ComponentNode) node;
+                if (componentNode.getControllerState() == ComponentState.CREATED) {
+                    componentNode.init();
                 }
-                actorNode.processComponents(deltaTime);
+                componentNode.processComponents(deltaTime);
             }
         }
         // Process children

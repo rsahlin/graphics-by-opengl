@@ -1,5 +1,6 @@
 package com.nucleus.profiling;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,7 +58,6 @@ public class FrameSampler {
         public String toString() {
             return "Average: " + getAverage() + " Max: " + max + " Min: " + min;
         }
-
     }
 
     public final static String DISPLAY_SPLASH = "DISPLAY_SPLASH";
@@ -67,7 +67,7 @@ public class FrameSampler {
     public final static String CREATE_NODE = "CREATE_NODE";
     public final static String LOAD_MAP = "LOAD_MAP";
     public final static String CREATE_SHADER = "CREATE_SHADER";
-    public final static String LOGICPROCESSOR = "LOGICPROCESSOR";
+    public final static String COMPONENTPROCESSOR = "COMPONENTPROCESSOR";
     public final static String PROCESSCOMPONENT = "PROCESSCOMPONENT";
     public final static String RENDERNODES = "RENDERNODES";
     /**
@@ -111,6 +111,7 @@ public class FrameSampler {
     private long sampleStart;
 
     private Map<String, Sample> tagTimings = new HashMap<>();
+    private Map<String, ArrayList<Long>> tagStartTimes = new HashMap<>();
 
     /**
      * Returns the sampler instance
@@ -293,7 +294,7 @@ public class FrameSampler {
      * 
      * @param tag
      * @param startTime
-     * @param endTime
+     * @param endTime The end time of interval
      */
     public void addTag(String tag, long startTime, long endTime) {
         Sample sample = tagTimings.get(tag);
@@ -307,6 +308,41 @@ public class FrameSampler {
                 logAverage(tag, sample);
                 sample.reset();
             }
+        }
+    }
+
+    /**
+     * Adds start time to a tag, must be finilized with a call to {@link #setEndTimes(String, long)}
+     * 
+     * @param tag
+     * @param startTime
+     */
+    public void addTag(String tag, long startTime) {
+        synchronized (tagStartTimes) {
+            ArrayList<Long> start = tagStartTimes.get(tag);
+            if (start == null) {
+                start = new ArrayList<>();
+                tagStartTimes.put(tag, start);
+            }
+            start.add(startTime);
+        }
+    }
+
+    /**
+     * Sets the end times that have {@value #UNDEFINED}
+     * 
+     * @param tag
+     * @param endTime
+     */
+    public void setEndTimes(String tag, long endTime) {
+        synchronized (tagStartTimes) {
+            ArrayList<Long> start = tagStartTimes.get(tag);
+            if (start != null) {
+                for (long s : start) {
+                    addTag(tag,  s, endTime);
+                }
+            }
+            tagStartTimes.clear();
         }
     }
 
