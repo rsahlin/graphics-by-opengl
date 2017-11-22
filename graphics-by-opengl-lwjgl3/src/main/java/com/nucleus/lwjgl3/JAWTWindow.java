@@ -15,6 +15,7 @@ import javax.swing.WindowConstants;
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
 import com.nucleus.mmi.PointerData.PointerAction;
+import com.nucleus.mmi.PointerData.Type;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 
 public class JAWTWindow extends J2SEWindow implements RenderContextListener, MouseMotionListener, MouseListener {
@@ -70,6 +71,28 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener, Mou
         canvas.setCoreApp(coreApp);
     }
 
+    
+    protected void handleMouseEvent(MouseEvent e, PointerAction action) {
+        int xpos = e.getX();
+        int ypos = e.getY();
+        Type type = Type.STYLUS;
+        switch (e.getButton()) {
+            case MouseEvent.BUTTON1:
+                type = Type.MOUSE;
+                break;
+            case MouseEvent.BUTTON2:
+                type = Type.ERASER;
+                break;
+            case MouseEvent.BUTTON3:
+                type = Type.FINGER;
+                break;
+
+        }
+        handleMouseEvent(action, type, xpos, ypos, 0, e.getWhen());
+    }
+    
+    
+    
     @Override
     public void mouseClicked(MouseEvent e) {
     }
@@ -84,17 +107,17 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener, Mou
 
     @Override
     public void mousePressed(MouseEvent e) {
-        handleMouseEvent(e.getX(), e.getY(), 0, e.getWhen(), PointerAction.DOWN);
+        handleMouseEvent(e, PointerAction.DOWN);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        handleMouseEvent(e.getX(), e.getY(), 0, e.getWhen(), PointerAction.UP);
+        handleMouseEvent(e, PointerAction.UP);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        handleMouseEvent(e.getX(), e.getY(), 0, e.getWhen(), PointerAction.MOVE);
+        handleMouseEvent(e, PointerAction.MOVE);
     }
 
     @Override

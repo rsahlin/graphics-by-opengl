@@ -51,11 +51,6 @@ public class ElementBuffer extends BufferObject {
     int count;
 
     /**
-     * Number of elements to draw
-     */
-    int drawCount;
-
-    /**
      * Offset to first element
      */
     int offset;
@@ -73,15 +68,14 @@ public class ElementBuffer extends BufferObject {
             throw new IllegalArgumentException(NULL_TYPE_STR);
         }
         this.count = count;
-        drawCount = count;
         this.type = type;
         int size = 1;
         switch (type) {
-        case BYTE:
-            break;
-        case SHORT:
-            size = 2;
-            break;
+            case BYTE:
+                break;
+            case SHORT:
+                size = 2;
+                break;
         }
         sizeInBytes = count * size;
         indices = ByteBuffer.allocateDirect(sizeInBytes).order(ByteOrder.nativeOrder());

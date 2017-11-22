@@ -49,7 +49,7 @@ public class BufferObjectsFactory {
             if (attribs != null) {
                 renderer.bindBuffer(GLESWrapper.GLES20.GL_ARRAY_BUFFER, attribs.getBufferName());
                 renderer.bufferData(GLESWrapper.GLES20.GL_ARRAY_BUFFER, attribs.getSizeInBytes(),
-                        attribs.getBuffer().position(0), GLESWrapper.GLES20.GL_DYNAMIC_DRAW);
+                        attribs.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
                 attribs.setDirty(false);
             }
         }

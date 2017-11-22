@@ -255,7 +255,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             glBindBuffer(target, buffer.getBufferName());
             if (buffer.isDirty()) {
                 glBufferData(target, buffer.getSizeInBytes(), buffer.getBuffer().position(0),
-                        GLES20.GL_DYNAMIC_DRAW);
+                        GLES20.GL_STATIC_DRAW);
                 buffer.setDirty(false);
             }
             for (ShaderVariable a : attribs) {

@@ -9,7 +9,9 @@ import javax.microedition.khronos.opengles.GL10;
 
 import com.nucleus.CoreApp;
 import com.nucleus.SimpleLogger;
+import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
+import com.nucleus.mmi.PointerData.Type;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.renderer.Window;
@@ -85,31 +87,28 @@ public class AndroidSurfaceView extends GLSurfaceView
         if (coreApp == null) {
             return true;
         }
-        int count = event.getPointerCount();
         int index = event.getActionIndex();
+        Type type = getType(event.getToolType(index));
+        int count = event.getPointerCount();
         int finger = event.getPointerId(index);
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_DOWN:
                 // This is the first pointer, or multitouch pointer going down.
-                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN,
-                        event.getEventTime() + androidUptimeDelta, finger,
+                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN, type, event.getEventTime() + androidUptimeDelta, finger,
                         new float[] { event.getX(index), event.getY(index) });
                 break;
             case MotionEvent.ACTION_POINTER_UP:
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 // This is multitouch or the last pointer going up
-                coreApp.getInputProcessor().pointerEvent(PointerAction.UP, event.getEventTime() + androidUptimeDelta,
-                        finger,
-                        new float[] {
-                                event.getX(index), event.getY(index) });
+                coreApp.getInputProcessor().pointerEvent(PointerAction.UP, type, event.getEventTime() + androidUptimeDelta,
+                        finger, new float[] { event.getX(index), event.getY(index) });
                 break;
             case MotionEvent.ACTION_MOVE:
                 for (int i = 0; i < count; i++) {
                     finger = event.getPointerId(i);
-                    coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE,
-                            event.getEventTime() + androidUptimeDelta, finger,
+                    coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, type, event.getEventTime() + androidUptimeDelta, finger,
                             new float[] { event.getX(i), event.getY(i) });
                 }
                 break;
@@ -119,6 +118,21 @@ public class AndroidSurfaceView extends GLSurfaceView
         return true;
     }
 
+    private Type getType(int type) {
+        switch (type) {
+            case MotionEvent.TOOL_TYPE_ERASER:
+                return PointerData.Type.ERASER;
+            case MotionEvent.TOOL_TYPE_FINGER:
+                return PointerData.Type.FINGER;
+            case MotionEvent.TOOL_TYPE_MOUSE:
+                return PointerData.Type.MOUSE;
+            case MotionEvent.TOOL_TYPE_STYLUS:
+                return PointerData.Type.STYLUS;
+                default:
+                    return PointerData.Type.MOUSE;
+        }
+    }
+    
     @Override
     public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
         SimpleLogger.d(getClass(), "chooseConfig()");

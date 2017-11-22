@@ -546,6 +546,9 @@ class BaseRenderer implements NucleusRenderer {
         if (updater != null) {
             updater.updateAttributeData();
         }
+        if (mesh.getDrawCount() == 0) {
+            return;
+        }
         Material material = mesh.getMaterial();
         ShaderProgram program = getProgram(material, currentPass);
         gles.glUseProgram(program.getProgram());

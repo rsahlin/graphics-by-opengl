@@ -1,6 +1,7 @@
 package com.nucleus.mmi.core;
 
 import com.nucleus.mmi.PointerData.PointerAction;
+import com.nucleus.mmi.PointerData.Type;
 
 /**
  * A low level pointer (touch, mouse or similar) based input event.
@@ -27,12 +28,13 @@ public interface PointerListener {
     /**
      * 
      * @param action DOWN, UP or MOVE
+     * @param type What type of event, stylus, mouse, finger or mouse
      * @param timestamp The event timestamp
      * @param pointer Pointer index, 0 and updwards.
      * @param position Pointer x,y position, normally in screen coordinates - implementations MUST create new array for
      * each call.
      */
-    public void pointerEvent(PointerAction action, long timestamp, int pointer,
+    public void pointerEvent(PointerAction action, Type type, long timestamp, int pointer,
             float[] position);
 
 }

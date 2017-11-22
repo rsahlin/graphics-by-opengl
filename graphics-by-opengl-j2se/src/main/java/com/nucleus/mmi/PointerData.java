@@ -8,6 +8,17 @@ import com.nucleus.mmi.core.PointerListener;
 public class PointerData {
 
     /**
+     * The type of event, ie what the source of the action is
+     *
+     */
+    public enum Type {
+        STYLUS(),
+        ERASER(),
+        MOUSE(),
+        FINGER();
+    }
+    
+    /**
      * The different pointer actions
      *
      */

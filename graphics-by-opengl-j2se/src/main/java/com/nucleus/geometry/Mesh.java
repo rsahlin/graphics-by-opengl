@@ -229,7 +229,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             }
         }
 
-
         /**
          * Calculates the bounds covering this mesh.
          * 
@@ -474,7 +473,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         return texture;
     }
 
-
     /**
      * Sets the attribute updater for this mesh, use this for meshes where the attribute data must be updated each
      * frame.
@@ -643,7 +641,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     /**
      * Returns the number of vertices to draw - this is set to the same as the vertice count when the buffer
      * is created
-     * TODO - Unify this with the usage in ElementBuffer
      * 
      * @return
      */

@@ -9,6 +9,7 @@ import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
+import com.nucleus.mmi.PointerData.Type;
 import com.nucleus.mmi.PointerMotionData;
 import com.nucleus.vecmath.Vector2D;
 
@@ -51,7 +52,7 @@ public class PointerInputProcessor implements PointerListener {
     }
 
     @Override
-    public void pointerEvent(PointerAction action, long timestamp, int pointer, float[] position) {
+    public void pointerEvent(PointerAction action, Type type, long timestamp, int pointer, float[] position) {
         if (pointer >= MAX_POINTERS) {
             return;
         }
@@ -69,7 +70,7 @@ public class PointerInputProcessor implements PointerListener {
             break;
         case DOWN:
             pointerCount = pointer + 1;
-            pointerMotionData[pointer] = new PointerMotionData();
+            pointerMotionData[pointer] = new PointerMotionData(type);
             addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ACTIVE, pointer,
                     pointerMotionData[pointer]),
                     pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition));
@@ -85,7 +86,7 @@ public class PointerInputProcessor implements PointerListener {
             break;
         case ZOOM:
                 if (pointerMotionData[pointer] == null) {
-                    pointerMotionData[pointer] = new PointerMotionData();
+                    pointerMotionData[pointer] = new PointerMotionData(type);
                 }
             MMIPointerEvent zoom = new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ZOOM, pointer,
                     pointerMotionData[pointer]);

@@ -24,6 +24,7 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.WindowListener;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
+import com.nucleus.mmi.PointerData.Type;
 import com.nucleus.opengl.GLESWrapper;
 
 /**
@@ -212,20 +213,33 @@ public abstract class JOGLGLWindow extends J2SEWindow
         int[] xpos = e.getAllX();
         int[] ypos = e.getAllY();
         int count = e.getPointerCount();
+        Type type = Type.STYLUS;
         for (int i = 0; i < count; i++) {
-            handleMouseEvent(xpos[i], ypos[i], e.getPointerId(i), e.getWhen(), action);
+            switch (e.getButton()) {
+                case MouseEvent.BUTTON1:
+                    type = Type.MOUSE;
+                    break;
+                case MouseEvent.BUTTON2:
+                    type = Type.ERASER;
+                    break;
+                case MouseEvent.BUTTON3:
+                    type = Type.FINGER;
+                    break;
+
+            }
+            handleMouseEvent(action, type, xpos[i], ypos[i], e.getPointerId(i), e.getWhen());
         }
     }
 
     protected void handleKeyEvent(KeyEvent event) {
         switch (event.getEventType()) {
-        case KeyEvent.EVENT_KEY_PRESSED:
-            switch (event.getKeyCode()) {
-            case KeyEvent.VK_ESCAPE:
-                backPressed();
-            }
-            break;
-        case KeyEvent.EVENT_KEY_RELEASED:
+            case KeyEvent.EVENT_KEY_PRESSED:
+                switch (event.getKeyCode()) {
+                    case KeyEvent.VK_ESCAPE:
+                        backPressed();
+                }
+                break;
+            case KeyEvent.EVENT_KEY_RELEASED:
         }
     }
 
@@ -278,8 +292,9 @@ public abstract class JOGLGLWindow extends J2SEWindow
     @Override
     public void mouseWheelMoved(MouseEvent e) {
         float factor = ZOOM_FACTOR;
-        coreApp.getInputProcessor().pointerEvent(PointerAction.ZOOM, e.getWhen(), PointerData.POINTER_1, new float[] {
-                e.getRotation()[1] * factor, e.getRotation()[1] * factor });
+        coreApp.getInputProcessor().pointerEvent(PointerAction.ZOOM, PointerData.Type.MOUSE, e.getWhen(),
+                PointerData.POINTER_1, new float[] {
+                        e.getRotation()[1] * factor, e.getRotation()[1] * factor });
     }
 
     @Override
@@ -326,7 +341,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
         if (fullscreen) {
             fullscreen = false;
             glWindow.setFullscreen(false);
-            glWindow.setPosition(glWindow.getWidth()/ 2, glWindow.getHeight() / 2);
+            glWindow.setPosition(glWindow.getWidth() / 2, glWindow.getHeight() / 2);
         } else {
             if (coreApp.onBackPressed()) {
                 coreApp.setDestroyFlag();
