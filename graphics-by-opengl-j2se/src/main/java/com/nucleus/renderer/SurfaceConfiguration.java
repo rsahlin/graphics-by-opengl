@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.nucleus.common.StringUtils;
+import com.nucleus.egl.EGLUtils;
 
 /**
- * Class that specifies the surface configuration, bitdepth, zbufferm samples and other
+ * Class that specifies the surface configuration, bitdepth, zbuffer samples and other
  * surface specific configurations.
- * Use with the @link Renderer
  * 
  * @author Richard Sahlin
  */
@@ -45,6 +45,11 @@ public class SurfaceConfiguration {
      * Number of bits to use for the depth buffer.
      */
     protected int depthBits = DEFAULT_DEPTH_BITS;
+
+    /**
+     * Surface type bitmask
+     */
+    protected int surfaceType;
 
     /**
      * Number of samples to require in SampleBuffers.
@@ -161,7 +166,7 @@ public class SurfaceConfiguration {
      * @param redbits
      */
     public void setRedBits(int redbits) {
-        redBits = redbits;
+        this.redBits = redbits;
     }
 
     /**
@@ -170,7 +175,7 @@ public class SurfaceConfiguration {
      * @param greenbits
      */
     public void setGreenBits(int greenbits) {
-        greenBits = greenbits;
+        this.greenBits = greenbits;
     }
 
     /**
@@ -179,7 +184,7 @@ public class SurfaceConfiguration {
      * @param bluebits
      */
     public void setBlueBits(int bluebits) {
-        blueBits = bluebits;
+        this.blueBits = bluebits;
     }
 
     /**
@@ -188,15 +193,25 @@ public class SurfaceConfiguration {
      * @param alphabits
      */
     public void setAlphaBits(int alphabits) {
-        alphaBits = alphabits;
+        this.alphaBits = alphabits;
     }
 
     /**
      * Sets the number of wanted depthbits, at least this value - may get a config with more.
+     * 
      * @param depthbits
      */
-    public void setDepthBits(int depthbits){
-        depthBits = depthbits;
+    public void setDepthBits(int depthbits) {
+        this.depthBits = depthbits;
+    }
+
+    /**
+     * Sets the surface type bitmask
+     * 
+     * @param surfaceType
+     */
+    public void setSurfaceType(int surfaceType) {
+        this.surfaceType = surfaceType;
     }
 
     @Override
@@ -206,7 +221,8 @@ public class SurfaceConfiguration {
             ext += e + System.lineSeparator();
         }
         return "RGBA:" + redBits + ", " + greenBits + ", " + blueBits + ", " + alphaBits + ", Depth: " + depthBits
-                + ", Samples: " + samples + ", Version: " + version + ", Vendor: " + vendor + System.lineSeparator() + 
+                + ", Samples: " + samples + ", Version: " + version + ", Vendor: " + vendor + System.lineSeparator() +
+                "Surfacetype " + EGLUtils.getSurfaceTypeAsString(surfaceType) + System.lineSeparator() +
                 "EGL extensions:" + System.lineSeparator() + ext;
     }
 
@@ -234,15 +250,16 @@ public class SurfaceConfiguration {
 
     /**
      * Returns a list with supported EGL extensions
+     * 
      * @return
      */
     public List<String> getExtensions() {
         return extensions;
     }
-    
+
     /**
      * Sets a list of surface attribs to set to EGL
-     * Each int[] shall consist of 2 values: attrib, value 
+     * Each int[] shall consist of 2 values: attrib, value
      * See https://www.khronos.org/registry/EGL/sdk/docs/man/html/eglSurfaceAttrib.xhtml
      * 
      * @param attribs
@@ -250,6 +267,5 @@ public class SurfaceConfiguration {
     protected void setSurfaceAttribs(List<int[]> attribs) {
         this.surfaceAttribs = attribs;
     }
-    
-    
+
 }

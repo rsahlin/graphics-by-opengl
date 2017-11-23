@@ -17,11 +17,22 @@ import com.nucleus.texturing.Image;
 public class FrameSampler {
 
     public static class Sample {
-        int total;
-        int max;
-        int min;
-        int count;
+        public int total;
+        public int max;
+        public int min;
+        public int count;
 
+        /**
+         * Creates an empty sample
+         */
+        public Sample() {
+        }
+
+        /**
+         * Creates a sample with one value
+         * 
+         * @param millis
+         */
         public Sample(int millis) {
             total = millis;
             max = millis;
@@ -55,6 +66,7 @@ public class FrameSampler {
             count = 0;
         }
 
+        @Override
         public String toString() {
             return "Average: " + getAverage() + " Max: " + max + " Min: " + min;
         }
@@ -339,11 +351,33 @@ public class FrameSampler {
             ArrayList<Long> start = tagStartTimes.get(tag);
             if (start != null) {
                 for (long s : start) {
-                    addTag(tag,  s, endTime);
+                    addTag(tag, s, endTime);
                 }
             }
             tagStartTimes.clear();
         }
+    }
+
+    /**
+     * Returns the sample for the specified tag, or null if not found.
+     * This is a reference to the Sample used to track values - changes will be reflected in the object stored
+     * with the tag.
+     * 
+     * @param tag
+     * @return Reference to the Sample, or null if no Sample for the tag
+     */
+    public Sample getSample(String tag) {
+        return tagTimings.get(tag);
+    }
+
+    /**
+     * Sets a sample for the tag
+     * 
+     * @param tag
+     * @param sample Sample to set or null to clear.
+     */
+    public void setSample(String tag, Sample sample) {
+        tagTimings.put(tag, sample);
     }
 
     private void logAverage(String tag, Sample sample) {

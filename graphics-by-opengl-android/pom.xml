@@ -20,7 +20,7 @@
                     <androidManifestFile>AndroidManifest.xml</androidManifestFile>
                     <resourceDirectory>./res</resourceDirectory>
                     <sdk>
-                        <platform>18</platform>
+                        <platform>19</platform>
                     </sdk>
                 </configuration>
                 <extensions>true</extensions>

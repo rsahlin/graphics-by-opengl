@@ -9,14 +9,9 @@ import javax.microedition.khronos.opengles.GL10;
 
 import com.nucleus.CoreApp;
 import com.nucleus.SimpleLogger;
-import com.nucleus.mmi.PointerData;
-import com.nucleus.mmi.PointerData.PointerAction;
-import com.nucleus.mmi.PointerData.Type;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
-import com.nucleus.renderer.Window;
 
-import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.EGLWindowSurfaceFactory;
 import android.opengl.GLSurfaceView.Renderer;
@@ -26,7 +21,8 @@ public class AndroidSurfaceView extends GLSurfaceView
         implements GLSurfaceView.EGLConfigChooser, Renderer, EGLWindowSurfaceFactory {
 
     /**
-     * Use an interface instead of CoreApp
+     * TODO
+     * Pass window/render events to NucleusActivity instead of keeping a ref to the CoreApp
      */
     CoreApp coreApp;
     /**
@@ -42,7 +38,7 @@ public class AndroidSurfaceView extends GLSurfaceView
     private EGLSurface eglSurface;
     private boolean surfaceDestroyed = false;
     private long lastDraw;
-    private long androidUptimeDelta;
+    private NucleusActivity nucleusActivity;
 
     /**
      * The result surface configuration from EGL
@@ -54,32 +50,25 @@ public class AndroidSurfaceView extends GLSurfaceView
      */
     private SurfaceConfiguration wantedConfig;
 
-    CoreApp.CoreAppStarter coreAppStarter;
-
     /**
      * Creates a new surface view for GL, this class will be used for Renderer, will choose EGL config based on
      * configuration
      * 
      * @param wantedConfig The wanted surface config
      * @param version Renderer version
-     * @param context
+     * @param nucleusActivity
      * @param coreAppStarter
      * @throws IllegalArgumentException If clientClass is null
      */
-    public AndroidSurfaceView(SurfaceConfiguration wantedConfig, Renderers version, Context context,
-            CoreApp.CoreAppStarter coreAppStarter) {
-        super(context);
-        if (coreAppStarter == null) {
-            throw new IllegalArgumentException("CoreAppStarter is null");
-        }
-        this.coreAppStarter = coreAppStarter;
+    public AndroidSurfaceView(SurfaceConfiguration wantedConfig, Renderers version, NucleusActivity nucleusActivity) {
+        super(nucleusActivity);
+        this.nucleusActivity = nucleusActivity;
         setEGLWindowSurfaceFactory(this);
         this.wantedConfig = wantedConfig;
         setEGLContextClientVersion(version.major);
         setEGLConfigChooser(this);
         setRenderer(this);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-        androidUptimeDelta = System.currentTimeMillis() - android.os.SystemClock.uptimeMillis();
     }
 
     @Override
@@ -87,67 +76,25 @@ public class AndroidSurfaceView extends GLSurfaceView
         if (coreApp == null) {
             return true;
         }
-        int index = event.getActionIndex();
-        Type type = getType(event.getToolType(index));
-        int count = event.getPointerCount();
-        int finger = event.getPointerId(index);
-        switch (event.getActionMasked()) {
-            case MotionEvent.ACTION_POINTER_DOWN:
-            case MotionEvent.ACTION_DOWN:
-                // This is the first pointer, or multitouch pointer going down.
-                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN, type, event.getEventTime() + androidUptimeDelta, finger,
-                        new float[] { event.getX(index), event.getY(index) });
-                break;
-            case MotionEvent.ACTION_POINTER_UP:
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                // This is multitouch or the last pointer going up
-                coreApp.getInputProcessor().pointerEvent(PointerAction.UP, type, event.getEventTime() + androidUptimeDelta,
-                        finger, new float[] { event.getX(index), event.getY(index) });
-                break;
-            case MotionEvent.ACTION_MOVE:
-                for (int i = 0; i < count; i++) {
-                    finger = event.getPointerId(i);
-                    coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, type, event.getEventTime() + androidUptimeDelta, finger,
-                            new float[] { event.getX(i), event.getY(i) });
-                }
-                break;
-            default:
-        }
+        nucleusActivity.handleTouch(event);
         requestRender();
         return true;
     }
 
-    private Type getType(int type) {
-        switch (type) {
-            case MotionEvent.TOOL_TYPE_ERASER:
-                return PointerData.Type.ERASER;
-            case MotionEvent.TOOL_TYPE_FINGER:
-                return PointerData.Type.FINGER;
-            case MotionEvent.TOOL_TYPE_MOUSE:
-                return PointerData.Type.MOUSE;
-            case MotionEvent.TOOL_TYPE_STYLUS:
-                return PointerData.Type.STYLUS;
-                default:
-                    return PointerData.Type.MOUSE;
-        }
-    }
-    
     @Override
     public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
         SimpleLogger.d(getClass(), "chooseConfig()");
         this.egl = egl;
         this.eglDisplay = display;
-        eglConfig = EGLUtils.selectConfig(egl, display, wantedConfig);
+        eglConfig = AndroidEGLUtils.selectConfig(egl, display, wantedConfig);
         if (eglConfig == null) {
             throw new IllegalArgumentException("No EGL config matching default surface configuration.");
         }
         surfaceDestroyed = false;
         surfaceConfig = new SurfaceConfiguration();
-        EGLUtils.readSurfaceConfig(egl, display, eglConfig, surfaceConfig);
-        EGLUtils.setEGLInfo(egl, display, surfaceConfig);
+        AndroidEGLUtils.readSurfaceConfig(egl, display, eglConfig, surfaceConfig);
+        AndroidEGLUtils.setEGLInfo(egl, display, surfaceConfig);
         SimpleLogger.d(getClass(), "chooseConfig() has: " + surfaceConfig.toString());
-        
         return eglConfig;
     }
 
@@ -173,18 +120,12 @@ public class AndroidSurfaceView extends GLSurfaceView
         }
     }
 
-    public void setCoreApp(CoreApp coreApp) {
-        this.coreApp = coreApp;
-    }
-
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         SimpleLogger.d(getClass(), "surfaceCreated() " + getWidth() + ", " + getHeight());
-        coreAppStarter.createCoreApp(getWidth(), getHeight());
         egl.eglSwapBuffers(eglDisplay, eglSurface);
         checkEGLError("eglSwapBuffers()");
-        // Call contextCreated since the renderer is already initialized and has a created EGL context.
-        coreApp.contextCreated(Window.getInstance().getWidth(), Window.getInstance().getHeight());
+        nucleusActivity.onSurfaceCreated(getWidth(), getHeight());
     }
 
     @Override
@@ -216,4 +157,9 @@ public class AndroidSurfaceView extends GLSurfaceView
             coreApp.surfaceLost();
         }
     }
+
+    public void setCoreApp(CoreApp coreApp) {
+        this.coreApp = coreApp;
+    }
+
 }
