@@ -238,7 +238,7 @@ class BaseRenderer implements NucleusRenderer {
                 gles.glDepthRangef(state.getDepthRangeNear(), state.getDepthRangeFar());
             } else {
                 gles.glDisable(GLES20.GL_DEPTH_TEST);
-                gles.glDepthMask(true);
+                gles.glClearDepthf(state.getClearDepth());
                 gles.glDepthRangef(state.getDepthRangeNear(), state.getDepthRangeFar());
             }
         }
@@ -396,7 +396,6 @@ class BaseRenderer implements NucleusRenderer {
                 break;
             case STENCIL:
                 gles.glEnable(GLES20.GL_STENCIL_TEST);
-                gles.glDepthMask(true);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + attachement);
@@ -494,6 +493,7 @@ class BaseRenderer implements NucleusRenderer {
             throw new IllegalArgumentException(
                     "RenderPass must contain pass and target:" + renderPass.getPass() + ", " + renderPass.getTarget());
         }
+        setupRenderTarget(renderPass.getTarget());
         RenderState state = renderPass.getRenderState();
         if (state != null) {
             // TODO - check diff between renderpasses and only update accordingly
@@ -501,7 +501,6 @@ class BaseRenderer implements NucleusRenderer {
             setRenderState(state);
             state.setChangeFlag(RenderState.CHANGE_FLAG_NONE);
         }
-        setupRenderTarget(renderPass.getTarget());
         // Clear buffer according to settings
         int clearFunc = state.getClearFunction();
         if (clearFunc != GLES20.GL_NONE) {
