@@ -7,9 +7,10 @@ import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 import javax.microedition.khronos.opengles.GL10;
 
-import com.nucleus.CoreApp;
 import com.nucleus.SimpleLogger;
+import com.nucleus.android.egl10.EGL10Utils;
 import com.nucleus.opengl.GLESWrapper.Renderers;
+import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.SurfaceConfiguration;
 
 import android.opengl.GLSurfaceView;
@@ -21,14 +22,9 @@ public class AndroidSurfaceView extends GLSurfaceView
         implements GLSurfaceView.EGLConfigChooser, Renderer, EGLWindowSurfaceFactory {
 
     /**
-     * TODO
-     * Pass window/render events to NucleusActivity instead of keeping a ref to the CoreApp
-     */
-    CoreApp coreApp;
-    /**
      * Set to true to exit from onDrawFrame directly - for instance when an error has occured.
      */
-    private volatile boolean noUpdates = false;
+    protected volatile boolean noUpdates = false;
 
     private final int EGL_CONTEXT_CLIENT_VERSION = 0x3098; // EGL 1.3 to set client version
 
@@ -39,6 +35,7 @@ public class AndroidSurfaceView extends GLSurfaceView
     private boolean surfaceDestroyed = false;
     private long lastDraw;
     private NucleusActivity nucleusActivity;
+    protected RenderContextListener renderListener;
 
     /**
      * The result surface configuration from EGL
@@ -68,16 +65,15 @@ public class AndroidSurfaceView extends GLSurfaceView
         setEGLContextClientVersion(version.major);
         setEGLConfigChooser(this);
         setRenderer(this);
-        setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+        setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (coreApp == null) {
+        if (nucleusActivity == null) {
             return true;
         }
         nucleusActivity.handleTouch(event);
-        requestRender();
         return true;
     }
 
@@ -86,14 +82,14 @@ public class AndroidSurfaceView extends GLSurfaceView
         SimpleLogger.d(getClass(), "chooseConfig()");
         this.egl = egl;
         this.eglDisplay = display;
-        eglConfig = AndroidEGLUtils.selectConfig(egl, display, wantedConfig);
+        eglConfig = EGL10Utils.selectConfig(egl, display, wantedConfig);
         if (eglConfig == null) {
             throw new IllegalArgumentException("No EGL config matching default surface configuration.");
         }
         surfaceDestroyed = false;
         surfaceConfig = new SurfaceConfiguration();
-        AndroidEGLUtils.readSurfaceConfig(egl, display, eglConfig, surfaceConfig);
-        AndroidEGLUtils.setEGLInfo(egl, display, surfaceConfig);
+        EGL10Utils.readSurfaceConfig(egl, display, eglConfig, surfaceConfig);
+        EGL10Utils.setEGLInfo(egl, display, surfaceConfig);
         SimpleLogger.d(getClass(), "chooseConfig() has: " + surfaceConfig.toString());
         return eglConfig;
     }
@@ -103,7 +99,7 @@ public class AndroidSurfaceView extends GLSurfaceView
         SimpleLogger.d(getClass(), "surfaceChanged() " + width + ", " + height);
     }
 
-    private void handleThrowable(Throwable t) {
+    protected void handleThrowable(Throwable t) {
         noUpdates = true;
         NucleusActivity.handleThrowable(t);
     }
@@ -114,7 +110,7 @@ public class AndroidSurfaceView extends GLSurfaceView
             return;
         }
         try {
-            coreApp.drawFrame();
+            renderListener.drawFrame();
         } catch (Throwable t) {
             handleThrowable(t);
         }
@@ -153,13 +149,13 @@ public class AndroidSurfaceView extends GLSurfaceView
             eglSurface = null;
             eglDisplay = null;
         }
-        if (coreApp != null) {
-            coreApp.surfaceLost();
+        if (renderListener != null) {
+            renderListener.surfaceLost();
         }
     }
 
-    public void setCoreApp(CoreApp coreApp) {
-        this.coreApp = coreApp;
+    public void setRenderContextListener(RenderContextListener listener) {
+        this.renderListener = listener;
     }
 
 }

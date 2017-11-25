@@ -1,8 +1,13 @@
 package com.nucleus.egl;
 
+import java.util.ArrayList;
+
+import com.nucleus.renderer.SurfaceConfiguration;
+
 public class EGLUtils {
 
-    private static final int[] EGL_SURFACE_TYPES = new int[] { EGL14Constants.EGL_PBUFFER_BIT, EGL14Constants.EGL_PIXMAP_BIT,
+    private static final int[] EGL_SURFACE_TYPES = new int[] { EGL14Constants.EGL_PBUFFER_BIT,
+            EGL14Constants.EGL_PIXMAP_BIT,
             EGL14Constants.EGL_SWAP_BEHAVIOR_PRESERVED_BIT, EGL14Constants.EGL_VG_ALPHA_FORMAT_PRE_BIT,
             EGL14Constants.EGL_VG_COLORSPACE_LINEAR_BIT, EGL14Constants.EGL_WINDOW_BIT };
     /**
@@ -32,6 +37,59 @@ public class EGLUtils {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Creates int array for the specified surface configuration
+     * 
+     * @param egl
+     * @param display
+     * @param wantedConfig
+     * @return
+     */
+    public static int[] createConfig(SurfaceConfiguration wantedConfig) {
+        ArrayList<int[]> eglArray = new ArrayList<int[]>();
+        setConfig(eglArray, EGL14Constants.EGL_RED_SIZE, wantedConfig.getRedBits());
+        setConfig(eglArray, EGL14Constants.EGL_GREEN_SIZE, wantedConfig.getGreenBits());
+        setConfig(eglArray, EGL14Constants.EGL_BLUE_SIZE, wantedConfig.getBlueBits());
+        setConfig(eglArray, EGL14Constants.EGL_ALPHA_SIZE, wantedConfig.getAlphaBits());
+        setConfig(eglArray, EGL14Constants.EGL_DEPTH_SIZE, wantedConfig.getDepthBits());
+        setConfig(eglArray, EGL14Constants.EGL_RENDERABLE_TYPE, EGL14Constants.EGL_OPENGL_ES2_BIT);
+        setConfig(eglArray, EGL14Constants.EGL_SAMPLES, wantedConfig.getSamples());
+        int buffers = 0;
+        if (wantedConfig.getSamples() > 1) {
+            buffers = 1;
+        }
+        setConfig(eglArray, EGL14Constants.EGL_SAMPLE_BUFFERS, buffers);
+        setConfig(eglArray, EGL14Constants.EGL_NONE, EGL14Constants.EGL_NONE);
+        return getConfigArray(eglArray);
+    }
+
+    /**
+     * Adds one wanted config attrib to list of configuration attributes
+     * 
+     * @param configs
+     * @param configAttrib
+     * @param value
+     */
+    private static void setConfig(ArrayList<int[]> configs, int configAttrib, int value) {
+        configs.add(new int[] { configAttrib, value });
+    }
+
+    /**
+     * Returns the wanted configuration as int array.
+     * 
+     * @param configs
+     * @return
+     */
+    private static int[] getConfigArray(ArrayList<int[]> configs) {
+        int[] result = new int[configs.size() * 2];
+        int index = 0;
+        for (int[] val : configs) {
+            result[index++] = val[0];
+            result[index++] = val[1];
+        }
+        return result;
     }
 
 }

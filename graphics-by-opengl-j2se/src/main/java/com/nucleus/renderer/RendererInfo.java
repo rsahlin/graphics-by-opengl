@@ -91,7 +91,7 @@ public class RendererInfo {
      * @return True if the platform has support for the extension
      */
     public boolean hasExtensionSupport(String extension) {
-        if (extensions.contains(extension)) {
+        if (extensions != null && extensions.contains(extension)) {
             return true;
         }
         return false;

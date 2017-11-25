@@ -61,6 +61,9 @@ public class SurfaceConfiguration {
      */
     protected String version;
     protected String vendor;
+    /**
+     * List of EGL extensions
+     */
     protected List<String> extensions = new ArrayList<String>();
     /**
      * Optional list with surface attribs
@@ -266,6 +269,19 @@ public class SurfaceConfiguration {
      */
     protected void setSurfaceAttribs(List<int[]> attribs) {
         this.surfaceAttribs = attribs;
+    }
+
+    /**
+     * Returns true if the platform has support for the specified extension.
+     * 
+     * @param extension The extension to check for
+     * @return True if the platform has support for the extension
+     */
+    public boolean hasExtensionSupport(String extension) {
+        if (extensions != null && extensions.contains(extension)) {
+            return true;
+        }
+        return false;
     }
 
 }

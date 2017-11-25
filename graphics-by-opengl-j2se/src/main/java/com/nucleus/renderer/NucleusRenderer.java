@@ -69,6 +69,20 @@ public interface NucleusRenderer {
          * @throws IllegalArgumentException If width or height <= 0
          */
         public void contextCreated(int width, int height);
+
+        /**
+         * Produces the next frame, when this method returns buffers shall be swapped and
+         * contents posted to display.
+         */
+        public void drawFrame();
+
+        /**
+         * Called when the underlying surface (EGL) is lost, this means the context is
+         * not valid anymore.
+         * If app is restared all context related data must be re-created
+         */
+        public void surfaceLost();
+
     }
 
     /**

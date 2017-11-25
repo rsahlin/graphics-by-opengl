@@ -117,5 +117,6 @@ public interface EGL14Constants {
      * EGL extensions
      */
     public final static int EGL_FRONT_BUFFER_AUTO_REFRESH_ANDROID = 0x314C;
+    public final static String EGL_ANDROID_front_buffer_auto_refresh = "EGL_ANDROID_front_buffer_auto_refresh";
 
 }

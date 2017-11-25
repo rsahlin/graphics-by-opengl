@@ -38,7 +38,6 @@ import android.view.WindowManager;
 public abstract class NucleusActivity extends Activity
         implements DialogInterface.OnClickListener {
 
-    protected EGLSurfaceView EGLSurface;
     protected SurfaceView surfaceView;
     private static Throwable throwable;
     private static NucleusActivity activity;
@@ -47,6 +46,10 @@ public abstract class NucleusActivity extends Activity
     protected Class<?> clientClass;
     protected GLESWrapper gles;
     private long androidUptimeDelta;
+    /**
+     * Set to false to use GLSurfaceView
+     */
+    protected boolean useEGL14 = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -126,13 +129,22 @@ public abstract class NucleusActivity extends Activity
         androidUptimeDelta = System.currentTimeMillis() - android.os.SystemClock.uptimeMillis();
     }
 
+    /**
+     * Creates the SurfaceView to be used to render GL content.
+     * To use EGL1.4 use {@link EGLSurfaceView} or subclass.
+     * To use legacy EGL1.0/1.1
+     * 
+     * @param version
+     * @param surfaceConfig
+     * @param rendermode
+     * @return
+     */
     protected SurfaceView createSurfaceView(Renderers version, SurfaceConfiguration surfaceConfig, int rendermode) {
-
-        return new EGLSurfaceView(surfaceConfig, version, this);
-
-        // SurfaceView sf = new AndroidSurfaceView(surfaceConfig, version, this);
-        // ((GLSurfaceView) sf).setRenderMode(rendermode);
-        // return sf;
+        if (useEGL14) {
+            return new EGLSurfaceView(surfaceConfig, version, this);
+        } else {
+            return new AndroidSurfaceView(surfaceConfig, version, this);
+        }
     }
 
     /**
@@ -227,9 +239,9 @@ public abstract class NucleusActivity extends Activity
         // Call contextCreated since the renderer is already initialized and has a created EGL context.
         coreApp.contextCreated(width, height);
         if (surfaceView instanceof AndroidSurfaceView) {
-            ((AndroidSurfaceView) surfaceView).setCoreApp(coreApp);
+            ((AndroidSurfaceView) surfaceView).setRenderContextListener(coreApp);
         } else if (surfaceView instanceof EGLSurfaceView) {
-            ((EGLSurfaceView) surfaceView).setCoreApp(coreApp);
+            ((EGLSurfaceView) surfaceView).setRenderContextListener(coreApp);
         }
     }
 
@@ -255,8 +267,15 @@ public abstract class NucleusActivity extends Activity
                         finger, new float[] { event.getX(index), event.getY(index) });
                 break;
             case MotionEvent.ACTION_MOVE:
+                // Handle history
+                final int historySize = event.getHistorySize();
                 for (int i = 0; i < count; i++) {
                     finger = event.getPointerId(i);
+                    for (int h = 0; h < historySize; h++) {
+                        coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, type,
+                                event.getHistoricalEventTime(h) + androidUptimeDelta, finger,
+                                new float[] { event.getHistoricalX(i, h), event.getHistoricalY(i, h) });
+                    }
                     coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, type,
                             event.getEventTime() + androidUptimeDelta, finger,
                             new float[] { event.getX(i), event.getY(i) });

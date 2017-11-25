@@ -1,4 +1,4 @@
-package com.nucleus.android;
+package com.nucleus.android.egl10;
 
 import java.util.ArrayList;
 
@@ -7,9 +7,14 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLDisplay;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.egl.EGLUtils;
 import com.nucleus.renderer.SurfaceConfiguration;
 
-public class AndroidEGLUtils {
+/**
+ * EGL Utils based on old JSR 239 EGL (EGL 1.0 and 1.1)
+ *
+ */
+public class EGL10Utils {
 
     public final static String TAG = "EGLUtils";
 
@@ -28,33 +33,6 @@ public class AndroidEGLUtils {
         int[] attribs = new int[1];
         egl.eglGetConfigAttrib(eglDisplay, config, configAttrib, attribs);
         return attribs[0];
-    }
-
-    /**
-     * Adds one wanted config attrib to list of configuration attributes
-     * 
-     * @param configs
-     * @param configAttrib
-     * @param value
-     */
-    public static void setConfig(ArrayList<int[]> configs, int configAttrib, int value) {
-        configs.add(new int[] { configAttrib, value });
-    }
-
-    /**
-     * Returns the wanted configuration as int array.
-     * 
-     * @param configs
-     * @return
-     */
-    public static int[] getConfigArray(ArrayList<int[]> configs) {
-        int[] result = new int[configs.size() * 2];
-        int index = 0;
-        for (int[] val : configs) {
-            result[index++] = val[0];
-            result[index++] = val[1];
-        }
-        return result;
     }
 
     /**
@@ -100,11 +78,11 @@ public class AndroidEGLUtils {
     public final static EGLConfig selectConfig(EGL10 egl, EGLDisplay eglDisplay, EGLConfig[] configs, int count,
             SurfaceConfiguration wantedConfig) {
         if (wantedConfig.getSamples() > 1) {
-            SimpleLogger.d(AndroidEGLUtils.class, "Select config with >= " + wantedConfig.getSamples());
+            SimpleLogger.d(EGL10Utils.class, "Select config with >= " + wantedConfig.getSamples());
             // Fetch a list with configs that have at least two samples
             ArrayList<EGLConfig> sortedlist = filterByAttributeGreaterEqual(egl, eglDisplay, configs, EGL10.EGL_SAMPLES,
                     2);
-            SimpleLogger.d(AndroidEGLUtils.class, "Found " + sortedlist.size() + " configs with samples.");
+            SimpleLogger.d(EGL10Utils.class, "Found " + sortedlist.size() + " configs with samples.");
             EGLConfig chosen = null;
             for (EGLConfig conf : sortedlist) {
                 int currentSamples = getEGLConfigAttrib(egl, eglDisplay, conf, EGL10.EGL_SAMPLES);
@@ -118,7 +96,7 @@ public class AndroidEGLUtils {
                     if (chosenSamples < currentSamples || chosenSamples > wantedConfig.getSamples()) {
                         if (currentSamples < wantedConfig.getSamples()) {
                             chosen = conf;
-                            SimpleLogger.d(AndroidEGLUtils.class, "Picking config with " + currentSamples + " samples");
+                            SimpleLogger.d(EGL10Utils.class, "Picking config with " + currentSamples + " samples");
                         }
                     }
                 }
@@ -165,25 +143,6 @@ public class AndroidEGLUtils {
         return "UNKNOWN (" + error + ")";
     }
 
-    public static int[] createConfig(EGL10 egl, EGLDisplay display, SurfaceConfiguration wantedConfig) {
-        ArrayList<int[]> eglArray = new ArrayList<int[]>();
-        AndroidEGLUtils.setConfig(eglArray, EGL10.EGL_RED_SIZE, wantedConfig.getRedBits());
-        AndroidEGLUtils.setConfig(eglArray, EGL10.EGL_GREEN_SIZE, wantedConfig.getGreenBits());
-        AndroidEGLUtils.setConfig(eglArray, EGL10.EGL_BLUE_SIZE, wantedConfig.getBlueBits());
-        AndroidEGLUtils.setConfig(eglArray, EGL10.EGL_ALPHA_SIZE, wantedConfig.getAlphaBits());
-        AndroidEGLUtils.setConfig(eglArray, EGL10.EGL_DEPTH_SIZE, wantedConfig.getDepthBits());
-        AndroidEGLUtils.setConfig(eglArray, EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT);
-        AndroidEGLUtils.setConfig(eglArray, EGL10.EGL_SAMPLES, wantedConfig.getSamples());
-        int buffers = 0;
-        if (wantedConfig.getSamples() > 1) {
-            buffers = 1;
-        }
-        AndroidEGLUtils.setConfig(eglArray, EGL10.EGL_SAMPLE_BUFFERS, buffers);
-        AndroidEGLUtils.setConfig(eglArray, EGL10.EGL_NONE, EGL10.EGL_NONE);
-        return AndroidEGLUtils.getConfigArray(eglArray);
-
-    }
-
     /**
      * Selects the closest matching config - some properties such as samples may not be fulfilled.
      * Create a SurfaceConfig from the returned EGLConfig to check what the configuration is.
@@ -194,7 +153,7 @@ public class AndroidEGLUtils {
      * @return
      */
     public static EGLConfig selectConfig(EGL10 egl, EGLDisplay display, SurfaceConfiguration wantedConfig) {
-        int[] configSpec = createConfig(egl, display, wantedConfig);
+        int[] configSpec = EGLUtils.createConfig(wantedConfig);
         EGLConfig[] configs = new EGLConfig[20];
         int[] num_config = new int[1];
         egl.eglChooseConfig(display, configSpec, configs, 20, num_config);
@@ -203,7 +162,7 @@ public class AndroidEGLUtils {
             return null;
         }
         // Filter on config attributes that may not be present
-        return AndroidEGLUtils.selectConfig(egl, display, configs, num_config[0], wantedConfig);
+        return EGL10Utils.selectConfig(egl, display, configs, num_config[0], wantedConfig);
     }
 
     /**

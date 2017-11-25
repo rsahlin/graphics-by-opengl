@@ -71,7 +71,6 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener, Mou
         canvas.setCoreApp(coreApp);
     }
 
-    
     protected void handleMouseEvent(MouseEvent e, PointerAction action) {
         int xpos = e.getX();
         int ypos = e.getY();
@@ -90,9 +89,7 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener, Mou
         }
         handleMouseEvent(action, type, xpos, ypos, 0, e.getWhen());
     }
-    
-    
-    
+
     @Override
     public void mouseClicked(MouseEvent e) {
     }
@@ -123,6 +120,12 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener, Mou
     @Override
     public void mouseMoved(MouseEvent e) {
         // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void surfaceLost() {
+        // TODO Auto-generated method stub
+
     }
 
 }
