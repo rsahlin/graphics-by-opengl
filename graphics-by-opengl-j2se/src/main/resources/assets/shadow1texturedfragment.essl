@@ -15,6 +15,7 @@
  * Fragment shader for shadow pass 1
  * @author Richard Sahlin
  */
+ 
 precision mediump float;
 
 uniform sampler2D uTexture;      //The texture sampler
@@ -22,9 +23,9 @@ varying vec2 vTexCoord;
 
 void main()
 {
-    if (texture2D(uTexture, vTexCoord).a > 1.0) {
-        discard;
-    } else {
+//    if (texture2D(uTexture, vTexCoord).a < 1.0) {
+//        discard;
+//    } else {
         gl_FragColor = vec4(1,1,1,1);
-    }
+//    }
 }

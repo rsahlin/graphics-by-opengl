@@ -49,8 +49,8 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                 return false;
             }
 
-            int[] version = new int[2];
-            if (!EGL14.eglInitialize(EglDisplay, version, 0, version, 1)) {
+            int[] versionArray = new int[2];
+            if (!EGL14.eglInitialize(EglDisplay, versionArray, 0, versionArray, 1)) {
                 EglDisplay = null;
                 SimpleLogger.d(getClass(), "Could not initialize egl display");
                 return false;
@@ -77,7 +77,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         SimpleLogger.d(getClass(), surfaceConfig.toString());
 
         int[] eglContextAttribList = new int[] {
-                EGL14.EGL_CONTEXT_CLIENT_VERSION, 2,
+                EGL14.EGL_CONTEXT_CLIENT_VERSION, version.major,
                 EGL14.EGL_NONE
         };
         EGLContext = EGL14.eglCreateContext(EglDisplay, EglConfig,

@@ -24,7 +24,6 @@ import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
-import com.nucleus.profiling.FrameSampler.SampleInfo;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.scene.LineDrawerNode;
@@ -393,6 +392,7 @@ class BaseRenderer implements NucleusRenderer {
                 break;
             case DEPTH:
                 gles.glEnable(GLES20.GL_DEPTH_TEST);
+                gles.glDepthFunc(GLES20.GL_ALWAYS);
                 gles.glDepthMask(true);
                 break;
             case STENCIL:
@@ -437,7 +437,7 @@ class BaseRenderer implements NucleusRenderer {
     /**
      * Binds framebuffer to the specified target and attachement.
      * Currently only supports binding to window framebuffer (0)
-     *  
+     * 
      * @param target Null target or target with empty/null attachements
      */
     private void bindFramebuffer(RenderTarget target) throws GLException {
@@ -687,7 +687,7 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(RootNode root) throws GLException {
-    	long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
         List<Node> scene = root.getChildren();
         if (scene != null) {
             for (Node node : scene) {
