@@ -183,7 +183,7 @@ public class AssetManager {
                 texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), source);
                 textures.put(refSource, texture);
                 setExternalReference(texture.getId(), ref);
-                FrameSampler.getInstance().logTag(FrameSampler.CREATE_TEXTURE + " " + texture.getName(), start,
+                FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_TEXTURE, " " + texture.getName(), start,
                         System.currentTimeMillis());
             }
             return texture;
@@ -253,7 +253,7 @@ public class AssetManager {
         }
         long start = System.currentTimeMillis();
         renderer.createProgram(program);
-        FrameSampler.getInstance().logTag(FrameSampler.CREATE_SHADER + program.getClass().getSimpleName(), start,
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, program.getClass().getSimpleName(), start,
                 System.currentTimeMillis());
         programs.put(program.getKey(), program);
         return program;

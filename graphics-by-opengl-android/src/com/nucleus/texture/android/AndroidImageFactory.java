@@ -20,7 +20,7 @@ public class AndroidImageFactory extends BaseImageFactory implements ImageFactor
         ClassLoader classLoader = getClass().getClassLoader();
         Bitmap b = BitmapFactory.decodeStream(classLoader.getResourceAsStream(name));
         long loaded = System.currentTimeMillis();
-        FrameSampler.getInstance().logTag(FrameSampler.LOAD_IMAGE, start, loaded);
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.LOAD_IMAGE, start, loaded);
         if (b == null) {
             throw new IOException("Could not load " + name);
         }
@@ -30,7 +30,7 @@ public class AndroidImageFactory extends BaseImageFactory implements ImageFactor
         Image image = new Image(b.getWidth(), b.getHeight(), format);
         copyPixels(bytePixels, ImageFormat.RGBA, image);
         b.recycle();
-        FrameSampler.getInstance().logTag(FrameSampler.COPY_IMAGE + " " + image.getFormat().toString(), loaded,
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.COPY_IMAGE, " " + image.getFormat().toString(), loaded,
                 System.currentTimeMillis());
         return image;
     }

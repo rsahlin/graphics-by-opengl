@@ -119,9 +119,10 @@ public class AndroidSurfaceView extends GLSurfaceView
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         SimpleLogger.d(getClass(), "surfaceCreated() " + getWidth() + ", " + getHeight());
+        nucleusActivity.onSurfaceCreated(getWidth(), getHeight());
         egl.eglSwapBuffers(eglDisplay, eglSurface);
         checkEGLError("eglSwapBuffers()");
-        nucleusActivity.onSurfaceCreated(getWidth(), getHeight());
+        nucleusActivity.contextCreated(getWidth(), getHeight());
     }
 
     @Override

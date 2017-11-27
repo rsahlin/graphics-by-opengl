@@ -44,7 +44,7 @@ public class TextureUtils {
             Image image = loadTextureImage(imageFactory, texture);
             long loaded = System.currentTimeMillis();
             FrameSampler.getInstance()
-                    .logTag(FrameSampler.CREATE_IMAGE + " " + texture.getExternalReference().getSource(), start,
+                    .logTag(FrameSampler.Samples.CREATE_IMAGE, " " + texture.getExternalReference().getSource(), start,
                             loaded);
             int width = image.getWidth();
             int height = image.getHeight();
@@ -134,12 +134,14 @@ public class TextureUtils {
         }
         if (textureImages.length == 1 && texture.getTexParams().isMipMapFilter()) {
             if (texture.getLevels() < 2) {
-                throw new IllegalArgumentException("Texture " + texture.getId() + " has mipmap filter params but levels is " + texture.getLevels());
+                throw new IllegalArgumentException("Texture " + texture.getId()
+                        + " has mipmap filter params but levels is " + texture.getLevels());
             }
             long start = System.currentTimeMillis();
             gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
             SimpleLogger.d(TextureUtils.class, "Generated mipmaps for texture " + texture.getId());
-            FrameSampler.getInstance().logTag(FrameSampler.GENERATE_MIPMAPS, start, System.currentTimeMillis());
+            FrameSampler.getInstance().logTag(FrameSampler.Samples.GENERATE_MIPMAPS, texture.getId(), start,
+                    System.currentTimeMillis());
         }
     }
 
@@ -155,8 +157,8 @@ public class TextureUtils {
         if (texture != null && texture.textureType != TextureType.Untextured) {
             int textureID = texture.getName();
             if (textureID == Constants.NO_VALUE && texture.getExternalReference().isIdReference()) {
-                //Texture has no texture object - and is id reference
-                //Should only be used for dynamic textures, eg ones that depend on define in existing node
+                // Texture has no texture object - and is id reference
+                // Should only be used for dynamic textures, eg ones that depend on define in existing node
                 AssetManager.getInstance().getIdReference(texture);
                 textureID = texture.getName();
                 gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
@@ -170,8 +172,6 @@ public class TextureUtils {
         }
     }
 
-    
-    
     /**
      * Return the GL texture type for the specified format.
      * 
@@ -201,7 +201,7 @@ public class TextureUtils {
                 return Type.UNSIGNED_INT;
             case DEPTH_32F:
                 return Type.FLOAT;
-            
+
             default:
                 throw new IllegalArgumentException("Not implemented for: " + format);
         }
@@ -240,6 +240,7 @@ public class TextureUtils {
 
     /**
      * Returns the internal format for the texture - only needed on GLES 3.0 and above
+     * 
      * @param texture
      * @return The internal format
      */
@@ -247,11 +248,11 @@ public class TextureUtils {
         switch (texture.getFormat()) {
             case DEPTH_COMPONENT:
                 return getDepthComponentFormat(texture.getType());
-                default:
-                    return texture.getFormat().format;
+            default:
+                return texture.getFormat().format;
         }
     }
-    
+
     public static int getDepthComponentFormat(Texture2D.Type type) {
         switch (type) {
             case UNSIGNED_SHORT:
@@ -260,11 +261,11 @@ public class TextureUtils {
                 return GLES30.GL_DEPTH_COMPONENT24;
             case FLOAT:
                 return GLES20.GL_FLOAT;
-                default:
+            default:
                 throw new IllegalArgumentException("Invalid type: " + type);
         }
     }
-    
+
     /**
      * Returns the ImageFormat that fits for the texture format and type.
      * If format or type is not defined then the default value is choosen, normally RGBA 32 bit.

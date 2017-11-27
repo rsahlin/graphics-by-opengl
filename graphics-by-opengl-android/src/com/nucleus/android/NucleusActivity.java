@@ -229,13 +229,27 @@ public abstract class NucleusActivity extends Activity
     }
 
     /**
-     * Called when an EGL surface for rendering has been created
+     * Called when an EGL surface for rendering has been created, this will call to create core app and display splash.
+     * Swap buffers after this method returns to make splash visible.
+     * Then call {@link CoreApp#contextCreated(int, int)}
      * 
+     * @param width
+     * @param height
      */
     public void onSurfaceCreated(int width, int height) {
         NucleusRenderer renderer = RendererFactory.getRenderer(gles, new AndroidImageFactory(),
                 new AndroidMatrixEngine());
         coreApp = CoreApp.createCoreApp(width, height, renderer, clientClass);
+    }
+
+
+    /**
+     * Call {@link CoreApp#contextCreated(int, int)} - this signalls that context is created and everything is ready to start render
+     * 
+     * @param width
+     * @param height
+     */
+    public void contextCreated(int width, int height) {
         // Call contextCreated since the renderer is already initialized and has a created EGL context.
         coreApp.contextCreated(width, height);
         if (surfaceView instanceof AndroidSurfaceView) {
@@ -243,8 +257,9 @@ public abstract class NucleusActivity extends Activity
         } else if (surfaceView instanceof EGLSurfaceView) {
             ((EGLSurfaceView) surfaceView).setRenderContextListener(coreApp);
         }
+    	
     }
-
+    
     protected void handleTouch(MotionEvent event) {
         int index = event.getActionIndex();
         Type type = getType(event.getToolType(index));

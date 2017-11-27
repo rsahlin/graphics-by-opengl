@@ -6,6 +6,7 @@ import java.util.Map;
 import com.nucleus.common.TypeResolver;
 import com.nucleus.component.Component;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.profiling.FrameSampler.Level;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RootNode;
 
@@ -70,7 +71,7 @@ public class ComponentHandler {
         }
         long start = java.lang.System.currentTimeMillis();
         system.process(component, deltaTime);
-        FrameSampler.getInstance().addTag(FrameSampler.PROCESSCOMPONENT + component.getId(), start, java.lang.System.currentTimeMillis());
+        FrameSampler.getInstance().addTag(FrameSampler.Samples.PROCESSCOMPONENT.name() + component.getId(), start, java.lang.System.currentTimeMillis(), FrameSampler.Samples.PROCESSCOMPONENT.detail);
     }
 
     /**

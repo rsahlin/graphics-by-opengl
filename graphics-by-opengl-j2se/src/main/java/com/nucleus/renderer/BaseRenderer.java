@@ -24,6 +24,7 @@ import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.profiling.FrameSampler.SampleInfo;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.scene.LineDrawerNode;
@@ -434,9 +435,10 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     /**
-     * Binds framebuffer
-     * 
-     * @param target
+     * Binds framebuffer to the specified target and attachement.
+     * Currently only supports binding to window framebuffer (0)
+     *  
+     * @param target Null target or target with empty/null attachements
      */
     private void bindFramebuffer(RenderTarget target) throws GLException {
         if (target == null || target.getAttachements() == null || target.getAttachements().size() == 0) {
@@ -493,7 +495,6 @@ class BaseRenderer implements NucleusRenderer {
             throw new IllegalArgumentException(
                     "RenderPass must contain pass and target:" + renderPass.getPass() + ", " + renderPass.getTarget());
         }
-        setupRenderTarget(renderPass.getTarget());
         RenderState state = renderPass.getRenderState();
         if (state != null) {
             // TODO - check diff between renderpasses and only update accordingly
@@ -501,6 +502,7 @@ class BaseRenderer implements NucleusRenderer {
             setRenderState(state);
             state.setChangeFlag(RenderState.CHANGE_FLAG_NONE);
         }
+        setupRenderTarget(renderPass.getTarget());
         // Clear buffer according to settings
         int clearFunc = state.getClearFunction();
         if (clearFunc != GLES20.GL_NONE) {
@@ -685,12 +687,14 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(RootNode root) throws GLException {
+    	long start = System.currentTimeMillis();
         List<Node> scene = root.getChildren();
         if (scene != null) {
             for (Node node : scene) {
                 render(node);
             }
         }
+        FrameSampler.getInstance().addTag(FrameSampler.Samples.RENDERNODES, start, System.currentTimeMillis());
     }
 
     @Override

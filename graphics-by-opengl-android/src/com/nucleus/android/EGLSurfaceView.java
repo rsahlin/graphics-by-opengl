@@ -154,6 +154,8 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             // SimpleLogger.d(getClass(), "Set attrib for: " + EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh);
         }
         nucleusActivity.onSurfaceCreated(getWidth(), getHeight());
+        EGL14.eglSwapBuffers(EglDisplay, EGLSurface);
+        nucleusActivity.contextCreated(getWidth(),  getHeight());
     }
 
     @Override

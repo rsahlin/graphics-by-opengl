@@ -137,9 +137,9 @@ public class GSONSceneFactory implements SceneSerializer {
             setGson(builder.create());
             RootNode scene = getSceneFromJson(gson, reader);
             long loaded = System.currentTimeMillis();
-            FrameSampler.getInstance().logTag(FrameSampler.LOAD_SCENE, start, loaded);
+            FrameSampler.getInstance().logTag(FrameSampler.Samples.LOAD_SCENE, start, loaded);
             RootNode createdRoot = createScene(scene.getChildren());
-            FrameSampler.getInstance().logTag(FrameSampler.CREATE_SCENE, loaded, System.currentTimeMillis());
+            FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SCENE, loaded, System.currentTimeMillis());
             return createdRoot;
         } catch (IOException e) {
             throw new NodeException(e);

@@ -258,7 +258,6 @@ public class CoreApp implements RenderContextListener {
      * @param node
      */
     public void setRootNode(RootNode node) {
-        FrameSampler.getInstance().logTag(FrameSampler.SET_ROOT_NODE);
         this.rootNode = node;
         logicRunnable.setRootNode(node);
         ViewController vc = new ViewController();
@@ -266,7 +265,7 @@ public class CoreApp implements RenderContextListener {
         NodeController nc = new NodeController(node);
         nc.registerEventHandler(null);
         ComponentHandler.getInstance().initSystems(node, renderer);
-
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.SET_ROOT_NODE);
     }
 
     /**
@@ -280,7 +279,7 @@ public class CoreApp implements RenderContextListener {
     }
 
     public void displaySplash() throws GLException, NodeException {
-        FrameSampler.getInstance().logTag(FrameSampler.DISPLAY_SPLASH);
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.DISPLAY_SPLASH);
 
         BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
