@@ -1,8 +1,8 @@
 package com.nucleus;
 
 import com.nucleus.assets.AssetManager;
-import com.nucleus.component.J2SEComponentProcessor;
 import com.nucleus.component.ComponentProcessorRunnable;
+import com.nucleus.component.J2SEComponentProcessor;
 import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
@@ -150,7 +150,7 @@ public class CoreApp implements RenderContextListener {
         }
         this.renderer = renderer;
         this.clientApp = clientApp;
-        
+
         logicRunnable = new ComponentProcessorRunnable(renderer, new J2SEComponentProcessor(), false);
 
     }
@@ -196,6 +196,7 @@ public class CoreApp implements RenderContextListener {
      * This may be followed by a call to contextCreated() in which case only textures needs to be
      * re-created.
      */
+    @Override
     public void surfaceLost() {
         SimpleLogger.d(getClass(), "surfaceLost()");
     }
@@ -225,6 +226,7 @@ public class CoreApp implements RenderContextListener {
      * This method MUST be called from a thread that can access GL.
      * The normal case is to call it from window/surface that has onDraw/display callbacks.
      */
+    @Override
     public void drawFrame() {
         if (!hasCalledCreated) {
             throw new IllegalArgumentException(NOT_CALLED_CREATECONTEXT);
@@ -232,8 +234,8 @@ public class CoreApp implements RenderContextListener {
         // If renderer is null it means CoreApp is destroyed - do nothing.
         if (renderer != null) {
             try {
-                //If multiple threads used this method will return immediately
-                logicRunnable.process(rootNode,FrameSampler.getInstance().getDelta());
+                // If multiple threads used this method will return immediately
+                logicRunnable.process(rootNode, FrameSampler.getInstance().getDelta());
                 renderer.beginFrame();
                 if (rootNode != null) {
                     renderer.render(rootNode);
@@ -252,7 +254,8 @@ public class CoreApp implements RenderContextListener {
     }
 
     /**
-     * Sets the scene rootnode, this will update the root node in the logic runnable {@linkplain ComponentProcessorRunnable}
+     * Sets the scene rootnode, this will update the root node in the logic runnable
+     * {@linkplain ComponentProcessorRunnable}
      * A {@linkplain NodeController} will be created for the node and used as {@linkplain EventHandler}
      * 
      * @param node

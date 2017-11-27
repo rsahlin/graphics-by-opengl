@@ -381,8 +381,8 @@ public class RenderState {
      * 
      * @param clearFlags The flags for clear function in beginFrame() method of Renderer.
      * The following flags are ored together to enable clearing of multiple buffers.
-     * ConstantValues.DEPTH_BUFFER_BIT, ConstantValues.STENCIL_BUFFER_BIT,
-     * ConstantValues.COLOR_BUFFER_BIT or ConstantValues.NONE
+     * GLES20.DEPTH_BUFFER_BIT, GLES20.STENCIL_BUFFER_BIT,
+     * GLES20.COLOR_BUFFER_BIT or GLES20.GL_NONE
      * @throws IllegalArgumentException If clearFlags is invalid.
      */
     public void setClearFunction(int clearFlags) {

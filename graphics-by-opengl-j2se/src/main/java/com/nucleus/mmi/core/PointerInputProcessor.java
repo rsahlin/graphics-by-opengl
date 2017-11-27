@@ -163,9 +163,6 @@ public class PointerInputProcessor implements PointerListener {
     private void zoom(PointerMotionData pointer1, PointerMotionData pointer2, Vector2D vector1, Vector2D vector2,
             Vector2D center1, Vector2D center2) {
         // Zoom movement
-        System.out.println("DOT1 " + vector1.dot(center1) + ", DOT2: " + vector2.dot(center2) +
-                " LENGTH: "
-                + (vector1.vector[Vector2D.MAGNITUDE] + vector2.vector[Vector2D.MAGNITUDE]));
         sendToListeners(new MMIPointerEvent(pointer1, pointer2, vector1, vector2, vector1.dot(center1),
                 vector2.dot(center2)));
 

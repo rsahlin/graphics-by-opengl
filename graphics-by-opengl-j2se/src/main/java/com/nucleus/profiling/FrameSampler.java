@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.nucleus.SimpleLogger;
-import com.nucleus.texturing.Image;
 
 /**
  * Utility class for keeping track of delta times, normally used to calculate the delta time from one frame to the next.
@@ -422,7 +421,7 @@ public class FrameSampler {
      * @param info
      * @param startTime
      */
-    public void addTag(SampleInfo info, long startTime, Level detail) {
+    public void addTag(SampleInfo info, long startTime) {
         addTag(info.getTag(), startTime, info.getDetail());
     }
 

@@ -31,6 +31,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     protected SurfaceConfiguration surfaceConfig;
     protected Surface surface;
     protected RenderContextListener renderListener;
+    protected boolean waitForClient = false;
 
     public EGLSurfaceView(SurfaceConfiguration surfaceConfig, Renderers version, NucleusActivity nucleusActivity) {
         super(nucleusActivity);
@@ -155,7 +156,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         }
         nucleusActivity.onSurfaceCreated(getWidth(), getHeight());
         EGL14.eglSwapBuffers(EglDisplay, EGLSurface);
-        nucleusActivity.contextCreated(getWidth(),  getHeight());
+        nucleusActivity.contextCreated(getWidth(), getHeight());
     }
 
     @Override
@@ -178,6 +179,15 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         this.renderListener = listener;
     }
 
+    /**
+     * Specify if a call to eglWaitClient() is made after eglSwapBuffers
+     * 
+     * @param waitClient True to call eglWaitClient() efter swapbuffers
+     */
+    public void setWaitClient(boolean waitClient) {
+        this.waitForClient = waitClient;
+    }
+
     @Override
     public void run() {
         SimpleLogger.d(getClass(), "Starting EGL surface thread");
@@ -186,7 +196,9 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             renderListener.drawFrame();
             if (EGLSurface != null) {
                 EGL14.eglSwapBuffers(EglDisplay, EGLSurface);
-                EGL14.eglWaitGL();
+                if (waitForClient) {
+                    EGL14.eglWaitClient();
+                }
             }
         }
         SimpleLogger.d(getClass(), "Exiting surface thread");
