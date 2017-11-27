@@ -21,12 +21,12 @@ import com.nucleus.vecmath.Vector2D;
  */
 public class PointerInputProcessor implements PointerListener {
 
-    public final static int MAX_POINTERS = 5;
+    public int maxPointers = 5;
 
     /**
      * Pointer motion data, one for each supported pointer.
      */
-    PointerMotionData[] pointerMotionData = new PointerMotionData[MAX_POINTERS];
+    PointerMotionData[] pointerMotionData;
 
     /**
      * Scale and offset value for incoming pointer values, this can be used to normalize pointer values.
@@ -53,6 +53,7 @@ public class PointerInputProcessor implements PointerListener {
      * Default constructor
      */
     public PointerInputProcessor() {
+        pointerMotionData = new PointerMotionData[maxPointers];
     }
 
     /**
@@ -66,7 +67,7 @@ public class PointerInputProcessor implements PointerListener {
 
     @Override
     public void pointerEvent(PointerAction action, Type type, long timestamp, int pointer, float[] position) {
-        if (pointer >= MAX_POINTERS) {
+        if (pointer >= maxPointers) {
             return;
         }
         scaledPosition[X] = position[X] * transform[X] + transform[2];
@@ -243,4 +244,24 @@ public class PointerInputProcessor implements PointerListener {
         scale[0] = transform[X];
         scale[1] = transform[Y];
     }
+
+    /**
+     * Returns the max number of pointers that will be reported
+     * 
+     * @return
+     */
+    public int getMaxPointers() {
+        return maxPointers;
+    }
+
+    /**
+     * Sets the max number of pointers that will be reported
+     * 
+     * @param maxPointers
+     */
+    public void setMaxPointers(int maxPointers) {
+        this.maxPointers = maxPointers;
+        pointerMotionData = new PointerMotionData[maxPointers];
+    }
+
 }

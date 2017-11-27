@@ -37,6 +37,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     private float lineWidth = 1;
 
     transient private float[] attributes;
+    transient private boolean attributesDirty = false;
     transient AttributeBuffer buffer;
     /**
      * If drawcount is updated it must be set to buffer in {@link #updateAttributeData()} method.
@@ -214,7 +215,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         attributes[color++] = rgba[1];
         attributes[color++] = rgba[2];
         attributes[color] = rgba[3];
-
+        attributesDirty = true;
     }
 
     @Override
@@ -227,8 +228,11 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
             drawCount = Constants.NO_VALUE;
             drawOffset = Constants.NO_VALUE;
         }
-        buffer.setArray(attributes, 0, 0, attributes.length);
-        buffer.setDirty(true);
+        if (attributesDirty) {
+            buffer.setArray(attributes, 0, 0, attributes.length);
+            buffer.setDirty(true);
+            attributesDirty = false;
+        }
 
     }
 

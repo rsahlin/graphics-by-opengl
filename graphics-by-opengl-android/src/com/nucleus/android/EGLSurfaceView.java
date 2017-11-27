@@ -119,13 +119,13 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        SimpleLogger.d(getClass(), "surfaceChanged()");
+        SimpleLogger.d(getClass(), "surfaceChanged() " + width + ", " + height);
 
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        SimpleLogger.d(getClass(), "surfaceCreated()");
+        SimpleLogger.d(getClass(), "surfaceCreated() ");
         surface = holder.getSurface();
         thread = new Thread(this);
         thread.start();
