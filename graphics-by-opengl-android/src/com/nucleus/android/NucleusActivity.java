@@ -45,6 +45,7 @@ public abstract class NucleusActivity extends Activity
 
     /**
      * Key for setting if EGL14 surface should be used - hint to subclasses
+     * true / false
      */
     public static final String EGL14_SURFACE_KEY = "eglsurface";
     /**
@@ -52,9 +53,14 @@ public abstract class NucleusActivity extends Activity
      */
     public static final String SAMPLES_KEY = "samples";
     /**
-     * Key for setting egl sleep after swapping buffer - ready by {@link EGLSurfaceView}
+     * Key for setting egl sleep, in millis, after swapping buffer - ready by {@link EGLSurfaceView}
      */
     public static final String EGL_SLEEP_KEY = "eglsleep";
+
+    /**
+     * Key for setting egl wait client - true / false
+     */
+    public static final String EGL_WAIT_CLIENT_KEY = "eglwaitclient";
 
     protected SurfaceView surfaceView;
     private static Throwable throwable;
@@ -77,6 +83,10 @@ public abstract class NucleusActivity extends Activity
      * Hint to subclasses
      */
     protected int eglSleep = Constants.NO_VALUE;
+    /**
+     * Hint to subclasses
+     */
+    protected boolean eglWaitClient = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -131,6 +141,8 @@ public abstract class NucleusActivity extends Activity
         samples = (s != null && s.length() != 0) ? Integer.parseInt(s) : Constants.NO_VALUE;
         s = readProperty(EGL_SLEEP_KEY);
         eglSleep = (s != null && s.length() != 0) ? Integer.parseInt(s) : Constants.NO_VALUE;
+        s = readProperty(EGL_WAIT_CLIENT_KEY);
+        eglWaitClient = (s != null && s.contentEquals(Constants.FALSE)) ? false : true;
     }
 
     protected String readProperty(String key) {
