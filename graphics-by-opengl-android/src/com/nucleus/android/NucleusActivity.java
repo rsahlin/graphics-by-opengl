@@ -1,7 +1,12 @@
 package com.nucleus.android;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 import com.nucleus.CoreApp;
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.Constants;
 import com.nucleus.matrix.android.AndroidMatrixEngine;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
@@ -38,6 +43,19 @@ import android.view.WindowManager;
 public abstract class NucleusActivity extends Activity
         implements DialogInterface.OnClickListener {
 
+    /**
+     * Key for setting if EGL14 surface should be used - hint to subclasses
+     */
+    public static final String EGL14_SURFACE_KEY = "eglsurface";
+    /**
+     * Key for setting number of requested samples - hint to subclasses
+     */
+    public static final String SAMPLES_KEY = "samples";
+    /**
+     * Key for setting egl sleep after swapping buffer - ready by {@link EGLSurfaceView}
+     */
+    public static final String EGL_SLEEP_KEY = "eglsleep";
+
     protected SurfaceView surfaceView;
     private static Throwable throwable;
     private static NucleusActivity activity;
@@ -48,8 +66,17 @@ public abstract class NucleusActivity extends Activity
     private long androidUptimeDelta;
     /**
      * Set to false to use GLSurfaceView
+     * Hint to subclasses before creating SurfaceView
      */
     protected boolean useEGL14 = true;
+    /**
+     * Hint to subclasses
+     */
+    protected int samples = Constants.NO_VALUE;
+    /**
+     * Hint to subclasses
+     */
+    protected int eglSleep = Constants.NO_VALUE;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,6 +87,7 @@ public abstract class NucleusActivity extends Activity
         }
         activity = this;
         super.onCreate(savedInstanceState);
+        checkProperties();
         setup(getRenderVersion(), GLSurfaceView.RENDERMODE_CONTINUOUSLY);
     }
 
@@ -93,6 +121,30 @@ public abstract class NucleusActivity extends Activity
     }
 
     /**
+     * Checks for set properties and updates related fields.
+     * Currently checks for EGL/GL Surface usage.
+     */
+    protected void checkProperties() {
+        String egl = readProperty(EGL14_SURFACE_KEY);
+        useEGL14 = egl != null && egl.contentEquals(Constants.FALSE) ? false : true;
+        String s = readProperty(SAMPLES_KEY);
+        samples = (s != null && s.length() != 0) ? Integer.parseInt(s) : Constants.NO_VALUE;
+        s = readProperty(EGL_SLEEP_KEY);
+        eglSleep = (s != null && s.length() != 0) ? Integer.parseInt(s) : Constants.NO_VALUE;
+    }
+
+    protected String readProperty(String key) {
+        try {
+            Process proc = Runtime.getRuntime().exec(new String[] { "/system/bin/getprop", key });
+            BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            return reader.readLine();
+        } catch (IOException e) {
+            SimpleLogger.d(getClass(), "Exception reading property: " + e);
+        }
+        return null;
+    }
+
+    /**
      * Returns the version of the renderer to use
      * 
      * @return
@@ -118,6 +170,7 @@ public abstract class NucleusActivity extends Activity
         createWrapper(version);
         surfaceConfig.setSamples(getSamples());
         surfaceView = createSurfaceView(version, surfaceConfig, rendermode);
+        SimpleLogger.d(getClass(), "Using " + surfaceView.getClass().getSimpleName());
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -242,9 +295,9 @@ public abstract class NucleusActivity extends Activity
         coreApp = CoreApp.createCoreApp(width, height, renderer, clientClass);
     }
 
-
     /**
-     * Call {@link CoreApp#contextCreated(int, int)} - this signalls that context is created and everything is ready to start render
+     * Call {@link CoreApp#contextCreated(int, int)} - this signalls that context is created and everything is ready to
+     * start render
      * 
      * @param width
      * @param height
@@ -257,9 +310,9 @@ public abstract class NucleusActivity extends Activity
         } else if (surfaceView instanceof EGLSurfaceView) {
             ((EGLSurfaceView) surfaceView).setRenderContextListener(coreApp);
         }
-    	
+
     }
-    
+
     protected void handleTouch(MotionEvent event) {
         int index = event.getActionIndex();
         Type type = getType(event.getToolType(index));

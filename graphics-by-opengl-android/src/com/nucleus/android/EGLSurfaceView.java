@@ -13,6 +13,7 @@ import android.opengl.EGLConfig;
 import android.opengl.EGLContext;
 import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
+import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -32,6 +33,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     protected Surface surface;
     protected RenderContextListener renderListener;
     protected boolean waitForClient = false;
+    protected int sleep = 0;
 
     public EGLSurfaceView(SurfaceConfiguration surfaceConfig, Renderers version, NucleusActivity nucleusActivity) {
         super(nucleusActivity);
@@ -185,7 +187,18 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
      * @param waitClient True to call eglWaitClient() efter swapbuffers
      */
     public void setWaitClient(boolean waitClient) {
+        SimpleLogger.d(getClass(), "Setting waitForClient to " + waitClient);
         this.waitForClient = waitClient;
+    }
+
+    /**
+     * Sets number of millis to sleep after swapping buffers, and waitForClient if enabled.
+     * 
+     * @param millis
+     */
+    public void setEGLSleep(int millis) {
+        SimpleLogger.d(getClass(), "Setting sleep to " + millis);
+        sleep = millis;
     }
 
     @Override
@@ -198,6 +211,9 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                 EGL14.eglSwapBuffers(EglDisplay, EGLSurface);
                 if (waitForClient) {
                     EGL14.eglWaitClient();
+                }
+                if (sleep > 0) {
+                    SystemClock.sleep(sleep);
                 }
             }
         }

@@ -103,7 +103,8 @@ public class FrameSampler {
         CREATE_IMAGE(Level.NORMAL),
         LOAD_IMAGE(Level.NORMAL),
         COPY_IMAGE(Level.NORMAL),
-        GENERATE_MIPMAPS(Level.NORMAL);
+        GENERATE_MIPMAPS(Level.NORMAL),
+        DRAWFRAME(Level.NORMAL);
 
         public final Level detail;
 

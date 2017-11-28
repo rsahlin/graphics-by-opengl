@@ -24,7 +24,7 @@ public abstract class RootNode extends Node {
      * Default id for the root node
      */
     public static final String ROOTNODE_ID = "rootnode";
-    
+
     /**
      * Pre defined ids that can be used for scenes and make it more convenient find a scene.
      * 
@@ -61,7 +61,7 @@ public abstract class RootNode extends Node {
         super();
         setType(NodeTypes.rootnode);
     }
-    
+
     /**
      * Sets the root scene node, this rootnode shall be rootnode of all added children.
      * This is the same as adding the scene by calling {@link #addChild(Node)} on each of the children.
@@ -170,13 +170,14 @@ public abstract class RootNode extends Node {
      * @param child
      * @throws IllegalArgumentException If a node with the same ID is already added to the nodetree
      */
+    @Override
     protected void registerChild(Node child) {
         if (childNodeTable.containsKey(child.getId())) {
             throw new IllegalArgumentException("Already added child with id:" + child.getId());
         }
         childNodeTable.put(child.getId(), child);
     }
-    
+
     /**
      * Unregisters the child from list of nodes within the rootnode
      * NOTE - this shall not be called directly
@@ -185,6 +186,7 @@ public abstract class RootNode extends Node {
      * @param parent
      * @throws IllegalArgumentException If the child is not registered with the rootnode
      */
+    @Override
     protected void unregisterChild(Node child) {
         if (childNodeTable.remove(child.getId()) == null) {
             throw new IllegalArgumentException("Node not registered with root:" + child.getId());
@@ -198,6 +200,7 @@ public abstract class RootNode extends Node {
      * 
      * @param renderer
      */
+    @Override
     public void destroy(NucleusRenderer renderer) {
         for (Node node : childNodeTable.values()) {
             node.destroy(renderer);

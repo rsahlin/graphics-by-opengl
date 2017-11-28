@@ -18,9 +18,6 @@ import com.nucleus.scene.Node;
  */
 public class EventManager {
 
-    public final static String TRUE = "true";
-    public final static String FALSE = "false";
-
     private static EventManager eventManager = new EventManager();
 
     private HashMap<String, EventHandler<Node>> handlers = new HashMap<>();
@@ -119,7 +116,7 @@ public class EventManager {
         }
 
     }
-    
+
     private java.util.List<Method> findMethods(Class<?> clazz) {
         Method[] methods;
         try {
@@ -141,7 +138,8 @@ public class EventManager {
 
                     }
                 } else if (method.isAnnotationPresent(Subscribe.class)) {
-                    throw new IllegalArgumentException("Method " + name + " has " + parameterTypes.length + " parameters.");
+                    throw new IllegalArgumentException(
+                            "Method " + name + " has " + parameterTypes.length + " parameters.");
                 }
             } else if (method.isAnnotationPresent(Subscribe.class)) {
                 throw new IllegalArgumentException(name + " must be public");
