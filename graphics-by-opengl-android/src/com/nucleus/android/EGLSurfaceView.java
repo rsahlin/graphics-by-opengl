@@ -5,6 +5,7 @@ import com.nucleus.android.egl14.EGL14Utils;
 import com.nucleus.egl.EGL14Constants;
 import com.nucleus.egl.EGLUtils;
 import com.nucleus.opengl.GLESWrapper.Renderers;
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.SurfaceConfiguration;
 
@@ -208,9 +209,15 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         while (surface != null) {
             renderListener.drawFrame();
             if (EGLSurface != null) {
+                long start = System.currentTimeMillis();
                 EGL14.eglSwapBuffers(EglDisplay, EGLSurface);
+                FrameSampler.getInstance().addTag(FrameSampler.Samples.EGLSWAPBUFFERS, start,
+                        System.currentTimeMillis());
                 if (waitForClient) {
+                    start = System.currentTimeMillis();
                     EGL14.eglWaitClient();
+                    FrameSampler.getInstance().addTag(FrameSampler.Samples.EGLWAITNATIVE, start,
+                            System.currentTimeMillis());
                 }
                 if (sleep > 0) {
                     SystemClock.sleep(sleep);

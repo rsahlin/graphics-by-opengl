@@ -104,7 +104,8 @@ public class FrameSampler {
         LOAD_IMAGE(Level.NORMAL),
         COPY_IMAGE(Level.NORMAL),
         GENERATE_MIPMAPS(Level.NORMAL),
-        DRAWFRAME(Level.NORMAL);
+        EGLSWAPBUFFERS(Level.HIGH),
+        EGLWAITNATIVE(Level.HIGH);
 
         public final Level detail;
 
@@ -164,7 +165,7 @@ public class FrameSampler {
     /**
      * Adjust to log different sample timings, read/write this in your code
      */
-    public Level sampleDetail = Level.NORMAL;
+    public Level sampleDetail = Level.HIGH;
 
     /**
      * Returns the sampler instance
