@@ -31,6 +31,7 @@ import android.view.Display;
 import android.view.Display.Mode;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -104,6 +105,11 @@ public abstract class NucleusActivity extends Activity
     @Override
     public void onResume() {
         SimpleLogger.d(getClass(), "onResume()");
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        surfaceView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         super.onResume();
     }
 
@@ -183,8 +189,6 @@ public abstract class NucleusActivity extends Activity
         surfaceConfig.setSamples(getSamples());
         surfaceView = createSurfaceView(version, surfaceConfig, rendermode);
         SimpleLogger.d(getClass(), "Using " + surfaceView.getClass().getSimpleName());
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(surfaceView);
         Display display = getWindowManager().getDefaultDisplay();

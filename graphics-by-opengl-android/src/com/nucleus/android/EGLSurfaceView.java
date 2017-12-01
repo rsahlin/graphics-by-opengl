@@ -44,52 +44,54 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         getHolder().addCallback(this);
     }
 
-    protected boolean createEglContext() {
+    protected void createEglContext() {
         if (EglDisplay == null) {
+            SimpleLogger.d(getClass(), "egl display is null, creating.");
             EglDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
             if (EglDisplay == EGL14.EGL_NO_DISPLAY) {
-                SimpleLogger.d(getClass(), "Could not create egl display");
-                return false;
+                throw new IllegalArgumentException("Could not create egl display.");
             }
 
             int[] versionArray = new int[2];
             if (!EGL14.eglInitialize(EglDisplay, versionArray, 0, versionArray, 1)) {
                 EglDisplay = null;
-                SimpleLogger.d(getClass(), "Could not initialize egl display");
-                return false;
+                throw new IllegalArgumentException("Could not initialize egl display");
+            }
+            SimpleLogger.d(getClass(), "egl display initialized, version: " + versionArray[0] + "." + versionArray[1]);
+        }
+        if (EglConfig == null) {
+            SimpleLogger.d(getClass(), "egl config is null, creating.");
+
+            int[] eglConfigAttribList = null;
+            if (surfaceConfig != null) {
+                eglConfigAttribList = EGLUtils.createConfig(surfaceConfig);
+            } else {
+                // Create default.
+                eglConfigAttribList = createDefaultConfigAttribs();
+            }
+            int[] numEglConfigs = new int[1];
+            EGLConfig[] eglConfigs = new EGLConfig[1];
+            if (!EGL14.eglChooseConfig(EglDisplay, eglConfigAttribList, 0,
+                    eglConfigs, 0, eglConfigs.length, numEglConfigs, 0)) {
+                throw new IllegalArgumentException("Could not choose egl config.");
+            }
+            EglConfig = eglConfigs[0];
+            surfaceConfig = EGL14Utils.getSurfaceConfig(EglDisplay, EglConfig);
+            SimpleLogger.d(getClass(), "Selected EGL Configuration:");
+            SimpleLogger.d(getClass(), surfaceConfig.toString());
+        }
+        if (EGLContext == null) {
+            SimpleLogger.d(getClass(), "egl context is null, creating.");
+            int[] eglContextAttribList = new int[] {
+                    EGL14.EGL_CONTEXT_CLIENT_VERSION, version.major,
+                    EGL14.EGL_NONE
+            };
+            EGLContext = EGL14.eglCreateContext(EglDisplay, EglConfig,
+                    EGL14.EGL_NO_CONTEXT, eglContextAttribList, 0);
+            if (EGLContext == null) {
+                throw new IllegalArgumentException("Could not create EGL context");
             }
         }
-        int[] eglConfigAttribList = null;
-        if (surfaceConfig != null) {
-            eglConfigAttribList = EGLUtils.createConfig(surfaceConfig);
-        } else {
-            // Create default.
-            eglConfigAttribList = createDefaultConfigAttribs();
-        }
-
-        int[] numEglConfigs = new int[1];
-        EGLConfig[] eglConfigs = new EGLConfig[1];
-        if (!EGL14.eglChooseConfig(EglDisplay, eglConfigAttribList, 0,
-                eglConfigs, 0, eglConfigs.length, numEglConfigs, 0)) {
-            SimpleLogger.d(getClass(), "Could not choose egl config");
-            return false;
-        }
-        EglConfig = eglConfigs[0];
-        surfaceConfig = EGL14Utils.getSurfaceConfig(EglDisplay, EglConfig);
-        SimpleLogger.d(getClass(), "Selected EGL Configuration:");
-        SimpleLogger.d(getClass(), surfaceConfig.toString());
-
-        int[] eglContextAttribList = new int[] {
-                EGL14.EGL_CONTEXT_CLIENT_VERSION, version.major,
-                EGL14.EGL_NONE
-        };
-        EGLContext = EGL14.eglCreateContext(EglDisplay, EglConfig,
-                EGL14.EGL_NO_CONTEXT, eglContextAttribList, 0);
-        if (EGLContext == null) {
-            SimpleLogger.d(getClass(), "Could not create EGL context");
-            return false;
-        }
-        return true;
     }
 
     protected int[] createDefaultConfigAttribs() {
@@ -104,7 +106,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         };
     }
 
-    protected boolean createEglSurface() {
+    protected void createEglSurface() {
         if (EGLSurface == null) {
             int[] eglSurfaceAttribList = new int[] {
                     EGL14.EGL_NONE
@@ -114,10 +116,9 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                     eglSurfaceAttribList, 0);
             if (EGLSurface == null) {
                 SimpleLogger.d(getClass(), "Could not create window surface");
-                return false;
+                throw new IllegalArgumentException("Could not create egl surface.");
             }
         }
-        return true;
     }
 
     @Override
@@ -130,8 +131,14 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceCreated(SurfaceHolder holder) {
         SimpleLogger.d(getClass(), "surfaceCreated() ");
         surface = holder.getSurface();
-        thread = new Thread(this);
-        thread.start();
+        if (thread == null) {
+            thread = new Thread(this);
+            thread.start();
+        } else {
+            if (EGLSurface == null) {
+                createEglSurface();
+            }
+        }
     }
 
     @Override
@@ -144,12 +151,9 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     protected void createEGL() {
-        if (!createEglContext()) {
-            throw new IllegalArgumentException("Could not create EGL context");
-        }
-        if (!createEglSurface()) {
-            throw new IllegalArgumentException("Could not create EGL surface");
-        }
+        boolean created = EGLContext == null;
+        createEglContext();
+        createEglSurface();
         makeCurrent();
         SimpleLogger.d(getClass(), "EGL created and made current");
         EGL14.eglSurfaceAttrib(EglDisplay, EGLSurface, EGL14.EGL_SWAP_BEHAVIOR, EGL14.EGL_BUFFER_DESTROYED);
@@ -157,9 +161,11 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             // EGL14.eglSurfaceAttrib(EglDisplay, EGLSurface, EGL14Constants.EGL_FRONT_BUFFER_AUTO_REFRESH_ANDROID, 1);
             // SimpleLogger.d(getClass(), "Set attrib for: " + EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh);
         }
-        nucleusActivity.onSurfaceCreated(getWidth(), getHeight());
-        EGL14.eglSwapBuffers(EglDisplay, EGLSurface);
-        nucleusActivity.contextCreated(getWidth(), getHeight());
+        if (created) {
+            nucleusActivity.onSurfaceCreated(getWidth(), getHeight());
+            EGL14.eglSwapBuffers(EglDisplay, EGLSurface);
+            nucleusActivity.contextCreated(getWidth(), getHeight());
+        }
     }
 
     @Override
@@ -167,9 +173,6 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         SimpleLogger.d(getClass(), "surfaceDestroyed()");
         surface = null;
         EGLSurface = null;
-        if (renderListener != null) {
-            renderListener.surfaceLost();
-        }
     }
 
     private void makeCurrent() {
@@ -224,7 +227,11 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                 }
             }
         }
+        if (renderListener != null) {
+            renderListener.surfaceLost();
+        }
         SimpleLogger.d(getClass(), "Exiting surface thread");
+        thread = null;
     }
 
 }
