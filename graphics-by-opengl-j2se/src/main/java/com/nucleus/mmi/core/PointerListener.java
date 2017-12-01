@@ -33,8 +33,9 @@ public interface PointerListener {
      * @param pointer Pointer index, 0 and updwards.
      * @param position Pointer x,y position, normally in screen coordinates - implementations MUST create new array for
      * each call.
+     * @param pressure Touch pressure
      */
     public void pointerEvent(PointerAction action, Type type, long timestamp, int pointer,
-            float[] position);
+            float[] position, float pressure);
 
 }

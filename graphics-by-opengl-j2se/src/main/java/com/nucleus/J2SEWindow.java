@@ -107,15 +107,15 @@ public abstract class J2SEWindow {
             case DOWN:
                 coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN, type,
                         timestamp, pointer,
-                        new float[] { xpos, ypos });
+                        new float[] { xpos, ypos }, 0);
                 break;
             case UP:
                 coreApp.getInputProcessor().pointerEvent(PointerAction.UP, type, timestamp, pointer, new float[] {
-                        xpos, ypos });
+                        xpos, ypos }, 0);
                 break;
             case MOVE:
                 coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, type, timestamp, pointer, new float[] {
-                        xpos, ypos });
+                        xpos, ypos }, 0);
             default:
         }
     }

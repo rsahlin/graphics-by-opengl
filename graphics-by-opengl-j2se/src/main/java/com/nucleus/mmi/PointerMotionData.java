@@ -15,7 +15,7 @@ import com.nucleus.mmi.PointerData.PointerAction;
 public class PointerMotionData {
 
     PointerData.Type type;
-    
+
     /**
      * Each pointer data, the first will be the touch down, followed by movement.
      */
@@ -24,7 +24,7 @@ public class PointerMotionData {
     public PointerMotionData(PointerData.Type type) {
         this.type = type;
     }
-    
+
     /**
      * Adds the pointer data to list.
      * This shall only be used by the framework - do NOT call this method.
@@ -135,10 +135,11 @@ public class PointerMotionData {
      * @param timestamp
      * @param pointer
      * @param position
+     * @param pressure
      * @return
      */
-    public PointerData create(PointerAction action, long timestamp, int pointer, float[] position) {
-        return new PointerData(action, timestamp, pointer, position);
+    public PointerData create(PointerAction action, long timestamp, int pointer, float[] position, float pressure) {
+        return new PointerData(action, timestamp, pointer, position, pressure);
     }
 
     /**
@@ -162,10 +163,11 @@ public class PointerMotionData {
 
     /**
      * Returns the type of pointer is used for the motion event, this is the same from down to up.
+     * 
      * @return
      */
     public PointerData.Type getType() {
         return type;
     }
-    
+
 }

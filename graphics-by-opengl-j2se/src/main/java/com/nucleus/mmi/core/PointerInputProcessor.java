@@ -66,7 +66,8 @@ public class PointerInputProcessor implements PointerListener {
     }
 
     @Override
-    public void pointerEvent(PointerAction action, Type type, long timestamp, int pointer, float[] position) {
+    public void pointerEvent(PointerAction action, Type type, long timestamp, int pointer, float[] position,
+            float pressure) {
         if (pointer >= maxPointers) {
             return;
         }
@@ -76,7 +77,7 @@ public class PointerInputProcessor implements PointerListener {
             case MOVE:
                 addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.MOVE, pointer,
                         pointerMotionData[pointer]),
-                        pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition));
+                        pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition, pressure));
                 // More than one pointer is or has been active.
                 if (processTwoPointers && pointerCount == 2 && pointer == 1) {
                     processTwoPointers();
@@ -87,7 +88,7 @@ public class PointerInputProcessor implements PointerListener {
                 pointerMotionData[pointer] = new PointerMotionData(type);
                 addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ACTIVE, pointer,
                         pointerMotionData[pointer]),
-                        pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition));
+                        pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition, pressure));
                 break;
             case UP:
                 pointerCount--;
@@ -96,7 +97,7 @@ public class PointerInputProcessor implements PointerListener {
                 }
                 addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.INACTIVE, pointer,
                         pointerMotionData[pointer]),
-                        pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition));
+                        pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition, pressure));
                 break;
             case ZOOM:
                 if (pointerMotionData[pointer] == null) {

@@ -336,7 +336,7 @@ public abstract class NucleusActivity extends Activity
                 // This is the first pointer, or multitouch pointer going down.
                 coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN, type,
                         event.getEventTime() + androidUptimeDelta, finger,
-                        new float[] { event.getX(index), event.getY(index) });
+                        new float[] { event.getX(index), event.getY(index) }, event.getPressure());
                 break;
             case MotionEvent.ACTION_POINTER_UP:
             case MotionEvent.ACTION_UP:
@@ -344,7 +344,7 @@ public abstract class NucleusActivity extends Activity
                 // This is multitouch or the last pointer going up
                 coreApp.getInputProcessor().pointerEvent(PointerAction.UP, type,
                         event.getEventTime() + androidUptimeDelta,
-                        finger, new float[] { event.getX(index), event.getY(index) });
+                        finger, new float[] { event.getX(index), event.getY(index) }, event.getPressure());
                 break;
             case MotionEvent.ACTION_MOVE:
                 // Handle history
@@ -354,11 +354,12 @@ public abstract class NucleusActivity extends Activity
                     for (int h = 0; h < historySize; h++) {
                         coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, type,
                                 event.getHistoricalEventTime(h) + androidUptimeDelta, finger,
-                                new float[] { event.getHistoricalX(i, h), event.getHistoricalY(i, h) });
+                                new float[] { event.getHistoricalX(i, h), event.getHistoricalY(i, h) },
+                                event.getHistoricalPressure(index, h));
                     }
                     coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, type,
                             event.getEventTime() + androidUptimeDelta, finger,
-                            new float[] { event.getX(i), event.getY(i) });
+                            new float[] { event.getX(i), event.getY(i) }, event.getPressure());
                 }
                 break;
             default:

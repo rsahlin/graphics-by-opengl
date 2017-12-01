@@ -204,6 +204,20 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         int color = getMesh(MeshType.MAIN).getMaterial().getProgram().getShaderVariable(ShaderVariables.aColor)
                 .getOffset();
         internalSetVertex(offset + translate, offset + color, next, z, rgba);
+    }
+
+    /**
+     * Updated the position of a vertice in the line array
+     * 
+     * @param vertice
+     * @param pos
+     * @param z
+     */
+    public void setPos(int vertice, float[] pos, float z) {
+        int offset = buffer.getFloatStride() * vertice;
+        int translate = getMesh(MeshType.MAIN).getMaterial().getProgram().getShaderVariable(ShaderVariables.aTranslate)
+                .getOffset();
+        internalSetVertex(offset + translate, pos, z);
 
     }
 
@@ -218,6 +232,13 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         attributesDirty = true;
     }
 
+    private void internalSetVertex(int translate, float[] pos, float z) {
+        attributes[translate++] = pos[0];
+        attributes[translate++] = pos[1];
+        attributes[translate] = z;
+        attributesDirty = true;
+    }
+
     @Override
     public void updateAttributeData() {
         if (attributes == null || buffer == null) {
@@ -227,6 +248,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
             updateDrawCount(drawCount, drawOffset);
             drawCount = Constants.NO_VALUE;
             drawOffset = Constants.NO_VALUE;
+            attributesDirty = true;
         }
         if (attributesDirty) {
             buffer.setArray(attributes, 0, 0, attributes.length);

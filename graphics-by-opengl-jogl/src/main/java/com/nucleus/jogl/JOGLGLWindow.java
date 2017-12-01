@@ -25,7 +25,6 @@ import com.nucleus.WindowListener;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
-import com.nucleus.opengl.GLESWrapper;
 
 /**
  * 
@@ -294,7 +293,8 @@ public abstract class JOGLGLWindow extends J2SEWindow
         float factor = ZOOM_FACTOR;
         coreApp.getInputProcessor().pointerEvent(PointerAction.ZOOM, PointerData.Type.MOUSE, e.getWhen(),
                 PointerData.POINTER_1, new float[] {
-                        e.getRotation()[1] * factor, e.getRotation()[1] * factor });
+                        e.getRotation()[1] * factor, e.getRotation()[1] * factor },
+                0);
     }
 
     @Override

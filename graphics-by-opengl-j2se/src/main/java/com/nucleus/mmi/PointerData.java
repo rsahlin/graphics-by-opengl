@@ -17,7 +17,7 @@ public class PointerData {
         MOUSE(),
         FINGER();
     }
-    
+
     /**
      * The different pointer actions
      *
@@ -84,6 +84,11 @@ public class PointerData {
     public long timeStamp;
 
     /**
+     * Touch pressure, if reported.
+     */
+    public float pressure;
+
+    /**
      * The pointer action, ie what the type of input action, DOWN, MOVE or UP
      */
     public PointerAction action;
@@ -95,11 +100,13 @@ public class PointerData {
      * @param timestamp The time of the event, in milliseconds.
      * @param pointer Pointer index, eg the touch finger index.
      * @param position Array with x and y position.
+     * @param pressure Touch pressure
      */
-    public PointerData(PointerAction action, long timestamp, int pointer, float[] position) {
+    public PointerData(PointerAction action, long timestamp, int pointer, float[] position, float pressure) {
         this.action = action;
         this.timeStamp = timestamp;
         this.pointer = pointer;
+        this.pressure = pressure;
         this.position = new float[] { position[PointerListener.X], position[PointerListener.Y] };
     }
 
