@@ -7,18 +7,15 @@
     <parent>
         <groupId>com.super2k.graphics-by-opengl</groupId>
         <artifactId>graphics-by-opengl</artifactId>
-        <version>${graphics-by-gl-version}</version>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>graphics-by-opengl-lwjgl3</artifactId>
     <name>graphics-by-opengl-lwjgl3</name>
     <dependencies>
         <dependency>
-            <groupId>com.super2k.vecmath</groupId>
-            <artifactId>vecmath</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.super2k.graphics-by-opengl</groupId>
             <artifactId>graphics-by-opengl-j2se</artifactId>
+            <version>0.0.1-SNAPSHOT</version>            
         </dependency>
         <dependency>
             <groupId>junit</groupId>

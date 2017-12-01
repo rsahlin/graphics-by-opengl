@@ -5,13 +5,13 @@
         <graphics-by-gl-version>0.0.1-SNAPSHOT</graphics-by-gl-version>
         <vecmath-version>0.0.1-SNAPSHOT</vecmath-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <android.maven.version>4.4.3</android.maven.version>
+        <android.maven.version>4.5.0</android.maven.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     <groupId>com.super2k.graphics-by-opengl</groupId>
     <artifactId>graphics-by-opengl</artifactId>
-    <version>${graphics-by-gl-version}</version>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Graphics By OpenGL - Parent</name>
     <modules>
@@ -38,19 +38,14 @@
                 <artifactId>vecmath</artifactId>
                 <version>${vecmath-version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.super2k.graphics-by-opengl</groupId>
-                <artifactId>graphics-by-opengl-j2se</artifactId>
-                <version>${graphics-by-gl-version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>
         <pluginManagement>
             <plugins>
                 <plugin>
-			        <groupId>org.apache.maven.plugins</groupId>
-			        <artifactId>maven-compiler-plugin</artifactId>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
                         <source>1.8</source>
                         <target>1.8</target>
