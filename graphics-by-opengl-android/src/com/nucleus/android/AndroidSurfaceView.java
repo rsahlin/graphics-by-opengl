@@ -12,12 +12,13 @@ import com.nucleus.android.egl10.EGL10Utils;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.SurfaceConfiguration;
-
+import android.annotation.SuppressLint;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.EGLWindowSurfaceFactory;
 import android.opengl.GLSurfaceView.Renderer;
 import android.view.MotionEvent;
 
+@SuppressLint("ClickableViewAccessibility")
 public class AndroidSurfaceView extends GLSurfaceView
         implements GLSurfaceView.EGLConfigChooser, Renderer, EGLWindowSurfaceFactory {
 

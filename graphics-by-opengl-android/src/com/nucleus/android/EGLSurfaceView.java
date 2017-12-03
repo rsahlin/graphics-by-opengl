@@ -8,7 +8,7 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.SurfaceConfiguration;
-
+import android.annotation.SuppressLint;
 import android.opengl.EGL14;
 import android.opengl.EGLConfig;
 import android.opengl.EGLContext;
@@ -20,6 +20,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+@SuppressLint("ClickableViewAccessibility")
 public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
 
     Thread thread;
