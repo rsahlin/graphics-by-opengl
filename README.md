@@ -36,8 +36,16 @@ Check by opening 'Help' - 'Install new software' - 'What is already installed?'
 Uninstall software from 'The Android Opensource Project' and fetch Andmore from Eclipse marketplace.
 - JDK 1.7 or 1.8 (Not 1.9)
 Check with 'javac -version' 
+
+For Android:
 - Android standalone SDK for windows:
 https://developer.android.com/studio/index.html#downloads - scroll down to 'Get just the command line tools'
+- android-maven-plugin : Follow instructions at: http://simpligility.github.io/android-maven-plugin/
+- Local maven installation of Android platform SDK to be used, defaults to 27.
+To install execute the following, where $ANDROID_HOME is your android sdk folder (use %ANDROID_HOME% on Windows):
+mvn install:install-file -Dfile=$ANDROID_HOME/platforms/android-27/android.jar -DgroupId=com.google.android -DartifactId=android -Dversion=7.1 -Dpackaging=jar
+
+Project structure:
 
 graphics-by-opengl-j2se contains all APIs and implementation that is not platform specific
 - the majority of functionality and code should be here.
