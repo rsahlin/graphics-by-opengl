@@ -56,7 +56,7 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener, Mou
         frame.setVisible(true);
         frame.addMouseListener(this);
         frame.addMouseMotionListener(this);
-        wrapper = new LWJGL3GLES20Wrapper();
+        wrapper = new LWJGL3GLES30Wrapper();
     }
 
     @Override

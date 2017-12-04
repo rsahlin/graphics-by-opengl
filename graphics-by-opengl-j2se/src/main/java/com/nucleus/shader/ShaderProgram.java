@@ -167,7 +167,30 @@ public abstract class ShaderProgram {
          */
         protected String getShaderSourceName() {
             return (pass != null ? pass.name().toLowerCase()
-                    : "") + (category != null ? category : "") + (shading != null ? shading.name().toLowerCase() : "");
+                    : "") + (shading != null ? shading.name().toLowerCase() : "") + (category != null ? category : "");
+        }
+
+        /**
+         * Returns the shading as a string, or "" if not set.
+         * 
+         * @return
+         */
+        protected String getShadingString() {
+            return (shading != null ? shading.name().toLowerCase() : "");
+        }
+
+        /**
+         * Returns the category as a string, or "" if not set
+         * 
+         * @return
+         */
+        protected String getCategoryString() {
+            return (category != null ? category : "");
+        }
+
+        @Override
+        public String toString() {
+            return getShaderSourceName();
         }
 
     }
@@ -304,13 +327,12 @@ public abstract class ShaderProgram {
      * 
      * @param pass The pass this shader is for or null if not used
      * @param shading The shading function or null if not used
-     * @param category The category of funciton or null of not used
+     * @param category The category of function or null of not used
      * @param mapping
      */
     protected ShaderProgram(Pass pass, Texture2D.Shading shading, String category, VariableMapping[] mapping) {
         function = new Function(pass, shading, category);
         setMapping(mapping);
-        setShaderSource();
     }
 
     protected void setMapping(VariableMapping[] mapping) {
@@ -319,9 +341,9 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets the name of the vertex/fragment shaders
+     * Sets the name of the vertex/fragment shaders - shall be called before the program is created.
      */
-    protected void setShaderSource() {
+    protected void createShaderSource() {
         String shaderSourceName = function.getShaderSourceName();
         vertexShaderName = PROGRAM_DIRECTORY + shaderSourceName + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
         fragmentShaderName = PROGRAM_DIRECTORY + shaderSourceName + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
@@ -379,6 +401,7 @@ public abstract class ShaderProgram {
      * @throws RuntimeException If there is an error reading shader sources or compiling/linking program.
      */
     public void createProgram(GLES20Wrapper gles) {
+        createShaderSource();
         if (vertexShaderName == null || fragmentShaderName == null) {
             throw new ShaderProgramException(MUST_SET_FIELDS);
         }

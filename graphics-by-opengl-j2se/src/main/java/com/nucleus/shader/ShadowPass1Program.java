@@ -18,7 +18,7 @@ import com.nucleus.vecmath.Matrix;
  *
  */
 public class ShadowPass1Program extends ShaderProgram {
-    
+
     /**
      * The program that should be used to render the object casting shadow
      */
@@ -37,12 +37,9 @@ public class ShadowPass1Program extends ShaderProgram {
     }
 
     @Override
-    protected void setShaderSource() {
-        vertexShaderName = PROGRAM_DIRECTORY + "transform" + VERTEX_TYPE
-                + SHADER_SOURCE_SUFFIX;
-        fragmentShaderName = PROGRAM_DIRECTORY + Pass.SHADOW1.name().toLowerCase() + function.shading.name()
-                + FRAGMENT_TYPE
-                + SHADER_SOURCE_SUFFIX;
+    protected void createShaderSource() {
+        vertexShaderName = objectProgram.vertexShaderName;
+        fragmentShaderName = PROGRAM_DIRECTORY + function.getShaderSourceName() + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
     }
 
     @Override
@@ -83,5 +80,5 @@ public class ShadowPass1Program extends ShaderProgram {
         // TODO Auto-generated method stub
 
     }
-    
+
 }

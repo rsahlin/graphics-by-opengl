@@ -96,7 +96,7 @@ public class GLFWWindow extends J2SEWindow {
         gles = GLES.createCapabilities();
         // Render with OpenGL ES
         GLFW.glfwShowWindow(window);
-        wrapper = new LWJGL3GLES20Wrapper();
+        wrapper = new LWJGL3GLES30Wrapper();
     }
 
     @Override

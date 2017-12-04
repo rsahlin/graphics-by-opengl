@@ -17,17 +17,11 @@ public class TransformProgram extends ShaderProgram {
      * Name of this shader - TODO where should this be defined?
      */
     protected static final String CATEGORY = "transform";
-    
+
     protected TransformProgram(Pass pass, Texture2D.Shading shading, String category) {
         super(pass, shading, category, ShaderVariables.values());
     }
-    
-    @Override
-    protected void setShaderSource() {
-        vertexShaderName = PROGRAM_DIRECTORY + CATEGORY + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
-        fragmentShaderName = PROGRAM_DIRECTORY + CATEGORY + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
-    }
-    
+
     @Override
     public ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Shading shading) {
         switch (pass) {
@@ -38,8 +32,8 @@ public class TransformProgram extends ShaderProgram {
             case SHADOW1:
                 ShadowPass1Program program = new ShadowPass1Program(this, shading, CATEGORY);
                 return AssetManager.getInstance().getProgram(renderer, program);
-                default:
-            throw new IllegalArgumentException("Invalid pass " + pass);
+            default:
+                throw new IllegalArgumentException("Invalid pass " + pass);
         }
     }
 

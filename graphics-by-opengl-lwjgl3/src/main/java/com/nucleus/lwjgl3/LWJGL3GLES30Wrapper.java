@@ -8,7 +8,7 @@ import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES30Wrapper;
 
-public class LWJGL3GLES20Wrapper extends GLES30Wrapper {
+public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
 
     @Override
     public void glAttachShader(int program, int shader) {
@@ -87,7 +87,8 @@ public class LWJGL3GLES20Wrapper extends GLES30Wrapper {
 
     @Override
     public void glGetProgramiv(int program, int pname, int[] params, int offset) {
-        IntBuffer v = ByteBuffer.allocateDirect((params.length - offset) * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer v = ByteBuffer.allocateDirect((params.length - offset) * 4).order(ByteOrder.nativeOrder())
+                .asIntBuffer();
         org.lwjgl.opengles.GLES20.glGetProgramiv(program, pname, v);
         toArray((IntBuffer) v.rewind(), params, offset);
     }
