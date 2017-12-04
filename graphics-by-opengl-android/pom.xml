@@ -15,11 +15,12 @@
             <plugin>
                 <groupId>com.simpligility.maven.plugins</groupId>
                 <artifactId>android-maven-plugin</artifactId>
+                <version>4.5.0</version>
                 <configuration>
                     <androidManifestFile>AndroidManifest.xml</androidManifestFile>
                     <resourceDirectory>${project.basedir}/res</resourceDirectory>
                     <sdk>
-                        <platform>24</platform>
+                        <platform>25</platform>
                     </sdk>
                 </configuration>
             </plugin>
@@ -73,6 +74,12 @@
         </pluginManagement>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>android</artifactId>
+            <version>7.1</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.super2k.graphics-by-opengl</groupId>
             <artifactId>graphics-by-opengl-j2se</artifactId>
