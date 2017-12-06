@@ -43,7 +43,8 @@ https://developer.android.com/studio/index.html#downloads - scroll down to 'Get 
 - android-maven-plugin : Follow instructions at: http://simpligility.github.io/android-maven-plugin/
 - Local maven installation of Android platform SDK to be used, defaults to 27.
 To install execute the following, where $ANDROID_HOME is your android sdk folder (use %ANDROID_HOME% on Windows):
-mvn install:install-file -Dfile=$ANDROID_HOME/platforms/android-27/android.jar -DgroupId=com.google.android -DartifactId=android -Dversion=7.1 -Dpackaging=jar
+Execute the following in the base directory for graphics-by-opengl:
+mvn install:install-file -Dfile="%ANDROID_HOME%/platforms/android-27/android.jar" -DgroupId="com.google.android" -DartifactId=android -Dversion="7.1" -Dpackaging=jar
 
 Project structure:
 
