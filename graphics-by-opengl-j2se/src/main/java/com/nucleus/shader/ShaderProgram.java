@@ -1140,7 +1140,7 @@ public abstract class ShaderProgram {
      * @return Key value for this shader program.
      */
     public String getKey() {
-        return getClass().getCanonicalName() + (function.shading != null ? function.shading.name() : "");
+        return getClass().getSimpleName() + function.getShadingString() + function.getCategoryString();
     }
 
     /**

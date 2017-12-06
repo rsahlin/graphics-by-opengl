@@ -23,9 +23,9 @@ varying vec2 vTexCoord;
 
 void main()
 {
-//    if (texture2D(uTexture, vTexCoord).a < 1.0) {
-//        discard;
-//    } else {
+    if (texture2D(uTexture, vTexCoord).a < 1.0) {
+        discard;
+    } else {
         gl_FragColor = vec4(1,1,1,1);
-//    }
+    }
 }
