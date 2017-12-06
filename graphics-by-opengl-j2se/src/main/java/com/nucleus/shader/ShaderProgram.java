@@ -548,6 +548,24 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Calls {@link #setUniformMatrices(float[][], Mesh)} to update uniform matrices.
+     * Then call {@link #setUniformData(float[], Mesh)} to set program specific uniform data
+     * Then sets uniforms to GL by calling {@link #setUniforms(GLES20Wrapper, VariableMapping[])}
+     * When this method returns the uniform data has been uploaded to GL and is ready.
+     * 
+     * @param gles
+     * @param uniforms The uniform array store - destination
+     * @param matrices modelview, projection and renderpas matrices
+     * @param mesh
+     */
+    public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
+            throws GLException {
+        setUniformMatrices(uniforms, matrices, mesh);
+        setUniformData(uniforms, mesh);
+        setUniforms(gles, uniforms, sourceUniforms);
+    }
+
+    /**
      * Checks the status of the attribute name mapping and if enabled the attributes are bound to locations
      * that correspond to location that is appended or prefixed to the name.
      * 
@@ -1016,24 +1034,6 @@ public abstract class ShaderProgram {
             }
         }
         return size;
-    }
-
-    /**
-     * Calls {@link #setUniformMatrices(float[][], Mesh)} to update uniform matrices.
-     * Then call {@link #setUniformData(float[], Mesh)} to set program specific uniform data
-     * Then sets uniforms to GL by calling {@link #setUniforms(GLES20Wrapper, VariableMapping[])}
-     * When this method returns the uniform data has been uploaded to GL and is ready.
-     * 
-     * @param gles
-     * @param uniforms The uniform array store - destination
-     * @param matrices modelview, projection and renderpas matrices
-     * @param mesh
-     */
-    public void updateUniforms(GLES20Wrapper gles, float[] uniforms, float[][] matrices, Mesh mesh)
-            throws GLException {
-        setUniformMatrices(uniforms, matrices, mesh);
-        setUniformData(uniforms, mesh);
-        setUniforms(gles, uniforms, sourceUniforms);
     }
 
     /**

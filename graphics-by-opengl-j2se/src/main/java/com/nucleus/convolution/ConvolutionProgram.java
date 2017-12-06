@@ -86,7 +86,7 @@ public class ConvolutionProgram extends ShaderProgram {
     }
 
     @Override
-    public void updateUniforms(GLES20Wrapper gles, float[] uniforms, float[][] matrices, Mesh mesh)
+    public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
             throws GLException {
         Matrix.mul4(matrices[0], matrices[1]);
         System.arraycopy(matrices[0], 0, getUniforms(), 0, Matrix.MATRIX_ELEMENTS);
@@ -100,8 +100,8 @@ public class ConvolutionProgram extends ShaderProgram {
             case ALL:
             case MAIN:
                 return this;
-                default:
-            throw new IllegalArgumentException("Invalid pass " + pass);
+            default:
+                throw new IllegalArgumentException("Invalid pass " + pass);
         }
     }
 

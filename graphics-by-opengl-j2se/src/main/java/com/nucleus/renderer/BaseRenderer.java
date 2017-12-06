@@ -557,7 +557,7 @@ class BaseRenderer implements NucleusRenderer {
 
         material.setBlendModeSeparate(gles);
         program.updateAttributes(gles, mesh);
-        program.updateUniforms(gles, program.getUniforms(), matrices, mesh);
+        program.updateUniforms(gles, matrices, mesh);
 
         AttributeBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         ElementBuffer indices = mesh.getElementBuffer();
