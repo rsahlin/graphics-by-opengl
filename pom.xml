@@ -6,8 +6,8 @@
         <vecmath-version>0.0.1-SNAPSHOT</vecmath-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <android.maven.version>4.5.0</android.maven.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
     <groupId>com.super2k.graphics-by-opengl</groupId>
     <artifactId>graphics-by-opengl</artifactId>
@@ -46,9 +46,10 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.7.0</version>
                     <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
+                        <source>1.7</source>
+                        <target>1.7</target>
                     </configuration>
                 </plugin>
             </plugins>
