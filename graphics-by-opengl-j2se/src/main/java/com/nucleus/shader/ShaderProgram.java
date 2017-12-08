@@ -165,7 +165,7 @@ public abstract class ShaderProgram {
          * 
          * @return
          */
-        protected String getShaderSourceName() {
+        public String getShaderSourceName() {
             return (pass != null ? pass.name().toLowerCase()
                     : "") + (shading != null ? shading.name().toLowerCase() : "") + (category != null ? category : "");
         }
@@ -175,7 +175,7 @@ public abstract class ShaderProgram {
          * 
          * @return
          */
-        protected String getShadingString() {
+        public String getShadingString() {
             return (shading != null ? shading.name().toLowerCase() : "");
         }
 
@@ -184,8 +184,17 @@ public abstract class ShaderProgram {
          * 
          * @return
          */
-        protected String getCategoryString() {
+        public String getCategoryString() {
             return (category != null ? category : "");
+        }
+
+        /**
+         * Returns the pass as a string, or "" if null.
+         * 
+         * @return
+         */
+        public String getPassString() {
+            return (pass != null ? pass.name() : "");
         }
 
         @Override
@@ -342,11 +351,32 @@ public abstract class ShaderProgram {
 
     /**
      * Sets the name of the vertex/fragment shaders - shall be called before the program is created.
+     * Calls {@link #getVertexShaderSource()} and {@link #getFragmentShaderSource()} to collect
+     * shader sourcenames
      */
     protected void createShaderSource() {
-        String shaderSourceName = function.getShaderSourceName();
-        vertexShaderName = PROGRAM_DIRECTORY + shaderSourceName + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
-        fragmentShaderName = PROGRAM_DIRECTORY + shaderSourceName + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
+        vertexShaderName = PROGRAM_DIRECTORY + getVertexShaderSource() + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
+        fragmentShaderName = PROGRAM_DIRECTORY + getFragmentShaderSource() + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
+    }
+
+    /**
+     * Returns the name of the vertex shader source, this is taken from the function.
+     * Override in sublcasses to point to other vertex shader source
+     * 
+     * @return
+     */
+    protected String getVertexShaderSource() {
+        return function.getShaderSourceName();
+    }
+
+    /**
+     * Returns the name of the fragment shader source, this is taken from the function.
+     * Override in sublcasses to point to other fragment shader source
+     * 
+     * @return
+     */
+    protected String getFragmentShaderSource() {
+        return function.getShaderSourceName();
     }
 
     /**

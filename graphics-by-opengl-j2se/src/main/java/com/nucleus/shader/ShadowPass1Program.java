@@ -37,9 +37,17 @@ public class ShadowPass1Program extends ShaderProgram {
     }
 
     @Override
-    protected void createShaderSource() {
-        vertexShaderName = objectProgram.vertexShaderName;
-        fragmentShaderName = PROGRAM_DIRECTORY + function.getShaderSourceName() + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
+    protected String getFragmentShaderSource() {
+        if (function.getPass() != null) {
+            return function.getPassString() + function.getShadingString();
+        } else {
+            return function.getShaderSourceName();
+        }
+    }
+
+    @Override
+    protected String getVertexShaderSource() {
+        return objectProgram.getVertexShaderSource();
     }
 
     @Override
