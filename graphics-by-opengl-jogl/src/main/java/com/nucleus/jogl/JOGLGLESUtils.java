@@ -2,6 +2,7 @@ package com.nucleus.jogl;
 
 import java.util.ArrayList;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.opengl.GLES20Wrapper;
 
 /**
@@ -33,7 +34,7 @@ public class JOGLGLESUtils {
             int[] names = new int[1];
             gles.glGenBuffers(names);
             usedBufferNames.add(names);
-            System.out.println("Allocated 1 buffer object name: " + names[0]);
+            SimpleLogger.d(JOGLGLESUtils.class, "Allocated 1 buffer object name: " + names[0]);
             return names;
         }
     }

@@ -177,7 +177,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-        System.out.println("reshape: x,y= " + x + ", " + y + " width,height= " + width + ", " + height);
+        SimpleLogger.d(getClass(), "reshape: x,y= " + x + ", " + y + " width,height= " + width + ", " + height);
         windowSize.setWidth(width);
         windowSize.setHeight(height);
         if (windowListener != null) {

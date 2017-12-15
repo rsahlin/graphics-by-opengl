@@ -12,7 +12,7 @@
  */
 
  /**
- * Fragment shader for shadow pass 1
+ * shadow pass 1 fragment shader for a textured 2D object using alpha to specify occlusion 
  * @author Richard Sahlin
  */
  

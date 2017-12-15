@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.nucleus.SimpleLogger;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
@@ -113,7 +114,7 @@ public class GSONSceneFactory implements SceneSerializer {
                     is.close();
                 } catch (IOException e) {
                     // Cannot do anything.
-                    System.out.println(ERROR_CLOSING_STREAM + e.getMessage());
+                    SimpleLogger.d(getClass(), ERROR_CLOSING_STREAM + e.getMessage());
                 }
             }
         }

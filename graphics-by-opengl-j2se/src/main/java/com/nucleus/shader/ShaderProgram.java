@@ -757,7 +757,7 @@ public abstract class ShaderProgram {
         gles.glAttachShader(program, vertexShader);
         gles.glAttachShader(program, fragmentShader);
         gles.glLinkProgram(program);
-        System.out.println(gles.glGetProgramInfoLog(program));
+        SimpleLogger.d(getClass(), gles.glGetProgramInfoLog(program));
         GLUtils.handleError(gles, LINK_PROGRAM_ERROR);
     }
 

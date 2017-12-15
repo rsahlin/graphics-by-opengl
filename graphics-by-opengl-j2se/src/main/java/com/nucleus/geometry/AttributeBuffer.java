@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /**
@@ -69,8 +70,8 @@ public class AttributeBuffer extends BufferObject {
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         attribByteStride = sizePerVertex * dataSize;
         attribFloatStride = sizePerVertex;
-        System.out
-                .println("Allocated atrribute buffer with " + sizeInBytes + " bytes, sizePerVertices " + sizePerVertex
+        SimpleLogger.d(getClass(),
+                "Allocated atrribute buffer with " + sizeInBytes + " bytes, sizePerVertices " + sizePerVertex
                         + " dataSize " + dataSize + ", capacity() "
                         + attributes.capacity());
     }
@@ -162,7 +163,7 @@ public class AttributeBuffer extends BufferObject {
     public void setByteStride(int byteStride) {
         attribByteStride = byteStride;
     }
-    
+
     /**
      * Copies float values from the source array into the buffer.
      * Use this method when many values shall be written.
@@ -215,6 +216,5 @@ public class AttributeBuffer extends BufferObject {
         }
         return result;
     }
-
 
 }

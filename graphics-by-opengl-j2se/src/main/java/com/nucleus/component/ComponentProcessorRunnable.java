@@ -1,6 +1,7 @@
 package com.nucleus.component;
 
 import com.nucleus.CoreApp;
+import com.nucleus.SimpleLogger;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RootNode;
@@ -23,21 +24,22 @@ public class ComponentProcessorRunnable implements Runnable {
      * Creates a new runnable that can be used to call component (logic) processing in a separate thread.
      * 
      */
-    public ComponentProcessorRunnable(NucleusRenderer renderer, ComponentProcessor componentProcessor, boolean enableMultiThread) {
+    public ComponentProcessorRunnable(NucleusRenderer renderer, ComponentProcessor componentProcessor,
+            boolean enableMultiThread) {
         if (renderer == null || componentProcessor == null) {
             throw new IllegalArgumentException(NULL_PARAMETER + renderer + ", " + componentProcessor);
         }
         this.renderer = renderer;
         this.componentProcessor = componentProcessor;
-        //TODO Create thread manager that handles available thread, lease thread instead of creating here
+        // TODO Create thread manager that handles available thread, lease thread instead of creating here
         if (Runtime.getRuntime().availableProcessors() > 1 && enableMultiThread) {
-            System.out.println("Started extra process for component processing, number of processors: "
+            SimpleLogger.d(getClass(), "Started extra process for component processing, number of processors: "
                     + Runtime.getRuntime().availableProcessors());
             runnableThread = new Thread(this);
         } else {
-            System.out.println("Running everything on one thread.");
+            SimpleLogger.d(getClass(), "Running everything on one thread.");
         }
-        
+
     }
 
     /**
@@ -52,7 +54,7 @@ public class ComponentProcessorRunnable implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("Started thread to call processNode()");
+        SimpleLogger.d(getClass(), "Started thread to call processNode()");
         running = true;
         while (running) {
             synchronized (this) {
@@ -64,7 +66,7 @@ public class ComponentProcessorRunnable implements Runnable {
                 }
             }
         }
-        System.out.println("Exited call processNode() thread");
+        SimpleLogger.d(getClass(), "Exited call processNode() thread");
     }
 
     public void destroy() {
@@ -76,10 +78,11 @@ public class ComponentProcessorRunnable implements Runnable {
         if (rootNode != null) {
             long start = System.currentTimeMillis();
             componentProcessor.processRoot(rootNode, delta);
-            FrameSampler.getInstance().addTag(FrameSampler.Samples.COMPONENTPROCESSOR, start, System.currentTimeMillis());
+            FrameSampler.getInstance().addTag(FrameSampler.Samples.COMPONENTPROCESSOR, start,
+                    System.currentTimeMillis());
         }
     }
-    
+
     /**
      * Process the root node, updating behavior
      * 
@@ -89,7 +92,7 @@ public class ComponentProcessorRunnable implements Runnable {
     public void process(RootNode rootNode, float delta) {
         this.rootNode = rootNode;
         if (runnableThread != null) {
-            
+
             if (!runnableThread.isAlive()) {
                 runnableThread.start();
             } else {
@@ -98,7 +101,7 @@ public class ComponentProcessorRunnable implements Runnable {
                 }
             }
         } else {
-            internalProcessNode(rootNode,FrameSampler.getInstance().getDelta());
+            internalProcessNode(rootNode, FrameSampler.getInstance().getDelta());
         }
     }
 }

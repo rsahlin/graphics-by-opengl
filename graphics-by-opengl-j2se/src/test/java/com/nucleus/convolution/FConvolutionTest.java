@@ -16,6 +16,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.Convolution.Kernel;
 import com.nucleus.texturing.Image;
@@ -220,7 +221,7 @@ public class FConvolutionTest implements WindowListener {
             y += myFrame.getHeight();
         }
         frames.add(myFrame);
-        System.out.println("done");
+        SimpleLogger.d(getClass(), "done");
 
     }
 
