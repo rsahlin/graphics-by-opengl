@@ -8,25 +8,33 @@
     </parent>
     <artifactId>graphics-by-opengl-android</artifactId>
     <packaging>aar</packaging>
-    <name>graphics-by-opengl-android</name>
     <build>
-        <sourceDirectory>src</sourceDirectory>
+        <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
             <plugin>
                 <groupId>com.simpligility.maven.plugins</groupId>
                 <artifactId>android-maven-plugin</artifactId>
-                <version>4.5.0</version>
+                <extensions>true</extensions>
                 <configuration>
+                    <resourceDirectory>./res</resourceDirectory>
+                    <sourceDirectories>
+                        <sourceDirectory>src/main/java</sourceDirectory>
+                    </sourceDirectories>
                     <androidManifestFile>AndroidManifest.xml</androidManifestFile>
-                    <resourceDirectory>${project.basedir}/res</resourceDirectory>
                     <sdk>
                         <platform>24</platform>
                     </sdk>
+                    <dex>
+                        <multi-dex>true</multi-dex>
+                    </dex>
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
             </plugin>
         </plugins>
         <pluginManagement>
@@ -35,9 +43,12 @@
                     <groupId>com.simpligility.maven.plugins</groupId>
                     <artifactId>android-maven-plugin</artifactId>
                     <version>4.5.0</version>
-                    <extensions>true</extensions>
+                    <configuration>
+                        <sdk>
+                            <platform>24</platform>
+                        </sdk>
+                    </configuration>
                 </plugin>
-
                 <!--This plugin's configuration is used to store Eclipse 
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
