@@ -1,4 +1,4 @@
-﻿#graphics-by-opengl
+#graphics-by-opengl
 A Java based API for graphics using OpenGLES.
 
 As this is a multi platform project I use Eclipse and import as Maven project.
@@ -44,8 +44,9 @@ https://developer.android.com/studio/index.html#downloads - scroll down to 'Get 
 - Local maven installation of Android platform SDK to be used, defaults to 24.
 To install execute the following, where $ANDROID_HOME is your android sdk folder (use %ANDROID_HOME% on Windows):
 Execute the following in the base directory for graphics-by-opengl:
-mvn install:install-file -Dfile="%ANDROID_HOME%/platforms/android-24/android.jar" -DgroupId="com.google.android" -DartifactId=android -Dversion="7.0" -Dpackaging=jar
+mvn install:install-file -Dfile="%ANDROID_HOME%/platforms/android-25/android.jar" -DgroupId="com.google.android" -DartifactId=android -Dversion="25" -Dpackaging=jar
 
+The Android SDK level is set as property 'android.sdk'
 
 Project structure:
 

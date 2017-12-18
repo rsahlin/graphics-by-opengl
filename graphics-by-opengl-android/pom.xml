@@ -21,9 +21,6 @@
                         <sourceDirectory>src/main/java</sourceDirectory>
                     </sourceDirectories>
                     <androidManifestFile>AndroidManifest.xml</androidManifestFile>
-                    <sdk>
-                        <platform>24</platform>
-                    </sdk>
                     <dex>
                         <multi-dex>true</multi-dex>
                     </dex>
@@ -45,7 +42,7 @@
                     <version>4.5.0</version>
                     <configuration>
                         <sdk>
-                            <platform>24</platform>
+                            <platform>${android.sdk}</platform>
                         </sdk>
                     </configuration>
                 </plugin>
@@ -88,7 +85,7 @@
         <dependency>
             <groupId>com.google.android</groupId>
             <artifactId>android</artifactId>
-            <version>7.0</version>
+            <version>${android.sdk}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
