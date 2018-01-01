@@ -20,7 +20,7 @@ public class GLFWWindow extends J2SEWindow {
     // The window handle
     private long window;
     private GLESCapabilities gles;
-    
+
     /**
      * 
      * @param coreAppStarter
@@ -116,6 +116,7 @@ public class GLFWWindow extends J2SEWindow {
 
     public void swapBuffers() {
         GLFW.glfwSwapBuffers(window); // swap the color buffers
+        GLFW.glfwSwapInterval(1);
     }
 
 }

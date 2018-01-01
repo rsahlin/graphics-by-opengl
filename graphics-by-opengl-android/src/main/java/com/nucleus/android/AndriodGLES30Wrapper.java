@@ -3,7 +3,9 @@ package com.nucleus.android;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
 
-public class AndriodGLES30Wrapper extends AndroidGLES20Wrapper {
+import com.nucleus.opengl.GLES30Wrapper;
+
+public class AndriodGLES30Wrapper extends GLES30Wrapper {
 
     @Override
     public void glAttachShader(int program, int shader) {
@@ -340,6 +342,16 @@ public class AndriodGLES30Wrapper extends AndroidGLES20Wrapper {
     public void glColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
         android.opengl.GLES30.glColorMask(red, green, blue, alpha);
     }
-     
-    
+
+    @Override
+    public void glSamplerParameteri(int sampler, int pname, int param) {
+        android.opengl.GLES30.glSamplerParameteri(sampler, pname, param);
+
+    }
+
+    @Override
+    public void glUniform1iv(int location, int count, int[] v0, int offset) {
+        android.opengl.GLES30.glUniform1iv(location, count, v0, offset);
+    }
+
 }

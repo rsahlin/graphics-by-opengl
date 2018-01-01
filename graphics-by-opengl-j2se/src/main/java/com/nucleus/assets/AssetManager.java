@@ -15,10 +15,10 @@ import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.Image.ImageFormat;
-import com.nucleus.texturing.TexParameter;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
+import com.nucleus.texturing.TextureParameter.Parameter;
 import com.nucleus.texturing.TextureType;
 
 /**
@@ -98,21 +98,23 @@ public class AssetManager {
     /**
      * If the reference texture is id reference and the reference is registered then the texture data is copied into
      * the reference, overwriting transient values and non-set (null) values.
+     * 
      * @param reference
      */
     public void getIdReference(Texture2D reference) {
         if (reference != null && reference.getExternalReference().isIdReference()) {
             Texture2D source = getTexture(reference.getExternalReference().getIdReference());
             if (source == null) {
-                throw new IllegalArgumentException("Could not find texture with id reference: " + reference.getExternalReference().getIdReference());
+                throw new IllegalArgumentException("Could not find texture with id reference: "
+                        + reference.getExternalReference().getIdReference());
             }
             TextureFactory.copyTextureInstance(source, reference);
         } else {
-            //What should be done?
+            // What should be done?
             SimpleLogger.d(getClass(), "Called getIdReference with null reference:");
         }
     }
-    
+
     /**
      * Returns the texture for the rendertarget attachement, if not already create it will be created and stored in the
      * assetmanager with id taken from renderTarget and attachement
@@ -130,13 +132,13 @@ public class AssetManager {
         }
         Texture2D texture = textures.get(renderTarget.getAttachementId(attachement));
         if (texture == null) {
-            //TODO - What values should be used when creating the texture?
+            // TODO - What values should be used when creating the texture?
             TextureType type = TextureType.Texture2D;
             RESOLUTION resolution = RESOLUTION.HD;
             int[] size = attachement.getSize();
             TextureParameter texParams = new TextureParameter(
-                    new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST, TexParameter.CLAMP,
-                            TexParameter.CLAMP });
+                    new Parameter[] { Parameter.NEAREST, Parameter.NEAREST, Parameter.CLAMP,
+                            Parameter.CLAMP });
             ImageFormat format = ImageFormat.valueOf(attachement.getFormat());
             texture = TextureFactory.createTexture(renderer.getGLES(), type, resolution, size, format, texParams);
             texture.setId(renderTarget.getAttachementId(attachement));
@@ -192,6 +194,7 @@ public class AssetManager {
 
     /**
      * Fetches a texture from map of registered textures
+     * 
      * @param id Id of the texture, ususally the external source path.
      * @return The texture, or null if not registered
      */
@@ -201,9 +204,9 @@ public class AssetManager {
             return null;
         }
         return texture;
-        
+
     }
-    
+
     /**
      * Sets the external reference for the object id
      * 

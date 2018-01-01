@@ -11,6 +11,7 @@ import java.util.List;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
+import com.nucleus.common.Constants;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Property;
@@ -20,6 +21,8 @@ import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES30;
+import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.NucleusRenderer;
@@ -166,12 +169,11 @@ public abstract class ShaderProgram {
          * @return
          */
         public String getShaderSourceName() {
-            return (pass != null ? pass.name().toLowerCase()
-                    : "") + (shading != null ? shading.name().toLowerCase() : "") + (category != null ? category : "");
+            return (getPassString() + getShadingString() + getCategoryString());
         }
 
         /**
-         * Returns the shading as a string, or "" if not set.
+         * Returns the shading as a lowercase string, or "" if not set.
          * 
          * @return
          */
@@ -180,21 +182,21 @@ public abstract class ShaderProgram {
         }
 
         /**
-         * Returns the category as a string, or "" if not set
+         * Returns the category as a lowercase string, or "" if not set
          * 
          * @return
          */
         public String getCategoryString() {
-            return (category != null ? category : "");
+            return (category != null ? category.toLowerCase() : "");
         }
 
         /**
-         * Returns the pass as a string, or "" if null.
+         * Returns the pass as a lowercase string, or "" if null.
          * 
          * @return
          */
         public String getPassString() {
-            return (pass != null ? pass.name() : "");
+            return (pass != null ? pass.name().toLowerCase() : "");
         }
 
         @Override
@@ -212,15 +214,15 @@ public abstract class ShaderProgram {
     /**
      * The GL program object
      */
-    private int program = -1;
+    private int program = Constants.NO_VALUE;
     /**
      * The GL vertex shader object
      */
-    private int vertexShader = -1;
+    private int vertexShader = Constants.NO_VALUE;
     /**
      * The GL fragment shader object
      */
-    private int fragmentShader = -1;
+    private int fragmentShader = Constants.NO_VALUE;
 
     /**
      * This is the main array holding all active shader variables
@@ -767,16 +769,18 @@ public abstract class ShaderProgram {
      * @param gles
      * @param sourceName
      * @param type
+     * @param library true if this is not the main shader
      * @return The created shader
      * @throws GLException If there is an reading from stream, etting or compiling shader source.
      */
-    public int compileShader(GLES20Wrapper gles, String sourceName, int type) throws GLException {
+    public int compileShader(GLES20Wrapper gles, String sourceName, int type, boolean library) throws GLException {
         int shader = gles.glCreateShader(type);
         if (vertexShader == 0) {
             throw new GLException(CREATE_SHADER_ERROR, GLES20.GL_NO_ERROR);
         }
         try {
-            compileShader(gles, getClass().getClassLoader().getResourceAsStream(sourceName), shader, sourceName);
+            compileShader(gles, getClass().getClassLoader().getResourceAsStream(sourceName), shader, type, sourceName,
+                    library);
         } catch (IOException e) {
             switch (type) {
                 case GLES20.GL_VERTEX_SHADER:
@@ -796,29 +800,41 @@ public abstract class ShaderProgram {
      * @param gles GLES20 platform specific wrapper.
      * @param shaderStream Inputstream to the shader source.
      * @param shader OpenGL object to compile the shader to.
+     * @param type GL_VERTEX_SHADER or GL_FRAGMENT_SHADER
      * @param sourceName Name of the sourcefile - this is used for error reporting.
+     * @param libray true if this is a library function for shader
      * @throws GLException If there is an reading from stream, etting or compiling shader source.
      */
-    public void compileShader(GLES20Wrapper gles, InputStream shaderStream, int shader, String sourceName)
+    public void compileShader(GLES20Wrapper gles, InputStream shaderStream, int shader, int type, String sourceName,
+            boolean library)
             throws IOException, GLException {
-        if (gles.getShaderVersion() == GLES20Wrapper.SHADING_LANGUAGE_100) {
-            compileShader(gles, gles.getVersionedShaderSource(shaderStream) + getCommonVertexSources(), shader,
-                    sourceName);
+        if (!gles.getInfo().hasExtensionSupport(GLES_EXTENSIONS.separate_shader_objects)) {
+            compileShader(gles,
+                    gles.getVersionedShaderSource(shaderStream, type, library)
+                            + getCommonVertexSources(),
+                    shader, sourceName);
         } else {
-            compileShader(gles, gles.getVersionedShaderSource(shaderStream), shader, sourceName);
+            compileShader(gles, gles.getVersionedShaderSource(shaderStream, type, library), shader,
+                    sourceName);
         }
     }
 
     private void compileShader(GLES20Wrapper gles, String source, int shader, String sourceName) throws GLException {
-        gles.glShaderSource(shader, source);
-        GLUtils.handleError(gles, SHADER_SOURCE_ERROR + sourceName);
-        gles.glCompileShader(shader);
-        GLUtils.handleError(gles, COMPILE_SHADER_ERROR + sourceName);
-        checkCompileStatus(gles, shader, sourceName);
+        try {
+            gles.glShaderSource(shader, source);
+            GLUtils.handleError(gles, SHADER_SOURCE_ERROR + sourceName);
+            gles.glCompileShader(shader);
+            GLUtils.handleError(gles, COMPILE_SHADER_ERROR + sourceName);
+            checkCompileStatus(gles, shader, sourceName);
+        } catch (GLException e) {
+            SimpleLogger.d(getClass(), "Exception compiling shader source:" + System.lineSeparator());
+            SimpleLogger.d(getClass(), source);
+            throw e;
+        }
     }
 
     /**
-     * Checks the compile status of the specified shader program - if shader is not sucessfully compiled an exception
+     * Checks the compile status of the specified shader program - if shader is not successfully compiled an exception
      * is thrown.
      * 
      * @param gles GLES20 platform specific wrapper.
@@ -834,6 +850,22 @@ public abstract class ShaderProgram {
                     + gles.glGetShaderInfoLog(shader),
                     GLES20.GL_FALSE);
         }
+    }
+
+    /**
+     * Checks the link status of the specified program - if link status returns false then an exception is thrown.
+     * 
+     * @param gles
+     * @param program The program to check link status on
+     * @throws GLException
+     */
+    public void checkLinkStatus(GLES20Wrapper gles, int program) throws GLException {
+        int[] linkStatus = new int[1];
+        gles.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
+        if (linkStatus[0] != GLES20.GL_TRUE) {
+            throw new GLException(LINK_PROGRAM_ERROR, GLES20.GL_FALSE);
+        }
+
     }
 
     /**
@@ -931,10 +963,12 @@ public abstract class ShaderProgram {
             }
             program = gles.glCreateProgram();
             SimpleLogger.d(getClass(),
-                    "Program name: " + program + ", vertex: " + vertexShader + " fragment: " + fragmentShader);
-            vertexShader = compileShader(gles, vertexName, GLES20.GL_VERTEX_SHADER);
-            fragmentShader = compileShader(gles, fragmentName, GLES20.GL_FRAGMENT_SHADER);
+                    "Program name: " + program + ", vertex: " + vertexShader + " fragment: " + fragmentShader
+                            + " from sources: " + vertexName + ", " + fragmentName);
+            vertexShader = compileShader(gles, vertexName, GLES20.GL_VERTEX_SHADER, false);
+            fragmentShader = compileShader(gles, fragmentName, GLES20.GL_FRAGMENT_SHADER, false);
             linkProgram(gles, program, vertexShader, commonVertexShaders, fragmentShader);
+            checkLinkStatus(gles, program);
             fetchProgramInfo(gles);
             bindAttributeNames(gles);
             createUniformStorage(shaderVariables);
@@ -974,6 +1008,9 @@ public abstract class ShaderProgram {
                 gles.glUniformMatrix4fv(variable.getLocation(), variable.getSize(), false, uniforms, offset);
                 break;
             case GLES20.GL_SAMPLER_2D:
+                gles.glUniform1iv(variable.getLocation(), variable.getSize(), samplers, offset);
+                break;
+            case GLES30.GL_SAMPLER_2D_SHADOW:
                 gles.glUniform1iv(variable.getLocation(), variable.getSize(), samplers, offset);
                 break;
             default:
@@ -1037,9 +1074,17 @@ public abstract class ShaderProgram {
     protected int getSamplerSize(ShaderVariable[] variables) {
         int size = 0;
         for (ShaderVariable v : variables) {
-            if (v != null && v.getType() == VariableType.UNIFORM && v.getDataType() == GLES20.GL_SAMPLER_2D) {
-                size += v.getSizeInFloats();
-            }
+            if (v != null && v.getType() == VariableType.UNIFORM)
+                switch (v.getDataType()) {
+                    case GLES20.GL_SAMPLER_2D:
+                    case GLES20.GL_SAMPLER_CUBE:
+                    case GLES30.GL_SAMPLER_2D_SHADOW:
+                    case GLES30.GL_SAMPLER_2D_ARRAY:
+                    case GLES30.GL_SAMPLER_2D_ARRAY_SHADOW:
+                    case GLES30.GL_SAMPLER_CUBE_SHADOW:
+                    case GLES30.GL_SAMPLER_3D:
+                        size += v.getSizeInFloats();
+                }
         }
         return size;
 
@@ -1218,22 +1263,24 @@ public abstract class ShaderProgram {
      */
     private void createCommonVertexShaders(GLES20Wrapper gles) throws GLException, IOException {
         String[] sourceNames = new String[] { PROGRAM_DIRECTORY + COMMON_VERTEX_SHADER };
-        if (gles.getShaderVersion() != GLES20Wrapper.SHADING_LANGUAGE_100) {
+        if (gles.getInfo().hasExtensionSupport(GLES_EXTENSIONS.separate_shader_objects)) {
+            SimpleLogger.d(getClass(), "Support for separate shader objects, compiling common vertex sources.");
             // Compile into shader names and link
             commonVertexShaders = new ArrayList<>();
             for (String source : sourceNames) {
                 commonVertexShaders
-                        .add(compileShader(gles, source, GLES20.GL_VERTEX_SHADER));
+                        .add(compileShader(gles, source, GLES20.GL_VERTEX_SHADER, true));
             }
         } else {
+            SimpleLogger.d(getClass(), "No support for separate shader objects, adding common sources.");
             createCommonVertexSources(gles, sourceNames);
         }
     }
 
     /**
-     * Creates the common vertex shaders that can be used to share functions between shaders.
-     * If version is gles 2 then collect the source and append when compiling shaders, otherwise compile
-     * separately.
+     * Creates the common vertex shaders that can be used to share functions between shaders, as a collection
+     * of source strings.
+     * Use this if platform does not have support for separate shader objects.
      * 
      * @param gles
      * @param vertexSourceNames Array with vertex shader sources
@@ -1243,7 +1290,7 @@ public abstract class ShaderProgram {
         commonVertexSources = new ArrayList<>();
         for (String name : vertexSourceNames) {
             commonVertexSources.add(gles.getVersionedShaderSource(getClass().getClassLoader()
-                    .getResourceAsStream(name)));
+                    .getResourceAsStream(name), GLES20.GL_VERTEX_SHADER, true));
         }
     }
 

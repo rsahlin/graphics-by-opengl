@@ -408,4 +408,9 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
         org.lwjgl.opengles.GLES20.glColorMask(red, green, blue, alpha);
     }
 
+    @Override
+    public void glSamplerParameteri(int sampler, int pname, int param) {
+        org.lwjgl.opengles.GLES30.glSamplerParameteri(sampler, pname, sampler);
+    }
+
 }

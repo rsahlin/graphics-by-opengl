@@ -37,19 +37,19 @@ public class LWJGL3Application extends J2SEWindowApplication {
     public LWJGL3Application(String[] args, Renderers version, Class<?> clientClass) {
         super(args, version, clientClass);
         switch (windowType) {
-        case GLFW:
-            createCoreApp(windowWidth, windowHeight);
-            ((GLFWWindow) window).swapBuffers();
-            coreApp.contextCreated(windowWidth, windowHeight);
-            break;
-        default:
-            // Do nothing - create context based on callback
+            case GLFW:
+                createCoreApp(windowWidth, windowHeight);
+                ((GLFWWindow) window).swapBuffers();
+                coreApp.contextCreated(windowWidth, windowHeight);
+                break;
+            default:
+                // Do nothing - create context based on callback
         }
     }
 
     @Override
     protected void setProperties(String[] args) {
-        this.windowType = WindowType.JAWT;
+        this.windowType = WindowType.GLFW;
         super.setProperties(args);
     }
 
@@ -65,14 +65,14 @@ public class LWJGL3Application extends J2SEWindowApplication {
     @Override
     protected J2SEWindow createWindow(Renderers version) {
         switch (windowType) {
-        case GLFW:
-            window = new GLFWWindow(this, windowWidth, windowHeight);
-            break;
-        case JAWT:
-            window = new JAWTWindow(this, windowWidth, windowHeight);
-            break;
-        default:
-            throw new IllegalArgumentException("Not implemented for " + windowType);
+            case GLFW:
+                window = new GLFWWindow(this, windowWidth, windowHeight);
+                break;
+            case JAWT:
+                window = new JAWTWindow(this, windowWidth, windowHeight);
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + windowType);
         }
         return window;
     }
@@ -95,13 +95,13 @@ public class LWJGL3Application extends J2SEWindowApplication {
 
     public void run() {
         switch (windowType) {
-        case GLFW:
-            running = true;
-            while (running) {
-                window.drawFrame();
-            }
-            break;
-        default:
+            case GLFW:
+                running = true;
+                while (running) {
+                    window.drawFrame();
+                }
+                break;
+            default:
         }
     }
 

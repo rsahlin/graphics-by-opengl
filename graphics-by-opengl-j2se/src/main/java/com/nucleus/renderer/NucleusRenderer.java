@@ -313,12 +313,4 @@ public interface NucleusRenderer {
      */
     public void setProjection(float[] matrix, int index);
 
-    /**
-     * Returns the renderer info.
-     * This is likely to only be available after the context is created.
-     * 
-     * @return The renderer info, or null if called before {@link #init(SurfaceConfiguration)} has been called.
-     */
-    public RendererInfo getInfo();
-
 }

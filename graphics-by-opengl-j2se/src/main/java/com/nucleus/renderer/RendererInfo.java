@@ -6,6 +6,7 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.common.StringUtils;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
 
 /**
  * Info about the renderer in the system.
@@ -96,4 +97,32 @@ public class RendererInfo {
         }
         return false;
     }
+
+    /**
+     * Returns true if the platform has support for the extension.
+     * Will check for extension match regardless of extension prefix like GL_EXT_ etc
+     * 
+     * @param extension
+     * @return
+     */
+    public boolean hasExtensionSupport(GLES_EXTENSIONS extension) {
+        return extension == null ? false : hasExtensionNoPrefix(extension.name());
+    }
+
+    /**
+     * Checks if there is support for extension - excluding prefix like GL_EXT_, GL_ARB_ etc
+     * 
+     * @param extension
+     * @return
+     */
+    private boolean hasExtensionNoPrefix(String extension) {
+        for (String str : extensions) {
+            int index = str.indexOf('_', 3) + 1;
+            if (str.substring(index).equals(extension)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
