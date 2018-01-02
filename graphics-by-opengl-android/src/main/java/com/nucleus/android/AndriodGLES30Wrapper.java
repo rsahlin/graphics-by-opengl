@@ -354,4 +354,9 @@ public class AndriodGLES30Wrapper extends GLES30Wrapper {
         android.opengl.GLES30.glUniform1iv(location, count, v0, offset);
     }
 
+    @Override
+    public void glValidateProgram(int program) {
+        android.opengl.GLES30.glValidateProgram(program);
+    }
+
 }

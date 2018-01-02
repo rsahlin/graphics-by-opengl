@@ -81,6 +81,13 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public abstract void glCompileShader(int shader);
 
     /**
+     * Abstraction for glValidateProgram()
+     * 
+     * @param program
+     */
+    public abstract void glValidateProgram(int program);
+
+    /**
      * Abstraction for glCreateShader()
      * 
      * @param type

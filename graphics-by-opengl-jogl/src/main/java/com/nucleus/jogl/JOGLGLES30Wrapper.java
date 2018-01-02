@@ -414,4 +414,9 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
         gles.glSamplerParameteri(sampler, pname, param);
     }
 
+    @Override
+    public void glValidateProgram(int program) {
+        gles.glValidateProgram(program);
+    }
+
 }

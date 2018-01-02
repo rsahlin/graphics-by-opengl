@@ -415,4 +415,9 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
         gles.glColorMask(red, green, blue, alpha);
     }
 
+    @Override
+    public void glValidateProgram(int program) {
+        gles.glValidateProgram(program);
+    }
+
 }

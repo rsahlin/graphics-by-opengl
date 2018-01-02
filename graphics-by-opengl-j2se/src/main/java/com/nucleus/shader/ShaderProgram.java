@@ -12,6 +12,7 @@ import java.util.List;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
+import com.nucleus.common.Environment;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Property;
@@ -864,6 +865,17 @@ public abstract class ShaderProgram {
         gles.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
         if (linkStatus[0] != GLES20.GL_TRUE) {
             throw new GLException(LINK_PROGRAM_ERROR, GLES20.GL_FALSE);
+        }
+        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG)) {
+            gles.glValidateProgram(program);
+            String result = gles.glGetProgramInfoLog(program);
+            int[] status = new int[1];
+            gles.glGetProgramiv(program, GLES20.GL_VALIDATE_STATUS, status, 0);
+            if (status[0] != GLES20.GL_TRUE) {
+                SimpleLogger.d(getClass(), "Could not validate program\n");
+                SimpleLogger.d(getClass(), result);
+                throw new IllegalArgumentException("Could not validate program:\n" + result);
+            }
         }
 
     }
