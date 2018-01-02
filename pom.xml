@@ -8,7 +8,6 @@
         <android.maven.version>4.5.0</android.maven.version>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <android.sdk>25</android.sdk>
     </properties>
     <groupId>com.super2k.graphics-by-opengl</groupId>
     <artifactId>graphics-by-opengl</artifactId>
