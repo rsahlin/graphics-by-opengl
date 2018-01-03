@@ -85,6 +85,7 @@ public abstract class ShaderProgram {
 
     public final static String SHADER_SOURCE_ERROR = "Error setting shader source: ";
     public final static String COMPILE_SHADER_ERROR = "Error compiling shader: ";
+    public final static String COMPILE_STATUS_ERROR = "Failed compile status: ";
     public final static String CREATE_SHADER_ERROR = "Can not create shader object, context not active?";
     public final static String LINK_PROGRAM_ERROR = "Error linking program: ";
     public final static String BIND_ATTRIBUTE_ERROR = "Error binding attribute: ";
@@ -828,7 +829,7 @@ public abstract class ShaderProgram {
             GLUtils.handleError(gles, COMPILE_SHADER_ERROR + sourceName);
             checkCompileStatus(gles, shader, sourceName);
         } catch (GLException e) {
-            SimpleLogger.d(getClass(), "Exception compiling shader source:" + System.lineSeparator());
+            SimpleLogger.d(getClass(), e.getMessage() + " from source:" + System.lineSeparator());
             SimpleLogger.d(getClass(), source);
             throw e;
         }
@@ -847,7 +848,7 @@ public abstract class ShaderProgram {
         IntBuffer compileStatus = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
         gles.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compileStatus);
         if (compileStatus.get(0) != GLES20.GL_TRUE) {
-            throw new GLException(COMPILE_SHADER_ERROR + sourceName + " : " + compileStatus.get(0) + "\n"
+            throw new GLException(COMPILE_STATUS_ERROR + sourceName + " : " + compileStatus.get(0) + "\n"
                     + gles.glGetShaderInfoLog(shader),
                     GLES20.GL_FALSE);
         }
