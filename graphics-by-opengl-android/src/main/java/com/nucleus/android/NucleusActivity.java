@@ -44,25 +44,44 @@ import android.view.WindowManager;
 public abstract class NucleusActivity extends Activity
         implements DialogInterface.OnClickListener {
 
+    public final static String SYSTEM_PROPERTY = "/system/bin/getprop";
+    
     /**
-     * Key for setting if EGL14 surface should be used - hint to subclasses
-     * true / false
+     * Used to convert android adb setprop to system property.
+     * @author rdsn
+     *
      */
-    public static final String EGL14_SURFACE_KEY = "eglsurface";
-    /**
-     * Key for setting number of requested samples - hint to subclasses
-     */
-    public static final String SAMPLES_KEY = "samples";
-    /**
-     * Key for setting egl sleep, in millis, after swapping buffer - ready by {@link EGLSurfaceView}
-     */
-    public static final String EGL_SLEEP_KEY = "eglsleep";
-
-    /**
-     * Key for setting egl wait client - true / false
-     */
-    public static final String EGL_WAIT_CLIENT_KEY = "eglwaitclient";
-
+    public enum PropertyKeys {
+        /**
+         * Key for setting if EGL14 surface should be used - hint to subclasses
+         * true / false
+         */
+        EGL14SURFACE("com.nucleus.egl14surface"),
+        /**
+         * Key for setting number of requested samples - hint to subclasses
+         */
+        SAMPLES("com.nucleus.samples"),
+        /**
+         * Key for setting egl sleep, in millis, after swapping buffer - ready by {@link EGLSurfaceView}
+         */
+        EGLSLEEP("com.nucleus.eglsleep"),
+        /**
+         * Key for setting egl wait client - true / false
+         */
+        EGLWAITCLIENT("com.nucleus.eglwaitclient"),
+        /**
+         * EGL swap interval, only works if using eglsurface
+         */
+        EGLSWAPINTERVAL("com.nucleus.eglswapinterval");
+     
+        public final String key;
+        
+        private PropertyKeys(String key) {
+            this.key = key;
+        }
+        
+    }
+    
     protected SurfaceView surfaceView;
     private static Throwable throwable;
     private static NucleusActivity activity;
@@ -76,6 +95,12 @@ public abstract class NucleusActivity extends Activity
      * Hint to subclasses before creating SurfaceView
      */
     protected boolean useEGL14 = true;
+    
+    /**
+     * EGL swap interval, must use egl surfaceview for this to work.
+     */
+    protected int eglSwapInterval = 1;
+    
     /**
      * Hint to subclasses
      */
@@ -87,7 +112,7 @@ public abstract class NucleusActivity extends Activity
     /**
      * Hint to subclasses
      */
-    protected boolean eglWaitClient = true;
+    protected boolean eglWaitClient = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -141,23 +166,31 @@ public abstract class NucleusActivity extends Activity
      * Currently checks for EGL/GL Surface usage.
      */
     protected void checkProperties() {
-        String egl = readProperty(EGL14_SURFACE_KEY);
-        useEGL14 = egl != null && egl.contentEquals(Constants.FALSE) ? false : true;
-        String s = readProperty(SAMPLES_KEY);
-        samples = (s != null && s.length() != 0) ? Integer.parseInt(s) : Constants.NO_VALUE;
-        s = readProperty(EGL_SLEEP_KEY);
-        eglSleep = (s != null && s.length() != 0) ? Integer.parseInt(s) : Constants.NO_VALUE;
-        s = readProperty(EGL_WAIT_CLIENT_KEY);
-        eglWaitClient = (s != null && s.contentEquals(Constants.FALSE)) ? false : true;
+        String egl = readProperty(PropertyKeys.EGL14SURFACE.name());
+        useEGL14 = egl != null && egl.length() > 0 ? Boolean.parseBoolean(egl) : useEGL14;
+        String s = readProperty(PropertyKeys.SAMPLES.name());
+        samples = s != null && s.length() != 0 ? Integer.parseInt(s) : Constants.NO_VALUE;
+        s = readProperty(PropertyKeys.EGLSLEEP.name());
+        eglSleep = (s != null && s.length() > 0) ? Integer.parseInt(s) : Constants.NO_VALUE;
+        s = readProperty(PropertyKeys.EGLWAITCLIENT.name());
+        eglWaitClient = s != null && s.length() > 0 ? Boolean.parseBoolean(s) : eglWaitClient;
+        s = readProperty(PropertyKeys.EGLSWAPINTERVAL.name());
+        eglSwapInterval = s != null && s.length() > 0 ? Integer.parseInt(s) : eglSwapInterval;
+        SimpleLogger.d(getClass(), "useEGL14=" + useEGL14 + ", samples=" + samples + ", eglSleep=" + eglSleep + ", eglWaitClient=" + eglWaitClient + ", eglSwapInterval=" + eglSwapInterval);
     }
 
-    protected String readProperty(String key) {
+    /**
+     * Reads a system property with the specified key, key is converted to lowercase.
+     * @param key
+     * @return The property key or null
+     */
+    public static String readProperty(String key) {
         try {
-            Process proc = Runtime.getRuntime().exec(new String[] { "/system/bin/getprop", key });
+            Process proc = Runtime.getRuntime().exec(new String[] { SYSTEM_PROPERTY, key.toLowerCase() });
             BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             return reader.readLine();
         } catch (IOException e) {
-            SimpleLogger.d(getClass(), "Exception reading property: " + e);
+            SimpleLogger.d(NucleusActivity.class, "Exception reading property: " + e);
         }
         return null;
     }

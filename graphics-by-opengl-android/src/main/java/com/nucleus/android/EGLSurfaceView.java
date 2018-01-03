@@ -158,9 +158,11 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         makeCurrent();
         SimpleLogger.d(getClass(), "EGL created and made current");
         EGL14.eglSurfaceAttrib(EglDisplay, EGLSurface, EGL14.EGL_SWAP_BEHAVIOR, EGL14.EGL_BUFFER_DESTROYED);
+        EGL14.eglSwapInterval(EglDisplay, 0);
+        SimpleLogger.d(getClass(), "Set egl swap interval to 0");
         if (surfaceConfig.hasExtensionSupport(EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh)) {
-            // EGL14.eglSurfaceAttrib(EglDisplay, EGLSurface, EGL14Constants.EGL_FRONT_BUFFER_AUTO_REFRESH_ANDROID, 1);
-            // SimpleLogger.d(getClass(), "Set attrib for: " + EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh);
+            EGL14.eglSurfaceAttrib(EglDisplay, EGLSurface, EGL14Constants.EGL_FRONT_BUFFER_AUTO_REFRESH_ANDROID, 1);
+            SimpleLogger.d(getClass(), "Set attrib for: " + EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh);
         }
         if (created) {
             nucleusActivity.onSurfaceCreated(getWidth(), getHeight());
@@ -206,15 +208,24 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         sleep = millis;
     }
 
+    /**
+     * Draws the current frame.
+     */
+    protected void drawFrame() {
+        renderListener.drawFrame();
+    }
+    
     @Override
     public void run() {
         SimpleLogger.d(getClass(), "Starting EGL surface thread");
         createEGL();
         while (surface != null) {
-            renderListener.drawFrame();
+            drawFrame();
             if (EGLSurface != null) {
                 long start = System.currentTimeMillis();
+                EGL14.eglSwapInterval(EglDisplay, 0);
                 EGL14.eglSwapBuffers(EglDisplay, EGLSurface);
+                EGL14.eglWaitGL();
                 FrameSampler.getInstance().addTag(FrameSampler.Samples.EGLSWAPBUFFERS, start,
                         System.currentTimeMillis());
                 if (waitForClient) {
