@@ -2,6 +2,7 @@ package com.nucleus.android;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.android.egl14.EGL14Utils;
+import com.nucleus.common.Environment;
 import com.nucleus.egl.EGL14Constants;
 import com.nucleus.egl.EGLUtils;
 import com.nucleus.opengl.GLESWrapper.Renderers;
@@ -220,15 +221,19 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     public void run() {
         SimpleLogger.d(getClass(), "Starting EGL surface thread");
         createEGL();
+        Environment env = Environment.getInstance();
         while (surface != null) {
             drawFrame();
             if (EGLSurface != null) {
                 long start = System.currentTimeMillis();
                 EGL14.eglSwapInterval(EglDisplay, 0);
                 EGL14.eglSwapBuffers(EglDisplay, EGLSurface);
-                EGL14.eglWaitGL();
-                FrameSampler.getInstance().addTag(FrameSampler.Samples.EGLSWAPBUFFERS, start,
-                        System.currentTimeMillis());
+                boolean eglWaitGL = env.isProperty(Environment.Property.EGLWAITGL, false);
+                if (eglWaitGL) {
+                    EGL14.eglWaitGL();
+                }
+                FrameSampler.getInstance().addTag(FrameSampler.Samples.EGLSWAPBUFFERS.name() + "-WAITGL=" + eglWaitGL, start,
+                        System.currentTimeMillis(), FrameSampler.Samples.EGLSWAPBUFFERS.detail);
                 if (waitForClient) {
                     start = System.currentTimeMillis();
                     EGL14.eglWaitClient();

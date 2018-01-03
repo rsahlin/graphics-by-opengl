@@ -131,6 +131,7 @@ public abstract class NucleusActivity extends Activity
      * Currently checks for EGL/GL Surface usage.
      */
     protected void checkProperties() {
+        Environment e = Environment.getInstance();
         String egl = readProperty(Environment.Property.EGL14SURFACE.name());
         useEGL14 = egl != null && egl.length() > 0 ? Boolean.parseBoolean(egl) : useEGL14;
         String s = readProperty(Environment.Property.SAMPLES.name());
@@ -141,7 +142,8 @@ public abstract class NucleusActivity extends Activity
         eglWaitClient = s != null && s.length() > 0 ? Boolean.parseBoolean(s) : eglWaitClient;
         s = readProperty(Environment.Property.EGLSWAPINTERVAL.name());
         eglSwapInterval = s != null && s.length() > 0 ? Integer.parseInt(s) : eglSwapInterval;
-        SimpleLogger.d(getClass(), "useEGL14=" + useEGL14 + ", samples=" + samples + ", eglSleep=" + eglSleep + ", eglWaitClient=" + eglWaitClient + ", eglSwapInterval=" + eglSwapInterval);
+        e.setProperty(Environment.Property.EGLWAITGL, readProperty(Environment.Property.EGLWAITGL.name()));
+        SimpleLogger.d(getClass(), "useEGL14=" + useEGL14 + ", samples=" + samples + ", eglSleep=" + eglSleep + ", eglWaitClient=" + eglWaitClient + ", eglSwapInterval=" + eglSwapInterval + ", eglWaitGL=" + e.getProperty(Environment.Property.EGLWAITGL));
     }
 
     /**

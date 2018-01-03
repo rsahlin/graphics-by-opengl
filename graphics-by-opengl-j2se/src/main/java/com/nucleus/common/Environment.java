@@ -30,6 +30,10 @@ public class Environment {
          */
         EGLSLEEP("com.nucleus.eglsleep"),
         /**
+         * Set to true to wait for gl after eglSwapBuffers
+         */
+        EGLWAITGL("com.nucleus.eglwaitgl"),
+        /**
          * Key for setting egl wait client - true / false
          */
         EGLWAITCLIENT("com.nucleus.eglwaitclient"),
@@ -37,7 +41,6 @@ public class Environment {
          * EGL swap interval, only works if using eglsurface
          */
         EGLSWAPINTERVAL("com.nucleus.eglswapinterval");
-        
 
         public final String key;
 
@@ -46,9 +49,8 @@ public class Environment {
         }
 
     }
-    
+
     private Map<Property, String> properties = new HashMap();
-    
 
     private static Environment environment;
 
@@ -64,19 +66,20 @@ public class Environment {
     }
 
     /**
-     * Checks each {@link Property} and stores value in local hashmap , call {@link #getProperty(Property)} to read value.
+     * Checks each {@link Property} and stores value in local hashmap , call {@link #getProperty(Property)} to read
+     * value.
      */
     public void loadProperties() {
         for (Property p : Property.values()) {
-            String value = getProperty(p);
+            String value = readProperty(p);
             if (value != null) {
                 properties.put(p, value);
                 SimpleLogger.d(getClass(), "Read environment property " + p + " to " + value);
             }
         }
-        
+
     }
-    
+
     /**
      * Sets the property value to the local map and to system properties. The value will be retained when
      * calling {@link #loadProperties()}
@@ -89,15 +92,23 @@ public class Environment {
         System.setProperty(property.key, value);
         SimpleLogger.d(getClass(), "Set environment property " + property + " to " + value);
     }
-    
-    
+
     /**
-     * Returns the system property for the key defined in the Property enum.
-     * This will fetch the property from System.getProperty()
+     * Returns the system property from local map, call {@link #loadProperties()} to first load properties.
+     * 
      * @param property
      * @return The property value, or null if not set.
      */
     public String getProperty(Property property) {
+        return System.getProperty(property.key);
+    }
+
+    /**
+     * Fetches a system property, by getting it from System.getProperty()
+     * @param property
+     * @return
+     */
+    public String readProperty(Property property) {
         return System.getProperty(property.key);
     }
     
