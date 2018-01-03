@@ -8,6 +8,7 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.SurfaceConfiguration;
+
 import android.annotation.SuppressLint;
 import android.opengl.EGL14;
 import android.opengl.EGLConfig;

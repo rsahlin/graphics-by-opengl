@@ -40,7 +40,6 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
         this.gles = gles;
     }
 
-
     @Override
     public void glAttachShader(int program, int shader) {
         gles.glAttachShader(program, shader);
@@ -408,6 +407,16 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
         gles.glColorMask(red, green, blue, alpha);
+    }
+
+    @Override
+    public void glSamplerParameteri(int sampler, int pname, int param) {
+        gles.glSamplerParameteri(sampler, pname, param);
+    }
+
+    @Override
+    public void glValidateProgram(int program) {
+        gles.glValidateProgram(program);
     }
 
 }

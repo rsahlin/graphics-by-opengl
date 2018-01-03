@@ -26,10 +26,10 @@ import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.RootNode;
-import com.nucleus.scene.Node.NodeTypes;
 
 /**
  * GSON Serializer for nucleus scenegraph.
@@ -103,6 +103,7 @@ public class GSONSceneFactory implements SceneSerializer {
 
     @Override
     public RootNode importScene(String filename) throws NodeException {
+        SimpleLogger.d(getClass(), "Importing scene:" + filename);
         ClassLoader loader = getClass().getClassLoader();
         InputStream is = loader.getResourceAsStream(filename);
         try {

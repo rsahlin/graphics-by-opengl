@@ -2,6 +2,7 @@ package com.nucleus.shader;
 
 import com.nucleus.common.StringUtils;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES30;
 
 /**
  * Data for an active shader variable, this can be either attribute or uniform variables.
@@ -160,6 +161,8 @@ public class ShaderVariable {
             case GLES20.GL_FLOAT_MAT4:
                 return 16 * size;
             case GLES20.GL_SAMPLER_2D:
+                return size;
+            case GLES30.GL_SAMPLER_2D_SHADOW:
                 return size;
         }
         throw new IllegalArgumentException(ILLEGAL_DATATYPE_ERROR + dataType);

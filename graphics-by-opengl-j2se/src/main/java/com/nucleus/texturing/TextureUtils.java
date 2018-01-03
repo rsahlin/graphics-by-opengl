@@ -16,7 +16,6 @@ import com.nucleus.renderer.Window;
 import com.nucleus.texturing.Image.ImageFormat;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.Texture2D.Type;
-import com.nucleus.texturing.TextureParameter.Name;
 
 /**
  * Texture utilities, loading of texture(s)
@@ -115,7 +114,8 @@ public class TextureUtils {
         boolean isMipMapParams = texture.getTexParams().isMipMapFilter();
         if ((textureImages.length > 1 && !isMipMapParams) || (texture.getLevels() > 1 && !isMipMapParams)) {
             throw new IllegalArgumentException(
-                    "Multiple mipmap images but wrong min filter " + texture.getTexParams().getValue(Name.MIN_FILTER));
+                    "Multiple mipmap images but wrong min filter "
+                            + texture.getTexParams().getParameters()[TextureParameter.MIN_FILTER_INDEX]);
         }
         int level = 0;
         texture.setup(textureImages[0].width, textureImages[0].height);
@@ -153,8 +153,8 @@ public class TextureUtils {
      * @param texture
      */
     public static void prepareTexture(GLES20Wrapper gles, Texture2D texture) throws GLException {
-        gles.glActiveTexture(GLES20.GL_TEXTURE0);
         if (texture != null && texture.textureType != TextureType.Untextured) {
+            gles.glActiveTexture(GLES20.GL_TEXTURE0);
             int textureID = texture.getName();
             if (textureID == Constants.NO_VALUE && texture.getExternalReference().isIdReference()) {
                 // Texture has no texture object - and is id reference

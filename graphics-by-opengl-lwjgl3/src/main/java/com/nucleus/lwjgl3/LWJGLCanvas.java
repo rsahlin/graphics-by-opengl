@@ -122,7 +122,6 @@ public class LWJGLCanvas extends Canvas {
                             if (!wglMakeCurrent(hdc, hglrc)) {
                                 throw new IllegalStateException("wglMakeCurrent() failed");
                             }
-
                             GLES.setCapabilities(caps);
                         }
                         if (coreApp != null) {

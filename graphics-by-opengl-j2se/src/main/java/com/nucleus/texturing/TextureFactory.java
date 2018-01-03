@@ -3,7 +3,6 @@ package com.nucleus.texturing;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,7 +35,7 @@ public class TextureFactory {
      * Keep track of loaded texture objects by id
      */
     private static final Map<String, Texture2D> loadedTextures = new HashMap<>();
-    
+
     /**
      * Creates a new empty texture
      * 
@@ -53,7 +52,7 @@ public class TextureFactory {
         Texture2D result = createTexture(type);
         result.setup(resolution, texParams, 1, TextureUtils.getFormat(format), TextureUtils.getType(format));
         result.setup(size[0], size[1]);
-        createTextureName(gles,  result);
+        createTextureName(gles, result);
         TextureUtils.prepareTexture(gles, result);
         gles.texImage(result);
         GLUtils.handleError(gles, "glTexImage2D");
@@ -135,6 +134,7 @@ public class TextureFactory {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(Texture2D.class, new TextureDeserializer());
         Gson gson = builder.create();
+        SimpleLogger.d(TextureFactory.class, "Reading texture data from: " + ref.getSource());
         InputStreamReader reader = new InputStreamReader(ref.getAsStream(), StandardCharsets.UTF_8);
         Texture2D texture = gson.fromJson(reader, Texture2D.class);
         if (texture.getId() == null) {
@@ -225,7 +225,7 @@ public class TextureFactory {
         texture.setup(textures[0]);
         return textures;
     }
-    
+
     /**
      * Copies the transient values (texture object name, width, height) and the texture format values into the
      * destination.

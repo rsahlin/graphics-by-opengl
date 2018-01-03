@@ -20,7 +20,7 @@ import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
+import com.nucleus.opengl.GLESWrapper.GLES_EXTENSION_TOKENS;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
@@ -35,7 +35,6 @@ import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShadowPass1Program;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.TextureUtils;
 import com.nucleus.vecmath.Matrix;
 
@@ -108,7 +107,6 @@ class BaseRenderer implements NucleusRenderer {
 
     protected Window window = Window.getInstance();
 
-    protected RendererInfo rendererInfo;
     /**
      * Set to true when init is called
      */
@@ -166,7 +164,6 @@ class BaseRenderer implements NucleusRenderer {
         resizeWindow(0, 0, width, height);
         initialized = true;
         this.surfaceConfig = surfaceConfig;
-        rendererInfo = new RendererInfo(gles);
     }
 
     @Override
@@ -243,11 +240,12 @@ class BaseRenderer implements NucleusRenderer {
             }
         }
         if ((flags & RenderState.CHANGE_FLAG_MULTISAMPLE) != 0) {
-            if (rendererInfo.hasExtensionSupport(GLESWrapper.GLES_EXTENSIONS.MULTISAMPLE_EXT.name())) {
+            if (gles.getInfo()
+                    .hasExtensionSupport(GLESWrapper.GLES_EXTENSIONS.multisample_compatibility)) {
                 if (surfaceConfig != null && surfaceConfig.getSamples() > 1 && state.isMultisampling()) {
-                    gles.glEnable(GLES_EXTENSIONS.MULTISAMPLE_EXT.value);
+                    gles.glEnable(GLES_EXTENSION_TOKENS.MULTISAMPLE_EXT.value);
                 } else {
-                    gles.glDisable(GLES_EXTENSIONS.MULTISAMPLE_EXT.value);
+                    gles.glDisable(GLES_EXTENSION_TOKENS.MULTISAMPLE_EXT.value);
                 }
             }
         }
@@ -360,7 +358,7 @@ class BaseRenderer implements NucleusRenderer {
             disable(attachement);
         } else {
             Texture2D texture = ad.getTexture();
-            bindTexture(texture);
+            TextureUtils.prepareTexture(gles, texture);
             gles.bindFramebufferTexture(texture, target.getFramebufferName(), attachement);
             gles.glViewport(0, 0, texture.getWidth(), texture.getHeight());
             enable(attachement);
@@ -394,6 +392,7 @@ class BaseRenderer implements NucleusRenderer {
                 gles.glEnable(GLES20.GL_DEPTH_TEST);
                 gles.glDepthFunc(GLES20.GL_ALWAYS);
                 gles.glDepthMask(true);
+
                 break;
             case STENCIL:
                 gles.glEnable(GLES20.GL_STENCIL_TEST);
@@ -562,22 +561,24 @@ class BaseRenderer implements NucleusRenderer {
         AttributeBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         ElementBuffer indices = mesh.getElementBuffer();
         Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
-        bindTexture(texture);
+        TextureUtils.prepareTexture(gles, texture);
         if (indices == null) {
             gles.glDrawArrays(mesh.getMode().mode, mesh.getOffset(), mesh.getDrawCount());
+            GLUtils.handleError(gles, "glDrawArrays ");
             timeKeeper.addDrawArrays(mesh.getDrawCount());
         } else {
             if (indices.getBufferName() > 0) {
                 gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
                 gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
                         mesh.getOffset());
+                GLUtils.handleError(gles, "glDrawElements with ElementBuffer ");
             } else {
                 gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
                         indices.getBuffer().position(mesh.getOffset()));
+                GLUtils.handleError(gles, "glDrawElements no ElementBuffer ");
             }
             timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
         }
-        GLUtils.handleError(gles, "glDrawArrays ");
     }
 
     /**
@@ -589,32 +590,6 @@ class BaseRenderer implements NucleusRenderer {
     private ShaderProgram getProgram(Material material, Pass pass) {
         ShaderProgram program = material.getProgram();
         return program.getProgram(this, pass, program.getShading());
-    }
-
-    /**
-     * binds the texture, if texture reference is dynamic id the reference is fetched.
-     * TODO This should use the method in {@link TextureUtils#prepareTexture(GLES20Wrapper, Texture2D)}
-     * 
-     * @param texture
-     * 
-     */
-    private void bindTexture(Texture2D texture) throws GLException {
-        int textureID = texture.getName();
-        if (texture != null && texture.textureType != TextureType.Untextured) {
-            if (textureID == Constants.NO_VALUE && texture.getExternalReference().isIdReference()) {
-                // Texture has no texture object - and is id reference
-                // Should only be used for dynamic textures, eg ones that depend on define in existing node
-                // TODO - try to move outside of frame render loop
-                AssetManager.getInstance().getIdReference(texture);
-                textureID = texture.getName();
-                gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
-                gles.uploadTexParameters(texture.getTexParams());
-                GLUtils.handleError(gles, "glBindTexture()");
-            } else {
-                gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
-                GLUtils.handleError(gles, "glBindTexture()");
-            }
-        }
     }
 
     @Override
@@ -730,11 +705,6 @@ class BaseRenderer implements NucleusRenderer {
     @Override
     public SurfaceConfiguration getSurfaceConfiguration() {
         return surfaceConfig;
-    }
-
-    @Override
-    public RendererInfo getInfo() {
-        return rendererInfo;
     }
 
 }

@@ -46,7 +46,6 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
         this.gles = gles;
     }
 
-
     @Override
     public void glAttachShader(int program, int shader) {
         gles.glAttachShader(program, shader);
@@ -393,7 +392,7 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level) {
-        gles.glFramebufferTexture2D(target,  attachment,  textarget,  texture,  level);
+        gles.glFramebufferTexture2D(target, attachment, textarget, texture, level);
     }
 
     @Override
@@ -414,6 +413,11 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
         gles.glColorMask(red, green, blue, alpha);
+    }
+
+    @Override
+    public void glValidateProgram(int program) {
+        gles.glValidateProgram(program);
     }
 
 }
