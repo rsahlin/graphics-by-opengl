@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import com.nucleus.CoreApp;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
+import com.nucleus.common.Environment;
 import com.nucleus.matrix.android.AndroidMatrixEngine;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
@@ -45,42 +46,6 @@ public abstract class NucleusActivity extends Activity
         implements DialogInterface.OnClickListener {
 
     public final static String SYSTEM_PROPERTY = "/system/bin/getprop";
-    
-    /**
-     * Used to convert android adb setprop to system property.
-     * @author rdsn
-     *
-     */
-    public enum PropertyKeys {
-        /**
-         * Key for setting if EGL14 surface should be used - hint to subclasses
-         * true / false
-         */
-        EGL14SURFACE("com.nucleus.egl14surface"),
-        /**
-         * Key for setting number of requested samples - hint to subclasses
-         */
-        SAMPLES("com.nucleus.samples"),
-        /**
-         * Key for setting egl sleep, in millis, after swapping buffer - ready by {@link EGLSurfaceView}
-         */
-        EGLSLEEP("com.nucleus.eglsleep"),
-        /**
-         * Key for setting egl wait client - true / false
-         */
-        EGLWAITCLIENT("com.nucleus.eglwaitclient"),
-        /**
-         * EGL swap interval, only works if using eglsurface
-         */
-        EGLSWAPINTERVAL("com.nucleus.eglswapinterval");
-     
-        public final String key;
-        
-        private PropertyKeys(String key) {
-            this.key = key;
-        }
-        
-    }
     
     protected SurfaceView surfaceView;
     private static Throwable throwable;
@@ -166,15 +131,15 @@ public abstract class NucleusActivity extends Activity
      * Currently checks for EGL/GL Surface usage.
      */
     protected void checkProperties() {
-        String egl = readProperty(PropertyKeys.EGL14SURFACE.name());
+        String egl = readProperty(Environment.Property.EGL14SURFACE.name());
         useEGL14 = egl != null && egl.length() > 0 ? Boolean.parseBoolean(egl) : useEGL14;
-        String s = readProperty(PropertyKeys.SAMPLES.name());
+        String s = readProperty(Environment.Property.SAMPLES.name());
         samples = s != null && s.length() != 0 ? Integer.parseInt(s) : Constants.NO_VALUE;
-        s = readProperty(PropertyKeys.EGLSLEEP.name());
+        s = readProperty(Environment.Property.EGLSLEEP.name());
         eglSleep = (s != null && s.length() > 0) ? Integer.parseInt(s) : Constants.NO_VALUE;
-        s = readProperty(PropertyKeys.EGLWAITCLIENT.name());
+        s = readProperty(Environment.Property.EGLWAITCLIENT.name());
         eglWaitClient = s != null && s.length() > 0 ? Boolean.parseBoolean(s) : eglWaitClient;
-        s = readProperty(PropertyKeys.EGLSWAPINTERVAL.name());
+        s = readProperty(Environment.Property.EGLSWAPINTERVAL.name());
         eglSwapInterval = s != null && s.length() > 0 ? Integer.parseInt(s) : eglSwapInterval;
         SimpleLogger.d(getClass(), "useEGL14=" + useEGL14 + ", samples=" + samples + ", eglSleep=" + eglSleep + ", eglWaitClient=" + eglWaitClient + ", eglSwapInterval=" + eglSwapInterval);
     }

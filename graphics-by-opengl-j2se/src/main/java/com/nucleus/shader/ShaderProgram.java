@@ -804,14 +804,14 @@ public abstract class ShaderProgram {
      * @param type GL_VERTEX_SHADER or GL_FRAGMENT_SHADER
      * @param sourceName Name of the sourcefile - this is used for error reporting.
      * @param libray true if this is a library function for shader
-     * @throws GLException If there is an reading from stream, etting or compiling shader source.
+     * @throws GLException If there is an reading from stream, setting or compiling shader source.
      */
     public void compileShader(GLES20Wrapper gles, InputStream shaderStream, int shader, int type, String sourceName,
             boolean library)
             throws IOException, GLException {
         if (!gles.getInfo().hasExtensionSupport(GLES_EXTENSIONS.separate_shader_objects)) {
             compileShader(gles,
-                    gles.getVersionedShaderSource(shaderStream, type, library)
+                    gles.getVersionedShaderSource(shaderStream, type, true)
                             + getCommonVertexSources(),
                     shader, sourceName);
         } else {
@@ -866,7 +866,7 @@ public abstract class ShaderProgram {
         if (linkStatus[0] != GLES20.GL_TRUE) {
             throw new GLException(LINK_PROGRAM_ERROR, GLES20.GL_FALSE);
         }
-        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG)) {
+        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
             gles.glValidateProgram(program);
             String result = gles.glGetProgramInfoLog(program);
             int[] status = new int[1];
