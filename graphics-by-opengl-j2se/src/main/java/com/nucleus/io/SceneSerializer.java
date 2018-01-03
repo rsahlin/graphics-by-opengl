@@ -44,7 +44,7 @@ public interface SceneSerializer {
      * @param filename Name of file containing scene data.
      * @return The scene, including all defined children.
      * @throws NodeException If there is an exception loading the data.
-     * @throws IllegalStateException If the renderer has not been set before calling this method.
+     * @throws IllegalStateException If the renderer or nodefactory has not been set before calling this method.
      */
     public RootNode importScene(String filename) throws NodeException;
 
@@ -55,6 +55,8 @@ public interface SceneSerializer {
      * @param is Inputstream containing the scene data
      * @return The scene root node, including all defined children.
      * @throws NodeException If there is an exception loading the data.
+     * @throws IllegalArgumentException If inputstream is null
+     * @throws IllegalStateException If the renderer or nodefactory has not been set before calling this method.
      */
     public RootNode importScene(InputStream is) throws NodeException;
 

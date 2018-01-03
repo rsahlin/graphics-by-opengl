@@ -290,7 +290,8 @@ public class FrameSampler {
     @Override
     public String toString() {
         int fps = (int) (frames / totalDelta);
-        return "Average FPS: " + fps + ", " + vertices / frames + " vertices, " + indices / frames
+        return "Average FPS: " + fps + "(" + frames + " frames), " + vertices / frames + " vertices, "
+                + indices / frames
                 + " indices, " + drawCalls / frames + " drawcall - per frame";
     }
 

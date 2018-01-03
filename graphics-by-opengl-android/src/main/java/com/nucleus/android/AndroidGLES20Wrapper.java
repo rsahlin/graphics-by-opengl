@@ -352,5 +352,10 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     public String getShaderVersion() {
         return GLES20Wrapper.SHADING_LANGUAGE_100;
     }
-    
+
+    @Override
+    public void glValidateProgram(int program) {
+        android.opengl.GLES20.glValidateProgram(program);
+    }
+
 }

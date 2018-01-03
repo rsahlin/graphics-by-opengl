@@ -356,35 +356,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     }
 
     /**
-     * Setup the buffers needed for drawing using only the vertices (no indexed buffer)
-     * 
-     * @param vertices One or more buffers with vertice/attribute data
-     * @param material The material to use when rendering this mesh.
-     * @param texture Texture to set or null
-     * @throws IllegalArgumentException If vertices or material is null.
-     */
-    public void setupVertices(AttributeBuffer[] vertices, Material material, Texture2D texture) {
-        if (vertices == null || material == null) {
-            throw new IllegalArgumentException(NULL_PARAMETER_STR);
-        }
-        setBuffers(vertices);
-        this.material = material;
-        if (texture != null) {
-            this.texture[Texture2D.TEXTURE_0] = texture;
-        }
-    }
-
-    /**
-     * Sets the vertice/attribute buffers,
-     * 
-     * @param attributes Buffers containing vertices/attributes, what this means is specific to the program
-     * used to render the mesh.
-     */
-    protected void setBuffers(AttributeBuffer[] attributes) {
-        this.attributes = attributes;
-    }
-
-    /**
      * Sets the texture into this mesh as the specified texture index.
      * The texture object must have a valid texture name, the texture will be active when the mesh is rendered.
      * 
