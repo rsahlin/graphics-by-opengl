@@ -1,13 +1,12 @@
 package com.nucleus.geometry;
 
-import java.nio.FloatBuffer;
-
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.nucleus.BaseTestCase;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 
-public class FVertexBufferTest {
+public class FVertexBufferTest extends BaseTestCase {
 
     final static int TRIANGLE_COUNT = 3;
     final static int COMPONENT_COUNT = 3;

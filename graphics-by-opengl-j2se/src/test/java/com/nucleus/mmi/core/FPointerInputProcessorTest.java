@@ -78,12 +78,33 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
     private void assertActionPosition(List<MMIPointerEvent> events, ArrayList<AssertMMIAction> assertValues,
             int offset, int count, int assertOffset) {
 
+        /**
+         * PointerMotionData starts with ACTIVE and ends with INACTIVE
+         */
         for (int i = 0; i < count; i++) {
             MMIPointerEvent event = events.get(i + offset);
             AssertMMIAction assertAction = assertValues.get(i + assertOffset);
             Assert.assertEquals(assertAction.action, event.getAction());
-            Assert.assertArrayEquals(assertAction.position, event.getPointerData().getCurrentPosition(), 0);
-            Assert.assertEquals(assertAction.timestamp, event.getPointerData().getCurrent().timeStamp);
+            PointerData pointer = null;
+            switch (event.getAction()) {
+                case ACTIVE:
+                    // First event
+                    pointer = event.getPointerData().getFirst();
+                    break;
+                case INACTIVE:
+                    // Last event
+                    pointer = event.getPointerData().getCurrent();
+                    break;
+                case MOVE:
+                    // Only works if move action comes after ACTIVE at index 0
+                    pointer = event.getPointerData().get(i);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Not implemented");
+
+            }
+            Assert.assertEquals(assertAction.timestamp, pointer.timeStamp);
+            Assert.assertArrayEquals(assertAction.position, pointer.position, 0);
         }
 
     }
@@ -109,8 +130,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
     }
 
     private AssertMMIAction sendEvent(PointerAction action, PointerInputProcessor processor, int pointer,
-            float[] coordinates,
-            int pos) {
+            float[] coordinates, int pos) {
 
         float[] coord = new float[] { coordinates[pos++], coordinates[pos++] };
         AssertMMIAction check = new AssertMMIAction(getFromPointerAction(action), pointer, coord,
@@ -178,6 +198,33 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
     }
 
     @Test
+    public void testMultipleDownMove() {
+        PointerInputProcessor processor = new PointerInputProcessor();
+        processor.addMMIListener(this);
+
+        ArrayList<AssertMMIAction> checkList = new ArrayList<>();
+        float[] positions = createRandomPositions(10);
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_1, positions, 0));
+        checkList.add(sendEvent(PointerAction.MOVE, processor, PointerData.POINTER_1, positions, 2));
+        checkList.add(sendEvent(PointerAction.MOVE, processor, PointerData.POINTER_1, positions, 4));
+        checkList.add(sendEvent(PointerAction.MOVE, processor, PointerData.POINTER_1, positions, 6));
+        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_1, positions, 8));
+
+        assertActionPosition(pointerEvents, checkList, 0, checkList.size(), 0);
+        pointerEvents.clear();
+        checkList.clear();
+
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_1, positions, 10));
+        checkList.add(sendEvent(PointerAction.MOVE, processor, PointerData.POINTER_1, positions, 12));
+        checkList.add(sendEvent(PointerAction.MOVE, processor, PointerData.POINTER_1, positions, 14));
+        checkList.add(sendEvent(PointerAction.MOVE, processor, PointerData.POINTER_1, positions, 16));
+        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_1, positions, 18));
+
+        assertActionPosition(pointerEvents, checkList, 0, checkList.size(), 0);
+
+    }
+
+    @Test
     public void testManyActionDownUp() {
         // Test that many action down and up in different order results in correct action
         PointerInputProcessor processor = new PointerInputProcessor();
@@ -186,15 +233,15 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
         ArrayList<AssertMMIAction> checkList = new ArrayList<>();
         float[] positions = createRandomPositions(10);
         checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_1, positions, 0));
-        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_2, positions, 0));
-        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_1, positions, 0));
-        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_1, positions, 0));
-        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_3, positions, 0));
-        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_2, positions, 0));
-        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_2, positions, 0));
-        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_4, positions, 0));
-        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_5, positions, 0));
-        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_1, positions, 0));
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_2, positions, 2));
+        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_1, positions, 4));
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_1, positions, 6));
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_3, positions, 8));
+        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_2, positions, 10));
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_2, positions, 12));
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_4, positions, 14));
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_5, positions, 16));
+        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_1, positions, 18));
 
         assertActionPosition(pointerEvents, checkList, 0, checkList.size(), 0);
 
