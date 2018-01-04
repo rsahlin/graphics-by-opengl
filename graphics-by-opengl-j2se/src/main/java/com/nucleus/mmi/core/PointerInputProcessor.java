@@ -75,12 +75,16 @@ public class PointerInputProcessor implements PointerListener {
         scaledPosition[Y] = position[Y] * transform[Y] + transform[3];
         switch (action) {
             case MOVE:
-                addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.MOVE, pointer,
-                        pointerMotionData[pointer]),
-                        pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition, pressure));
-                // More than one pointer is or has been active.
-                if (processTwoPointers && pointerCount == 2 && pointer == 1) {
-                    processTwoPointers();
+                if (pointerMotionData[pointer].getCurrent().action == PointerData.PointerAction.UP) {
+                    SimpleLogger.d(getClass(), "Move after up");
+                } else {
+                    addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.MOVE, pointer,
+                            pointerMotionData[pointer]),
+                            pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition, pressure));
+                    // More than one pointer is or has been active.
+                    if (processTwoPointers && pointerCount == 2 && pointer == 1) {
+                        processTwoPointers();
+                    }
                 }
                 break;
             case DOWN:
@@ -263,6 +267,17 @@ public class PointerInputProcessor implements PointerListener {
     public void setMaxPointers(int maxPointers) {
         this.maxPointers = maxPointers;
         pointerMotionData = new PointerMotionData[maxPointers];
+    }
+
+    /**
+     * Reverses the pointer normalization
+     * 
+     * @param normalized
+     * @return
+     */
+    public float[] getScreenCoordinate(float[] normalized) {
+        return new float[] { (normalized[0] - transform[2]) / transform[0],
+                (normalized[1] - transform[3]) / transform[1] };
     }
 
 }
