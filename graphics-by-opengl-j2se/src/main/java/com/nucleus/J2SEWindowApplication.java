@@ -57,11 +57,19 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
      * @param args
      */
     protected void setProperties(String[] args) {
+        setSystemProperties();
         if (args == null) {
             return;
         }
         for (String str : args) {
             setProperty(str);
+        }
+    }
+
+    protected void setSystemProperties() {
+        String swap = Environment.getInstance().getProperty(Environment.Property.EGLSWAPINTERVAL);
+        if (swap != null && swap.length() > 0) {
+            swapInterval = Integer.parseInt(swap);
         }
     }
 
@@ -87,16 +95,13 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
             fullscreen = Boolean.parseBoolean(str.substring(FULLSCREEN_KEY.length() + 1));
             SimpleLogger.d(getClass(), FULLSCREEN_KEY + " set to " + fullscreen);
         }
-        String swap = Environment.getInstance().getProperty(Environment.Property.EGLSWAPINTERVAL);
-        if (swap != null && swap.length() > 0) {
-            swapInterval = Integer.parseInt(swap);
-        }
 
     }
 
     /**
      * Create and setup the window implementation based on the renderer version
      * The returned window shall be ready to be used.
+     * 
      * @return
      */
     protected abstract J2SEWindow createWindow(Renderers version);
@@ -127,6 +132,5 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         }
         return coreApp.getRenderer();
     }
-
 
 }

@@ -70,11 +70,14 @@ public class Environment {
      * value.
      */
     public void loadProperties() {
+        SimpleLogger.d(getClass(), "Loading properties");
         for (Property p : Property.values()) {
             String value = readProperty(p);
             if (value != null) {
                 properties.put(p, value);
                 SimpleLogger.d(getClass(), "Read environment property " + p + " to " + value);
+            } else {
+                SimpleLogger.d(getClass(), "No property for " + p.key);
             }
         }
 
@@ -105,13 +108,14 @@ public class Environment {
 
     /**
      * Fetches a system property, by getting it from System.getProperty()
+     * 
      * @param property
      * @return
      */
     public String readProperty(Property property) {
         return System.getProperty(property.key);
     }
-    
+
     /**
      * Returns true if the system property is defined as 'true', false if property set but not 'true'.
      * If no property is set then defaultValue is returned.
