@@ -418,4 +418,10 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
         org.lwjgl.opengles.GLES20.glValidateProgram(program);
     }
 
+    @Override
+    public void glGetShaderSource(int shader, int bufsize, int[] length, byte[] source) {
+        ByteBuffer bufferSource = ByteBuffer.wrap(source);
+        org.lwjgl.opengles.GLES20.glGetShaderSource(shader, length, bufferSource); 
+    }
+
 }

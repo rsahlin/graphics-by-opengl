@@ -419,4 +419,9 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
         gles.glValidateProgram(program);
     }
 
+    @Override
+    public void glGetShaderSource(int shader, int bufsize, int[] length, byte[] source) {
+        gles.glGetShaderSource(shader, bufsize, length, 0, source, 0);
+    }
+
 }

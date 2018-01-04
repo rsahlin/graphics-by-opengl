@@ -359,4 +359,9 @@ public class AndriodGLES30Wrapper extends GLES30Wrapper {
         android.opengl.GLES30.glValidateProgram(program);
     }
 
+    @Override
+    public void glGetShaderSource(int shader, int bufsize, int[] length, byte[] source) {
+        android.opengl.GLES30.glGetShaderSource(shader, bufsize, length, 0, source, 0);
+    }
+
 }

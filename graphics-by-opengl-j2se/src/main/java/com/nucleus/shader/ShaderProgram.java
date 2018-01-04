@@ -765,6 +765,20 @@ public abstract class ShaderProgram {
         GLUtils.handleError(gles, LINK_PROGRAM_ERROR);
     }
 
+    private void logShaderSources(GLES20Wrapper gles, ArrayList<Integer> commonVertexShaders, int vertexShader,
+            int fragmentShader) {
+        SimpleLogger.d(getClass(), "Common vertex shaders:");
+        if (commonVertexShaders != null) {
+            for (Integer shader : commonVertexShaders) {
+                SimpleLogger.d(getClass(), gles.glGetShaderSource(shader));
+            }
+        }
+        SimpleLogger.d(getClass(), "Vertex shader:");
+        SimpleLogger.d(getClass(), gles.glGetShaderSource(vertexShader));
+        SimpleLogger.d(getClass(), "Fragment shader:");
+        SimpleLogger.d(getClass(), gles.glGetShaderSource(fragmentShader));
+    }
+
     /**
      * Creates the shader name, attaches the source and compiles the shader.
      * 
@@ -985,7 +999,10 @@ public abstract class ShaderProgram {
             fetchProgramInfo(gles);
             bindAttributeNames(gles);
             createUniformStorage(shaderVariables);
-        } catch (GLException | IOException e) {
+        } catch (GLException e) {
+            logShaderSources(gles, commonVertexShaders, vertexShader, fragmentShader);
+            throw new RuntimeException(e.toString());
+        } catch (IOException e) {
             throw new RuntimeException(e.toString());
         }
     }
@@ -1282,7 +1299,7 @@ public abstract class ShaderProgram {
             commonVertexShaders = new ArrayList<>();
             for (String source : sourceNames) {
                 commonVertexShaders
-                        .add(compileShader(gles, source, GLES20.GL_VERTEX_SHADER, true));
+                        .add(compileShader(gles, source, GLES20.GL_VERTEX_SHADER, false));
             }
         } else {
             SimpleLogger.d(getClass(), "No support for separate shader objects, adding common sources.");

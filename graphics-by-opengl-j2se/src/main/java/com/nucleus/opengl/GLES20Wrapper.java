@@ -626,6 +626,31 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public abstract int glCheckFramebufferStatus(int target);
 
     /**
+     * Abstraction for glGetShaderSource(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *source);
+     * 
+     * @param shader
+     * @return
+     */
+    public String glGetShaderSource(int shader) {
+        IntBuffer sourceLength = IntBuffer.allocate(1);
+        glGetShaderiv(shader, GLES20.GL_SHADER_SOURCE_LENGTH, sourceLength);
+        StringBuffer result = new StringBuffer();
+        byte[] buffer = new byte[sourceLength.get(0)];
+        int[] read = new int[1];
+        glGetShaderSource(shader, buffer.length, read, buffer);
+        result.append(new String(buffer, 0, read[0]));
+        return result.toString();
+    }
+
+    /**
+     * Abstraction for glGetShaderSource(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *source);
+     * 
+     * @param shader
+     * @return
+     */
+    public abstract void glGetShaderSource(int shader, int bufsize, int[] length, byte[] source);
+
+    /**
      * Sets the texture parameter values for the texture parameter to OpenGL, call this to set the correct texture
      * parameters when rendering.
      * 

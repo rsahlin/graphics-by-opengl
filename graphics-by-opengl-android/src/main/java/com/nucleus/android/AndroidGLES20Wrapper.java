@@ -358,4 +358,9 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
         android.opengl.GLES20.glValidateProgram(program);
     }
 
+    @Override
+    public void glGetShaderSource(int shader, int bufsize, int[] length, byte[] source) {
+        android.opengl.GLES20.glGetShaderSource(shader, bufsize, length, 0, source, 0);
+    }
+
 }

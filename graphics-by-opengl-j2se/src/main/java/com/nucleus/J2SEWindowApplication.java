@@ -2,6 +2,7 @@ package com.nucleus;
 
 import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.CoreApp.CoreAppStarter;
+import com.nucleus.common.Environment;
 import com.nucleus.matrix.j2se.J2SEMatrixEngine;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
@@ -85,6 +86,10 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         if (str.toUpperCase().startsWith(FULLSCREEN_KEY)) {
             fullscreen = Boolean.parseBoolean(str.substring(FULLSCREEN_KEY.length() + 1));
             SimpleLogger.d(getClass(), FULLSCREEN_KEY + " set to " + fullscreen);
+        }
+        String swap = Environment.getInstance().getProperty(Environment.Property.EGLSWAPINTERVAL);
+        if (swap != null && swap.length() > 0) {
+            swapInterval = Integer.parseInt(swap);
         }
 
     }
