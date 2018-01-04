@@ -12,11 +12,9 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.nucleus.SimpleLogger;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.Convolution.Kernel;
 import com.nucleus.texturing.Image;
@@ -50,7 +48,7 @@ public class FConvolutionTest implements WindowListener {
 
     }
 
-    @AfterClass
+    // @AfterClass
     public static void waitForUser() {
         wait = true;
         while (wait) {
@@ -221,7 +219,6 @@ public class FConvolutionTest implements WindowListener {
             y += myFrame.getHeight();
         }
         frames.add(myFrame);
-        SimpleLogger.d(getClass(), "done");
 
     }
 
