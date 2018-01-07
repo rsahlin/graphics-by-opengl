@@ -8,6 +8,7 @@ import java.util.StringTokenizer;
 
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.StreamUtils;
+import com.nucleus.opengl.GLException.Error;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RendererInfo;
 import com.nucleus.shader.ShaderVariable;
@@ -688,8 +689,9 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, attachement.value, GLES20.GL_TEXTURE_2D,
                 texture.getName(), 0);
         GLUtils.handleError(this, "glFramebufferTexture");
-        if (glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER) != GLES20.GL_FRAMEBUFFER_COMPLETE) {
-            throw new IllegalArgumentException("Framebuffer status not complete");
+        int status = glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER);
+        if (status != GLES20.GL_FRAMEBUFFER_COMPLETE) {
+            throw new IllegalArgumentException("Framebuffer status not complete: " + Error.getError(status));
         }
     }
 

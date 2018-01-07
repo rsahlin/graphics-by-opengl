@@ -100,7 +100,6 @@ public class TextureUtils {
      * The size of the image will be set in the texture
      * 
      * @param gles GLES20Wrapper for GL calls
-     * @param unit Texture unit number (active texture)
      * @param texture The texture object, shall have texture name set
      * @param textureImages Array with one or more images to send to GL. If more than
      * one image is specified then multiple mip-map levels will be set.
@@ -108,7 +107,7 @@ public class TextureUtils {
      * @throws GLException If there is an error uploading the textures
      * @throws IllegalArgumentException If multiple mipmaps provided but texture min filter is not _MIPMAP_
      */
-    public static void uploadTextures(GLES20Wrapper gles, int unit, Texture2D texture, Image[] textureImages)
+    public static void uploadTextures(GLES20Wrapper gles, Texture2D texture, Image[] textureImages)
             throws GLException {
         gles.glBindTexture(GLES20.GL_TEXTURE_2D, texture.getName());
         boolean isMipMapParams = texture.getTexParams().isMipMapFilter();
@@ -151,10 +150,11 @@ public class TextureUtils {
      * 
      * @paran gles
      * @param texture
+     * @param unit The texture unit number to use, 0 and up
      */
-    public static void prepareTexture(GLES20Wrapper gles, Texture2D texture) throws GLException {
+    public static void prepareTexture(GLES20Wrapper gles, Texture2D texture, int unit) throws GLException {
         if (texture != null && texture.textureType != TextureType.Untextured) {
-            gles.glActiveTexture(GLES20.GL_TEXTURE0);
+            gles.glActiveTexture(GLES20.GL_TEXTURE0 + unit);
             int textureID = texture.getName();
             if (textureID == Constants.NO_VALUE && texture.getExternalReference().isIdReference()) {
                 // Texture has no texture object - and is id reference
