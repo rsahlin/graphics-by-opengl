@@ -636,6 +636,9 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         IntBuffer sourceLength = IntBuffer.allocate(1);
         glGetShaderiv(shader, GLES20.GL_SHADER_SOURCE_LENGTH, sourceLength);
         StringBuffer result = new StringBuffer();
+        if (sourceLength.get(0) == 0) {
+            return "No shader source";
+        }
         byte[] buffer = new byte[sourceLength.get(0)];
         int[] read = new int[1];
         glGetShaderSource(shader, buffer.length, read, buffer);
