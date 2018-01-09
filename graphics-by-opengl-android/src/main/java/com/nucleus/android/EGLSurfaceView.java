@@ -16,7 +16,6 @@ import android.opengl.EGLConfig;
 import android.opengl.EGLContext;
 import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
-import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -36,15 +35,40 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     protected SurfaceConfiguration surfaceConfig;
     protected Surface surface;
     protected RenderContextListener renderListener;
-    protected boolean waitForClient = false;
-    protected int sleep = 0;
+    protected int eglSwapInterval = 1;
+    /**
+     * Special surface attribs that may be specified when creating the surface - see
+     * https://www.khronos.org/registry/EGL/sdk/docs/man/html/eglCreateWindowSurface.xhtml
+     * Shall be terminateded by EGL_NONE
+     * EGL_RENDER_BUFFER
+     * EGL_VG_ALPHA_FORMAT
+     * EGL_VG_COLORSPACE
+     */
+    protected int[] surfaceAttribs;
 
-    public EGLSurfaceView(SurfaceConfiguration surfaceConfig, Renderers version, NucleusActivity nucleusActivity) {
+    /**
+     * 
+     * @param surfaceConfig
+     * @param version
+     * @param nucleusActivity
+     * @param swapInterval
+     * @param surfaceAttribs Surface attribs that may be specified when creating the surface - see
+     * https://www.khronos.org/registry/EGL/sdk/docs/man/html/eglCreateWindowSurface.xhtml
+     * EGL_RENDER_BUFFER
+     * EGL_VG_ALPHA_FORMAT
+     * EGL_VG_COLORSPACE
+     * Shall be terminateded by EGL_NONE
+     * 
+     */
+    public EGLSurfaceView(SurfaceConfiguration surfaceConfig, Renderers version, NucleusActivity nucleusActivity,
+            int swapInterval, int[] surfaceAttribs) {
         super(nucleusActivity);
         this.nucleusActivity = nucleusActivity;
         this.surfaceConfig = surfaceConfig;
         this.version = version;
         getHolder().addCallback(this);
+        eglSwapInterval = swapInterval;
+        this.surfaceAttribs = surfaceAttribs;
     }
 
     protected void createEglContext() {
@@ -111,12 +135,12 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     protected void createEglSurface() {
         if (EGLSurface == null) {
-            int[] eglSurfaceAttribList = new int[] {
-                    EGL14.EGL_NONE
-            };
+            if (surfaceAttribs == null) {
+                surfaceAttribs = new int[] { EGL14.EGL_NONE };
+            }
             // turn our SurfaceControl into a Surface
             EGLSurface = EGL14.eglCreateWindowSurface(EglDisplay, EglConfig, surface,
-                    eglSurfaceAttribList, 0);
+                    surfaceAttribs, 0);
             if (EGLSurface == null) {
                 SimpleLogger.d(getClass(), "Could not create window surface");
                 throw new IllegalArgumentException("Could not create egl surface.");
@@ -159,12 +183,10 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         createEglSurface();
         makeCurrent();
         SimpleLogger.d(getClass(), "EGL created and made current");
-        EGL14.eglSurfaceAttrib(EglDisplay, EGLSurface, EGL14.EGL_SWAP_BEHAVIOR, EGL14.EGL_BUFFER_DESTROYED);
-        EGL14.eglSwapInterval(EglDisplay, 0);
-        SimpleLogger.d(getClass(), "Set egl swap interval to 0");
         if (surfaceConfig.hasExtensionSupport(EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh)) {
             EGL14.eglSurfaceAttrib(EglDisplay, EGLSurface, EGL14Constants.EGL_FRONT_BUFFER_AUTO_REFRESH_ANDROID, 1);
-            SimpleLogger.d(getClass(), "Set attrib for: " + EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh);
+            SimpleLogger.d(getClass(),
+                    "Set surfaceattrib for: " + EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh);
         }
         if (created) {
             nucleusActivity.onSurfaceCreated(getWidth(), getHeight());
@@ -191,23 +213,32 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     /**
-     * Specify if a call to eglWaitClient() is made after eglSwapBuffers
+     * Sets the egl swap interval, if no EGLDisplay exists then nothing is done.
      * 
-     * @param waitClient True to call eglWaitClient() efter swapbuffers
+     * @param interval
      */
-    public void setWaitClient(boolean waitClient) {
-        SimpleLogger.d(getClass(), "Setting waitForClient to " + waitClient);
-        this.waitForClient = waitClient;
+    public void setEGLSwapInterval(int interval) {
+        if (EglDisplay != null) {
+            SimpleLogger.d(getClass(),
+                    "set EGLSwapInterval to " + interval + " : " + EGL14.eglSwapInterval(EglDisplay, interval));
+        } else {
+            SimpleLogger.d(getClass(), "EGLDisplay is null, cannot set swapInterval");
+        }
     }
 
     /**
-     * Sets number of millis to sleep after swapping buffers, and waitForClient if enabled.
+     * Sets an egl surfaceattrib, if EGLDisplay or EGLSurface is null then nothing is done.
      * 
-     * @param millis
+     * @param attribute
+     * @param value
      */
-    public void setEGLSleep(int millis) {
-        SimpleLogger.d(getClass(), "Setting sleep to " + millis);
-        sleep = millis;
+    public void setEGLSurfaceAttrib(int attribute, int value) {
+        if (EglDisplay != null && EGLSurface != null) {
+            SimpleLogger.d(getClass(), "set EGL surfaceattrib: " + attribute + " : " + value + " : "
+                    + EGL14.eglSurfaceAttrib(EglDisplay, EGLSurface, attribute, value));
+        } else {
+            SimpleLogger.d(getClass(), "Could not set EGL surfaceattrib, display or surface is null");
+        }
     }
 
     /**
@@ -216,33 +247,15 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     protected void drawFrame() {
         renderListener.drawFrame();
     }
-    
+
     @Override
     public void run() {
         SimpleLogger.d(getClass(), "Starting EGL surface thread");
         createEGL();
-        Environment env = Environment.getInstance();
         while (surface != null) {
             drawFrame();
             if (EGLSurface != null) {
-                long start = System.currentTimeMillis();
-                EGL14.eglSwapInterval(EglDisplay, 0);
-                EGL14.eglSwapBuffers(EglDisplay, EGLSurface);
-                boolean eglWaitGL = env.isProperty(Environment.Property.EGLWAITGL, false);
-                if (eglWaitGL) {
-                    EGL14.eglWaitGL();
-                }
-                FrameSampler.getInstance().addTag(FrameSampler.Samples.EGLSWAPBUFFERS.name() + "-WAITGL=" + eglWaitGL, start,
-                        System.currentTimeMillis(), FrameSampler.Samples.EGLSWAPBUFFERS.detail);
-                if (waitForClient) {
-                    start = System.currentTimeMillis();
-                    EGL14.eglWaitClient();
-                    FrameSampler.getInstance().addTag(FrameSampler.Samples.EGLWAITNATIVE, start,
-                            System.currentTimeMillis());
-                }
-                if (sleep > 0) {
-                    SystemClock.sleep(sleep);
-                }
+                swapBuffers();
             }
         }
         if (renderListener != null) {
@@ -250,6 +263,22 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         }
         SimpleLogger.d(getClass(), "Exiting surface thread");
         thread = null;
+    }
+
+    /**
+     * Swapbuffers and syncronize
+     */
+    protected void swapBuffers() {
+        Environment env = Environment.getInstance();
+        long start = System.currentTimeMillis();
+        EGL14.eglSwapBuffers(EglDisplay, EGLSurface);
+        boolean eglWaitGL = env.isProperty(Environment.Property.EGLWAITGL, false);
+        if (eglWaitGL) {
+            EGL14.eglWaitGL();
+        }
+        FrameSampler.getInstance().addTag(FrameSampler.Samples.EGLSWAPBUFFERS.name() + "-WAITGL=" + eglWaitGL,
+                start,
+                System.currentTimeMillis(), FrameSampler.Samples.EGLSWAPBUFFERS.detail);
     }
 
 }
