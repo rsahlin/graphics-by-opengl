@@ -915,6 +915,8 @@ public abstract class ShaderProgram {
             SimpleLogger.d(getClass(), "Could not validate program\n");
             SimpleLogger.d(getClass(), result);
             throw new IllegalArgumentException("Could not validate program:\n" + result);
+        } else {
+            SimpleLogger.d(getClass(), "Program " + program + " validated OK.");
         }
     }
 
