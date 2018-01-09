@@ -65,7 +65,7 @@ public abstract class NucleusActivity extends Activity
      * EGL swap interval, must use egl surfaceview for this to work. Set to eglSurfaceView
      * Change here to change the default value, may be overridden by property.
      */
-    protected int eglSwapInterval = 0;
+    protected int eglSwapInterval = 1;
 
     /**
      * Surface attributes for eglCreateWindows, must use egl surfaceview for this to work. Set to eglSurfaceView
