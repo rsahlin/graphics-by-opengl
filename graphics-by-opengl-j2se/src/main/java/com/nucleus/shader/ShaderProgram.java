@@ -12,7 +12,6 @@ import java.util.List;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
-import com.nucleus.common.Environment;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Property;
@@ -32,6 +31,7 @@ import com.nucleus.renderer.Window;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
+import com.nucleus.texturing.TextureUtils;
 import com.nucleus.texturing.TiledTexture2D;
 import com.nucleus.vecmath.Matrix;
 
@@ -479,12 +479,16 @@ public abstract class ShaderProgram {
         int samplerOffset = 0;
         for (ShaderVariable v : variables) {
             if (v != null && v.getType() == type) {
-                if (v.getDataType() == GLES20.GL_SAMPLER_2D) {
-                    v.setOffset(samplerOffset);
-                    samplerOffset += v.getSizeInFloats();
-                } else {
-                    v.setOffset(offset);
-                    offset += v.getSizeInFloats();
+                switch (v.getDataType()) {
+                    case GLES20.GL_SAMPLER_2D:
+                    case GLES30.GL_SAMPLER_2D_SHADOW:
+                        v.setOffset(samplerOffset);
+                        samplerOffset += v.getSizeInFloats();
+                        break;
+                    default:
+                        v.setOffset(offset);
+                        offset += v.getSizeInFloats();
+                        break;
                 }
             }
         }
@@ -597,6 +601,19 @@ public abstract class ShaderProgram {
         setUniformMatrices(uniforms, matrices, mesh);
         setUniformData(uniforms, mesh);
         setUniforms(gles, uniforms, sourceUniforms);
+    }
+
+    /**
+     * Prepares each texture used before rendering starts.
+     * This shall set texture parameters to used textures, ie activate texture, bind texture then set parameters.
+     * 
+     * @param gles
+     * @param mesh
+     * @throws GLException
+     */
+    public void prepareTextures(GLES20Wrapper gles, Mesh mesh) throws GLException {
+        Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
+        TextureUtils.prepareTexture(gles, texture, Texture2D.TEXTURE_0);
     }
 
     /**
@@ -881,18 +898,24 @@ public abstract class ShaderProgram {
         if (linkStatus[0] != GLES20.GL_TRUE) {
             throw new GLException(LINK_PROGRAM_ERROR, GLES20.GL_FALSE);
         }
-        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
-            gles.glValidateProgram(program);
-            String result = gles.glGetProgramInfoLog(program);
-            int[] status = new int[1];
-            gles.glGetProgramiv(program, GLES20.GL_VALIDATE_STATUS, status, 0);
-            if (status[0] != GLES20.GL_TRUE) {
-                SimpleLogger.d(getClass(), "Could not validate program\n");
-                SimpleLogger.d(getClass(), result);
-                throw new IllegalArgumentException("Could not validate program:\n" + result);
-            }
-        }
+    }
 
+    /**
+     * Validates the program - only call this in debug mode.
+     * Set uniform and texture data before calling this method.
+     * 
+     * @param gles
+     */
+    public void validateProgram(GLES20Wrapper gles) {
+        gles.glValidateProgram(program);
+        String result = gles.glGetProgramInfoLog(program);
+        int[] status = new int[1];
+        gles.glGetProgramiv(program, GLES20.GL_VALIDATE_STATUS, status, 0);
+        if (status[0] != GLES20.GL_TRUE) {
+            SimpleLogger.d(getClass(), "Could not validate program\n");
+            SimpleLogger.d(getClass(), result);
+            throw new IllegalArgumentException("Could not validate program:\n" + result);
+        }
     }
 
     /**
@@ -999,6 +1022,7 @@ public abstract class ShaderProgram {
             fetchProgramInfo(gles);
             bindAttributeNames(gles);
             createUniformStorage(shaderVariables);
+            setSamplers();
         } catch (GLException e) {
             logShaderSources(gles, commonVertexShaders, vertexShader, fragmentShader);
             throw new RuntimeException(e.toString());
@@ -1277,6 +1301,20 @@ public abstract class ShaderProgram {
     private void createUniforms(float[] uniforms, int[] samplers) {
         this.uniforms = uniforms;
         this.samplers = samplers;
+    }
+
+    /**
+     * Sets the texture units to use for each sampler, default behavior is to start at unit 0 and increase for each
+     * sampler.
+     */
+    protected void setSamplers() {
+        int index = 0;
+        if (shaderVariables[ShaderVariables.uTexture.index] != null) {
+            samplers[index] = index++;
+        }
+        if (shaderVariables[ShaderVariables.uShadowTexture.index] != null) {
+            samplers[index] = index++;
+        }
     }
 
     @Override

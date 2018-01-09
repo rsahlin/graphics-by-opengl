@@ -15,6 +15,12 @@ public class ParameterData {
     public final static String NAME = "name";
     public final static String PARAM = "param";
 
+    public ParameterData(Target target, Name name, Param param) {
+        this.target = target;
+        this.name = name;
+        this.param = param;
+    }
+
     /**
      * Texture targets for the name and param, if used.
      * Used for texture parameters other than min,mag filter, wrap s/t

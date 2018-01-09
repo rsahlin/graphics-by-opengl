@@ -11,6 +11,7 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Constants;
+import com.nucleus.common.Environment;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.ElementBuffer;
@@ -358,7 +359,7 @@ class BaseRenderer implements NucleusRenderer {
             disable(attachement);
         } else {
             Texture2D texture = ad.getTexture();
-            TextureUtils.prepareTexture(gles, texture);
+            TextureUtils.prepareTexture(gles, texture, Texture2D.TEXTURE_0);
             gles.bindFramebufferTexture(texture, target.getFramebufferName(), attachement);
             gles.glViewport(0, 0, texture.getWidth(), texture.getHeight());
             enable(attachement);
@@ -557,11 +558,15 @@ class BaseRenderer implements NucleusRenderer {
         material.setBlendModeSeparate(gles);
         program.updateAttributes(gles, mesh);
         program.updateUniforms(gles, matrices, mesh);
+        program.prepareTextures(gles, mesh);
 
         AttributeBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         ElementBuffer indices = mesh.getElementBuffer();
-        Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
-        TextureUtils.prepareTexture(gles, texture);
+
+        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
+            program.validateProgram(getGLES());
+        }
+
         if (indices == null) {
             gles.glDrawArrays(mesh.getMode().mode, mesh.getOffset(), mesh.getDrawCount());
             GLUtils.handleError(gles, "glDrawArrays ");

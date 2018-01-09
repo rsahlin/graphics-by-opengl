@@ -26,6 +26,7 @@ public class TextureParameter {
             Parameter.NEAREST, Parameter.CLAMP,
             Parameter.CLAMP };
 
+    // TODO replace with Param
     public enum Parameter {
         NEAREST(GLES20.GL_NEAREST),
         LINEAR(GLES20.GL_LINEAR),
@@ -172,6 +173,7 @@ public class TextureParameter {
         REPEAT(GLES20.GL_REPEAT),
         MIRRORED_REPEAT(GLES20.GL_MIRRORED_REPEAT),
         LESS(GLES20.GL_LESS),
+        LEQUAL(GLES20.GL_LEQUAL),
         GREATER(GLES20.GL_GREATER),
         COMPARE_REF_TO_TEXTURE(GLES30.GL_COMPARE_REF_TO_TEXTURE);
 

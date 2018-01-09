@@ -7,6 +7,7 @@ import java.util.Hashtable;
 import com.nucleus.SimpleLogger;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
@@ -140,7 +141,8 @@ public class AssetManager {
                     new Parameter[] { Parameter.NEAREST, Parameter.NEAREST, Parameter.CLAMP,
                             Parameter.CLAMP });
             ImageFormat format = ImageFormat.valueOf(attachement.getFormat());
-            texture = TextureFactory.createTexture(renderer.getGLES(), type, resolution, size, format, texParams);
+            texture = TextureFactory.createTexture(renderer.getGLES(), type, resolution, size, format, texParams,
+                    GLES20.GL_TEXTURE_2D);
             texture.setId(renderTarget.getAttachementId(attachement));
             textures.put(renderTarget.getAttachementId(attachement), texture);
         }

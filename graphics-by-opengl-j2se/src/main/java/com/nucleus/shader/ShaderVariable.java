@@ -69,7 +69,7 @@ public class ShaderVariable {
      */
     private int location;
     /**
-     * Offset into buffer where the data for this varible is stored, used by GL
+     * Offset into buffer where the data for this variable is stored, used by GL
      */
     private int offset;
 
