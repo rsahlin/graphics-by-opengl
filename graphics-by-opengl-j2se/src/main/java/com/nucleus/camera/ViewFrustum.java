@@ -168,21 +168,39 @@ public class ViewFrustum {
      */
     public static void setProjectionMatrix(float[] matrix, Projection projection, float[] values) {
         switch (projection) {
-        case ORTHOGONAL:
-            Matrix.orthoM(matrix, 0, values[ViewFrustum.LEFT_INDEX],
-                    values[ViewFrustum.RIGHT_INDEX], values[ViewFrustum.BOTTOM_INDEX],
-                    values[ViewFrustum.TOP_INDEX], values[ViewFrustum.NEAR_INDEX],
-                    values[ViewFrustum.FAR_INDEX]);
-            break;
-        case PERSPECTIVE:
-            Matrix.frustumM(matrix, 0, values[ViewFrustum.LEFT_INDEX],
-                    values[ViewFrustum.RIGHT_INDEX], values[ViewFrustum.BOTTOM_INDEX],
-                    values[ViewFrustum.TOP_INDEX], values[ViewFrustum.NEAR_INDEX],
-                    values[ViewFrustum.FAR_INDEX]);
-            break;
-        default:
-            System.err.println("Illegal projection: " + projection);
+            case ORTHOGONAL:
+                Matrix.orthoM(matrix, 0, values[ViewFrustum.LEFT_INDEX],
+                        values[ViewFrustum.RIGHT_INDEX], values[ViewFrustum.BOTTOM_INDEX],
+                        values[ViewFrustum.TOP_INDEX], values[ViewFrustum.NEAR_INDEX],
+                        values[ViewFrustum.FAR_INDEX]);
+                break;
+            case PERSPECTIVE:
+                Matrix.frustumM(matrix, 0, values[ViewFrustum.LEFT_INDEX],
+                        values[ViewFrustum.RIGHT_INDEX], values[ViewFrustum.BOTTOM_INDEX],
+                        values[ViewFrustum.TOP_INDEX], values[ViewFrustum.NEAR_INDEX],
+                        values[ViewFrustum.FAR_INDEX]);
+                break;
+            default:
+                System.err.println("Illegal projection: " + projection);
         }
+    }
+
+    /**
+     * Returns the width of the view frustum, delta between right and left.
+     * 
+     * @return
+     */
+    public float getWidth() {
+        return Math.abs(values[RIGHT_INDEX] - values[LEFT_INDEX]);
+    }
+
+    /**
+     * Returns the height of the view frustum, delta between top and bottom
+     * 
+     * @return
+     */
+    public float getHeight() {
+        return Math.abs(values[TOP_INDEX] - values[BOTTOM_INDEX]);
     }
 
 }

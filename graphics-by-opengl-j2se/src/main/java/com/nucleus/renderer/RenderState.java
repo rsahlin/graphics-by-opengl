@@ -68,7 +68,7 @@ public class RenderState {
     protected boolean enableMultisampling = DEFAULT_MULTISAMPLING;
 
     /**
-     * Depth func used if depth test is enabled, default is less or equal.
+     * Depth func used if depth test is enabled, default is NONE
      */
     @SerializedName(DEPTHFUNC)
     protected int depthFunc = DEFAULT_DEPTHFUNC;
