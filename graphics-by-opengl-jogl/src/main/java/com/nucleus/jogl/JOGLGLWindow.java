@@ -16,6 +16,7 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
+import com.jogamp.opengl.egl.EGL;
 import com.jogamp.opengl.util.Animator;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
@@ -85,6 +86,10 @@ public abstract class JOGLGLWindow extends J2SEWindow
         createNEWTWindow(width, height, glProfile);
     }
 
+    private void createEGLWindow(int width, int height, GLProfile glProfile) {
+        long display = EGL.eglGetCurrentDisplay();
+    }
+    
     /**
      * Creates the JOGL display and OpenGLES
      * 
@@ -96,7 +101,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
         // Screen screen = NewtFactory.createScreen(display, SCREEN_ID);
         GLCapabilities glCapabilities = new GLCapabilities(glProfile);
         glCapabilities.setSampleBuffers(true);
-        glCapabilities.setNumSamples(8);
+        glCapabilities.setNumSamples(4);
         glCapabilities.setAlphaBits(8);
         // Window window = NewtFactory.createWindow(glCapabilities);
         glWindow = GLWindow.create(glCapabilities);
@@ -119,9 +124,8 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     private void createAWTWindow(int width, int height, GLProfile glProfile) {
         GLCapabilities caps = new GLCapabilities(glProfile);
-        caps.setBackgroundOpaque(false);
+        caps.setBackgroundOpaque(true);
         glWindow = GLWindow.create(caps);
-
         frame = new java.awt.Frame("Nucleus");
         frame.setSize(width, height);
         frame.setLayout(new java.awt.BorderLayout());
