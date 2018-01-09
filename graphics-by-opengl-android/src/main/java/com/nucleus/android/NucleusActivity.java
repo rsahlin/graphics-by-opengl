@@ -46,7 +46,7 @@ public abstract class NucleusActivity extends Activity
         implements DialogInterface.OnClickListener {
 
     public final static String SYSTEM_PROPERTY = "/system/bin/getprop";
-    
+
     protected SurfaceView surfaceView;
     private static Throwable throwable;
     private static NucleusActivity activity;
@@ -60,12 +60,17 @@ public abstract class NucleusActivity extends Activity
      * Hint to subclasses before creating SurfaceView
      */
     protected boolean useEGL14 = true;
-    
+
     /**
-     * EGL swap interval, must use egl surfaceview for this to work.
+     * EGL swap interval, must use egl surfaceview for this to work. Set to eglSurfaceView
      */
     protected int eglSwapInterval = 1;
-    
+
+    /**
+     * Surface attributes for eglCreateWindows, must use egl surfaceview for this to work. Set to eglSurfaceView
+     */
+    protected int[] surfaceAttribs;
+
     /**
      * Hint to subclasses
      */
@@ -143,11 +148,15 @@ public abstract class NucleusActivity extends Activity
         s = readProperty(Environment.Property.EGLSWAPINTERVAL.name());
         eglSwapInterval = s != null && s.length() > 0 ? Integer.parseInt(s) : eglSwapInterval;
         e.setProperty(Environment.Property.EGLWAITGL, readProperty(Environment.Property.EGLWAITGL.name()));
-        SimpleLogger.d(getClass(), "useEGL14=" + useEGL14 + ", samples=" + samples + ", eglSleep=" + eglSleep + ", eglWaitClient=" + eglWaitClient + ", eglSwapInterval=" + eglSwapInterval + ", eglWaitGL=" + e.getProperty(Environment.Property.EGLWAITGL));
+        SimpleLogger.d(getClass(),
+                "useEGL14=" + useEGL14 + ", samples=" + samples + ", eglSleep=" + eglSleep + ", eglWaitClient="
+                        + eglWaitClient + ", eglSwapInterval=" + eglSwapInterval + ", eglWaitGL="
+                        + e.getProperty(Environment.Property.EGLWAITGL));
     }
 
     /**
      * Reads a system property with the specified key, key is converted to lowercase.
+     * 
      * @param key
      * @return The property key or null
      */
@@ -210,7 +219,8 @@ public abstract class NucleusActivity extends Activity
      */
     protected SurfaceView createSurfaceView(Renderers version, SurfaceConfiguration surfaceConfig, int rendermode) {
         if (useEGL14) {
-            return new EGLSurfaceView(surfaceConfig, version, this);
+            return new EGLSurfaceView(surfaceConfig, version, this, eglSwapInterval,
+                    surfaceAttribs);
         } else {
             return new AndroidSurfaceView(surfaceConfig, version, this);
         }
@@ -319,14 +329,33 @@ public abstract class NucleusActivity extends Activity
      * @param height
      */
     public void contextCreated(int width, int height) {
+        if (surfaceView instanceof AndroidSurfaceView) {
+            createdSurfaceView((AndroidSurfaceView) surfaceView);
+        } else if (surfaceView instanceof EGLSurfaceView) {
+            createdEGLSurfaceView((EGLSurfaceView) surfaceView);
+        }
         // Call contextCreated since the renderer is already initialized and has a created EGL context.
         coreApp.contextCreated(width, height);
-        if (surfaceView instanceof AndroidSurfaceView) {
-            ((AndroidSurfaceView) surfaceView).setRenderContextListener(coreApp);
-        } else if (surfaceView instanceof EGLSurfaceView) {
-            ((EGLSurfaceView) surfaceView).setRenderContextListener(coreApp);
-        }
+    }
 
+    /**
+     * Called before {@link CoreApp#contextCreated(int, int)} is called when {@link AndroidSurfaceView} is used.
+     * Subclasses must call super
+     * 
+     * @param surfaceView
+     */
+    protected void createdSurfaceView(AndroidSurfaceView surfaceView) {
+        ((AndroidSurfaceView) surfaceView).setRenderContextListener(coreApp);
+    }
+
+    /**
+     * Called before {@link CoreApp#contextCreated(int, int)} is called when {@link EGLSurfaceView} is used.
+     * Subclasses must call super
+     * 
+     * @param surfaceView
+     */
+    protected void createdEGLSurfaceView(EGLSurfaceView surfaceView) {
+        ((EGLSurfaceView) surfaceView).setRenderContextListener(coreApp);
     }
 
     protected void handleTouch(MotionEvent event) {
