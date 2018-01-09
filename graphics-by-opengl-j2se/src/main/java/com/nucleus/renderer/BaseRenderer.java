@@ -563,6 +563,7 @@ class BaseRenderer implements NucleusRenderer {
         AttributeBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         ElementBuffer indices = mesh.getElementBuffer();
 
+        // TODO - is this the best place for this check - remember, this should only be done in debug cases.
         if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
             program.validateProgram(getGLES());
         }

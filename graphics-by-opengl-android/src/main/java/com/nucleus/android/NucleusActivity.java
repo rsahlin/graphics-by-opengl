@@ -63,8 +63,9 @@ public abstract class NucleusActivity extends Activity
 
     /**
      * EGL swap interval, must use egl surfaceview for this to work. Set to eglSurfaceView
+     * Change here to change the default value, may be overridden by property.
      */
-    protected int eglSwapInterval = 1;
+    protected int eglSwapInterval = 0;
 
     /**
      * Surface attributes for eglCreateWindows, must use egl surfaceview for this to work. Set to eglSurfaceView
@@ -345,7 +346,7 @@ public abstract class NucleusActivity extends Activity
      * @param surfaceView
      */
     protected void createdSurfaceView(AndroidSurfaceView surfaceView) {
-        ((AndroidSurfaceView) surfaceView).setRenderContextListener(coreApp);
+        surfaceView.setRenderContextListener(coreApp);
     }
 
     /**
@@ -355,7 +356,7 @@ public abstract class NucleusActivity extends Activity
      * @param surfaceView
      */
     protected void createdEGLSurfaceView(EGLSurfaceView surfaceView) {
-        ((EGLSurfaceView) surfaceView).setRenderContextListener(coreApp);
+        surfaceView.setRenderContextListener(coreApp);
     }
 
     protected void handleTouch(MotionEvent event) {

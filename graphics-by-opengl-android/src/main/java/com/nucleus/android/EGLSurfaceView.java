@@ -35,7 +35,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     protected SurfaceConfiguration surfaceConfig;
     protected Surface surface;
     protected RenderContextListener renderListener;
-    protected int eglSwapInterval = 1;
+    protected final int eglSwapInterval;
     /**
      * Special surface attribs that may be specified when creating the surface - see
      * https://www.khronos.org/registry/EGL/sdk/docs/man/html/eglCreateWindowSurface.xhtml
@@ -183,6 +183,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         createEglSurface();
         makeCurrent();
         SimpleLogger.d(getClass(), "EGL created and made current");
+        EGL14.eglSwapInterval(EglDisplay, eglSwapInterval);
         if (surfaceConfig.hasExtensionSupport(EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh)) {
             EGL14.eglSurfaceAttrib(EglDisplay, EGLSurface, EGL14Constants.EGL_FRONT_BUFFER_AUTO_REFRESH_ANDROID, 1);
             SimpleLogger.d(getClass(),
