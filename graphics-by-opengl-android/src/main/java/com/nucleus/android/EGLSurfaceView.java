@@ -71,12 +71,57 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         this.surfaceAttribs = surfaceAttribs;
     }
 
+    /**
+     * Returns the EGLDisplay that shall be used, default is to fetch EGL_DEFAULT_DISPLAY
+     * 
+     * @return
+     */
+    protected EGLDisplay getEGLDisplay() {
+        return EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
+    }
+
+    /**
+     * Creates a list of egl config attribs for the surface config, if surfaceConfig is null then
+     * {@link #createDefaultConfigAttribs()} is called.
+     * 
+     * @param surfaceConfig
+     * @return
+     */
+    protected int[] createEGLConfigAttribs(SurfaceConfiguration surfaceConfig) {
+        if (surfaceConfig != null) {
+            return EGLUtils.createConfig(surfaceConfig);
+        } else {
+            // Create default.
+            return createDefaultConfigAttribs();
+        }
+    }
+
+    /**
+     * Creates the egl context, default is to set client version to {@link #version#major}.
+     * 
+     * @throws IllegalArgumentException If context could not be created
+     */
+    protected void createEGLContext() {
+        int[] eglContextAttribList = new int[] {
+                EGL14.EGL_CONTEXT_CLIENT_VERSION, version.major,
+                EGL14.EGL_NONE
+        };
+        EGLContext = EGL14.eglCreateContext(EglDisplay, EglConfig,
+                EGL14.EGL_NO_CONTEXT, eglContextAttribList, 0);
+        if (EGLContext == null) {
+            throw new IllegalArgumentException("Could not create EGL context");
+        }
+    }
+
+    /**
+     * Creates the egl context, first getting the display by calling
+     */
     protected void createEglContext() {
         if (EglDisplay == null) {
             SimpleLogger.d(getClass(), "egl display is null, creating.");
-            EglDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
+            EglDisplay = getEGLDisplay();
             if (EglDisplay == EGL14.EGL_NO_DISPLAY) {
-                throw new IllegalArgumentException("Could not create egl display.");
+                throw new IllegalArgumentException("Could not get egl display.");
             }
 
             int[] versionArray = new int[2];
@@ -84,18 +129,12 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                 EglDisplay = null;
                 throw new IllegalArgumentException("Could not initialize egl display");
             }
-            SimpleLogger.d(getClass(), "egl display initialized, version: " + versionArray[0] + "." + versionArray[1]);
+            SimpleLogger.d(getClass(), "egl initialized, version: " + versionArray[0] + "." + versionArray[1]);
         }
         if (EglConfig == null) {
             SimpleLogger.d(getClass(), "egl config is null, creating.");
 
-            int[] eglConfigAttribList = null;
-            if (surfaceConfig != null) {
-                eglConfigAttribList = EGLUtils.createConfig(surfaceConfig);
-            } else {
-                // Create default.
-                eglConfigAttribList = createDefaultConfigAttribs();
-            }
+            int[] eglConfigAttribList = createEGLConfigAttribs(surfaceConfig);
             int[] numEglConfigs = new int[1];
             EGLConfig[] eglConfigs = new EGLConfig[1];
             if (!EGL14.eglChooseConfig(EglDisplay, eglConfigAttribList, 0,
@@ -109,15 +148,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         }
         if (EGLContext == null) {
             SimpleLogger.d(getClass(), "egl context is null, creating.");
-            int[] eglContextAttribList = new int[] {
-                    EGL14.EGL_CONTEXT_CLIENT_VERSION, version.major,
-                    EGL14.EGL_NONE
-            };
-            EGLContext = EGL14.eglCreateContext(EglDisplay, EglConfig,
-                    EGL14.EGL_NO_CONTEXT, eglContextAttribList, 0);
-            if (EGLContext == null) {
-                throw new IllegalArgumentException("Could not create EGL context");
-            }
+            createEGLContext();
         }
     }
 
