@@ -3,6 +3,7 @@ package com.nucleus;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.component.ComponentProcessorRunnable;
 import com.nucleus.component.J2SEComponentProcessor;
+import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
@@ -10,7 +11,7 @@ import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.RectangleShapeBuilder;
 import com.nucleus.geometry.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.mmi.MMIEventListener;
+import com.nucleus.mmi.ObjectInputListener;
 import com.nucleus.mmi.core.PointerInputProcessor;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
@@ -24,9 +25,11 @@ import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.J2SENodeInputListener;
 import com.nucleus.scene.NavigationController;
+import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.NodeController;
 import com.nucleus.scene.NodeException;
+import com.nucleus.scene.NodeInputListener;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewController;
 import com.nucleus.shader.TranslateProgram;
@@ -166,6 +169,8 @@ public class CoreApp implements RenderContextListener {
 
     /**
      * Returns the pointer input processor, this can be used to listen to low level MMI (pointer input) events.
+     * Applications can use this to listen to low level input events - or use the NodeTree and attach pointerinput to
+     * nodes via NodeInputListener see {@link #addPointerInput(RootNode)}
      * 
      * @return
      */
@@ -272,10 +277,13 @@ public class CoreApp implements RenderContextListener {
     }
 
     /**
-     * Adds pointer input callback {@linkplain MMIEventListener} to the scene, after this call the Node tree will get
-     * callbacks on pointer input
+     * Adds pointer input callback using {@link NodeInputListener} to the scene, after this call the Node tree will get
+     * callbacks on pointer input.
+     * Call this if nodes use the {@link EventManager}, eg POINTERINPUT property, or shall use a node with
+     * {@link ObjectInputListener}
+     * Set ObjectInputListener on node by calling {@link Node#setObjectInputListener(ObjectInputListener)}
      * 
-     * @param root
+     * @param root The rootnode
      */
     public void addPointerInput(RootNode root) {
         inputProcessor.addMMIListener(new J2SENodeInputListener(root));
