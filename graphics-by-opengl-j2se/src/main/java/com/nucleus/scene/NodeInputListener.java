@@ -3,9 +3,13 @@ package com.nucleus.scene;
 import java.util.ArrayList;
 
 import com.nucleus.mmi.MMIPointerEvent;
+import com.nucleus.mmi.ObjectInputListener;
 
 /**
  * Handles interception of input events on a node, builds on {@link MMIPointerEvent}
+ * This is intended for Nodes that need to implement custom logic for touch input, by setting the
+ * {@link ObjectInputListener}
+ * on the node.
  *
  */
 public interface NodeInputListener {
