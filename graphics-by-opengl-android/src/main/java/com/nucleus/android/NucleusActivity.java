@@ -138,21 +138,24 @@ public abstract class NucleusActivity extends Activity
      */
     protected void checkProperties() {
         Environment e = Environment.getInstance();
-        String egl = readProperty(Environment.Property.EGL14SURFACE.name());
-        useEGL14 = egl != null && egl.length() > 0 ? Boolean.parseBoolean(egl) : useEGL14;
-        String s = readProperty(Environment.Property.SAMPLES.name());
-        samples = s != null && s.length() != 0 ? Integer.parseInt(s) : Constants.NO_VALUE;
-        s = readProperty(Environment.Property.EGLSLEEP.name());
-        eglSleep = (s != null && s.length() > 0) ? Integer.parseInt(s) : Constants.NO_VALUE;
-        s = readProperty(Environment.Property.EGLWAITCLIENT.name());
-        eglWaitClient = s != null && s.length() > 0 ? Boolean.parseBoolean(s) : eglWaitClient;
-        s = readProperty(Environment.Property.EGLSWAPINTERVAL.name());
-        eglSwapInterval = s != null && s.length() > 0 ? Integer.parseInt(s) : eglSwapInterval;
+        String eglStr = readProperty(Environment.Property.EGL14SURFACE.name());
+        useEGL14 = eglStr != null && eglStr.length() > 0 ? Boolean.parseBoolean(eglStr) : useEGL14;
+        String samplesStr = readProperty(Environment.Property.SAMPLES.name());
+        samples = samplesStr != null && samplesStr.length() != 0 ? Integer.parseInt(samplesStr) : Constants.NO_VALUE;
+        String sleepStr = readProperty(Environment.Property.EGLSLEEP.name());
+        eglSleep = (sleepStr != null && sleepStr.length() > 0) ? Integer.parseInt(sleepStr) : Constants.NO_VALUE;
+        String waitclientStr = readProperty(Environment.Property.EGLWAITCLIENT.name());
+        eglWaitClient = waitclientStr != null && waitclientStr.length() > 0 ? Boolean.parseBoolean(waitclientStr)
+                : eglWaitClient;
+        String swapIntervalStr = readProperty(Environment.Property.EGLSWAPINTERVAL.name());
+        eglSwapInterval = swapIntervalStr != null && swapIntervalStr.length() > 0 ? Integer.parseInt(swapIntervalStr)
+                : eglSwapInterval;
         e.setProperty(Environment.Property.EGLWAITGL, readProperty(Environment.Property.EGLWAITGL.name()));
         SimpleLogger.d(getClass(),
-                "useEGL14=" + useEGL14 + ", samples=" + samples + ", eglSleep=" + eglSleep + ", eglWaitClient="
-                        + eglWaitClient + ", eglSwapInterval=" + eglSwapInterval + ", eglWaitGL="
-                        + e.getProperty(Environment.Property.EGLWAITGL));
+                "useEGL14=" + useEGL14 + " (property=" + eglStr + "), samples=" + samples + " (property=" + samplesStr
+                        + "), eglSleep=" + eglSleep + " (property=" + sleepStr + "), eglWaitClient=" + eglWaitClient
+                        + " (property=" + waitclientStr + ") , eglSwapInterval=" + eglSwapInterval + " (property="
+                        + swapIntervalStr + "), eglWaitGL=" + e.getProperty(Environment.Property.EGLWAITGL));
     }
 
     /**
@@ -211,7 +214,8 @@ public abstract class NucleusActivity extends Activity
     /**
      * Creates the SurfaceView to be used to render GL content.
      * To use EGL1.4 use {@link EGLSurfaceView} or subclass.
-     * To use legacy EGL1.0/1.1
+     * To use legacy EGL1.0/1.1 use {@link AndroidSurfaceView}
+     * This method is called from {@link #onCreate(Bundle)}
      * 
      * @param version
      * @param surfaceConfig
