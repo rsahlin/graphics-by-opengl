@@ -334,17 +334,17 @@ public abstract class NucleusActivity extends Activity
      * @param height
      */
     public void contextCreated(int width, int height) {
+        // Call contextCreated since the renderer is already initialized and has a created EGL context.
+        coreApp.contextCreated(width, height);
         if (surfaceView instanceof AndroidSurfaceView) {
             createdSurfaceView((AndroidSurfaceView) surfaceView);
         } else if (surfaceView instanceof EGLSurfaceView) {
             createdEGLSurfaceView((EGLSurfaceView) surfaceView);
         }
-        // Call contextCreated since the renderer is already initialized and has a created EGL context.
-        coreApp.contextCreated(width, height);
     }
 
     /**
-     * Called before {@link CoreApp#contextCreated(int, int)} is called when {@link AndroidSurfaceView} is used.
+     * Called after {@link CoreApp#contextCreated(int, int)} is called when {@link AndroidSurfaceView} is used.
      * Subclasses must call super
      * 
      * @param surfaceView
@@ -354,7 +354,7 @@ public abstract class NucleusActivity extends Activity
     }
 
     /**
-     * Called before {@link CoreApp#contextCreated(int, int)} is called when {@link EGLSurfaceView} is used.
+     * Called after {@link CoreApp#contextCreated(int, int)} is called when {@link EGLSurfaceView} is used.
      * Subclasses must call super
      * 
      * @param surfaceView
