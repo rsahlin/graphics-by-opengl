@@ -36,6 +36,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     protected Surface surface;
     protected RenderContextListener renderListener;
     protected final int eglSwapInterval;
+    Environment env;
     /**
      * Special surface attribs that may be specified when creating the surface - see
      * https://www.khronos.org/registry/EGL/sdk/docs/man/html/eglCreateWindowSurface.xhtml
@@ -63,6 +64,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     public EGLSurfaceView(SurfaceConfiguration surfaceConfig, Renderers version, NucleusActivity nucleusActivity,
             int swapInterval, int[] surfaceAttribs) {
         super(nucleusActivity);
+        env = Environment.getInstance();
         this.nucleusActivity = nucleusActivity;
         this.surfaceConfig = surfaceConfig;
         this.version = version;
@@ -215,7 +217,8 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         makeCurrent();
         SimpleLogger.d(getClass(), "EGL created and made current");
         EGL14.eglSwapInterval(EglDisplay, eglSwapInterval);
-        if (surfaceConfig.hasExtensionSupport(EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh)) {
+        if (env.isProperty(Environment.Property.FRONTBUFFERAUTO, false)
+                && surfaceConfig.hasExtensionSupport(EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh)) {
             EGL14.eglSurfaceAttrib(EglDisplay, EGLSurface, EGL14Constants.EGL_FRONT_BUFFER_AUTO_REFRESH_ANDROID, 1);
             SimpleLogger.d(getClass(),
                     "Set surfaceattrib for: " + EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh);

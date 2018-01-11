@@ -150,7 +150,12 @@ public abstract class NucleusActivity extends Activity
         String swapIntervalStr = readProperty(Environment.Property.EGLSWAPINTERVAL.name());
         eglSwapInterval = swapIntervalStr != null && swapIntervalStr.length() > 0 ? Integer.parseInt(swapIntervalStr)
                 : eglSwapInterval;
-        e.setProperty(Environment.Property.EGLWAITGL, readProperty(Environment.Property.EGLWAITGL.name()));
+        for (Environment.Property p : Environment.Property.values()) {
+            String str = readProperty(p.name());
+            if (str != null && str.length() > 0) {
+                e.setProperty(p, readProperty(p.name()));
+            }
+        }
         SimpleLogger.d(getClass(),
                 "useEGL14=" + useEGL14 + " (property=" + eglStr + "), samples=" + samples + " (property=" + samplesStr
                         + "), eglSleep=" + eglSleep + " (property=" + sleepStr + "), eglWaitClient=" + eglWaitClient

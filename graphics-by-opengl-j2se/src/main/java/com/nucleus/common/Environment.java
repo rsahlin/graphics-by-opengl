@@ -40,7 +40,11 @@ public class Environment {
         /**
          * EGL swap interval, only works if using eglsurface
          */
-        EGLSWAPINTERVAL("com.nucleus.eglswapinterval");
+        EGLSWAPINTERVAL("com.nucleus.eglswapinterval"),
+        /**
+         * If true then EGL front_buffer_auto_refresh is enabled if present
+         */
+        FRONTBUFFERAUTO("com.nucleus.frontbufferrefresh");
 
         public final String key;
 
