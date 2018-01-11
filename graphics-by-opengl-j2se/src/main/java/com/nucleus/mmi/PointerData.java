@@ -7,6 +7,8 @@ import com.nucleus.mmi.core.PointerListener;
  */
 public class PointerData {
 
+    public final static float DOWN_PRESSURE = 1f;
+
     /**
      * The type of event, ie what the source of the action is
      *

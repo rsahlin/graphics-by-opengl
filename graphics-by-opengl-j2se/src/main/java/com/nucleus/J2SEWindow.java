@@ -3,6 +3,7 @@ package com.nucleus;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 
+import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
 import com.nucleus.opengl.GLES20Wrapper;
@@ -107,15 +108,15 @@ public abstract class J2SEWindow {
             case DOWN:
                 coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN, type,
                         timestamp, pointer,
-                        new float[] { xpos, ypos }, 0);
+                        new float[] { xpos, ypos }, PointerData.DOWN_PRESSURE);
                 break;
             case UP:
                 coreApp.getInputProcessor().pointerEvent(PointerAction.UP, type, timestamp, pointer, new float[] {
-                        xpos, ypos }, 0);
+                        xpos, ypos }, PointerData.DOWN_PRESSURE);
                 break;
             case MOVE:
                 coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, type, timestamp, pointer, new float[] {
-                        xpos, ypos }, 0);
+                        xpos, ypos }, PointerData.DOWN_PRESSURE);
             default:
         }
     }
