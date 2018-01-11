@@ -140,9 +140,11 @@ public class GSONSceneFactory implements SceneSerializer {
             RootNode scene = getSceneFromJson(gson, reader);
             long loaded = System.currentTimeMillis();
             FrameSampler.getInstance().logTag(FrameSampler.Samples.LOAD_SCENE, start, loaded);
-            RootNode createdRoot = createScene(scene.getChildren());
+            RootNode root = createInstance();
+            scene.copyTo(root);
+            createScene(root, scene.getChildren());
             FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SCENE, loaded, System.currentTimeMillis());
-            return createdRoot;
+            return root;
         } catch (IOException e) {
             throw new NodeException(e);
         }
@@ -180,16 +182,16 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     /**
-     * Creates {@linkplain RootNode} from the scene node and returns, use this method when importing to create
+     * Creates instances of the nodes in the scene and adds to the root, use this method when importing to create
      * a new instance of the loaded scene.
      * 
-     * @param scene The root node scenes
+     * @param root The root node, created child nodes will be added to this
+     * @param scene The root nodes to create instances of
      * @return The created scenes or null if there is an error.
      * @throws NodeException
      */
-    private RootNode createScene(List<Node> scene) throws NodeException {
-        RootNode root = createInstance();
-        addNodes(root, scene);
+    private RootNode createScene(RootNode root, List<Node> scene) throws NodeException {
+        createNodes(root, scene);
         return root;
     }
 
@@ -210,7 +212,7 @@ public class GSONSceneFactory implements SceneSerializer {
      * @return
      * @throws IOException
      */
-    private void addNodes(RootNode root, List<Node> children) throws NodeException {
+    private void createNodes(RootNode root, List<Node> children) throws NodeException {
         for (Node node : children) {
             Node created = nodeFactory.create(renderer, meshFactory, node, root);
             root.addChild(created);
