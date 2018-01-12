@@ -46,6 +46,7 @@ public abstract class NucleusActivity extends Activity
         implements DialogInterface.OnClickListener {
 
     public final static String SYSTEM_PROPERTY = "/system/bin/getprop";
+    public final static String CHOREOGRAPHER_KEY = "choreographer";
 
     protected SurfaceView surfaceView;
     private static Throwable throwable;
@@ -66,6 +67,11 @@ public abstract class NucleusActivity extends Activity
      * Change here to change the default value, may be overridden by property.
      */
     protected int eglSwapInterval = 1;
+    /**
+     * True to use choreographer for rendering on UI thread.
+     * Change here to change the default value, may be overridden by property.
+     */
+    protected boolean useChoreographer = true;
 
     /**
      * Surface attributes for eglCreateWindows, must use egl surfaceview for this to work. Set to eglSurfaceView
@@ -150,6 +156,10 @@ public abstract class NucleusActivity extends Activity
         String swapIntervalStr = readProperty(Environment.Property.EGLSWAPINTERVAL.name());
         eglSwapInterval = swapIntervalStr != null && swapIntervalStr.length() > 0 ? Integer.parseInt(swapIntervalStr)
                 : eglSwapInterval;
+        String choreographerStr = readProperty(CHOREOGRAPHER_KEY);
+        useChoreographer = choreographerStr != null && choreographerStr.length() > 0
+                ? Boolean.parseBoolean(choreographerStr)
+                : useChoreographer;
         for (Environment.Property p : Environment.Property.values()) {
             String str = readProperty(p.name());
             if (str != null && str.length() > 0) {
@@ -160,7 +170,8 @@ public abstract class NucleusActivity extends Activity
                 "useEGL14=" + useEGL14 + " (property=" + eglStr + "), samples=" + samples + " (property=" + samplesStr
                         + "), eglSleep=" + eglSleep + " (property=" + sleepStr + "), eglWaitClient=" + eglWaitClient
                         + " (property=" + waitclientStr + ") , eglSwapInterval=" + eglSwapInterval + " (property="
-                        + swapIntervalStr + "), eglWaitGL=" + e.getProperty(Environment.Property.EGLWAITGL));
+                        + swapIntervalStr + "), eglWaitGL=" + e.getProperty(Environment.Property.EGLWAITGL)
+                        + " useChoreograper=" + useChoreographer + " (" + choreographerStr + ")");
     }
 
     /**
@@ -232,7 +243,7 @@ public abstract class NucleusActivity extends Activity
     protected SurfaceView createSurfaceView(Renderers version, SurfaceConfiguration surfaceConfig, int rendermode) {
         if (useEGL14) {
             return new EGLSurfaceView(surfaceConfig, version, this, eglSwapInterval,
-                    surfaceAttribs);
+                    surfaceAttribs, useChoreographer);
         } else {
             return new AndroidSurfaceView(surfaceConfig, version, this);
         }

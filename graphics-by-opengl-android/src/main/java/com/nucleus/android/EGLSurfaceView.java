@@ -16,16 +16,19 @@ import android.opengl.EGLConfig;
 import android.opengl.EGLContext;
 import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
+import android.view.Choreographer;
+import android.view.Choreographer.FrameCallback;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 @SuppressLint("ClickableViewAccessibility")
-public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
+public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runnable, FrameCallback {
 
     Thread thread;
 
+    protected Choreographer choreographer;
     protected NucleusActivity nucleusActivity;
     protected Renderers version;
     protected EGLContext EGLContext;
@@ -36,6 +39,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     protected Surface surface;
     protected RenderContextListener renderListener;
     protected final int eglSwapInterval;
+    protected boolean useChoreographer = true;
     Environment env;
     /**
      * Special surface attribs that may be specified when creating the surface - see
@@ -55,6 +59,8 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
      * @param swapInterval
      * @param surfaceAttribs Surface attribs that may be specified when creating the surface - see
      * https://www.khronos.org/registry/EGL/sdk/docs/man/html/eglCreateWindowSurface.xhtml
+     * @param useChoreographer True to use choreographer to drive rendering on UI thread, if false then new thread is
+     * created for rendering.
      * EGL_RENDER_BUFFER
      * EGL_VG_ALPHA_FORMAT
      * EGL_VG_COLORSPACE
@@ -62,7 +68,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
      * 
      */
     public EGLSurfaceView(SurfaceConfiguration surfaceConfig, Renderers version, NucleusActivity nucleusActivity,
-            int swapInterval, int[] surfaceAttribs) {
+            int swapInterval, int[] surfaceAttribs, boolean useChoreographer) {
         super(nucleusActivity);
         env = Environment.getInstance();
         this.nucleusActivity = nucleusActivity;
@@ -71,6 +77,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         getHolder().addCallback(this);
         eglSwapInterval = swapInterval;
         this.surfaceAttribs = surfaceAttribs;
+        this.useChoreographer = useChoreographer;
     }
 
     /**
@@ -128,7 +135,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         }
         EglConfig = eglConfigs[0];
         surfaceConfig = EGL14Utils.getSurfaceConfig(EglDisplay, EglConfig);
-        SimpleLogger.d(getClass(), "Selected EGL Configuration:");
+        SimpleLogger.d(getClass(), "Selected EGL Configuration for display " + EglDisplay + " :");
         SimpleLogger.d(getClass(), surfaceConfig.toString());
     }
 
@@ -152,7 +159,8 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                 EglDisplay = null;
                 throw new IllegalArgumentException("Could not initialize egl display");
             }
-            SimpleLogger.d(getClass(), "egl initialized, version: " + versionArray[0] + "." + versionArray[1]);
+            SimpleLogger.d(getClass(), "egl initialized on display " + EglDisplay + ", version: " + versionArray[0]
+                    + "." + versionArray[1]);
         }
         if (EglConfig == null) {
             SimpleLogger.d(getClass(), "egl config is null, creating.");
@@ -201,14 +209,24 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceCreated(SurfaceHolder holder) {
         SimpleLogger.d(getClass(), "surfaceCreated() ");
         surface = holder.getSurface();
-        if (thread == null) {
-            thread = new Thread(this);
-            thread.start();
+        if (useChoreographer) {
+            SimpleLogger.d(getClass(), "Using Choreographer to drive rendering on UI thread.");
+            createEGL();
+            choreographer = Choreographer.getInstance();
+            choreographer.postFrameCallback(this);
         } else {
-            if (EGLSurface == null) {
-                createEglSurface();
+            SimpleLogger.d(getClass(), "Not using Choreographer, creating thread to drive rendering.");
+            if (thread == null) {
+                thread = new Thread(this);
+                thread.start();
+            } else {
+                // Not the first time we are starting - just re-create the surface if null.
+                if (EGLSurface == null) {
+                    createEglSurface();
+                }
             }
         }
+
     }
 
     @Override
@@ -298,16 +316,20 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         SimpleLogger.d(getClass(), "Starting EGL surface thread");
         createEGL();
         while (surface != null) {
-            drawFrame();
-            if (EGLSurface != null) {
-                swapBuffers();
-            }
+            internalDoFrame();
         }
         if (renderListener != null) {
             renderListener.surfaceLost();
         }
         SimpleLogger.d(getClass(), "Exiting surface thread");
         thread = null;
+    }
+
+    protected void internalDoFrame() {
+        drawFrame();
+        if (EGLSurface != null) {
+            swapBuffers();
+        }
     }
 
     /**
@@ -324,6 +346,14 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         FrameSampler.getInstance().addTag(FrameSampler.Samples.EGLSWAPBUFFERS.name() + "-WAITGL=" + eglWaitGL,
                 start,
                 System.currentTimeMillis(), FrameSampler.Samples.EGLSWAPBUFFERS.detail);
+    }
+
+    @Override
+    public void doFrame(long frameTimeNanos) {
+        internalDoFrame();
+        if (choreographer != null) {
+            choreographer.postFrameCallback(this);
+        }
     }
 
 }
