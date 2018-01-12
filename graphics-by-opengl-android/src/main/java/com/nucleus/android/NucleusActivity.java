@@ -189,8 +189,10 @@ public abstract class NucleusActivity extends Activity
 
     /**
      * Returns the number of samples to use for the EGL config.
+     * This is called from the {@link #createSurfaceConfig()} and used when setting number of samples in the
+     * surfaceconfig.
      * 
-     * @return
+     * @return Number of wanted samples
      */
     public abstract int getSamples();
 
@@ -203,8 +205,8 @@ public abstract class NucleusActivity extends Activity
      */
     private void setup(Renderers version, int rendermode) {
         SurfaceConfiguration surfaceConfig = createSurfaceConfig();
+        SimpleLogger.d(getClass(), "Using SurfaceConfig:\n" + surfaceConfig.toString());
         createWrapper(version);
-        surfaceConfig.setSamples(getSamples());
         surfaceView = createSurfaceView(version, surfaceConfig, rendermode);
         SimpleLogger.d(getClass(), "Using " + surfaceView.getClass().getSimpleName());
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -238,11 +240,14 @@ public abstract class NucleusActivity extends Activity
 
     /**
      * Creates the wanted EGL surface configuration, creates a default {@link SurfaceConfiguration}
+     * then sets number of samples with value from {@link #getSamples()}
      * 
      * @return
      */
     protected SurfaceConfiguration createSurfaceConfig() {
-        return new SurfaceConfiguration();
+        SurfaceConfiguration surfaceConfig = new SurfaceConfiguration();
+        surfaceConfig.setSamples(getSamples());
+        return surfaceConfig;
     }
 
     private void createWrapper(Renderers version) {

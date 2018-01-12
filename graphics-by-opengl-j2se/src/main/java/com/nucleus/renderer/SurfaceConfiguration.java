@@ -19,6 +19,7 @@ public class SurfaceConfiguration {
     public final static int DEFAULT_BLUE_BITS = 8;
     public final static int DEFAULT_ALPHA_BITS = 8;
     public final static int DEFAULT_DEPTH_BITS = 16;
+    public final static int DEFAULT_STENCIL_BITS = 0;
     public final static int DEFAULT_SAMPLES = 0;
 
     protected final static String INVALID_SAMPLES_STRING = "Invalid samples value";
@@ -45,6 +46,11 @@ public class SurfaceConfiguration {
      * Number of bits to use for the depth buffer.
      */
     protected int depthBits = DEFAULT_DEPTH_BITS;
+
+    /**
+     * Number of bits to use for stencil
+     */
+    protected int stencilBits = DEFAULT_STENCIL_BITS;
 
     /**
      * Surface type bitmask
@@ -142,6 +148,15 @@ public class SurfaceConfiguration {
     }
 
     /**
+     * Returns the number of bits to use for stencil buffer
+     * 
+     * @return
+     */
+    public int getStencilBits() {
+        return stencilBits;
+    }
+
+    /**
      * Return the number of samples required for this configuration.
      * 
      * @return The number of samples required for this configuration.
@@ -209,6 +224,15 @@ public class SurfaceConfiguration {
     }
 
     /**
+     * Sets the number of wanted stencilbits, at least this value - may get config with more.
+     * 
+     * @param stencilbits
+     */
+    public void setStencilBits(int stencilbits) {
+        this.stencilBits = stencilbits;
+    }
+
+    /**
      * Sets the surface type bitmask
      * 
      * @param surfaceType
@@ -224,7 +248,8 @@ public class SurfaceConfiguration {
             ext += e + System.lineSeparator();
         }
         return "RGBA:" + redBits + ", " + greenBits + ", " + blueBits + ", " + alphaBits + ", Depth: " + depthBits
-                + ", Samples: " + samples + ", Version: " + version + ", Vendor: " + vendor + System.lineSeparator() +
+                + ", stencil: " + stencilBits + ", Samples: " + samples + ", Version: " + version + ", Vendor: "
+                + vendor + System.lineSeparator() +
                 "Surfacetype " + EGLUtils.getSurfaceTypeAsString(surfaceType) + System.lineSeparator() +
                 "EGL extensions:" + System.lineSeparator() + ext;
     }

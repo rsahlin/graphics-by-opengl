@@ -27,6 +27,7 @@ public class EGL14Utils {
         surfaceConfig.setBlueBits(getEGLConfigAttrib(eglDisplay, config, EGL14.EGL_BLUE_SIZE));
         surfaceConfig.setAlphaBits(getEGLConfigAttrib(eglDisplay, config, EGL14.EGL_ALPHA_SIZE));
         surfaceConfig.setDepthBits(getEGLConfigAttrib(eglDisplay, config, EGL14.EGL_DEPTH_SIZE));
+        surfaceConfig.setStencilBits(getEGLConfigAttrib(eglDisplay, config, EGL14.EGL_STENCIL_SIZE));
         surfaceConfig.setSamples(getEGLConfigAttrib(eglDisplay, config, EGL14.EGL_SAMPLES));
         surfaceConfig.setSurfaceType(getEGLConfigAttrib(eglDisplay, config, EGL14.EGL_SURFACE_TYPE));
         setEGLInfo(eglDisplay, surfaceConfig);

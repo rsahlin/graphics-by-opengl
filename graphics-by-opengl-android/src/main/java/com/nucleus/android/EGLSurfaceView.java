@@ -116,6 +116,27 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     /**
+     * Choose the desired config
+     */
+    protected void chooseEGLConfig() {
+        int[] eglConfigAttribList = createEGLConfigAttribs(surfaceConfig);
+        int[] numEglConfigs = new int[1];
+        EGLConfig[] eglConfigs = new EGLConfig[1];
+        if (!EGL14.eglChooseConfig(EglDisplay, eglConfigAttribList, 0,
+                eglConfigs, 0, eglConfigs.length, numEglConfigs, 0)) {
+            throw new IllegalArgumentException("Could not choose egl config.");
+        }
+        EglConfig = eglConfigs[0];
+        surfaceConfig = EGL14Utils.getSurfaceConfig(EglDisplay, EglConfig);
+        SimpleLogger.d(getClass(), "Selected EGL Configuration:");
+        SimpleLogger.d(getClass(), surfaceConfig.toString());
+    }
+
+    protected void chooseEGLConcfig(EGLConfig config) {
+
+    }
+
+    /**
      * Creates the egl context, first getting the display by calling
      */
     protected void createEglContext() {
@@ -135,18 +156,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         }
         if (EglConfig == null) {
             SimpleLogger.d(getClass(), "egl config is null, creating.");
-
-            int[] eglConfigAttribList = createEGLConfigAttribs(surfaceConfig);
-            int[] numEglConfigs = new int[1];
-            EGLConfig[] eglConfigs = new EGLConfig[1];
-            if (!EGL14.eglChooseConfig(EglDisplay, eglConfigAttribList, 0,
-                    eglConfigs, 0, eglConfigs.length, numEglConfigs, 0)) {
-                throw new IllegalArgumentException("Could not choose egl config.");
-            }
-            EglConfig = eglConfigs[0];
-            surfaceConfig = EGL14Utils.getSurfaceConfig(EglDisplay, EglConfig);
-            SimpleLogger.d(getClass(), "Selected EGL Configuration:");
-            SimpleLogger.d(getClass(), surfaceConfig.toString());
+            chooseEGLConfig();
         }
         if (EGLContext == null) {
             SimpleLogger.d(getClass(), "egl context is null, creating.");
@@ -237,7 +247,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         EGLSurface = null;
     }
 
-    private void makeCurrent() {
+    protected void makeCurrent() {
         if (!EGL14.eglMakeCurrent(EglDisplay, EGLSurface, EGLSurface, EGLContext)) {
             throw new IllegalArgumentException("Could not make egl current");
         }

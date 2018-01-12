@@ -54,6 +54,7 @@ public class EGLUtils {
         setConfig(eglArray, EGL14Constants.EGL_BLUE_SIZE, wantedConfig.getBlueBits());
         setConfig(eglArray, EGL14Constants.EGL_ALPHA_SIZE, wantedConfig.getAlphaBits());
         setConfig(eglArray, EGL14Constants.EGL_DEPTH_SIZE, wantedConfig.getDepthBits());
+        setConfig(eglArray, EGL14Constants.EGL_STENCIL_SIZE, wantedConfig.getStencilBits());
         setConfig(eglArray, EGL14Constants.EGL_RENDERABLE_TYPE, EGL14Constants.EGL_OPENGL_ES2_BIT);
         setConfig(eglArray, EGL14Constants.EGL_SAMPLES, wantedConfig.getSamples());
         int buffers = 0;
