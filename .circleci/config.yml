@@ -5,6 +5,9 @@ jobs:
        - image: circleci/openjdk:8-jdk-browsers
        - image: buildpack-deps:trusty
      steps:
+  - add_ssh_keys:
+    fingerprints:
+      - "f1:69:76:4f:b0:2a:c6:a5:dd:71:b7:ce:89:8b:43:20"
        - run: git clone ssh://github.com/rsahlin/vecmath.git
        - checkout
        - run: mvn compile
