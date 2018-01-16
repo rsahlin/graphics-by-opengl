@@ -5,7 +5,7 @@ jobs:
        - image: circleci/openjdk:8-jdk-browsers
        - image: buildpack-deps:trusty
      steps:
-       - git clone https://github.com/rsahlin/vecmath.git
+       - git clone ssh://github.com/rsahlin/vecmath.git
        - checkout
        - run: mvn compile
 
