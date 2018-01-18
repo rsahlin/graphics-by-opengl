@@ -11,7 +11,7 @@ import com.nucleus.scene.RootNode;
 public abstract class System {
 
     private String type;
-    
+
     /**
      * Updates the component using this system.
      * 
@@ -28,22 +28,34 @@ public abstract class System {
      * @param component The component to be used in the system
      */
     public abstract void initSystem(RootNode root, Component component);
-    
+
+    /**
+     * Returns the size of data for each entity needed by the system to do processing.
+     * This is called from the
+     * {@link Component#create(com.nucleus.renderer.NucleusRenderer, com.nucleus.component.ComponentNode, System)}
+     * method.
+     * 
+     * @return Size of data for each entity.
+     */
+    public abstract int getEntityDataSize();
+
     /**
      * Returns the type of component, this is tied to the implementing class by {@link TypeResolver}
+     * 
      * @return
      */
     public String getType() {
         return type;
     }
-    
+
     /**
      * Sets the type of the system, this is normally only done when creating the system.
+     * 
      * @param type
      * @return
      */
     protected void setType(String type) {
         this.type = type;
     }
-    
+
 }

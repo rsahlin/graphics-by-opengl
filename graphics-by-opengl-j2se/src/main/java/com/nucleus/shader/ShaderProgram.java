@@ -728,7 +728,8 @@ public abstract class ShaderProgram {
             }
             ShaderVariable variable = new ShaderVariable(type, nameBuffer, written, NAME_LENGTH_OFFSET, SIZE_OFFSET,
                     TYPE_OFFSET);
-            setVariableLocation(gles, program, type, variable);
+            setVariableLocation(gles, program, variable);
+            setVariableStaticOffset(gles, program, variable);
             addShaderVariable(variable);
         }
     }
@@ -739,13 +740,12 @@ public abstract class ShaderProgram {
      * 
      * @param gles
      * @param program
-     * @param type
      * @param variable
      * @throws GLException
      */
-    private void setVariableLocation(GLES20Wrapper gles, int program, VariableType type, ShaderVariable variable)
+    protected void setVariableLocation(GLES20Wrapper gles, int program, ShaderVariable variable)
             throws GLException {
-        switch (type) {
+        switch (variable.getType()) {
             case ATTRIBUTE:
                 variable.setLocation(gles.glGetAttribLocation(program, variable.getName()));
                 break;
@@ -756,6 +756,18 @@ public abstract class ShaderProgram {
         if (variable.getLocation() < 0) {
             throw new GLException(VARIABLE_LOCATION_ERROR + variable.getName(), 0);
         }
+    }
+
+    /**
+     * Set the variable static offset, if dynamic offset is used it is computed after all variables has been collected.
+     * 
+     * @param gles
+     * @param program
+     * @param variable
+     */
+    protected void setVariableStaticOffset(GLES20Wrapper gles, int program, ShaderVariable variable) {
+        ShaderVariables v = ShaderVariables.valueOf(variable.getName());
+        variable.setOffset(v.offset);
     }
 
     /**

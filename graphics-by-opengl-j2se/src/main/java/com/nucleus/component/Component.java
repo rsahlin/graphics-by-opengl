@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.common.Type;
 import com.nucleus.io.BaseReference;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.system.System;
 
 /**
  * The component part of behavior, this holds the data needed to perform actions.
@@ -25,7 +26,7 @@ public abstract class Component extends BaseReference {
 
     @SerializedName(SYSTEM)
     private String system;
-    
+
     /**
      * Used to create a new instance of a component
      * 
@@ -39,9 +40,10 @@ public abstract class Component extends BaseReference {
      * 
      * @param renderer
      * @param parent
+     * @param system The system that will handle processing of the component
      * @throws ComponentException If there is an error preventing the component to be created
      */
-    public abstract void create(NucleusRenderer renderer, ComponentNode parent)
+    public abstract void create(NucleusRenderer renderer, ComponentNode parent, System system)
             throws ComponentException;
 
     public String getSystem() {
