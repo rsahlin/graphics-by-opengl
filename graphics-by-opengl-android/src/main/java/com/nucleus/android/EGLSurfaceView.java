@@ -111,6 +111,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
      * @throws IllegalArgumentException If context could not be created
      */
     protected void createEGLContext() {
+        EGL14.eglBindAPI(EGL14.EGL_OPENGL_ES_API);
         int[] eglContextAttribList = new int[] {
                 EGL14.EGL_CONTEXT_CLIENT_VERSION, version.major,
                 EGL14.EGL_NONE
@@ -261,8 +262,15 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         SimpleLogger.d(getClass(), "surfaceDestroyed()");
+        if (EGLSurface != null) {
+            EGL14.eglDestroySurface(EglDisplay, EGLSurface);
+        }
+        if (EGLContext != null) {
+            EGL14.eglDestroyContext(EglDisplay, EGLContext);
+        }
         surface = null;
         EGLSurface = null;
+        EglDisplay = null;
     }
 
     protected void makeCurrent() {

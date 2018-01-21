@@ -32,6 +32,16 @@ public abstract class System {
     public abstract void initSystem(NucleusRenderer renderer, RootNode root, Component component);
 
     /**
+     * Returns the size of data for each entity needed by the system to do processing.
+     * This is called from the
+     * {@link Component#create(com.nucleus.renderer.NucleusRenderer, com.nucleus.component.ComponentNode, System)}
+     * method.
+     * 
+     * @return Size of data for each entity.
+     */
+    public abstract int getEntityDataSize();
+
+    /**
      * Returns the type of component, this is tied to the implementing class by {@link TypeResolver}
      * 
      * @return
