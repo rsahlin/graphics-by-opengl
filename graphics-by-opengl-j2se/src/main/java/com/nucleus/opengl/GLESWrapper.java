@@ -16,12 +16,16 @@ public abstract class GLESWrapper {
      *
      */
     public enum Renderers {
-        GLES20(2),
-        GLES30(3);
+        GLES20(2, 0),
+        GLES30(3, 0),
+        GLES31(3, 1),
+        GLES32(3, 2);
         public final int major;
+        public final int minor;
 
-        private Renderers(int major) {
+        private Renderers(int major, int minor) {
             this.major = major;
+            this.minor = minor;
         };
     }
 

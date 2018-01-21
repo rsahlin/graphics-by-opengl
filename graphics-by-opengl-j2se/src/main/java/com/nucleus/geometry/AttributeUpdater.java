@@ -87,6 +87,9 @@ public interface AttributeUpdater {
 
     /**
      * This is for objects that need (consumes) attribute data, ie Meshes
+     * The data used to update Mesh shall be agnostic to this API, ie it shall be up to the implementation.
+     * One implementation may use Java float[] and use the CPU to update, another may use java.nio.Buffers and move
+     * updating to a shader or OpenCL program.
      * 
      * @author Richard Sahlin
      *
@@ -95,7 +98,7 @@ public interface AttributeUpdater {
         public final static String BUFFER_NOT_BOUND = "Buffer not bound";
 
         /**
-         * Copy updated generic attributes into the VertexBuffers (in a Mesh) as needed, ie the last step needed
+         * Copy updated generic attributes into the AttributeBuffer (in a Mesh) as needed, ie the last step needed
          * before the Mesh can be rendered.
          * What data and what to copy is implementation specific and depends on the shader program used
          * to render the mesh.
@@ -107,22 +110,15 @@ public interface AttributeUpdater {
         public void updateAttributeData();
 
         /**
-         * Returns the generic attribute data as an array reference
-         * 
-         * @return The array containing the attribute data, any changes done here shall be reflected when
-         * {@link #updateAttributeData()} is called.
-         * Returns the attributedata owned by a component that will be used when the node it is attached to is rendered.
-         * @throws IllegalArgumentException If {@link #bindAttributeBuffer(AttributeBuffer)} has not been called before
-         * calling this method.
-         */
-        public float[] getAttributeData();
-
-        /**
-         * Binds the attribute buffer to be used as a destination when set attribute data is called.
+         * Binds the attribute buffer to be used as a destination when updateAttributeData() is called.
          * This method must be called before calling {@link #updateAttributeData()}.
-         * Implementations may need to allocate buffers and save a reference to the attribute buffer.
+         * Implementations may need to allocate extra buffers and save a reference to the attribute buffer.
          * 
-         * @param buffer The buffer that shall be updated when {@link #updateAttributeData()} is called
+         * TODO How to handle multiple attribute buffers that need updating.
+         * 
+         * @param buffer The buffer that shall be updated when {@link #updateAttributeData()} is called, this is the
+         * attribute buffer
+         * that is bound when the destination Mesh is rendered.
          */
         public void bindAttributeBuffer(AttributeBuffer buffer);
 

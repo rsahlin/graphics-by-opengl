@@ -77,7 +77,7 @@ public class RendererInfo {
 
     /**
      * Returns a version or release number for the shading language of the form
-     * OpenGL<space>ES<space>GLSL<space>ES<space><version number><space><vendor-specific information>.
+     * OpenGL ES GLSL ES <version number> <vendor-specific information>.
      * 
      * @return
      */

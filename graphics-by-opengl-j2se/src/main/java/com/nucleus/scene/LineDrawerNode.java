@@ -255,12 +255,6 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
             buffer.setDirty(true);
             attributesDirty = false;
         }
-
-    }
-
-    @Override
-    public float[] getAttributeData() {
-        return attributes;
     }
 
     @Override
