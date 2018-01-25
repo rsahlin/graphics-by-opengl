@@ -448,6 +448,13 @@ public abstract class ShaderProgram {
      * Finds the shader attribute variables per buffer using VariableMapping, iterate through defined (by subclasses)
      * attribute variable mapping.
      * Put the result in the result array and set the {@linkplain ShaderVariable} offset based on used attributes.
+     * Sorting shall be done in the order that variables are added to the {@link #attributes} array, as this will
+     * preserve the order.
+     * Meaning that if the declared ShaderVariables are used, and of same size as declared, then the resulting offsets
+     * will match the offsets in ShaderVariables.
+     * 
+     * TODO Add check for mismatch of size, ie if ShaderVariables hase one variable as float3 and it is defined is
+     * program as float4 then raise error.
      * 
      * @param resultArray Array to store shader variables for each attribute buffer in, attributes for buffer 1 will go
      * at index 0.
@@ -678,7 +685,9 @@ public abstract class ShaderProgram {
         attributeVariables = new ShaderVariable[attributeBufferCount][];
         attributesPerVertex = new int[attributeBufferCount];
         mapAttributeVariablePerBuffer(attributeVariables);
-        dynamicMapVariables();
+        if (useDynamicVariables()) {
+            dynamicMapVariables();
+        }
         for (int i = 0; i < attributesPerVertex.length; i++) {
             attributesPerVertex[i] = getVariableSize(attributeVariables[i], VariableType.ATTRIBUTE);
         }
@@ -686,7 +695,7 @@ public abstract class ShaderProgram {
 
     /**
      * Dynamically sets used shader variable offsets, for ATTRIBUTES and UNIFORMS
-     * The offset will be tightly packed based on used variable size
+     * The offset will be tightly packed based on used variable size, the order of used variables will be the same.
      */
     private void dynamicMapVariables() {
         for (ShaderVariable[] sv : attributeVariables) {
@@ -1383,4 +1392,16 @@ public abstract class ShaderProgram {
         }
         return result;
     }
+
+    /**
+     * Returns true if shader variables, and offsets, shall be dynamically mapped, false to keep static
+     * TODO Static mapping does not work if size of declared ShaderVariable does not match with size used in shader.
+     * Attribute buffers are always allocated based on used size of variables.
+     * 
+     * @return
+     */
+    protected boolean useDynamicVariables() {
+        return true;
+    }
+
 }
