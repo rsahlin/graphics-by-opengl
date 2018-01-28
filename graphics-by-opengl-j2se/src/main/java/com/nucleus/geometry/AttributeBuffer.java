@@ -1,6 +1,5 @@
 package com.nucleus.geometry;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -103,7 +102,7 @@ public class AttributeBuffer extends BufferObject {
      * 
      * @return
      */
-    public Buffer getBuffer() {
+    public FloatBuffer getBuffer() {
         return attributes;
     }
 
