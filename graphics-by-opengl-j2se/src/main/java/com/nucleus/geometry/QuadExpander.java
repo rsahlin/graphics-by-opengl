@@ -71,6 +71,15 @@ public class QuadExpander extends AttributeExpander {
         }
     }
 
+    public void setColor(int quad, float[] color) {
+        int offset = dataSize * quad;
+        data[offset + mapper.colorOffset] = color[0];
+        data[offset + mapper.colorOffset + 1] = color[1];
+        data[offset + mapper.colorOffset + 2] = color[2];
+        data[offset + mapper.colorOffset + 3] = color[3];
+
+    }
+
     public void setFrame(int quad, int frame) {
         int offset = dataSize * quad;
         if (texture.textureType == TextureType.TiledTexture2D) {
