@@ -74,10 +74,10 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         this.nucleusActivity = nucleusActivity;
         this.surfaceConfig = surfaceConfig;
         this.version = version;
-        getHolder().addCallback(this);
         eglSwapInterval = swapInterval;
         this.surfaceAttribs = surfaceAttribs;
         this.useChoreographer = useChoreographer;
+        getHolder().addCallback(this);
     }
 
     /**
@@ -244,8 +244,8 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         createEglContext();
         createEglSurface();
         makeCurrent();
-        SimpleLogger.d(getClass(), "EGL created and made current");
         EGL14.eglSwapInterval(EglDisplay, eglSwapInterval);
+        SimpleLogger.d(getClass(), "EGL created and made current, eglSwapInterval set to " + eglSwapInterval);
         if (env.isProperty(Environment.Property.FRONTBUFFERAUTO, false)
                 && surfaceConfig.hasExtensionSupport(EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh)) {
             EGL14.eglSurfaceAttrib(EglDisplay, EGLSurface, EGL14Constants.EGL_FRONT_BUFFER_AUTO_REFRESH_ANDROID, 1);
