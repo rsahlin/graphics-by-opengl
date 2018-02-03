@@ -1,5 +1,7 @@
 package com.nucleus.component;
 
+import java.util.ArrayList;
+
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.common.Type;
 import com.nucleus.io.BaseReference;
@@ -12,8 +14,8 @@ import com.nucleus.system.System;
  * This holds the data needed to process the behavior, this processing shall be done by the system handling the
  * component.
  * This is to ensure that behavior is data driven and uses composition rather than inheritance.
- * In order to be compatible with hardware acceleration such as OpenCL it is very important NOT to break down into too
- * small components.
+ * In order to be compatible with hardware acceleration such as OpenCL it is important NOT to break down into too
+ * small components and to use buffers that are available on the native side (GPU)
  */
 public abstract class Component extends BaseReference {
 
@@ -26,6 +28,8 @@ public abstract class Component extends BaseReference {
 
     @SerializedName(SYSTEM)
     private String system;
+
+    transient protected ArrayList<ComponentBuffer> buffers = new ArrayList<>();
 
     /**
      * Used to create a new instance of a component
@@ -76,6 +80,26 @@ public abstract class Component extends BaseReference {
      */
     public Component create(Type<?> typeClass) throws InstantiationException, IllegalAccessException {
         return (Component) typeClass.getTypeClass().newInstance();
+    }
+
+    /**
+     * Adds a buffer at the specified index, fetch by calling {@link #getBuffer(int)}
+     * 
+     * @param index
+     * @param buffer
+     */
+    protected void addBuffer(int index, ComponentBuffer buffer) {
+        buffers.add(index, buffer);
+    }
+
+    /**
+     * Returns the buffer at index
+     * 
+     * @param index
+     * @return
+     */
+    protected ComponentBuffer getBuffer(int index) {
+        return buffers.get(index);
     }
 
 }

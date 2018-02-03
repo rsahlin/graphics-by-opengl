@@ -1,7 +1,8 @@
-package com.nucleus.geometry;
+package com.nucleus.component;
 
 import java.nio.FloatBuffer;
 
+import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.PropertyMapper;
 import com.nucleus.vecmath.AxisAngle;
@@ -10,14 +11,11 @@ import com.nucleus.vecmath.Transform;
 /**
  * Copy and expand attribute data from source to destination.
  * This can for instance be used to expand quad/sprite data into destination mesh.
- * Use this for CPU based attribute mapping
  *
  */
 public class AttributeExpander implements Consumer {
 
-    float[] data;
-    int dataSize;
-    int vertices;
+    ComponentBuffer data;
     int multiplier;
     int sourceOffset = 0;
     int destOffset = 0;
@@ -28,15 +26,11 @@ public class AttributeExpander implements Consumer {
      * 
      * @param mapper
      * @param data
-     * @param dataSize
-     * @param vertices
      * @param multiplier
      */
-    public AttributeExpander(PropertyMapper mapper, float[] data, int dataSize, int vertices, int multiplier) {
+    public AttributeExpander(PropertyMapper mapper, ComponentBuffer data, int multiplier) {
         this.mapper = mapper;
         this.data = data;
-        this.dataSize = dataSize;
-        this.vertices = vertices;
         this.multiplier = multiplier;
     }
 
@@ -45,13 +39,14 @@ public class AttributeExpander implements Consumer {
         int source = sourceOffset;
         int dest = destOffset;
         FloatBuffer destination = buffer.getBuffer();
-        for (int i = 0; i < vertices; i++) {
+        for (int i = 0; i < data.entityCount; i++) {
             for (int expand = 0; expand < multiplier; expand++) {
                 destination.position(dest);
-                destination.put(data, source, mapper.attributesPerVertex);
+                // destination.put(data, source, mapper.attributesPerVertex);
                 dest += mapper.attributesPerVertex;
+                throw new IllegalArgumentException("Not implemented");
             }
-            source += dataSize;
+            source += data.sizePerEntity;
         }
         buffer.setDirty(true);
     }
@@ -68,25 +63,19 @@ public class AttributeExpander implements Consumer {
      * @param frame
      */
     public void setData(int vertex, Transform transform) {
-        int offset = dataSize * vertex;
+        int offset = data.sizePerEntity * vertex;
         float[] translate = transform.getTranslate();
         if (translate != null) {
-            data[offset + mapper.translateOffset] = translate[0];
-            data[offset + mapper.translateOffset + 1] = translate[1];
-            data[offset + mapper.translateOffset + 2] = translate[2];
+            data.put(vertex, mapper.translateOffset, translate, 0, 3);
         }
         if (transform.getAxisAngle() != null) {
             float[] axisangle = transform.getAxisAngle().getValues();
             float angle = axisangle[AxisAngle.ANGLE];
-            data[offset + mapper.rotateOffset] = axisangle[AxisAngle.X] * angle;
-            data[offset + mapper.rotateOffset + 1] = axisangle[AxisAngle.Y] * angle;
-            data[offset + mapper.rotateOffset + 2] = axisangle[AxisAngle.Z] * angle;
+            data.put(vertex, mapper.rotateOffset, translate, 0, 3);
         }
         float[] scale = transform.getScale();
         if (scale != null) {
-            data[offset + mapper.scaleOffset] = scale[0];
-            data[offset + mapper.scaleOffset + 1] = scale[1];
-            data[offset + mapper.scaleOffset + 2] = scale[2];
+            data.put(vertex, mapper.scaleOffset, translate, 0, 3);
         }
     }
 
