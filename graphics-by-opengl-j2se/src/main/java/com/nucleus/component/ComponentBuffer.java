@@ -52,11 +52,11 @@ public abstract class ComponentBuffer extends BufferObject {
      * 
      * @param entity
      * @param offset
-     * @param data
+     * @param source
      * @param srcOffset offset into data where first value is read
      * @param count Number of values to copy
      */
-    public abstract void put(int entity, int offset, float[] data, int srcOffset, int count);
+    public abstract void put(int entity, int offset, float[] source, int srcOffset, int count);
 
     /**
      * Returns the size (floats) of an entity

@@ -18,9 +18,9 @@ public class CPUBuffer extends ComponentBuffer {
     }
 
     @Override
-    public void put(int entity, int offset, float[] data, int srcOffset, int count) {
+    public void put(int entity, int offset, float[] source, int srcOffset, int count) {
         int index = entity * sizePerEntity;
-        System.arraycopy(this.data, index + offset, data, srcOffset, count);
+        System.arraycopy(source, srcOffset, this.data, index + offset, count);
     }
 
     @Override

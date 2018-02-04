@@ -93,13 +93,42 @@ public abstract class Component extends BaseReference {
     }
 
     /**
-     * Returns the buffer at index
+     * Returns the buffer at index - this should normally not be used directly by clients.
+     * Use
      * 
      * @param index
      * @return
      */
     protected ComponentBuffer getBuffer(int index) {
         return buffers.get(index);
+    }
+
+    /**
+     * Reads values for an entity from the specified buffer.
+     * The destination must have room for {@link ComponentBuffer#getSizePerEntity()} number of values
+     * Use this method when entity data shall be fetched, if updated call
+     * {@link #put(int, int, float[])} to update the data in the buffer.
+     * 
+     * @param entity The entity to get data for.
+     * @param bufferIndex Buffer to read from
+     */
+    public void get(int entity, int bufferIndex, float[] destination) {
+        ComponentBuffer buffer = getBuffer(bufferIndex);
+        buffer.get(entity, destination);
+    }
+
+    /**
+     * Puts values for an entity into the specified buffer
+     * The source array must match the size of {@link ComponentBuffer#getSizePerEntity()}
+     * Use this method after entity data has been updated by calling {@link #get(int, int, float[])}
+     * 
+     * @param entity
+     * @param bufferIndex
+     * @param source
+     */
+    public void put(int entity, int bufferIndex, float[] source) {
+        ComponentBuffer buffer = getBuffer(bufferIndex);
+        buffer.put(entity, 0, source, 0, source.length);
     }
 
 }

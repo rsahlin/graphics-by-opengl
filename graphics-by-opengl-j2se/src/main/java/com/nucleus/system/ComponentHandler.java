@@ -92,8 +92,7 @@ public class ComponentHandler {
 
     /**
      * Creates and registers the system for the component, if the system has already been registered for the component
-     * type then the
-     * registered system is returned.
+     * type then the registered system is returned.
      * 
      * @param component The component to create the system for
      * @return If the system has not already been created then it is created, otherwise the registered system is
@@ -108,6 +107,16 @@ public class ComponentHandler {
         system.setType(component.getSystem());
         componentSystem.put(component.getSystem(), system);
         return system;
+    }
+
+    /**
+     * Returns the System for the component, if one is registered
+     * 
+     * @param component
+     * @return The System for the component, or null if not registered.
+     */
+    public System getSystem(Component component) {
+        return componentSystem.get(component.getSystem());
     }
 
 }

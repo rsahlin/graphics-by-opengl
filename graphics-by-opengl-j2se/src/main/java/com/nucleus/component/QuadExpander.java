@@ -38,6 +38,7 @@ public class QuadExpander extends AttributeExpander {
                     // Store the UV for the vertex
                     data.put(i, mapper.frameOffset, frames[i], uvIndex, 2);
                     data.get(i, buffer);
+                    uvIndex += 2;
                 }
             }
             buffer.setDirty(true);

@@ -1,7 +1,5 @@
 package com.nucleus.component;
 
-import java.nio.FloatBuffer;
-
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.PropertyMapper;
@@ -36,17 +34,11 @@ public class AttributeExpander implements Consumer {
 
     @Override
     public void updateAttributeData() {
-        int source = sourceOffset;
-        int dest = destOffset;
-        FloatBuffer destination = buffer.getBuffer();
+        buffer.getBuffer().position(0);
         for (int i = 0; i < data.entityCount; i++) {
             for (int expand = 0; expand < multiplier; expand++) {
-                destination.position(dest);
-                // destination.put(data, source, mapper.attributesPerVertex);
-                dest += mapper.attributesPerVertex;
-                throw new IllegalArgumentException("Not implemented");
+                data.get(i, buffer);
             }
-            source += data.sizePerEntity;
         }
         buffer.setDirty(true);
     }
@@ -63,7 +55,6 @@ public class AttributeExpander implements Consumer {
      * @param frame
      */
     public void setData(int vertex, Transform transform) {
-        int offset = data.sizePerEntity * vertex;
         float[] translate = transform.getTranslate();
         if (translate != null) {
             data.put(vertex, mapper.translateOffset, translate, 0, 3);
@@ -75,7 +66,7 @@ public class AttributeExpander implements Consumer {
         }
         float[] scale = transform.getScale();
         if (scale != null) {
-            data.put(vertex, mapper.scaleOffset, translate, 0, 3);
+            data.put(vertex, mapper.scaleOffset, scale, 0, 3);
         }
     }
 
