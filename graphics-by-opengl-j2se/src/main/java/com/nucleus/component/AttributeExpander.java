@@ -61,8 +61,12 @@ public class AttributeExpander implements Consumer {
         }
         if (transform.getAxisAngle() != null) {
             float[] axisangle = transform.getAxisAngle().getValues();
+            float[] euler = new float[3];
             float angle = axisangle[AxisAngle.ANGLE];
-            data.put(vertex, mapper.rotateOffset, translate, 0, 3);
+            euler[0] = axisangle[AxisAngle.X] * angle;
+            euler[1] = axisangle[AxisAngle.Y] * angle;
+            euler[2] = axisangle[AxisAngle.Z] * angle;
+            data.put(vertex, mapper.rotateOffset, euler, 0, 3);
         }
         float[] scale = transform.getScale();
         if (scale != null) {
