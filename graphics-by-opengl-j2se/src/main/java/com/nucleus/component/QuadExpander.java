@@ -13,6 +13,8 @@ public class QuadExpander extends AttributeExpander {
      */
     private transient float[][] frames;
     private transient Texture2D texture;
+    private transient float[][] uvData;
+    private transient float[] entityData;
 
     /**
      * 
@@ -25,18 +27,35 @@ public class QuadExpander extends AttributeExpander {
         super(mapper, data, multiplier);
         this.texture = texture;
         this.frames = new float[data.entityCount][2 * 4];
+        if (texture.getTextureType() == TextureType.UVTexture2D) {
+            copyUVAtlas(((UVTexture2D) texture).getUVAtlas());
+            entityData = new float[mapper.attributesPerVertex];
+        }
+    }
+
+    private void copyUVAtlas(UVAtlas uvAtlas) {
+        int frames = uvAtlas.getFrameCount();
+        uvData = new float[frames][];
+        for (int i = 0; i < frames; i++) {
+            uvData[i] = new float[8];
+            uvAtlas.getUVFrame(i, uvData[i], 0);
+        }
     }
 
     @Override
     public void updateAttributeData() {
         if (texture.getTextureType() == TextureType.UVTexture2D) {
             int uvIndex = 0;
+            int frame;
             buffer.getBuffer().position(0);
+            float[] uv = new float[8];
             for (int i = 0; i < data.entityCount; i++) {
                 uvIndex = 0;
+                data.get(i, entityData);
+                frame = (int) entityData[mapper.frameOffset];
                 for (int expand = 0; expand < multiplier; expand++) {
                     // Store the UV for the vertex
-                    data.put(i, mapper.frameOffset, frames[i], uvIndex, 2);
+                    data.put(i, mapper.frameOffset, uvData[frame], uvIndex, 2);
                     data.get(i, buffer);
                     uvIndex += 2;
                 }

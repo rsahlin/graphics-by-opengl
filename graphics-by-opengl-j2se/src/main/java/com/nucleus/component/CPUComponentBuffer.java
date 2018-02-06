@@ -2,11 +2,11 @@ package com.nucleus.component;
 
 import com.nucleus.geometry.AttributeBuffer;
 
-public class CPUBuffer extends ComponentBuffer {
+public class CPUComponentBuffer extends ComponentBuffer {
 
     private float[] data;
 
-    public CPUBuffer(int entityCount, int sizePerEntity) {
+    public CPUComponentBuffer(int entityCount, int sizePerEntity) {
         super(entityCount, sizePerEntity);
         data = new float[entityCount * sizePerEntity];
     }
