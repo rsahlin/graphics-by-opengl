@@ -828,10 +828,13 @@ public abstract class ShaderProgram {
                 SimpleLogger.d(getClass(), gles.glGetShaderSource(shader));
             }
         }
-        for (int name : shaderNames) {
-            SimpleLogger.d(getClass(), "Shader source for object " + name);
-            SimpleLogger.d(getClass(), gles.glGetShaderSource(name));
+        // It could be an exception before shader names are allocated
+        if (shaderNames != null) {
+            for (int name : shaderNames) {
+                SimpleLogger.d(getClass(), "Shader source for object " + name);
+                SimpleLogger.d(getClass(), gles.glGetShaderSource(name));
 
+            }
         }
     }
 

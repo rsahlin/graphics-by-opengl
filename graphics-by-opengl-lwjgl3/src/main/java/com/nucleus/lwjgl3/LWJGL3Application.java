@@ -66,7 +66,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
     protected J2SEWindow createWindow(Renderers version) {
         switch (windowType) {
             case GLFW:
-                window = new GLFWWindow(this, windowWidth, windowHeight);
+                window = new GLFWWindow(version, this, windowWidth, windowHeight);
                 break;
             case JAWT:
                 window = new JAWTWindow(this, windowWidth, windowHeight);

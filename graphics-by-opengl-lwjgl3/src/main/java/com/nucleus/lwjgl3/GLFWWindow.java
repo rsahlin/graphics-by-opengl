@@ -10,6 +10,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
+import com.nucleus.opengl.GLESWrapper.Renderers;
 
 /**
  * The lwjgl3 window
@@ -27,12 +28,12 @@ public class GLFWWindow extends J2SEWindow {
      * @param width
      * @param height
      */
-    public GLFWWindow(CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
+    public GLFWWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
         super(coreAppStarter, width, height);
-        init(coreAppStarter, width, height);
+        init(version, coreAppStarter, width, height);
     }
 
-    private void init(CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
+    private void init(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
         GLFWErrorCallback.createPrint().set();
         // pretend we're using GLES in windows, instead use a subset of OpenGL 2.0 as GLES 2.0
         // Bypasses the default create() method.
@@ -49,8 +50,8 @@ public class GLFWWindow extends J2SEWindow {
         // GLFW setup for EGL & OpenGL ES
         // GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_CREATION_API, GLFW.GLFW_EGL_CONTEXT_API);
         GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_API);
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 2);
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 0);
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4);
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 5);
 
         window = GLFW.glfwCreateWindow(width, height, "GLFW EGL/OpenGL ES Demo", MemoryUtil.NULL, MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {

@@ -1,8 +1,5 @@
 package com.nucleus;
 
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
@@ -33,8 +30,7 @@ public abstract class J2SEWindow {
         this.coreAppStarter = coreAppStarter;
         this.width = width;
         this.height = height;
-        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        Window.getInstance().setScreenSize(gd.getDisplayMode().getWidth(), gd.getDisplayMode().getHeight());
+        Window.getInstance().setScreenSize(width, height);
 
     }
 
