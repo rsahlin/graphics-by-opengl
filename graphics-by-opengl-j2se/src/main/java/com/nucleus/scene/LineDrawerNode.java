@@ -9,6 +9,7 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.RectangleShapeBuilder;
 import com.nucleus.geometry.ShapeBuilder;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.ShaderVariables;
 
 /**
@@ -240,7 +241,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     }
 
     @Override
-    public void updateAttributeData() {
+    public void updateAttributeData(NucleusRenderer renderer) {
         if (attributes == null || buffer == null) {
             throw new IllegalArgumentException(Consumer.BUFFER_NOT_BOUND);
         }

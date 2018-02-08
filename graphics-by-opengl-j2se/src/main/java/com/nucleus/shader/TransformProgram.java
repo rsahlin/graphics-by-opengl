@@ -10,6 +10,9 @@ import com.nucleus.texturing.Texture2D.Shading;
 /**
  * Program for transformed vertices, shader calculates vertex position with position offset, rotation and scale
  * Can be used to draw lines, polygons or similar
+ * 
+ * TODO - If this is not used then remove
+ * 
  */
 public class TransformProgram extends ShaderProgram {
 

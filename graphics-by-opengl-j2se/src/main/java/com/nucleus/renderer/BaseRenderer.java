@@ -545,7 +545,7 @@ class BaseRenderer implements NucleusRenderer {
             throws GLException {
         Consumer updater = mesh.getAttributeConsumer();
         if (updater != null) {
-            updater.updateAttributeData();
+            updater.updateAttributeData(this);
         }
         if (mesh.getDrawCount() == 0) {
             return;

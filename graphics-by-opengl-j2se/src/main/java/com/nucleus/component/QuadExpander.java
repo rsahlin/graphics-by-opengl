@@ -1,12 +1,23 @@
 package com.nucleus.component;
 
+import com.nucleus.assets.AssetManager;
 import com.nucleus.geometry.AttributeUpdater.PropertyMapper;
+import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.shader.ComputeShader;
+import com.nucleus.shader.VariableMapping;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.UVAtlas;
 import com.nucleus.texturing.UVTexture2D;
 
+/**
+ * Sprite / Quad expander, same as AttributeExpander but adds methods for setting frame / color
+ *
+ */
 public class QuadExpander extends AttributeExpander {
+
+    protected static ComputeShader computeShader;
 
     /**
      * Storage for 4 UV components
@@ -23,7 +34,8 @@ public class QuadExpander extends AttributeExpander {
      * @param data
      * @param multiplier
      */
-    public QuadExpander(Texture2D texture, PropertyMapper mapper, ComponentBuffer data, int multiplier) {
+    public QuadExpander(Texture2D texture, PropertyMapper mapper, ComponentBuffer data,
+            int multiplier) {
         super(mapper, data, multiplier);
         this.texture = texture;
         this.frames = new float[data.entityCount][2 * 4];
@@ -43,7 +55,10 @@ public class QuadExpander extends AttributeExpander {
     }
 
     @Override
-    public void updateAttributeData() {
+    public void updateAttributeData(NucleusRenderer renderer) {
+        if (computeShader == null) {
+            loadShader(renderer);
+        }
         if (texture.getTextureType() == TextureType.UVTexture2D) {
             int uvIndex = 0;
             int frame;
@@ -62,12 +77,17 @@ public class QuadExpander extends AttributeExpander {
             }
             buffer.setDirty(true);
         } else {
-            super.updateAttributeData();
+            super.updateAttributeData(renderer);
         }
     }
 
     public void setColor(int quad, float[] color) {
         data.put(quad, mapper.colorOffset, color, 0, 4);
+    }
+
+    protected void loadShader(NucleusRenderer renderer) {
+        computeShader = (ComputeShader) AssetManager.getInstance().getProgram(renderer,
+                new ComputeShader(Shading.textured, new VariableMapping[0]));
     }
 
     public void setFrame(int quad, int frame) {

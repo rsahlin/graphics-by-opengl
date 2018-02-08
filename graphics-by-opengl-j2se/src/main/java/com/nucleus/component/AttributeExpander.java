@@ -3,6 +3,7 @@ package com.nucleus.component;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.PropertyMapper;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.vecmath.AxisAngle;
 import com.nucleus.vecmath.Transform;
 
@@ -33,7 +34,7 @@ public class AttributeExpander implements Consumer {
     }
 
     @Override
-    public void updateAttributeData() {
+    public void updateAttributeData(NucleusRenderer renderer) {
         buffer.getBuffer().position(0);
         for (int i = 0; i < data.entityCount; i++) {
             for (int expand = 0; expand < multiplier; expand++) {
