@@ -35,11 +35,18 @@ public class JOGLApplication extends J2SEWindowApplication implements WindowList
     protected J2SEWindow createWindow(Renderers version) {
         switch (version) {
             case GLES20:
-                window = new JOGLGLESWindow(GLProfile.GL2ES2, windowWidth, windowHeight, windowUndecorated, fullscreen, this,
+                window = new JOGLGLESWindow(GLProfile.GL2ES2, windowWidth, windowHeight, windowUndecorated, fullscreen,
+                        this,
                         swapInterval);
                 break;
             case GLES30:
-                window = new JOGLGLESWindow(GLProfile.GL4ES3, windowWidth, windowHeight, windowUndecorated, fullscreen, this,
+                window = new JOGLGLESWindow(GLProfile.GL4ES3, windowWidth, windowHeight, windowUndecorated, fullscreen,
+                        this,
+                        swapInterval);
+                break;
+            case GLES31:
+                window = new JOGLGLESWindow(GLProfile.GL4ES3, windowWidth, windowHeight, windowUndecorated, fullscreen,
+                        this,
                         swapInterval);
                 break;
             default:

@@ -48,12 +48,19 @@ import com.nucleus.vecmath.Matrix;
  */
 public abstract class ShaderProgram {
 
+    public enum Shaders {
+        VERTEX_FRAGMENT(),
+        COMPUTE();
+    }
+
     public static final String PROGRAM_DIRECTORY = "assets/";
     public static final String SHADER_SOURCE_SUFFIX = ".essl";
     public static final String COMMON_VERTEX_SHADER = "commonvertex" + SHADER_SOURCE_SUFFIX;
     public static final String FRAGMENT_TYPE = "fragment";
     public static final String VERTEX_TYPE = "vertex";
     protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
+
+    protected final Shaders shaders;
 
     /**
      * Number of vertices per sprite - this is for a quad that is created using element buffer.
@@ -210,15 +217,14 @@ public abstract class ShaderProgram {
     }
 
     protected Function function;
-    // TODO - remove these and only use sourceName class
-    protected String vertexShaderName;
-    protected String fragmentShaderName;
 
     /**
      * The GL program object
      */
     private int program = Constants.NO_VALUE;
 
+    private String[] shaderSourceNames;
+    private int[] shaderTypes;
     private int[] shaderNames;
 
     /**
@@ -337,10 +343,13 @@ public abstract class ShaderProgram {
      * @param shading The shading function or null if not used
      * @param category The category of function or null of not used
      * @param mapping
+     * @param shader
      */
-    protected ShaderProgram(Pass pass, Texture2D.Shading shading, String category, VariableMapping[] mapping) {
+    protected ShaderProgram(Pass pass, Texture2D.Shading shading, String category, VariableMapping[] mapping,
+            Shaders shaders) {
         function = new Function(pass, shading, category);
         setMapping(mapping);
+        this.shaders = shaders;
     }
 
     protected void setMapping(VariableMapping[] mapping) {
@@ -349,33 +358,47 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets the name of the vertex/fragment shaders - shall be called before the program is created.
-     * Calls {@link #getVertexShaderSource()} and {@link #getFragmentShaderSource()} to collect
-     * shader sourcenames
+     * Sets the name of the shadersin this program - shall be called before the program is created.
+     * Creates shaders with type based on the {@link Shaders} field {@link #shaders}
+     * 
      */
     protected void createShaderSource() {
-        vertexShaderName = PROGRAM_DIRECTORY + getVertexShaderSource() + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
-        fragmentShaderName = PROGRAM_DIRECTORY + getFragmentShaderSource() + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
+        switch (shaders) {
+            case VERTEX_FRAGMENT:
+                shaderSourceNames = new String[2];
+                shaderTypes = new int[] { GLES20.GL_VERTEX_SHADER, GLES20.GL_FRAGMENT_SHADER };
+                break;
+            case COMPUTE:
+                shaderSourceNames = new String[1];
+                shaderTypes = new int[] { GLES31.GL_COMPUTE_SHADER };
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + shaders);
+        }
+        for (int i = 0; i < shaderTypes.length; i++) {
+            shaderSourceNames[i] = getShaderSource(shaderTypes[i]);
+        }
     }
 
     /**
      * Returns the name of the vertex shader source, this is taken from the function.
      * Override in sublcasses to point to other vertex shader source
      * 
+     * @param type The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER
      * @return
      */
-    protected String getVertexShaderSource() {
-        return function.getShaderSourceName();
-    }
+    protected String getShaderSource(int type) {
+        switch (type) {
+            case GLES20.GL_VERTEX_SHADER:
+                return PROGRAM_DIRECTORY + function.getShaderSourceName() + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
+            case GLES20.GL_FRAGMENT_SHADER:
+                return PROGRAM_DIRECTORY + function.getShaderSourceName() + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
+            case GLES31.GL_COMPUTE_SHADER:
+                return PROGRAM_DIRECTORY + function.getShaderSourceName() + SHADER_SOURCE_SUFFIX;
+            default:
+                throw new IllegalArgumentException("Not implemented for type: " + type);
 
-    /**
-     * Returns the name of the fragment shader source, this is taken from the function.
-     * Override in sublcasses to point to other fragment shader source
-     * 
-     * @return
-     */
-    protected String getFragmentShaderSource() {
-        return function.getShaderSourceName();
+        }
     }
 
     /**
@@ -431,10 +454,10 @@ public abstract class ShaderProgram {
      */
     public void createProgram(GLES20Wrapper gles) {
         createShaderSource();
-        if (vertexShaderName == null || fragmentShaderName == null) {
+        if (shaderSourceNames == null) {
             throw new ShaderProgramException(MUST_SET_FIELDS);
         }
-        createProgram(gles, vertexShaderName, fragmentShaderName);
+        createProgram(gles, shaderSourceNames, shaderTypes);
     }
 
     /**
@@ -779,37 +802,37 @@ public abstract class ShaderProgram {
      * 
      * @param gles GLES20 platform specific wrapper.
      * @param program
-     * @param vertexShader
+     * @param shaderNames
      * @param commonVertexShaders List with shared vertex shaders or null
-     * @param fragmentShader
      * @throws GLException If the program could not be linked with the shaders.
      */
-    public void linkProgram(GLES20Wrapper gles, int program, int vertexShader, ArrayList<Integer> commonVertexShaders,
-            int fragmentShader) throws GLException {
+    public void linkProgram(GLES20Wrapper gles, int program, int[] shaderNames, ArrayList<Integer> commonVertexShaders)
+            throws GLException {
         if (commonVertexShaders != null) {
             for (Integer shader : commonVertexShaders) {
                 gles.glAttachShader(program, shader);
             }
         }
-        gles.glAttachShader(program, vertexShader);
-        gles.glAttachShader(program, fragmentShader);
+        for (int name : shaderNames) {
+            gles.glAttachShader(program, name);
+        }
         gles.glLinkProgram(program);
         SimpleLogger.d(getClass(), gles.glGetProgramInfoLog(program));
         GLUtils.handleError(gles, LINK_PROGRAM_ERROR);
     }
 
-    private void logShaderSources(GLES20Wrapper gles, ArrayList<Integer> commonVertexShaders, int vertexShader,
-            int fragmentShader) {
+    private void logShaderSources(GLES20Wrapper gles, ArrayList<Integer> commonVertexShaders, int[] shaderNames) {
         SimpleLogger.d(getClass(), "Common vertex shaders:");
         if (commonVertexShaders != null) {
             for (Integer shader : commonVertexShaders) {
                 SimpleLogger.d(getClass(), gles.glGetShaderSource(shader));
             }
         }
-        SimpleLogger.d(getClass(), "Vertex shader:");
-        SimpleLogger.d(getClass(), gles.glGetShaderSource(vertexShader));
-        SimpleLogger.d(getClass(), "Fragment shader:");
-        SimpleLogger.d(getClass(), gles.glGetShaderSource(fragmentShader));
+        for (int name : shaderNames) {
+            SimpleLogger.d(getClass(), "Shader source for object " + name);
+            SimpleLogger.d(getClass(), gles.glGetShaderSource(name));
+
+        }
     }
 
     /**
@@ -824,7 +847,7 @@ public abstract class ShaderProgram {
      */
     public int compileShader(GLES20Wrapper gles, String sourceName, int type, boolean library) throws GLException {
         int shader = gles.glCreateShader(type);
-        if (shaderNames[0] == 0) {
+        if (shader == 0) {
             throw new GLException(CREATE_SHADER_ERROR, GLES20.GL_NO_ERROR);
         }
         try {
@@ -1016,10 +1039,6 @@ public abstract class ShaderProgram {
         }
     }
 
-    protected void createProgram(GLES20Wrapper gles, String[] sourceNames, int[] types) {
-
-    }
-
     /**
      * Utility method to create the vertex and shader program using the specified shader names.
      * The shaders will be loaded, compiled and linked.
@@ -1028,30 +1047,31 @@ public abstract class ShaderProgram {
      * If program compiles succesfully then the program info is fetched.
      * 
      * @param gles
-     * @param vertexName Name of vertex shader to load, compile and link
-     * @param fragmentName Name of fragment shader to load, compile and link
+     * @param sourceNames Name of shaders to load, compile and link
+     * @param types Type of shaders for sourceNames
      */
-    protected void createProgram(GLES20Wrapper gles, String vertexName, String fragmentName) {
-        SimpleLogger.d(getClass(), "Creating program for: " + vertexName + " and " + fragmentName);
+    protected void createProgram(GLES20Wrapper gles, String[] sourceNames, int[] types) {
+        SimpleLogger.d(getClass(), "Creating program for: " + sourceNames.length + " shaders");
         try {
-            if (commonVertexShaders == null && commonVertexSources == null) {
+            if (shaders != Shaders.COMPUTE && commonVertexShaders == null && commonVertexSources == null) {
                 createCommonVertexShaders(gles);
             }
-            shaderNames = new int[2];
+            shaderNames = new int[sourceNames.length];
             program = gles.glCreateProgram();
-            SimpleLogger.d(getClass(),
-                    "Program name: " + program + ", vertex: " + shaderNames[0] + " fragment: " + shaderNames[1]
-                            + " from sources: " + vertexName + ", " + fragmentName);
-            shaderNames[0] = compileShader(gles, vertexName, GLES20.GL_VERTEX_SHADER, false);
-            shaderNames[1] = compileShader(gles, fragmentName, GLES20.GL_FRAGMENT_SHADER, false);
-            linkProgram(gles, program, shaderNames[0], commonVertexShaders, shaderNames[1]);
+            for (int shaderIndex = 0; shaderIndex < sourceNames.length; shaderIndex++) {
+                SimpleLogger.d(getClass(),
+                        "Compiling " + sourceNames[shaderIndex]);
+                shaderNames[shaderIndex] = compileShader(gles, sourceNames[shaderIndex], types[shaderIndex], false);
+
+            }
+            linkProgram(gles, program, shaderNames, commonVertexShaders);
             checkLinkStatus(gles, program);
             fetchProgramInfo(gles);
             bindAttributeNames(gles);
             createUniformStorage(shaderVariables);
             setSamplers();
         } catch (GLException e) {
-            logShaderSources(gles, commonVertexShaders, shaderNames[0], shaderNames[1]);
+            logShaderSources(gles, commonVertexShaders, shaderNames);
             throw new RuntimeException(e.toString());
         } catch (IOException e) {
             throw new RuntimeException(e.toString());
@@ -1346,8 +1366,7 @@ public abstract class ShaderProgram {
 
     @Override
     public String toString() {
-        return vertexShaderName + " (" + shaderNames[0] + ") / " + fragmentShaderName + " (" + shaderNames[1]
-                + ") shading: " + function.shading;
+        return shaders + " : " + function.getShaderSourceName();
     }
 
     /**

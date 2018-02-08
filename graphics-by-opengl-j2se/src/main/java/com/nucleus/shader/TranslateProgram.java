@@ -9,12 +9,12 @@ import com.nucleus.texturing.Texture2D.Shading;
 /**
  * Program for translated vertices, shader calculates vertex position with position offset
  * Can be used to draw lines, polygons or similar - objects cannot be independently rotated or scaled
- * - use {@link TransformProgram} 
+ * - use {@link TransformProgram}
  */
 public class TranslateProgram extends ShaderProgram {
 
     public TranslateProgram(Texture2D.Shading shading) {
-        super(null, shading, null, ShaderVariables.values());
+        super(null, shading, null, ShaderVariables.values(), Shaders.VERTEX_FRAGMENT);
     }
 
     @Override
@@ -24,8 +24,8 @@ public class TranslateProgram extends ShaderProgram {
             case ALL:
             case MAIN:
                 return this;
-                default:
-            throw new IllegalArgumentException("Invalid pass " + pass);
+            default:
+                throw new IllegalArgumentException("Invalid pass " + pass);
         }
     }
 

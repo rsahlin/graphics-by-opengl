@@ -10,13 +10,7 @@ public class ComputeShader extends ShaderProgram {
     public static final String CATEGORY = "compute";
 
     public ComputeShader(Shading shading, VariableMapping[] mapping) {
-        super(null, shading, CATEGORY, mapping);
-    }
-
-    @Override
-    protected void createShaderSource() {
-        vertexShaderName = PROGRAM_DIRECTORY + getVertexShaderSource() + SHADER_SOURCE_SUFFIX;
-        fragmentShaderName = "";
+        super(null, shading, CATEGORY, mapping, Shaders.COMPUTE);
     }
 
     @Override

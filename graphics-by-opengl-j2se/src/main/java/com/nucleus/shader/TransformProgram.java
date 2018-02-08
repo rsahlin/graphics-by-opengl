@@ -22,7 +22,7 @@ public class TransformProgram extends ShaderProgram {
     protected static final String CATEGORY = "transform";
 
     protected TransformProgram(Pass pass, Texture2D.Shading shading, String category) {
-        super(pass, shading, category, ShaderVariables.values());
+        super(pass, shading, category, ShaderVariables.values(), Shaders.VERTEX_FRAGMENT);
     }
 
     @Override
