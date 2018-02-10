@@ -42,7 +42,9 @@ public class RendererInfo {
         maxTextureSize = param[0];
         SimpleLogger.d(getClass(), "GLInfo:\n" + "GLES Version: " + version + " with shading language "
                 + shadingLanguageVersion + "\n" + vendor + " " + renderer + ", max texture size: " + maxTextureSize);
-        StringUtils.logList(getClass().getCanonicalName(), extensions);
+        if (extensions != null) {
+            StringUtils.logList(getClass().getCanonicalName(), extensions);
+        }
     }
 
     /**
@@ -106,7 +108,7 @@ public class RendererInfo {
      * @return
      */
     public boolean hasExtensionSupport(GLES_EXTENSIONS extension) {
-        return extension == null ? false : hasExtensionNoPrefix(extension.name());
+        return extension == null || extensions == null ? false : hasExtensionNoPrefix(extension.name());
     }
 
     /**

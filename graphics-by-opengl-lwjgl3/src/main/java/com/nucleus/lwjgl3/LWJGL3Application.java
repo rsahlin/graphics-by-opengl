@@ -15,6 +15,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
      * To select GLFW or JAWT window
      */
     private static final String WINDOW_TYPE_KEY = "WINDOWTYPE";
+    protected static final WindowType DEFAULT_WINDOW_TYPE = WindowType.JAWT;
 
     private boolean running = false;
 
@@ -49,7 +50,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
 
     @Override
     protected void setProperties(String[] args) {
-        this.windowType = WindowType.GLFW;
+        this.windowType = DEFAULT_WINDOW_TYPE;
         super.setProperties(args);
     }
 
