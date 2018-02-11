@@ -10,8 +10,6 @@ import org.lwjgl.system.MemoryUtil;
 
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
-import com.nucleus.SimpleLogger;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 
 /**
@@ -100,8 +98,6 @@ public class GLFWWindow extends J2SEWindow {
         // Render with OpenGL ES
         GLFW.glfwShowWindow(window);
         wrapper = new LWJGL3GLES30Wrapper();
-        String glString = wrapper.glGetString(GLES20.GL_EXTENSIONS);
-        SimpleLogger.d(getClass(), "extensions: " + glString);
     }
 
     @Override

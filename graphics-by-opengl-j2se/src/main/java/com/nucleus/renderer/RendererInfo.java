@@ -45,6 +45,10 @@ public class RendererInfo {
         if (extensions != null) {
             StringUtils.logList(getClass().getCanonicalName(), extensions);
         }
+        // Some implementations may raise error in glGetString for some unknown reason (LWJGL) - clear any raised errors
+        // here
+        while (gles.glGetError() != GLES20.GL_NO_ERROR) {
+        }
     }
 
     /**
