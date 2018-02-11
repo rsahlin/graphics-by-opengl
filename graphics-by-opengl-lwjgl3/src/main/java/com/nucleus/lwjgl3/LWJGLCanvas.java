@@ -24,7 +24,6 @@ import static org.lwjgl.system.windows.GDI32.GetPixelFormat;
 import static org.lwjgl.system.windows.GDI32.PFD_DOUBLEBUFFER;
 import static org.lwjgl.system.windows.GDI32.PFD_DRAW_TO_WINDOW;
 import static org.lwjgl.system.windows.GDI32.PFD_MAIN_PLANE;
-import static org.lwjgl.system.windows.GDI32.PFD_SUPPORT_OPENGL;
 import static org.lwjgl.system.windows.GDI32.PFD_TYPE_RGBA;
 import static org.lwjgl.system.windows.GDI32.SetPixelFormat;
 
@@ -46,6 +45,7 @@ import org.lwjgl.system.windows.WinBase;
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
+import com.nucleus.opengl.GLESWrapper.Renderers;
 
 /**
  * A Canvas component that uses OpenGL for rendering.
@@ -67,7 +67,7 @@ public class LWJGLCanvas extends Canvas {
     int width;
     int height;
 
-    public LWJGLCanvas(J2SEWindow window, int width, int height) {
+    public LWJGLCanvas(Renderers version, J2SEWindow window, int width, int height) {
         awt = JAWT.calloc();
         awt.version(JAWT_VERSION_1_4);
         if (!JAWT_GetAWT(awt)) {
@@ -130,8 +130,6 @@ public class LWJGLCanvas extends Canvas {
                         } else {
                             SimpleLogger.d(getClass(), "CoreApp is null");
                         }
-                        // wglMakeCurrent(NULL, NULL);
-                        // GL.setCapabilities(null);
                     }
                 } finally {
                     // Free the drawing surface info
@@ -156,7 +154,7 @@ public class LWJGLCanvas extends Canvas {
                 PIXELFORMATDESCRIPTOR pfd = PIXELFORMATDESCRIPTOR.calloc()
                         .nSize((byte) PIXELFORMATDESCRIPTOR.SIZEOF)
                         .nVersion((short) 1)
-                        .dwFlags(PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER)
+                        .dwFlags(GDI32.PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER)
                         .iPixelType(PFD_TYPE_RGBA)
                         .cColorBits((byte) 32)
                         .cAlphaBits((byte) 8)

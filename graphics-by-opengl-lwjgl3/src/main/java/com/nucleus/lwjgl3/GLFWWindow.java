@@ -2,7 +2,6 @@ package com.nucleus.lwjgl3;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.opengles.GLES;
 import org.lwjgl.opengles.GLESCapabilities;
 import org.lwjgl.system.Configuration;
@@ -35,10 +34,6 @@ public class GLFWWindow extends J2SEWindow {
 
     private void init(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
         GLFWErrorCallback.createPrint().set();
-        // pretend we're using GLES in windows, instead use a subset of OpenGL 2.0 as GLES 2.0
-        // Bypasses the default create() method.
-        Configuration.OPENGLES_EXPLICIT_INIT.set(true);
-        GLES.create(GL.getFunctionProvider());
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize glfw");
         }
@@ -49,9 +44,14 @@ public class GLFWWindow extends J2SEWindow {
 
         // GLFW setup for EGL & OpenGL ES
         // GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_CREATION_API, GLFW.GLFW_EGL_CONTEXT_API);
-        GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_API);
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4);
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 5);
+        GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API);
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, version.major);
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, version.minor);
+
+        // pretend we're using GLES in windows, instead use a subset of OpenGL 2.0 as GLES 2.0
+        // Bypasses the default create() method.
+        Configuration.OPENGLES_EXPLICIT_INIT.set(true);
+        GLES.create(GLES.getFunctionProvider());
 
         window = GLFW.glfwCreateWindow(width, height, "GLFW EGL/OpenGL ES Demo", MemoryUtil.NULL, MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {
@@ -97,7 +97,8 @@ public class GLFWWindow extends J2SEWindow {
         gles = GLES.createCapabilities();
         // Render with OpenGL ES
         GLFW.glfwShowWindow(window);
-        wrapper = new LWJGL3GLES30Wrapper();
+
+        wrapper = LWJGLWrapperFactory.createWrapper(version);
     }
 
     @Override

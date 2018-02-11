@@ -70,7 +70,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
                 window = new GLFWWindow(version, this, windowWidth, windowHeight);
                 break;
             case JAWT:
-                window = new JAWTWindow(this, windowWidth, windowHeight);
+                window = new JAWTWindow(version, this, windowWidth, windowHeight);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + windowType);

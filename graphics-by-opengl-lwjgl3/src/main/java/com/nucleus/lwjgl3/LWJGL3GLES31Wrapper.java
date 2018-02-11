@@ -6,9 +6,9 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import com.nucleus.opengl.GLES30Wrapper;
+import com.nucleus.opengl.GLES31Wrapper;
 
-public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
+public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
 
     @Override
     public void glAttachShader(int program, int shader) {
@@ -387,6 +387,397 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
     public void glGetShaderSource(int shader, int bufsize, int[] length, byte[] source) {
         ByteBuffer bufferSource = ByteBuffer.wrap(source);
         org.lwjgl.opengles.GLES20.glGetShaderSource(shader, length, bufferSource);
+    }
+
+    @Override
+    public void glDispatchCompute(int num_groups_x, int num_groups_y, int num_groups_z) {
+        org.lwjgl.opengles.GLES31.glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
+    }
+
+    @Override
+    public void glDispatchComputeIndirect(long indirect) {
+        org.lwjgl.opengles.GLES31.glDispatchComputeIndirect(indirect);
+    }
+
+    @Override
+    public void glDrawArraysIndirect(int mode, long indirect) {
+        org.lwjgl.opengles.GLES31.glDrawArraysIndirect(mode, indirect);
+    }
+
+    @Override
+    public void glDrawElementsIndirect(int mode, int type, long indirect) {
+        org.lwjgl.opengles.GLES31.glDrawElementsIndirect(mode, type, indirect);
+    }
+
+    @Override
+    public void glGetFramebufferParameteriv(int target, int pname, int[] params, int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetFramebufferParameteriv(int target, int pname, IntBuffer params) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetProgramInterfaceiv(int program, int programInterface, int pname, int[] params, int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetProgramInterfaceiv(int program, int programInterface, int pname, IntBuffer params) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public int glGetProgramResourceIndex(int program, int programInterface, String name) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public String glGetProgramResourceName(int program, int programInterface, int index) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void glGetProgramResourceiv(int program, int programInterface, int index, int propCount, int[] props,
+            int propsOffset, int bufSize, int[] length, int lengthOffset, int[] params, int paramsOffset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetProgramResourceiv(int program, int programInterface, int index, int propCount, IntBuffer props,
+            int bufSize, IntBuffer length, IntBuffer params) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public int glGetProgramResourceLocation(int program, int programInterface, String name) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public void glUseProgramStages(int pipeline, int stages, int program) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glActiveShaderProgram(int pipeline, int program) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public int glCreateShaderProgramv(int type, String[] strings) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public void glBindProgramPipeline(int pipeline) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glDeleteProgramPipelines(int n, int[] pipelines, int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glDeleteProgramPipelines(int n, IntBuffer pipelines) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGenProgramPipelines(int n, int[] pipelines, int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGenProgramPipelines(int n, IntBuffer pipelines) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public boolean glIsProgramPipeline(int pipeline) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public void glGetProgramPipelineiv(int pipeline, int pname, int[] params, int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetProgramPipelineiv(int pipeline, int pname, IntBuffer params) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniform1i(int program, int location, int v0) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniform4i(int program, int location, int v0, int v1, int v2, int v3) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniform4ui(int program, int location, int v0, int v1, int v2, int v3) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniform4f(int program, int location, float v0, float v1, float v2, float v3) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniform4iv(int program, int location, int count, int[] value, int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniform4iv(int program, int location, int count, IntBuffer value) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniform4uiv(int program, int location, int count, int[] value, int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniform4uiv(int program, int location, int count, IntBuffer value) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniform4fv(int program, int location, int count, float[] value, int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniform4fv(int program, int location, int count, FloatBuffer value) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2fv(int program, int location, int count, boolean transpose, float[] value,
+            int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix2fv(int program, int location, int count, boolean transpose, FloatBuffer value) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3fv(int program, int location, int count, boolean transpose, float[] value,
+            int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3fv(int program, int location, int count, boolean transpose, FloatBuffer value) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4fv(int program, int location, int count, boolean transpose, float[] value,
+            int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4fv(int program, int location, int count, boolean transpose, FloatBuffer value) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x4fv(int program, int location, int count, boolean transpose, float[] value,
+            int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x4fv(int program, int location, int count, boolean transpose,
+            FloatBuffer value) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x3fv(int program, int location, int count, boolean transpose, float[] value,
+            int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x3fv(int program, int location, int count, boolean transpose,
+            FloatBuffer value) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glValidateProgramPipeline(int pipeline) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public String glGetProgramPipelineInfoLog(int program) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void glBindImageTexture(int unit, int texture, int level, boolean layered, int layer, int access,
+            int format) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetBooleani_v(int target, int index, boolean[] data, int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetBooleani_v(int target, int index, IntBuffer data) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glMemoryBarrier(int barriers) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glMemoryBarrierByRegion(int barriers) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glTexStorage2DMultisample(int target, int samples, int internalformat, int width, int height,
+            boolean fixedsamplelocations) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetMultisamplefv(int pname, int index, float[] val, int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetMultisamplefv(int pname, int index, FloatBuffer val) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glSampleMaski(int maskNumber, int mask) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetTexLevelParameteriv(int target, int level, int pname, int[] params, int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetTexLevelParameteriv(int target, int level, int pname, IntBuffer params) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetTexLevelParameterfv(int target, int level, int pname, float[] params, int offset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetTexLevelParameterfv(int target, int level, int pname, FloatBuffer params) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glBindVertexBuffer(int bindingindex, int buffer, long offset, int stride) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glVertexAttribFormat(int attribindex, int size, int type, boolean normalized, int relativeoffset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glVertexAttribIFormat(int attribindex, int size, int type, int relativeoffset) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glVertexAttribBinding(int attribindex, int bindingindex) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glVertexBindingDivisor(int bindingindex, int divisor) {
+        // TODO Auto-generated method stub
+
     }
 
 }

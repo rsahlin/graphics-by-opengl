@@ -16,19 +16,20 @@ import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
+import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 
 public class JAWTWindow extends J2SEWindow implements RenderContextListener, MouseMotionListener, MouseListener {
 
     LWJGLCanvas canvas;
 
-    public JAWTWindow(CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
+    public JAWTWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
         super(coreAppStarter, width, height);
-        init(coreAppStarter, width, height);
+        init(version, coreAppStarter, width, height);
     }
 
-    private void init(CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
-        canvas = new LWJGLCanvas(this, width, height);
+    private void init(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
+        canvas = new LWJGLCanvas(version, this, width, height);
         canvas.addMouseListener(this);
         canvas.addMouseMotionListener(this);
         final JFrame frame = new JFrame("JAWT Demo");
@@ -56,7 +57,7 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener, Mou
         frame.setVisible(true);
         frame.addMouseListener(this);
         frame.addMouseMotionListener(this);
-        wrapper = new LWJGL3GLES30Wrapper();
+        wrapper = LWJGLWrapperFactory.createWrapper(version);
     }
 
     @Override
