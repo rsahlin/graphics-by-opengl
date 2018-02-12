@@ -4,9 +4,11 @@ import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.shader.ShaderVariable.VariableType;
 
 /**
- * The shader names used
+ * The variable names used for common shaders.
+ * These can be used as a common way to find specific variables, for instance in order to share variables between
+ * different shader programs.
  */
-public enum ShaderVariables implements VariableMapping {
+public enum CommonShaderVariables implements VariableMapping {
     uTexture(0, ShaderVariable.VariableType.UNIFORM, null),
     uShadowTexture(2, ShaderVariable.VariableType.UNIFORM, null),
     uMVMatrix(4, ShaderVariable.VariableType.UNIFORM, null),
@@ -50,7 +52,7 @@ public enum ShaderVariables implements VariableMapping {
      * @param type Type of variable
      * @param bufferIndex Index of buffer in mesh that holds the variable data
      */
-    private ShaderVariables(int offset, VariableType type, BufferIndex bufferIndex) {
+    private CommonShaderVariables(int offset, VariableType type, BufferIndex bufferIndex) {
         this.offset = offset;
         this.type = type;
         this.bufferIndex = bufferIndex;

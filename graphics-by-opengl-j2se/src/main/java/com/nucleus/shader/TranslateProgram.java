@@ -14,7 +14,7 @@ import com.nucleus.texturing.Texture2D.Shading;
 public class TranslateProgram extends ShaderProgram {
 
     public TranslateProgram(Texture2D.Shading shading) {
-        super(null, shading, null, ShaderVariables.values(), Shaders.VERTEX_FRAGMENT);
+        super(null, shading, null, CommonShaderVariables.values(), Shaders.VERTEX_FRAGMENT);
     }
 
     @Override

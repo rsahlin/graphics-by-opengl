@@ -294,20 +294,20 @@ public abstract class ShaderProgram {
         ShaderVariable v = null;
         switch (property) {
             case TRANSLATE:
-                v = shaderVariables[ShaderVariables.aTranslate.index];
+                v = shaderVariables[CommonShaderVariables.aTranslate.index];
                 break;
             case ROTATE:
-                v = shaderVariables[ShaderVariables.aRotate.index];
+                v = shaderVariables[CommonShaderVariables.aRotate.index];
                 break;
             case SCALE:
-                v = shaderVariables[ShaderVariables.aScale.index];
+                v = shaderVariables[CommonShaderVariables.aScale.index];
                 break;
             case FRAME:
-                v = shaderVariables[ShaderVariables.aFrameData.index];
+                v = shaderVariables[CommonShaderVariables.aFrameData.index];
                 break;
             case COLOR_AMBIENT:
             case COLOR:
-                v = shaderVariables[ShaderVariables.aColor.index];
+                v = shaderVariables[CommonShaderVariables.aColor.index];
                 break;
             default:
         }
@@ -326,7 +326,7 @@ public abstract class ShaderProgram {
      * @return Number of defined variables in the shader program, all variables do not need to be used.
      */
     public int getVariableCount() {
-        return ShaderVariables.values().length;
+        return CommonShaderVariables.values().length;
     }
 
     /**
@@ -1238,6 +1238,30 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Returns a list with samplers from array of ShaderVariables
+     * 
+     * @param variables
+     * @return
+     */
+    protected ArrayList<ShaderVariable> getSamplers(ShaderVariable[] variables) {
+        ArrayList<ShaderVariable> samplers = new ArrayList<>();
+        for (ShaderVariable v : variables) {
+            if (v != null && v.getType() == VariableType.UNIFORM)
+                switch (v.getDataType()) {
+                    case GLES20.GL_SAMPLER_2D:
+                    case GLES20.GL_SAMPLER_CUBE:
+                    case GLES30.GL_SAMPLER_2D_SHADOW:
+                    case GLES30.GL_SAMPLER_2D_ARRAY:
+                    case GLES30.GL_SAMPLER_2D_ARRAY_SHADOW:
+                    case GLES30.GL_SAMPLER_CUBE_SHADOW:
+                    case GLES30.GL_SAMPLER_3D:
+                        samplers.add(v);
+                }
+        }
+        return samplers;
+    }
+
+    /**
      * Returns the size of shader variable that are mapped to the specified buffer index.
      * Use this to fetch the size per attribute for the different buffers.
      * 
@@ -1270,10 +1294,10 @@ public abstract class ShaderProgram {
     public void setUniformMatrices(float[] uniforms, float[][] matrices, Mesh mesh) {
         // Refresh the uniform matrixes - default is modelview and projection
         System.arraycopy(matrices[0], 0, uniforms,
-                shaderVariables[ShaderVariables.uMVMatrix.index].getOffset(),
+                shaderVariables[CommonShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(matrices[1], 0, uniforms,
-                shaderVariables[ShaderVariables.uProjectionMatrix.index].getOffset(),
+                shaderVariables[CommonShaderVariables.uProjectionMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
 
@@ -1401,15 +1425,9 @@ public abstract class ShaderProgram {
      * sampler.
      */
     protected void setSamplers() {
-        int index = 0;
-        /**
-         * TODO - shall not use ShaderVariables
-         */
-        if (ShaderVariables.uTexture.index != -1) {
-            samplers[index] = index++;
-        }
-        if (ShaderVariables.uShadowTexture.index != -1) {
-            samplers[index] = index++;
+        ArrayList<ShaderVariable> samplersList = getSamplers(shaderVariables);
+        for (int i = 0; i < samplersList.size(); i++) {
+            samplers[i] = samplersList.get(i).getOffset();
         }
     }
 
