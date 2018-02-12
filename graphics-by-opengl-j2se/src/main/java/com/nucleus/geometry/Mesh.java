@@ -93,6 +93,21 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             this.index = index;
         }
 
+        /**
+         * Returns the BufferIndex for the specified index, or null it no match.
+         * 
+         * @param index
+         * @return
+         */
+        public static BufferIndex getFromIndex(int index) {
+            for (BufferIndex bi : values()) {
+                if (bi.index == index) {
+                    return bi;
+                }
+            }
+            return null;
+        }
+
     }
 
     public static class Builder<T extends Mesh> extends MeshBuilder<Mesh> {

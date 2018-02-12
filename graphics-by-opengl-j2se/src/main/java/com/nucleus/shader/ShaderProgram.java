@@ -233,6 +233,10 @@ public abstract class ShaderProgram {
      * Use {@link #getShaderVariable(VariableMapping)} to fetch variable.
      */
     protected ShaderVariable[] shaderVariables;
+    /**
+     * Counts up as shader variables are stored in {@link #shaderVariables}
+     */
+    protected int foundVariables = 0;
 
     private AttribNameMapping attribNameMapping = null;
 
@@ -313,17 +317,6 @@ public abstract class ShaderProgram {
             SimpleLogger.d(getClass(), "No ShaderVariable for " + property);
         }
         return -1;
-    }
-
-    /**
-     * Returns the variable mapping for the shader variable, the mapping is used to find buffer index and offsets.
-     * 
-     * @param variable The shader variable to get the variable mapping for.
-     * @throws IllegalArgumentException If the shader variable has no variable mapping in the subclass.
-     * @throws NullPointerException If variable is null
-     */
-    public VariableMapping getVariableMapping(ShaderVariable variable) {
-        return ShaderVariables.valueOf(getVariableName(variable));
     }
 
     /**
@@ -706,8 +699,9 @@ public abstract class ShaderProgram {
         if (useDynamicVariables()) {
             dynamicMapVariables();
         }
-        for (int i = 0; i < attributesPerVertex.length; i++) {
-            attributesPerVertex[i] = getVariableSize(attributeVariables[i], VariableType.ATTRIBUTE);
+        for (int i = 0; i < attributeBufferCount; i++) {
+            attributesPerVertex[i] = getVariableSize(attributeVariables[i], VariableType.ATTRIBUTE,
+                    BufferIndex.getFromIndex(i));
         }
     }
 
@@ -793,8 +787,37 @@ public abstract class ShaderProgram {
      * @param variable
      */
     protected void setVariableStaticOffset(GLES20Wrapper gles, int program, ShaderVariable variable) {
-        ShaderVariables v = ShaderVariables.valueOf(variable.getName());
-        variable.setOffset(v.offset);
+        VariableMapping v = getMappingByName(variable);
+        variable.setOffset(v.getOffset());
+    }
+
+    /**
+     * Returns the VariableMapping from list of set attributes for the shader program.
+     * 
+     * @param name
+     * @return
+     */
+    public VariableMapping getMappingByName(ShaderVariable variable) {
+        String name = variable.getName();
+        switch (variable.getType()) {
+            case ATTRIBUTE:
+                for (VariableMapping vm : attributes) {
+                    if (name.contentEquals(vm.getName())) {
+                        return vm;
+                    }
+                }
+                break;
+            case UNIFORM:
+                for (VariableMapping vm : sourceUniforms) {
+                    if (name.contentEquals(vm.getName())) {
+                        return vm;
+                    }
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + variable.getType());
+        }
+        return null;
     }
 
     /**
@@ -977,17 +1000,19 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Returns the shader variable for the specified index, use this to map attributes to variables.
+     * Returns the shader variable for the specified index, or null if attribute is not an active variable.
+     * Use this to map attributes to variables.
      * 
      * @param attribute
-     * @return
+     * @return The ShaderVariable for the attribute mappint, or null if not used in source.
      * @throws IllegalArgumentException If shader variables are null, the program has probably not been created.
      */
     public ShaderVariable getShaderVariable(VariableMapping attribute) {
         if (shaderVariables == null) {
             throw new IllegalArgumentException(NULL_VARIABLES_ERROR);
         }
-        return shaderVariables[attribute.getIndex()];
+        int index = attribute.getIndex();
+        return index >= 0 ? shaderVariables[index] : null;
     }
 
     /**
@@ -1030,11 +1055,13 @@ public abstract class ShaderProgram {
             return;
         }
         try {
-            VariableMapping vm = getVariableMapping(variable);
+            VariableMapping vm = getMappingByName(variable);
             // TODO Offset is set dynamically when dynamicMapShaderOffset() is called - create a setting so that
             // it is possible to toggle between the two modes.
             // variable.setOffset(vm.getOffset());
-            shaderVariables[vm.getIndex()] = variable;
+            vm.setIndex(foundVariables);
+            shaderVariables[foundVariables++] = variable;
+
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
                     "Variable has no mapping to shader variable (ie used in shader but not defined in program "
@@ -1138,7 +1165,7 @@ public abstract class ShaderProgram {
         int samplerSize = 0;
         if (variables != null) {
             samplerSize = getSamplerSize(variables);
-            uniformSize = getVariableSize(variables, VariableType.UNIFORM);
+            uniformSize = getVariableSize(variables, VariableType.UNIFORM, null);
             if (uniformSize > 0) {
                 createUniforms(new float[uniformSize], new int[samplerSize]);
             } else {
@@ -1158,15 +1185,30 @@ public abstract class ShaderProgram {
      * 
      * @param variables
      * @param type
+     * @param index BufferIndex to the buffer that the variables belong to, or null
      * @return Total size, in floats, of all defined shader variables of the specified type
      */
-    protected int getVariableSize(ShaderVariable[] variables, VariableType type) {
+    protected int getVariableSize(ShaderVariable[] variables, VariableType type, BufferIndex index) {
         int size = 0;
         for (ShaderVariable v : variables) {
             if (v != null && v.getType() == type && v.getDataType() != GLES20.GL_SAMPLER_2D) {
                 size += v.getSizeInFloats();
             }
         }
+        return alignVariableSize(size, type, index);
+    }
+
+    /**
+     * Align the size of the variables (per vertex) of the type in the buffer with index, override in
+     * subclasses if for instance
+     * Attributes shall be aligned to a specific size, eg vec4
+     * 
+     * @param size The packed size
+     * @param type
+     * @param index
+     * @return The aligned size of variables per vertex.
+     */
+    protected int alignVariableSize(int size, VariableType type, BufferIndex index) {
         return size;
     }
 
@@ -1207,7 +1249,7 @@ public abstract class ShaderProgram {
         int size = 0;
         for (ShaderVariable v : variables) {
             if (v != null) {
-                VariableMapping vm = getVariableMapping(v);
+                VariableMapping vm = getMappingByName(v);
                 if (vm.getBufferIndex() == index) {
                     size += v.getSizeInFloats();
                 }
@@ -1360,10 +1402,13 @@ public abstract class ShaderProgram {
      */
     protected void setSamplers() {
         int index = 0;
-        if (shaderVariables[ShaderVariables.uTexture.index] != null) {
+        /**
+         * TODO - shall not use ShaderVariables
+         */
+        if (ShaderVariables.uTexture.index != -1) {
             samplers[index] = index++;
         }
-        if (shaderVariables[ShaderVariables.uShadowTexture.index] != null) {
+        if (ShaderVariables.uShadowTexture.index != -1) {
             samplers[index] = index++;
         }
     }

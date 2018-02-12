@@ -7,37 +7,37 @@ import com.nucleus.shader.ShaderVariable.VariableType;
  * The shader names used
  */
 public enum ShaderVariables implements VariableMapping {
-    uTexture(0, 0, ShaderVariable.VariableType.UNIFORM, null),
-    uShadowTexture(1, 2, ShaderVariable.VariableType.UNIFORM, null),
-    uMVMatrix(2, 4, ShaderVariable.VariableType.UNIFORM, null),
+    uTexture(0, ShaderVariable.VariableType.UNIFORM, null),
+    uShadowTexture(2, ShaderVariable.VariableType.UNIFORM, null),
+    uMVMatrix(4, ShaderVariable.VariableType.UNIFORM, null),
     /**
      * Projection matrix that can be applied after snapping to screen coordinates
      */
-    uProjectionMatrix(3, 20, ShaderVariable.VariableType.UNIFORM, null),
+    uProjectionMatrix(20, ShaderVariable.VariableType.UNIFORM, null),
     /**
      * The light pov
      */
-    uLightMatrix(4, 36, ShaderVariable.VariableType.UNIFORM, null),
-    uScreenSize(5, 52, ShaderVariable.VariableType.UNIFORM, null),
+    uLightMatrix(36, ShaderVariable.VariableType.UNIFORM, null),
+    uScreenSize(52, ShaderVariable.VariableType.UNIFORM, null),
     /**
      * Normally texture width, height and frames per line
      */
-    uTextureData(6, 54, ShaderVariable.VariableType.UNIFORM, null),
-    uAmbientLight(7, 58, ShaderVariable.VariableType.UNIFORM, null),
-    uDiffuseLight(8, 62, ShaderVariable.VariableType.UNIFORM, null),
-    aVertex(9, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-    aTexCoord(10, 3, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-    aTranslate(11, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aRotate(12, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aScale(13, 8, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aColor(14, 12, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aFrameData(15, 16, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aData1(16, 20, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
+    uTextureData(54, ShaderVariable.VariableType.UNIFORM, null),
+    uAmbientLight(58, ShaderVariable.VariableType.UNIFORM, null),
+    uDiffuseLight(62, ShaderVariable.VariableType.UNIFORM, null),
+    aVertex(0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+    aTexCoord(3, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+    aTranslate(0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aRotate(4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aScale(8, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aColor(12, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aFrameData(16, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aData1(20, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
 
     /**
      * Index of variable
      */
-    public final int index;
+    public int index = -1;
     /**
      * Offset into data where variable is, for static variable mapping
      */
@@ -46,13 +46,11 @@ public enum ShaderVariables implements VariableMapping {
     public final BufferIndex bufferIndex;
 
     /**
-     * @param index Index of the shader variable
      * @param offset Offset into data where variable is. Used for static mapping
      * @param type Type of variable
      * @param bufferIndex Index of buffer in mesh that holds the variable data
      */
-    private ShaderVariables(int index, int offset, VariableType type, BufferIndex bufferIndex) {
-        this.index = index;
+    private ShaderVariables(int offset, VariableType type, BufferIndex bufferIndex) {
         this.offset = offset;
         this.type = type;
         this.bufferIndex = bufferIndex;
@@ -64,6 +62,11 @@ public enum ShaderVariables implements VariableMapping {
     }
 
     @Override
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    @Override
     public VariableType getType() {
         return type;
     }
@@ -71,5 +74,15 @@ public enum ShaderVariables implements VariableMapping {
     @Override
     public BufferIndex getBufferIndex() {
         return bufferIndex;
+    }
+
+    @Override
+    public String getName() {
+        return name();
+    }
+
+    @Override
+    public int getOffset() {
+        return offset;
     }
 }

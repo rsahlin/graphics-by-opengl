@@ -22,21 +22,22 @@ public class ConvolutionProgram extends ShaderProgram {
 
     protected enum VARIABLES implements VariableMapping {
         uMVPMatrix(0, ShaderVariable.VariableType.UNIFORM, null),
-        uKernel(1, ShaderVariable.VariableType.UNIFORM, null),
-        aTranslate(2, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-        aTexCoord(3, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES);
+        uKernel(16, ShaderVariable.VariableType.UNIFORM, null),
+        aTranslate(0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+        aTexCoord(4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES);
 
-        private final int index;
+        private int index = -1;
+        private final int offset;
         private final VariableType type;
         private final BufferIndex bufferIndex;
 
         /**
-         * @param index Index of the shader variable
+         * @param offset
          * @param type Type of variable
          * @param bufferIndex Index of buffer in mesh that holds the variable data
          */
-        private VARIABLES(int index, VariableType type, BufferIndex bufferIndex) {
-            this.index = index;
+        private VARIABLES(int offset, VariableType type, BufferIndex bufferIndex) {
+            this.offset = offset;
             this.type = type;
             this.bufferIndex = bufferIndex;
         }
@@ -44,6 +45,11 @@ public class ConvolutionProgram extends ShaderProgram {
         @Override
         public int getIndex() {
             return index;
+        }
+
+        @Override
+        public void setIndex(int index) {
+            this.index = index;
         }
 
         @Override
@@ -56,6 +62,16 @@ public class ConvolutionProgram extends ShaderProgram {
             return bufferIndex;
         }
 
+        @Override
+        public int getOffset() {
+            return offset;
+        }
+
+        @Override
+        public String getName() {
+            return name();
+        }
+
     }
 
     private final static String VERTEX_SHADER_NAME = "assets/convolutionvertex.essl";
@@ -63,11 +79,6 @@ public class ConvolutionProgram extends ShaderProgram {
 
     public ConvolutionProgram() {
         super(null, null, null, VARIABLES.values(), Shaders.VERTEX_FRAGMENT);
-    }
-
-    @Override
-    public VariableMapping getVariableMapping(ShaderVariable variable) {
-        return VARIABLES.valueOf(getVariableName(variable));
     }
 
     @Override
