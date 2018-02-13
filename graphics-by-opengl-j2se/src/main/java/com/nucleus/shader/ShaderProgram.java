@@ -233,9 +233,6 @@ public abstract class ShaderProgram {
      * Use {@link #getShaderVariable(VariableMapping)} to fetch variable.
      */
     protected ShaderVariable[] shaderVariables;
-    /**
-     * Counts up as shader variables are stored in {@link #shaderVariables}
-     */
     protected int foundVariables = 0;
 
     private AttribNameMapping attribNameMapping = null;
@@ -294,20 +291,20 @@ public abstract class ShaderProgram {
         ShaderVariable v = null;
         switch (property) {
             case TRANSLATE:
-                v = shaderVariables[CommonShaderVariables.aTranslate.index];
+                v = getShaderVariable(CommonShaderVariables.aTranslate);
                 break;
             case ROTATE:
-                v = shaderVariables[CommonShaderVariables.aRotate.index];
+                v = getShaderVariable(CommonShaderVariables.aRotate);
                 break;
             case SCALE:
-                v = shaderVariables[CommonShaderVariables.aScale.index];
+                v = getShaderVariable(CommonShaderVariables.aScale);
                 break;
             case FRAME:
-                v = shaderVariables[CommonShaderVariables.aFrameData.index];
+                v = getShaderVariable(CommonShaderVariables.aFrameData);
                 break;
             case COLOR_AMBIENT:
             case COLOR:
-                v = shaderVariables[CommonShaderVariables.aColor.index];
+                v = getShaderVariable(CommonShaderVariables.aColor);
                 break;
             default:
         }
@@ -690,7 +687,7 @@ public abstract class ShaderProgram {
         gles.glGetProgramiv(program, GLES20.GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, attribInfo, MAX_NAME_LENGTH_OFFSET);
         gles.glGetProgramiv(program, GLES20.GL_ACTIVE_UNIFORM_MAX_LENGTH, uniformInfo, MAX_NAME_LENGTH_OFFSET);
         GLUtils.handleError(gles, GET_PROGRAM_INFO_ERROR);
-        shaderVariables = new ShaderVariable[getVariableCount()];
+        shaderVariables = new ShaderVariable[CommonShaderVariables.values().length];
         fetchActiveVariables(gles, VariableType.ATTRIBUTE, attribInfo);
         fetchActiveVariables(gles, VariableType.UNIFORM, uniformInfo);
         attributeVariables = new ShaderVariable[attributeBufferCount][];
@@ -1000,19 +997,18 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Returns the shader variable for the specified index, or null if attribute is not an active variable.
-     * Use this to map attributes to variables.
+     * Returns the shader variable for the {@link VariableMapping}
+     * Use this to map attributes/uniforms to variables.
      * 
-     * @param attribute
-     * @return The ShaderVariable for the attribute mappint, or null if not used in source.
+     * @param variable
+     * @return The ShaderVariable for the variable, or null if not used in source.
      * @throws IllegalArgumentException If shader variables are null, the program has probably not been created.
      */
-    public ShaderVariable getShaderVariable(VariableMapping attribute) {
+    public ShaderVariable getShaderVariable(VariableMapping variable) {
         if (shaderVariables == null) {
             throw new IllegalArgumentException(NULL_VARIABLES_ERROR);
         }
-        int index = attribute.getIndex();
-        return index >= 0 ? shaderVariables[index] : null;
+        return shaderVariables[variable.getIndex()];
     }
 
     /**
@@ -1059,8 +1055,7 @@ public abstract class ShaderProgram {
             // TODO Offset is set dynamically when dynamicMapShaderOffset() is called - create a setting so that
             // it is possible to toggle between the two modes.
             // variable.setOffset(vm.getOffset());
-            vm.setIndex(foundVariables);
-            shaderVariables[foundVariables++] = variable;
+            shaderVariables[vm.getIndex()] = variable;
 
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
@@ -1148,7 +1143,7 @@ public abstract class ShaderProgram {
             default:
                 throw new IllegalArgumentException("Not implemented for dataType: " + variable.getDataType());
         }
-        GLUtils.handleError(gles, "setVectorUniform(), dataType: " + variable.getDataType());
+        GLUtils.handleError(gles, "setUniform(), dataType: " + variable.getDataType());
 
     }
 

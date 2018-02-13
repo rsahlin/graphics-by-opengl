@@ -21,22 +21,24 @@ public class ConvolutionProgram extends ShaderProgram {
     protected final static int DEFAULT_COMPONENTS = 3;
 
     protected enum VARIABLES implements VariableMapping {
-        uMVPMatrix(0, ShaderVariable.VariableType.UNIFORM, null),
-        uKernel(16, ShaderVariable.VariableType.UNIFORM, null),
-        aTranslate(0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-        aTexCoord(4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES);
+        uMVPMatrix(0, 0, ShaderVariable.VariableType.UNIFORM, null),
+        uKernel(1, 16, ShaderVariable.VariableType.UNIFORM, null),
+        aTranslate(2, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+        aTexCoord(3, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES);
 
-        private int index = -1;
+        private final int index;
         private final int offset;
         private final VariableType type;
         private final BufferIndex bufferIndex;
 
         /**
+         * @param index
          * @param offset
          * @param type Type of variable
          * @param bufferIndex Index of buffer in mesh that holds the variable data
          */
-        private VARIABLES(int offset, VariableType type, BufferIndex bufferIndex) {
+        private VARIABLES(int index, int offset, VariableType type, BufferIndex bufferIndex) {
+            this.index = index;
             this.offset = offset;
             this.type = type;
             this.bufferIndex = bufferIndex;
@@ -45,11 +47,6 @@ public class ConvolutionProgram extends ShaderProgram {
         @Override
         public int getIndex() {
             return index;
-        }
-
-        @Override
-        public void setIndex(int index) {
-            this.index = index;
         }
 
         @Override

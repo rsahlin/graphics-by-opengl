@@ -17,23 +17,14 @@ import com.nucleus.shader.ShaderVariable.VariableType;
 public interface VariableMapping {
 
     /**
-     * Returns the index position of the attribute, this is the position of the variable in array storage if the
-     * variable is used.
-     * If variable is NOT used in the shader this method MUST return -1
+     * Returns the index position of the attribute, this can be used to locate runtime version of variable.
      * 
-     * @return Index of variable or -1 if not used in shader.
+     * @return Index of variable
      */
     public int getIndex();
 
     /**
-     * Sets the index of this variable in array store - this shall only be done once.
-     * 
-     * @param index
-     */
-    public void setIndex(int index);
-
-    /**
-     * Returns the (static) offset where for data of the variable
+     * Returns the (static) offset for data to the variable.
      * 
      * @return
      */

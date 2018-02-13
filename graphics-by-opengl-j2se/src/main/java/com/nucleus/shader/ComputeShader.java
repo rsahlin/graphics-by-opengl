@@ -15,12 +15,12 @@ public class ComputeShader extends ShaderProgram {
      * The shader names used
      */
     public enum ComputeVariables implements VariableMapping {
-        uConfig(0, ShaderVariable.VariableType.UNIFORM, null);
+        uConfig(0, 0, ShaderVariable.VariableType.UNIFORM, null);
 
         /**
          * Index of variable
          */
-        public int index = -1;
+        public final int index;
         /**
          * Offset into data where variable is, for static variable mapping
          */
@@ -29,11 +29,13 @@ public class ComputeShader extends ShaderProgram {
         public final BufferIndex bufferIndex;
 
         /**
+         * @param index
          * @param offset Offset into data where variable is. Used for static mapping
          * @param type Type of variable
          * @param bufferIndex Index of buffer in mesh that holds the variable data
          */
-        private ComputeVariables(int offset, VariableType type, BufferIndex bufferIndex) {
+        private ComputeVariables(int index, int offset, VariableType type, BufferIndex bufferIndex) {
+            this.index = index;
             this.offset = offset;
             this.type = type;
             this.bufferIndex = bufferIndex;
@@ -42,11 +44,6 @@ public class ComputeShader extends ShaderProgram {
         @Override
         public int getIndex() {
             return index;
-        }
-
-        @Override
-        public void setIndex(int index) {
-            this.index = index;
         }
 
         @Override
