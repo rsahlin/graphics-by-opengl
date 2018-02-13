@@ -1,8 +1,9 @@
 package com.nucleus.component;
 
+import com.nucleus.assets.AssetManager;
 import com.nucleus.geometry.AttributeUpdater.PropertyMapper;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.shader.ComputeShader;
+import com.nucleus.shader.QuadExpanderShader;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.UVAtlas;
@@ -14,7 +15,7 @@ import com.nucleus.texturing.UVTexture2D;
  */
 public class QuadExpander extends AttributeExpander {
 
-    protected static ComputeShader computeShader;
+    protected static QuadExpanderShader expanderShader;
 
     /**
      * Storage for 4 UV components
@@ -53,7 +54,7 @@ public class QuadExpander extends AttributeExpander {
 
     @Override
     public void updateAttributeData(NucleusRenderer renderer) {
-        if (computeShader == null) {
+        if (expanderShader == null) {
             loadShader(renderer);
         }
         if (texture.getTextureType() == TextureType.UVTexture2D) {
@@ -83,8 +84,8 @@ public class QuadExpander extends AttributeExpander {
     }
 
     protected void loadShader(NucleusRenderer renderer) {
-        // computeShader = (ComputeShader) AssetManager.getInstance().getProgram(renderer,
-        // new ComputeShader(Shading.textured, ComputeVariables.values()));
+        expanderShader = (QuadExpanderShader) AssetManager.getInstance().getProgram(renderer,
+                new QuadExpanderShader());
     }
 
     public void setFrame(int quad, int frame) {

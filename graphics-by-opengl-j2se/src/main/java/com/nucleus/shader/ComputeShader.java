@@ -67,8 +67,8 @@ public class ComputeShader extends ShaderProgram {
         }
     }
 
-    public ComputeShader(Shading shading, VariableMapping[] mapping) {
-        super(null, shading, CATEGORY, mapping, Shaders.COMPUTE);
+    public ComputeShader(String category, VariableMapping[] mapping) {
+        super(null, null, category, mapping, Shaders.COMPUTE);
     }
 
     @Override
