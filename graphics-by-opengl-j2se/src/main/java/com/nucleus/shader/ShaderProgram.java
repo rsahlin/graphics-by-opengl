@@ -26,7 +26,6 @@ import com.nucleus.opengl.GLESWrapper.GLES31;
 import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
-import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -271,11 +270,11 @@ public abstract class ShaderProgram {
      * Returns the program for the specified pass and shading, this is used to resolve the correct
      * program for different passes
      * 
-     * @param renderer
+     * @param gles
      * @param pass
      * @param shading
      */
-    public abstract ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Texture2D.Shading shading);
+    public abstract ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, Texture2D.Shading shading);
 
     /**
      * Returns the offset within an attribute buffer where the property is, this is used to set specific properties

@@ -14,12 +14,12 @@ import com.nucleus.vecmath.Transform;
  */
 public class AttributeExpander implements Consumer {
 
-    ComponentBuffer data;
-    int multiplier;
-    int sourceOffset = 0;
-    int destOffset = 0;
-    PropertyMapper mapper;
-    AttributeBuffer buffer;
+    protected ComponentBuffer data;
+    protected int multiplier;
+    protected int sourceOffset = 0;
+    protected int destOffset = 0;
+    protected PropertyMapper mapper;
+    protected AttributeBuffer buffer;
 
     /**
      * 

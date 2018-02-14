@@ -595,7 +595,7 @@ class BaseRenderer implements NucleusRenderer {
      */
     private ShaderProgram getProgram(Material material, Pass pass) {
         ShaderProgram program = material.getProgram();
-        return program.getProgram(this, pass, program.getShading());
+        return program.getProgram(getGLES(), pass, program.getShading());
     }
 
     @Override

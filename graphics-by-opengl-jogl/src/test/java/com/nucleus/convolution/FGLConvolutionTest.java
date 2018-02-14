@@ -35,15 +35,13 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
 
     public static class MyClientApplication implements ClientApplication {
 
-
         @Override
         public void init(CoreApp coreApp) {
 
         }
 
     }
-    
-    
+
     private final static float[] kernel1 = new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 };
     private final static float[] kernel2 = new float[] { -1, -1, -1, -1, 8, -1, -1, -1, -1 };
     private final static float[] kernel3 = new float[] { 0, -1, 0, -1, 5, -1, 0, -1, 0 };
@@ -94,7 +92,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
         meshBuilder.setElementMode(Mode.TRIANGLES, 4, 6);
         meshBuilder.setTexture(texture);
-        program = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer,
+        program = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
                 new ConvolutionProgram());
         Material material = new Material();
         material.setProgram(program);
@@ -150,15 +148,15 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
     public void onInputEvent(MMIPointerEvent event) {
 
         switch (event.getAction()) {
-        case ACTIVE:
-            kernelIndex++;
-            if (kernelIndex >= kernel.length) {
-                kernelIndex = 0;
-            }
-            break;
-        case INACTIVE:
-        case ZOOM:
-        case MOVE:
+            case ACTIVE:
+                kernelIndex++;
+                if (kernelIndex >= kernel.length) {
+                    kernelIndex = 0;
+                }
+                break;
+            case INACTIVE:
+            case ZOOM:
+            case MOVE:
         }
 
     }

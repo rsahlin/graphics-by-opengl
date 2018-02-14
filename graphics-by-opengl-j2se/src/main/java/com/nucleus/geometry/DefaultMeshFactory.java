@@ -40,7 +40,7 @@ public class DefaultMeshFactory implements MeshFactory {
                 }
                 Material m = new Material();
                 TranslateProgram program = (TranslateProgram) AssetManager.getInstance()
-                        .getProgram(renderer, new TranslateProgram(Shading.flat));
+                        .getProgram(renderer.getGLES(), new TranslateProgram(Shading.flat));
                 m.setProgram(program);
                 Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
                 builder.setMaterial(m);

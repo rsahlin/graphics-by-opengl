@@ -251,13 +251,13 @@ public class AssetManager {
      * @param program
      * @return An instance of the ShaderProgram that is loaded and compiled
      */
-    public ShaderProgram getProgram(NucleusRenderer renderer, ShaderProgram program) {
+    public ShaderProgram getProgram(GLES20Wrapper gles, ShaderProgram program) {
         ShaderProgram compiled = programs.get(program.getKey());
         if (compiled != null) {
             return compiled;
         }
         long start = System.currentTimeMillis();
-        renderer.createProgram(program);
+        program.createProgram(gles);
         FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, program.getClass().getSimpleName(), start,
                 System.currentTimeMillis());
         programs.put(program.getKey(), program);
