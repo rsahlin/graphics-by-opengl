@@ -1,15 +1,9 @@
 package com.nucleus.jogl;
 
 import java.awt.Frame;
-import java.util.List;
 
-import com.jogamp.nativewindow.AbstractGraphicsDevice;
-import com.jogamp.nativewindow.CapabilitiesImmutable;
-import com.jogamp.nativewindow.DefaultGraphicsScreen;
-import com.jogamp.nativewindow.GraphicsConfigurationFactory;
 import com.jogamp.nativewindow.util.Dimension;
 import com.jogamp.nativewindow.util.InsetsImmutable;
-import com.jogamp.nativewindow.windows.WindowsGraphicsDevice;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseEvent;
@@ -19,11 +13,9 @@ import com.jogamp.newt.event.WindowUpdateEvent;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLCapabilitiesChooser;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
-import com.jogamp.opengl.egl.EGL;
 import com.jogamp.opengl.util.Animator;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
@@ -34,8 +26,6 @@ import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
 
-import jogamp.opengl.egl.EGLGraphicsConfigurationFactory;
-
 /**
  * 
  * @author Richard Sahlin
@@ -45,8 +35,7 @@ import jogamp.opengl.egl.EGLGraphicsConfigurationFactory;
  *
  */
 public abstract class JOGLGLWindow extends J2SEWindow
-        implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener, KeyListener,
-        GLCapabilitiesChooser {
+        implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener, KeyListener {
 
     /**
      * A zoom on the wheel equals 1 / 5 screen height
@@ -65,6 +54,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
     protected Frame frame;
     protected GLWindow glWindow;
     WindowListener windowListener;
+    protected GLProfile profile;
 
     /**
      * Creates a new JOGL window with the specified {@link CoreAppStarter} and swapinterval
@@ -84,6 +74,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
         this.swapInterval = swapInterval;
         this.undecorated = undecorated;
         this.fullscreen = fullscreen;
+        this.profile = glProfile;
         create(width, height, glProfile, coreAppStarter);
     }
 
@@ -96,10 +87,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
         createNEWTWindow(width, height, glProfile);
     }
 
-    private void createEGLWindow(int width, int height, GLProfile glProfile) {
-        long display = EGL.eglGetCurrentDisplay();
-    }
-
     /**
      * Creates the JOGL display and OpenGLES
      * 
@@ -109,14 +96,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
     private void createNEWTWindow(int width, int height, GLProfile glProfile) {
         // Display display = NewtFactory.createDisplay(null);
         // Screen screen = NewtFactory.createScreen(display, SCREEN_ID);
-
-        GLCapabilities caps = new GLCapabilities(GLProfile.getGL4ES3());
-        GLCapabilities chosen = new GLCapabilities(GLProfile.getGL4ES3());
-        WindowsGraphicsDevice device = new WindowsGraphicsDevice(AbstractGraphicsDevice.DEFAULT_UNIT);
-        DefaultGraphicsScreen screen = new DefaultGraphicsScreen(device, AbstractGraphicsDevice.DEFAULT_UNIT);
-        GraphicsConfigurationFactory factory = EGLGraphicsConfigurationFactory.getFactory(device, caps);
-        factory.chooseGraphicsConfiguration(chosen, caps, this, screen,
-                AbstractGraphicsDevice.DEFAULT_UNIT);
 
         GLCapabilities glCapabilities = new GLCapabilities(glProfile);
         glCapabilities.setSampleBuffers(true);
@@ -372,12 +351,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
                 System.exit(0);
             }
         }
-    }
-
-    @Override
-    public int chooseCapabilities(CapabilitiesImmutable desired, List<? extends CapabilitiesImmutable> available,
-            int windowSystemRecommendedChoice) {
-        return 0;
     }
 
 }

@@ -134,7 +134,6 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
             int size = windowWidth * windowHeight;
             int fillrate = (size * counter) / (int) (end - start);
             fillrateStr = " " + Float.toString(fillrate / 1000) + ", mpixels/s";
-            window.setTitle(fillrateStr);
             start = System.currentTimeMillis();
             counter = 0;
         }

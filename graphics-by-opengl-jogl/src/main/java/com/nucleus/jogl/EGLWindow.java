@@ -1,14 +1,22 @@
 package com.nucleus.jogl;
 
 import java.nio.IntBuffer;
-
-import javax.swing.Renderer;
+import java.util.List;
 
 import com.jogamp.common.nio.PointerBuffer;
-import com.jogamp.newt.Display;
-import com.jogamp.newt.NewtFactory;
-import com.jogamp.newt.Screen;
+import com.jogamp.nativewindow.AbstractGraphicsDevice;
+import com.jogamp.nativewindow.CapabilitiesImmutable;
+import com.jogamp.nativewindow.DefaultGraphicsScreen;
+import com.jogamp.nativewindow.GraphicsConfigurationFactory;
+import com.jogamp.nativewindow.egl.EGLGraphicsDevice;
+import com.jogamp.nativewindow.windows.WindowsGraphicsDevice;
+import com.jogamp.newt.opengl.GLWindow;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLCapabilitiesChooser;
+import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.egl.EGL;
+import com.nucleus.CoreApp;
+import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
 import com.nucleus.common.Environment;
@@ -16,38 +24,64 @@ import com.nucleus.egl.EGL14Constants;
 import com.nucleus.egl.EGLUtils;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.SurfaceConfiguration;
 
-import jogamp.opengl.egl.EGLGraphicsConfiguration;
+import jogamp.opengl.egl.EGLDisplayUtil;
 import jogamp.opengl.egl.EGLGraphicsConfigurationFactory;
+import jogamp.opengl.windows.wgl.WindowsWGLGraphicsConfiguration;
 
-import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+public class EGLWindow extends J2SEWindow implements Runnable,
+        GLCapabilitiesChooser {
 
-
-public class EGLWindow implements Runnable {
-    
     Thread thread;
 
     protected Renderers version;
-    protected long EGLContext;
-    protected long EglDisplay;
-    protected long EglConfig;
-    protected long EGLSurface;
+    protected long EGLContext = Constants.NO_VALUE;
+    protected long EglDisplay = Constants.NO_VALUE;
+    protected long EglConfig = Constants.NO_VALUE;
+    protected long EGLSurface = Constants.NO_VALUE;
     protected long surface;
     protected SurfaceConfiguration surfaceConfig;
     protected RenderContextListener renderListener;
     protected boolean waitForClient = false;
     protected int sleep = 0;
 
-    public EGLWindow(SurfaceConfiguration surfaceConfig, Renderers version) {
-        this.surfaceConfig = surfaceConfig;
-        this.version = version;
+    public EGLWindow(int width, int height, boolean undecorated, boolean fullscreen, GLProfile glProfile,
+            CoreApp.CoreAppStarter coreAppStarter, int swapInterval) {
+        super(coreAppStarter, width, height);
+        Thread t = new Thread(this);
+        t.start();
+
     }
 
     protected void createEglContext() {
         if (EglDisplay == Constants.NO_VALUE) {
+
+            GLCapabilities caps = new GLCapabilities(GLProfile.getGL4ES3());
+            GLCapabilities chosen = new GLCapabilities(GLProfile.getGL4ES3());
+            WindowsGraphicsDevice device = new WindowsGraphicsDevice(AbstractGraphicsDevice.DEFAULT_UNIT);
+
+            // AbstractGraphicsDevice agd = NativeWindowFactory.createDevice(
+            // NativeWindowFactory.getDefaultDisplayConnection(),
+            // true);
+            GLWindow nativeWindow = GLWindow.create(new GLCapabilities(GLProfile.get(GLProfile.GL4ES3)));
+            nativeWindow.setSize(width, height);
+            nativeWindow.setVisible(true);
+            EGLGraphicsDevice eglDevice = EGLDisplayUtil.eglCreateEGLGraphicsDevice(nativeWindow.getNativeSurface());
+            DefaultGraphicsScreen screen = new DefaultGraphicsScreen(eglDevice, AbstractGraphicsDevice.DEFAULT_UNIT);
+
+            GraphicsConfigurationFactory factory = EGLGraphicsConfigurationFactory.getFactory(device, caps);
+            WindowsWGLGraphicsConfiguration chosenConfig = (WindowsWGLGraphicsConfiguration) factory
+                    .chooseGraphicsConfiguration(
+                            chosen, caps, this, screen,
+                            AbstractGraphicsDevice.DEFAULT_UNIT);
+
+            // EGL.eglCreateContext(nativeWindow.getDisplayHandle(), chosenConfig. , share_context, attrib_list)
+
+            // EGL.eglCreateContext(eglDevice.getNativeDisplayID(), eglC, share_context, attrib_list)
+
             SimpleLogger.d(getClass(), "egl display is null, creating.");
-            EglDisplay = EGL.eglGetDisplay(EGL.EGL_DEFAULT_DISPLAY);
             if (EglDisplay == EGL.EGL_NO_DISPLAY) {
                 throw new IllegalArgumentException("Could not create egl display.");
             }
@@ -58,9 +92,10 @@ public class EGLWindow implements Runnable {
                 throw new IllegalArgumentException("Could not initialize egl display");
             }
             versionArray.rewind();
-            SimpleLogger.d(getClass(), "egl display initialized, version: " + versionArray.get() + "." + versionArray.get());
+            SimpleLogger.d(getClass(),
+                    "egl display initialized, version: " + versionArray.get() + "." + versionArray.get());
         }
-        if (EglConfig == 0) {
+        if (EglConfig == Constants.NO_VALUE) {
             SimpleLogger.d(getClass(), "egl config is null, creating.");
 
             int[] eglConfigAttribList = null;
@@ -78,9 +113,9 @@ public class EGLWindow implements Runnable {
                 throw new IllegalArgumentException("Could not choose egl config.");
             }
             EglConfig = configs.get(0);
-//            surfaceConfig = EGL14Utils.getSurfaceConfig(EglDisplay, EglConfig);
-//            SimpleLogger.d(getClass(), "Selected EGL Configuration:");
-//            SimpleLogger.d(getClass(), surfaceConfig.toString());
+            // surfaceConfig = EGL14Utils.getSurfaceConfig(EglDisplay, EglConfig);
+            // SimpleLogger.d(getClass(), "Selected EGL Configuration:");
+            // SimpleLogger.d(getClass(), surfaceConfig.toString());
         }
         if (EGLContext == 0) {
             SimpleLogger.d(getClass(), "egl context is null, creating.");
@@ -124,7 +159,6 @@ public class EGLWindow implements Runnable {
         }
     }
 
-
     protected void createEGL() {
         boolean created = EGLContext == 0;
         createEglContext();
@@ -134,15 +168,15 @@ public class EGLWindow implements Runnable {
         SimpleLogger.d(getClass(), "Set egl swap interval to 0");
         if (surfaceConfig.hasExtensionSupport(EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh)) {
             EGL.eglSurfaceAttrib(EglDisplay, EGLSurface, EGL14Constants.EGL_FRONT_BUFFER_AUTO_REFRESH_ANDROID, 1);
-            SimpleLogger.d(getClass(), "Set surfaceattrib for: " + EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh);
+            SimpleLogger.d(getClass(),
+                    "Set surfaceattrib for: " + EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh);
         }
         if (created) {
-//            nucleusActivity.onSurfaceCreated(getWidth(), getHeight());
-//            EGL.eglSwapBuffers(EglDisplay, EGLSurface.get);
-//            nucleusActivity.contextCreated(getWidth(), getHeight());
+            // nucleusActivity.onSurfaceCreated(getWidth(), getHeight());
+            // EGL.eglSwapBuffers(EglDisplay, EGLSurface.get);
+            // nucleusActivity.contextCreated(getWidth(), getHeight());
         }
     }
-
 
     private void makeCurrent() {
         if (!EGL.eglMakeCurrent(EglDisplay, EGLSurface, EGLSurface, EGLContext)) {
@@ -176,6 +210,7 @@ public class EGLWindow implements Runnable {
 
     /**
      * Sets the egl swap interval, if no EGLDisplay exists then nothing is done.
+     * 
      * @param interval
      */
     public void setEGLSwapInterval(int interval) {
@@ -189,25 +224,24 @@ public class EGLWindow implements Runnable {
 
     /**
      * Sets an egl surfaceattrib, if EGLDisplay or EGLSurface is null then nothing is done.
+     * 
      * @param attribute
      * @param value
      */
     public void setEGLSurfaceAttrib(int attribute, int value) {
-        if(EglDisplay != 0 && EGLSurface != 0) {
+        if (EglDisplay != 0 && EGLSurface != 0) {
             EGL.eglSurfaceAttrib(EglDisplay, EGLSurface, attribute, value);
             SimpleLogger.d(getClass(), "set EGL surfaceattrib: " + attribute + " : " + value);
         } else {
             SimpleLogger.d(getClass(), "Could not set EGL surfaceattrib, display or surface is null");
         }
     }
-    
-    /**
-     * Draws the current frame.
-     */
-    protected void drawFrame() {
+
+    @Override
+    public void drawFrame() {
         renderListener.drawFrame();
     }
-    
+
     @Override
     public void run() {
         SimpleLogger.d(getClass(), "Starting EGL surface thread");
@@ -222,7 +256,8 @@ public class EGLWindow implements Runnable {
                 if (eglWaitGL) {
                     EGL.eglWaitGL();
                 }
-                FrameSampler.getInstance().addTag(FrameSampler.Samples.EGLSWAPBUFFERS.name() + "-WAITGL=" + eglWaitGL, start,
+                FrameSampler.getInstance().addTag(FrameSampler.Samples.EGLSWAPBUFFERS.name() + "-WAITGL=" + eglWaitGL,
+                        start,
                         System.currentTimeMillis(), FrameSampler.Samples.EGLSWAPBUFFERS.detail);
                 if (waitForClient) {
                     start = System.currentTimeMillis();
@@ -231,7 +266,7 @@ public class EGLWindow implements Runnable {
                             System.currentTimeMillis());
                 }
                 if (sleep > 0) {
-//                    System.sleep(sleep);
+                    // System.sleep(sleep);
                 }
             }
         }
@@ -241,6 +276,11 @@ public class EGLWindow implements Runnable {
         SimpleLogger.d(getClass(), "Exiting surface thread");
         thread = null;
     }
-    
+
+    @Override
+    public int chooseCapabilities(CapabilitiesImmutable desired, List<? extends CapabilitiesImmutable> available,
+            int windowSystemRecommendedChoice) {
+        return 0;
+    }
 
 }

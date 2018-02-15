@@ -14,8 +14,6 @@ import com.nucleus.opengl.GLESWrapper;
  */
 public class JOGLGLESWindow extends JOGLGLWindow {
 
-    protected String glProfile;
-
     /**
      * 
      * @param profile GLProfile
@@ -26,10 +24,9 @@ public class JOGLGLESWindow extends JOGLGLWindow {
      * @param coreAppStarter
      * @param swapInterval
      */
-    public JOGLGLESWindow(String profile, int width, int height, boolean undecorated, boolean fullscreen,
+    public JOGLGLESWindow(int width, int height, boolean undecorated, boolean fullscreen, GLProfile profile,
             CoreAppStarter coreAppStarter, int swapInterval) {
-        super(width, height, undecorated, fullscreen, GLProfile.get(profile), coreAppStarter, swapInterval);
-        glProfile = profile;
+        super(width, height, undecorated, fullscreen, profile, coreAppStarter, swapInterval);
     }
 
     @Override
@@ -50,7 +47,7 @@ public class JOGLGLESWindow extends JOGLGLWindow {
     public void init(GLAutoDrawable drawable) {
         SimpleLogger.d(getClass(), "init()");
         if (wrapper == null) {
-            switch (glProfile) {
+            switch (profile.getName()) {
                 case GLProfile.GL2ES2:
                     wrapper = new JOGLGLES20Wrapper(drawable.getGL().getGL2ES2());
                     break;

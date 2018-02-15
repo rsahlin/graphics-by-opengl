@@ -17,7 +17,7 @@ import com.nucleus.renderer.NucleusRenderer;
  */
 public class JOGLApplication extends J2SEWindowApplication implements WindowListener {
 
-    protected JOGLGLESWindow window;
+    protected J2SEWindow window;
 
     /**
      * Creates a new application starter with the specified renderer and client main class implementation.
@@ -33,29 +33,31 @@ public class JOGLApplication extends J2SEWindowApplication implements WindowList
 
     @Override
     protected J2SEWindow createWindow(Renderers version) {
+        String profile = null;
         switch (version) {
             case GLES20:
-                window = new JOGLGLESWindow(GLProfile.GL2ES2, windowWidth, windowHeight, windowUndecorated, fullscreen,
-                        this,
-                        swapInterval);
+                profile = GLProfile.GL2ES2;
                 break;
             case GLES30:
-                window = new JOGLGLESWindow(GLProfile.GL4ES3, windowWidth, windowHeight, windowUndecorated, fullscreen,
-                        this,
-                        swapInterval);
+                profile = GLProfile.GL4ES3;
                 break;
             case GLES31:
-                window = new JOGLGLESWindow(GLProfile.GL4ES3, windowWidth, windowHeight, windowUndecorated, fullscreen,
-                        this,
-                        swapInterval);
+                profile = GLProfile.GL4ES3;
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + version);
         }
-        window.setGLEVentListener();
-        window.setWindowListener(this);
-        // Setting window to visible will trigger the GLEventListener, on the same or another thread.
-        window.setVisible(true);
+        /**
+         * JOGLGLWindow w = new JOGLGLESWindow(profile, windowWidth, windowHeight, windowUndecorated, fullscreen,
+         * // this, swapInterval);
+         * w.setGLEVentListener();
+         * w.setWindowListener(this);
+         * // Setting window to visible will trigger the GLEventListener, on the same or another thread.
+         * w.setVisible(true);
+         */
+        window = new EGLWindow(windowWidth, windowHeight, windowUndecorated, fullscreen, GLProfile.get(profile),
+                this, swapInterval);
+
         return window;
     }
 
