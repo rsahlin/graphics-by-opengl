@@ -1,6 +1,5 @@
 package com.nucleus.jogl;
 
-import com.jogamp.opengl.GLProfile;
 import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.J2SEWindow;
 import com.nucleus.J2SEWindowApplication;
@@ -33,30 +32,7 @@ public class JOGLApplication extends J2SEWindowApplication implements WindowList
 
     @Override
     protected J2SEWindow createWindow(Renderers version) {
-        String profile = null;
-        switch (version) {
-            case GLES20:
-                profile = GLProfile.GL2ES2;
-                break;
-            case GLES30:
-                profile = GLProfile.GL4ES3;
-                break;
-            case GLES31:
-                profile = GLProfile.GL4ES3;
-                break;
-            default:
-                throw new IllegalArgumentException("Not implemented for " + version);
-        }
-        /**
-         * JOGLGLWindow w = new JOGLGLESWindow(profile, windowWidth, windowHeight, windowUndecorated, fullscreen,
-         * // this, swapInterval);
-         * w.setGLEVentListener();
-         * w.setWindowListener(this);
-         * // Setting window to visible will trigger the GLEventListener, on the same or another thread.
-         * w.setVisible(true);
-         */
-        window = new EGLWindow(windowWidth, windowHeight, windowUndecorated, fullscreen, GLProfile.get(profile),
-                this, swapInterval);
+        window = new EGLWindow(windowWidth, windowHeight, windowUndecorated, fullscreen, version, this, swapInterval);
 
         return window;
     }
