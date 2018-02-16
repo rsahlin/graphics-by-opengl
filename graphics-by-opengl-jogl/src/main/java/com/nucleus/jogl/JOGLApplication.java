@@ -32,7 +32,9 @@ public class JOGLApplication extends J2SEWindowApplication implements WindowList
 
     @Override
     protected J2SEWindow createWindow(Renderers version) {
-        window = new JOGLEGLWindow(version, this, windowWidth, windowHeight);
+        // window = new JOGLEGLWindow(version, this, windowWidth, windowHeight);
+        window = new JOGLGLESWindow(version, this, windowWidth, windowHeight, windowUndecorated, fullscreen,
+                swapInterval);
         return window;
     }
 

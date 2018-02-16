@@ -25,6 +25,7 @@ import com.nucleus.WindowListener;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
+import com.nucleus.opengl.GLESWrapper.Renderers;
 
 /**
  * 
@@ -54,37 +55,38 @@ public abstract class JOGLGLWindow extends J2SEWindow
     protected Frame frame;
     protected GLWindow glWindow;
     WindowListener windowListener;
-    protected GLProfile profile;
+    protected Renderers version;
+    Animator animator;
 
     /**
      * Creates a new JOGL window with the specified {@link CoreAppStarter} and swapinterval
      * 
+     * @param version
+     * @param coreAppStarter
      * @param width
      * @param height
      * @param undecorated
      * @param fullscreen
-     * @param glProfile
-     * @param coreAppStarter
      * @param swapInterval
      * @throws IllegalArgumentException If coreAppStarter is null
      */
-    public JOGLGLWindow(int width, int height, boolean undecorated, boolean fullscreen, GLProfile glProfile,
-            CoreApp.CoreAppStarter coreAppStarter, int swapInterval) {
+    public JOGLGLWindow(Renderers version, CoreAppStarter coreAppStarter, int width, int height, boolean undecorated,
+            boolean fullscreen, int swapInterval) {
         super(coreAppStarter, width, height);
         this.swapInterval = swapInterval;
         this.undecorated = undecorated;
         this.fullscreen = fullscreen;
-        this.profile = glProfile;
-        create(width, height, glProfile, coreAppStarter);
+        this.version = version;
+        create(version, coreAppStarter, width, height);
     }
 
-    private void create(int width, int height, GLProfile glProfile, CoreApp.CoreAppStarter coreAppStarter) {
+    private void create(Renderers version, CoreAppStarter coreAppStarter, int width, int height) {
         if (coreAppStarter == null) {
             throw new IllegalArgumentException("CoreAppStarter is null");
         }
         this.coreAppStarter = coreAppStarter;
         windowSize = new Dimension(width, height);
-        createNEWTWindow(width, height, glProfile);
+        createNEWTWindow(width, height, version);
     }
 
     /**
@@ -92,12 +94,26 @@ public abstract class JOGLGLWindow extends J2SEWindow
      * 
      * @param width
      * @param height
+     * @version
      */
-    private void createNEWTWindow(int width, int height, GLProfile glProfile) {
+    private void createNEWTWindow(int width, int height, Renderers version) {
         // Display display = NewtFactory.createDisplay(null);
         // Screen screen = NewtFactory.createScreen(display, SCREEN_ID);
 
-        GLCapabilities glCapabilities = new GLCapabilities(glProfile);
+        GLProfile profile = null;
+        switch (version) {
+            case GLES20:
+                profile = GLProfile.get(GLProfile.GLES2);
+                break;
+            case GLES30:
+            case GLES31:
+                profile = GLProfile.get(GLProfile.GL4ES3);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid version " + version);
+        }
+
+        GLCapabilities glCapabilities = new GLCapabilities(profile);
         glCapabilities.setSampleBuffers(true);
         glCapabilities.setNumSamples(4);
         glCapabilities.setAlphaBits(8);
@@ -114,10 +130,13 @@ public abstract class JOGLGLWindow extends J2SEWindow
         glWindow.addMouseListener(this);
         glWindow.addWindowListener(this);
         glWindow.addKeyListener(this);
+        glWindow.addWindowListener(this);
+        glWindow.addGLEventListener(this);
         GLProfile.initSingleton();
-        Animator animator = new Animator();
+        animator = new Animator();
         animator.add(glWindow);
         animator.start();
+        glWindow.setVisible(true);
     }
 
     private void createAWTWindow(int width, int height, GLProfile glProfile) {
@@ -347,7 +366,8 @@ public abstract class JOGLGLWindow extends J2SEWindow
         } else {
             if (coreApp.onBackPressed()) {
                 coreApp.setDestroyFlag();
-                glWindow.destroy();
+                glWindow.setVisible(false);
+                animator.stop();
                 System.exit(0);
             }
         }

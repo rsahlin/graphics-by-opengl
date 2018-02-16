@@ -1,10 +1,10 @@
 package com.nucleus.jogl;
 
 import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLProfile;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.SimpleLogger;
 import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLESWrapper.Renderers;
 
 /**
  * Window for a GLES 2/3 renderer, this class must create the correct {@link GLESWrapper}
@@ -16,7 +16,7 @@ public class JOGLGLESWindow extends JOGLGLWindow {
 
     /**
      * 
-     * @param profile GLProfile
+     * @param version
      * @param width
      * @param height
      * @param undecorated
@@ -24,9 +24,9 @@ public class JOGLGLESWindow extends JOGLGLWindow {
      * @param coreAppStarter
      * @param swapInterval
      */
-    public JOGLGLESWindow(int width, int height, boolean undecorated, boolean fullscreen, GLProfile profile,
-            CoreAppStarter coreAppStarter, int swapInterval) {
-        super(width, height, undecorated, fullscreen, profile, coreAppStarter, swapInterval);
+    public JOGLGLESWindow(Renderers version, CoreAppStarter coreAppStarter, int width, int height, boolean undecorated,
+            boolean fullscreen, int swapInterval) {
+        super(version, coreAppStarter, width, height, undecorated, fullscreen, swapInterval);
     }
 
     @Override
@@ -47,13 +47,16 @@ public class JOGLGLESWindow extends JOGLGLWindow {
     public void init(GLAutoDrawable drawable) {
         SimpleLogger.d(getClass(), "init()");
         if (wrapper == null) {
-            switch (profile.getName()) {
-                case GLProfile.GL2ES2:
+            switch (version) {
+                case GLES20:
                     wrapper = new JOGLGLES20Wrapper(drawable.getGL().getGL2ES2());
                     break;
-                case GLProfile.GL4ES3:
+                case GLES30:
+                case GLES31:
                     wrapper = new JOGLGLES30Wrapper(drawable.getGL().getGL4ES3());
                     break;
+                default:
+                    throw new IllegalArgumentException("Invalid renderer version " + version);
             }
         }
         super.init(drawable);
