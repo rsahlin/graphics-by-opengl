@@ -16,6 +16,24 @@ import com.nucleus.texturing.J2SEImageFactory;
  */
 public abstract class J2SEWindowApplication implements CoreAppStarter, WindowListener {
 
+    public enum WindowType {
+        /**
+         * Only available when using LWJGL
+         */
+        GLFW(),
+        /**
+         * Only avaialable when using JOGL
+         */
+        NEWT(),
+        JAWT(),
+        EGL();
+    }
+
+    /**
+     * To select GLFW or JAWT window
+     */
+    protected static final String WINDOW_TYPE_KEY = "WINDOWTYPE";
+
     public static final String WINDOW_WIDTH_KEY = "WINDOW-WIDTH";
     public static final String WINDOW_HEIGHT_KEY = "WINDOW-HEIGHT";
     public static final String WINDOW_UNDECORATED_KEY = "WINDOW-UNDECORATED";
@@ -29,6 +47,8 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     protected boolean windowUndecorated = false;
     protected boolean fullscreen = false;
     protected J2SEWindow j2seWindow;
+    protected WindowType windowType;
+
     protected RenderContextListener contextListener;
 
     /**
@@ -94,6 +114,10 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         if (str.toUpperCase().startsWith(FULLSCREEN_KEY)) {
             fullscreen = Boolean.parseBoolean(str.substring(FULLSCREEN_KEY.length() + 1));
             SimpleLogger.d(getClass(), FULLSCREEN_KEY + " set to " + fullscreen);
+        }
+        if (str.toUpperCase().startsWith(WINDOW_TYPE_KEY)) {
+            windowType = WindowType.valueOf(str.substring(WINDOW_TYPE_KEY.length() + 1));
+            SimpleLogger.d(getClass(), WINDOW_TYPE_KEY + " set to " + windowType);
         }
 
     }

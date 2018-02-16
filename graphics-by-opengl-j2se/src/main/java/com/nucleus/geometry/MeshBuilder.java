@@ -22,6 +22,7 @@ public abstract class MeshBuilder<T> {
      * Builds the position data for one or more quads at the specified index in the mesh.
      * The indices must already be created
      * Vertex buffer shall have storage for XYZ and texture UV if used.
+     * TODO Move to RectangleShapeBuilder
      * 
      * @param mesh The mesh to build the position data in
      * @param program The program to use when rendering the mesh, it is stored in the material

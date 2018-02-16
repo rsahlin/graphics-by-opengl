@@ -16,7 +16,7 @@ import com.nucleus.renderer.NucleusRenderer;
  */
 public class JOGLApplication extends J2SEWindowApplication implements WindowListener {
 
-    protected J2SEWindow window;
+    protected static final WindowType DEFAULT_WINDOW_TYPE = WindowType.EGL;
 
     /**
      * Creates a new application starter with the specified renderer and client main class implementation.
@@ -31,11 +31,25 @@ public class JOGLApplication extends J2SEWindowApplication implements WindowList
     }
 
     @Override
+    protected void setProperties(String[] args) {
+        this.windowType = DEFAULT_WINDOW_TYPE;
+        super.setProperties(args);
+    }
+
+    @Override
     protected J2SEWindow createWindow(Renderers version) {
-        // window = new JOGLEGLWindow(version, this, windowWidth, windowHeight);
-        window = new JOGLGLESWindow(version, this, windowWidth, windowHeight, windowUndecorated, fullscreen,
-                swapInterval);
-        return window;
+        switch (windowType) {
+            case NEWT:
+                j2seWindow = new JOGLGLESWindow(version, this, windowWidth, windowHeight, windowUndecorated,
+                        fullscreen, swapInterval);
+                break;
+            case EGL:
+                j2seWindow = new JOGLEGLWindow(version, this, windowWidth, windowHeight);
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + windowType);
+        }
+        return j2seWindow;
     }
 
     @Override

@@ -17,11 +17,11 @@ public class JOGLGLESWindow extends JOGLGLWindow {
     /**
      * 
      * @param version
+     * @param coreAppStarter
      * @param width
      * @param height
      * @param undecorated
      * @param fullscreen
-     * @param coreAppStarter
      * @param swapInterval
      */
     public JOGLGLESWindow(Renderers version, CoreAppStarter coreAppStarter, int width, int height, boolean undecorated,

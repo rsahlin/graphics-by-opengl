@@ -3,7 +3,6 @@ package com.nucleus.lwjgl3;
 import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.J2SEWindow;
 import com.nucleus.J2SEWindowApplication;
-import com.nucleus.SimpleLogger;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 
 /**
@@ -11,22 +10,9 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
  */
 public class LWJGL3Application extends J2SEWindowApplication {
 
-    /**
-     * To select GLFW or JAWT window
-     */
-    private static final String WINDOW_TYPE_KEY = "WINDOWTYPE";
     protected static final WindowType DEFAULT_WINDOW_TYPE = WindowType.JAWT;
 
     private boolean running = false;
-
-    public enum WindowType {
-        GLFW(),
-        JAWT(),
-        EGL();
-    }
-
-    protected J2SEWindow window;
-    protected WindowType windowType;
 
     /**
      * Creates a new application starter with the specified renderer and client main class implementation.
@@ -41,7 +27,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
         switch (windowType) {
             case GLFW:
                 createCoreApp(windowWidth, windowHeight);
-                ((GLFWWindow) window).swapBuffers();
+                ((GLFWWindow) j2seWindow).swapBuffers();
                 coreApp.contextCreated(windowWidth, windowHeight);
                 break;
             default:
@@ -56,30 +42,21 @@ public class LWJGL3Application extends J2SEWindowApplication {
     }
 
     @Override
-    protected void setProperty(String str) {
-        super.setProperty(str);
-        if (str.toUpperCase().startsWith(WINDOW_TYPE_KEY)) {
-            windowType = WindowType.valueOf(str.substring(WINDOW_TYPE_KEY.length() + 1));
-            SimpleLogger.d(getClass(), WINDOW_TYPE_KEY + " set to " + windowType);
-        }
-    }
-
-    @Override
     protected J2SEWindow createWindow(Renderers version) {
         switch (windowType) {
             case GLFW:
-                window = new GLFWWindow(version, this, windowWidth, windowHeight);
+                j2seWindow = new GLFWWindow(version, this, windowWidth, windowHeight);
                 break;
             case JAWT:
-                window = new JAWTWindow(version, this, windowWidth, windowHeight);
+                j2seWindow = new JAWTWindow(version, this, windowWidth, windowHeight);
                 break;
             case EGL:
-                window = new LWJGLEGLWindow(version, this, windowWidth, windowHeight);
+                j2seWindow = new LWJGLEGLWindow(version, this, windowWidth, windowHeight);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + windowType);
         }
-        return window;
+        return j2seWindow;
     }
 
     @Override
@@ -103,7 +80,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
             case GLFW:
                 running = true;
                 while (running) {
-                    window.drawFrame();
+                    j2seWindow.drawFrame();
                 }
                 break;
             default:
