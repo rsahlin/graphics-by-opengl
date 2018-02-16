@@ -96,6 +96,48 @@ public class RectangleShapeBuilder extends ElementBuilder {
         this.configuration = configuration;
     }
 
+    /**
+     * Sets 3 component position in the destination array.
+     * This method is not speed efficient, only use when very few positions shall be set.
+     * 
+     * @param vertexIndex The vertex index in the quad - 0 to 3, this is stored AFTER xyz
+     * @param x
+     * @param y
+     * @param z
+     * @param dest position will be set here, must contain at least pos + 3 values.
+     * @param pos The index where data is written.
+     */
+    public static void setPosition(int vertexIndex, float x, float y, float z, float[] dest, int pos) {
+        dest[pos++] = x;
+        dest[pos++] = y;
+        dest[pos++] = z;
+        dest[pos++] = vertexIndex;
+    }
+
+    /**
+     * Sets 3 component position plus uv in the destination array.
+     * This method is not speed efficient, only use when very few positions shall be set.
+     * For instance when creating one quad.
+     * 
+     * @param vertexIndex The vertex index in the quad - 0 to 3, this is stored AFTER xyz
+     * @param x
+     * @param y
+     * @param z
+     * @param u
+     * @param v
+     * @param dest position will be set here, must contain at least pos + 5 values.
+     * @param pos The index where data is written.
+     */
+    public static void setPositionUV(int vertexIndex, float x, float y, float z, float u, float v, float[] dest,
+            int pos) {
+        dest[pos++] = x;
+        dest[pos++] = y;
+        dest[pos++] = z;
+        dest[pos++] = vertexIndex;
+        dest[pos++] = u;
+        dest[pos++] = v;
+    }
+
     @Override
     public void build(Mesh mesh) {
         AttributeBuffer attributes = mesh.getVerticeBuffer(BufferIndex.VERTICES);
@@ -170,22 +212,22 @@ public class RectangleShapeBuilder extends ElementBuilder {
     protected static void createQuadArray(float[] values, float z, int vertexStride, float[] uv,
             float[] destination) {
         if (uv != null) {
-            com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y], z, uv[0], uv[1], destination, 0);
-            com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y], z, uv[2], uv[3],
+            setPositionUV(0, values[X], values[Y], z, uv[0], uv[1], destination, 0);
+            setPositionUV(1, values[X] + values[WIDTH], values[Y], z, uv[2], uv[3],
                     destination,
                     vertexStride);
-            com.nucleus.geometry.MeshBuilder.setPositionUV(values[X] + values[WIDTH], values[Y] - values[HEIGHT],
+            setPositionUV(2, values[X] + values[WIDTH], values[Y] - values[HEIGHT],
                     z, uv[4], uv[5], destination, vertexStride * 2);
-            com.nucleus.geometry.MeshBuilder.setPositionUV(values[X], values[Y] - values[HEIGHT], z, uv[6], uv[7],
+            setPositionUV(3, values[X], values[Y] - values[HEIGHT], z, uv[6], uv[7],
                     destination,
                     vertexStride * 3);
         } else {
-            com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y], z, destination, 0);
-            com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y], z,
+            setPosition(0, values[X], values[Y], z, destination, 0);
+            setPosition(1, values[X] + values[WIDTH], values[Y], z,
                     destination, vertexStride);
-            com.nucleus.geometry.MeshBuilder.setPosition(values[X] + values[WIDTH], values[Y] - values[HEIGHT], z,
+            setPosition(2, values[X] + values[WIDTH], values[Y] - values[HEIGHT], z,
                     destination, vertexStride * 2);
-            com.nucleus.geometry.MeshBuilder.setPosition(values[X], values[Y] - values[HEIGHT], z,
+            setPosition(3, values[X], values[Y] - values[HEIGHT], z,
                     destination, vertexStride * 3);
         }
     }

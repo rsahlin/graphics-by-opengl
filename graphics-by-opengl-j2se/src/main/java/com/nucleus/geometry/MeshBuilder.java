@@ -1,7 +1,5 @@
 package com.nucleus.geometry;
 
-import java.nio.ByteBuffer;
-
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.shader.ShaderProgram;
 
@@ -19,58 +17,6 @@ public abstract class MeshBuilder<T> {
      * @return
      */
     protected abstract T createMesh();
-
-    /**
-     * Sets 3 component position in the destination array.
-     * This method is not speed efficient, only use when very few positions shall be set.
-     * 
-     * @param x
-     * @param y
-     * @param z
-     * @param dest position will be set here, must contain at least pos + 3 values.
-     * @param pos The index where data is written.
-     */
-    public static void setPosition(float x, float y, float z, float[] dest, int pos) {
-        dest[pos++] = x;
-        dest[pos++] = y;
-        dest[pos++] = z;
-    }
-
-    /**
-     * Sets 3 component position plus uv in the destination array.
-     * This method is not speed efficient, only use when very few positions shall be set.
-     * For instance when creating one quad.
-     * 
-     * @param x
-     * @param y
-     * @param z
-     * @param u
-     * @param v
-     * @param dest position will be set here, must contain at least pos + 5 values.
-     * @param pos The index where data is written.
-     */
-    public static void setPositionUV(float x, float y, float z, float u, float v, float[] dest, int pos) {
-        dest[pos++] = x;
-        dest[pos++] = y;
-        dest[pos++] = z;
-        dest[pos++] = u;
-        dest[pos++] = v;
-    }
-
-    /**
-     * Sets 3 component position in the destination buffer.
-     * This method is not speed efficient, only use when very few positions shall be set.
-     * 
-     * @param x
-     * @param y
-     * @param z
-     * @param buffer
-     */
-    public static void setPosition(float x, float y, float z, ByteBuffer buffer) {
-        buffer.putFloat(x);
-        buffer.putFloat(y);
-        buffer.putFloat(z);
-    }
 
     /**
      * Builds the position data for one or more quads at the specified index in the mesh.
