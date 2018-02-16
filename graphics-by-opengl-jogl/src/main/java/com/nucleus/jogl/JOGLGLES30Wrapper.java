@@ -424,4 +424,19 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
         gles.glGetShaderSource(shader, bufsize, length, 0, source, 0);
     }
 
+    @Override
+    public void glBindBufferBase(int target, int index, int buffer) {
+        gles.glBindBufferBase(target, index, buffer);
+    }
+
+    @Override
+    public void glUniformBlockBinding(int program, int uniformBlockIndex, int uniformBlockBinding) {
+        gles.glUniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding);
+    }
+
+    @Override
+    public void glBindBufferRange(int target, int index, int buffer, int ptroffset, int ptrsize) {
+        gles.glBindBufferRange(target, index, buffer, ptroffset, ptrsize);
+    }
+
 }

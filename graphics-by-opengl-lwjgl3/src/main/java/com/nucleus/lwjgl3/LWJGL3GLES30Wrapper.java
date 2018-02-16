@@ -389,4 +389,19 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
         org.lwjgl.opengles.GLES20.glGetShaderSource(shader, length, bufferSource);
     }
 
+    @Override
+    public void glBindBufferBase(int target, int index, int buffer) {
+        org.lwjgl.opengles.GLES30.glBindBufferBase(target, index, buffer);
+    }
+
+    @Override
+    public void glUniformBlockBinding(int program, int uniformBlockIndex, int uniformBlockBinding) {
+        org.lwjgl.opengles.GLES30.glUniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding);
+    }
+
+    @Override
+    public void glBindBufferRange(int target, int index, int buffer, int ptroffset, int ptrsize) {
+        org.lwjgl.opengles.GLES30.glBindBufferRange(target, index, buffer, ptroffset, ptrsize);
+    }
+
 }

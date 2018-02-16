@@ -364,4 +364,19 @@ public class AndriodGLES30Wrapper extends GLES30Wrapper {
         android.opengl.GLES30.glGetShaderSource(shader, bufsize, length, 0, source, 0);
     }
 
+    @Override
+    public void glBindBufferBase(int target, int index, int buffer) {
+        android.opengl.GLES30.glBindBufferBase(target, index, buffer);
+    }
+
+    @Override
+    public void glUniformBlockBinding(int program, int uniformBlockIndex, int uniformBlockBinding) {
+        android.opengl.GLES30.glUniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding);
+    }
+
+    @Override
+    public void glBindBufferRange(int target, int index, int buffer, int offset, int size) {
+        android.opengl.GLES30.glBindBufferRange(target, index, buffer, offset, size);
+    }
+
 }

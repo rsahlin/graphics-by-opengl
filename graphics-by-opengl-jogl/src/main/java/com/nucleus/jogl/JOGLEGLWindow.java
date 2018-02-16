@@ -27,7 +27,7 @@ import com.nucleus.renderer.SurfaceConfiguration;
 
 import jogamp.opengl.egl.EGLDisplayUtil;
 
-public class EGLWindow extends J2SEWindow implements Runnable,
+public class JOGLEGLWindow extends J2SEWindow implements Runnable,
         GLCapabilitiesChooser {
 
     Thread thread;
@@ -44,10 +44,8 @@ public class EGLWindow extends J2SEWindow implements Runnable,
     protected int sleep = 0;
     protected GLContext glContext;
 
-    public EGLWindow(int width, int height, boolean undecorated, boolean fullscreen, Renderers version,
-            CoreApp.CoreAppStarter coreAppStarter, int swapInterval) {
+    public JOGLEGLWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
         super(coreAppStarter, width, height);
-        GLProfile.initSingleton();
         this.version = version;
         Thread t = new Thread(this);
         t.start();

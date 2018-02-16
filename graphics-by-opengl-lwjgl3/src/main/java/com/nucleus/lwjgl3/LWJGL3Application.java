@@ -21,7 +21,8 @@ public class LWJGL3Application extends J2SEWindowApplication {
 
     public enum WindowType {
         GLFW(),
-        JAWT();
+        JAWT(),
+        EGL();
     }
 
     protected J2SEWindow window;
@@ -71,6 +72,9 @@ public class LWJGL3Application extends J2SEWindowApplication {
                 break;
             case JAWT:
                 window = new JAWTWindow(version, this, windowWidth, windowHeight);
+                break;
+            case EGL:
+                window = new LWJGLEGLWindow(version, this, windowWidth, windowHeight);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + windowType);
