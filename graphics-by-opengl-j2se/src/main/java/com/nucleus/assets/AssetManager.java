@@ -23,7 +23,9 @@ import com.nucleus.texturing.TextureParameter.Parameter;
 import com.nucleus.texturing.TextureType;
 
 /**
- * Loading and unloading assets, mainly textures.
+ * Loading and unloading assets, mainly textures - this is the main entrypoint for loading of textures and programs.
+ * Clients shall only use this class - avoid calling methods to load assets (program/texture etc)
+ * 
  * It should normally handle resources that are loaded separately from the main json file using an
  * {@link ExternalReference} eg data that does not fit within the main file.
  * 
@@ -245,7 +247,8 @@ public class AssetManager {
 
     /**
      * Returns a loaded and compiled shader program, if the program has not already been loaded and compiled it will be
-     * added to AssetManager
+     * added to AssetManager using shader program and function.
+     * Next time this method is called with the same shaderprogram and function the existing instance is returned.
      * 
      * @param renderer
      * @param program

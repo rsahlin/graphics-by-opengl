@@ -8,10 +8,12 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengles.GLES;
 import org.lwjgl.opengles.GLESCapabilities;
+import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryUtil;
 
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 
 /**
@@ -45,9 +47,13 @@ public class GLFWWindow extends J2SEWindow {
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
 
+        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_COMPAT_PROFILE);
+        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GLES20.GL_TRUE);
+
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_CREATION_API, GLFW.GLFW_NATIVE_CONTEXT_API);
         GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4);
         GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3);
-        GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API);
+        GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_API);
 
         window = GLFW.glfwCreateWindow(width, height, "GLFW EGL/OpenGL ES Demo", MemoryUtil.NULL, MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {
@@ -57,19 +63,17 @@ public class GLFWWindow extends J2SEWindow {
 
         GLFWVidMode vidmode = Objects.requireNonNull(GLFW.glfwGetVideoMode(monitor));
         GLFW.glfwMakeContextCurrent(window);
+        GLFW.glfwShowWindow(window);
+
+        Configuration.OPENGLES_EXPLICIT_INIT.set(true);
+        GLES.create(GL.getFunctionProvider());
+        gles = GLES.createCapabilities();
 
         GLFW.glfwSetKeyCallback(window, (windowHnd, key, scancode, action, mods) -> {
             if (action == GLFW.GLFW_RELEASE && key == GLFW.GLFW_KEY_ESCAPE) {
                 GLFW.glfwSetWindowShouldClose(windowHnd, true);
             }
         });
-        // OpenGL ES capabilities
-        GLFW.glfwMakeContextCurrent(window);
-
-        GLES.create(GL.getFunctionProvider());
-        gles = GLES.createCapabilities();
-        // Render with OpenGL ES
-        GLFW.glfwShowWindow(window);
 
         wrapper = LWJGLWrapperFactory.createWrapper(version);
     }

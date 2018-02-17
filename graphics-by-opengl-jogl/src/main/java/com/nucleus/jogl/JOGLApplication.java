@@ -3,7 +3,6 @@ package com.nucleus.jogl;
 import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.J2SEWindow;
 import com.nucleus.J2SEWindowApplication;
-import com.nucleus.WindowListener;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
 
@@ -14,7 +13,7 @@ import com.nucleus.renderer.NucleusRenderer;
  * @author Richard Sahlin
  *
  */
-public class JOGLApplication extends J2SEWindowApplication implements WindowListener {
+public class JOGLApplication extends J2SEWindowApplication {
 
     protected static final WindowType DEFAULT_WINDOW_TYPE = WindowType.EGL;
 
@@ -50,17 +49,6 @@ public class JOGLApplication extends J2SEWindowApplication implements WindowList
                 throw new IllegalArgumentException("Not implemented for " + windowType);
         }
         return j2seWindow;
-    }
-
-    @Override
-    public void resize(int x, int y, int width, int height) {
-        if (coreApp != null) {
-            coreApp.getRenderer().resizeWindow(x, y, width, height);
-        }
-    }
-
-    @Override
-    public void windowClosed() {
     }
 
 }

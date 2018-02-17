@@ -62,10 +62,4 @@ public class JOGLGLESWindow extends JOGLGLWindow {
         super.init(drawable);
     }
 
-    @Override
-    public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-        SimpleLogger.d(getClass(), "reshape(" + x + "," + y + " : " + width + "," + height + ")");
-        super.reshape(drawable, x, y, width, height);
-    }
-
 }

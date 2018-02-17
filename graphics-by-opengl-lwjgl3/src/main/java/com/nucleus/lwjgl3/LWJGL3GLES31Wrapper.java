@@ -7,8 +7,16 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES31Wrapper;
+import com.nucleus.renderer.NucleusRenderer;
 
 public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
+
+    /**
+     * Implementation constructor - DO NOT USE - fetch wrapper from {@link NucleusRenderer}
+     */
+    protected LWJGL3GLES31Wrapper() {
+        super(Platform.GL);
+    }
 
     @Override
     public void glAttachShader(int program, int shader) {

@@ -35,6 +35,14 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public static String SHADING_LANGUAGE_100 = "100";
 
     /**
+     * Implementation constructor - DO NOT USE!!!
+     * TODO - protect/hide this constructor
+     */
+    protected GLES20Wrapper(Platform platform) {
+        super(platform);
+    }
+
+    /**
      * Abstraction for glFrameBufferTexture2D
      */
     public abstract void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level);
@@ -726,31 +734,42 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     }
 
     @Override
-    public String getShaderVersion() {
+    public String getShaderVersion(String sourceVersion) {
         return SHADING_LANGUAGE_100;
     }
 
     /**
-     * Checks if the first (non empty) line contains version
+     * Checks if the first (non empty) line contains version, if so it is returned
      * 
      * @param source
-     * @return True if the first, non empty, line contains #version declaration
+     * @return The version string that is the full first line (excluding line separator char), eg "#version 310 es",
+     * "#version 430" or null if no version.
+     * The returned string can be used to calculate offset when substituting version.
      */
-    protected boolean hasVersion(String source) {
-        StringTokenizer st = new StringTokenizer(source, "\n");
+    protected String hasVersion(String source) {
+        StringTokenizer st = new StringTokenizer(source, System.lineSeparator());
         String t = st.nextToken().trim();
-        if (t.toLowerCase().startsWith(VERSION)) {
-            return true;
+        if (t.trim().toLowerCase().startsWith(VERSION)) {
+            return t;
         }
-        return false;
+        return null;
     }
 
     @Override
     public String getVersionedShaderSource(InputStream shaderStream, int type, boolean library) throws IOException {
         String source = StreamUtils.readStringFromStream(shaderStream);
-        if (!library && !hasVersion(source)) {
-            // Insert version 100
-            return VERSION + " " + SHADING_LANGUAGE_100 + System.lineSeparator() + source;
+        if (!library) {
+            String version = hasVersion(source);
+            if (version != null) {
+                String versionInfo = version.trim().substring(VERSION.length()).trim();
+                // Insert the correct version depending on platform implementation.
+                return VERSION + " " + getShaderVersion(versionInfo) + System.lineSeparator()
+                        + source.substring(version.length());
+            } else {
+                // Treat no version as GLES shader version 100
+                return VERSION + " " + SHADING_LANGUAGE_100 + System.lineSeparator()
+                        + source;
+            }
         }
         return source;
     }

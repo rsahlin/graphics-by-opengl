@@ -21,7 +21,6 @@ import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
-import com.nucleus.WindowListener;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
@@ -54,7 +53,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
     protected GLCanvas canvas;
     protected Frame frame;
     protected GLWindow glWindow;
-    WindowListener windowListener;
     protected Renderers version;
     Animator animator;
 
@@ -201,9 +199,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
         SimpleLogger.d(getClass(), "reshape: x,y= " + x + ", " + y + " width,height= " + width + ", " + height);
         windowSize.setWidth(width);
         windowSize.setHeight(height);
-        if (windowListener != null) {
-            windowListener.resize(x, y, width, height);
-        }
+        resize(x, y, width, height);
     }
 
     /**
@@ -263,15 +259,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
         }
     }
 
-    /**
-     * Sets the windowlistener to get callbacks when the window has changed.
-     * 
-     * @param listener
-     */
-    public void setWindowListener(WindowListener listener) {
-        this.windowListener = listener;
-    }
-
     @Override
     public void mouseClicked(MouseEvent e) {
         // TODO Auto-generated method stub
@@ -328,7 +315,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void windowDestroyNotify(WindowEvent e) {
-        windowListener.windowClosed();
+        windowClosed();
     }
 
     @Override

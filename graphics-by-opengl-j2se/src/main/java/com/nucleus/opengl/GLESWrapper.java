@@ -2,12 +2,26 @@ package com.nucleus.opengl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.StringTokenizer;
 
 import com.nucleus.renderer.RendererInfo;
 
 public abstract class GLESWrapper {
 
+    /**
+     * Implementation of GL/GLES on the platform.
+     *
+     */
+    public enum Platform {
+        GLES(),
+        GL();
+    }
+
+    private final static String[] GLES3_VERTEX_REPLACEMENTS = new String[] { "attribute", "in", "varying", "out" };
+    private final static String[] GLES3_FRAGMENT_REPLACEMENTS = new String[] { "varying", "in" };
+
     protected RendererInfo rendererInfo;
+    protected final Platform platform;
 
     /**
      * The supported renderers
@@ -27,6 +41,10 @@ public abstract class GLESWrapper {
             this.major = major;
             this.minor = minor;
         };
+    }
+
+    protected GLESWrapper(Platform platform) {
+        this.platform = platform;
     }
 
     public abstract class GL10 {
@@ -886,14 +904,22 @@ public abstract class GLESWrapper {
     }
 
     /**
-     * Returns the GLES shader language version.
+     * Returns the GLES shader language version for the platform implementation based on the shader source version.
+     * The sourceVersion String is the version part of the "#version" source declaration, eg "300 es", "430" etc.
      * 
-     * @return '100' for es shading language 1.0 and '300 es' for es language version 3.0
+     * @param sourceVersion The source version string minus #version, eg "310 es" - or NULL if version not defined.
+     * @return The possibly substituted source version, depending on platform implementation.
+     * Mainly used to substitute "310 es" for "430" on desktop platforms/drivers that does not support GLES fully"
      */
-    public abstract String getShaderVersion();
+    public abstract String getShaderVersion(String sourceVersion);
 
     /**
-     * Returns a versioned shader source as String.
+     * Returns a versioned shader source as String - this is the main method that shall be used to fetch shader source.
+     * If the shader source has a version string it shall be checked by the gles wrapper implementation and if needed
+     * substituted for
+     * a version that is suitable for the current platform.
+     * For instance "#version 310 es" needs to be sutstitued for "#version 430" on desktop implementations (namely AMD
+     * or Nvidia drivers that does not fully support the GLES profiles
      * 
      * @param shaderStream
      * @param type Shader type GL_VERTEX_SHADER or GL_FRAGMENT_SHADER
@@ -903,6 +929,41 @@ public abstract class GLESWrapper {
      */
     public abstract String getVersionedShaderSource(InputStream shaderStream, int type, boolean library)
             throws IOException;
+
+    /**
+     * Replaces the Shader source older OpenGL ES 2.X attribute and uniform variables to in/out naming.
+     * 
+     * @param source
+     * @param type
+     * @return
+     */
+    protected String replaceGLES20(String source, int type) {
+        StringTokenizer st = new StringTokenizer(source, "\n");
+        StringBuffer result = new StringBuffer();
+        String t = "";
+        String[] replacements = null;
+        switch (type) {
+            case GLES20.GL_VERTEX_SHADER:
+                replacements = GLES3_VERTEX_REPLACEMENTS;
+                break;
+            case GLES20.GL_FRAGMENT_SHADER:
+                replacements = GLES3_FRAGMENT_REPLACEMENTS;
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid shader type: " + type);
+
+        }
+        while (st.hasMoreTokens()) {
+            t = st.nextToken().trim();
+            for (int i = 0; i < replacements.length; i += 2) {
+                if (t.startsWith(replacements[i])) {
+                    t = replacements[i + 1] + t.substring(replacements[i].length());
+                }
+            }
+            result.append(t + "\n");
+        }
+        return result.toString();
+    }
 
     /**
      * Returns the renderer info, if it has not been created before it is created and then returned.

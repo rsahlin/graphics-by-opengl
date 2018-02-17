@@ -133,6 +133,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     @Override
     public void createCoreWindows(Renderers version) {
         j2seWindow = createWindow(version);
+        j2seWindow.setWindowListener(this);
     }
 
     @Override
@@ -155,6 +156,20 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
             return null;
         }
         return coreApp.getRenderer();
+    }
+
+    @Override
+    public void resize(int x, int y, int width, int height) {
+        if (coreApp != null) {
+            coreApp.getRenderer().resizeWindow(x, y, width, height);
+        }
+    }
+
+    @Override
+    public void windowClosed() {
+        if (coreApp != null) {
+            coreApp.setDestroyFlag();
+        }
     }
 
 }

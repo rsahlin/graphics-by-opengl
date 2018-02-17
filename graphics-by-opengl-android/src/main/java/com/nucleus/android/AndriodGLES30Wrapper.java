@@ -4,8 +4,16 @@ import java.nio.Buffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES30Wrapper;
+import com.nucleus.renderer.NucleusRenderer;
 
 public class AndriodGLES30Wrapper extends GLES30Wrapper {
+
+    /**
+     * Implementation constructor - DO NOT USE - fetch wrapper from {@link NucleusRenderer}
+     */
+    protected AndriodGLES30Wrapper() {
+        super(Platform.GLES);
+    }
 
     @Override
     public void glAttachShader(int program, int shader) {

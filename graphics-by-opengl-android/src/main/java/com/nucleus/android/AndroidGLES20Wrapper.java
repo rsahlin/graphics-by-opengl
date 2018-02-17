@@ -4,8 +4,16 @@ import java.nio.Buffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.renderer.NucleusRenderer;
 
 public class AndroidGLES20Wrapper extends GLES20Wrapper {
+
+    /**
+     * Implementation constructor - DO NOT USE - fetch wrapper from {@link NucleusRenderer}
+     */
+    protected AndroidGLES20Wrapper() {
+        super(Platform.GLES);
+    }
 
     @Override
     public void glAttachShader(int program, int shader) {
@@ -349,8 +357,8 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public String getShaderVersion() {
-        return GLES20Wrapper.SHADING_LANGUAGE_100;
+    public String getShaderVersion(String sourceVersion) {
+        return sourceVersion;
     }
 
     @Override
