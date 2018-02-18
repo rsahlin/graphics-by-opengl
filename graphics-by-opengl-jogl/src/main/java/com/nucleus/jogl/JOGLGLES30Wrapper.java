@@ -451,11 +451,14 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
     }
 
     @Override
-    public void glGetActiveUniformBlockName(int program, int uniformBlockIndex, int bufSize, int[] length,
-            String uniformBlockName) {
-        gles.glGetActiveUniformBlockName(program, uniformBlockIndex, bufSize, length, 0, uniformBlockName.getBytes(),
-                0);
+    public String glGetActiveUniformBlockName(int program, int uniformBlockIndex) {
+        throw new IllegalArgumentException("Not implemented");
+    }
 
+    @Override
+    public void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int pname, int[] params) {
+        gles.glGetActiveUniformsiv(program, uniformCount, uniformIndices, 0, pname, params,
+                0);
     }
 
 }

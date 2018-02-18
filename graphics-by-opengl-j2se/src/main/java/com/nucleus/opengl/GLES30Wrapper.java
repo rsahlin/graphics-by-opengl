@@ -89,9 +89,21 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
      * 
      * @param program
      * @param uniformBlockIndex
-     * @param bufSize
+     * @return
      */
-    public abstract void glGetActiveUniformBlockName(int program, int uniformBlockIndex, int bufSize, int[] length,
-            String uniformBlockName);
+    public abstract String glGetActiveUniformBlockName(int program, int uniformBlockIndex);
+
+    /**
+     * Abstraction for void glGetActiveUniformsiv( GLuint program, GLsizei uniformCount, const GLuint *uniformIndices,
+     * GLenum pname, GLint *params);
+     * 
+     * @param program
+     * @param uniformCount
+     * @param uniformIndices
+     * @param pname
+     * @param params
+     */
+    public abstract void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int pname,
+            int[] params);
 
 }

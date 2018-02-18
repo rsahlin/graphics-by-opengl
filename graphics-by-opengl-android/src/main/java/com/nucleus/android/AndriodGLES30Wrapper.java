@@ -387,4 +387,25 @@ public class AndriodGLES30Wrapper extends GLES30Wrapper {
         android.opengl.GLES30.glBindBufferRange(target, index, buffer, offset, size);
     }
 
+    @Override
+    public int glGetUniformBlockIndex(int program, String uniformBlockName) {
+        return android.opengl.GLES30.glGetUniformBlockIndex(program, uniformBlockName);
+    }
+
+    @Override
+    public void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, int[] params, int offset) {
+        android.opengl.GLES30.glGetActiveUniformBlockiv(program, uniformBlockIndex, pname, params, offset);
+    }
+
+    @Override
+    public String glGetActiveUniformBlockName(int program, int uniformBlockIndex) {
+        return android.opengl.GLES30.glGetActiveUniformBlockName(program, uniformBlockIndex);
+    }
+
+    @Override
+    public void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int pname, int[] params) {
+        android.opengl.GLES30.glGetActiveUniformsiv(program, uniformCount, uniformIndices, 0, pname,
+                params, 0);
+    }
+
 }

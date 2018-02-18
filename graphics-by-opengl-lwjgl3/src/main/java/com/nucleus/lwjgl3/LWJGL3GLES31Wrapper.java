@@ -826,9 +826,13 @@ public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
     }
 
     @Override
-    public void glGetActiveUniformBlockName(int program, int uniformBlockIndex, int bufSize, int[] length,
-            String uniformBlockName) {
-        throw new IllegalArgumentException("Not implemented");
+    public String glGetActiveUniformBlockName(int program, int uniformBlockIndex) {
+        return org.lwjgl.opengles.GLES30.glGetActiveUniformBlockName(program, uniformBlockIndex);
+    }
+
+    @Override
+    public void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int pname, int[] params) {
+        org.lwjgl.opengles.GLES30.glGetActiveUniformsiv(program, uniformIndices, pname, params);
     }
 
 }
