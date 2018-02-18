@@ -798,25 +798,37 @@ public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
     @Override
     public void glVertexAttribFormat(int attribindex, int size, int type, boolean normalized, int relativeoffset) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void glVertexAttribIFormat(int attribindex, int size, int type, int relativeoffset) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void glVertexAttribBinding(int attribindex, int bindingindex) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void glVertexBindingDivisor(int bindingindex, int divisor) {
         // TODO Auto-generated method stub
+    }
 
+    @Override
+    public int glGetUniformBlockIndex(int program, String uniformBlockName) {
+        return org.lwjgl.opengles.GLES30.glGetUniformBlockIndex(program, uniformBlockName);
+    }
+
+    @Override
+    public void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, int[] params, int offset) {
+        org.lwjgl.opengles.GLES30.glGetActiveUniformBlockiv(program, uniformBlockIndex, pname, params);
+    }
+
+    @Override
+    public void glGetActiveUniformBlockName(int program, int uniformBlockIndex, int bufSize, int[] length,
+            String uniformBlockName) {
+        throw new IllegalArgumentException("Not implemented");
     }
 
 }

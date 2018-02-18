@@ -28,7 +28,7 @@ public enum CommonShaderVariables implements VariableMapping {
     uAmbientLight(7, 58, ShaderVariable.VariableType.UNIFORM, null),
     uDiffuseLight(8, 62, ShaderVariable.VariableType.UNIFORM, null),
     aVertex(9, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-    aTexCoord(10, 3, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+    aTexCoord(10, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
     aTranslate(11, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
     aRotate(12, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
     aScale(13, 8, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),

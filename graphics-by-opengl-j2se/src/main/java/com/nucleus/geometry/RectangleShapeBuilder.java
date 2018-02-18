@@ -87,8 +87,24 @@ public class RectangleShapeBuilder extends ElementBuilder {
             return vertexCount >>> 2;
         }
 
+        /**
+         * Enable or disables the vertex index, of set to true then each vertex has the vertex index in the quad. 0 for
+         * the first vertex, 1 for the next - up to 3.
+         * 
+         * @param enable
+         */
+        public void enableVertexIndex(boolean enable) {
+            this.enableVertexIndex = enable;
+        }
+
         protected Rectangle rectangle;
         protected float z;
+        /**
+         * Set to true to add vertex index for each vertex in the quad, ie the first vertex will have index 0, the next
+         * 1 and so on.
+         * The index is stored after vertex xyz.
+         */
+        protected boolean enableVertexIndex = false;
     }
 
     private RectangleConfiguration configuration;
@@ -186,7 +202,7 @@ public class RectangleShapeBuilder extends ElementBuilder {
         float[] data = new float[stride * QUAD_VERTICES];
         if (configuration.rectangle != null) {
             createQuadArray(configuration.rectangle, mesh.getTexture(Texture2D.TEXTURE_0), stride,
-                    configuration.z, data);
+                    configuration.z, configuration.enableVertexIndex, data);
         }
         int startIndex = configuration.startVertex * stride;
         int count = configuration.getRectangleCount();
@@ -209,16 +225,21 @@ public class RectangleShapeBuilder extends ElementBuilder {
      * @param texture Texture or null
      * @param vertexStride Number of values between vertices
      * @param z Z axis value for quad.
+     * @param useVertexIndex If true then the index into the quad (0 - 3) is added after xyz.
      * @destination Values where quad array positions, and optional uv, are written.
      */
     public static void createQuadArray(Rectangle rectangle, Texture2D texture, int vertexStride, float z,
-            float[] destination) {
+            boolean useVertexIndex, float[] destination) {
         float[] values = rectangle.getValues();
         // TODO Should it be possible to pass UV to this method?
+        float[] uvCoordinates = null;
         if (vertexStride > 4 && texture != null && texture.textureType != TextureType.Untextured) {
-            createQuadArray(values, z, vertexStride, createUVCoordinates(texture), destination);
+            uvCoordinates = createUVCoordinates(texture);
+        }
+        if (useVertexIndex) {
+            createQuadArrayVertexIndex(values, z, vertexStride, uvCoordinates, destination);
         } else {
-            createQuadArray(values, z, vertexStride, null, destination);
+            createQuadArray(values, z, vertexStride, uvCoordinates, destination);
         }
     }
 

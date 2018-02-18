@@ -12,6 +12,7 @@ import java.util.List;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
+import com.nucleus.common.StringUtils;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Property;
@@ -743,8 +744,10 @@ public abstract class ShaderProgram {
                 default:
                     throw new IllegalArgumentException("Not implemented for " + type);
             }
-            ShaderVariable variable = new ShaderVariable(type, nameBuffer, written, NAME_LENGTH_OFFSET, SIZE_OFFSET,
-                    TYPE_OFFSET);
+
+            // Create shader variable using name excluding [] and .
+            ShaderVariable variable = new ShaderVariable(type, getVariableName(nameBuffer, written[NAME_LENGTH_OFFSET]),
+                    written, SIZE_OFFSET, TYPE_OFFSET);
             setVariableLocation(gles, program, variable);
             setVariableStaticOffset(gles, program, variable);
             addShaderVariable(variable);
@@ -1014,11 +1017,12 @@ public abstract class ShaderProgram {
      * Utility method to return the name of a shader variable, this will remove unwanted characters such as array
      * declaration or '.' field access eg 'struct.field' will become 'struct'
      * 
-     * @param variable
+     * @param nameBuffer
+     * @param nameLength
      * @return Name of variable, without array declaration.
      */
-    public String getVariableName(ShaderVariable variable) {
-        String name = variable.getName();
+    public String getVariableName(byte[] nameBuffer, int nameLength) {
+        String name = StringUtils.createString(nameBuffer, 0, nameLength);
         if (name.endsWith("]")) {
             int end = name.indexOf("[");
             name = name.substring(0, end);

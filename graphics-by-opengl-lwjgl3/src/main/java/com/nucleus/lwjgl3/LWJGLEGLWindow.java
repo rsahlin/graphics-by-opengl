@@ -2,6 +2,7 @@ package com.nucleus.lwjgl3;
 
 import java.lang.reflect.Field;
 import java.nio.IntBuffer;
+import java.util.Objects;
 
 import org.lwjgl.egl.EGL;
 import org.lwjgl.egl.EGL10;
@@ -9,8 +10,11 @@ import org.lwjgl.egl.EGLCapabilities;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWNativeEGL;
+import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengles.GLES;
 import org.lwjgl.opengles.GLESCapabilities;
+import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
@@ -19,6 +23,7 @@ import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Environment;
 import com.nucleus.egl.EGLUtils;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
@@ -93,11 +98,15 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
 
-        // GLFW setup for EGL & OpenGL ES
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_CREATION_API, GLFW.GLFW_EGL_CONTEXT_API);
-        GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API);
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 2);
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 0);
+        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_COMPAT_PROFILE);
+        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GLES20.GL_TRUE);
+
+        // GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_CREATION_API, GLFW.GLFW_EGL_CONTEXT_API);
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_CREATION_API, GLFW.GLFW_NATIVE_CONTEXT_API);
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4);
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3);
+        // GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API);
+        GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_API);
 
         // pretend we're using GLES in windows, instead use a subset of OpenGL 2.0 as GLES 2.0
         // Bypasses the default create() method.
@@ -118,6 +127,24 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
             throw new RuntimeException("Failed to create the GLFW window");
         }
 
+        long monitor = GLFW.glfwGetPrimaryMonitor();
+
+        GLFWVidMode vidmode = Objects.requireNonNull(GLFW.glfwGetVideoMode(monitor));
+        GLFW.glfwMakeContextCurrent(window);
+        GLFW.glfwShowWindow(window);
+
+        Configuration.OPENGLES_EXPLICIT_INIT.set(true);
+        GLES.create(GL.getFunctionProvider());
+        GLESCapabilities gles = GLES.createCapabilities();
+
+        GLFW.glfwSetKeyCallback(window, (windowHnd, key, scancode, action, mods) -> {
+            if (action == GLFW.GLFW_RELEASE && key == GLFW.GLFW_KEY_ESCAPE) {
+                GLFW.glfwSetWindowShouldClose(windowHnd, true);
+            }
+        });
+
+        wrapper = LWJGLWrapperFactory.createWrapper(version);
+
         GLFW.glfwSetKeyCallback(window, (windowHnd, key, scancode, action, mods) -> {
             if (action == GLFW.GLFW_RELEASE && key == GLFW.GLFW_KEY_ESCAPE) {
                 GLFW.glfwSetWindowShouldClose(windowHnd, true);
@@ -126,6 +153,9 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
 
         // EGL capabilities
         long dpy = GLFWNativeEGL.glfwGetEGLDisplay();
+        if (dpy == EGL10.EGL_NO_DISPLAY) {
+            throw new IllegalArgumentException("EGL_NO_DISPLAY");
+        }
 
         EGLCapabilities egl;
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -152,10 +182,6 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
             e.printStackTrace();
         }
 
-        // OpenGL ES capabilities
-        GLFW.glfwMakeContextCurrent(window);
-        GLESCapabilities gles = GLES.createCapabilities();
-
         try {
             System.out.println("OpenGL ES Capabilities:");
             for (Field f : GLESCapabilities.class.getFields()) {
@@ -169,11 +195,6 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
             e.printStackTrace();
         }
 
-        // Render with OpenGL ES
-        GLFW.glfwShowWindow(window);
-
-        // glfwFreeCallbacks(window);
-        // glfwTerminate();
     }
 
     protected int[] createDefaultConfigAttribs() {

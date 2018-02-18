@@ -440,4 +440,22 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
         gles.glBindBufferRange(target, index, buffer, ptroffset, ptrsize);
     }
 
+    @Override
+    public int glGetUniformBlockIndex(int program, String uniformBlockName) {
+        return gles.glGetUniformBlockIndex(program, uniformBlockName);
+    }
+
+    @Override
+    public void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, int[] params, int offset) {
+        gles.glGetActiveUniformBlockiv(program, uniformBlockIndex, pname, params, offset);
+    }
+
+    @Override
+    public void glGetActiveUniformBlockName(int program, int uniformBlockIndex, int bufSize, int[] length,
+            String uniformBlockName) {
+        gles.glGetActiveUniformBlockName(program, uniformBlockIndex, bufSize, length, 0, uniformBlockName.getBytes(),
+                0);
+
+    }
+
 }

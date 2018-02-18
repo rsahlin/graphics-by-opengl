@@ -1,6 +1,5 @@
 package com.nucleus.shader;
 
-import com.nucleus.common.StringUtils;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
 
@@ -78,17 +77,17 @@ public class ShaderVariable {
      * This constructor can be used with the data from GLES
      * 
      * @param type Type of shader variable
-     * @param name byte array containing the name
+     * @param name Name of variable excluding [] and . chars.
      * @param data Array holding size and type for variable, typically fetched from GL
      * @param nameLengthOffset Offset into array where length of name is
      * @param sizeOffset Offset into array where size of variable is
      * @param typeOffset Offset into array where type of variable is
      * @throws ArrayIndexOutOfBoundsException If sizeOffset or typeOffset is larger than data length, or negative.
      */
-    ShaderVariable(VariableType type, byte[] name, int[] data, int nameLengthOffset, int sizeOffset,
+    ShaderVariable(VariableType type, String name, int[] data, int sizeOffset,
             int typeOffset) {
         this.type = type;
-        this.name = StringUtils.createString(name, 0, data[nameLengthOffset]);
+        this.name = name;
         size = data[sizeOffset];
         dataType = data[typeOffset];
     }

@@ -63,4 +63,35 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
      */
     public abstract void glBindBufferRange(int target, int index, int buffer, int ptroffset, int ptrsize);
 
+    /**
+     * Abstraction for GLuint glGetUniformBlockIndex( GLuint program, const GLchar *uniformBlockName);
+     * 
+     * @param program
+     * @param uniformBlockName
+     * @return
+     */
+    public abstract int glGetUniformBlockIndex(int program, String uniformBlockName);
+
+    /**
+     * Astraction for glGetActiveUniformBlockiv(GLuint program, GLuint uniformBlockIndex, GLenum pname, GLint *params);
+     * 
+     * @param program
+     * @param uniformBlockIndex
+     * @param pname
+     * @param params
+     */
+    public abstract void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, int[] params,
+            int offset);
+
+    /**
+     * Abstraction for void glGetActiveUniformBlockName( GLuint program, GLuint uniformBlockIndex, GLsizei bufSize,
+     * GLsizei *length, GLchar *uniformBlockName);
+     * 
+     * @param program
+     * @param uniformBlockIndex
+     * @param bufSize
+     */
+    public abstract void glGetActiveUniformBlockName(int program, int uniformBlockIndex, int bufSize, int[] length,
+            String uniformBlockName);
+
 }
