@@ -9,6 +9,12 @@ import java.nio.IntBuffer;
 import com.nucleus.opengl.GLES30Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
 
+/**
+ * Implementation of the LWJGL3 wrapper
+ * TODO - Shall this be made static since the underlying GL/GLES is static?
+ * It would simplify handling GLES2.0, 3.0, 3.1
+ *
+ */
 public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
 
     /**
@@ -428,8 +434,13 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
     }
 
     @Override
-    public void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int pname, int[] params) {
-        org.lwjgl.opengles.GLES30.glGetActiveUniformsiv(program, uniformIndices, pname, params);
+    public void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int indicesOffset,
+            int pname, int[] params, int paramsOffset) {
+        IntBuffer indicesBuffer = ByteBuffer.allocateDirect(uniformIndices.length * 4).asIntBuffer();
+        indicesBuffer.position(indicesOffset);
+        IntBuffer paramsBuffer = ByteBuffer.allocateDirect(params.length * 4).asIntBuffer();
+        paramsBuffer.position(paramsOffset);
+        org.lwjgl.opengles.GLES30.glGetActiveUniformsiv(program, indicesBuffer, pname, indicesBuffer);
     }
 
 }

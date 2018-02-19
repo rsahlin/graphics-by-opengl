@@ -4,9 +4,40 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.StringTokenizer;
 
+import com.nucleus.common.StringUtils;
 import com.nucleus.renderer.RendererInfo;
+import com.nucleus.shader.ShaderVariable;
+import com.nucleus.shader.ShaderVariable.VariableBlock;
+import com.nucleus.shader.ShaderVariable.VariableType;
 
 public abstract class GLESWrapper {
+
+    public class ProgramInfo {
+        private int program;
+        private int[] activeVariables;
+        private int[] maxNameLength;
+
+        public ProgramInfo(int program, int[] activeVariables, int[] maxNameLength) {
+            this.program = program;
+            this.activeVariables = new int[activeVariables.length];
+            this.maxNameLength = new int[maxNameLength.length];
+            System.arraycopy(activeVariables, 0, this.activeVariables, 0, activeVariables.length);
+            System.arraycopy(maxNameLength, 0, this.maxNameLength, 0, maxNameLength.length);
+        }
+
+        public int getActiveVariables(VariableType type) {
+            return type.index <= activeVariables.length ? activeVariables[type.index] : 0;
+        }
+
+        public int getMaxNameLength(VariableType type) {
+            return type.index <= maxNameLength.length ? maxNameLength[type.index] : 0;
+        }
+
+        public int getProgram() {
+            return program;
+        }
+
+    }
 
     /**
      * Implementation of GL/GLES on the platform.
@@ -19,6 +50,27 @@ public abstract class GLESWrapper {
 
     private final static String[] GLES3_VERTEX_REPLACEMENTS = new String[] { "attribute", "in", "varying", "out" };
     private final static String[] GLES3_FRAGMENT_REPLACEMENTS = new String[] { "varying", "in" };
+
+    /**
+     * Used when calling glGetActiveAttrib/uniform as offset into data to be written
+     */
+    public final static int NAME_LENGTH_OFFSET = 0;
+    /**
+     * Used when calling glGetActiveAttrib/uniform as offset into data to be written
+     */
+    public final static int SIZE_OFFSET = 1;
+    /**
+     * Used when calling glGetActiveAttrib/uniform as offset into data to be written
+     */
+    public final static int TYPE_OFFSET = 2;
+    /**
+     * Used when calling glGetActiveUniformsiv as offset into data to be written
+     */
+    public final static int BLOCK_INDEX_OFFSET = 3;
+    /**
+     * Used when calling glGetActiveUniformsiv as offset into data to be written
+     */
+    public final static int UNIFORM_OFFSET = 4;
 
     protected RendererInfo rendererInfo;
     protected final Platform platform;
@@ -966,10 +1018,65 @@ public abstract class GLESWrapper {
     }
 
     /**
+     * Utility method to return the name of a shader variable, this will remove unwanted characters such as array
+     * declaration or '.' field access eg 'struct.field' will become 'struct'
+     * 
+     * @param nameBuffer
+     * @param nameLength
+     * @return Name of variable, without array declaration.
+     */
+    public String getVariableName(byte[] nameBuffer, int nameLength) {
+        String name = StringUtils.createString(nameBuffer, 0, nameLength);
+        if (name.endsWith("]")) {
+            int end = name.indexOf("[");
+            name = name.substring(0, end);
+        }
+        int dot = name.indexOf(".");
+        if (dot == -1) {
+            return name;
+        }
+        if (dot == 0) {
+            return name.substring(1);
+        }
+        return name.substring(0, dot);
+    }
+
+    /**
      * Returns the renderer info, if it has not been created before it is created and then returned.
      * 
      * @return The renderer info
      */
     public abstract RendererInfo getInfo();
+
+    /**
+     * Creates the program info for attrib /uniform / uniform block
+     * 
+     * @param program
+     * @return
+     * @throws If there is an error fetching program info
+     */
+    public abstract ProgramInfo getProgramInfo(int program) throws GLException;
+
+    /**
+     * Returns the uniform blocks active in the program
+     * 
+     * @param info
+     * @return
+     * @throws GLException
+     */
+    public abstract VariableBlock[] getUniformBlocks(ProgramInfo info) throws GLException;
+
+    /**
+     * Creates and returns shader variable for the program, of the specified variable type and variable index.
+     * 
+     * @param program
+     * @param type
+     * @param index Index of the active uniform, 0 to GL_ACTIVE_UNIFORMS
+     * @param nameBuffer Buffer to write name of uniform
+     * @return The active uniform or null if operation failed.
+     * @throws If there is an error fetching info for active variable
+     */
+    public abstract ShaderVariable getActiveVariable(int program, VariableType type, int index, byte[] nameBuffer)
+            throws GLException;
 
 }

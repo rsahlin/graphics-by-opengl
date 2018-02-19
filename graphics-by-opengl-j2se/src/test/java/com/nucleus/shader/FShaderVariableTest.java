@@ -3,6 +3,7 @@ package com.nucleus.shader;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.shader.ShaderVariable.VariableType;
 
@@ -19,7 +20,7 @@ public class FShaderVariableTest {
     public void testCreate() {
 
         ShaderVariable variable = new ShaderVariable(VariableType.ATTRIBUTE, VARIABLE_NAME, variableData,
-                ShaderProgram.SIZE_OFFSET, ShaderProgram.TYPE_OFFSET);
+                GLESWrapper.SIZE_OFFSET, GLESWrapper.TYPE_OFFSET);
         Assert.assertEquals(VARIABLE_NAME, variable.getName());
         Assert.assertEquals(VARIABLE_SIZE, variable.getSize());
         Assert.assertEquals(VARIABLE_TYPE, variable.getDataType());
@@ -30,7 +31,7 @@ public class FShaderVariableTest {
     public void testSetLocation() {
 
         ShaderVariable variable = new ShaderVariable(VariableType.ATTRIBUTE, VARIABLE_NAME, variableData,
-                ShaderProgram.SIZE_OFFSET, ShaderProgram.TYPE_OFFSET);
+                GLESWrapper.SIZE_OFFSET, GLESWrapper.TYPE_OFFSET);
         variable.setLocation(VARIABLE_LOCATION);
         Assert.assertEquals(VARIABLE_LOCATION, variable.getLocation());
 

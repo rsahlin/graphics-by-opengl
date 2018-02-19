@@ -15,7 +15,7 @@ import com.nucleus.renderer.NucleusRenderer;
  */
 public class JOGLApplication extends J2SEWindowApplication {
 
-    protected static final WindowType DEFAULT_WINDOW_TYPE = WindowType.EGL;
+    protected static final WindowType DEFAULT_WINDOW_TYPE = WindowType.NEWT;
 
     /**
      * Creates a new application starter with the specified renderer and client main class implementation.

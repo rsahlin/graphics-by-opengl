@@ -831,8 +831,13 @@ public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
     }
 
     @Override
-    public void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int pname, int[] params) {
-        org.lwjgl.opengles.GLES30.glGetActiveUniformsiv(program, uniformIndices, pname, params);
+    public void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int indicesOffset,
+            int pname, int[] params, int paramsOffset) {
+        IntBuffer indicesBuffer = ByteBuffer.allocateDirect(uniformIndices.length * 4).asIntBuffer();
+        indicesBuffer.position(indicesOffset);
+        IntBuffer paramsBuffer = ByteBuffer.allocateDirect(params.length * 4).asIntBuffer();
+        paramsBuffer.position(paramsOffset);
+        org.lwjgl.opengles.GLES30.glGetActiveUniformsiv(program, indicesBuffer, pname, indicesBuffer);
     }
 
 }

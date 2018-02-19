@@ -1,5 +1,6 @@
 package com.nucleus.shader;
 
+import com.nucleus.common.Constants;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
 
@@ -14,18 +15,40 @@ public class ShaderVariable {
     private final static String ILLEGAL_DATATYPE_ERROR = "Illegal datatype: ";
 
     /**
-     * The different types of active variables - either uniform or attribute.
+     * The different types of active variables - attribute, uniform or uniform block
      * 
      * @author Richard Sahlin
      *
      */
     public enum VariableType {
 
-        UNIFORM(),
-        ATTRIBUTE();
+        UNIFORM(0),
+        ATTRIBUTE(1),
+        UNIFORM_BLOCK(2);
 
-        private VariableType() {
+        public final int index;
+
+        private VariableType(int index) {
+            this.index = index;
         }
+    }
+
+    public static class VariableBlock {
+
+        public VariableBlock(int program, int blockIndex, int active, int[] indices) {
+            this.program = program;
+            this.blockIndex = blockIndex;
+            this.active = active;
+            this.indices = new int[indices.length];
+            System.arraycopy(indices, 0, this.indices, 0, indices.length);
+        }
+
+        protected int active;
+        protected int[] indices;
+        protected int blockIndex;
+        protected int program;
+        protected String name;
+
     }
 
     /**
@@ -71,6 +94,10 @@ public class ShaderVariable {
      * Offset into buffer where the data for this variable is stored, used by GL
      */
     private int offset;
+    /**
+     * If this is a uniform variable within a uniform block this index is set.
+     */
+    private int uniformBlockIndex = Constants.NO_VALUE;
 
     /**
      * Creates a new ActiveVariable from the specified data.
@@ -82,14 +109,38 @@ public class ShaderVariable {
      * @param nameLengthOffset Offset into array where length of name is
      * @param sizeOffset Offset into array where size of variable is
      * @param typeOffset Offset into array where type of variable is
+     * @param uniformBlockIndex -1 or index of uniform block if this is a uniform belonging to a uniform block
      * @throws ArrayIndexOutOfBoundsException If sizeOffset or typeOffset is larger than data length, or negative.
      */
-    ShaderVariable(VariableType type, String name, int[] data, int sizeOffset,
+    public ShaderVariable(VariableType type, String name, int[] data, int sizeOffset,
             int typeOffset) {
         this.type = type;
         this.name = name;
         size = data[sizeOffset];
         dataType = data[typeOffset];
+    }
+
+    /**
+     * Creates a new ActiveVariable from the specified data.
+     * This constructor can be used with the data from GLES
+     * Use this constructor if the variable could be a uniform in a uniform block
+     * 
+     * @param type Type of shader variable
+     * @param name Name of variable excluding [] and . chars.
+     * @param data Array holding size and type for variable, typically fetched from GL
+     * @param nameLengthOffset Offset into array where length of name is
+     * @param sizeOffset Offset into array where size of variable is
+     * @param typeOffset Offset into array where type of variable is
+     * @param uniformBlockIndex -1 or index of uniform block if this is a uniform belonging to a uniform block
+     * @throws ArrayIndexOutOfBoundsException If sizeOffset or typeOffset is larger than data length, or negative.
+     */
+    public ShaderVariable(VariableType type, String name, int[] data, int sizeOffset,
+            int typeOffset, int uniformBlockIndex) {
+        this.type = type;
+        this.name = name;
+        size = data[sizeOffset];
+        dataType = data[typeOffset];
+        this.uniformBlockIndex = uniformBlockIndex;
     }
 
     /**
@@ -99,6 +150,15 @@ public class ShaderVariable {
      */
     public VariableType getType() {
         return type;
+    }
+
+    /**
+     * If this variable belongs to a uniform block, this contains the uniform block index - if not this is -1
+     * 
+     * @return Uniform block index, or -1 if not uniform in a uniform block.
+     */
+    public int getUniformBlockIndex() {
+        return uniformBlockIndex;
     }
 
     /**

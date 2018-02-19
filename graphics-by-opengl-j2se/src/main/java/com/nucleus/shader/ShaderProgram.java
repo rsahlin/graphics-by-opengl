@@ -25,10 +25,12 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.GLESWrapper.GLES31;
 import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
+import com.nucleus.opengl.GLESWrapper.ProgramInfo;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
+import com.nucleus.shader.ShaderVariable.VariableBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -100,29 +102,6 @@ public abstract class ShaderProgram {
     public final static String VARIABLE_LOCATION_ERROR = "Could not get shader variable location: ";
     public final static String NULL_VARIABLES_ERROR = "ShaderVariables are null, program not created? Must call fetchProgramInfo()";
     public final static String GET_PROGRAM_INFO_ERROR = "Error fetching program info.";
-
-    /**
-     * Index into array where active (attribute or uniform) variable is stored, used when
-     * calling GL
-     */
-    protected final static int ACTIVE_COUNT_OFFSET = 0;
-    /**
-     * Index into array where max name length (attribute or uniform) for variable is stored, used when calling GL
-     */
-    protected final static int MAX_NAME_LENGTH_OFFSET = 1;
-
-    /**
-     * Used when calling glGetActiveAttrib as offset into data to be written
-     */
-    protected final static int SIZE_OFFSET = 1;
-    /**
-     * Used when calling glGetActiveAttrib as offset into data to be written
-     */
-    protected final static int TYPE_OFFSET = 2;
-    /**
-     * Used when calling glGetActiveAttrib as offset into data to be written
-     */
-    protected final static int NAME_LENGTH_OFFSET = 0;
 
     /**
      * The function of the shader program
@@ -680,16 +659,18 @@ public abstract class ShaderProgram {
      * @throws GLException If attribute or uniform locations could not be found.
      */
     protected void fetchProgramInfo(GLES20Wrapper gles) throws GLException {
-        int[] attribInfo = new int[2];
-        int[] uniformInfo = new int[2];
-        gles.glGetProgramiv(program, GLES20.GL_ACTIVE_ATTRIBUTES, attribInfo, ACTIVE_COUNT_OFFSET);
-        gles.glGetProgramiv(program, GLES20.GL_ACTIVE_UNIFORMS, uniformInfo, ACTIVE_COUNT_OFFSET);
-        gles.glGetProgramiv(program, GLES20.GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, attribInfo, MAX_NAME_LENGTH_OFFSET);
-        gles.glGetProgramiv(program, GLES20.GL_ACTIVE_UNIFORM_MAX_LENGTH, uniformInfo, MAX_NAME_LENGTH_OFFSET);
+        ProgramInfo info = gles.getProgramInfo(program);
         GLUtils.handleError(gles, GET_PROGRAM_INFO_ERROR);
         shaderVariables = new ShaderVariable[CommonShaderVariables.values().length];
-        fetchActiveVariables(gles, VariableType.ATTRIBUTE, attribInfo);
-        fetchActiveVariables(gles, VariableType.UNIFORM, uniformInfo);
+        int uniformBlocks = info.getActiveVariables(VariableType.UNIFORM_BLOCK);
+        if (uniformBlocks > 0) {
+            VariableBlock[] blocks = gles.getUniformBlocks(info);
+            for (VariableBlock block : blocks) {
+                fetchActiveVariables(gles, VariableType.UNIFORM_BLOCK, info, block);
+            }
+        }
+        fetchActiveVariables(gles, VariableType.ATTRIBUTE, info, null);
+        fetchActiveVariables(gles, VariableType.UNIFORM, info, null);
         attributeVariables = new ShaderVariable[attributeBufferCount][];
         attributesPerVertex = new int[attributeBufferCount];
         mapAttributeVariablePerBuffer(attributeVariables);
@@ -723,31 +704,23 @@ public abstract class ShaderProgram {
      * @param gles
      * @param type Type of variable to fetch info for.
      * @param info
+     * @param block Variable block info or null
      * @throws GLException If attribute or uniform location(s) are -1, ie they could not be found using the name.
      */
-    private void fetchActiveVariables(GLES20Wrapper gles, VariableType type, int[] info) throws GLException {
-
-        int count = info[ACTIVE_COUNT_OFFSET];
-        byte[] nameBuffer = new byte[info[MAX_NAME_LENGTH_OFFSET]];
-        int[] written = new int[3];
-
+    private void fetchActiveVariables(GLES20Wrapper gles, VariableType type, ProgramInfo info, VariableBlock block)
+            throws GLException {
+        int count = info.getActiveVariables(type);
+        if (count == 0) {
+            return;
+        }
+        byte[] nameBuffer = new byte[info.getMaxNameLength(type)];
+        ShaderVariable variable = null;
         for (int i = 0; i < count; i++) {
-            switch (type) {
-                case ATTRIBUTE:
-                    gles.glGetActiveAttrib(program, i, written, NAME_LENGTH_OFFSET, written,
-                            SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
-                    break;
-                case UNIFORM:
-                    gles.glGetActiveUniform(program, i, written, NAME_LENGTH_OFFSET, written,
-                            SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Not implemented for " + type);
+            if (block != null) {
+                variable = gles.getActiveVariable(program, type, block.indices[i], nameBuffer);
+            } else {
+                variable = gles.getActiveVariable(program, type, i, nameBuffer);
             }
-
-            // Create shader variable using name excluding [] and .
-            ShaderVariable variable = new ShaderVariable(type, getVariableName(nameBuffer, written[NAME_LENGTH_OFFSET]),
-                    written, SIZE_OFFSET, TYPE_OFFSET);
             setVariableLocation(gles, program, variable);
             setVariableStaticOffset(gles, program, variable);
             addShaderVariable(variable);

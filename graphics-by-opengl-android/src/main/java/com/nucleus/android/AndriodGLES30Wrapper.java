@@ -403,9 +403,10 @@ public class AndriodGLES30Wrapper extends GLES30Wrapper {
     }
 
     @Override
-    public void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int pname, int[] params) {
-        android.opengl.GLES30.glGetActiveUniformsiv(program, uniformCount, uniformIndices, 0, pname,
-                params, 0);
+    public void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int indicesOffset, int pname,
+            int[] params, int paramsOffset) {
+        android.opengl.GLES30.glGetActiveUniformsiv(program, uniformCount, uniformIndices, indicesOffset, pname,
+                params, paramsOffset);
     }
 
 }

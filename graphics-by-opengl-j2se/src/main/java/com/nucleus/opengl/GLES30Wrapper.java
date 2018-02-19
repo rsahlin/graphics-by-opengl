@@ -1,5 +1,9 @@
 package com.nucleus.opengl;
 
+import com.nucleus.shader.ShaderVariable;
+import com.nucleus.shader.ShaderVariable.VariableBlock;
+import com.nucleus.shader.ShaderVariable.VariableType;
+
 /**
  * Wrapper for GLES30
  *
@@ -15,6 +19,69 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
      */
     protected GLES30Wrapper(Platform platform) {
         super(platform);
+    }
+
+    @Override
+    public ProgramInfo getProgramInfo(int program) {
+        int[] activeInfo = new int[3];
+        int[] nameLength = new int[3];
+        glGetProgramiv(program, GLES20.GL_ACTIVE_ATTRIBUTES, activeInfo, VariableType.ATTRIBUTE.index);
+        glGetProgramiv(program, GLES20.GL_ACTIVE_UNIFORMS, activeInfo, VariableType.UNIFORM.index);
+        glGetProgramiv(program, GLES30.GL_ACTIVE_UNIFORM_BLOCKS, activeInfo, VariableType.UNIFORM_BLOCK.index);
+        glGetProgramiv(program, GLES20.GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, nameLength, VariableType.ATTRIBUTE.index);
+        glGetProgramiv(program, GLES20.GL_ACTIVE_UNIFORM_MAX_LENGTH, nameLength, VariableType.UNIFORM.index);
+        glGetProgramiv(program, GLES30.GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, nameLength,
+                VariableType.UNIFORM_BLOCK.index);
+        return new ProgramInfo(program, activeInfo, nameLength);
+    }
+
+    @Override
+    public VariableBlock[] getUniformBlocks(ProgramInfo info) {
+        if (info == null || info.getActiveVariables(VariableType.UNIFORM_BLOCK) < 1) {
+            return null;
+        }
+        VariableBlock[] uniformBlock = new VariableBlock[info.getActiveVariables(VariableType.UNIFORM_BLOCK)];
+        int[] blockInfo = new int[3];
+        int[] indices = null;
+        for (int i = 0; i < uniformBlock.length; i++) {
+            // GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS
+            glGetActiveUniformBlockiv(info.getProgram(), i, GLES30.GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, blockInfo, 0);
+            if (blockInfo[0] > 0) {
+                indices = new int[blockInfo[0]];
+                glGetActiveUniformBlockiv(info.getProgram(), i, GLES30.GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices,
+                        0);
+                uniformBlock[i] = new VariableBlock(info.getProgram(), i, blockInfo[0], indices);
+            }
+        }
+        return uniformBlock;
+    }
+
+    @Override
+    public ShaderVariable getActiveVariable(int program, VariableType type, int index, byte[] nameBuffer)
+            throws GLException {
+
+        switch (type) {
+            case ATTRIBUTE:
+            case UNIFORM:
+                return super.getActiveVariable(program, type, index, nameBuffer);
+            case UNIFORM_BLOCK:
+                int[] params = new int[5];
+                int[] indices = new int[] { index };
+                glGetActiveUniform(program, index, params, NAME_LENGTH_OFFSET, params,
+                        SIZE_OFFSET, params, TYPE_OFFSET, nameBuffer);
+                glGetActiveUniformsiv(program, 1, indices, 0, GLES30.GL_UNIFORM_BLOCK_INDEX, params,
+                        BLOCK_INDEX_OFFSET);
+                glGetActiveUniformsiv(program, 1, indices, 0, GLES30.GL_UNIFORM_OFFSET, params, UNIFORM_OFFSET);
+                GLUtils.handleError(this, "glGetActiveUnifor for " + type);
+                // Create shader variable using name excluding [] and .
+                return new ShaderVariable(VariableType.UNIFORM,
+                        getVariableName(nameBuffer, params[NAME_LENGTH_OFFSET]),
+                        params, SIZE_OFFSET, TYPE_OFFSET, params[BLOCK_INDEX_OFFSET]);
+            default:
+                throw new IllegalArgumentException("Invalid variable type " + type);
+
+        }
+
     }
 
     @Override
@@ -100,10 +167,12 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
      * @param program
      * @param uniformCount
      * @param uniformIndices
+     * @param indicesOffset
      * @param pname
      * @param params
+     * @param paramsOffset
      */
-    public abstract void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int pname,
-            int[] params);
+    public abstract void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int indicesOffset,
+            int pname, int[] params, int paramsOffset);
 
 }

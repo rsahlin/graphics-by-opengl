@@ -12,6 +12,8 @@ import com.nucleus.opengl.GLException.Error;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RendererInfo;
 import com.nucleus.shader.ShaderVariable;
+import com.nucleus.shader.ShaderVariable.VariableBlock;
+import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Image;
 import com.nucleus.texturing.ParameterData;
 import com.nucleus.texturing.Texture2D;
@@ -40,6 +42,47 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      */
     protected GLES20Wrapper(Platform platform) {
         super(platform);
+    }
+
+    @Override
+    public ProgramInfo getProgramInfo(int program) throws GLException {
+        int[] activeInfo = new int[2];
+        int[] nameLength = new int[2];
+        glGetProgramiv(program, GLES20.GL_ACTIVE_ATTRIBUTES, activeInfo, VariableType.ATTRIBUTE.index);
+        glGetProgramiv(program, GLES20.GL_ACTIVE_UNIFORMS, activeInfo, VariableType.UNIFORM.index);
+        glGetProgramiv(program, GLES20.GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, nameLength, VariableType.ATTRIBUTE.index);
+        glGetProgramiv(program, GLES20.GL_ACTIVE_UNIFORM_MAX_LENGTH, nameLength, VariableType.UNIFORM.index);
+        GLUtils.handleError(this, "glGetProgramiv");
+        return new ProgramInfo(program, activeInfo, nameLength);
+    }
+
+    @Override
+    public VariableBlock[] getUniformBlocks(ProgramInfo info) throws GLException {
+        // Uniform blocks not supported on GLES2 - return null
+        return null;
+    }
+
+    @Override
+    public ShaderVariable getActiveVariable(int program, VariableType type, int index, byte[] nameBuffer)
+            throws GLException {
+        int[] written = new int[3];
+        switch (type) {
+            case ATTRIBUTE:
+                glGetActiveAttrib(program, index, written, NAME_LENGTH_OFFSET, written,
+                        SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
+                break;
+            case UNIFORM:
+                glGetActiveUniform(program, index, written, NAME_LENGTH_OFFSET, written,
+                        SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid varible type: " + type);
+
+        }
+        GLUtils.handleError(this, "glGetActive : " + type);
+        // Create shader variable using name excluding [] and .
+        return new ShaderVariable(type, getVariableName(nameBuffer, written[NAME_LENGTH_OFFSET]),
+                written, SIZE_OFFSET, TYPE_OFFSET);
     }
 
     /**
