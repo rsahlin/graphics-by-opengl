@@ -82,7 +82,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         GLUtils.handleError(this, "glGetActive : " + type);
         // Create shader variable using name excluding [] and .
         return new ShaderVariable(type, getVariableName(nameBuffer, written[NAME_LENGTH_OFFSET]),
-                written, SIZE_OFFSET, TYPE_OFFSET);
+                written, SIZE_OFFSET);
     }
 
     /**

@@ -93,7 +93,7 @@ public class ShaderVariable {
     /**
      * Offset into buffer where the data for this variable is stored, used by GL
      */
-    private int offset;
+    private int offset = Constants.NO_VALUE;
     /**
      * If this is a uniform variable within a uniform block this index is set.
      */
@@ -105,42 +105,17 @@ public class ShaderVariable {
      * 
      * @param type Type of shader variable
      * @param name Name of variable excluding [] and . chars.
-     * @param data Array holding size and type for variable, typically fetched from GL
-     * @param nameLengthOffset Offset into array where length of name is
-     * @param sizeOffset Offset into array where size of variable is
-     * @param typeOffset Offset into array where type of variable is
-     * @param uniformBlockIndex -1 or index of uniform block if this is a uniform belonging to a uniform block
+     * @param data Array holding size, type - and optionally variable index and block index in this order.
+     * @param startIndex Start of data.
      * @throws ArrayIndexOutOfBoundsException If sizeOffset or typeOffset is larger than data length, or negative.
      */
-    public ShaderVariable(VariableType type, String name, int[] data, int sizeOffset,
-            int typeOffset) {
+    public ShaderVariable(VariableType type, String name, int[] data, int startIndex) {
         this.type = type;
         this.name = name;
-        size = data[sizeOffset];
-        dataType = data[typeOffset];
-    }
-
-    /**
-     * Creates a new ActiveVariable from the specified data.
-     * This constructor can be used with the data from GLES
-     * Use this constructor if the variable could be a uniform in a uniform block
-     * 
-     * @param type Type of shader variable
-     * @param name Name of variable excluding [] and . chars.
-     * @param data Array holding size and type for variable, typically fetched from GL
-     * @param nameLengthOffset Offset into array where length of name is
-     * @param sizeOffset Offset into array where size of variable is
-     * @param typeOffset Offset into array where type of variable is
-     * @param uniformBlockIndex -1 or index of uniform block if this is a uniform belonging to a uniform block
-     * @throws ArrayIndexOutOfBoundsException If sizeOffset or typeOffset is larger than data length, or negative.
-     */
-    public ShaderVariable(VariableType type, String name, int[] data, int sizeOffset,
-            int typeOffset, int uniformBlockIndex) {
-        this.type = type;
-        this.name = name;
-        size = data[sizeOffset];
-        dataType = data[typeOffset];
-        this.uniformBlockIndex = uniformBlockIndex;
+        size = data[startIndex++];
+        dataType = data[startIndex++];
+        this.offset = data.length > startIndex ? data[startIndex++] : this.offset;
+        this.uniformBlockIndex = data.length > startIndex ? data[startIndex++] : this.uniformBlockIndex;
     }
 
     /**

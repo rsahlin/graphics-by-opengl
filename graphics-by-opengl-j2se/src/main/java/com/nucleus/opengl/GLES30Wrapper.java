@@ -74,9 +74,9 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
                 glGetActiveUniformsiv(program, 1, indices, 0, GLES30.GL_UNIFORM_OFFSET, params, UNIFORM_OFFSET);
                 GLUtils.handleError(this, "glGetActiveUnifor for " + type);
                 // Create shader variable using name excluding [] and .
-                return new ShaderVariable(VariableType.UNIFORM,
+                return new ShaderVariable(VariableType.UNIFORM_BLOCK,
                         getVariableName(nameBuffer, params[NAME_LENGTH_OFFSET]),
-                        params, SIZE_OFFSET, TYPE_OFFSET, params[BLOCK_INDEX_OFFSET]);
+                        params, SIZE_OFFSET);
             default:
                 throw new IllegalArgumentException("Invalid variable type " + type);
 

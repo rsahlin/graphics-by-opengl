@@ -327,7 +327,7 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets the name of the shadersin this program - shall be called before the program is created.
+     * Sets the name of the shaders in this program - shall be called before the program is created.
      * Creates shaders with type based on the {@link Shaders} field {@link #shaders}
      * 
      */
@@ -380,9 +380,10 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets the uniform mapping as defined by subclass
+     * Adds the uniform mapping as defined by subclass
      * 
-     * @param mapping
+     * @param mapping The mappings to add to source uniforms - these are the uniform names that can be found by using
+     * {@link VariableMapping}
      */
     protected void setUniformMapping(VariableMapping[] mapping) {
         ArrayList<VariableMapping> uniformList = new ArrayList<VariableMapping>();
@@ -745,6 +746,11 @@ public abstract class ShaderProgram {
             case UNIFORM:
                 variable.setLocation(gles.glGetUniformLocation(program, variable.getName()));
                 break;
+            case UNIFORM_BLOCK:
+                // Location is not used - skip check
+                variable.setLocation(Constants.NO_VALUE);
+                return;
+
         }
         if (variable.getLocation() < 0) {
             throw new GLException(VARIABLE_LOCATION_ERROR + variable.getName(), 0);
@@ -760,7 +766,8 @@ public abstract class ShaderProgram {
      */
     protected void setVariableStaticOffset(GLES20Wrapper gles, int program, ShaderVariable variable) {
         VariableMapping v = getMappingByName(variable);
-        variable.setOffset(v.getOffset());
+        // If variable is null then not defined in mapping used when class is created
+        variable.setOffset(v != null ? v.getOffset() : Constants.NO_VALUE);
     }
 
     /**
@@ -780,6 +787,7 @@ public abstract class ShaderProgram {
                 }
                 break;
             case UNIFORM:
+            case UNIFORM_BLOCK:
                 for (VariableMapping vm : sourceUniforms) {
                     if (name.contentEquals(vm.getName())) {
                         return vm;
