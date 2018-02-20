@@ -40,15 +40,6 @@ public class UVAtlas extends BaseReference {
     private float[] UVData;
 
     /**
-     * Returns all Quad UV data, or null if not set.
-     * 
-     * @return
-     */
-    public float[] getFrames() {
-        return UVData;
-    }
-
-    /**
      * Returns the number of frames that are defined
      * 
      * @return Number of frames of UV data.
@@ -64,19 +55,6 @@ public class UVAtlas extends BaseReference {
      */
     public float[] getUVData() {
         return UVData;
-    }
-
-    /**
-     * Stores the UV data for a sprite (quad) frame at the specified index, this will put the
-     * UV start pointa + width/height at the specified destination index.
-     * 
-     * @param frame Frame number to fetch UV data for.
-     * @param destination Destination array
-     * @param destIndex Index in destination where UV + width/height is stored
-     */
-    public void getUVData(int frame, float[] destination, int destIndex) {
-        int sourceIndex = frame * COMPONENTS;
-        System.arraycopy(UVData, sourceIndex, destination, destIndex, COMPONENTS);
     }
 
     /**

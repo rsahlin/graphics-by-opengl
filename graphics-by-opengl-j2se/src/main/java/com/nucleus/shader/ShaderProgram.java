@@ -236,6 +236,7 @@ public abstract class ShaderProgram {
     protected VariableMapping[] sourceUniforms; // List of uniforms defined by a program
     protected HashMap<Integer, ShaderVariable> blockVariables = new HashMap<>(); // Active block uniforms, index is the
                                                                                  // uniform index from GL
+    protected VariableBlock[] variableBlocks;
     protected ArrayList<Integer> commonVertexShaders;
     protected ArrayList<String> commonVertexSources;
 
@@ -672,8 +673,8 @@ public abstract class ShaderProgram {
         shaderVariables = new ShaderVariable[CommonShaderVariables.values().length];
         int uniformBlocks = info.getActiveVariables(VariableType.UNIFORM_BLOCK);
         if (uniformBlocks > 0) {
-            VariableBlock[] blocks = gles.getUniformBlocks(info);
-            for (VariableBlock block : blocks) {
+            variableBlocks = gles.getUniformBlocks(info);
+            for (VariableBlock block : variableBlocks) {
                 fetchActiveVariables(gles, VariableType.UNIFORM_BLOCK, info, block);
             }
         }
@@ -731,10 +732,9 @@ public abstract class ShaderProgram {
                 this.blockVariables.put(variable.getLocation(), variable);
                 addShaderVariable(variable);
             } else {
-                // Check if uniform variable already has been fetched from block
-                if (type == VariableType.UNIFORM) {
-                    variable = blockVariables.get(i);
-                }
+                // Check if uniform variable already has been fetched from block - then check that it is used in type of
+                // shader.
+                variable = getBlockVariable(type, i);
                 if (variable != null) {
                     SimpleLogger.d(getClass(),
                             type.name() + " using block variable for index " + i + ", " + variable.getName());
@@ -746,6 +746,29 @@ public abstract class ShaderProgram {
                 }
             }
         }
+    }
+
+    /**
+     * Returns ShaderVariable from variable blocks, if the block variable is used in the type.
+     * 
+     * @param type Shader type
+     * @param index
+     * @return
+     */
+    protected ShaderVariable getBlockVariable(VariableType type, int index) {
+        ShaderVariable var = blockVariables.get(index);
+        if (var != null) {
+            VariableBlock block = variableBlocks[var.getBlockIndex()];
+            switch (block.usage) {
+                case VERTEX_SHADER:
+                    return type == VariableType.UNIFORM ? var : null;
+                case FRAGMENT_SHADER:
+                    return type == VariableType.ATTRIBUTE ? var : null;
+                case VERTEX_FRAGMENT_SHADER:
+                    return var;
+            }
+        }
+        return null;
     }
 
     /**
@@ -904,7 +927,7 @@ public abstract class ShaderProgram {
      * @param gles GLES20 platform specific wrapper.
      * @param shaderStream Inputstream to the shader source.
      * @param shader OpenGL object to compile the shader to.
-     * @param type GL_VERTEX_SHADER or GL_FRAGMENT_SHADER
+     * @param type GL_VERTEX_SHADER, GL_FRAGMENT_SHADER or GL_COMPUTE_SHADER
      * @param sourceName Name of the sourcefile - this is used for error reporting.
      * @param libray true if this is a library function for shader
      * @throws GLException If there is an reading from stream, setting or compiling shader source.
@@ -914,8 +937,8 @@ public abstract class ShaderProgram {
             throws IOException, GLException {
         if (commonVertexShaders == null) {
             compileShader(gles,
-                    gles.getVersionedShaderSource(shaderStream, type, true)
-                            + getCommonVertexSources(),
+                    gles.getVersionedShaderSource(shaderStream, type, library)
+                            + getCommonSources(type),
                     shader, sourceName);
         } else {
             compileShader(gles, gles.getVersionedShaderSource(shaderStream, type, library), shader,
@@ -1477,9 +1500,14 @@ public abstract class ShaderProgram {
         }
     }
 
-    private String getCommonVertexSources() {
-        // common vertex sources can be null if Compute program
-        if (commonVertexSources == null) {
+    /**
+     * 
+     * @param type Shader type GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER
+     * @return
+     */
+    private String getCommonSources(int type) {
+        // common sources can be null if Compute program
+        if (commonVertexSources == null || type != GLES20.GL_VERTEX_SHADER) {
             return "";
         }
         String result = new String();

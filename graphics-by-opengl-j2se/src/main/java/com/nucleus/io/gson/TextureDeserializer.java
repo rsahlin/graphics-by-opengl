@@ -17,7 +17,7 @@ import com.nucleus.texturing.TextureType;
  * DO NOT USE THIS CLASS DIRECTLY - go through {@link AssetManager} to handle textures
  *
  */
-public class TextureDeserializer implements JsonDeserializer<Texture2D> {
+public class TextureDeserializer extends NucleusDeserializer implements JsonDeserializer<Texture2D> {
 
     @Override
     public Texture2D deserialize(JsonElement json, Type type, JsonDeserializationContext context)
@@ -28,6 +28,8 @@ public class TextureDeserializer implements JsonDeserializer<Texture2D> {
             throw new IllegalArgumentException("Texture must define " + Texture2D.TEXTURETYPE);
         }
         TextureType texType = TextureType.valueOf(jsonType.getAsString());
-        return (Texture2D) new Gson().fromJson(json, texType.getImplementation());
+        Texture2D texture = (Texture2D) new Gson().fromJson(json, texType.getImplementation());
+        postDeserialize(texture);
+        return texture;
     }
 }
