@@ -41,16 +41,23 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
             return null;
         }
         VariableBlock[] uniformBlock = new VariableBlock[info.getActiveVariables(VariableType.UNIFORM_BLOCK)];
-        int[] blockInfo = new int[3];
+        int[] blockInfo = new int[4];
         int[] indices = null;
         for (int i = 0; i < uniformBlock.length; i++) {
             // GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS
-            glGetActiveUniformBlockiv(info.getProgram(), i, GLES30.GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, blockInfo, 0);
+            int program = info.getProgram();
+            glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, blockInfo, 0);
             if (blockInfo[0] > 0) {
                 indices = new int[blockInfo[0]];
-                glGetActiveUniformBlockiv(info.getProgram(), i, GLES30.GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices,
+                glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices,
                         0);
-                uniformBlock[i] = new VariableBlock(info.getProgram(), i, blockInfo[0], indices);
+                glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_DATA_SIZE, blockInfo, 1);
+                glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER,
+                        blockInfo, 2);
+                glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER,
+                        blockInfo, 3);
+                uniformBlock[i] = new VariableBlock(info.getProgram(), i,
+                        glGetActiveUniformBlockName(info.getProgram(), i), blockInfo, indices);
             }
         }
         return uniformBlock;
@@ -65,18 +72,20 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
             case UNIFORM:
                 return super.getActiveVariable(program, type, index, nameBuffer);
             case UNIFORM_BLOCK:
-                int[] params = new int[5];
+                int[] params = new int[10];
                 int[] indices = new int[] { index };
+                params[ShaderVariable.INDEX_OFFSET] = index;
                 glGetActiveUniform(program, index, params, NAME_LENGTH_OFFSET, params,
-                        SIZE_OFFSET, params, TYPE_OFFSET, nameBuffer);
+                        ShaderVariable.SIZE_OFFSET, params, ShaderVariable.TYPE_OFFSET, nameBuffer);
                 glGetActiveUniformsiv(program, 1, indices, 0, GLES30.GL_UNIFORM_BLOCK_INDEX, params,
-                        BLOCK_INDEX_OFFSET);
-                glGetActiveUniformsiv(program, 1, indices, 0, GLES30.GL_UNIFORM_OFFSET, params, UNIFORM_OFFSET);
+                        ShaderVariable.BLOCK_INDEX_OFFSET);
+                glGetActiveUniformsiv(program, 1, indices, 0, GLES30.GL_UNIFORM_OFFSET, params,
+                        ShaderVariable.DATA_OFFSET);
                 GLUtils.handleError(this, "glGetActiveUnifor for " + type);
                 // Create shader variable using name excluding [] and .
                 return new ShaderVariable(VariableType.UNIFORM_BLOCK,
                         getVariableName(nameBuffer, params[NAME_LENGTH_OFFSET]),
-                        params, SIZE_OFFSET);
+                        params, 0);
             default:
                 throw new IllegalArgumentException("Invalid variable type " + type);
 

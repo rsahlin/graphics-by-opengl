@@ -27,14 +27,15 @@ public enum CommonShaderVariables implements VariableMapping {
     uTextureData(6, 54, ShaderVariable.VariableType.UNIFORM, null),
     uAmbientLight(7, 58, ShaderVariable.VariableType.UNIFORM, null),
     uDiffuseLight(8, 62, ShaderVariable.VariableType.UNIFORM, null),
-    aVertex(9, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-    aTexCoord(10, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-    aTranslate(11, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aRotate(12, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aScale(13, 8, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aColor(14, 12, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aFrameData(15, 16, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aData1(16, 20, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
+    uvData(9, 0, ShaderVariable.VariableType.UNIFORM, null),
+    aVertex(10, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+    aTexCoord(11, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+    aTranslate(12, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aRotate(13, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aScale(14, 8, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aColor(15, 12, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aFrameData(16, 16, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aData1(17, 20, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
 
     /**
      * Index (id) of variable

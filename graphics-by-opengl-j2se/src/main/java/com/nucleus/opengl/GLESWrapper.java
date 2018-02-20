@@ -51,27 +51,6 @@ public abstract class GLESWrapper {
     private final static String[] GLES3_VERTEX_REPLACEMENTS = new String[] { "attribute", "in", "varying", "out" };
     private final static String[] GLES3_FRAGMENT_REPLACEMENTS = new String[] { "varying", "in" };
 
-    /**
-     * Used when calling glGetActiveAttrib/uniform as offset into data to be written
-     */
-    public final static int NAME_LENGTH_OFFSET = 0;
-    /**
-     * Used when calling glGetActiveAttrib/uniform as offset into data to be written
-     */
-    public final static int SIZE_OFFSET = 1;
-    /**
-     * Used when calling glGetActiveAttrib/uniform as offset into data to be written
-     */
-    public final static int TYPE_OFFSET = 2;
-    /**
-     * Used when calling glGetActiveUniformsiv as offset into data to be written
-     */
-    public final static int BLOCK_INDEX_OFFSET = 3;
-    /**
-     * Used when calling glGetActiveUniformsiv as offset into data to be written
-     */
-    public final static int UNIFORM_OFFSET = 4;
-
     protected RendererInfo rendererInfo;
     protected final Platform platform;
 

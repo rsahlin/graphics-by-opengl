@@ -15,6 +15,28 @@ public class ShaderVariable {
     private final static String ILLEGAL_DATATYPE_ERROR = "Illegal datatype: ";
 
     /**
+     * Offset to size
+     */
+    public final static int SIZE_OFFSET = 0;
+    /**
+     * Offset to type
+     */
+    public final static int TYPE_OFFSET = 1;
+
+    /**
+     * Offset to index of active variable
+     */
+    public final static int INDEX_OFFSET = 2;
+    /**
+     * Offset to uniform data offset
+     */
+    public final static int DATA_OFFSET = 3;
+    /**
+     * Offset to block index
+     */
+    public final static int BLOCK_INDEX_OFFSET = 4;
+
+    /**
      * The different types of active variables - attribute, uniform or uniform block
      * 
      * @author Richard Sahlin
@@ -35,19 +57,48 @@ public class ShaderVariable {
 
     public static class VariableBlock {
 
-        public VariableBlock(int program, int blockIndex, int active, int[] indices) {
-            this.program = program;
-            this.blockIndex = blockIndex;
-            this.active = active;
-            this.indices = new int[indices.length];
-            System.arraycopy(indices, 0, this.indices, 0, indices.length);
+        /**
+         * Where the variable block variables are used
+         * 
+         * @author rdsn
+         *
+         */
+        public enum Usage {
+            VERTEX_SHADER(),
+            FRAGMENT_SHADER(),
+            VERTEX_FRAGMENT_SHADER();
         }
 
-        protected int active;
+        /**
+         * Creates a new VariableBlock for the specified program and block index.
+         * blockInfo shall contain: active variables, block data size
+         * 
+         * @param program
+         * @param blockIndex
+         * @param blockName
+         * @param blockInfo active variable count, block data size is read here
+         * @param indices
+         */
+        public VariableBlock(int program, int blockIndex, String blockName, int[] blockInfo, int[] indices) {
+            this.program = program;
+            this.blockIndex = blockIndex;
+            this.activeCount = blockInfo[0];
+            this.indices = new int[indices.length];
+            this.name = blockName;
+            this.blockDataSize = blockInfo[1];
+            System.arraycopy(indices, 0, this.indices, 0, indices.length);
+            int value = blockInfo[2] + (blockInfo[3] << 1);
+            usage = value == 3 ? Usage.VERTEX_FRAGMENT_SHADER
+                    : value == 1 ? Usage.VERTEX_SHADER : Usage.FRAGMENT_SHADER;
+        }
+
+        protected int activeCount;
         protected int[] indices;
         protected int blockIndex;
         protected int program;
+        protected int blockDataSize;
         protected String name;
+        protected Usage usage;
 
     }
 
@@ -94,10 +145,11 @@ public class ShaderVariable {
      * Offset into buffer where the data for this variable is stored, used by GL
      */
     private int offset = Constants.NO_VALUE;
+
     /**
-     * If this is a uniform variable within a uniform block this index is set.
+     * If this variable belongs to a block
      */
-    private int uniformBlockIndex = Constants.NO_VALUE;
+    private int blockIndex = Constants.NO_VALUE;
 
     /**
      * Creates a new ActiveVariable from the specified data.
@@ -105,17 +157,19 @@ public class ShaderVariable {
      * 
      * @param type Type of shader variable
      * @param name Name of variable excluding [] and . chars.
-     * @param data Array holding size, type - and optionally variable index and block index in this order.
+     * @param data Array holding data at {@value #SIZE_OFFSET}, {@value #TYPE_OFFSET}, {@value #INDEX_OFFSET},
+     * {@value #DATA_OFFSET} {@value #BLOCK_INDEX_OFFSET}
      * @param startIndex Start of data.
      * @throws ArrayIndexOutOfBoundsException If sizeOffset or typeOffset is larger than data length, or negative.
      */
     public ShaderVariable(VariableType type, String name, int[] data, int startIndex) {
         this.type = type;
         this.name = name;
-        size = data[startIndex++];
-        dataType = data[startIndex++];
-        this.offset = data.length > startIndex ? data[startIndex++] : this.offset;
-        this.uniformBlockIndex = data.length > startIndex ? data[startIndex++] : this.uniformBlockIndex;
+        size = data[startIndex + SIZE_OFFSET];
+        dataType = data[startIndex + TYPE_OFFSET];
+        location = data[startIndex + INDEX_OFFSET];
+        this.offset = data.length > startIndex ? data[startIndex + DATA_OFFSET] : this.offset;
+        this.blockIndex = data.length > startIndex ? data[startIndex + BLOCK_INDEX_OFFSET] : this.blockIndex;
     }
 
     /**
@@ -128,12 +182,12 @@ public class ShaderVariable {
     }
 
     /**
-     * If this variable belongs to a uniform block, this contains the uniform block index - if not this is -1
+     * If this variable belongs to a variable block, this contains the block index - if not this is -1
      * 
-     * @return Uniform block index, or -1 if not uniform in a uniform block.
+     * @return Block index, or -1 if not variable in a block.
      */
-    public int getUniformBlockIndex() {
-        return uniformBlockIndex;
+    public int getBlockIndex() {
+        return blockIndex;
     }
 
     /**

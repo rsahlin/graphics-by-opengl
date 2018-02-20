@@ -36,6 +36,8 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public static String ES = "es";
     public static String SHADING_LANGUAGE_100 = "100";
 
+    public static final int NAME_LENGTH_OFFSET = 5;
+
     /**
      * Implementation constructor - DO NOT USE!!!
      * TODO - protect/hide this constructor
@@ -65,15 +67,16 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     @Override
     public ShaderVariable getActiveVariable(int program, VariableType type, int index, byte[] nameBuffer)
             throws GLException {
-        int[] written = new int[3];
+        int[] written = new int[NAME_LENGTH_OFFSET + 1];
+        written[ShaderVariable.INDEX_OFFSET] = index;
         switch (type) {
             case ATTRIBUTE:
                 glGetActiveAttrib(program, index, written, NAME_LENGTH_OFFSET, written,
-                        SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
+                        ShaderVariable.SIZE_OFFSET, written, ShaderVariable.TYPE_OFFSET, nameBuffer);
                 break;
             case UNIFORM:
                 glGetActiveUniform(program, index, written, NAME_LENGTH_OFFSET, written,
-                        SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
+                        ShaderVariable.SIZE_OFFSET, written, ShaderVariable.TYPE_OFFSET, nameBuffer);
                 break;
             default:
                 throw new IllegalArgumentException("Invalid varible type: " + type);
@@ -82,7 +85,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         GLUtils.handleError(this, "glGetActive : " + type);
         // Create shader variable using name excluding [] and .
         return new ShaderVariable(type, getVariableName(nameBuffer, written[NAME_LENGTH_OFFSET]),
-                written, SIZE_OFFSET);
+                written, 0);
     }
 
     /**
