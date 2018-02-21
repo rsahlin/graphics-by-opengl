@@ -74,17 +74,17 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
             case UNIFORM_BLOCK:
                 int[] params = new int[10];
                 int[] indices = new int[] { index };
-                params[ShaderVariable.INDEX_OFFSET] = index;
-                glGetActiveUniform(program, index, params, NAME_LENGTH_OFFSET, params,
+                params[ShaderVariable.ACTIVE_INDEX_OFFSET] = index;
+                glGetActiveUniform(program, index, params, ShaderVariable.NAME_LENGTH_OFFSET, params,
                         ShaderVariable.SIZE_OFFSET, params, ShaderVariable.TYPE_OFFSET, nameBuffer);
                 glGetActiveUniformsiv(program, 1, indices, 0, GLES30.GL_UNIFORM_BLOCK_INDEX, params,
                         ShaderVariable.BLOCK_INDEX_OFFSET);
                 glGetActiveUniformsiv(program, 1, indices, 0, GLES30.GL_UNIFORM_OFFSET, params,
                         ShaderVariable.DATA_OFFSET);
-                GLUtils.handleError(this, "glGetActiveUnifor for " + type);
+                GLUtils.handleError(this, "glGetActiveUniform for " + type);
                 // Create shader variable using name excluding [] and .
                 return new ShaderVariable(VariableType.UNIFORM_BLOCK,
-                        getVariableName(nameBuffer, params[NAME_LENGTH_OFFSET]),
+                        getVariableName(nameBuffer, params[ShaderVariable.NAME_LENGTH_OFFSET]),
                         params, 0);
             default:
                 throw new IllegalArgumentException("Invalid variable type " + type);

@@ -1,11 +1,9 @@
 package com.nucleus.texturing;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.gson.PostDeserializable;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /**
  * A texture that has an array of UV coordinates + width/height,so that it can hold data for a number of sprite frames.
@@ -23,7 +21,7 @@ public class UVTexture2D extends Texture2D implements PostDeserializable {
      * Currently copied from UVAtlas after deserialization
      * TODO Implement using binary loader.
      */
-    transient FloatBuffer uvData;
+    transient AttributeBuffer uvData;
 
     public UVTexture2D() {
         super();
@@ -52,6 +50,15 @@ public class UVTexture2D extends Texture2D implements PostDeserializable {
         return UVAtlas;
     }
 
+    /**
+     * Returns the buffer containing the uv atlas
+     * 
+     * @return
+     */
+    public AttributeBuffer getUVAtlasBuffer() {
+        return uvData;
+    }
+
     @Override
     public int getFrameCount() {
         return UVAtlas.getFrameCount();
@@ -61,7 +68,7 @@ public class UVTexture2D extends Texture2D implements PostDeserializable {
     public void postDeserialize() {
         if (UVAtlas != null) {
             float[] data = UVAtlas.getUVData();
-            uvData = ByteBuffer.allocateDirect(data.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            uvData = new AttributeBuffer(UVAtlas.getFrameCount(), UVAtlas.COMPONENTS, GLES20.GL_FLOAT);
             uvData.put(data);
         }
     }

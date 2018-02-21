@@ -231,9 +231,16 @@ public abstract class ShaderProgram {
      * The size of each buffer for the attribute variables
      */
     protected int[] attributesPerVertex;
-    protected VariableMapping[] attributes; // List of attributes defined by a program
-    protected int attributeBufferCount; // Number of buffers used by attributes
-    protected VariableMapping[] sourceUniforms; // List of uniforms defined by a program
+    /**
+     * List of uniforms defined by a program, ie passed to {@link #setUniformMapping(VariableMapping[])}
+     * 
+     */
+    protected VariableMapping[] sourceUniforms;
+    /**
+     * List of attributes defined by a program, ie passet to {@link #setAttributeMapping(VariableMapping[])}
+     */
+    protected VariableMapping[] attributes;
+    protected int attributeBufferCount;
     protected HashMap<Integer, ShaderVariable> blockVariables = new HashMap<>(); // Active block uniforms, index is the
                                                                                  // uniform index from GL
     protected VariableBlock[] variableBlocks;
@@ -729,7 +736,7 @@ public abstract class ShaderProgram {
             if (block != null) {
                 variable = gles.getActiveVariable(program, type, block.indices[i], nameBuffer);
                 // Add to current block uniforms
-                this.blockVariables.put(variable.getLocation(), variable);
+                this.blockVariables.put(variable.getActiveIndex(), variable);
                 addShaderVariable(variable);
             } else {
                 // Check if uniform variable already has been fetched from block - then check that it is used in type of
@@ -1134,6 +1141,20 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Sets the uniform data into the block
+     * 
+     * @param gles
+     * @param block
+     * @param variable
+     * @param offset
+     * @throws GLException
+     */
+    protected void setUniformBlock(GLES20Wrapper gles, VariableBlock block, ShaderVariable variable)
+            throws GLException {
+
+    }
+
+    /**
      * Sets one of more float uniforms for the specified variable, supports VEC2, VEC3, VEC4 and MAT2, MAT3, MAT4 types
      * 
      * @param gles
@@ -1141,9 +1162,9 @@ public abstract class ShaderProgram {
      * @param offset Offset into uniform array where data starts.
      * @throws GLException If there is an error setting a uniform to GL
      */
-    protected final void setUniform(GLES20Wrapper gles, ShaderVariable variable, int offset)
+    protected final void setUniform(GLES20Wrapper gles, ShaderVariable variable)
             throws GLException {
-
+        int offset = variable.getOffset();
         switch (variable.getDataType()) {
             case GLES20.GL_FLOAT_VEC2:
                 gles.glUniform2fv(variable.getLocation(), variable.getSize(), uniforms, offset);
@@ -1349,7 +1370,11 @@ public abstract class ShaderProgram {
             ShaderVariable v = getShaderVariable(am);
             // If null then declared in program but not used, silently ignore
             if (v != null) {
-                setUniform(gles, v, v.getOffset());
+                if (v.getBlockIndex() != Constants.NO_VALUE) {
+                    setUniformBlock(gles, variableBlocks[v.getBlockIndex()], v);
+                } else {
+                    setUniform(gles, v);
+                }
             }
         }
     }

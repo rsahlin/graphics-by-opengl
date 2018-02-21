@@ -26,7 +26,7 @@ public class CPUComponentBuffer extends ComponentBuffer {
     @Override
     public void get(int entity, AttributeBuffer destination) {
         int index = entity * sizePerEntity;
-        destination.getBuffer().put(data, index, sizePerEntity);
+        destination.put(data, index, sizePerEntity);
         destination.setDirty(true);
     }
 

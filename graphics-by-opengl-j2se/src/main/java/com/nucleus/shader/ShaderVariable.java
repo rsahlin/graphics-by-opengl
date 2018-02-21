@@ -5,7 +5,8 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
 
 /**
- * Data for an active shader variable, this can be either attribute or uniform variables.
+ * Data for an active shader variable, ie varible declared and used in a compiled shader.
+ * This can be attribute, uniform or block variables.
  * 
  * @author Richard Sahlin
  *
@@ -23,18 +24,20 @@ public class ShaderVariable {
      */
     public final static int TYPE_OFFSET = 1;
 
+    public static final int NAME_LENGTH_OFFSET = 2;
+
     /**
-     * Offset to index of active variable
+     * Offset to index of active (location) variable
      */
-    public final static int INDEX_OFFSET = 2;
+    public final static int ACTIVE_INDEX_OFFSET = 3;
     /**
      * Offset to uniform data offset
      */
-    public final static int DATA_OFFSET = 3;
+    public final static int DATA_OFFSET = 4;
     /**
      * Offset to block index
      */
-    public final static int BLOCK_INDEX_OFFSET = 4;
+    public final static int BLOCK_INDEX_OFFSET = 5;
 
     /**
      * The different types of active variables - attribute, uniform or uniform block
@@ -55,17 +58,27 @@ public class ShaderVariable {
         }
     }
 
+    /**
+     * Containing information about a variable block
+     *
+     */
     public static class VariableBlock {
 
         /**
          * Where the variable block variables are used
-         * 
-         * @author rdsn
-         *
          */
         public enum Usage {
+            /**
+             * Variables used only in vertex shader
+             */
             VERTEX_SHADER(),
+            /**
+             * Variables used only in fragment shader
+             */
             FRAGMENT_SHADER(),
+            /**
+             * Variables used in vertex and fragment shader
+             */
             VERTEX_FRAGMENT_SHADER();
         }
 
@@ -142,6 +155,10 @@ public class ShaderVariable {
      */
     private int location;
     /**
+     * The gl index of this active variable
+     */
+    private int activeIndex;
+    /**
      * Offset into buffer where the data for this variable is stored, used by GL
      */
     private int offset = Constants.NO_VALUE;
@@ -167,9 +184,10 @@ public class ShaderVariable {
         this.name = name;
         size = data[startIndex + SIZE_OFFSET];
         dataType = data[startIndex + TYPE_OFFSET];
-        location = data[startIndex + INDEX_OFFSET];
-        this.offset = data.length > startIndex ? data[startIndex + DATA_OFFSET] : this.offset;
-        this.blockIndex = data.length > startIndex ? data[startIndex + BLOCK_INDEX_OFFSET] : this.blockIndex;
+        activeIndex = data[startIndex + ACTIVE_INDEX_OFFSET];
+        this.offset = data.length > startIndex + DATA_OFFSET ? data[startIndex + DATA_OFFSET] : this.offset;
+        this.blockIndex = data.length > startIndex + BLOCK_INDEX_OFFSET ? data[startIndex + BLOCK_INDEX_OFFSET]
+                : this.blockIndex;
     }
 
     /**
@@ -206,6 +224,15 @@ public class ShaderVariable {
      */
     public int getLocation() {
         return location;
+    }
+
+    /**
+     * Returns the active index of this shader variable
+     * 
+     * @return The index of this variable as an active variable
+     */
+    public int getActiveIndex() {
+        return activeIndex;
     }
 
     /**

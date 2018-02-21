@@ -36,8 +36,6 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public static String ES = "es";
     public static String SHADING_LANGUAGE_100 = "100";
 
-    public static final int NAME_LENGTH_OFFSET = 5;
-
     /**
      * Implementation constructor - DO NOT USE!!!
      * TODO - protect/hide this constructor
@@ -67,15 +65,16 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     @Override
     public ShaderVariable getActiveVariable(int program, VariableType type, int index, byte[] nameBuffer)
             throws GLException {
-        int[] written = new int[NAME_LENGTH_OFFSET + 1];
-        written[ShaderVariable.INDEX_OFFSET] = index;
+        // DO NOT CREATE ARRAY LARGER THAN THIS - otherwise created uniform will indicate it belongs to a block.
+        int[] written = new int[ShaderVariable.ACTIVE_INDEX_OFFSET + 1];
+        written[ShaderVariable.ACTIVE_INDEX_OFFSET] = index;
         switch (type) {
             case ATTRIBUTE:
-                glGetActiveAttrib(program, index, written, NAME_LENGTH_OFFSET, written,
+                glGetActiveAttrib(program, index, written, ShaderVariable.NAME_LENGTH_OFFSET, written,
                         ShaderVariable.SIZE_OFFSET, written, ShaderVariable.TYPE_OFFSET, nameBuffer);
                 break;
             case UNIFORM:
-                glGetActiveUniform(program, index, written, NAME_LENGTH_OFFSET, written,
+                glGetActiveUniform(program, index, written, ShaderVariable.NAME_LENGTH_OFFSET, written,
                         ShaderVariable.SIZE_OFFSET, written, ShaderVariable.TYPE_OFFSET, nameBuffer);
                 break;
             default:
@@ -84,7 +83,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         }
         GLUtils.handleError(this, "glGetActive : " + type);
         // Create shader variable using name excluding [] and .
-        return new ShaderVariable(type, getVariableName(nameBuffer, written[NAME_LENGTH_OFFSET]),
+        return new ShaderVariable(type, getVariableName(nameBuffer, written[ShaderVariable.NAME_LENGTH_OFFSET]),
                 written, 0);
     }
 

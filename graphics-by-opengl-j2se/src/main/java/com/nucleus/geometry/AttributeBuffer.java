@@ -100,10 +100,35 @@ public class AttributeBuffer extends BufferObject {
      * NOTE!
      * Take care when writing to the buffer as it may clash with copy to gl.
      * 
+     * Avoid using this method to store data in underlying buffer - use {@link #put(float[], int, int)} etc
+     * 
      * @return
      */
+    @Deprecated
     public FloatBuffer getBuffer() {
         return attributes;
+    }
+
+    /**
+     * Copies data from the data array into this buffer, the dirty flag is set.
+     * 
+     * @param data
+     * @param offset Offset into data where values are copied
+     * @param length NUmber of float values to copy
+     */
+    public void put(float[] data, int offset, int length) {
+        attributes.put(data, offset, length);
+        dirty = true;
+    }
+
+    /**
+     * Copies data from the data array into this buffer, the dirty flag is set.
+     * 
+     * @param data
+     */
+    public void put(float[] data) {
+        attributes.put(data);
+        dirty = true;
     }
 
     /**
@@ -178,23 +203,14 @@ public class AttributeBuffer extends BufferObject {
     }
 
     /**
-     * Same as calling {@link #calculateBounds2D(int)} with the vertice count and first
-     * rewinding the buffer.
-     * 
-     * @param vertices
-     * @return
-     */
-    public float[] calculateBounds2D() {
-        attributes.rewind();
-        return calculateBounds2D(verticeCount);
-    }
-
-    /**
      * Calculates the axis aligned 2D bounds for vertices in this buffer, starting at the current position.
+     * This method should be moved to some other class/package - this AttributeBuffer class does not
+     * specifically deal with vertices / coordinates
      * 
      * @param count Number of vertices to include in calculation
      * @return Array with the smallest and largest corner (x1y1x2y2)
      */
+    @Deprecated
     public float[] calculateBounds2D(int count) {
         float[] result = null;
         int stride = (attribByteStride / 4);

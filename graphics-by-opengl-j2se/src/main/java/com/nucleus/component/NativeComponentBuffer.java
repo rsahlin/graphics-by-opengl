@@ -31,7 +31,7 @@ public class NativeComponentBuffer extends ComponentBuffer {
     @Override
     public void get(int entity, AttributeBuffer destination) {
         get(entity, tempData);
-        destination.getBuffer().put(tempData);
+        destination.put(tempData);
     }
 
     @Override
