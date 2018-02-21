@@ -8,10 +8,8 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /**
- * Create and hold data for OpenGL vertex arrays, this can for instance be the vertice position, texture coordinates,
+ * Create and hold data for OpenGL attribute arrays, this can for instance be the vertice position, texture coordinates,
  * normal and material data or any other attribute data.
- * The data is interleaved, meaning that data for one vertex is stored together - as opposed to having separated
- * buffers.
  * 
  * @author Richard Sahlin
  *

@@ -243,9 +243,11 @@ public abstract class ShaderProgram {
     protected int attributeBufferCount;
     protected HashMap<Integer, ShaderVariable> blockVariables = new HashMap<>(); // Active block uniforms, index is the
                                                                                  // uniform index from GL
-    protected VariableBlock[] variableBlocks;
     protected ArrayList<Integer> commonVertexShaders;
     protected ArrayList<String> commonVertexSources;
+
+    protected VariableBlock[] variableBlocks;
+    protected BlockBuffer[] blockBuffers;
 
     /**
      * Uniforms, used when rendering this Mesh depending on what ShaderProgram is used.
@@ -694,8 +696,7 @@ public abstract class ShaderProgram {
             dynamicMapVariables();
         }
         for (int i = 0; i < attributeBufferCount; i++) {
-            attributesPerVertex[i] = getVariableSize(attributeVariables[i], VariableType.ATTRIBUTE,
-                    BufferIndex.getFromIndex(i));
+            attributesPerVertex[i] = getVariableSize(attributeVariables[i], VariableType.ATTRIBUTE);
         }
     }
 
@@ -1210,11 +1211,26 @@ public abstract class ShaderProgram {
         int samplerSize = 0;
         if (variables != null) {
             samplerSize = getSamplerSize(variables);
-            uniformSize = getVariableSize(variables, VariableType.UNIFORM, null);
+            uniformSize = getVariableSize(variables, VariableType.UNIFORM);
             if (uniformSize > 0) {
                 createUniforms(new float[uniformSize], new int[samplerSize]);
             } else {
                 SimpleLogger.d(getClass(), "No uniforms used");
+            }
+
+            if (variableBlocks != null) {
+                blockBuffers = new BlockBuffer[variableBlocks.length];
+                int blockSize = 0;
+                for (int index = 0; index < variableBlocks.length; index++) {
+                    VariableBlock vb = variableBlocks[index];
+                    // TODO - need to add stride
+                    blockSize = getVariableSize(vb);
+                    blockBuffers[index] = createBlockBuffer(vb, blockSize);
+                }
+                if (blockSize > 0) {
+                    SimpleLogger.d(getClass(), "Data for uniform block " + blockSize);
+                }
+
             }
         } else {
             throw new IllegalArgumentException("Shader variables is null, forgot to call createProgram()?");
@@ -1233,14 +1249,29 @@ public abstract class ShaderProgram {
      * @param index BufferIndex to the buffer that the variables belong to, or null
      * @return Total size, in floats, of all defined shader variables of the specified type
      */
-    protected int getVariableSize(ShaderVariable[] variables, VariableType type, BufferIndex index) {
+    protected int getVariableSize(ShaderVariable[] variables, VariableType type) {
         int size = 0;
         for (ShaderVariable v : variables) {
             if (v != null && v.getType() == type && v.getDataType() != GLES20.GL_SAMPLER_2D) {
                 size += v.getSizeInFloats();
             }
         }
-        return alignVariableSize(size, type, index);
+        return alignVariableSize(size, type);
+    }
+
+    /**
+     * returns the size, in basic machine units, of all active variables in the block.
+     * 
+     * @param block
+     * @return
+     */
+    protected int getVariableSize(VariableBlock block) {
+        int size = 0;
+        for (int index : block.indices) {
+            ShaderVariable variable = this.blockVariables.get(index);
+            size += variable.getSizeInBytes();
+        }
+        return size;
     }
 
     /**
@@ -1250,10 +1281,9 @@ public abstract class ShaderProgram {
      * 
      * @param size The packed size
      * @param type
-     * @param index
      * @return The aligned size of variables per vertex.
      */
-    protected int alignVariableSize(int size, VariableType type, BufferIndex index) {
+    protected int alignVariableSize(int size, VariableType type) {
         return size;
     }
 
@@ -1467,6 +1497,18 @@ public abstract class ShaderProgram {
     private void createUniforms(float[] uniforms, int[] samplers) {
         this.uniforms = uniforms;
         this.samplers = samplers;
+    }
+
+    /**
+     * Creates the buffer to hold the block variable data
+     * 
+     * @param block The block to create the buffer for
+     * @param size The size, in bytes to allocate.
+     */
+    protected BlockBuffer createBlockBuffer(VariableBlock block, int size) {
+        // Size is in bytes, align to floats
+        FloatBlockBuffer fbb = new FloatBlockBuffer(size >>> 2);
+        return fbb;
     }
 
     /**

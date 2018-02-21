@@ -1,9 +1,9 @@
 package com.nucleus.texturing;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.gson.PostDeserializable;
-import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.shader.BlockBuffer;
+import com.nucleus.shader.FloatBlockBuffer;
 
 /**
  * A texture that has an array of UV coordinates + width/height,so that it can hold data for a number of sprite frames.
@@ -21,7 +21,7 @@ public class UVTexture2D extends Texture2D implements PostDeserializable {
      * Currently copied from UVAtlas after deserialization
      * TODO Implement using binary loader.
      */
-    transient AttributeBuffer uvData;
+    transient BlockBuffer uvData;
 
     public UVTexture2D() {
         super();
@@ -55,7 +55,7 @@ public class UVTexture2D extends Texture2D implements PostDeserializable {
      * 
      * @return
      */
-    public AttributeBuffer getUVAtlasBuffer() {
+    public BlockBuffer getUVAtlasBuffer() {
         return uvData;
     }
 
@@ -68,8 +68,8 @@ public class UVTexture2D extends Texture2D implements PostDeserializable {
     public void postDeserialize() {
         if (UVAtlas != null) {
             float[] data = UVAtlas.getUVData();
-            uvData = new AttributeBuffer(UVAtlas.getFrameCount(), UVAtlas.COMPONENTS, GLES20.GL_FLOAT);
-            uvData.put(data);
+            uvData = new FloatBlockBuffer(data.length);
+            uvData.put(data, 0, data.length);
         }
     }
 

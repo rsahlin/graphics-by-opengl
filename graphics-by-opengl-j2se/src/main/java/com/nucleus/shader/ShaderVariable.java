@@ -283,6 +283,36 @@ public class ShaderVariable {
         throw new IllegalArgumentException(ILLEGAL_DATATYPE_ERROR + dataType);
     }
 
+    /**
+     * Utility method that returns the total number of bytes that this variable occupies.
+     * This is needed when allocating the client (Java) side of the variable.
+     * 
+     * @return Number of bytes that this variable needs
+     */
+    public int getSizeInBytes() {
+        switch (dataType) {
+            case GLES20.GL_FLOAT:
+                return size * 4;
+            case GLES20.GL_FLOAT_VEC2:
+                return 2 * size * 4;
+            case GLES20.GL_FLOAT_VEC3:
+                return 3 * size * 4;
+            case GLES20.GL_FLOAT_VEC4:
+                return 4 * size * 4;
+            case GLES20.GL_FLOAT_MAT2:
+                return 4 * size * 4;
+            case GLES20.GL_FLOAT_MAT3:
+                return 9 * size * 4;
+            case GLES20.GL_FLOAT_MAT4:
+                return 16 * size * 4;
+            case GLES20.GL_SAMPLER_2D:
+                return size * 4;
+            case GLES30.GL_SAMPLER_2D_SHADOW:
+                return size * 4;
+        }
+        throw new IllegalArgumentException(ILLEGAL_DATATYPE_ERROR + dataType);
+    }
+
     public int getComponentCount() {
         switch (dataType) {
             case GLES20.GL_FLOAT:
