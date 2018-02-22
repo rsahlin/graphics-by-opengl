@@ -3,6 +3,8 @@ package com.nucleus.opengl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.StringTokenizer;
 
@@ -686,7 +688,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @return
      */
     public String glGetShaderSource(int shader) {
-        IntBuffer sourceLength = IntBuffer.allocate(1);
+        IntBuffer sourceLength = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
         glGetShaderiv(shader, GLES20.GL_SHADER_SOURCE_LENGTH, sourceLength);
         StringBuffer result = new StringBuffer();
         if (sourceLength.get(0) == 0) {

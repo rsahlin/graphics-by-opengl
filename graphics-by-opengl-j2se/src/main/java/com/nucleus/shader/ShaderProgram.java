@@ -1157,7 +1157,6 @@ public abstract class ShaderProgram {
             setSamplers();
         } catch (GLException e) {
             logShaderSources(gles, commonVertexShaders, shaderNames);
-            throw new RuntimeException(e.toString());
         } catch (IOException e) {
             throw new RuntimeException(e.toString());
         }
