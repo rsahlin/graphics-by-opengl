@@ -247,7 +247,6 @@ public abstract class ShaderProgram {
     protected ArrayList<String> commonVertexSources;
 
     protected VariableBlock[] variableBlocks;
-    protected BlockBuffer[] blockBuffers;
 
     /**
      * Uniforms, used when rendering this Mesh depending on what ShaderProgram is used.
@@ -546,6 +545,29 @@ public abstract class ShaderProgram {
             buffers[index.index] = createAttributeBuffer(index, verticeCount, mesh);
         }
         return buffers;
+    }
+
+    /**
+     * Creates the block (uniform) buffers, if any are used.
+     * 
+     * @return Variable block buffers for this program, or null if not used.
+     */
+    public BlockBuffer[] createBlockBuffers() {
+        BlockBuffer[] blockBuffers = null;
+        if (variableBlocks != null) {
+            blockBuffers = new BlockBuffer[variableBlocks.length];
+            int blockSize = 0;
+            for (int index = 0; index < variableBlocks.length; index++) {
+                VariableBlock vb = variableBlocks[index];
+                // TODO - need to add stride
+                blockSize = getVariableSize(vb);
+                blockBuffers[index] = createBlockBuffer(vb, blockSize);
+            }
+            if (blockSize > 0) {
+                SimpleLogger.d(getClass(), "Data for uniform block " + blockSize);
+            }
+        }
+        return blockBuffers;
     }
 
     /**
@@ -1216,21 +1238,6 @@ public abstract class ShaderProgram {
                 createUniforms(new float[uniformSize], new int[samplerSize]);
             } else {
                 SimpleLogger.d(getClass(), "No uniforms used");
-            }
-
-            if (variableBlocks != null) {
-                blockBuffers = new BlockBuffer[variableBlocks.length];
-                int blockSize = 0;
-                for (int index = 0; index < variableBlocks.length; index++) {
-                    VariableBlock vb = variableBlocks[index];
-                    // TODO - need to add stride
-                    blockSize = getVariableSize(vb);
-                    blockBuffers[index] = createBlockBuffer(vb, blockSize);
-                }
-                if (blockSize > 0) {
-                    SimpleLogger.d(getClass(), "Data for uniform block " + blockSize);
-                }
-
             }
         } else {
             throw new IllegalArgumentException("Shader variables is null, forgot to call createProgram()?");

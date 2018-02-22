@@ -13,6 +13,7 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.BufferObjectsFactory;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.VariableMapping;
@@ -288,6 +289,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     transient protected AttributeBuffer[] attributes;
     transient protected ElementBuffer indices;
+    transient protected BlockBuffer[] blockBuffers;
     /**
      * Number of elements to draw
      */
@@ -368,6 +370,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         } else {
             setDrawCount(vertexCount, 0);
         }
+        blockBuffers = program.createBlockBuffers();
     }
 
     /**

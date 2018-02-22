@@ -95,10 +95,11 @@ public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
 
     @Override
     public void glGetProgramiv(int program, int pname, int[] params, int offset) {
-        IntBuffer v = ByteBuffer.allocateDirect((params.length - offset) * 4).order(ByteOrder.nativeOrder())
+        IntBuffer v = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder())
                 .asIntBuffer();
         org.lwjgl.opengles.GLES20.glGetProgramiv(program, pname, v);
-        LWJGLUtils.toArray((IntBuffer) v.rewind(), params, offset);
+        v.position(0);
+        params[offset] = v.get(0);
     }
 
     @Override
