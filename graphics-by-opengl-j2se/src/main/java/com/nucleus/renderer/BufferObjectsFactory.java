@@ -45,6 +45,7 @@ public class BufferObjectsFactory {
         renderer.genBuffers(names);
         mesh.setBufferNames(0, names, 0);
         ElementBuffer indices = mesh.getElementBuffer();
+        GLUtils.handleError(renderer.getGLES(), "before create vbos");
         for (AttributeBuffer attribs : mesh.getVerticeBuffers()) {
             if (attribs != null) {
                 renderer.bindBuffer(GLESWrapper.GLES20.GL_ARRAY_BUFFER, attribs.getBufferName());
@@ -52,14 +53,16 @@ public class BufferObjectsFactory {
                         attribs.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
                 attribs.setDirty(false);
             }
+            GLUtils.handleError(renderer.getGLES(), "createVBOs GL_ARRAY_BUFFER name " + attribs.getBufferName());
         }
         if (indices != null) {
             renderer.bindBuffer(GLESWrapper.GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
             renderer.bufferData(GLESWrapper.GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getSizeInBytes(),
                     indices.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
             indices.setDirty(false);
+            GLUtils.handleError(renderer.getGLES(),
+                    "createVBOs  GL_ELEMENT_ARRAY_BUFFER name " + indices.getBufferName());
         }
-        GLUtils.handleError(renderer.getGLES(), "createVBOs ");
     }
 
 }
