@@ -33,8 +33,8 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
      * @param gles The JOGL GLES30 instance
      * @throws IllegalArgumentException If gles is null
      */
-    public JOGLGLES30Wrapper(GL4ES3 gles) {
-        super(Platform.GL);
+    public JOGLGLES30Wrapper(GL4ES3 gles, Renderers renderVersion) {
+        super(Platform.GL, renderVersion);
         if (gles == null) {
             throw new IllegalArgumentException(GLES_NULL);
         }

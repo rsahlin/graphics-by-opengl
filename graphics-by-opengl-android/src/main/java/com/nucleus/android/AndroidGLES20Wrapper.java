@@ -12,7 +12,7 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
      * Implementation constructor - DO NOT USE - fetch wrapper from {@link NucleusRenderer}
      */
     protected AndroidGLES20Wrapper() {
-        super(Platform.GLES);
+        super(Platform.GLES, Renderers.GLES20);
     }
 
     @Override
@@ -357,7 +357,7 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public String getShaderVersion(String sourceVersion) {
+    public String getShaderVersion(String sourceVersion, int version) {
         return sourceVersion;
     }
 

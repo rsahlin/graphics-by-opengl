@@ -7,6 +7,7 @@ import com.nucleus.common.StringUtils;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
+import com.nucleus.opengl.GLESWrapper.Renderers;
 
 /**
  * Info about the renderer in the system.
@@ -22,13 +23,16 @@ public class RendererInfo {
     private String shadingLanguageVersion;
     private List<String> extensions;
     private int maxTextureSize;
+    private Renderers renderVersion;
 
     /**
      * Fetches info from GLES and stores in this class.
      * 
      * @param gles
+     * @param renderVersion
      */
-    public RendererInfo(GLES20Wrapper gles) {
+    public RendererInfo(GLES20Wrapper gles, Renderers renderVersion) {
+        this.renderVersion = renderVersion;
         vendor = gles.glGetString(GLES20.GL_VENDOR);
         version = gles.glGetString(GLES20.GL_VERSION);
         renderer = gles.glGetString(GLES20.GL_RENDERER);
@@ -79,6 +83,15 @@ public class RendererInfo {
      */
     public String getVersion() {
         return version;
+    }
+
+    /**
+     * Returns the renderer version, eg GLES2.0, GLES30
+     * 
+     * @return
+     */
+    public Renderers getRenderVersion() {
+        return renderVersion;
     }
 
     /**

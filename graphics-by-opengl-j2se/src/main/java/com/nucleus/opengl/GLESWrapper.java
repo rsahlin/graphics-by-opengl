@@ -26,11 +26,11 @@ public abstract class GLESWrapper {
         }
 
         public int getActiveVariables(VariableType type) {
-            return type.index <= activeVariables.length ? activeVariables[type.index] : 0;
+            return type.index < activeVariables.length ? activeVariables[type.index] : 0;
         }
 
         public int getMaxNameLength(VariableType type) {
-            return type.index <= maxNameLength.length ? maxNameLength[type.index] : 0;
+            return type.index < maxNameLength.length ? maxNameLength[type.index] : 0;
         }
 
         public int getProgram() {
@@ -53,6 +53,10 @@ public abstract class GLESWrapper {
 
     protected RendererInfo rendererInfo;
     protected final Platform platform;
+    /**
+     * Must be set by implementing classes
+     */
+    protected final Renderers renderVersion;
 
     /**
      * The supported renderers
@@ -74,8 +78,9 @@ public abstract class GLESWrapper {
         };
     }
 
-    protected GLESWrapper(Platform platform) {
+    protected GLESWrapper(Platform platform, Renderers renderVersion) {
         this.platform = platform;
+        this.renderVersion = renderVersion;
     }
 
     public abstract class GL10 {
@@ -939,10 +944,11 @@ public abstract class GLESWrapper {
      * The sourceVersion String is the version part of the "#version" source declaration, eg "300 es", "430" etc.
      * 
      * @param sourceVersion The source version string minus #version, eg "310 es" - or NULL if version not defined.
+     * @param version The parsed version number, eg 100 or 0 if version not defined.
      * @return The possibly substituted source version, depending on platform implementation.
      * Mainly used to substitute "310 es" for "430" on desktop platforms/drivers that does not support GLES fully"
      */
-    public abstract String getShaderVersion(String sourceVersion);
+    public abstract String getShaderVersion(String sourceVersion, int version);
 
     /**
      * Returns a versioned shader source as String - this is the main method that shall be used to fetch shader source.

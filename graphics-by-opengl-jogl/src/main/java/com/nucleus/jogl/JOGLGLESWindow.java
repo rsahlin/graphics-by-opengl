@@ -47,17 +47,7 @@ public class JOGLGLESWindow extends JOGLGLWindow {
     public void init(GLAutoDrawable drawable) {
         SimpleLogger.d(getClass(), "init()");
         if (wrapper == null) {
-            switch (version) {
-                case GLES20:
-                    wrapper = new JOGLGLES20Wrapper(drawable.getGL().getGL2ES2());
-                    break;
-                case GLES30:
-                case GLES31:
-                    wrapper = new JOGLGLES30Wrapper(drawable.getGL().getGL4ES3());
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid renderer version " + version);
-            }
+            wrapper = JOGLWrapperFactory.createWrapper(version, drawable.getContext());
         }
         super.init(drawable);
     }

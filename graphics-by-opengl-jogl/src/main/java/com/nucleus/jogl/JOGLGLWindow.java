@@ -101,7 +101,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
         GLProfile profile = null;
         switch (version) {
             case GLES20:
-                profile = GLProfile.get(GLProfile.GLES2);
+                profile = GLProfile.getDefaultDevice();
                 break;
             case GLES30:
             case GLES31:

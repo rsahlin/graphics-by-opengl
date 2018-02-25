@@ -42,8 +42,8 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * Implementation constructor - DO NOT USE!!!
      * TODO - protect/hide this constructor
      */
-    protected GLES20Wrapper(Platform platform) {
-        super(platform);
+    protected GLES20Wrapper(Platform platform, Renderers renderVersion) {
+        super(platform, renderVersion);
     }
 
     @Override
@@ -781,7 +781,11 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     }
 
     @Override
-    public String getShaderVersion(String sourceVersion) {
+    public String getShaderVersion(String sourceVersion, int version) {
+        // Make sure version is not too high for es 2
+        if (version > 100) {
+            throw new IllegalArgumentException("Illegal shader version " + sourceVersion);
+        }
         return SHADING_LANGUAGE_100;
     }
 
@@ -810,7 +814,8 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             if (version != null) {
                 String versionInfo = version.trim().substring(VERSION.length()).trim();
                 // Insert the correct version depending on platform implementation.
-                return VERSION + " " + getShaderVersion(versionInfo) + System.lineSeparator()
+                int number = Integer.parseInt(versionInfo.substring(0, 3));
+                return VERSION + " " + getShaderVersion(versionInfo, number) + System.lineSeparator()
                         + source.substring(version.length());
             } else {
                 // Treat no version as GLES shader version 100
@@ -824,7 +829,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     @Override
     public RendererInfo getInfo() {
         if (rendererInfo == null) {
-            rendererInfo = new RendererInfo(this);
+            rendererInfo = new RendererInfo(this, renderVersion);
         }
         return rendererInfo;
     }

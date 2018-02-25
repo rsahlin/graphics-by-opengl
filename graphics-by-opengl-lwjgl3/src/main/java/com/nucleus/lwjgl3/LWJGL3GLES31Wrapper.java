@@ -16,7 +16,7 @@ public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
      * Implementation constructor - DO NOT USE - fetch wrapper from {@link NucleusRenderer}
      */
     protected LWJGL3GLES31Wrapper() {
-        super(Platform.GL);
+        super(Platform.GL, Renderers.GLES31);
     }
 
     /**

@@ -39,8 +39,8 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
      * @param gles The JOGL GLES20 instance
      * @throws IllegalArgumentException If gles is null
      */
-    public JOGLGLES20Wrapper(GL2ES2 gles) {
-        super(Platform.GL);
+    public JOGLGLES20Wrapper(GL2ES2 gles, Renderers renderVersion) {
+        super(Platform.GL, renderVersion);
         if (gles == null) {
             throw new IllegalArgumentException(GLES_NULL);
         }

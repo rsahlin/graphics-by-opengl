@@ -11,7 +11,7 @@ import com.nucleus.opengl.GLES20Wrapper;
 public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     protected LWJGL3GLES20Wrapper() {
-        super(Platform.GL);
+        super(Platform.GL, Renderers.GLES20);
     }
 
     @Override

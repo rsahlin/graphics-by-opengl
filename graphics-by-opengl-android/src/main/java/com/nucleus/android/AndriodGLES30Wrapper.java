@@ -12,7 +12,7 @@ public class AndriodGLES30Wrapper extends GLES30Wrapper {
      * Implementation constructor - DO NOT USE - fetch wrapper from {@link NucleusRenderer}
      */
     protected AndriodGLES30Wrapper() {
-        super(Platform.GLES);
+        super(Platform.GLES, Renderers.GLES30);
     }
 
     @Override

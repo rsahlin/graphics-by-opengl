@@ -22,7 +22,7 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
      * Implementation constructor - DO NOT USE - fetch wrapper from {@link NucleusRenderer}
      */
     public LWJGL3GLES30Wrapper() {
-        super(Platform.GL);
+        super(Platform.GL, Renderers.GLES30);
     }
 
     /**
