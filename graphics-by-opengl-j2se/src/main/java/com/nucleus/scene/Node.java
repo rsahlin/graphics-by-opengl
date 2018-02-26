@@ -11,21 +11,20 @@ import com.nucleus.bounds.Bounds;
 import com.nucleus.bounds.CircularBounds;
 import com.nucleus.bounds.RectangularBounds;
 import com.nucleus.camera.ViewFrustum;
+import com.nucleus.common.Constants;
 import com.nucleus.common.Type;
 import com.nucleus.component.ComponentNode;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
-import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.ObjectInputListener;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
-import com.nucleus.renderer.NucleusRenderer.Layer;
-import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Transform;
@@ -82,12 +81,7 @@ public class Node extends BaseReference {
 
     public static final String STATE = "state";
     public static final String TYPE = "type";
-    public static final String TRANSFORM = "transform";
-    public static final String VIEWFRUSTUM = "viewFrustum";
     public static final String CHILDREN = "children";
-    public static final String BOUNDS = "bounds";
-    public static final String MATERIAL = "material";
-    public static final String RENDERPASS = "renderPass";
     public static final String TEXTUREREF = "textureRef";
     public static final String PROPERTIES = "properties";
     public static final String PASS = "pass";
@@ -149,9 +143,9 @@ public class Node extends BaseReference {
 
     @SerializedName(TYPE)
     private String type;
-    @SerializedName(TRANSFORM)
+    @SerializedName(Transform.TRANSFORM)
     protected Transform transform;
-    @SerializedName(VIEWFRUSTUM)
+    @SerializedName(ViewFrustum.VIEWFRUSTUM)
     private ViewFrustum viewFrustum;
     /**
      * The childnodes shall always be processed/rendered in the order they are defined.
@@ -161,15 +155,15 @@ public class Node extends BaseReference {
     @SerializedName(CHILDREN)
     protected ArrayList<Node> children = new ArrayList<Node>();
 
-    @SerializedName(BOUNDS)
+    @SerializedName(Bounds.BOUNDS)
     private Bounds bounds;
 
-    @SerializedName(MATERIAL)
+    @SerializedName(Material.MATERIAL)
     private Material material;
 
-    @SerializedName(RENDERPASS)
+    @SerializedName(RenderPass.RENDERPASS)
     private ArrayList<RenderPass> renderPass;
-    
+
     @SerializedName(STATE)
     private State state = State.ON;
 
@@ -203,10 +197,6 @@ public class Node extends BaseReference {
      */
     transient float[] modelMatrix = Matrix.createMatrix();
     transient ArrayList<Mesh> meshes = new ArrayList<Mesh>();
-    /**
-     * Optional AttributeUpdate producer, used for instance by spritemesh nodes
-     */
-    transient Producer attributeProducer;
 
     /**
      * The parent node, this shall be set when node is added as child
@@ -238,7 +228,7 @@ public class Node extends BaseReference {
         setRootNode(root);
         setType(type);
     }
-    
+
     /**
      * Creates an empty node with unique (for the scene) Id.
      * The uniqueness of the id is NOT checked.
@@ -298,6 +288,7 @@ public class Node extends BaseReference {
 
     /**
      * Creates the transient values needed in runtime - implement in subclasses
+     * This method is called after the mesh has been created.
      */
     public void create() {
     }
@@ -327,15 +318,6 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Returns the attribute producer, or null if not set
-     * 
-     * @return
-     */
-    public Producer getAttributeProducer() {
-        return attributeProducer;
-    }
-
-    /**
      * Returns the {@link ObjectInputListener}, or null if not set.
      * This method should normally not be called, it is handled by {@link NodeInputListener}
      * 
@@ -355,17 +337,6 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Sets the attribute producer, this is used by nodes where the attribute data needs to be updated before rendering.
-     * The producer will be called by the renderer before the mesh is rendered, but after the completion of the
-     * previous frame.
-     * 
-     * @param producer
-     */
-    public void setAttributeProducer(Producer producer) {
-        this.attributeProducer = producer;
-    }
-
-    /**
      * Adds a mesh to be rendered with this node.
      * 
      * @param mesh
@@ -374,7 +345,6 @@ public class Node extends BaseReference {
         meshes.add(type.index, mesh);
     }
 
-    
     /**
      * Removes the mesh from this node, if present.
      * If many meshes are added this method may have a performance impact.
@@ -408,9 +378,9 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Returns the loaded material definition
+     * Returns the loaded material definition for the Node
      * 
-     * @return
+     * @return Material defined for the Node or null
      */
     public Material getMaterial() {
         return material;
@@ -446,6 +416,7 @@ public class Node extends BaseReference {
     /**
      * Sets the renderpass in this node, removing any existing renderpasses.
      * Checks that the renderpasses are valid
+     * 
      * @param renderPass, or null to remove renderpass
      */
     protected void setRenderPass(ArrayList<RenderPass> renderPass) {
@@ -463,7 +434,7 @@ public class Node extends BaseReference {
             this.renderPass = null;
         }
     }
-    
+
     /**
      * Copies the transform from the source node, if the transform in the source is null then this nodes transform
      * is set to null as well.
@@ -480,7 +451,7 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Sets the source transform as a referrence.
+     * Sets the source transform as a reference.
      * 
      * @param source The transform reference, may be null.
      */
@@ -489,12 +460,28 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Fetches the projection matrix, if set.
+     * Fetches the projection matrix for the specified pass, if set.
      * 
-     * @return Projection matrix for this node and childnodes, or null
+     * @param pass
+     * @return Projection matrix for this node and childnodes, or null if not set
      */
-    public float[] getProjection() {
-        return projection;
+    public float[] getProjection(Pass pass) {
+        switch (pass) {
+            case SHADOW1:
+                if (renderPass != null) {
+                    RenderPass p = null;
+                    for (int i = 0; i < renderPass.size(); i++) {
+                        p = renderPass.get(i);
+                        if (p.getPass() == Pass.SHADOW1) {
+                            return p.getViewFrustum().getMatrix();
+                        }
+                    }
+                }
+                return null;
+            default:
+                return projection;
+
+        }
     }
 
     /**
@@ -560,7 +547,8 @@ public class Node extends BaseReference {
      * The child node's parent will be set to this node.
      * 
      * @param child The child to add to this node.
-     * @throws IllegalArgumentException If child does not have the root node, or id set, or if a child already has been added
+     * @throws IllegalArgumentException If child does not have the root node, or id set, or if a child already has been
+     * added
      * with the same id
      */
     public void addChild(Node child) {
@@ -574,21 +562,23 @@ public class Node extends BaseReference {
 
     /**
      * Registers the node as a child in the rootnode
+     * 
      * @param child
      * @throws IllegalArgumentException If a node with the same ID is already added to the nodetree
      */
     protected void registerChild(Node child) {
         rootNode.registerChild(child);
     }
-    
+
     /**
      * Unregisters the node as child in the rootnode
+     * 
      * @param child
      */
     protected void unregisterChild(Node child) {
         rootNode.unregisterChild(child);
     }
-    
+
     /**
      * Removes the child from this node if it is present.
      * 
@@ -750,6 +740,7 @@ public class Node extends BaseReference {
         }
         return null;
     }
+
     private LayerNode getViewNode(Layer layer, Node node) {
         return getViewNode(layer, node.getChildren());
     }
@@ -771,8 +762,7 @@ public class Node extends BaseReference {
         }
         return null;
     }
-    
-    
+
     /**
      * Returns the first node with matching type, or null if none found.
      * This method will search through the active children.
@@ -808,8 +798,7 @@ public class Node extends BaseReference {
         }
         return null;
     }
-    
-    
+
     /**
      * Returns the child node with matching id from this node, children are not searched recursively.
      * TODO Shall this method call getChildren() which will return only on-switched nodes?
@@ -828,7 +817,9 @@ public class Node extends BaseReference {
 
     @Override
     public String toString() {
-        return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children, pass=" + pass + ", state=" + state;
+        return "Node '" + getId() + "', " + meshes.size() + " meshes, " + children.size() + " children, pass=" + pass
+                + ", state=" + state
+                + (renderPass != null ? ", has renderpass" : "") + (bounds != null ? ", has bounds" : "");
     }
 
     /**
@@ -991,7 +982,8 @@ public class Node extends BaseReference {
      */
     protected boolean isInside(float[] position) {
         if (bounds != null && (state == State.ON || state == State.ACTOR)
-                && getProperty(EventHandler.Type.POINTERINPUT.name(), EventManager.FALSE).equals(EventManager.TRUE)) {
+                && getProperty(EventHandler.EventType.POINTERINPUT.name(), Constants.FALSE)
+                        .equals(Constants.TRUE)) {
             // In order to do pointer intersections the model and view matrix is needed.
             // For this to work it is important that the view keeps the same orientation of axis as OpenGL (right
             // and up)
@@ -1066,7 +1058,6 @@ public class Node extends BaseReference {
         properties = null;
         parent = null;
         rootNode = null;
-        attributeProducer = null;
     }
 
     /**
@@ -1095,6 +1086,7 @@ public class Node extends BaseReference {
 
     /**
      * Returns the Pass(es) that this node should be used in
+     * 
      * @return
      */
     public Pass getPass() {
@@ -1103,18 +1095,20 @@ public class Node extends BaseReference {
 
     /**
      * Sets the renderpass this node is active in.
+     * 
      * @param pass
      */
     protected void setPass(Pass pass) {
         this.pass = pass;
     }
-    
+
     /**
-     * Returns the renderpasses definition, or null if not defined. 
+     * Returns the renderpasses definition, or null if not defined.
+     * 
      * @return
      */
     public ArrayList<RenderPass> getRenderPass() {
         return renderPass;
     }
-    
+
 }

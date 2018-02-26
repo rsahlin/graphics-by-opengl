@@ -3,6 +3,7 @@ package com.nucleus.io;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,6 +66,19 @@ public class StreamUtils {
     public static byte[] readFromStream(InputStream in) throws IOException {
         return readFromStream(in, DEFAULT_BUFFER_SIZE);
 
+    }
+
+    /**
+     * Utility method to read data from inputstream and return as a UTF-8 encoded
+     * String.
+     * Use this method when reading Strings from file to get correct encoding.
+     * 
+     * @param in
+     * @return
+     * @throws IOException
+     */
+    public static String readStringFromStream(InputStream in) throws IOException {
+        return new String(readFromStream(in), StandardCharsets.UTF_8);
     }
 
     /**

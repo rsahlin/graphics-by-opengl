@@ -3,7 +3,6 @@ package com.nucleus.component;
 import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.common.Type;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
@@ -30,6 +29,7 @@ public class ComponentNode extends Node implements ComponentController {
     @Deprecated
     protected ComponentNode() {
     }
+
     /**
      * Default constructor
      */
@@ -55,7 +55,8 @@ public class ComponentNode extends Node implements ComponentController {
     }
 
     /**
-     * Create the components, the {@link System} needed by the component will be created and registered with the {@link ComponentHandler}
+     * Create the components, the {@link System} needed by the component will be created and registered with the
+     * {@link ComponentHandler}
      * 
      * @param renderer
      * @throws ComponentException
@@ -65,11 +66,11 @@ public class ComponentNode extends Node implements ComponentController {
         ComponentHandler handler = ComponentHandler.getInstance();
         try {
             for (Component c : components) {
-                c.create(renderer, this);
-                handler.createSystem(c);
+                System s = handler.createSystem(c);
                 handler.registerComponent(c);
+                c.create(renderer, this, s);
             }
-        } catch (InstantiationException  | IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             throw new ComponentException(e);
         }
     }

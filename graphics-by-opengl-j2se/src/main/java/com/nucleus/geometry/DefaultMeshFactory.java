@@ -6,11 +6,8 @@ import com.nucleus.assets.AssetManager;
 import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.LineDrawerNode;
 import com.nucleus.scene.Node;
-import com.nucleus.scene.Node.NodeTypes;
-import com.nucleus.scene.SwitchNode;
 import com.nucleus.shader.TranslateProgram;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -24,12 +21,26 @@ public class DefaultMeshFactory implements MeshFactory {
 
         switch (Node.NodeTypes.valueOf(parent.getType())) {
             case linedrawernode:
+                LineDrawerNode lineDrawer = (LineDrawerNode) parent;
                 Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
-                int count = ((LineDrawerNode) parent).getLineCount();
-                builder.setElementMode(Mode.LINES, count, count * 2);
+                int count = lineDrawer.getLineCount();
+                switch (lineDrawer.getLineMode()) {
+                    case LINES:
+                        builder.setArrayMode(Mode.LINES, count * 2);
+                        break;
+                    case LINE_STRIP:
+                        builder.setArrayMode(Mode.LINE_STRIP, count * 2);
+                        break;
+                    case RECTANGLE:
+                        // Rectangle shares vertices, 4 vertices per rectangle
+                        builder.setElementMode(Mode.LINES, count, count * 2);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Not implemented for mode " + lineDrawer.getLineMode());
+                }
                 Material m = new Material();
                 TranslateProgram program = (TranslateProgram) AssetManager.getInstance()
-                        .getProgram(renderer, new TranslateProgram(Shading.flat));
+                        .getProgram(renderer.getGLES(), new TranslateProgram(Shading.flat));
                 m.setProgram(program);
                 Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
                 builder.setMaterial(m);

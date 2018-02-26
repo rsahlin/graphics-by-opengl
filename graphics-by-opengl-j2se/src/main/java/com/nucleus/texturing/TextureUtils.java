@@ -16,7 +16,6 @@ import com.nucleus.renderer.Window;
 import com.nucleus.texturing.Image.ImageFormat;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.Texture2D.Type;
-import com.nucleus.texturing.TextureParameter.Name;
 
 /**
  * Texture utilities, loading of texture(s)
@@ -44,7 +43,7 @@ public class TextureUtils {
             Image image = loadTextureImage(imageFactory, texture);
             long loaded = System.currentTimeMillis();
             FrameSampler.getInstance()
-                    .logTag(FrameSampler.CREATE_IMAGE + " " + texture.getExternalReference().getSource(), start,
+                    .logTag(FrameSampler.Samples.CREATE_IMAGE, " " + texture.getExternalReference().getSource(), start,
                             loaded);
             int width = image.getWidth();
             int height = image.getHeight();
@@ -101,7 +100,6 @@ public class TextureUtils {
      * The size of the image will be set in the texture
      * 
      * @param gles GLES20Wrapper for GL calls
-     * @param unit Texture unit number (active texture)
      * @param texture The texture object, shall have texture name set
      * @param textureImages Array with one or more images to send to GL. If more than
      * one image is specified then multiple mip-map levels will be set.
@@ -109,13 +107,14 @@ public class TextureUtils {
      * @throws GLException If there is an error uploading the textures
      * @throws IllegalArgumentException If multiple mipmaps provided but texture min filter is not _MIPMAP_
      */
-    public static void uploadTextures(GLES20Wrapper gles, int unit, Texture2D texture, Image[] textureImages)
+    public static void uploadTextures(GLES20Wrapper gles, Texture2D texture, Image[] textureImages)
             throws GLException {
         gles.glBindTexture(GLES20.GL_TEXTURE_2D, texture.getName());
         boolean isMipMapParams = texture.getTexParams().isMipMapFilter();
         if ((textureImages.length > 1 && !isMipMapParams) || (texture.getLevels() > 1 && !isMipMapParams)) {
             throw new IllegalArgumentException(
-                    "Multiple mipmap images but wrong min filter " + texture.getTexParams().getValue(Name.MIN_FILTER));
+                    "Multiple mipmap images but wrong min filter "
+                            + texture.getTexParams().getParameters()[TextureParameter.MIN_FILTER_INDEX]);
         }
         int level = 0;
         texture.setup(textureImages[0].width, textureImages[0].height);
@@ -134,12 +133,14 @@ public class TextureUtils {
         }
         if (textureImages.length == 1 && texture.getTexParams().isMipMapFilter()) {
             if (texture.getLevels() < 2) {
-                throw new IllegalArgumentException("Texture " + texture.getId() + " has mipmap filter params but levels is " + texture.getLevels());
+                throw new IllegalArgumentException("Texture " + texture.getId()
+                        + " has mipmap filter params but levels is " + texture.getLevels());
             }
             long start = System.currentTimeMillis();
             gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
             SimpleLogger.d(TextureUtils.class, "Generated mipmaps for texture " + texture.getId());
-            FrameSampler.getInstance().logTag(FrameSampler.GENERATE_MIPMAPS, start, System.currentTimeMillis());
+            FrameSampler.getInstance().logTag(FrameSampler.Samples.GENERATE_MIPMAPS, texture.getId(), start,
+                    System.currentTimeMillis());
         }
     }
 
@@ -149,14 +150,15 @@ public class TextureUtils {
      * 
      * @paran gles
      * @param texture
+     * @param unit The texture unit number to use, 0 and up
      */
-    static void prepareTexture(GLES20Wrapper gles, Texture2D texture) throws GLException {
-        gles.glActiveTexture(GLES20.GL_TEXTURE0);
+    public static void prepareTexture(GLES20Wrapper gles, Texture2D texture, int unit) throws GLException {
         if (texture != null && texture.textureType != TextureType.Untextured) {
+            gles.glActiveTexture(GLES20.GL_TEXTURE0 + unit);
             int textureID = texture.getName();
             if (textureID == Constants.NO_VALUE && texture.getExternalReference().isIdReference()) {
-                //Texture has no texture object - and is id reference
-                //Should only be used for dynamic textures, eg ones that depend on define in existing node
+                // Texture has no texture object - and is id reference
+                // Should only be used for dynamic textures, eg ones that depend on define in existing node
                 AssetManager.getInstance().getIdReference(texture);
                 textureID = texture.getName();
                 gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
@@ -170,8 +172,6 @@ public class TextureUtils {
         }
     }
 
-    
-    
     /**
      * Return the GL texture type for the specified format.
      * 
@@ -201,7 +201,7 @@ public class TextureUtils {
                 return Type.UNSIGNED_INT;
             case DEPTH_32F:
                 return Type.FLOAT;
-            
+
             default:
                 throw new IllegalArgumentException("Not implemented for: " + format);
         }
@@ -240,6 +240,7 @@ public class TextureUtils {
 
     /**
      * Returns the internal format for the texture - only needed on GLES 3.0 and above
+     * 
      * @param texture
      * @return The internal format
      */
@@ -247,11 +248,11 @@ public class TextureUtils {
         switch (texture.getFormat()) {
             case DEPTH_COMPONENT:
                 return getDepthComponentFormat(texture.getType());
-                default:
-                    return texture.getFormat().format;
+            default:
+                return texture.getFormat().format;
         }
     }
-    
+
     public static int getDepthComponentFormat(Texture2D.Type type) {
         switch (type) {
             case UNSIGNED_SHORT:
@@ -260,11 +261,11 @@ public class TextureUtils {
                 return GLES30.GL_DEPTH_COMPONENT24;
             case FLOAT:
                 return GLES20.GL_FLOAT;
-                default:
+            default:
                 throw new IllegalArgumentException("Invalid type: " + type);
         }
     }
-    
+
     /**
      * Returns the ImageFormat that fits for the texture format and type.
      * If format or type is not defined then the default value is choosen, normally RGBA 32 bit.

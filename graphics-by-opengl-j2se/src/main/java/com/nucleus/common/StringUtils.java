@@ -1,7 +1,11 @@
 package com.nucleus.common;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
+
+import com.nucleus.SimpleLogger;
 
 public class StringUtils {
 
@@ -46,7 +50,7 @@ public class StringUtils {
      * @return The resulting String
      */
     public static String getString(String[] strArray, int offset, int count) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < count; i++) {
             if (i > 0) {
                 result.append(DEFAULT_DELIMITER);
@@ -63,7 +67,7 @@ public class StringUtils {
      * @return The int array as a String with values delimitered by ','
      */
     public static String getString(int[] intArray) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < intArray.length; i++) {
             if (i > 0) {
                 result.append(DEFAULT_DELIMITER);
@@ -80,7 +84,7 @@ public class StringUtils {
      * @return The float array as a String with values delimitered by ','
      */
     public static String getString(float[] floatArray) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < floatArray.length; i++) {
             if (i > 0) {
                 result.append(DEFAULT_DELIMITER);
@@ -90,6 +94,13 @@ public class StringUtils {
         return result.toString();
     }
 
+    /**
+     * Returns the list as an array, using delimeter
+     * 
+     * @param str
+     * @param delimiter
+     * @return
+     */
     public static ArrayList<String> getArrayList(String str, String delimiter) {
         ArrayList<String> resultList = new ArrayList<String>();
         StringTokenizer st = new StringTokenizer(str, delimiter);
@@ -97,6 +108,21 @@ public class StringUtils {
             resultList.add(st.nextToken());
         }
         return resultList;
+    }
+
+    /**
+     * Returns the sequence of Strings, using delimiter, as a List
+     * 
+     * @return
+     */
+    public static List<String> getList(String str, String delimiter) {
+        List<String> result = new ArrayList<>();
+        StringTokenizer st = new StringTokenizer(str, delimiter);
+        while (st.hasMoreTokens()) {
+            String extension = st.nextToken();
+            result.add(extension);
+        }
+        return result;
     }
 
     /**
@@ -170,6 +196,31 @@ public class StringUtils {
         }
         result[array.length] = str;
         return result;
+    }
+
+    /**
+     * Creates a String using UTF-8 encoding from the byte array.
+     * Use this method to make sure UTF-8 is used regardless of platform encoding.
+     * 
+     * @param data
+     * @param start
+     * @param length
+     * @return
+     */
+    public static String createString(byte[] data, int start, int length) {
+        return new String(data, start, length, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Logs each String in the list as a log message.
+     * 
+     * @param tag
+     * @param list
+     */
+    public static void logList(String tag, List<String> list) {
+        for (String str : list) {
+            SimpleLogger.d(tag, str);
+        }
     }
 
 }

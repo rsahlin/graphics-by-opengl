@@ -10,6 +10,7 @@ import java.nio.IntBuffer;
 
 import javax.imageio.ImageIO;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.texturing.Image.ImageFormat;
 
 /**
@@ -62,7 +63,7 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
     public BufferedImage createImage(BufferedImage source, int type) {
         BufferedImage copy = new BufferedImage(source.getWidth(), source.getHeight(), type);
         while (!copy.createGraphics().drawImage(source, 0, 0, null)) {
-            System.out.println("waiting");
+            SimpleLogger.d(getClass(), "waiting");
         }
         return copy;
     }

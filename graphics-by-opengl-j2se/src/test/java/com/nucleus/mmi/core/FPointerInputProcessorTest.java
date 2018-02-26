@@ -15,6 +15,7 @@ import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
+import com.nucleus.mmi.PointerData.Type;
 import com.nucleus.vecmath.Vector2D;
 
 public class FPointerInputProcessorTest extends BaseTestCase implements MMIEventListener {
@@ -66,23 +67,44 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
 
         ArrayList<AssertMMIAction> assertValues = new ArrayList<AssertMMIAction>();
         processor.addMMIListener(this);
-        createAndSend(PointerAction.DOWN, processor, PointerInputProcessor.MAX_POINTERS, assertValues);
-        createAndSend(PointerAction.UP, processor, PointerInputProcessor.MAX_POINTERS, assertValues);
+        createAndSend(PointerAction.DOWN, processor, processor.getMaxPointers(), assertValues);
+        createAndSend(PointerAction.UP, processor, processor.getMaxPointers(), assertValues);
 
-        Assert.assertEquals(PointerInputProcessor.MAX_POINTERS * 2, pointerEvents.size());
-        assertActionPosition(pointerEvents, assertValues, 0, PointerInputProcessor.MAX_POINTERS * 2, 0);
+        Assert.assertEquals(processor.getMaxPointers() * 2, pointerEvents.size());
+        assertActionPosition(pointerEvents, assertValues, 0, processor.getMaxPointers() * 2, 0);
 
     }
 
     private void assertActionPosition(List<MMIPointerEvent> events, ArrayList<AssertMMIAction> assertValues,
             int offset, int count, int assertOffset) {
 
+        /**
+         * PointerMotionData starts with ACTIVE and ends with INACTIVE
+         */
         for (int i = 0; i < count; i++) {
             MMIPointerEvent event = events.get(i + offset);
             AssertMMIAction assertAction = assertValues.get(i + assertOffset);
             Assert.assertEquals(assertAction.action, event.getAction());
-            Assert.assertArrayEquals(assertAction.position, event.getPointerData().getCurrentPosition(), 0);
-            Assert.assertEquals(assertAction.timestamp, event.getPointerData().getCurrent().timeStamp);
+            PointerData pointer = null;
+            switch (event.getAction()) {
+                case ACTIVE:
+                    // First event
+                    pointer = event.getPointerData().getFirst();
+                    break;
+                case INACTIVE:
+                    // Last event
+                    pointer = event.getPointerData().getCurrent();
+                    break;
+                case MOVE:
+                    // Only works if move action comes after ACTIVE at index 0
+                    pointer = event.getPointerData().get(i);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Not implemented");
+
+            }
+            Assert.assertEquals(assertAction.timestamp, pointer.timeStamp);
+            Assert.assertArrayEquals(assertAction.position, pointer.position, 0);
         }
 
     }
@@ -103,18 +125,17 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
             AssertMMIAction a = new AssertMMIAction(getFromPointerAction(action), i, position,
                     System.currentTimeMillis());
             positions.add(a);
-            processor.pointerEvent(action, a.timestamp, i, position);
+            processor.pointerEvent(action, Type.FINGER, a.timestamp, i, position, 0);
         }
     }
 
     private AssertMMIAction sendEvent(PointerAction action, PointerInputProcessor processor, int pointer,
-            float[] coordinates,
-            int pos) {
+            float[] coordinates, int pos) {
 
         float[] coord = new float[] { coordinates[pos++], coordinates[pos++] };
         AssertMMIAction check = new AssertMMIAction(getFromPointerAction(action), pointer, coord,
                 System.currentTimeMillis());
-        processor.pointerEvent(action, check.timestamp, pointer, coord);
+        processor.pointerEvent(action, Type.FINGER, check.timestamp, pointer, coord, 0);
         return check;
     }
 
@@ -126,14 +147,14 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
      */
     private Action getFromPointerAction(PointerAction action) {
         switch (action) {
-        case DOWN:
-            return Action.ACTIVE;
-        case UP:
-            return Action.INACTIVE;
-        case MOVE:
-            return Action.MOVE;
-        default:
-            throw new IllegalArgumentException("Not implemented for action " + action);
+            case DOWN:
+                return Action.ACTIVE;
+            case UP:
+                return Action.INACTIVE;
+            case MOVE:
+                return Action.MOVE;
+            default:
+                throw new IllegalArgumentException("Not implemented for action " + action);
         }
     }
 
@@ -159,9 +180,10 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
         PointerInputProcessor processor = new PointerInputProcessor();
 
         processor.addMMIListener(this);
-        processor.pointerEvent(PointerAction.DOWN, System.currentTimeMillis(),
-                PointerData.POINTER_1, FIRST_POS);
-        processor.pointerEvent(PointerAction.MOVE, System.currentTimeMillis(), PointerData.POINTER_1, SECOND_POS);
+        processor.pointerEvent(PointerAction.DOWN, Type.FINGER, System.currentTimeMillis(),
+                PointerData.POINTER_1, FIRST_POS, 0);
+        processor.pointerEvent(PointerAction.MOVE, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_1,
+                SECOND_POS, 0);
 
         Assert.assertEquals(2, pointerEvents.size());
         MMIPointerEvent event = pointerEvents.get(0);
@@ -176,6 +198,33 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
     }
 
     @Test
+    public void testMultipleDownMove() {
+        PointerInputProcessor processor = new PointerInputProcessor();
+        processor.addMMIListener(this);
+
+        ArrayList<AssertMMIAction> checkList = new ArrayList<>();
+        float[] positions = createRandomPositions(10);
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_1, positions, 0));
+        checkList.add(sendEvent(PointerAction.MOVE, processor, PointerData.POINTER_1, positions, 2));
+        checkList.add(sendEvent(PointerAction.MOVE, processor, PointerData.POINTER_1, positions, 4));
+        checkList.add(sendEvent(PointerAction.MOVE, processor, PointerData.POINTER_1, positions, 6));
+        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_1, positions, 8));
+
+        assertActionPosition(pointerEvents, checkList, 0, checkList.size(), 0);
+        pointerEvents.clear();
+        checkList.clear();
+
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_1, positions, 10));
+        checkList.add(sendEvent(PointerAction.MOVE, processor, PointerData.POINTER_1, positions, 12));
+        checkList.add(sendEvent(PointerAction.MOVE, processor, PointerData.POINTER_1, positions, 14));
+        checkList.add(sendEvent(PointerAction.MOVE, processor, PointerData.POINTER_1, positions, 16));
+        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_1, positions, 18));
+
+        assertActionPosition(pointerEvents, checkList, 0, checkList.size(), 0);
+
+    }
+
+    @Test
     public void testManyActionDownUp() {
         // Test that many action down and up in different order results in correct action
         PointerInputProcessor processor = new PointerInputProcessor();
@@ -184,15 +233,15 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
         ArrayList<AssertMMIAction> checkList = new ArrayList<>();
         float[] positions = createRandomPositions(10);
         checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_1, positions, 0));
-        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_2, positions, 0));
-        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_1, positions, 0));
-        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_1, positions, 0));
-        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_3, positions, 0));
-        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_2, positions, 0));
-        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_2, positions, 0));
-        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_4, positions, 0));
-        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_5, positions, 0));
-        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_1, positions, 0));
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_2, positions, 2));
+        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_1, positions, 4));
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_1, positions, 6));
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_3, positions, 8));
+        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_2, positions, 10));
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_2, positions, 12));
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_4, positions, 14));
+        checkList.add(sendEvent(PointerAction.DOWN, processor, PointerData.POINTER_5, positions, 16));
+        checkList.add(sendEvent(PointerAction.UP, processor, PointerData.POINTER_1, positions, 18));
 
         assertActionPosition(pointerEvents, checkList, 0, checkList.size(), 0);
 
@@ -204,10 +253,14 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
         PointerInputProcessor processor = new PointerInputProcessor();
 
         processor.addMMIListener(this);
-        processor.pointerEvent(PointerAction.DOWN, System.currentTimeMillis(), PointerData.POINTER_1, FINGER1_FIRST);
-        processor.pointerEvent(PointerAction.MOVE, System.currentTimeMillis(), PointerData.POINTER_1, FINGER1_SECOND);
-        processor.pointerEvent(PointerAction.DOWN, System.currentTimeMillis(), PointerData.POINTER_2, FINGER2_FIRST);
-        processor.pointerEvent(PointerAction.MOVE, System.currentTimeMillis(), PointerData.POINTER_2, FINGER2_SECOND);
+        processor.pointerEvent(PointerAction.DOWN, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_1,
+                FINGER1_FIRST, 0);
+        processor.pointerEvent(PointerAction.MOVE, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_1,
+                FINGER1_SECOND, 0);
+        processor.pointerEvent(PointerAction.DOWN, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_2,
+                FINGER2_FIRST, 0);
+        processor.pointerEvent(PointerAction.MOVE, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_2,
+                FINGER2_SECOND, 0);
 
         Assert.assertEquals(5, pointerEvents.size());
         MMIPointerEvent event = pointerEvents.get(0);
@@ -236,10 +289,14 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
         PointerInputProcessor processor = new PointerInputProcessor();
         processor.addMMIListener(this);
 
-        processor.pointerEvent(PointerAction.DOWN, System.currentTimeMillis(), PointerData.POINTER_1, new float[] { x1,
-                y1 });
-        processor.pointerEvent(PointerAction.DOWN, System.currentTimeMillis(), PointerData.POINTER_2, new float[] { x2,
-                y2 });
+        processor.pointerEvent(PointerAction.DOWN, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_1,
+                new float[] { x1,
+                        y1 },
+                0);
+        processor.pointerEvent(PointerAction.DOWN, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_2,
+                new float[] { x2,
+                        y2 },
+                0);
 
         float[] data = new float[] { x1, y1, x2, y2, deltaX1, 0, deltaX2, 0 };
         createEvents(processor, PointerAction.MOVE, data, 100);
@@ -269,8 +326,8 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
         for (int i = 1; i < count + 1; i++) {
             float[] pos1 = new float[] { values[0] + values[4] * i, values[1] + values[5] * i };
             float[] pos2 = new float[] { values[2] + values[6] * i, values[3] + values[7] * i };
-            processor.pointerEvent(action, i, PointerData.POINTER_1, pos1);
-            processor.pointerEvent(action, i, PointerData.POINTER_2, pos2);
+            processor.pointerEvent(action, Type.FINGER, i, PointerData.POINTER_1, pos1, 0);
+            processor.pointerEvent(action, Type.FINGER, i, PointerData.POINTER_2, pos2, 0);
         }
 
     }
@@ -281,12 +338,14 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
         PointerInputProcessor processor = new PointerInputProcessor();
 
         processor.addMMIListener(this);
-        processor.pointerEvent(PointerAction.DOWN, System.currentTimeMillis(), PointerData.POINTER_1, FINGER1_FIRST);
-        processor.pointerEvent(PointerAction.MOVE, System.currentTimeMillis(), PointerData.POINTER_1, FINGER1_SECOND);
-        processor.pointerEvent(PointerAction.DOWN, System.currentTimeMillis(), PointerData.POINTER_2,
-                FINGER2_FIRST_SMALL);
-        processor.pointerEvent(PointerAction.MOVE, System.currentTimeMillis(), PointerData.POINTER_2,
-                FINGER2_SECOND_SMALL);
+        processor.pointerEvent(PointerAction.DOWN, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_1,
+                FINGER1_FIRST, 0);
+        processor.pointerEvent(PointerAction.MOVE, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_1,
+                FINGER1_SECOND, 0);
+        processor.pointerEvent(PointerAction.DOWN, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_2,
+                FINGER2_FIRST_SMALL, 0);
+        processor.pointerEvent(PointerAction.MOVE, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_2,
+                FINGER2_SECOND_SMALL, 0);
 
         Assert.assertEquals(5, pointerEvents.size());
         MMIPointerEvent event = pointerEvents.get(0);

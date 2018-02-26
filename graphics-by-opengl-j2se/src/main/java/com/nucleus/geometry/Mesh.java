@@ -13,6 +13,7 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.BufferObjectsFactory;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.VariableMapping;
@@ -91,6 +92,21 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
         private BufferIndex(int index) {
             this.index = index;
+        }
+
+        /**
+         * Returns the BufferIndex for the specified index, or null it no match.
+         * 
+         * @param index
+         * @return
+         */
+        public static BufferIndex getFromIndex(int index) {
+            for (BufferIndex bi : values()) {
+                if (bi.index == index) {
+                    return bi;
+                }
+            }
+            return null;
         }
 
     }
@@ -229,7 +245,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             }
         }
 
-
         /**
          * Calculates the bounds covering this mesh.
          * 
@@ -274,6 +289,16 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     transient protected AttributeBuffer[] attributes;
     transient protected ElementBuffer indices;
+    transient protected BlockBuffer[] blockBuffers;
+    /**
+     * Number of elements to draw
+     */
+    transient int drawCount;
+    /**
+     * Offset to first element
+     */
+    transient int offset;
+
     /**
      * Drawmode, if indices is null then glDrawArrays shall be used with this mode
      */
@@ -322,6 +347,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         mapper = new PropertyMapper(program);
         this.material.setProgram(program);
         internalCreateBuffers(program, vertexCount, indiceCount);
+        if (this instanceof AttributeUpdater.Consumer) {
+            setAttributeUpdater((AttributeUpdater.Consumer) this);
+        }
     }
 
     /**
@@ -336,36 +364,13 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     protected void internalCreateBuffers(ShaderProgram program, int vertexCount, int indiceCount) {
         attributes = program.createAttributeBuffers(this, vertexCount);
-        indices = new ElementBuffer(indiceCount, Type.SHORT);
-    }
-
-    /**
-     * Setup the buffers needed for drawing using only the vertices (no indexed buffer)
-     * 
-     * @param vertices One or more buffers with vertice/attribute data
-     * @param material The material to use when rendering this mesh.
-     * @param texture Texture to set or null
-     * @throws IllegalArgumentException If vertices or material is null.
-     */
-    public void setupVertices(AttributeBuffer[] vertices, Material material, Texture2D texture) {
-        if (vertices == null || material == null) {
-            throw new IllegalArgumentException(NULL_PARAMETER_STR);
+        if (indiceCount > 0) {
+            indices = new ElementBuffer(indiceCount, Type.SHORT);
+            setDrawCount(indiceCount, 0);
+        } else {
+            setDrawCount(vertexCount, 0);
         }
-        setBuffers(vertices);
-        this.material = material;
-        if (texture != null) {
-            this.texture[Texture2D.TEXTURE_0] = texture;
-        }
-    }
-
-    /**
-     * Sets the vertice/attribute buffers,
-     * 
-     * @param attributes Buffers containing vertices/attributes, what this means is specific to the program
-     * used to render the mesh.
-     */
-    protected void setBuffers(AttributeBuffer[] attributes) {
-        this.attributes = attributes;
+        blockBuffers = program.createBlockBuffers();
     }
 
     /**
@@ -456,7 +461,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     public Texture2D[] getTextures() {
         return texture;
     }
-
 
     /**
      * Sets the attribute updater for this mesh, use this for meshes where the attribute data must be updated each
@@ -603,6 +607,43 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         if (buffer != null) {
             buffer.setComponents(attribute, 4, 0, offset, verticeCount);
         }
+    }
+
+    /**
+     * Sets the number of elements/vertices to draw and the offset to first element.
+     * offset + drawCount must be less or equal to count.
+     * TODO - Unify this with the usage in ElementBuffer
+     * 
+     * @param drawCount Number of elements to draw (indices)
+     * @param offset First element to draw
+     */
+    public void setDrawCount(int drawCount, int offset) {
+        ElementBuffer buffer = getElementBuffer();
+        int max = getVerticeBuffer(BufferIndex.VERTICES).getVerticeCount();
+        if (buffer != null && buffer.getCount() > 0) {
+            max = buffer.getCount();
+        }
+        this.drawCount = Math.min(drawCount, max);
+        this.offset = offset;
+    }
+
+    /**
+     * Returns the number of vertices to draw - this is set to the same as the vertice count when the buffer
+     * is created
+     * 
+     * @return
+     */
+    public int getDrawCount() {
+        return drawCount;
+    }
+
+    /**
+     * Returns the offset to the first vertice to draw
+     * 
+     * @return
+     */
+    public int getOffset() {
+        return offset;
     }
 
 }

@@ -63,7 +63,7 @@ public class ViewController implements EventHandler<Node> {
                 Actions action = Actions.valueOf(category);
                 handleAction(action, value, target);
             } catch (IllegalArgumentException e) {
-                System.out.println("Could not parse category: " + category);
+                SimpleLogger.d(getClass(), "Could not parse category: " + category);
             }
         } else {
             SimpleLogger.d(getClass(), "No ViewNode parent in node " + object);
@@ -73,14 +73,14 @@ public class ViewController implements EventHandler<Node> {
     private void handleAction(Actions action, String data, LayerNode target) {
         float[] values = StringUtils.getFloatArray(data);
         switch (action) {
-        case MOVE:
-            target.getTransform().addTranslation(values);
-            break;
-        case MOVETO:
-            target.getTransform().setTranslate(values);
-            break;
-        default:
-            throw new IllegalArgumentException("Not implemented");
+            case MOVE:
+                target.getTransform().addTranslation(values);
+                break;
+            case MOVETO:
+                target.getTransform().setTranslate(values);
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented");
         }
     }
 

@@ -1,17 +1,15 @@
 package com.nucleus.geometry;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /**
- * Create and hold data for OpenGL vertex arrays, this can for instance be the vertice position, texture coordinates,
+ * Create and hold data for OpenGL attribute arrays, this can for instance be the vertice position, texture coordinates,
  * normal and material data or any other attribute data.
- * The data is interleaved, meaning that data for one vertex is stored together - as opposed to having separated
- * buffers.
  * 
  * @author Richard Sahlin
  *
@@ -30,6 +28,7 @@ public class AttributeBuffer extends BufferObject {
     private int attribByteStride;
     private FloatBuffer attributes;
     private int verticeCount;
+
     /**
      * Datatype
      */
@@ -68,8 +67,8 @@ public class AttributeBuffer extends BufferObject {
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         attribByteStride = sizePerVertex * dataSize;
         attribFloatStride = sizePerVertex;
-        System.out
-                .println("Allocated atrribute buffer with " + sizeInBytes + " bytes, sizePerVertices " + sizePerVertex
+        SimpleLogger.d(getClass(),
+                "Allocated atrribute buffer with " + sizeInBytes + " bytes, sizePerVertices " + sizePerVertex
                         + " dataSize " + dataSize + ", capacity() "
                         + attributes.capacity());
     }
@@ -96,11 +95,47 @@ public class AttributeBuffer extends BufferObject {
 
     /**
      * Returns the underlying Buffer holding vertex buffer array data.
+     * NOTE!
+     * Take care when writing to the buffer as it may clash with copy to gl.
+     * 
+     * Avoid using this method to store data in underlying buffer - use {@link #put(float[], int, int)} etc
      * 
      * @return
      */
-    public Buffer getBuffer() {
+    @Deprecated
+    public FloatBuffer getBuffer() {
         return attributes;
+    }
+
+    /**
+     * Copies data from the data array into this buffer, the dirty flag is set.
+     * 
+     * @param data
+     * @param offset Offset into data where values are copied
+     * @param length NUmber of float values to copy
+     */
+    public void put(float[] data, int offset, int length) {
+        attributes.put(data, offset, length);
+        dirty = true;
+    }
+
+    /**
+     * Copies data from the data array into this buffer, the dirty flag is set.
+     * 
+     * @param data
+     */
+    public void put(float[] data) {
+        attributes.put(data);
+        dirty = true;
+    }
+
+    /**
+     * returns the capacity of the underlying buffer
+     * 
+     * @return
+     */
+    public int getCapacity() {
+        return attributes.capacity();
     }
 
     /**
@@ -150,7 +185,7 @@ public class AttributeBuffer extends BufferObject {
     public void setByteStride(int byteStride) {
         attribByteStride = byteStride;
     }
-    
+
     /**
      * Copies float values from the source array into the buffer.
      * Use this method when many values shall be written.
@@ -161,9 +196,38 @@ public class AttributeBuffer extends BufferObject {
      * @param length
      */
     public void setArray(float[] array, int sourcePos, int destPos, int length) {
-        attributes.position(sourcePos);
+        attributes.position(destPos);
         attributes.put(array, sourcePos, length);
     }
 
+    /**
+     * Calculates the axis aligned 2D bounds for vertices in this buffer, starting at the current position.
+     * This method should be moved to some other class/package - this AttributeBuffer class does not
+     * specifically deal with vertices / coordinates
+     * 
+     * @param count Number of vertices to include in calculation
+     * @return Array with the smallest and largest corner (x1y1x2y2)
+     */
+    @Deprecated
+    public float[] calculateBounds2D(int count) {
+        float[] result = null;
+        int stride = (attribByteStride / 4);
+        float[] values = new float[stride];
+        FloatBuffer buffer = attributes;
+        for (int i = 0; i < count; i++) {
+            buffer.get(values);
+            if (result == null) {
+                result = new float[4];
+                System.arraycopy(values, 0, result, 0, 2);
+                System.arraycopy(values, 0, result, 2, 2);
+            } else {
+                result[0] = Math.min(values[0], result[0]);
+                result[1] = Math.min(values[1], result[1]);
+                result[2] = Math.max(values[2], result[2]);
+                result[3] = Math.max(values[3], result[3]);
+            }
+        }
+        return result;
+    }
 
 }

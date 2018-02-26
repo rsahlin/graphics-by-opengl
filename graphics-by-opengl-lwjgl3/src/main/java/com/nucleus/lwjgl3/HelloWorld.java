@@ -12,13 +12,15 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
+import com.nucleus.SimpleLogger;
+
 public class HelloWorld {
 
     // The window handle
     private long window;
 
     public void run() {
-        System.out.println("Hello LWJGL " + Version.getVersion() + "!");
+        SimpleLogger.d(getClass(), "Hello LWJGL " + Version.getVersion() + "!");
 
         init();
         loop();

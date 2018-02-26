@@ -7,26 +7,25 @@ import java.util.Hashtable;
 import com.nucleus.SimpleLogger;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLUtils;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderTarget;
-import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.texturing.TexParameter;
+import com.nucleus.texturing.Image.ImageFormat;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
+import com.nucleus.texturing.TextureParameter.Parameter;
 import com.nucleus.texturing.TextureType;
-import com.nucleus.texturing.TextureUtils;
-import com.nucleus.texturing.Image.ImageFormat;
 
 /**
- * Loading and unloading assets, mainly textures.
+ * Loading and unloading assets, mainly textures - this is the main entrypoint for loading of textures and programs.
+ * Clients shall only use this class - avoid calling methods to load assets (program/texture etc)
+ * 
  * It should normally handle resources that are loaded separately from the main json file using an
  * {@link ExternalReference} eg data that does not fit within the main file.
  * 
@@ -102,21 +101,23 @@ public class AssetManager {
     /**
      * If the reference texture is id reference and the reference is registered then the texture data is copied into
      * the reference, overwriting transient values and non-set (null) values.
+     * 
      * @param reference
      */
     public void getIdReference(Texture2D reference) {
         if (reference != null && reference.getExternalReference().isIdReference()) {
             Texture2D source = getTexture(reference.getExternalReference().getIdReference());
             if (source == null) {
-                throw new IllegalArgumentException("Could not find texture with id reference: " + reference.getExternalReference().getIdReference());
+                throw new IllegalArgumentException("Could not find texture with id reference: "
+                        + reference.getExternalReference().getIdReference());
             }
             TextureFactory.copyTextureInstance(source, reference);
         } else {
-            //What should be done?
+            // What should be done?
             SimpleLogger.d(getClass(), "Called getIdReference with null reference:");
         }
     }
-    
+
     /**
      * Returns the texture for the rendertarget attachement, if not already create it will be created and stored in the
      * assetmanager with id taken from renderTarget and attachement
@@ -134,15 +135,16 @@ public class AssetManager {
         }
         Texture2D texture = textures.get(renderTarget.getAttachementId(attachement));
         if (texture == null) {
-            //TODO - What values should be used when creating the texture?
+            // TODO - What values should be used when creating the texture?
             TextureType type = TextureType.Texture2D;
             RESOLUTION resolution = RESOLUTION.HD;
             int[] size = attachement.getSize();
             TextureParameter texParams = new TextureParameter(
-                    new TexParameter[] { TexParameter.NEAREST, TexParameter.NEAREST, TexParameter.CLAMP,
-                            TexParameter.CLAMP });
+                    new Parameter[] { Parameter.NEAREST, Parameter.NEAREST, Parameter.CLAMP,
+                            Parameter.CLAMP });
             ImageFormat format = ImageFormat.valueOf(attachement.getFormat());
-            texture = TextureFactory.createTexture(renderer.getGLES(), type, resolution, size, format, texParams);
+            texture = TextureFactory.createTexture(renderer.getGLES(), type, resolution, size, format, texParams,
+                    GLES20.GL_TEXTURE_2D);
             texture.setId(renderTarget.getAttachementId(attachement));
             textures.put(renderTarget.getAttachementId(attachement), texture);
         }
@@ -167,6 +169,9 @@ public class AssetManager {
             source.setExternalReference(new ExternalReference(""));
         }
         ExternalReference ref = source.getExternalReference();
+        if (ref == null) {
+            throw new IllegalArgumentException("No external reference for texture id: " + source.getId());
+        }
         String refId = ref.getIdReference();
         if (refId != null) {
             Texture2D texture = textures.get(refId);
@@ -184,7 +189,7 @@ public class AssetManager {
                 texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), source);
                 textures.put(refSource, texture);
                 setExternalReference(texture.getId(), ref);
-                FrameSampler.getInstance().logTag(FrameSampler.CREATE_TEXTURE + " " + texture.getName(), start,
+                FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_TEXTURE, " " + texture.getName(), start,
                         System.currentTimeMillis());
             }
             return texture;
@@ -193,6 +198,7 @@ public class AssetManager {
 
     /**
      * Fetches a texture from map of registered textures
+     * 
      * @param id Id of the texture, ususally the external source path.
      * @return The texture, or null if not registered
      */
@@ -202,9 +208,9 @@ public class AssetManager {
             return null;
         }
         return texture;
-        
+
     }
-    
+
     /**
      * Sets the external reference for the object id
      * 
@@ -241,21 +247,21 @@ public class AssetManager {
 
     /**
      * Returns a loaded and compiled shader program, if the program has not already been loaded and compiled it will be
-     * added to AssetManager
+     * added to AssetManager using shader program and function.
+     * Next time this method is called with the same shaderprogram and function the existing instance is returned.
      * 
      * @param renderer
      * @param program
      * @return An instance of the ShaderProgram that is loaded and compiled
      */
-    public ShaderProgram getProgram(NucleusRenderer renderer, ShaderProgram program) {
+    public ShaderProgram getProgram(GLES20Wrapper gles, ShaderProgram program) {
         ShaderProgram compiled = programs.get(program.getKey());
         if (compiled != null) {
-            SimpleLogger.d(getClass(), "Returned compiled program for " + program.getClass().getSimpleName());
             return compiled;
         }
         long start = System.currentTimeMillis();
-        renderer.createProgram(program);
-        FrameSampler.getInstance().logTag(FrameSampler.CREATE_SHADER + program.getClass().getSimpleName(), start,
+        program.createProgram(gles);
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, program.getClass().getSimpleName(), start,
                 System.currentTimeMillis());
         programs.put(program.getKey(), program);
         return program;

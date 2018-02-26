@@ -2,8 +2,6 @@ package com.nucleus.scene;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
@@ -35,7 +33,7 @@ public class DefaultNodeFactory implements NodeFactory {
             throw new NodeException("Type not set in source node - was it created programatically?");
         }
         try {
-        	NodeTypes type = NodeTypes.valueOf(source.getType());
+            NodeTypes type = NodeTypes.valueOf(source.getType());
         } catch (IllegalArgumentException e) {
             // This means the node type is not known.
             throw new IllegalArgumentException(ILLEGAL_NODE_TYPE + source.getType());
@@ -69,7 +67,7 @@ public class DefaultNodeFactory implements NodeFactory {
             Node parent) throws NodeException {
         long start = System.currentTimeMillis();
         Node created = create(renderer, meshFactory, source, parent.getRootNode());
-        FrameSampler.getInstance().logTag(FrameSampler.CREATE_NODE + " " + source.getId(), start,
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_NODE, " " + source.getId(), start,
                 System.currentTimeMillis());
         boolean isViewNode = false;
         if (NodeTypes.layernode.name().equals(created.getType())) {
@@ -117,14 +115,11 @@ public class DefaultNodeFactory implements NodeFactory {
             throws NodeException {
         try {
             Node node = source.createInstance(root);
-            node.create();
-            // Copy properties from source node into the created node.
-            node.setProperties(source);
-            node.copyTransform(source);
             Mesh mesh = meshFactory.createMesh(renderer, node);
             if (mesh != null) {
                 node.addMesh(mesh, MeshType.MAIN);
             }
+            node.create();
             return node;
         } catch (IOException | GLException e) {
             throw new NodeException(e);

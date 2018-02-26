@@ -3,8 +3,6 @@
  * Can be used for instance for line drawing
  * @author Richard Sahlin
  */
-#version 100
-
 //Put array declaration after name for GLSL compatibility
 uniform mat4 uMVMatrix;
 uniform mat4 uProjectionMatrix;

@@ -11,9 +11,9 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Constants;
+import com.nucleus.common.Environment;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
-import com.nucleus.geometry.AttributeUpdater.Producer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
@@ -21,19 +21,22 @@ import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
+import com.nucleus.opengl.GLESWrapper.GLES_EXTENSION_TOKENS;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
+import com.nucleus.scene.LineDrawerNode;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.shader.ShadowPass1Program;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.TextureType;
+import com.nucleus.texturing.TextureUtils;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -46,6 +49,20 @@ import com.nucleus.vecmath.Matrix;
  * @author Richard Sahlin
  */
 class BaseRenderer implements NucleusRenderer {
+
+    public enum Matrices {
+        MODELVIEW(0),
+        PROJECTION(1),
+        RENDERPASS_1(2),
+        RENDERPASS_2(3);
+
+        public final int index;
+
+        private Matrices(int index) {
+            this.index = index;
+        }
+
+    }
 
     public final static String NOT_INITIALIZED_ERROR = "Not initialized, must call init()";
 
@@ -64,26 +81,21 @@ class BaseRenderer implements NucleusRenderer {
     protected ArrayDeque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<float[]> projection = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<Pass> renderPassStack = new ArrayDeque<>();
-    //TODO - move this into a class together with render pass deque so that access of stack and current pass
-    //is handled consistently
+    // TODO - move this into a class together with render pass deque so that access of stack and current pass
+    // is handled consistently
     private Pass currentPass;
-    /**
-     * The current concatenated modelview matrix
-     */
-    protected float[] mvMatrix = Matrix.createMatrix();
     /**
      * Reference to the current modelmatrix, each Node has its own Matrix that is referenced.
      */
     protected float[] modelMatrix;
-
+    /**
+     * see Matrices
+     */
+    protected float[][] matrices = new float[Matrices.values().length][];
     /**
      * The view matrix
      */
     protected float[] viewMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
-    /**
-     * The current projection matrix
-     */
-    protected float[] projectionMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
 
     protected GLES20Wrapper gles;
     protected ImageFactory imageFactory;
@@ -96,7 +108,6 @@ class BaseRenderer implements NucleusRenderer {
 
     protected Window window = Window.getInstance();
 
-    protected RendererInfo rendererInfo;
     /**
      * Set to true when init is called
      */
@@ -128,6 +139,10 @@ class BaseRenderer implements NucleusRenderer {
         this.gles = gles;
         this.imageFactory = imageFactory;
         this.matrixEngine = matrixEngine;
+        matrices[Matrices.MODELVIEW.index] = Matrix.createMatrix();
+        matrices[Matrices.PROJECTION.index] = Matrix.setIdentity(Matrix.createMatrix(), 0);
+        matrices[Matrices.RENDERPASS_1.index] = Matrix.createMatrix();
+        matrices[Matrices.RENDERPASS_2.index] = Matrix.createMatrix();
     }
 
     @Override
@@ -150,8 +165,6 @@ class BaseRenderer implements NucleusRenderer {
         resizeWindow(0, 0, width, height);
         initialized = true;
         this.surfaceConfig = surfaceConfig;
-        rendererInfo = new RendererInfo(gles);
-        gles.glLineWidth(1f);
     }
 
     @Override
@@ -172,23 +185,27 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     /**
-     * Pushes the pass and also sets the {@link #currentPass}
-     * @param pass
+     * Pushes the current pass and sets {@link #currentPass}
+     * 
+     * @param pass New current pass
      */
     protected void pushPass(Pass pass) {
-        renderPassStack.push(pass);
+        if (currentPass != null) {
+            renderPassStack.push(currentPass);
+        }
         currentPass = pass;
     }
 
     /**
-     * Pops a pass from the stack, setting the popped pass in {@link #currentPass}
-     * @return The popped pass or null if stack empty.
+     * Pops a pass from the stack to {@link #currentPass}
+     * 
+     * @return The popped pass (same as {@link #currentPass} or null if stack empty.
      */
     protected Pass popPass() {
         currentPass = renderPassStack.pop();
         return currentPass;
     }
-    
+
     /**
      * Internal method to apply the rendersettings.
      * 
@@ -219,16 +236,17 @@ class BaseRenderer implements NucleusRenderer {
                 gles.glDepthRangef(state.getDepthRangeNear(), state.getDepthRangeFar());
             } else {
                 gles.glDisable(GLES20.GL_DEPTH_TEST);
-                gles.glDepthMask(true);
+                gles.glClearDepthf(state.getClearDepth());
                 gles.glDepthRangef(state.getDepthRangeNear(), state.getDepthRangeFar());
             }
         }
         if ((flags & RenderState.CHANGE_FLAG_MULTISAMPLE) != 0) {
-            if (rendererInfo.hasExtensionSupport(GLESWrapper.GLES_EXTENSIONS.MULTISAMPLE_EXT.name())) {
+            if (gles.getInfo()
+                    .hasExtensionSupport(GLESWrapper.GLES_EXTENSIONS.multisample_compatibility)) {
                 if (surfaceConfig != null && surfaceConfig.getSamples() > 1 && state.isMultisampling()) {
-                    gles.glEnable(GLES_EXTENSIONS.MULTISAMPLE_EXT.value);
+                    gles.glEnable(GLES_EXTENSION_TOKENS.MULTISAMPLE_EXT.value);
                 } else {
-                    gles.glDisable(GLES_EXTENSIONS.MULTISAMPLE_EXT.value);
+                    gles.glDisable(GLES_EXTENSION_TOKENS.MULTISAMPLE_EXT.value);
                 }
             }
         }
@@ -241,41 +259,53 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(Node node) throws GLException {
-        if (node.getPass() != null && (currentPass.getFlags() & node.getPass().getFlags()) != 0) {
+        Pass pass = node.getPass();
+        if (pass != null && (currentPass.getFlags() & pass.getFlags()) != 0) {
+            // Node has defined pass and masked with current pass
             State state = node.getState();
             if (state == null || state == State.ON || state == State.RENDER) {
-                renderPassStack.push(node.getPass());
                 ArrayList<RenderPass> renderPasses = node.getRenderPass();
                 if (renderPasses != null) {
                     for (RenderPass renderPass : renderPasses) {
+                        if (renderPass.getViewFrustum() != null) {
+                            Matrix.mul4(ShadowPass1Program.getLightMatrix(matrices[Matrices.RENDERPASS_1.index]),
+                                    renderPass.getViewFrustum().getMatrix());
+                        }
                         pushPass(renderPass.getPass());
                         setRenderPass(renderPass);
+                        // Render node and children
                         internalRender(node);
                         popPass();
                     }
                 } else {
+                    // Render node and children
                     internalRender(node);
                 }
             }
-         }
+        }
     }
 
+    /**
+     * Internal method to render this node and all children,children are recursively rendered
+     * by calling {@link #render(Node)}
+     * 
+     * @param node
+     * @param renderPassMatrix
+     * @throws GLException
+     */
     private void internalRender(Node node) throws GLException {
-        // Check for AttributeUpdate producer.
-        Producer producer = node.getAttributeProducer();
-        if (producer != null) {
-            producer.updateAttributeData();
-        }
         float[] nodeMatrix = node.concatModelMatrix(this.modelMatrix);
         // Fetch projection just before render
-        float[] projection = node.getProjection();
+        float[] projection = node.getProjection(currentPass);
         if (projection != null) {
-            pushMatrix(this.projection, this.projectionMatrix);
-            this.projectionMatrix = projection;
+            pushMatrix(this.projection, matrices[Matrices.PROJECTION.index]);
+            matrices[Matrices.PROJECTION.index] = projection;
         }
-        Matrix.mul4(nodeMatrix, viewMatrix, mvMatrix);
-        // Matrix.mul4(mvMatrix, projectionMatrix);
-        renderMeshes(node.getMeshes(), mvMatrix, projectionMatrix);
+        Matrix.mul4(nodeMatrix, viewMatrix, matrices[Matrices.MODELVIEW.index]);
+        if (node.getType().equals(NodeTypes.linedrawernode.name())) {
+            gles.glLineWidth(((LineDrawerNode) node).getLineWidth());
+        }
+        renderMeshes(node.getMeshes(), matrices);
         this.modelMatrix = nodeMatrix;
         for (Node n : node.getChildren()) {
             pushMatrix(matrixStack, this.modelMatrix);
@@ -283,10 +313,9 @@ class BaseRenderer implements NucleusRenderer {
             this.modelMatrix = popMatrix(matrixStack);
         }
         if (projection != null) {
-            this.projectionMatrix = popMatrix(this.projection);
+            matrices[Matrices.PROJECTION.index] = popMatrix(this.projection);
         }
         node.getRootNode().addRenderedNode(node);
-
     }
 
     private void setupRenderTarget(RenderTarget target) throws GLException {
@@ -330,7 +359,7 @@ class BaseRenderer implements NucleusRenderer {
             disable(attachement);
         } else {
             Texture2D texture = ad.getTexture();
-            bindTexture(texture);
+            TextureUtils.prepareTexture(gles, texture, Texture2D.TEXTURE_0);
             gles.bindFramebufferTexture(texture, target.getFramebufferName(), attachement);
             gles.glViewport(0, 0, texture.getWidth(), texture.getHeight());
             enable(attachement);
@@ -362,20 +391,21 @@ class BaseRenderer implements NucleusRenderer {
                 break;
             case DEPTH:
                 gles.glEnable(GLES20.GL_DEPTH_TEST);
+                gles.glDepthFunc(GLES20.GL_ALWAYS);
                 gles.glDepthMask(true);
+
                 break;
             case STENCIL:
                 gles.glEnable(GLES20.GL_STENCIL_TEST);
-                gles.glDepthMask(true);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + attachement);
 
         }
         GLUtils.handleError(gles, "glDisable " + attachement);
-        
+
     }
-    
+
     /**
      * Creates and initializes the buffers needed for the rendertarget
      * 
@@ -384,7 +414,7 @@ class BaseRenderer implements NucleusRenderer {
     private void createBuffers(RenderTarget target) throws GLException {
         ArrayList<AttachementData> attachements = target.getAttachements();
         if (attachements == null) {
-            //No attachements - what does this mean?
+            // No attachements - what does this mean?
             SimpleLogger.d(getClass(), "No attachements");
         } else {
             if (target.getFramebufferName() == Constants.NO_VALUE) {
@@ -405,12 +435,14 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     /**
-     * Binds framebuffer
-     * @param target
+     * Binds framebuffer to the specified target and attachement.
+     * Currently only supports binding to window framebuffer (0)
+     * 
+     * @param target Null target or target with empty/null attachements
      */
     private void bindFramebuffer(RenderTarget target) throws GLException {
         if (target == null || target.getAttachements() == null || target.getAttachements().size() == 0) {
-            //Bind default windowbuffer
+            // Bind default windowbuffer
             gles.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
             gles.glViewport(0, 0, window.width, window.height);
             enable(Attachement.COLOR);
@@ -458,25 +490,40 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     private void setRenderPass(RenderPass renderPass) throws GLException {
-        //First set state so that rendertargets can override enable/disable writing to buffers
+        // First set state so that rendertargets can override enable/disable writing to buffers
+        if (renderPass.getPass() == null || renderPass.getTarget() == null) {
+            throw new IllegalArgumentException(
+                    "RenderPass must contain pass and target:" + renderPass.getPass() + ", " + renderPass.getTarget());
+        }
         RenderState state = renderPass.getRenderState();
         if (state != null) {
-            //TODO - check diff between renderpasses and only update accordingly
+            // TODO - check diff between renderpasses and only update accordingly
             state.setChangeFlag(RenderState.CHANGE_FLAG_ALL);
             setRenderState(state);
             state.setChangeFlag(RenderState.CHANGE_FLAG_NONE);
         }
         setupRenderTarget(renderPass.getTarget());
-        //Clear buffer according to settings
+        // Clear buffer according to settings
         int clearFunc = state.getClearFunction();
         if (clearFunc != GLES20.GL_NONE) {
             gles.glClear(clearFunc);
         }
+        switch (renderPass.getPass()) {
+            case SHADOW2:
+                // Adjust the light matrix to fit inside texture coordinates
+                Matrix.setIdentity(matrices[Matrices.RENDERPASS_2.index], 0);
+                Matrix.scaleM(matrices[Matrices.RENDERPASS_2.index], 0, 0.5f, 0.5f, 1f);
+                Matrix.translate(matrices[Matrices.RENDERPASS_2.index], 0.5f, 0.5f, 0f);
+                Matrix.mul4(matrices[Matrices.RENDERPASS_1.index], matrices[Matrices.RENDERPASS_2.index]);
+                break;
+            default:
+                // Nothing to do
+        }
     }
 
-    protected void renderMeshes(ArrayList<Mesh> meshes, float[] mvMatrix, float[] projectionMatrix) throws GLException {
+    protected void renderMeshes(ArrayList<Mesh> meshes, float[][] matrices) throws GLException {
         for (Mesh mesh : meshes) {
-            renderMesh(mesh, mvMatrix, projectionMatrix);
+            renderMesh(mesh, matrices);
         }
     }
 
@@ -488,15 +535,20 @@ class BaseRenderer implements NucleusRenderer {
      * drawArrays is called.
      * 
      * @param mesh The mesh to be rendered.
-     * @param mvMatrix accumulated modelview matrix for this mesh, this will be sent to uniform.
-     * @param projectionMatrix The projection matrix, depending on shader this is either concatenated
+     * @param matrices accumulated modelview matrix for this mesh, this will be sent to uniform.
+     * projectionMatrix The projection matrix, depending on shader this is either concatenated
      * with modelview set to unifom.
+     * renderPassMatrix Optional matrix for renderpass
      * @throws GLException If there is an error in GL while drawing this mesh.
      */
-    protected void renderMesh(Mesh mesh, float[] mvMatrix, float[] projectionMatrix) throws GLException {
+    protected void renderMesh(Mesh mesh, float[][] matrices)
+            throws GLException {
         Consumer updater = mesh.getAttributeConsumer();
         if (updater != null) {
-            updater.updateAttributeData();
+            updater.updateAttributeData(this);
+        }
+        if (mesh.getDrawCount() == 0) {
+            return;
         }
         Material material = mesh.getMaterial();
         ShaderProgram program = getProgram(material, currentPass);
@@ -504,27 +556,35 @@ class BaseRenderer implements NucleusRenderer {
         GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
 
         material.setBlendModeSeparate(gles);
-        program.bindAttributes(gles, mesh);
-        program.bindUniforms(gles, mvMatrix, projectionMatrix, mesh);
-        
+        program.updateAttributes(gles, mesh);
+        program.updateUniforms(gles, matrices, mesh);
+        program.prepareTextures(gles, mesh);
+
         AttributeBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
         ElementBuffer indices = mesh.getElementBuffer();
-        Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
-        bindTexture(texture);
+
+        // TODO - is this the best place for this check - remember, this should only be done in debug cases.
+        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
+            program.validateProgram(getGLES());
+        }
+
         if (indices == null) {
-            gles.glDrawArrays(mesh.getMode().mode, 0, vertices.getVerticeCount());
-            timeKeeper.addDrawArrays(vertices.getVerticeCount());
+            gles.glDrawArrays(mesh.getMode().mode, mesh.getOffset(), mesh.getDrawCount());
+            GLUtils.handleError(gles, "glDrawArrays ");
+            timeKeeper.addDrawArrays(mesh.getDrawCount());
         } else {
             if (indices.getBufferName() > 0) {
                 gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
-                gles.glDrawElements(mesh.getMode().mode, indices.getCount(), indices.getType().type, 0);
+                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
+                        mesh.getOffset());
+                GLUtils.handleError(gles, "glDrawElements with ElementBuffer ");
             } else {
-                gles.glDrawElements(mesh.getMode().mode, indices.getCount(), indices.getType().type,
-                        indices.getBuffer().position(0));
+                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
+                        indices.getBuffer().position(mesh.getOffset()));
+                GLUtils.handleError(gles, "glDrawElements no ElementBuffer ");
             }
-            timeKeeper.addDrawElements(vertices.getVerticeCount(), indices.getCount());
+            timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
         }
-        GLUtils.handleError(gles, "glDrawArrays ");
     }
 
     /**
@@ -534,32 +594,10 @@ class BaseRenderer implements NucleusRenderer {
      * @return
      */
     private ShaderProgram getProgram(Material material, Pass pass) {
-        return material.getProgram().getProgram(this, pass, null);
+        ShaderProgram program = material.getProgram();
+        return program.getProgram(getGLES(), pass, program.getShading());
     }
-    
-    /**
-     * binds the texture, if texture reference is dynamic id the reference is fetched.
-     * @param texture
-     */
-    private void bindTexture(Texture2D texture) throws GLException {
-        int textureID = texture.getName();
-        if (texture != null && texture.textureType != TextureType.Untextured) {
-            if (textureID == Constants.NO_VALUE && texture.getExternalReference().isIdReference()) {
-                //Texture has no texture object - and is id reference
-                //Should only be used for dynamic textures, eg ones that depend on define in existing node
-                //TODO - try to move outside of frame render loop
-                AssetManager.getInstance().getIdReference(texture);
-                textureID = texture.getName();
-                gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
-                gles.uploadTexParameters(texture.getTexParams());
-                GLUtils.handleError(gles, "glBindTexture()");
-            } else {
-                gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
-                GLUtils.handleError(gles, "glBindTexture()");
-            }
-        }
-    }
-    
+
     @Override
     public boolean isInitialized() {
         return initialized;
@@ -630,19 +668,14 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(RootNode root) throws GLException {
+        long start = System.currentTimeMillis();
         List<Node> scene = root.getChildren();
         if (scene != null) {
             for (Node node : scene) {
                 render(node);
             }
         }
-    }
-
-    @Override
-    public void processFrame() {
-        for (FrameListener listener : frameListeners) {
-            listener.processFrame(deltaTime);
-        }
+        FrameSampler.getInstance().addTag(FrameSampler.Samples.RENDERNODES, start, System.currentTimeMillis());
     }
 
     @Override
@@ -672,22 +705,12 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void setProjection(float[] matrix, int index) {
-        System.arraycopy(matrix, index, projectionMatrix, 0, 16);
-    }
-
-    @Override
-    public float[] getProjection() {
-        return projectionMatrix;
+        System.arraycopy(matrix, index, matrices[1], 0, 16);
     }
 
     @Override
     public SurfaceConfiguration getSurfaceConfiguration() {
         return surfaceConfig;
-    }
-
-    @Override
-    public RendererInfo getInfo() {
-        return rendererInfo;
     }
 
 }

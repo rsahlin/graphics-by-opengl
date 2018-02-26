@@ -43,14 +43,16 @@ public class ComponentHandler {
      * 
      * @param component The type of this component will be used to register the system.
      * @param system The system that will be registered with the components type
-     * @throws IllegalArgumentException If component already registered, or if the component/system is null, or if the id of the component is null
+     * @throws IllegalArgumentException If component already registered, or if the component/system is null, or if the
+     * id of the component is null
      */
     public void registerComponent(Component component) {
         if (component == null || component.getId() == null) {
             throw new IllegalArgumentException("Null parameter: " + component);
         }
         if (componentSystem.containsKey(component.getId())) {
-            throw new IllegalArgumentException("Already registered " + component.getId() + ", for system " + component.getSystem());
+            throw new IllegalArgumentException(
+                    "Already registered " + component.getId() + ", for system " + component.getSystem());
         }
         systemComponent.put(component.getSystem(), component);
     }
@@ -66,11 +68,13 @@ public class ComponentHandler {
     public void processComponent(Component component, float deltaTime) {
         System system = componentSystem.get(component.getSystem());
         if (system == null) {
-            throw new IllegalArgumentException("No system registered for " + component.getSystem() + " componentId: " + component.getId());
+            throw new IllegalArgumentException(
+                    "No system registered for " + component.getSystem() + " componentId: " + component.getId());
         }
         long start = java.lang.System.currentTimeMillis();
         system.process(component, deltaTime);
-        FrameSampler.getInstance().addTag(FrameSampler.PROCESSCOMPONENT + component.getId(), start, java.lang.System.currentTimeMillis());
+        FrameSampler.getInstance().addTag(FrameSampler.Samples.PROCESSCOMPONENT.name() + component.getId(), start,
+                java.lang.System.currentTimeMillis(), FrameSampler.Samples.PROCESSCOMPONENT.detail);
     }
 
     /**
@@ -82,15 +86,17 @@ public class ComponentHandler {
      */
     public void initSystems(RootNode root, NucleusRenderer renderer) {
         for (System s : componentSystem.values()) {
-            s.initSystem(root, systemComponent.get(s.getType()));
+            s.initSystem(renderer, root, systemComponent.get(s.getType()));
         }
     }
-    
+
     /**
-     * Creates and registers the system for the component, if the system has already been registered for the component type then the
-     * registered system is returned.
+     * Creates and registers the system for the component, if the system has already been registered for the component
+     * type then the registered system is returned.
+     * 
      * @param component The component to create the system for
-     * @return If the system has not already been created then it is created, otherwise the registered system is returned.
+     * @return If the system has not already been created then it is created, otherwise the registered system is
+     * returned.
      * @throws IllegalAccessException | InstantiationException If the system could not be created
      */
     public System createSystem(Component component) throws IllegalAccessException, InstantiationException {
@@ -102,6 +108,15 @@ public class ComponentHandler {
         componentSystem.put(component.getSystem(), system);
         return system;
     }
-    
+
+    /**
+     * Returns the System for the component, if one is registered
+     * 
+     * @param component
+     * @return The System for the component, or null if not registered.
+     */
+    public System getSystem(Component component) {
+        return componentSystem.get(component.getSystem());
+    }
 
 }

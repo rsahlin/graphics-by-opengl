@@ -1,10 +1,10 @@
 package com.nucleus.profiling;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.nucleus.SimpleLogger;
-import com.nucleus.texturing.Image;
 
 /**
  * Utility class for keeping track of delta times, normally used to calculate the delta time from one frame to the next.
@@ -15,12 +15,39 @@ import com.nucleus.texturing.Image;
  */
 public class FrameSampler {
 
-    public static class Sample {
-        int total;
-        int max;
-        int min;
-        int count;
+    public interface SampleInfo {
+        /**
+         * Returns the tag for the sample
+         * 
+         * @return
+         */
+        public String getTag();
 
+        /**
+         * Returns the sample log detail level, used to filter sample logs.
+         * 
+         * @return
+         */
+        public Level getDetail();
+    }
+
+    public static class Sample {
+        public int total;
+        public int max;
+        public int min;
+        public int count;
+
+        /**
+         * Creates an empty sample
+         */
+        public Sample() {
+        }
+
+        /**
+         * Creates a sample with one value
+         * 
+         * @param millis
+         */
         public Sample(int millis) {
             total = millis;
             max = millis;
@@ -54,39 +81,49 @@ public class FrameSampler {
             count = 0;
         }
 
+        @Override
         public String toString() {
             return "Average: " + getAverage() + " Max: " + max + " Min: " + min;
         }
-
     }
 
-    public final static String DISPLAY_SPLASH = "DISPLAY_SPLASH";
-    public final static String SET_ROOT_NODE = "SET_ROOT_NODE";
-    public final static String LOAD_SCENE = "LOAD_SCENE";
-    public final static String CREATE_SCENE = "CREATE_SCENE";
-    public final static String CREATE_NODE = "CREATE_NODE";
-    public final static String LOAD_MAP = "LOAD_MAP";
-    public final static String CREATE_SHADER = "CREATE_SHADER";
-    public final static String LOGICPROCESSOR = "LOGICPROCESSOR";
-    public final static String PROCESSCOMPONENT = "PROCESSCOMPONENT";
-    public final static String RENDERNODES = "RENDERNODES";
-    /**
-     * The whole creation of a texture, load image and copy data, generate mipmaps
-     */
-    public final static String CREATE_TEXTURE = "CREATE_TEXTURE";
-    /**
-     * Load image, plus copy to {@link Image}
-     */
-    public final static String CREATE_IMAGE = "CREATE_IMAGE";
-    /**
-     * Load and decode of image to native format.
-     */
-    public final static String LOAD_IMAGE = "LOAD_IMAGE";
-    /**
-     * Copy native image to nucleus {@link Image}
-     */
-    public final static String COPY_IMAGE = "COPY_IMAGE";
-    public final static String GENERATE_MIPMAPS = "GENERATE_MIPMAPS";
+    public enum Samples implements SampleInfo {
+
+        DISPLAY_SPLASH(Level.NORMAL),
+        SET_ROOT_NODE(Level.NORMAL),
+        LOAD_SCENE(Level.NORMAL),
+        CREATE_SCENE(Level.NORMAL),
+        CREATE_NODE(Level.NORMAL),
+        LOAD_MAP(Level.NORMAL),
+        CREATE_SHADER(Level.NORMAL),
+        COMPONENTPROCESSOR(Level.NORMAL),
+        PROCESSCOMPONENT(Level.HIGH),
+        RENDERNODES(Level.NORMAL),
+        CREATE_TEXTURE(Level.NORMAL),
+        CREATE_IMAGE(Level.NORMAL),
+        LOAD_IMAGE(Level.NORMAL),
+        COPY_IMAGE(Level.NORMAL),
+        GENERATE_MIPMAPS(Level.NORMAL),
+        EGLSWAPBUFFERS(Level.HIGH),
+        EGLWAITNATIVE(Level.HIGH);
+
+        public final Level detail;
+
+        private Samples(Level detail) {
+            this.detail = detail;
+        }
+
+        @Override
+        public String getTag() {
+            return name();
+        }
+
+        @Override
+        public Level getDetail() {
+            return detail;
+        }
+
+    }
 
     public final static int DEFAULT_MIN_FPS = 30;
     private static FrameSampler frameSampler = new FrameSampler();
@@ -111,6 +148,24 @@ public class FrameSampler {
     private long sampleStart;
 
     private Map<String, Sample> tagTimings = new HashMap<>();
+    private Map<String, ArrayList<Long>> tagStartTimes = new HashMap<>();
+
+    public enum Level {
+        LOW(1),
+        NORMAL(2),
+        HIGH(3);
+
+        public final int value;
+
+        private Level(int value) {
+            this.value = value;
+        }
+    }
+
+    /**
+     * Adjust to log different sample timings, read/write this in your code
+     */
+    public Level sampleDetail = Level.HIGH;
 
     /**
      * Returns the sampler instance
@@ -235,7 +290,8 @@ public class FrameSampler {
     @Override
     public String toString() {
         int fps = (int) (frames / totalDelta);
-        return "Average FPS: " + fps + ", " + vertices / frames + " vertices, " + indices / frames
+        return "Average FPS: " + fps + "(" + frames + " frames), " + vertices / frames + " vertices, "
+                + indices / frames
                 + " indices, " + drawCalls / frames + " drawcall - per frame";
     }
 
@@ -261,31 +317,47 @@ public class FrameSampler {
     /**
      * Outputs the time between start of sampler and now, use this to measure startup time and similar
      * 
-     * @param tag Identifier for sample
+     * @param info Identifier for sample
      */
-    public void logTag(String tag) {
-        logTag(tag, samplerStart, System.currentTimeMillis());
+    public void logTag(SampleInfo info) {
+        logTag(info, samplerStart, System.currentTimeMillis());
     }
 
     /**
      * Outputs the time between start of sampler and endtime
      * 
-     * @param tag Identifier for sample
+     * @param info Identifier for sample
      * @param endTime Time when sample ended
      */
-    public void logTag(String tag, long endTime) {
-        logTag(tag, samplerStart, endTime);
+    public void logTag(SampleInfo info, long endTime) {
+        logTag(info, samplerStart, endTime);
     }
 
     /**
      * Outputs the time between startTime and endtime
      * 
-     * @param tag Identifier for sample
+     * @param info Identifier for sample
      * @param startTime Time when sample started
      * @param endTime Time when sample ended
      */
-    public void logTag(String tag, long startTime, long endTime) {
-        SimpleLogger.d(getClass(), "Sample " + tag + " : " + (endTime - startTime) + " millis.");
+    public void logTag(SampleInfo info, long startTime, long endTime) {
+        if (info.getDetail().value >= sampleDetail.value) {
+            SimpleLogger.d(getClass(), "Sample " + info.getTag() + " : " + (endTime - startTime) + " millis.");
+        }
+    }
+
+    /**
+     * Outputs the time between startTime and endtime
+     * 
+     * @param info Identifier for sample
+     * @param extra Extra identifier tat
+     * @param startTime Time when sample started
+     * @param endTime Time when sample ended
+     */
+    public void logTag(SampleInfo info, String extra, long startTime, long endTime) {
+        if (info.getDetail().value >= sampleDetail.value) {
+            SimpleLogger.d(getClass(), "Sample " + info.getTag() + extra + " : " + (endTime - startTime) + " millis.");
+        }
     }
 
     /**
@@ -293,21 +365,118 @@ public class FrameSampler {
      * 
      * @param tag
      * @param startTime
-     * @param endTime
+     * @param endTime The end time of interval
+     * @param detail The sample log level, if current level is equal or higher then this sample is added. Otherwise it
+     * is skipped.
      */
-    public void addTag(String tag, long startTime, long endTime) {
-        Sample sample = tagTimings.get(tag);
-        int millis = (int) (endTime - startTime);
-        if (sample == null) {
-            sample = new Sample(millis);
-            tagTimings.put(tag, sample);
-        } else {
-            sample.add(millis);
-            if (sample.getCount() >= DEFAULT_AVERAGE_VALUES) {
-                logAverage(tag, sample);
-                sample.reset();
+    public void addTag(String tag, long startTime, long endTime, Level detail) {
+        if (sampleDetail.value >= detail.value) {
+            Sample sample = tagTimings.get(tag);
+            int millis = (int) (endTime - startTime);
+            if (sample == null) {
+                sample = new Sample(millis);
+                tagTimings.put(tag, sample);
+            } else {
+                sample.add(millis);
+                if (sample.getCount() >= DEFAULT_AVERAGE_VALUES) {
+                    logAverage(tag, sample);
+                    sample.reset();
+                }
             }
         }
+    }
+
+    /**
+     * Adds the tag timing, outputs min/max/average at specified interval
+     * 
+     * @param info
+     * @param startTime
+     * @param endTime The end time of interval
+     */
+    public void addTag(SampleInfo info, long startTime, long endTime) {
+        addTag(info.getTag(), startTime, endTime, info.getDetail());
+    }
+
+    /**
+     * Adds start time to a tag, must be finalized with a call to {@link #setEndTimes(String, long)}
+     * 
+     * @param tag
+     * @param startTime
+     * @param detail The sample log level, if current level is equal or higher then this sample is added. Otherwise it
+     * is skipped.
+     */
+    public void addTag(String tag, long startTime, Level detail) {
+        if (sampleDetail.value >= detail.value) {
+            synchronized (tagStartTimes) {
+                ArrayList<Long> start = tagStartTimes.get(tag);
+                if (start == null) {
+                    start = new ArrayList<>();
+                    tagStartTimes.put(tag, start);
+                }
+                start.add(startTime);
+            }
+        }
+    }
+
+    /**
+     * Adds start time to a tag, must be finalized with a call to {@link #setEndTimes(SampleInfo, long)}
+     * 
+     * @param info
+     * @param startTime
+     */
+    public void addTag(SampleInfo info, long startTime) {
+        addTag(info.getTag(), startTime, info.getDetail());
+    }
+
+    /**
+     * Sets the end times that have {@value #UNDEFINED}
+     * 
+     * @param tag
+     * @param endTime
+     * @param detail The sample log level, if current level is equal or higher then this sample is finalized.
+     */
+    public void setEndTimes(String tag, long endTime, Level detail) {
+        synchronized (tagStartTimes) {
+            ArrayList<Long> start = tagStartTimes.get(tag);
+            if (start != null) {
+                for (long s : start) {
+                    addTag(tag, s, endTime, detail);
+                }
+            }
+            tagStartTimes.clear();
+        }
+    }
+
+    /**
+     * Sets the end times that have {@value #UNDEFINED}
+     * 
+     * @param info
+     * @param endTime
+     */
+    public void setEndTimes(SampleInfo info, long endTime) {
+        setEndTimes(info.getTag(), endTime, info.getDetail());
+    }
+
+    /**
+     * Returns the sample for the specified tag, or null if not found.
+     * This is a reference to the Sample used to track values - changes will be reflected in the object stored
+     * with the tag.
+     * 
+     * @param tag
+     * @return Reference to the Sample, or null if no Sample for the tag
+     */
+    public Sample getSample(String tag) {
+        return tagTimings.get(tag);
+    }
+
+    /**
+     * Sets a sample for the tag
+     * 
+     * @param tag
+     * @param sample Sample to set or null to clear.
+     */
+    public void setSample(String tag, Sample sample) {
+        tagTimings.put(tag, sample);
     }
 
     private void logAverage(String tag, Sample sample) {

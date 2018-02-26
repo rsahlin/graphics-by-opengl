@@ -23,7 +23,7 @@ public class Texture2D extends BaseReference {
 
     public static final String RESOLUTION = "resolution";
     public static final String MIPMAP = "mipmap";
-    
+
     /**
      * TODO - is this really a property of the texture, maybe move to ShaderProgram?
      */
@@ -68,14 +68,14 @@ public class Texture2D extends BaseReference {
         DEPTH_COMPONENT16(GLES20.GL_DEPTH_COMPONENT16),
         DEPTH_COMPONENT24(GLES30.GL_DEPTH_COMPONENT24),
         DEPTH_COMPONENT32F(GLES30.GL_DEPTH_COMPONENT32F);
-        
+
         public final int internalFormat;
-        
+
         private InternalFormat(int internalFormat) {
             this.internalFormat = internalFormat;
         }
     }
-    
+
     /**
      * The GL texture types
      * 
@@ -197,6 +197,15 @@ public class Texture2D extends BaseReference {
     }
 
     /**
+     * Sets the reference to texture parameters, this will not upload texture parameters
+     * 
+     * @param parameters Reference to texture parameters
+     */
+    public void set(TextureParameter parameters) {
+        this.texParameters = parameters;
+    }
+
+    /**
      * Creates a texture with the specified id, external ref, target resolution and mipmap levels
      * 
      * @param id The id of the texture, not the GL texture name.
@@ -205,7 +214,7 @@ public class Texture2D extends BaseReference {
      * @param params Texture parameters, min/mag filter wrap s/t
      * @param levels Number of mipmap levels
      * @param format The texture format
-     * @param type The texture type 
+     * @param type The texture type
      */
     protected Texture2D(String id, ExternalReference externalReference, RESOLUTION resolution,
             TextureParameter params, int levels, Format format, Type type) {
@@ -223,6 +232,7 @@ public class Texture2D extends BaseReference {
     /**
      * Sets the resolution, filter, mipmap format and type, use this when constructing an empty texture object and
      * filling it with data.
+     * 
      * @param resolution
      * @param params
      * @param levels
@@ -236,7 +246,7 @@ public class Texture2D extends BaseReference {
         this.format = format;
         this.type = type;
     }
-    
+
     /**
      * Sets the texture size.
      * The texture(s) will not be uploaded to GL.
@@ -259,11 +269,11 @@ public class Texture2D extends BaseReference {
     protected void setup(int name) {
         this.name = name;
     }
-    
-    
+
     /**
      * Copies the transient values (texture object name, width, height) and the texture format values into this class.
      * Use this to copy an instance of an existing texture but to a new type or with different texture parameters.
+     * 
      * @param source
      */
     protected void copyInstance(Texture2D source) {
@@ -273,7 +283,7 @@ public class Texture2D extends BaseReference {
         this.format = source.format;
         this.type = source.type;
     }
-    
+
     /**
      * Returns the texture parameters to use with this texture.
      * 
@@ -363,7 +373,7 @@ public class Texture2D extends BaseReference {
                 + ", "
                 + getLevels() + " levels");
     }
-    
+
     /**
      * Calculates a normalized rectangle that covers one frame of this texture, based on size of the Window
      * and the source resolution of this texture.
@@ -397,10 +407,11 @@ public class Texture2D extends BaseReference {
 
     /**
      * Checks the texture parameters and mipmap levels for consistensy
+     * 
      * @return
      */
     public boolean validateTextureParameters() {
-        //If untextured return true;
+        // If untextured return true;
         if (textureType == TextureType.Untextured) {
             return true;
         }
@@ -410,5 +421,5 @@ public class Texture2D extends BaseReference {
         }
         return true;
     }
-    
+
 }

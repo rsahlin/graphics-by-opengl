@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.nucleus.SimpleLogger;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
@@ -25,10 +26,10 @@ import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.RootNode;
-import com.nucleus.scene.Node.NodeTypes;
 
 /**
  * GSON Serializer for nucleus scenegraph.
@@ -102,6 +103,7 @@ public class GSONSceneFactory implements SceneSerializer {
 
     @Override
     public RootNode importScene(String filename) throws NodeException {
+        SimpleLogger.d(getClass(), "Importing scene:" + filename);
         ClassLoader loader = getClass().getClassLoader();
         InputStream is = loader.getResourceAsStream(filename);
         try {
@@ -113,7 +115,7 @@ public class GSONSceneFactory implements SceneSerializer {
                     is.close();
                 } catch (IOException e) {
                     // Cannot do anything.
-                    System.out.println(ERROR_CLOSING_STREAM + e.getMessage());
+                    SimpleLogger.d(getClass(), ERROR_CLOSING_STREAM + e.getMessage());
                 }
             }
         }
@@ -137,10 +139,12 @@ public class GSONSceneFactory implements SceneSerializer {
             setGson(builder.create());
             RootNode scene = getSceneFromJson(gson, reader);
             long loaded = System.currentTimeMillis();
-            FrameSampler.getInstance().logTag(FrameSampler.LOAD_SCENE, start, loaded);
-            RootNode createdRoot = createScene(scene.getChildren());
-            FrameSampler.getInstance().logTag(FrameSampler.CREATE_SCENE, loaded, System.currentTimeMillis());
-            return createdRoot;
+            FrameSampler.getInstance().logTag(FrameSampler.Samples.LOAD_SCENE, start, loaded);
+            RootNode root = createInstance();
+            scene.copyTo(root);
+            createScene(root, scene.getChildren());
+            FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SCENE, loaded, System.currentTimeMillis());
+            return root;
         } catch (IOException e) {
             throw new NodeException(e);
         }
@@ -178,16 +182,16 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     /**
-     * Creates {@linkplain RootNode} from the scene node and returns, use this method when importing to create
+     * Creates instances of the nodes in the scene and adds to the root, use this method when importing to create
      * a new instance of the loaded scene.
      * 
-     * @param scene The root node scenes
+     * @param root The root node, created child nodes will be added to this
+     * @param scene The root nodes to create instances of
      * @return The created scenes or null if there is an error.
      * @throws NodeException
      */
-    private RootNode createScene(List<Node> scene) throws NodeException {
-        RootNode root = createInstance();
-        addNodes(root, scene);
+    private RootNode createScene(RootNode root, List<Node> scene) throws NodeException {
+        createNodes(root, scene);
         return root;
     }
 
@@ -208,7 +212,7 @@ public class GSONSceneFactory implements SceneSerializer {
      * @return
      * @throws IOException
      */
-    private void addNodes(RootNode root, List<Node> children) throws NodeException {
+    private void createNodes(RootNode root, List<Node> children) throws NodeException {
         for (Node node : children) {
             Node created = nodeFactory.create(renderer, meshFactory, node, root);
             root.addChild(created);

@@ -3,7 +3,6 @@ package com.nucleus.jogl;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2ES2;
@@ -32,15 +31,6 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
      */
     private ByteBuffer buffer = ByteBuffer.allocate(INFO_BUFFERSIZE);
 
-    /**
-     * Not used buffer object names
-     */
-    private ArrayList<int[]> bufferNames = new ArrayList<int[]>();
-    /**
-     * Used buffer object names
-     */
-    private ArrayList<int[]> usedBufferNames = new ArrayList<int[]>();
-
     GL2ES2 gles;
 
     /**
@@ -49,39 +39,12 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
      * @param gles The JOGL GLES20 instance
      * @throws IllegalArgumentException If gles is null
      */
-    public JOGLGLES20Wrapper(GL2ES2 gles) {
+    public JOGLGLES20Wrapper(GL2ES2 gles, Renderers renderVersion) {
+        super(Platform.GL, renderVersion);
         if (gles == null) {
             throw new IllegalArgumentException(GLES_NULL);
         }
         this.gles = gles;
-    }
-
-    /**
-     * Gets an unused buffer object name, if one does not exist it is allocated.
-     * 
-     * @return
-     */
-    protected int[] getName() {
-        if (bufferNames.size() > 0) {
-            int[] used = bufferNames.remove(bufferNames.size() - 1);
-            usedBufferNames.add(used);
-            return used;
-        } else {
-            int[] names = new int[1];
-            gles.glGenBuffers(1, names, 0);
-            usedBufferNames.add(names);
-            System.out.println("Allocated 1 buffer object name: " + names[0]);
-            return names;
-        }
-    }
-
-    /**
-     * Moves all used buffer names to the unused buffer name list.
-     */
-    protected void freeNames() {
-        while (!usedBufferNames.isEmpty()) {
-            bufferNames.add(usedBufferNames.remove(usedBufferNames.size() - 1));
-        }
     }
 
     @Override
@@ -173,7 +136,7 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, Buffer ptr) {
         // This method should not be called on JOGL - future versions of GL will move to named buffer objects.
-        int[] names = getName();
+        int[] names = JOGLGLESUtils.getName(this);
         // int offset = ptr.position();
         gles.glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, names[0]);
         int numBytes = ptr.capacity() * 4;
@@ -212,7 +175,7 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     public void glDrawElements(int mode, int count, int type, Buffer indices) {
         // This method should not be called on JOGL - future versions of GL will move to named buffer objects.
         int offset = indices.position();
-        int[] names = getName();
+        int[] names = JOGLGLESUtils.getName(this);
         gles.glBindBuffer(GL2ES2.GL_ELEMENT_ARRAY_BUFFER, names[0]);
         int numBytes = count;
         if (type == GLES20.GL_UNSIGNED_SHORT) {
@@ -289,6 +252,11 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     public void glUniform3fv(int location, int count, float[] v, int offset) {
         gles.glUniform3fv(location, count, v, offset);
 
+    }
+
+    @Override
+    public void glUniform1iv(int location, int count, int[] v0, int offset) {
+        gles.glUniform1iv(location, count, v0, offset);
     }
 
     @Override
@@ -425,7 +393,7 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level) {
-        gles.glFramebufferTexture2D(target,  attachment,  textarget,  texture,  level);
+        gles.glFramebufferTexture2D(target, attachment, textarget, texture, level);
     }
 
     @Override
@@ -446,6 +414,16 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
         gles.glColorMask(red, green, blue, alpha);
+    }
+
+    @Override
+    public void glValidateProgram(int program) {
+        gles.glValidateProgram(program);
+    }
+
+    @Override
+    public void glGetShaderSource(int shader, int bufsize, int[] length, byte[] source) {
+        gles.glGetShaderSource(shader, bufsize, length, 0, source, 0);
     }
 
 }

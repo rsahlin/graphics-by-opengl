@@ -69,6 +69,20 @@ public interface NucleusRenderer {
          * @throws IllegalArgumentException If width or height <= 0
          */
         public void contextCreated(int width, int height);
+
+        /**
+         * Produces the next frame, when this method returns buffers shall be swapped and
+         * contents posted to display.
+         */
+        public void drawFrame();
+
+        /**
+         * Called when the underlying surface (EGL) is lost, this means the context is
+         * not valid anymore.
+         * If app is restared all context related data must be re-created
+         */
+        public void surfaceLost();
+
     }
 
     /**
@@ -192,14 +206,6 @@ public interface NucleusRenderer {
     public void render(Node node) throws GLException;
 
     /**
-     * Call {@link FrameListener#processFrame(float)} for registered FrameListeners to signal that one updated frame
-     * shall be produced
-     * This method may be called from a separate thread from the one doing the rendering.
-     * Implementations must take this into consideration.
-     */
-    public void processFrame();
-
-    /**
      * Returns true if this renderer has been initialized by calling init() when
      * the context is created.
      * 
@@ -306,21 +312,5 @@ public interface NucleusRenderer {
      * @throws IndexOutOfBoundsException If there is not enough storage in the source matrix at index
      */
     public void setProjection(float[] matrix, int index);
-
-    /**
-     * Returns the current projection matrix, you should normally not change these values.
-     * The projection matrix is controlled by setting a projection in the Node
-     * 
-     * @return The projection matrix
-     */
-    public float[] getProjection();
-
-    /**
-     * Returns the renderer info.
-     * This is likely to only be available after the context is created.
-     * 
-     * @return The renderer info, or null if called before {@link #init(SurfaceConfiguration)} has been called.
-     */
-    public RendererInfo getInfo();
 
 }

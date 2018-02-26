@@ -33,15 +33,15 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
         for (int i = count; i >= 0; i--) {
             node = nodes.get(i);
             switch (node.getState()) {
-            case ON:
-            case ACTOR:
-                if (onPointerEvent(node, event)) {
-                    return true;
-                }
-                break;
-            default:
-                SimpleLogger.d(getClass(), "Not handling input, node in state: " + node.getState());
-                // Do nothing
+                case ON:
+                case ACTOR:
+                    if (onPointerEvent(node, event)) {
+                        return true;
+                    }
+                    break;
+                default:
+                    SimpleLogger.d(getClass(), "Not handling input, node in state: " + node.getState());
+                    // Do nothing
             }
         }
         return false;
@@ -65,30 +65,37 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
             }
             ObjectInputListener listener = node.getObjectInputListener();
             switch (event.getAction()) {
-            case ACTIVE:
-                down[0] = position[0];
-                down[1] = position[1];
-                SimpleLogger.d(getClass(), "HIT: " + node);
-                String onclick = node.getProperty(ONCLICK);
-                if (onclick != null) {
-                    Property p = Property.create(onclick);
-                    EventManager.getInstance().post(node, p.getKey(), p.getValue());
-                }
-                if (listener != null) {
-                    listener.onClick(event.getPointerData().getCurrent());
-                }
-                return true;
-            case INACTIVE:
-                break;
-            case MOVE:
-                if (listener != null) {
-                    listener.onDrag(event.getPointerData());
-                }
-                break;
-            case ZOOM:
-                break;
-            default:
-                break;
+                case ACTIVE:
+                    down[0] = position[0];
+                    down[1] = position[1];
+                    SimpleLogger.d(getClass(), "HIT: " + node);
+                    String onclick = node.getProperty(ONCLICK);
+                    if (onclick != null) {
+                        Property p = Property.create(onclick);
+                        if (p != null) {
+                            EventManager.getInstance().post(node, p.getKey(), p.getValue());
+                        } else {
+                            SimpleLogger.d(getClass(), "Invalid property for node " + node.getId() + " : " + onclick);
+                        }
+                    }
+                    if (listener != null) {
+                        listener.onInputEvent(event.getPointerData().getCurrent());
+                    }
+                    return true;
+                case INACTIVE:
+                    if (listener != null) {
+                        listener.onInputEvent(event.getPointerData().getCurrent());
+                    }
+                    return true;
+                case MOVE:
+                    if (listener != null) {
+                        listener.onDrag(event.getPointerData());
+                    }
+                    return true;
+                case ZOOM:
+                    break;
+                default:
+                    break;
             }
         }
         return false;

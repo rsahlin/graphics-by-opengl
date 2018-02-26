@@ -4,9 +4,8 @@ import com.nucleus.vecmath.VecMath;
 import com.nucleus.vecmath.Vector2D;
 
 public class MMIPointerEvent {
-
+    
     public enum Action {
-
         /**
          * A pointer becomes active, ie pressed. For touch input devices this means a touch down.
          */
@@ -96,6 +95,15 @@ public class MMIPointerEvent {
      */
     public Action getAction() {
         return action;
+    }
+
+    /**
+     * Returns the finger number for this event
+     * 
+     * @return Finger number, 0 and up
+     */
+    public int getFinger() {
+        return finger;
     }
 
 }

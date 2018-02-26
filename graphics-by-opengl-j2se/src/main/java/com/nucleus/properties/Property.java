@@ -28,7 +28,7 @@ public class Property {
     public static Property create(String property) {
         int split = property.indexOf(':');
         if (split == -1) {
-            return null;
+            return new Property(property, null);
         }
         Property p = new Property(property.substring(0, split), property.substring(split + 1));
         return p;

@@ -1,12 +1,13 @@
 package com.nucleus.renderer;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.StringUtils;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
+import com.nucleus.opengl.GLESWrapper.Renderers;
 
 /**
  * Info about the renderer in the system.
@@ -20,34 +21,38 @@ public class RendererInfo {
     private String renderer;
     private String version;
     private String shadingLanguageVersion;
-    private List<String> extensions = new ArrayList<String>();
+    private List<String> extensions;
     private int maxTextureSize;
+    private Renderers renderVersion;
 
     /**
      * Fetches info from GLES and stores in this class.
      * 
      * @param gles
+     * @param renderVersion
      */
-    public RendererInfo(GLES20Wrapper gles) {
+    public RendererInfo(GLES20Wrapper gles, Renderers renderVersion) {
+        this.renderVersion = renderVersion;
         vendor = gles.glGetString(GLES20.GL_VENDOR);
         version = gles.glGetString(GLES20.GL_VERSION);
         renderer = gles.glGetString(GLES20.GL_RENDERER);
         shadingLanguageVersion = gles.glGetString(GLES20.GL_SHADING_LANGUAGE_VERSION);
         String glString = gles.glGetString(GLES20.GL_EXTENSIONS);
         if (glString != null) {
-            StringTokenizer st = new StringTokenizer(glString, " ");
-            while (st.hasMoreTokens()) {
-                String extension = st.nextToken();
-                extensions.add(extension);
-                System.out.println("Extension: " + extension);
-            }
+            extensions = StringUtils.getList(glString, " ");
         }
         int[] param = new int[1];
         gles.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, param);
         maxTextureSize = param[0];
         SimpleLogger.d(getClass(), "GLInfo:\n" + "GLES Version: " + version + " with shading language "
                 + shadingLanguageVersion + "\n" + vendor + " " + renderer + ", max texture size: " + maxTextureSize);
-
+        if (extensions != null) {
+            StringUtils.logList(getClass().getCanonicalName(), extensions);
+        }
+        // Some implementations may raise error in glGetString for some unknown reason (LWJGL) - clear any raised errors
+        // here
+        while (gles.glGetError() != GLES20.GL_NO_ERROR) {
+        }
     }
 
     /**
@@ -81,8 +86,17 @@ public class RendererInfo {
     }
 
     /**
+     * Returns the renderer version, eg GLES2.0, GLES30
+     * 
+     * @return
+     */
+    public Renderers getRenderVersion() {
+        return renderVersion;
+    }
+
+    /**
      * Returns a version or release number for the shading language of the form
-     * OpenGL<space>ES<space>GLSL<space>ES<space><version number><space><vendor-specific information>.
+     * OpenGL ES GLSL ES <version number> <vendor-specific information>.
      * 
      * @return
      */
@@ -97,9 +111,37 @@ public class RendererInfo {
      * @return True if the platform has support for the extension
      */
     public boolean hasExtensionSupport(String extension) {
-        if (extensions.contains(extension)) {
+        if (extensions != null && extensions.contains(extension)) {
             return true;
         }
         return false;
     }
+
+    /**
+     * Returns true if the platform has support for the extension.
+     * Will check for extension match regardless of extension prefix like GL_EXT_ etc
+     * 
+     * @param extension
+     * @return
+     */
+    public boolean hasExtensionSupport(GLES_EXTENSIONS extension) {
+        return extension == null || extensions == null ? false : hasExtensionNoPrefix(extension.name());
+    }
+
+    /**
+     * Checks if there is support for extension - excluding prefix like GL_EXT_, GL_ARB_ etc
+     * 
+     * @param extension
+     * @return
+     */
+    private boolean hasExtensionNoPrefix(String extension) {
+        for (String str : extensions) {
+            int index = str.indexOf('_', 3) + 1;
+            if (str.substring(index).equals(extension)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

@@ -2,6 +2,7 @@ package com.nucleus;
 
 import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.CoreApp.CoreAppStarter;
+import com.nucleus.common.Environment;
 import com.nucleus.matrix.j2se.J2SEMatrixEngine;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
@@ -14,6 +15,24 @@ import com.nucleus.texturing.J2SEImageFactory;
  *
  */
 public abstract class J2SEWindowApplication implements CoreAppStarter, WindowListener {
+
+    public enum WindowType {
+        /**
+         * Only available when using LWJGL
+         */
+        GLFW(),
+        /**
+         * Only avaialable when using JOGL
+         */
+        NEWT(),
+        JAWT(),
+        EGL();
+    }
+
+    /**
+     * To select GLFW or JAWT window
+     */
+    protected static final String WINDOW_TYPE_KEY = "WINDOWTYPE";
 
     public static final String WINDOW_WIDTH_KEY = "WINDOW-WIDTH";
     public static final String WINDOW_HEIGHT_KEY = "WINDOW-HEIGHT";
@@ -28,6 +47,8 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     protected boolean windowUndecorated = false;
     protected boolean fullscreen = false;
     protected J2SEWindow j2seWindow;
+    protected WindowType windowType;
+
     protected RenderContextListener contextListener;
 
     /**
@@ -56,11 +77,19 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
      * @param args
      */
     protected void setProperties(String[] args) {
+        setSystemProperties();
         if (args == null) {
             return;
         }
         for (String str : args) {
             setProperty(str);
+        }
+    }
+
+    protected void setSystemProperties() {
+        String swap = Environment.getInstance().getProperty(Environment.Property.EGLSWAPINTERVAL);
+        if (swap != null && swap.length() > 0) {
+            swapInterval = Integer.parseInt(swap);
         }
     }
 
@@ -86,12 +115,17 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
             fullscreen = Boolean.parseBoolean(str.substring(FULLSCREEN_KEY.length() + 1));
             SimpleLogger.d(getClass(), FULLSCREEN_KEY + " set to " + fullscreen);
         }
+        if (str.toUpperCase().startsWith(WINDOW_TYPE_KEY)) {
+            windowType = WindowType.valueOf(str.substring(WINDOW_TYPE_KEY.length() + 1));
+            SimpleLogger.d(getClass(), WINDOW_TYPE_KEY + " set to " + windowType);
+        }
 
     }
 
     /**
      * Create and setup the window implementation based on the renderer version
      * The returned window shall be ready to be used.
+     * 
      * @return
      */
     protected abstract J2SEWindow createWindow(Renderers version);
@@ -99,6 +133,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     @Override
     public void createCoreWindows(Renderers version) {
         j2seWindow = createWindow(version);
+        j2seWindow.setWindowListener(this);
     }
 
     @Override
@@ -123,5 +158,18 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         return coreApp.getRenderer();
     }
 
+    @Override
+    public void resize(int x, int y, int width, int height) {
+        if (coreApp != null) {
+            coreApp.getRenderer().resizeWindow(x, y, width, height);
+        }
+    }
+
+    @Override
+    public void windowClosed() {
+        if (coreApp != null) {
+            coreApp.setDestroyFlag();
+        }
+    }
 
 }

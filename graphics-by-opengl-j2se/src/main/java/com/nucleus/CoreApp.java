@@ -1,38 +1,37 @@
 package com.nucleus;
 
-import java.util.prefs.BackingStoreException;
-
 import com.nucleus.assets.AssetManager;
-import com.nucleus.component.J2SELogicProcessor;
-import com.nucleus.component.LogicProcessorRunnable;
+import com.nucleus.component.ComponentProcessorRunnable;
+import com.nucleus.component.J2SEComponentProcessor;
+import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.RectangleShapeBuilder;
-import com.nucleus.geometry.RectangleShapeBuilder.Configuration;
+import com.nucleus.geometry.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.mmi.MMIEventListener;
+import com.nucleus.mmi.ObjectInputListener;
 import com.nucleus.mmi.core.PointerInputProcessor;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
-import com.nucleus.renderer.RenderState;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.J2SENodeInputListener;
 import com.nucleus.scene.NavigationController;
+import com.nucleus.scene.Node;
+import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.NodeController;
 import com.nucleus.scene.NodeException;
+import com.nucleus.scene.NodeInputListener;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewController;
-import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.shader.TranslateProgram;
 import com.nucleus.system.ComponentHandler;
 import com.nucleus.texturing.Texture2D;
@@ -49,7 +48,8 @@ import com.nucleus.texturing.TextureParameter;
  */
 public class CoreApp implements RenderContextListener {
 
-    private final static String NOT_CALLED_CREATECONTEXT = "Must call contextCreated() before rendering.";
+    private static final String NOT_CALLED_CREATECONTEXT = "Must call contextCreated() before rendering.";
+    private static final String SPLASH_FILENAME = "assets/splash.png";
 
     /**
      * Interface for the core app to create the objects needed.
@@ -121,7 +121,7 @@ public class CoreApp implements RenderContextListener {
      */
     protected PointerInputProcessor inputProcessor = new PointerInputProcessor();
 
-    LogicProcessorRunnable logicRunnable;
+    ComponentProcessorRunnable logicRunnable;
 
     /**
      * Set to true when {@link #contextCreated(int, int)} is called
@@ -153,8 +153,8 @@ public class CoreApp implements RenderContextListener {
         }
         this.renderer = renderer;
         this.clientApp = clientApp;
-        
-        logicRunnable = new LogicProcessorRunnable(renderer, new J2SELogicProcessor(), false);
+
+        logicRunnable = new ComponentProcessorRunnable(renderer, new J2SEComponentProcessor(), false);
 
     }
 
@@ -169,6 +169,8 @@ public class CoreApp implements RenderContextListener {
 
     /**
      * Returns the pointer input processor, this can be used to listen to low level MMI (pointer input) events.
+     * Applications can use this to listen to low level input events - or use the NodeTree and attach pointerinput to
+     * nodes via NodeInputListener see {@link #addPointerInput(RootNode)}
      * 
      * @return
      */
@@ -199,6 +201,7 @@ public class CoreApp implements RenderContextListener {
      * This may be followed by a call to contextCreated() in which case only textures needs to be
      * re-created.
      */
+    @Override
     public void surfaceLost() {
         SimpleLogger.d(getClass(), "surfaceLost()");
     }
@@ -228,6 +231,7 @@ public class CoreApp implements RenderContextListener {
      * This method MUST be called from a thread that can access GL.
      * The normal case is to call it from window/surface that has onDraw/display callbacks.
      */
+    @Override
     public void drawFrame() {
         if (!hasCalledCreated) {
             throw new IllegalArgumentException(NOT_CALLED_CREATECONTEXT);
@@ -235,8 +239,8 @@ public class CoreApp implements RenderContextListener {
         // If renderer is null it means CoreApp is destroyed - do nothing.
         if (renderer != null) {
             try {
-                //If multiple threads used this method will return immediately
-                logicRunnable.process(rootNode,FrameSampler.getInstance().getDelta());
+                // If multiple threads used this method will return immediately
+                logicRunnable.process(rootNode, FrameSampler.getInstance().getDelta());
                 renderer.beginFrame();
                 if (rootNode != null) {
                     renderer.render(rootNode);
@@ -255,13 +259,13 @@ public class CoreApp implements RenderContextListener {
     }
 
     /**
-     * Sets the scene rootnode, this will update the root node in the logic runnable {@linkplain LogicProcessorRunnable}
+     * Sets the scene rootnode, this will update the root node in the logic runnable
+     * {@linkplain ComponentProcessorRunnable}
      * A {@linkplain NodeController} will be created for the node and used as {@linkplain EventHandler}
      * 
      * @param node
      */
     public void setRootNode(RootNode node) {
-        FrameSampler.getInstance().logTag(FrameSampler.SET_ROOT_NODE);
         this.rootNode = node;
         logicRunnable.setRootNode(node);
         ViewController vc = new ViewController();
@@ -269,35 +273,38 @@ public class CoreApp implements RenderContextListener {
         NodeController nc = new NodeController(node);
         nc.registerEventHandler(null);
         ComponentHandler.getInstance().initSystems(node, renderer);
-
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.SET_ROOT_NODE);
     }
 
     /**
-     * Adds pointer input callback {@linkplain MMIEventListener} to the scene, after this call the Node tree will get
-     * callbacks on pointer input
+     * Adds pointer input callback using {@link NodeInputListener} to the scene, after this call the Node tree will get
+     * callbacks on pointer input.
+     * Call this if nodes use the {@link EventManager}, eg POINTERINPUT property, or shall use a node with
+     * {@link ObjectInputListener}
+     * Set ObjectInputListener on node by calling {@link Node#setObjectInputListener(ObjectInputListener)}
      * 
-     * @param root
+     * @param root The rootnode
      */
     public void addPointerInput(RootNode root) {
         inputProcessor.addMMIListener(new J2SENodeInputListener(root));
     }
 
     public void displaySplash() throws GLException, NodeException {
-        FrameSampler.getInstance().logTag(FrameSampler.DISPLAY_SPLASH);
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.DISPLAY_SPLASH);
 
         BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
         Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), "texture",
-                new ExternalReference("assets/splash.png"), RESOLUTION.HD, texParam, 1);
+                new ExternalReference(SPLASH_FILENAME), RESOLUTION.HD, texParam, 1);
         Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
         meshBuilder.setElementMode(Mode.TRIANGLES, 4, 6);
         meshBuilder.setTexture(texture);
-        TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(renderer,
+        TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
                 new TranslateProgram(Texture2D.Shading.textured));
         Material material = new Material();
         material.setProgram(vt);
         meshBuilder.setMaterial(material);
-        meshBuilder.setShapeBuilder(new RectangleShapeBuilder(new Configuration(0.2f, 0.2f, 0f, 1, 0)));
+        meshBuilder.setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(0.2f, 0.2f, 0f, 1, 0)));
         builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
                 .setNode(NodeTypes.layernode);
         RootNode root = builder.create();

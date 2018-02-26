@@ -14,10 +14,16 @@ import com.nucleus.mmi.PointerData.PointerAction;
  */
 public class PointerMotionData {
 
+    PointerData.Type type;
+
     /**
      * Each pointer data, the first will be the touch down, followed by movement.
      */
     ArrayList<PointerData> pointerMovement = new ArrayList<>();
+
+    public PointerMotionData(PointerData.Type type) {
+        this.type = type;
+    }
 
     /**
      * Adds the pointer data to list.
@@ -28,7 +34,6 @@ public class PointerMotionData {
      */
     public void add(PointerData data) {
         pointerMovement.add(data);
-
     }
 
     /**
@@ -91,6 +96,19 @@ public class PointerMotionData {
     }
 
     /**
+     * Returns the n'th pointer data, or null if no data
+     * 
+     * @param n
+     * @return
+     */
+    public PointerData get(int n) {
+        if (pointerMovement.size() > n) {
+            return pointerMovement.get(n);
+        }
+        return null;
+    }
+
+    /**
      * Returns the latest pointer data.
      * NOTE! This is a reference to the values. Do not modify!
      * 
@@ -117,10 +135,11 @@ public class PointerMotionData {
      * @param timestamp
      * @param pointer
      * @param position
+     * @param pressure
      * @return
      */
-    public PointerData create(PointerAction action, long timestamp, int pointer, float[] position) {
-        return new PointerData(action, timestamp, pointer, position);
+    public PointerData create(PointerAction action, long timestamp, int pointer, float[] position, float pressure) {
+        return new PointerData(action, timestamp, pointer, position, pressure);
     }
 
     /**
@@ -131,6 +150,24 @@ public class PointerMotionData {
      */
     public List<PointerData> getPointers() {
         return pointerMovement;
+    }
+
+    /**
+     * Returns the number of pointer data, ie number of touch inputs
+     * 
+     * @return
+     */
+    public int getCount() {
+        return pointerMovement.size();
+    }
+
+    /**
+     * Returns the type of pointer is used for the motion event, this is the same from down to up.
+     * 
+     * @return
+     */
+    public PointerData.Type getType() {
+        return type;
     }
 
 }

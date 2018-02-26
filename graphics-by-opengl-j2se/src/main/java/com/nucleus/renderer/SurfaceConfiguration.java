@@ -1,9 +1,14 @@
 package com.nucleus.renderer;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.nucleus.common.StringUtils;
+import com.nucleus.egl.EGLUtils;
+
 /**
- * Class that specifies the surface configuration, bitdepth, zbufferm samples and other
+ * Class that specifies the surface configuration, bitdepth, zbuffer samples and other
  * surface specific configurations.
- * Use with the @link Renderer
  * 
  * @author Richard Sahlin
  */
@@ -14,6 +19,7 @@ public class SurfaceConfiguration {
     public final static int DEFAULT_BLUE_BITS = 8;
     public final static int DEFAULT_ALPHA_BITS = 8;
     public final static int DEFAULT_DEPTH_BITS = 16;
+    public final static int DEFAULT_STENCIL_BITS = 0;
     public final static int DEFAULT_SAMPLES = 0;
 
     protected final static String INVALID_SAMPLES_STRING = "Invalid samples value";
@@ -42,9 +48,33 @@ public class SurfaceConfiguration {
     protected int depthBits = DEFAULT_DEPTH_BITS;
 
     /**
+     * Number of bits to use for stencil
+     */
+    protected int stencilBits = DEFAULT_STENCIL_BITS;
+
+    /**
+     * Surface type bitmask
+     */
+    protected int surfaceType;
+
+    /**
      * Number of samples to require in SampleBuffers.
      */
     protected int samples = DEFAULT_SAMPLES;
+
+    /**
+     * EGL version
+     */
+    protected String version;
+    protected String vendor;
+    /**
+     * List of EGL extensions
+     */
+    protected List<String> extensions = new ArrayList<String>();
+    /**
+     * Optional list with surface attribs
+     */
+    protected List<int[]> surfaceAttribs;
 
     /**
      * Constructs a SurfaceConfiguration that can used when
@@ -64,14 +94,12 @@ public class SurfaceConfiguration {
      * @param samples The number of samples for each pixel.
      */
     public SurfaceConfiguration(int redBits, int greenBits, int blueBits, int alphaBits, int depthBits, int samples) {
-
         this.redBits = redBits;
         this.greenBits = greenBits;
         this.blueBits = blueBits;
         this.alphaBits = alphaBits;
         this.depthBits = depthBits;
         this.samples = samples;
-
     }
 
     /**
@@ -120,6 +148,15 @@ public class SurfaceConfiguration {
     }
 
     /**
+     * Returns the number of bits to use for stencil buffer
+     * 
+     * @return
+     */
+    public int getStencilBits() {
+        return stencilBits;
+    }
+
+    /**
      * Return the number of samples required for this configuration.
      * 
      * @return The number of samples required for this configuration.
@@ -147,7 +184,7 @@ public class SurfaceConfiguration {
      * @param redbits
      */
     public void setRedBits(int redbits) {
-        redBits = redbits;
+        this.redBits = redbits;
     }
 
     /**
@@ -156,7 +193,7 @@ public class SurfaceConfiguration {
      * @param greenbits
      */
     public void setGreenBits(int greenbits) {
-        greenBits = greenbits;
+        this.greenBits = greenbits;
     }
 
     /**
@@ -165,7 +202,7 @@ public class SurfaceConfiguration {
      * @param bluebits
      */
     public void setBlueBits(int bluebits) {
-        blueBits = bluebits;
+        this.blueBits = bluebits;
     }
 
     /**
@@ -174,22 +211,102 @@ public class SurfaceConfiguration {
      * @param alphabits
      */
     public void setAlphaBits(int alphabits) {
-        alphaBits = alphabits;
+        this.alphaBits = alphabits;
     }
 
     /**
      * Sets the number of wanted depthbits, at least this value - may get a config with more.
+     * 
      * @param depthbits
      */
-    public void setDepthBits(int depthbits){
-        depthBits = depthbits;
+    public void setDepthBits(int depthbits) {
+        this.depthBits = depthbits;
+    }
+
+    /**
+     * Sets the number of wanted stencilbits, at least this value - may get config with more.
+     * 
+     * @param stencilbits
+     */
+    public void setStencilBits(int stencilbits) {
+        this.stencilBits = stencilbits;
+    }
+
+    /**
+     * Sets the surface type bitmask
+     * 
+     * @param surfaceType
+     */
+    public void setSurfaceType(int surfaceType) {
+        this.surfaceType = surfaceType;
     }
 
     @Override
     public String toString() {
+        String ext = "";
+        for (String e : extensions) {
+            ext += e + System.lineSeparator();
+        }
         return "RGBA:" + redBits + ", " + greenBits + ", " + blueBits + ", " + alphaBits + ", Depth: " + depthBits
-                + ", Samples: " + samples;
+                + ", stencil: " + stencilBits + ", Samples: " + samples + ", Version: " + version + ", Vendor: "
+                + vendor + System.lineSeparator() +
+                "Surfacetype " + EGLUtils.getSurfaceTypeAsString(surfaceType) + System.lineSeparator() +
+                "EGL extensions:" + System.lineSeparator() + ext;
+    }
 
+    /**
+     * Sets the egl infp
+     * 
+     * @param version
+     * @param vendor
+     * @param extensions
+     */
+    public void setInfo(String version, String vendor, String extensions) {
+        this.version = version;
+        this.vendor = vendor;
+        this.extensions = StringUtils.getList(extensions, " ");
+    }
+
+    /**
+     * Returns the EGL version.
+     * 
+     * @return
+     */
+    public String getVersion() {
+        return version;
+    }
+
+    /**
+     * Returns a list with supported EGL extensions
+     * 
+     * @return
+     */
+    public List<String> getExtensions() {
+        return extensions;
+    }
+
+    /**
+     * Sets a list of surface attribs to set to EGL
+     * Each int[] shall consist of 2 values: attrib, value
+     * See https://www.khronos.org/registry/EGL/sdk/docs/man/html/eglSurfaceAttrib.xhtml
+     * 
+     * @param attribs
+     */
+    protected void setSurfaceAttribs(List<int[]> attribs) {
+        this.surfaceAttribs = attribs;
+    }
+
+    /**
+     * Returns true if the platform has support for the specified extension.
+     * 
+     * @param extension The extension to check for
+     * @return True if the platform has support for the extension
+     */
+    public boolean hasExtensionSupport(String extension) {
+        if (extensions != null && extensions.contains(extension)) {
+            return true;
+        }
+        return false;
     }
 
 }

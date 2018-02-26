@@ -49,12 +49,15 @@ public class RectangularBounds extends Bounds implements PostDeserializable {
     transient protected float[] tempPositons = new float[8];
     transient protected float[] rotatedBounds = new float[8];
 
+    private RectangularBounds() {
+    }
+
     /**
      * Used to init the bounds from a rectangle
      */
     @SerializedName(RECTANGLE)
     private Rectangle rectangle;
-    
+
     /**
      * Creates a new bounds from an array of values.
      * If the array contains 4 values, bounds will be created from upper left corner (x1,y1) and width + height
@@ -195,7 +198,6 @@ public class RectangularBounds extends Bounds implements PostDeserializable {
         return true;
     }
 
-
     /**
      * Internal method to calculate the vectors in the rectangular bounds.
      * This needs to be done when the position reference has changed or when the bounds itself has
@@ -277,16 +279,16 @@ public class RectangularBounds extends Bounds implements PostDeserializable {
     @Override
     public void rotate(int axis, float angle) {
         switch (axis) {
-        case X:
-        case Y:
-        break;
-        case Z:
-            Vector2D.rotateZAxis(bounds, 0, rotatedBounds, 0, angle);
-            Vector2D.rotateZAxis(bounds, 2, rotatedBounds, 2, angle);
-            Vector2D.rotateZAxis(bounds, 4, rotatedBounds, 4, angle);
-            Vector2D.rotateZAxis(bounds, 6, rotatedBounds, 6, angle);
-            updated = true;
-        break;
+            case X:
+            case Y:
+                break;
+            case Z:
+                Vector2D.rotateZAxis(bounds, 0, rotatedBounds, 0, angle);
+                Vector2D.rotateZAxis(bounds, 2, rotatedBounds, 2, angle);
+                Vector2D.rotateZAxis(bounds, 4, rotatedBounds, 4, angle);
+                Vector2D.rotateZAxis(bounds, 6, rotatedBounds, 6, angle);
+                updated = true;
+                break;
         }
 
     }
@@ -294,6 +296,7 @@ public class RectangularBounds extends Bounds implements PostDeserializable {
     /**
      * Fetches the 4 positions of the corners for the rotated boundingbox, this is the position of this object plus
      * the rotated boundingbox.
+     * 
      * @param destination The 4 corners are stored here, rotated rectangle plus bound position.
      * @param index Index into array where data is stored, must be able to store 4 x,y values (8)
      */
@@ -375,12 +378,10 @@ public class RectangularBounds extends Bounds implements PostDeserializable {
 
     @Override
     public void postDeserialize() {
-        //Check if bounds should be initialized from Rectangle
+        // Check if bounds should be initialized from Rectangle
         if (rectangle != null) {
             setFromRectangle(rectangle.getValues());
         }
     }
-
-
 
 }

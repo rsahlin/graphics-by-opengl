@@ -8,12 +8,12 @@ package com.nucleus.mmi;
 public interface ObjectInputListener {
 
     /**
-     * Called when the object has a click action performed on it
+     * Called when the object has a pointer action performed on it, check PointerData for action.
      * 
-     * @param The pointer data for the click
-     * @return True if the object consumes the click action
+     * @param event The pointer data for the event
+     * @return True if the object consumes the pointer event
      */
-    public boolean onClick(PointerData click);
+    public boolean onInputEvent(PointerData event);
 
     /**
      * Called when a pointer down has been recorded and pointer has been dragged.
@@ -23,6 +23,5 @@ public interface ObjectInputListener {
      * @return True if the object consumes the action
      */
     public boolean onDrag(PointerMotionData drag);
-
 
 }

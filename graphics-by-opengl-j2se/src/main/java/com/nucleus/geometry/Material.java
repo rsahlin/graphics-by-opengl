@@ -13,6 +13,8 @@ import com.nucleus.shader.ShaderProgram;
  */
 public class Material {
 
+    public static final String MATERIAL = "material";
+    
     public static final String BLEND_EQUATION = "blendEquation";
     public static final String BLEND_FUNC = "blendFunc";
     public static final String AMBIENT = "ambient";
@@ -29,6 +31,22 @@ public class Material {
         private BlendEquation(int value) {
             this.value = value;
         }
+
+        /**
+         * Returns the blendequation for the value, or null if not found.
+         * 
+         * @param value
+         * @return
+         */
+        public static BlendEquation get(int value) {
+            for (BlendEquation be : values()) {
+                if (be.value == value) {
+                    return be;
+                }
+            }
+            return null;
+        }
+
     }
 
     public enum BlendFunc {
@@ -188,7 +206,8 @@ public class Material {
     }
 
     /**
-     * Sets the separate blend equation/function for this material, this will copy the values.
+     * Sets the separate blend equation/function for this material to gl
+     * TODO Move this method from this class to renderer or utility
      * 
      * @param gles
      */
@@ -247,6 +266,12 @@ public class Material {
         this.ambient[1] = ambient[index++];
         this.ambient[2] = ambient[index++];
         this.ambient[3] = ambient[index++];
+    }
+
+    @Override
+    public String toString() {
+        return "RGB:" + blendEquation[0] + ", ALPHA:" + blendEquation[1] + " program:"
+                + (program != null ? program.getClass().getSimpleName() : "null");
     }
 
 }

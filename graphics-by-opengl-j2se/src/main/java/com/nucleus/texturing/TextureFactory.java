@@ -2,7 +2,7 @@ package com.nucleus.texturing;
 
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,7 +13,6 @@ import com.nucleus.assets.AssetManager;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.io.gson.TextureDeserializer;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
@@ -35,7 +34,7 @@ public class TextureFactory {
      * Keep track of loaded texture objects by id
      */
     private static final Map<String, Texture2D> loadedTextures = new HashMap<>();
-    
+
     /**
      * Creates a new empty texture
      * 
@@ -45,15 +44,16 @@ public class TextureFactory {
      * @param size
      * @param format Image format
      * @param texParams
+     * @params target Texture target
      * @return
      */
     public static Texture2D createTexture(GLES20Wrapper gles, TextureType type, RESOLUTION resolution, int[] size,
-            ImageFormat format, TextureParameter texParams) throws GLException {
+            ImageFormat format, TextureParameter texParams, int target) throws GLException {
         Texture2D result = createTexture(type);
         result.setup(resolution, texParams, 1, TextureUtils.getFormat(format), TextureUtils.getType(format));
         result.setup(size[0], size[1]);
-        createTextureName(gles,  result);
-        TextureUtils.prepareTexture(gles, result);
+        createTextureName(gles, result);
+        gles.glBindTexture(target, result.getName());
         gles.texImage(result);
         GLUtils.handleError(gles, "glTexImage2D");
         return result;
@@ -72,7 +72,7 @@ public class TextureFactory {
      */
     public static Texture2D createTexture(GLES20Wrapper gles, ImageFactory imageFactory, Texture2D source) {
         Texture2D texture = createTexture(source);
-        prepareTexture(gles, imageFactory, texture);
+        internalCreateTexture(gles, imageFactory, texture);
         return texture;
     }
 
@@ -134,7 +134,8 @@ public class TextureFactory {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(Texture2D.class, new TextureDeserializer());
         Gson gson = builder.create();
-        InputStreamReader reader = new InputStreamReader(ref.getAsStream());
+        SimpleLogger.d(TextureFactory.class, "Reading texture data from: " + ref.getSource());
+        InputStreamReader reader = new InputStreamReader(ref.getAsStream(), StandardCharsets.UTF_8);
         Texture2D texture = gson.fromJson(reader, Texture2D.class);
         if (texture.getId() == null) {
             throw new IllegalArgumentException("Texture object id is null for ref: " + ref.getSource());
@@ -201,7 +202,7 @@ public class TextureFactory {
      * @param texture The texture
      * @param imageFactory The imagefactory to use for image creation
      */
-    private static void prepareTexture(GLES20Wrapper gles, ImageFactory imageFactory, Texture2D texture) {
+    private static void internalCreateTexture(GLES20Wrapper gles, ImageFactory imageFactory, Texture2D texture) {
         if (texture.getTextureType() == TextureType.Untextured) {
             return;
         }
@@ -209,8 +210,7 @@ public class TextureFactory {
         Image[] textureImg = TextureUtils
                 .loadTextureMIPMAP(imageFactory, texture);
         try {
-            TextureUtils.prepareTexture(gles, texture);
-            TextureUtils.uploadTextures(gles, GLES20.GL_TEXTURE0, texture, textureImg);
+            TextureUtils.uploadTextures(gles, texture, textureImg);
             SimpleLogger.d(TextureFactory.class, "Uploaded texture " + texture.toString());
             Image.destroyImages(textureImg);
         } catch (GLException e) {
@@ -224,7 +224,7 @@ public class TextureFactory {
         texture.setup(textures[0]);
         return textures;
     }
-    
+
     /**
      * Copies the transient values (texture object name, width, height) and the texture format values into the
      * destination.

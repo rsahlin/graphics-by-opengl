@@ -10,6 +10,10 @@ import com.nucleus.opengl.GLES20Wrapper;
 
 public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
+    protected LWJGL3GLES20Wrapper() {
+        super(Platform.GL, Renderers.GLES20);
+    }
+
     @Override
     public void glAttachShader(int program, int shader) {
         org.lwjgl.opengles.GLES20.glAttachShader(program, shader);
@@ -49,14 +53,14 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     public void glGenBuffers(int[] buffers) {
         IntBuffer ib = ByteBuffer.allocateDirect(buffers.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
         org.lwjgl.opengles.GLES20.glGenBuffers(ib);
-        toArray((IntBuffer) ib.rewind(), buffers, 0);
+        LWJGLUtils.toArray((IntBuffer) ib.rewind(), buffers, 0);
     }
 
     @Override
     public void glDeleteBuffers(int n, int[] buffers, int offset) {
-        IntBuffer ib = toIntBuffer(buffers, buffers.length - offset, offset);
+        IntBuffer ib = LWJGLUtils.toIntBuffer(buffers, buffers.length - offset, offset);
         org.lwjgl.opengles.GLES20.glDeleteBuffers(ib);
-        toArray(ib, buffers, offset);
+        LWJGLUtils.toArray(ib, buffers, offset);
     }
 
     @Override
@@ -87,9 +91,10 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glGetProgramiv(int program, int pname, int[] params, int offset) {
-        IntBuffer v = ByteBuffer.allocateDirect((params.length - offset) * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer v = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
         org.lwjgl.opengles.GLES20.glGetProgramiv(program, pname, v);
-        toArray((IntBuffer) v.rewind(), params, offset);
+        v.position(0);
+        params[offset] = v.get();
     }
 
     @Override
@@ -100,10 +105,13 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
         IntBuffer typeBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
         ByteBuffer nameBuffer = ByteBuffer.allocateDirect(name.length).order(ByteOrder.nativeOrder());
         org.lwjgl.opengles.GLES20.glGetActiveAttrib(program, index, lengthBuffer, sizeBuffer, typeBuffer, nameBuffer);
-        toArray((IntBuffer) lengthBuffer.rewind(), length, lengthOffset);
-        toArray((IntBuffer) sizeBuffer.rewind(), size, sizeOffset);
-        toArray((IntBuffer) typeBuffer.rewind(), type, typeOffset);
-        toArray((ByteBuffer) nameBuffer.rewind(), name, 0);
+        lengthBuffer.position(0);
+        sizeBuffer.position(0);
+        typeBuffer.position(0);
+        length[lengthOffset] = lengthBuffer.get();
+        size[sizeOffset] = sizeBuffer.get();
+        type[typeOffset] = typeBuffer.get();
+        nameBuffer.get(name);
     }
 
     @Override
@@ -114,36 +122,13 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
         IntBuffer typeBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
         ByteBuffer nameBuffer = ByteBuffer.allocateDirect(name.length).order(ByteOrder.nativeOrder());
         org.lwjgl.opengles.GLES20.glGetActiveUniform(program, index, lengthBuffer, sizeBuffer, typeBuffer, nameBuffer);
-        toArray((IntBuffer) lengthBuffer.rewind(), length, lengthOffset);
-        toArray((IntBuffer) sizeBuffer.rewind(), size, sizeOffset);
-        toArray((IntBuffer) typeBuffer.rewind(), type, typeOffset);
-        toArray((ByteBuffer) nameBuffer.rewind(), name, 0);
-    }
-
-    /**
-     * Copies the data from the source intbuffer to the destination
-     * 
-     * @param source
-     * @param dest
-     * @param destOffset
-     */
-    private void toArray(IntBuffer source, int[] dest, int destOffset) {
-        while (source.hasRemaining()) {
-            dest[destOffset++] = source.get();
-        }
-    }
-
-    /**
-     * Copies the data from the source bytebuffer to the destination
-     * 
-     * @param source
-     * @param dest
-     * @param destOffset
-     */
-    private void toArray(ByteBuffer source, byte[] dest, int destOffset) {
-        while (source.hasRemaining()) {
-            dest[destOffset++] = source.get();
-        }
+        lengthBuffer.position(0);
+        sizeBuffer.position(0);
+        typeBuffer.position(0);
+        length[lengthOffset] = lengthBuffer.get();
+        size[sizeOffset] = sizeBuffer.get();
+        type[typeOffset] = typeBuffer.get();
+        nameBuffer.get(name);
     }
 
     @Override
@@ -177,31 +162,22 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
         org.lwjgl.opengles.GLES20.glEnableVertexAttribArray(index);
     }
 
-    private FloatBuffer toFloatBuffer(float[] data, int length, int offset) {
-        FloatBuffer fb = ByteBuffer.allocateDirect(length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        fb.put(data, offset, length);
-        return fb;
-    }
-
-    private IntBuffer toIntBuffer(int[] data, int length, int offset) {
-        IntBuffer ib = ByteBuffer.allocateDirect(length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
-        ib.put(data, offset, length);
-        return ib;
-    }
-
     @Override
     public void glUniformMatrix4fv(int location, int count, boolean transpose, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniformMatrix4fv(location, transpose, toFloatBuffer(v, count * 16, offset));
+        org.lwjgl.opengles.GLES20.glUniformMatrix4fv(location, transpose,
+                LWJGLUtils.toFloatBuffer(v, count * 16, offset));
     }
 
     @Override
     public void glUniformMatrix3fv(int location, int count, boolean transpose, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniformMatrix3fv(location, transpose, toFloatBuffer(v, count * 12, offset));
+        org.lwjgl.opengles.GLES20.glUniformMatrix3fv(location, transpose,
+                LWJGLUtils.toFloatBuffer(v, count * 12, offset));
     }
 
     @Override
     public void glUniformMatrix2fv(int location, int count, boolean transpose, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniformMatrix2fv(location, transpose, toFloatBuffer(v, count * 8, offset));
+        org.lwjgl.opengles.GLES20.glUniformMatrix2fv(location, transpose,
+                LWJGLUtils.toFloatBuffer(v, count * 8, offset));
     }
 
     @Override
@@ -243,7 +219,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     public void glGenTextures(int[] textures) {
         IntBuffer ib = ByteBuffer.allocateDirect(textures.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
         org.lwjgl.opengles.GLES20.glGenTextures(ib);
-        toArray((IntBuffer) ib.rewind(), textures, 0);
+        LWJGLUtils.toArray((IntBuffer) ib.rewind(), textures, 0);
     }
 
     @Override
@@ -263,24 +239,30 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glGetIntegerv(int pname, int[] params) {
-        IntBuffer ib = ByteBuffer.allocateDirect(params.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
-        org.lwjgl.opengles.GLES20.glGetIntegerv(pname, ib);
-        toArray((IntBuffer) ib.rewind(), params, 0);
+        IntBuffer intBuffer = ByteBuffer.allocateDirect(params.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        org.lwjgl.opengles.GLES20.glGetIntegerv(pname, intBuffer);
+        intBuffer.position(0);
+        intBuffer.get(params);
     }
 
     @Override
     public void glUniform4fv(int location, int count, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniform4fv(location, toFloatBuffer(v, 4 * count, offset));
+        org.lwjgl.opengles.GLES20.glUniform4fv(location, LWJGLUtils.toFloatBuffer(v, 4 * count, offset));
     }
 
     @Override
     public void glUniform3fv(int location, int count, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniform3fv(location, toFloatBuffer(v, 3 * count, offset));
+        org.lwjgl.opengles.GLES20.glUniform3fv(location, LWJGLUtils.toFloatBuffer(v, 3 * count, offset));
+    }
+
+    @Override
+    public void glUniform1iv(int location, int count, int[] v0, int offset) {
+        org.lwjgl.opengles.GLES20.glUniform1iv(location, LWJGLUtils.toIntBuffer(v0, count, offset));
     }
 
     @Override
     public void glUniform2fv(int location, int count, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniform2fv(location, toFloatBuffer(v, 2 * count, offset));
+        org.lwjgl.opengles.GLES20.glUniform2fv(location, LWJGLUtils.toFloatBuffer(v, 2 * count, offset));
 
     }
 
@@ -354,7 +336,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glDeleteTextures(int[] textures) {
-        org.lwjgl.opengles.GLES20.glDeleteTextures(toIntBuffer(textures, textures.length, 0));
+        org.lwjgl.opengles.GLES20.glDeleteTextures(LWJGLUtils.toIntBuffer(textures, textures.length, 0));
     }
 
     @Override
@@ -400,6 +382,19 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
         org.lwjgl.opengles.GLES20.glColorMask(red, green, blue, alpha);
+    }
+
+    @Override
+    public void glValidateProgram(int program) {
+        org.lwjgl.opengles.GLES20.glValidateProgram(program);
+    }
+
+    @Override
+    public void glGetShaderSource(int shader, int bufsize, int[] length, byte[] source) {
+        ByteBuffer bufferSource = ByteBuffer.allocateDirect(bufsize);
+        org.lwjgl.opengles.GLES20.glGetShaderSource(shader, length, bufferSource);
+        bufferSource.position(0);
+        bufferSource.get(source, 0, length[0]);
     }
 
 }

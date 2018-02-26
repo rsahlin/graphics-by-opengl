@@ -1,40 +1,54 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <properties>
+            <android.sdk>25</android.sdk>
+    </properties>
     <parent>
         <groupId>com.super2k.graphics-by-opengl</groupId>
         <artifactId>graphics-by-opengl</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>graphics-by-opengl-android</artifactId>
-    <packaging>apklib</packaging>
-    <name>Graphics By OpenGL APKlib</name>
+    <packaging>aar</packaging>
     <build>
-        <sourceDirectory>src</sourceDirectory>
+        <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
             <plugin>
                 <groupId>com.simpligility.maven.plugins</groupId>
                 <artifactId>android-maven-plugin</artifactId>
-                <version>${android.maven.version}</version>
-                <configuration>
-                    <androidManifestFile>AndroidManifest.xml</androidManifestFile>
-                    <resourceDirectory>./res</resourceDirectory>
-                    <sdk>
-                        <platform>19</platform>
-                    </sdk>
-                </configuration>
                 <extensions>true</extensions>
+                <configuration>
+                    <resourceDirectory>./res</resourceDirectory>
+                    <sourceDirectories>
+                        <sourceDirectory>src/main/java</sourceDirectory>
+                    </sourceDirectories>
+                    <androidManifestFile>AndroidManifest.xml</androidManifestFile>
+                    <dex>
+                        <multi-dex>true</multi-dex>
+                    </dex>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                   <configuration>
-                       <source>1.7</source>
-                       <target>1.7</target>
-                   </configuration>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
             </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>com.simpligility.maven.plugins</groupId>
+                    <artifactId>android-maven-plugin</artifactId>
+                    <version>4.5.0</version>
+                    <configuration>
+                        <sdk>
+                            <platform>${android.sdk}</platform>
+                        </sdk>
+                    </configuration>
+                </plugin>
                 <!--This plugin's configuration is used to store Eclipse 
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
@@ -53,7 +67,7 @@
                                             android-maven-plugin
                                         </artifactId>
                                         <versionRange>
-                                            [4.4.1,)
+                                            [4.5.0,)
                                         </versionRange>
                                         <goals>
                                             <goal>emma</goal>
@@ -72,15 +86,15 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>android</artifactId>
+            <version>${android.sdk}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>com.super2k.graphics-by-opengl</groupId>
             <artifactId>graphics-by-opengl-j2se</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.android</groupId>
-            <artifactId>android</artifactId>
-            <version>4.1.1.4</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

@@ -8,7 +8,7 @@ import com.nucleus.common.Flags;
  */
 public enum Pass implements Flags {
     MAIN(1),
-    SHADOW(2),
+    SHADOW1(2),
     SHADOW2(4),
     LOGIC(8),
     /**

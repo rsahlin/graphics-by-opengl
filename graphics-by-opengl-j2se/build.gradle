@@ -7,29 +7,28 @@ tasks.withType(JavaCompile) {
     targetCompatibility = JavaVersion.VERSION_1_7
 }
 
-apply plugin:'java'
-apply plugin: 'maven-publish'
+apply plugin: 'java'
 
+repositories {
+    mavenLocal()
+    jcenter()
+}
+dependencies {
+    compile 'com.google.code.gson:gson:2.8.1'
+    compile 'com.super2k.vecmath:vecmath:0.0.1-SNAPSHOT'
+    testCompile 'junit:junit:4.12'
+}
+
+apply plugin: 'maven-publish'
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact (sourcesAndClasses)
+            artifact(sourcesAndClasses)
         }
     }
 }
-
 task sourcesAndClasses(type: Jar) {
-   from sourceSets.main.output
-   from sourceSets.main.allJava
-}
-
-repositories {
-    mavenLocal()
-    jcenter() 
-}
-dependencies {
-	compile 'com.google.code.gson:gson:2.8.1'
-	compile 'com.super2k.vecmath:vecmath:0.0.1-SNAPSHOT'
-	testCompile 'junit:junit:4.12'	
+    from sourceSets.main.output
+    from sourceSets.main.allJava
 }

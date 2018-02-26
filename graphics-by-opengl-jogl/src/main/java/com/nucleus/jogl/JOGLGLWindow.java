@@ -2,6 +2,7 @@ package com.nucleus.jogl;
 
 import java.awt.Frame;
 
+import com.jogamp.common.os.Platform;
 import com.jogamp.nativewindow.util.Dimension;
 import com.jogamp.nativewindow.util.InsetsImmutable;
 import com.jogamp.newt.event.KeyEvent;
@@ -21,10 +22,10 @@ import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
-import com.nucleus.WindowListener;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
-import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.mmi.PointerData.Type;
+import com.nucleus.opengl.GLESWrapper.Renderers;
 
 /**
  * 
@@ -53,36 +54,38 @@ public abstract class JOGLGLWindow extends J2SEWindow
     protected GLCanvas canvas;
     protected Frame frame;
     protected GLWindow glWindow;
-    WindowListener windowListener;
+    protected Renderers version;
+    Animator animator;
 
     /**
      * Creates a new JOGL window with the specified {@link CoreAppStarter} and swapinterval
      * 
+     * @param version
+     * @param coreAppStarter
      * @param width
      * @param height
      * @param undecorated
      * @param fullscreen
-     * @param glProfile
-     * @param coreAppStarter
      * @param swapInterval
      * @throws IllegalArgumentException If coreAppStarter is null
      */
-    public JOGLGLWindow(int width, int height, boolean undecorated, boolean fullscreen, GLProfile glProfile,
-            CoreApp.CoreAppStarter coreAppStarter, int swapInterval) {
+    public JOGLGLWindow(Renderers version, CoreAppStarter coreAppStarter, int width, int height, boolean undecorated,
+            boolean fullscreen, int swapInterval) {
         super(coreAppStarter, width, height);
         this.swapInterval = swapInterval;
         this.undecorated = undecorated;
         this.fullscreen = fullscreen;
-        create(width, height, glProfile, coreAppStarter);
+        this.version = version;
+        create(version, coreAppStarter, width, height);
     }
 
-    private void create(int width, int height, GLProfile glProfile, CoreApp.CoreAppStarter coreAppStarter) {
+    private void create(Renderers version, CoreAppStarter coreAppStarter, int width, int height) {
         if (coreAppStarter == null) {
             throw new IllegalArgumentException("CoreAppStarter is null");
         }
         this.coreAppStarter = coreAppStarter;
         windowSize = new Dimension(width, height);
-        createNEWTWindow(width, height, glProfile);
+        createNEWTWindow(width, height, version);
     }
 
     /**
@@ -90,13 +93,29 @@ public abstract class JOGLGLWindow extends J2SEWindow
      * 
      * @param width
      * @param height
+     * @version
      */
-    private void createNEWTWindow(int width, int height, GLProfile glProfile) {
+    private void createNEWTWindow(int width, int height, Renderers version) {
         // Display display = NewtFactory.createDisplay(null);
         // Screen screen = NewtFactory.createScreen(display, SCREEN_ID);
-        GLCapabilities glCapabilities = new GLCapabilities(glProfile);
+
+        SimpleLogger.d(getClass(), "os.and.arch: " + Platform.os_and_arch);
+        GLProfile profile = null;
+        switch (version) {
+            case GLES20:
+                profile = GLProfile.get(GLProfile.GL2ES2);
+                break;
+            case GLES30:
+            case GLES31:
+                profile = GLProfile.get(GLProfile.GL4ES3);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid version " + version);
+        }
+
+        GLCapabilities glCapabilities = new GLCapabilities(profile);
         glCapabilities.setSampleBuffers(true);
-        glCapabilities.setNumSamples(8);
+        glCapabilities.setNumSamples(4);
         glCapabilities.setAlphaBits(8);
         // Window window = NewtFactory.createWindow(glCapabilities);
         glWindow = GLWindow.create(glCapabilities);
@@ -111,17 +130,19 @@ public abstract class JOGLGLWindow extends J2SEWindow
         glWindow.addMouseListener(this);
         glWindow.addWindowListener(this);
         glWindow.addKeyListener(this);
+        glWindow.addWindowListener(this);
+        glWindow.addGLEventListener(this);
         GLProfile.initSingleton();
-        Animator animator = new Animator();
+        animator = new Animator();
         animator.add(glWindow);
         animator.start();
+        glWindow.setVisible(true);
     }
 
     private void createAWTWindow(int width, int height, GLProfile glProfile) {
         GLCapabilities caps = new GLCapabilities(glProfile);
-        caps.setBackgroundOpaque(false);
+        caps.setBackgroundOpaque(true);
         glWindow = GLWindow.create(caps);
-
         frame = new java.awt.Frame("Nucleus");
         frame.setSize(width, height);
         frame.setLayout(new java.awt.BorderLayout());
@@ -177,12 +198,10 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-        System.out.println("reshape: x,y= " + x + ", " + y + " width,height= " + width + ", " + height);
+        SimpleLogger.d(getClass(), "reshape: x,y= " + x + ", " + y + " width,height= " + width + ", " + height);
         windowSize.setWidth(width);
         windowSize.setHeight(height);
-        if (windowListener != null) {
-            windowListener.resize(x, y, width, height);
-        }
+        resize(x, y, width, height);
     }
 
     /**
@@ -212,30 +231,34 @@ public abstract class JOGLGLWindow extends J2SEWindow
         int[] xpos = e.getAllX();
         int[] ypos = e.getAllY();
         int count = e.getPointerCount();
+        Type type = Type.STYLUS;
         for (int i = 0; i < count; i++) {
-            handleMouseEvent(xpos[i], ypos[i], e.getPointerId(i), e.getWhen(), action);
+            switch (e.getButton()) {
+                case MouseEvent.BUTTON1:
+                    type = Type.MOUSE;
+                    break;
+                case MouseEvent.BUTTON2:
+                    type = Type.ERASER;
+                    break;
+                case MouseEvent.BUTTON3:
+                    type = Type.FINGER;
+                    break;
+
+            }
+            handleMouseEvent(action, type, xpos[i], ypos[i], e.getPointerId(i), e.getWhen());
         }
     }
 
     protected void handleKeyEvent(KeyEvent event) {
         switch (event.getEventType()) {
-        case KeyEvent.EVENT_KEY_PRESSED:
-            switch (event.getKeyCode()) {
-            case KeyEvent.VK_ESCAPE:
-                backPressed();
-            }
-            break;
-        case KeyEvent.EVENT_KEY_RELEASED:
+            case KeyEvent.EVENT_KEY_PRESSED:
+                switch (event.getKeyCode()) {
+                    case KeyEvent.VK_ESCAPE:
+                        backPressed();
+                }
+                break;
+            case KeyEvent.EVENT_KEY_RELEASED:
         }
-    }
-
-    /**
-     * Sets the windowlistener to get callbacks when the window has changed.
-     * 
-     * @param listener
-     */
-    public void setWindowListener(WindowListener listener) {
-        this.windowListener = listener;
     }
 
     @Override
@@ -278,8 +301,10 @@ public abstract class JOGLGLWindow extends J2SEWindow
     @Override
     public void mouseWheelMoved(MouseEvent e) {
         float factor = ZOOM_FACTOR;
-        coreApp.getInputProcessor().pointerEvent(PointerAction.ZOOM, e.getWhen(), PointerData.POINTER_1, new float[] {
-                e.getRotation()[1] * factor, e.getRotation()[1] * factor });
+        coreApp.getInputProcessor().pointerEvent(PointerAction.ZOOM, PointerData.Type.MOUSE, e.getWhen(),
+                PointerData.POINTER_1, new float[] {
+                        e.getRotation()[1] * factor, e.getRotation()[1] * factor },
+                0);
     }
 
     @Override
@@ -292,7 +317,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void windowDestroyNotify(WindowEvent e) {
-        windowListener.windowClosed();
+        windowClosed();
     }
 
     @Override
@@ -326,11 +351,12 @@ public abstract class JOGLGLWindow extends J2SEWindow
         if (fullscreen) {
             fullscreen = false;
             glWindow.setFullscreen(false);
-            glWindow.setPosition(glWindow.getWidth()/ 2, glWindow.getHeight() / 2);
+            glWindow.setPosition(glWindow.getWidth() / 2, glWindow.getHeight() / 2);
         } else {
             if (coreApp.onBackPressed()) {
                 coreApp.setDestroyFlag();
-                glWindow.destroy();
+                glWindow.setVisible(false);
+                animator.stop();
                 System.exit(0);
             }
         }

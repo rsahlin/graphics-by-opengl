@@ -9,6 +9,7 @@ import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
+import com.nucleus.mmi.PointerData.Type;
 import com.nucleus.mmi.PointerMotionData;
 import com.nucleus.vecmath.Vector2D;
 
@@ -20,13 +21,12 @@ import com.nucleus.vecmath.Vector2D;
  */
 public class PointerInputProcessor implements PointerListener {
 
-    
-    public final static int MAX_POINTERS = 5;
+    public int maxPointers = 5;
 
     /**
      * Pointer motion data, one for each supported pointer.
      */
-    PointerMotionData[] pointerMotionData = new PointerMotionData[MAX_POINTERS];
+    PointerMotionData[] pointerMotionData;
 
     /**
      * Scale and offset value for incoming pointer values, this can be used to normalize pointer values.
@@ -45,55 +45,75 @@ public class PointerInputProcessor implements PointerListener {
     private float moveThreshold = 3;
 
     /**
+     * Set to false to disable actions from two pointers, ZOOM
+     */
+    private boolean processTwoPointers = true;
+
+    /**
      * Default constructor
      */
     public PointerInputProcessor() {
+        pointerMotionData = new PointerMotionData[maxPointers];
+    }
+
+    /**
+     * Enable or disable processing of two pointer input - ZOOM.
+     * 
+     * @param processTwoPointers True to enable two pointer input (ZOOM) false to disable
+     */
+    public void setProcessTwoPointers(boolean processTwoPointers) {
+        this.processTwoPointers = processTwoPointers;
     }
 
     @Override
-    public void pointerEvent(PointerAction action, long timestamp, int pointer, float[] position) {
-        if (pointer >= MAX_POINTERS) {
+    public void pointerEvent(PointerAction action, Type type, long timestamp, int pointer, float[] position,
+            float pressure) {
+        if (pointer >= maxPointers) {
             return;
         }
         scaledPosition[X] = position[X] * transform[X] + transform[2];
         scaledPosition[Y] = position[Y] * transform[Y] + transform[3];
         switch (action) {
-        case MOVE:
-            addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.MOVE, pointer,
-                    pointerMotionData[pointer]),
-                    pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition));
-            // More than one pointer is or has been active.
-            if (pointerCount == 2 && pointer == 1) {
-                processTwoPointers();
-            }
-            break;
-        case DOWN:
-            pointerCount = pointer + 1;
-            pointerMotionData[pointer] = new PointerMotionData();
-            addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ACTIVE, pointer,
-                    pointerMotionData[pointer]),
-                    pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition));
-            break;
-        case UP:
-            pointerCount--;
-            if (pointerCount < 0) {
-                System.out.println("PointerInputProcessor: ERROR: pointerCount= " + pointerCount);
-            }
-            addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.INACTIVE, pointer,
-                    pointerMotionData[pointer]),
-                    pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition));
-            break;
-        case ZOOM:
-                if (pointerMotionData[pointer] == null) {
-                    pointerMotionData[pointer] = new PointerMotionData();
+            case MOVE:
+                if (pointerMotionData[pointer].getCurrent().action == PointerData.PointerAction.UP) {
+                    SimpleLogger.d(getClass(), "Move after up");
+                } else {
+                    addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.MOVE, pointer,
+                            pointerMotionData[pointer]),
+                            pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition, pressure));
+                    // More than one pointer is or has been active.
+                    if (processTwoPointers && pointerCount == 2 && pointer == 1) {
+                        processTwoPointers();
+                    }
                 }
-            MMIPointerEvent zoom = new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ZOOM, pointer,
-                    pointerMotionData[pointer]);
-            zoom.setZoom(position[X] * transform[X], position[Y] * transform[Y]);
-            sendToListeners(zoom);
-            break;
-        default:
-            throw new IllegalArgumentException();
+                break;
+            case DOWN:
+                pointerCount = pointer + 1;
+                pointerMotionData[pointer] = new PointerMotionData(type);
+                addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ACTIVE, pointer,
+                        pointerMotionData[pointer]),
+                        pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition, pressure));
+                break;
+            case UP:
+                pointerCount--;
+                if (pointerCount < 0) {
+                    SimpleLogger.d(getClass(), "PointerInputProcessor: ERROR: pointerCount= " + pointerCount);
+                }
+                addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.INACTIVE, pointer,
+                        pointerMotionData[pointer]),
+                        pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition, pressure));
+                break;
+            case ZOOM:
+                if (pointerMotionData[pointer] == null) {
+                    pointerMotionData[pointer] = new PointerMotionData(type);
+                }
+                MMIPointerEvent zoom = new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ZOOM, pointer,
+                        pointerMotionData[pointer]);
+                zoom.setZoom(position[X] * transform[X], position[Y] * transform[Y]);
+                sendToListeners(zoom);
+                break;
+            default:
+                throw new IllegalArgumentException();
         }
     }
 
@@ -113,32 +133,32 @@ public class PointerInputProcessor implements PointerListener {
         Vector2D vector2 = getDeltaAsVector(pointer2, 1);
         // Check if movement from or towards middle.
         if (vector1 != null && vector2 != null) {
-//            System.out.println("Twopointer delta1: " + vector1.vector[Vector2D.MAGNITUDE] + " pos: "
+            // System.out.println("Twopointer delta1: " + vector1.vector[Vector2D.MAGNITUDE] + " pos: "
             // + pointer1.getCurrentPosition()[0] + ", " + pointer1.getCurrentPosition()[1]);
             // if (vector1.vector[Vector2D.MAGNITUDE] > moveThreshold ||
             // vector2.vector[Vector2D.MAGNITUDE] > moveThreshold) {
 
-                Vertex2D.getDistance(middle, pointer1.getCurrentPosition(), toMiddle);
-                Vector2D center1 = new Vector2D(toMiddle);
-                Vertex2D.getDistance(middle, pointer2.getCurrentPosition(), toMiddle);
-                Vector2D center2 = new Vector2D(toMiddle);
+            Vertex2D.getDistance(middle, pointer1.getCurrentPosition(), toMiddle);
+            Vector2D center1 = new Vector2D(toMiddle);
+            Vertex2D.getDistance(middle, pointer2.getCurrentPosition(), toMiddle);
+            Vector2D center2 = new Vector2D(toMiddle);
 
-                float angle1 = (float) Math.acos(vector1.dot(center1)) * 57.2957795f;
-                float angle2 = (float) Math.acos(vector2.dot(center2)) * 57.2957795f;
-                if ((angle1 > 135 && angle2 > 135) || (angle1 < 45 && angle2 < 45)) {
-                    zoom(pointer1, pointer2, vector1, vector2, center1, center2);
+            float angle1 = (float) Math.acos(vector1.dot(center1)) * 57.2957795f;
+            float angle2 = (float) Math.acos(vector2.dot(center2)) * 57.2957795f;
+            if ((angle1 > 135 && angle2 > 135) || (angle1 < 45 && angle2 < 45)) {
+                zoom(pointer1, pointer2, vector1, vector2, center1, center2);
             } else // if (vector1.vector[Vector2D.MAGNITUDE] < moveThreshold) {
-                    // If one touch is very small then count the other.
-                    // TODO Maybe use magnitude as a factor and weigh angles together
-                    if ((angle2 > 135) || (angle2 < 45)) {
-                        zoom(pointer1, pointer2, vector1, vector2, center1, center2);
+                   // If one touch is very small then count the other.
+                   // TODO Maybe use magnitude as a factor and weigh angles together
+            if ((angle2 > 135) || (angle2 < 45)) {
+                zoom(pointer1, pointer2, vector1, vector2, center1, center2);
                 // }
             } else // if (vector2.vector[Vector2D.MAGNITUDE] < moveThreshold) {
-                    // If one touch is very small then count the other.
-                    // TODO Maybe use magnitude as a factor and weigh angles together
-                    if ((angle1 > 135) || (angle1 < 45)) {
-                        zoom(pointer1, pointer2, vector1, vector2, center1, center2);
-                    }
+                   // If one touch is very small then count the other.
+                   // TODO Maybe use magnitude as a factor and weigh angles together
+            if ((angle1 > 135) || (angle1 < 45)) {
+                zoom(pointer1, pointer2, vector1, vector2, center1, center2);
+            }
             // }
 
             // }
@@ -149,9 +169,6 @@ public class PointerInputProcessor implements PointerListener {
     private void zoom(PointerMotionData pointer1, PointerMotionData pointer2, Vector2D vector1, Vector2D vector2,
             Vector2D center1, Vector2D center2) {
         // Zoom movement
-        System.out.println("DOT1 " + vector1.dot(center1) + ", DOT2: " + vector2.dot(center2) +
-                " LENGTH: "
-                + (vector1.vector[Vector2D.MAGNITUDE] + vector2.vector[Vector2D.MAGNITUDE]));
         sendToListeners(new MMIPointerEvent(pointer1, pointer2, vector1, vector2, vector1.dot(center1),
                 vector2.dot(center2)));
 
@@ -232,4 +249,35 @@ public class PointerInputProcessor implements PointerListener {
         scale[0] = transform[X];
         scale[1] = transform[Y];
     }
+
+    /**
+     * Returns the max number of pointers that will be reported
+     * 
+     * @return
+     */
+    public int getMaxPointers() {
+        return maxPointers;
+    }
+
+    /**
+     * Sets the max number of pointers that will be reported
+     * 
+     * @param maxPointers
+     */
+    public void setMaxPointers(int maxPointers) {
+        this.maxPointers = maxPointers;
+        pointerMotionData = new PointerMotionData[maxPointers];
+    }
+
+    /**
+     * Reverses the pointer normalization
+     * 
+     * @param normalized
+     * @return
+     */
+    public float[] getScreenCoordinate(float[] normalized) {
+        return new float[] { (normalized[0] - transform[2]) / transform[0],
+                (normalized[1] - transform[3]) / transform[1] };
+    }
+
 }
