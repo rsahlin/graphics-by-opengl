@@ -2,6 +2,7 @@ package com.nucleus.jogl;
 
 import java.awt.Frame;
 
+import com.jogamp.common.os.Platform;
 import com.jogamp.nativewindow.util.Dimension;
 import com.jogamp.nativewindow.util.InsetsImmutable;
 import com.jogamp.newt.event.KeyEvent;
@@ -98,10 +99,11 @@ public abstract class JOGLGLWindow extends J2SEWindow
         // Display display = NewtFactory.createDisplay(null);
         // Screen screen = NewtFactory.createScreen(display, SCREEN_ID);
 
+        SimpleLogger.d(getClass(), "os.and.arch: " + Platform.os_and_arch);
         GLProfile profile = null;
         switch (version) {
             case GLES20:
-                profile = GLProfile.getDefaultDevice();
+                profile = GLProfile.get(GLProfile.GL2ES2);
                 break;
             case GLES30:
             case GLES31:
