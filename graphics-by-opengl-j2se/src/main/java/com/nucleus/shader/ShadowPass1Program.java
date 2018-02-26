@@ -3,8 +3,8 @@ package com.nucleus.shader;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
-import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -32,31 +32,35 @@ public class ShadowPass1Program extends ShaderProgram {
      * @param category
      */
     public ShadowPass1Program(ShaderProgram objectProgram, Texture2D.Shading shading, String category) {
-        super(Pass.SHADOW1, shading, category, ShaderVariables.values());
+        super(Pass.SHADOW1, shading, category, CommonShaderVariables.values(), Shaders.VERTEX_FRAGMENT);
         this.objectProgram = objectProgram;
     }
 
     @Override
-    protected String getFragmentShaderSource() {
-        if (function.getPass() != null) {
-            return function.getPassString() + function.getShadingString();
-        } else {
-            return function.getShaderSourceName();
+    protected String getShaderSource(int type) {
+        switch (type) {
+            case GLES20.GL_FRAGMENT_SHADER:
+                if (function.getPass() != null) {
+                    return PROGRAM_DIRECTORY + function.getPassString() + function.getShadingString() + FRAGMENT_TYPE
+                            + SHADER_SOURCE_SUFFIX;
+                } else {
+                    return PROGRAM_DIRECTORY + function.getShaderSourceName() + FRAGMENT_TYPE
+                            + SHADER_SOURCE_SUFFIX;
+                }
+            case GLES20.GL_VERTEX_SHADER:
+                return objectProgram.getShaderSource(type);
+            default:
+                throw new IllegalArgumentException("Not implemented");
         }
-    }
-
-    @Override
-    protected String getVertexShaderSource() {
-        return objectProgram.getVertexShaderSource();
     }
 
     @Override
     public void setUniformMatrices(float[] uniforms, float[][] matrices, Mesh mesh) {
         System.arraycopy(matrices[0], 0, getUniforms(),
-                shaderVariables[ShaderVariables.uMVMatrix.index].getOffset(),
+                shaderVariables[CommonShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(matrices[2], 0, getUniforms(),
-                shaderVariables[ShaderVariables.uProjectionMatrix.index].getOffset(),
+                shaderVariables[CommonShaderVariables.uProjectionMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
 
@@ -91,7 +95,7 @@ public class ShadowPass1Program extends ShaderProgram {
     }
 
     @Override
-    public ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Shading shading) {
+    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, Shading shading) {
         throw new IllegalArgumentException("Not valid");
     }
 

@@ -2,12 +2,61 @@ package com.nucleus.opengl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.StringTokenizer;
 
+import com.nucleus.common.StringUtils;
 import com.nucleus.renderer.RendererInfo;
+import com.nucleus.shader.ShaderVariable;
+import com.nucleus.shader.ShaderVariable.VariableBlock;
+import com.nucleus.shader.ShaderVariable.VariableType;
 
 public abstract class GLESWrapper {
 
+    public class ProgramInfo {
+        private int program;
+        private int[] activeVariables;
+        private int[] maxNameLength;
+
+        public ProgramInfo(int program, int[] activeVariables, int[] maxNameLength) {
+            this.program = program;
+            this.activeVariables = new int[activeVariables.length];
+            this.maxNameLength = new int[maxNameLength.length];
+            System.arraycopy(activeVariables, 0, this.activeVariables, 0, activeVariables.length);
+            System.arraycopy(maxNameLength, 0, this.maxNameLength, 0, maxNameLength.length);
+        }
+
+        public int getActiveVariables(VariableType type) {
+            return type.index < activeVariables.length ? activeVariables[type.index] : 0;
+        }
+
+        public int getMaxNameLength(VariableType type) {
+            return type.index < maxNameLength.length ? maxNameLength[type.index] : 0;
+        }
+
+        public int getProgram() {
+            return program;
+        }
+
+    }
+
+    /**
+     * Implementation of GL/GLES on the platform.
+     *
+     */
+    public enum Platform {
+        GLES(),
+        GL();
+    }
+
+    private final static String[] GLES3_VERTEX_REPLACEMENTS = new String[] { "attribute", "in", "varying", "out" };
+    private final static String[] GLES3_FRAGMENT_REPLACEMENTS = new String[] { "varying", "in" };
+
     protected RendererInfo rendererInfo;
+    protected final Platform platform;
+    /**
+     * Must be set by implementing classes
+     */
+    protected final Renderers renderVersion;
 
     /**
      * The supported renderers
@@ -27,6 +76,11 @@ public abstract class GLESWrapper {
             this.major = major;
             this.minor = minor;
         };
+    }
+
+    protected GLESWrapper(Platform platform, Renderers renderVersion) {
+        this.platform = platform;
+        this.renderVersion = renderVersion;
     }
 
     public abstract class GL10 {
@@ -886,14 +940,23 @@ public abstract class GLESWrapper {
     }
 
     /**
-     * Returns the GLES shader language version.
+     * Returns the GLES shader language version for the platform implementation based on the shader source version.
+     * The sourceVersion String is the version part of the "#version" source declaration, eg "300 es", "430" etc.
      * 
-     * @return '100' for es shading language 1.0 and '300 es' for es language version 3.0
+     * @param sourceVersion The source version string minus #version, eg "310 es" - or NULL if version not defined.
+     * @param version The parsed version number, eg 100 or 0 if version not defined.
+     * @return The possibly substituted source version, depending on platform implementation.
+     * Mainly used to substitute "310 es" for "430" on desktop platforms/drivers that does not support GLES fully"
      */
-    public abstract String getShaderVersion();
+    public abstract String getShaderVersion(String sourceVersion, int version);
 
     /**
-     * Returns a versioned shader source as String.
+     * Returns a versioned shader source as String - this is the main method that shall be used to fetch shader source.
+     * If the shader source has a version string it shall be checked by the gles wrapper implementation and if needed
+     * substituted for
+     * a version that is suitable for the current platform.
+     * For instance "#version 310 es" needs to be sutstitued for "#version 430" on desktop implementations (namely AMD
+     * or Nvidia drivers that does not fully support the GLES profiles
      * 
      * @param shaderStream
      * @param type Shader type GL_VERTEX_SHADER or GL_FRAGMENT_SHADER
@@ -905,10 +968,100 @@ public abstract class GLESWrapper {
             throws IOException;
 
     /**
+     * Replaces the Shader source older OpenGL ES 2.X attribute and uniform variables to in/out naming.
+     * 
+     * @param source
+     * @param type
+     * @return
+     */
+    protected String replaceGLES20(String source, int type) {
+        StringTokenizer st = new StringTokenizer(source, "\n");
+        StringBuffer result = new StringBuffer();
+        String t = "";
+        String[] replacements = null;
+        switch (type) {
+            case GLES20.GL_VERTEX_SHADER:
+                replacements = GLES3_VERTEX_REPLACEMENTS;
+                break;
+            case GLES20.GL_FRAGMENT_SHADER:
+                replacements = GLES3_FRAGMENT_REPLACEMENTS;
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid shader type: " + type);
+
+        }
+        while (st.hasMoreTokens()) {
+            t = st.nextToken().trim();
+            for (int i = 0; i < replacements.length; i += 2) {
+                if (t.startsWith(replacements[i])) {
+                    t = replacements[i + 1] + t.substring(replacements[i].length());
+                }
+            }
+            result.append(t + "\n");
+        }
+        return result.toString();
+    }
+
+    /**
+     * Utility method to return the name of a shader variable, this will remove unwanted characters such as array
+     * declaration or '.' field access eg 'struct.field' will become 'struct'
+     * 
+     * @param nameBuffer
+     * @param nameLength
+     * @return Name of variable, without array declaration.
+     */
+    public String getVariableName(byte[] nameBuffer, int nameLength) {
+        String name = StringUtils.createString(nameBuffer, 0, nameLength);
+        if (name.endsWith("]")) {
+            int end = name.indexOf("[");
+            name = name.substring(0, end);
+        }
+        int dot = name.indexOf(".");
+        if (dot == -1) {
+            return name;
+        }
+        if (dot == 0) {
+            return name.substring(1);
+        }
+        return name.substring(0, dot);
+    }
+
+    /**
      * Returns the renderer info, if it has not been created before it is created and then returned.
      * 
      * @return The renderer info
      */
     public abstract RendererInfo getInfo();
+
+    /**
+     * Creates the program info for attrib /uniform / uniform block
+     * 
+     * @param program
+     * @return
+     * @throws If there is an error fetching program info
+     */
+    public abstract ProgramInfo getProgramInfo(int program) throws GLException;
+
+    /**
+     * Returns the uniform blocks active in the program
+     * 
+     * @param info
+     * @return
+     * @throws GLException
+     */
+    public abstract VariableBlock[] getUniformBlocks(ProgramInfo info) throws GLException;
+
+    /**
+     * Creates and returns shader variable for the program, of the specified variable type and variable index.
+     * 
+     * @param program
+     * @param type
+     * @param index Index of the active uniform, 0 to GL_ACTIVE_UNIFORMS
+     * @param nameBuffer Buffer to write name of uniform
+     * @return The active uniform or null if operation failed.
+     * @throws If there is an error fetching info for active variable
+     */
+    public abstract ShaderVariable getActiveVariable(int program, VariableType type, int index, byte[] nameBuffer)
+            throws GLException;
 
 }

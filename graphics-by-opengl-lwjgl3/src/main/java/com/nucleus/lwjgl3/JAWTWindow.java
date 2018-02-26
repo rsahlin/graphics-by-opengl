@@ -12,23 +12,39 @@ import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
+import org.lwjgl.system.Platform;
+
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
+import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
+import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 
 public class JAWTWindow extends J2SEWindow implements RenderContextListener, MouseMotionListener, MouseListener {
 
     LWJGLCanvas canvas;
 
-    public JAWTWindow(CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
+    public JAWTWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
         super(coreAppStarter, width, height);
-        init(coreAppStarter, width, height);
+        init(version, coreAppStarter, width, height);
     }
 
-    private void init(CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
-        canvas = new LWJGLCanvas(this, width, height);
+    private void init(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
+        Platform platform = Platform.get();
+        SimpleLogger.d(getClass(), "Init windows for platform " + platform);
+        switch (platform) {
+            case WINDOWS:
+                canvas = new LWJGLWindowsCanvas(version, this, width, height);
+                break;
+            case LINUX:
+                canvas = new LWJGLLinuxCanvas(version, this, width, height);
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + Platform.get());
+        }
+
         canvas.addMouseListener(this);
         canvas.addMouseMotionListener(this);
         final JFrame frame = new JFrame("JAWT Demo");
@@ -51,12 +67,11 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener, Mou
 
         frame.setLayout(new BorderLayout());
         frame.add(canvas, BorderLayout.CENTER);
-
         frame.pack();
         frame.setVisible(true);
         frame.addMouseListener(this);
         frame.addMouseMotionListener(this);
-        wrapper = new LWJGL3GLES30Wrapper();
+        wrapper = LWJGLWrapperFactory.createWrapper(version);
     }
 
     @Override

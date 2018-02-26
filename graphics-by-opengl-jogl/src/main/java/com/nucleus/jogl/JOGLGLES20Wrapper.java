@@ -39,7 +39,8 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
      * @param gles The JOGL GLES20 instance
      * @throws IllegalArgumentException If gles is null
      */
-    public JOGLGLES20Wrapper(GL2ES2 gles) {
+    public JOGLGLES20Wrapper(GL2ES2 gles, Renderers renderVersion) {
+        super(Platform.GL, renderVersion);
         if (gles == null) {
             throw new IllegalArgumentException(GLES_NULL);
         }
@@ -424,6 +425,5 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     public void glGetShaderSource(int shader, int bufsize, int[] length, byte[] source) {
         gles.glGetShaderSource(shader, bufsize, length, 0, source, 0);
     }
-    
 
 }

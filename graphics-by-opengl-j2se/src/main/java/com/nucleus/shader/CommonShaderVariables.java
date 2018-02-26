@@ -4,9 +4,11 @@ import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.shader.ShaderVariable.VariableType;
 
 /**
- * The shader names used
+ * The variable names used for common shaders.
+ * These can be used as a common way to find specific variables, for instance in order to share variables between
+ * different shader programs.
  */
-public enum ShaderVariables implements VariableMapping {
+public enum CommonShaderVariables implements VariableMapping {
     uTexture(0, 0, ShaderVariable.VariableType.UNIFORM, null),
     uShadowTexture(1, 2, ShaderVariable.VariableType.UNIFORM, null),
     uMVMatrix(2, 4, ShaderVariable.VariableType.UNIFORM, null),
@@ -25,17 +27,18 @@ public enum ShaderVariables implements VariableMapping {
     uTextureData(6, 54, ShaderVariable.VariableType.UNIFORM, null),
     uAmbientLight(7, 58, ShaderVariable.VariableType.UNIFORM, null),
     uDiffuseLight(8, 62, ShaderVariable.VariableType.UNIFORM, null),
-    aVertex(9, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-    aTexCoord(10, 3, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-    aTranslate(11, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aRotate(12, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aScale(13, 8, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aColor(14, 12, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aFrameData(15, 16, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aData1(16, 20, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
+    uvData(9, 0, ShaderVariable.VariableType.UNIFORM, null),
+    aVertex(10, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+    aTexCoord(11, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+    aTranslate(12, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aRotate(13, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aScale(14, 8, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aColor(15, 12, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aFrameData(16, 16, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aData1(17, 20, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
 
     /**
-     * Index of variable
+     * Index (id) of variable
      */
     public final int index;
     /**
@@ -46,12 +49,12 @@ public enum ShaderVariables implements VariableMapping {
     public final BufferIndex bufferIndex;
 
     /**
-     * @param index Index of the shader variable
+     * @param index Index (id) of variable, can be used to locate the variable in an array.
      * @param offset Offset into data where variable is. Used for static mapping
      * @param type Type of variable
      * @param bufferIndex Index of buffer in mesh that holds the variable data
      */
-    private ShaderVariables(int index, int offset, VariableType type, BufferIndex bufferIndex) {
+    private CommonShaderVariables(int index, int offset, VariableType type, BufferIndex bufferIndex) {
         this.index = index;
         this.offset = offset;
         this.type = type;
@@ -71,5 +74,15 @@ public enum ShaderVariables implements VariableMapping {
     @Override
     public BufferIndex getBufferIndex() {
         return bufferIndex;
+    }
+
+    @Override
+    public String getName() {
+        return name();
+    }
+
+    @Override
+    public int getOffset() {
+        return offset;
     }
 }

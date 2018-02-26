@@ -3,6 +3,8 @@ package com.nucleus.opengl;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.nucleus.SimpleLogger;
+
 /**
  * Platform agnostic GL utility methods, uses the GLES20Wrapper for GLES functions.
  * 
@@ -11,18 +13,26 @@ import java.util.List;
  */
 public class GLUtils {
 
+    private static boolean throwErrors = false;
+
     /**
      * Checks for OpenGL error, if there is at least one error then all errors are fetched and GLException is thrown.
      * Call this method after all GL methods that can raise an error where the error means failure.
      * When this method returns there will be zero reported errors from GL.
      * 
-     * @param detailMessage The detailed exception message if there is a GL error.
+     * @param ga The tag to display with errors
      * @throws GLException If there is one or more errors in GL.
      */
-    public static void handleError(GLES20Wrapper gles, String detailMessage) throws GLException {
+    public static void handleError(GLES20Wrapper gles, String tag) throws GLException {
         List<Integer> errors = getErrors(gles);
         if (errors != null) {
-            throw new GLException(detailMessage, errors);
+            if (throwErrors) {
+                throw new GLException(tag, errors);
+            } else {
+                for (Integer i : errors) {
+                    SimpleLogger.d(tag, "GLError: " + i);
+                }
+            }
         }
     }
 

@@ -8,8 +8,7 @@ import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
 
 /**
- * Logic processor implementation
- * TODO - A better name would be ComponentProcessor or ComponentExecutor
+ * Component logic processor implementation
  * 
  * @author Richard Sahlin
  *
@@ -17,27 +16,27 @@ import com.nucleus.scene.RootNode;
 public class J2SEComponentProcessor implements ComponentProcessor {
 
     Bounds bounds;
-    
+
     @Override
     public void processRoot(RootNode root, float delta) {
         bounds = root.getBounds();
-        //Todo need to update bounds to view
+        // Todo need to update bounds to view
         Node rootNode = root.getNodeById(RootNode.ROOTNODE_ID);
-        
+
         for (Node node : root.getChildren()) {
             processNode(node, delta);
         }
-        
+
     }
-    
+
     @Override
     public void processNode(Node node, float deltaTime) {
-         if (node == null) {
+        if (node == null) {
             return;
         }
-        //Setup 
+        // Setup
         if (!cullNode(node)) {
-            //TODO check node type instead
+            // TODO check node type instead
             if (node instanceof ComponentNode) {
                 ComponentNode componentNode = (ComponentNode) node;
                 if (componentNode.getControllerState() == ComponentState.CREATED) {
@@ -56,6 +55,7 @@ public class J2SEComponentProcessor implements ComponentProcessor {
 
     /**
      * Checks if this node is within bounds, if so return true, otherwise return false
+     * 
      * @param node
      * @return True if this nodes bounds are outside cull area, false if inside or no bounds.
      */
@@ -65,5 +65,5 @@ public class J2SEComponentProcessor implements ComponentProcessor {
         }
         return node.cullNode(bounds, Pass.LOGIC);
     }
-    
+
 }

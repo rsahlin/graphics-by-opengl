@@ -103,11 +103,11 @@ public interface AttributeUpdater {
          * What data and what to copy is implementation specific and depends on the shader program used
          * to render the mesh.
          * 
-         * 
+         * @param renderer
          * @throws IllegalArgumentException If {@link #bindAttributeBuffer(AttributeBuffer)} has not been called before
          * calling this method.
          */
-        public void updateAttributeData();
+        public void updateAttributeData(NucleusRenderer renderer);
 
         /**
          * Binds the attribute buffer to be used as a destination when updateAttributeData() is called.

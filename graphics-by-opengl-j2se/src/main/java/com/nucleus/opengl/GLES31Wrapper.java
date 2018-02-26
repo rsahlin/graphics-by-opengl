@@ -6,6 +6,14 @@ package com.nucleus.opengl;
  */
 public abstract class GLES31Wrapper extends GLES30Wrapper {
 
+    /**
+     * Implementation constructor - DO NOT USE!!!
+     * TODO - protect/hide this constructor
+     */
+    protected GLES31Wrapper(Platform platform, Renderers renderVersion) {
+        super(platform, renderVersion);
+    }
+
     public abstract void glDispatchCompute(int num_groups_x, int num_groups_y, int num_groups_z);
 
     public abstract void glDispatchComputeIndirect(long indirect);

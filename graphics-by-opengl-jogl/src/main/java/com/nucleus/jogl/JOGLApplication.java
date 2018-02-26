@@ -1,10 +1,8 @@
 package com.nucleus.jogl;
 
-import com.jogamp.opengl.GLProfile;
 import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.J2SEWindow;
 import com.nucleus.J2SEWindowApplication;
-import com.nucleus.WindowListener;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
 
@@ -15,9 +13,9 @@ import com.nucleus.renderer.NucleusRenderer;
  * @author Richard Sahlin
  *
  */
-public class JOGLApplication extends J2SEWindowApplication implements WindowListener {
+public class JOGLApplication extends J2SEWindowApplication {
 
-    protected JOGLGLESWindow window;
+    protected static final WindowType DEFAULT_WINDOW_TYPE = WindowType.NEWT;
 
     /**
      * Creates a new application starter with the specified renderer and client main class implementation.
@@ -32,35 +30,25 @@ public class JOGLApplication extends J2SEWindowApplication implements WindowList
     }
 
     @Override
+    protected void setProperties(String[] args) {
+        this.windowType = DEFAULT_WINDOW_TYPE;
+        super.setProperties(args);
+    }
+
+    @Override
     protected J2SEWindow createWindow(Renderers version) {
-        switch (version) {
-            case GLES20:
-                window = new JOGLGLESWindow(GLProfile.GL2ES2, windowWidth, windowHeight, windowUndecorated, fullscreen, this,
-                        swapInterval);
+        switch (windowType) {
+            case NEWT:
+                j2seWindow = new JOGLGLESWindow(version, this, windowWidth, windowHeight, windowUndecorated,
+                        fullscreen, swapInterval);
                 break;
-            case GLES30:
-                window = new JOGLGLESWindow(GLProfile.GL4ES3, windowWidth, windowHeight, windowUndecorated, fullscreen, this,
-                        swapInterval);
+            case EGL:
+                j2seWindow = new JOGLEGLWindow(version, this, windowWidth, windowHeight);
                 break;
             default:
-                throw new IllegalArgumentException("Not implemented for " + version);
+                throw new IllegalArgumentException("Not implemented for " + windowType);
         }
-        window.setGLEVentListener();
-        window.setWindowListener(this);
-        // Setting window to visible will trigger the GLEventListener, on the same or another thread.
-        window.setVisible(true);
-        return window;
-    }
-
-    @Override
-    public void resize(int x, int y, int width, int height) {
-        if (coreApp != null) {
-            coreApp.getRenderer().resizeWindow(x, y, width, height);
-        }
-    }
-
-    @Override
-    public void windowClosed() {
+        return j2seWindow;
     }
 
 }

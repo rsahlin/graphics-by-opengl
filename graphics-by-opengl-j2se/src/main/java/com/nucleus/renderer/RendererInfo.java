@@ -7,6 +7,7 @@ import com.nucleus.common.StringUtils;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
+import com.nucleus.opengl.GLESWrapper.Renderers;
 
 /**
  * Info about the renderer in the system.
@@ -22,13 +23,16 @@ public class RendererInfo {
     private String shadingLanguageVersion;
     private List<String> extensions;
     private int maxTextureSize;
+    private Renderers renderVersion;
 
     /**
      * Fetches info from GLES and stores in this class.
      * 
      * @param gles
+     * @param renderVersion
      */
-    public RendererInfo(GLES20Wrapper gles) {
+    public RendererInfo(GLES20Wrapper gles, Renderers renderVersion) {
+        this.renderVersion = renderVersion;
         vendor = gles.glGetString(GLES20.GL_VENDOR);
         version = gles.glGetString(GLES20.GL_VERSION);
         renderer = gles.glGetString(GLES20.GL_RENDERER);
@@ -42,7 +46,13 @@ public class RendererInfo {
         maxTextureSize = param[0];
         SimpleLogger.d(getClass(), "GLInfo:\n" + "GLES Version: " + version + " with shading language "
                 + shadingLanguageVersion + "\n" + vendor + " " + renderer + ", max texture size: " + maxTextureSize);
-        StringUtils.logList(getClass().getCanonicalName(), extensions);
+        if (extensions != null) {
+            StringUtils.logList(getClass().getCanonicalName(), extensions);
+        }
+        // Some implementations may raise error in glGetString for some unknown reason (LWJGL) - clear any raised errors
+        // here
+        while (gles.glGetError() != GLES20.GL_NO_ERROR) {
+        }
     }
 
     /**
@@ -76,6 +86,15 @@ public class RendererInfo {
     }
 
     /**
+     * Returns the renderer version, eg GLES2.0, GLES30
+     * 
+     * @return
+     */
+    public Renderers getRenderVersion() {
+        return renderVersion;
+    }
+
+    /**
      * Returns a version or release number for the shading language of the form
      * OpenGL ES GLSL ES <version number> <vendor-specific information>.
      * 
@@ -106,7 +125,7 @@ public class RendererInfo {
      * @return
      */
     public boolean hasExtensionSupport(GLES_EXTENSIONS extension) {
-        return extension == null ? false : hasExtensionNoPrefix(extension.name());
+        return extension == null || extensions == null ? false : hasExtensionNoPrefix(extension.name());
     }
 
     /**

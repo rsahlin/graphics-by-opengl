@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.renderer.Configuration;
 
 /**
  * Environment settings
@@ -44,7 +45,11 @@ public class Environment {
         /**
          * If true then EGL front_buffer_auto_refresh is enabled if present
          */
-        FRONTBUFFERAUTO("com.nucleus.frontbufferrefresh");
+        FRONTBUFFERAUTO("com.nucleus.frontbufferrefresh"),
+        /**
+         * If false then use of vbo is disabled
+         */
+        USEVBO("com.nucleus.vbo");
 
         public final String key;
 
@@ -83,6 +88,11 @@ public class Environment {
             } else {
                 SimpleLogger.d(getClass(), "No property for " + p.key);
             }
+        }
+
+        // Check for properties that shall be passed on.
+        if (getProperty(Property.USEVBO) != null) {
+            Configuration.getInstance().setUseVBO(isProperty(Property.USEVBO, Configuration.getInstance().isUseVBO()));
         }
 
     }

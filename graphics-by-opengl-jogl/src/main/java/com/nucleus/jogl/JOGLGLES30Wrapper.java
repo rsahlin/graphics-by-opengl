@@ -33,7 +33,8 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
      * @param gles The JOGL GLES30 instance
      * @throws IllegalArgumentException If gles is null
      */
-    public JOGLGLES30Wrapper(GL4ES3 gles) {
+    public JOGLGLES30Wrapper(GL4ES3 gles, Renderers renderVersion) {
+        super(Platform.GL, renderVersion);
         if (gles == null) {
             throw new IllegalArgumentException(GLES_NULL);
         }
@@ -422,6 +423,48 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glGetShaderSource(int shader, int bufsize, int[] length, byte[] source) {
         gles.glGetShaderSource(shader, bufsize, length, 0, source, 0);
+    }
+
+    @Override
+    public void glBindBufferBase(int target, int index, int buffer) {
+        gles.glBindBufferBase(target, index, buffer);
+    }
+
+    @Override
+    public void glUniformBlockBinding(int program, int uniformBlockIndex, int uniformBlockBinding) {
+        gles.glUniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding);
+    }
+
+    @Override
+    public void glBindBufferRange(int target, int index, int buffer, int ptroffset, int ptrsize) {
+        gles.glBindBufferRange(target, index, buffer, ptroffset, ptrsize);
+    }
+
+    @Override
+    public int glGetUniformBlockIndex(int program, String uniformBlockName) {
+        return gles.glGetUniformBlockIndex(program, uniformBlockName);
+    }
+
+    @Override
+    public void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, int[] params, int offset) {
+        gles.glGetActiveUniformBlockiv(program, uniformBlockIndex, pname, params, offset);
+    }
+
+    @Override
+    public String glGetActiveUniformBlockName(int program, int uniformBlockIndex) {
+        int[] nameLength = new int[1];
+        glGetActiveUniformBlockiv(program, uniformBlockIndex, GLES30.GL_UNIFORM_BLOCK_NAME_LENGTH,
+                nameLength, 0);
+        byte[] name = new byte[nameLength[0]];
+        gles.glGetActiveUniformBlockName(program, uniformBlockIndex, nameLength[0], nameLength, 0, name, 0);
+        return new String(name);
+    }
+
+    @Override
+    public void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int indicesOffset,
+            int pname, int[] params, int paramsOffset) {
+        gles.glGetActiveUniformsiv(program, uniformCount, uniformIndices, indicesOffset, pname, params,
+                paramsOffset);
     }
 
 }

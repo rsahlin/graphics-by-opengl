@@ -4,8 +4,16 @@ import java.nio.Buffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES30Wrapper;
+import com.nucleus.renderer.NucleusRenderer;
 
 public class AndriodGLES30Wrapper extends GLES30Wrapper {
+
+    /**
+     * Implementation constructor - DO NOT USE - fetch wrapper from {@link NucleusRenderer}
+     */
+    protected AndriodGLES30Wrapper() {
+        super(Platform.GLES, Renderers.GLES30);
+    }
 
     @Override
     public void glAttachShader(int program, int shader) {
@@ -362,6 +370,43 @@ public class AndriodGLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glGetShaderSource(int shader, int bufsize, int[] length, byte[] source) {
         android.opengl.GLES30.glGetShaderSource(shader, bufsize, length, 0, source, 0);
+    }
+
+    @Override
+    public void glBindBufferBase(int target, int index, int buffer) {
+        android.opengl.GLES30.glBindBufferBase(target, index, buffer);
+    }
+
+    @Override
+    public void glUniformBlockBinding(int program, int uniformBlockIndex, int uniformBlockBinding) {
+        android.opengl.GLES30.glUniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding);
+    }
+
+    @Override
+    public void glBindBufferRange(int target, int index, int buffer, int offset, int size) {
+        android.opengl.GLES30.glBindBufferRange(target, index, buffer, offset, size);
+    }
+
+    @Override
+    public int glGetUniformBlockIndex(int program, String uniformBlockName) {
+        return android.opengl.GLES30.glGetUniformBlockIndex(program, uniformBlockName);
+    }
+
+    @Override
+    public void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, int[] params, int offset) {
+        android.opengl.GLES30.glGetActiveUniformBlockiv(program, uniformBlockIndex, pname, params, offset);
+    }
+
+    @Override
+    public String glGetActiveUniformBlockName(int program, int uniformBlockIndex) {
+        return android.opengl.GLES30.glGetActiveUniformBlockName(program, uniformBlockIndex);
+    }
+
+    @Override
+    public void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int indicesOffset, int pname,
+            int[] params, int paramsOffset) {
+        android.opengl.GLES30.glGetActiveUniformsiv(program, uniformCount, uniformIndices, indicesOffset, pname,
+                params, paramsOffset);
     }
 
 }

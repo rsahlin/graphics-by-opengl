@@ -12,6 +12,7 @@ import java.util.List;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
+import com.nucleus.common.StringUtils;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Property;
@@ -22,12 +23,14 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
+import com.nucleus.opengl.GLESWrapper.GLES31;
 import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
+import com.nucleus.opengl.GLESWrapper.ProgramInfo;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
-import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
+import com.nucleus.shader.ShaderVariable.VariableBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -47,12 +50,25 @@ import com.nucleus.vecmath.Matrix;
  */
 public abstract class ShaderProgram {
 
+    public enum Shaders {
+        VERTEX_FRAGMENT(),
+        COMPUTE();
+    }
+
     public static final String PROGRAM_DIRECTORY = "assets/";
     public static final String SHADER_SOURCE_SUFFIX = ".essl";
     public static final String COMMON_VERTEX_SHADER = "commonvertex" + SHADER_SOURCE_SUFFIX;
     public static final String FRAGMENT_TYPE = "fragment";
     public static final String VERTEX_TYPE = "vertex";
     protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
+
+    /**
+     * Set to true to force appending common shader to shader source
+     * TODO Move setting to environment
+     */
+    protected static boolean appendCommonShaders = false;
+
+    protected final Shaders shaders;
 
     /**
      * Number of vertices per sprite - this is for a quad that is created using element buffer.
@@ -92,29 +108,6 @@ public abstract class ShaderProgram {
     public final static String VARIABLE_LOCATION_ERROR = "Could not get shader variable location: ";
     public final static String NULL_VARIABLES_ERROR = "ShaderVariables are null, program not created? Must call fetchProgramInfo()";
     public final static String GET_PROGRAM_INFO_ERROR = "Error fetching program info.";
-
-    /**
-     * Index into array where active (attribute or uniform) variable is stored, used when
-     * calling GL
-     */
-    protected final static int ACTIVE_COUNT_OFFSET = 0;
-    /**
-     * Index into array where max name length (attribute or uniform) for variable is stored, used when calling GL
-     */
-    protected final static int MAX_NAME_LENGTH_OFFSET = 1;
-
-    /**
-     * Used when calling glGetActiveAttrib as offset into data to be written
-     */
-    protected final static int SIZE_OFFSET = 1;
-    /**
-     * Used when calling glGetActiveAttrib as offset into data to be written
-     */
-    protected final static int TYPE_OFFSET = 2;
-    /**
-     * Used when calling glGetActiveAttrib as offset into data to be written
-     */
-    protected final static int NAME_LENGTH_OFFSET = 0;
 
     /**
      * The function of the shader program
@@ -209,22 +202,15 @@ public abstract class ShaderProgram {
     }
 
     protected Function function;
-    // TODO - remove these and only use sourceName class
-    protected String vertexShaderName;
-    protected String fragmentShaderName;
 
     /**
      * The GL program object
      */
     private int program = Constants.NO_VALUE;
-    /**
-     * The GL vertex shader object
-     */
-    private int vertexShader = Constants.NO_VALUE;
-    /**
-     * The GL fragment shader object
-     */
-    private int fragmentShader = Constants.NO_VALUE;
+
+    private String[] shaderSourceNames;
+    private int[] shaderTypes;
+    private int[] shaderNames;
 
     /**
      * This is the main array holding all active shader variables
@@ -245,11 +231,22 @@ public abstract class ShaderProgram {
      * The size of each buffer for the attribute variables
      */
     protected int[] attributesPerVertex;
-    protected VariableMapping[] attributes; // List of attributes defined by a program
-    protected int attributeBufferCount; // Number of buffers used by attributes
-    protected VariableMapping[] sourceUniforms; // List of uniforms defined by a program
+    /**
+     * List of uniforms defined by a program, ie passed to {@link #setUniformMapping(VariableMapping[])}
+     * 
+     */
+    protected VariableMapping[] sourceUniforms;
+    /**
+     * List of attributes defined by a program, ie passet to {@link #setAttributeMapping(VariableMapping[])}
+     */
+    protected VariableMapping[] attributes;
+    protected int attributeBufferCount;
+    protected HashMap<Integer, ShaderVariable> blockVariables = new HashMap<>(); // Active block uniforms, index is the
+                                                                                 // uniform index from GL
     protected ArrayList<Integer> commonVertexShaders;
     protected ArrayList<String> commonVertexSources;
+
+    protected VariableBlock[] variableBlocks;
 
     /**
      * Uniforms, used when rendering this Mesh depending on what ShaderProgram is used.
@@ -269,11 +266,11 @@ public abstract class ShaderProgram {
      * Returns the program for the specified pass and shading, this is used to resolve the correct
      * program for different passes
      * 
-     * @param renderer
+     * @param gles
      * @param pass
      * @param shading
      */
-    public abstract ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Texture2D.Shading shading);
+    public abstract ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, Texture2D.Shading shading);
 
     /**
      * Returns the offset within an attribute buffer where the property is, this is used to set specific properties
@@ -289,20 +286,20 @@ public abstract class ShaderProgram {
         ShaderVariable v = null;
         switch (property) {
             case TRANSLATE:
-                v = shaderVariables[ShaderVariables.aTranslate.index];
+                v = getShaderVariable(CommonShaderVariables.aTranslate);
                 break;
             case ROTATE:
-                v = shaderVariables[ShaderVariables.aRotate.index];
+                v = getShaderVariable(CommonShaderVariables.aRotate);
                 break;
             case SCALE:
-                v = shaderVariables[ShaderVariables.aScale.index];
+                v = getShaderVariable(CommonShaderVariables.aScale);
                 break;
             case FRAME:
-                v = shaderVariables[ShaderVariables.aFrameData.index];
+                v = getShaderVariable(CommonShaderVariables.aFrameData);
                 break;
             case COLOR_AMBIENT:
             case COLOR:
-                v = shaderVariables[ShaderVariables.aColor.index];
+                v = getShaderVariable(CommonShaderVariables.aColor);
                 break;
             default:
         }
@@ -315,24 +312,13 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Returns the variable mapping for the shader variable, the mapping is used to find buffer index and offsets.
-     * 
-     * @param variable The shader variable to get the variable mapping for.
-     * @throws IllegalArgumentException If the shader variable has no variable mapping in the subclass.
-     * @throws NullPointerException If variable is null
-     */
-    public VariableMapping getVariableMapping(ShaderVariable variable) {
-        return ShaderVariables.valueOf(getVariableName(variable));
-    }
-
-    /**
      * Returns the number of defined attribute + uniform variables in the program.
      * This is to make it easier when developing so that temporarily unused variabled do not need to be removed.
      * 
      * @return Number of defined variables in the shader program, all variables do not need to be used.
      */
     public int getVariableCount() {
-        return ShaderVariables.values().length;
+        return CommonShaderVariables.values().length;
     }
 
     /**
@@ -342,10 +328,13 @@ public abstract class ShaderProgram {
      * @param shading The shading function or null if not used
      * @param category The category of function or null of not used
      * @param mapping
+     * @param shader
      */
-    protected ShaderProgram(Pass pass, Texture2D.Shading shading, String category, VariableMapping[] mapping) {
+    protected ShaderProgram(Pass pass, Texture2D.Shading shading, String category, VariableMapping[] mapping,
+            Shaders shaders) {
         function = new Function(pass, shading, category);
         setMapping(mapping);
+        this.shaders = shaders;
     }
 
     protected void setMapping(VariableMapping[] mapping) {
@@ -354,33 +343,47 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets the name of the vertex/fragment shaders - shall be called before the program is created.
-     * Calls {@link #getVertexShaderSource()} and {@link #getFragmentShaderSource()} to collect
-     * shader sourcenames
+     * Sets the name of the shaders in this program - shall be called before the program is created.
+     * Creates shaders with type based on the {@link Shaders} field {@link #shaders}
+     * 
      */
     protected void createShaderSource() {
-        vertexShaderName = PROGRAM_DIRECTORY + getVertexShaderSource() + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
-        fragmentShaderName = PROGRAM_DIRECTORY + getFragmentShaderSource() + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
+        switch (shaders) {
+            case VERTEX_FRAGMENT:
+                shaderSourceNames = new String[2];
+                shaderTypes = new int[] { GLES20.GL_VERTEX_SHADER, GLES20.GL_FRAGMENT_SHADER };
+                break;
+            case COMPUTE:
+                shaderSourceNames = new String[1];
+                shaderTypes = new int[] { GLES31.GL_COMPUTE_SHADER };
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + shaders);
+        }
+        for (int i = 0; i < shaderTypes.length; i++) {
+            shaderSourceNames[i] = getShaderSource(shaderTypes[i]);
+        }
     }
 
     /**
      * Returns the name of the vertex shader source, this is taken from the function.
      * Override in sublcasses to point to other vertex shader source
      * 
+     * @param type The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER
      * @return
      */
-    protected String getVertexShaderSource() {
-        return function.getShaderSourceName();
-    }
+    protected String getShaderSource(int type) {
+        switch (type) {
+            case GLES20.GL_VERTEX_SHADER:
+                return PROGRAM_DIRECTORY + function.getShaderSourceName() + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
+            case GLES20.GL_FRAGMENT_SHADER:
+                return PROGRAM_DIRECTORY + function.getShaderSourceName() + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
+            case GLES31.GL_COMPUTE_SHADER:
+                return PROGRAM_DIRECTORY + function.getShaderSourceName() + SHADER_SOURCE_SUFFIX;
+            default:
+                throw new IllegalArgumentException("Not implemented for type: " + type);
 
-    /**
-     * Returns the name of the fragment shader source, this is taken from the function.
-     * Override in sublcasses to point to other fragment shader source
-     * 
-     * @return
-     */
-    protected String getFragmentShaderSource() {
-        return function.getShaderSourceName();
+        }
     }
 
     /**
@@ -393,9 +396,10 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets the uniform mapping as defined by subclass
+     * Adds the uniform mapping as defined by subclass
      * 
-     * @param mapping
+     * @param mapping The mappings to add to source uniforms - these are the uniform names that can be found by using
+     * {@link VariableMapping}
      */
     protected void setUniformMapping(VariableMapping[] mapping) {
         ArrayList<VariableMapping> uniformList = new ArrayList<VariableMapping>();
@@ -436,10 +440,10 @@ public abstract class ShaderProgram {
      */
     public void createProgram(GLES20Wrapper gles) {
         createShaderSource();
-        if (vertexShaderName == null || fragmentShaderName == null) {
+        if (shaderSourceNames == null) {
             throw new ShaderProgramException(MUST_SET_FIELDS);
         }
-        createProgram(gles, vertexShaderName, fragmentShaderName);
+        createProgram(gles, shaderSourceNames, shaderTypes);
     }
 
     /**
@@ -541,6 +545,29 @@ public abstract class ShaderProgram {
             buffers[index.index] = createAttributeBuffer(index, verticeCount, mesh);
         }
         return buffers;
+    }
+
+    /**
+     * Creates the block (uniform) buffers, if any are used.
+     * 
+     * @return Variable block buffers for this program, or null if not used.
+     */
+    public BlockBuffer[] createBlockBuffers() {
+        BlockBuffer[] blockBuffers = null;
+        if (variableBlocks != null) {
+            blockBuffers = new BlockBuffer[variableBlocks.length];
+            int blockSize = 0;
+            for (int index = 0; index < variableBlocks.length; index++) {
+                VariableBlock vb = variableBlocks[index];
+                // TODO - need to add stride
+                blockSize = getVariableSize(vb);
+                blockBuffers[index] = createBlockBuffer(vb, blockSize);
+            }
+            if (blockSize > 0) {
+                SimpleLogger.d(getClass(), "Data for uniform block " + blockSize);
+            }
+        }
+        return blockBuffers;
     }
 
     /**
@@ -672,23 +699,25 @@ public abstract class ShaderProgram {
      * @throws GLException If attribute or uniform locations could not be found.
      */
     protected void fetchProgramInfo(GLES20Wrapper gles) throws GLException {
-        int[] attribInfo = new int[2];
-        int[] uniformInfo = new int[2];
-        gles.glGetProgramiv(program, GLES20.GL_ACTIVE_ATTRIBUTES, attribInfo, ACTIVE_COUNT_OFFSET);
-        gles.glGetProgramiv(program, GLES20.GL_ACTIVE_UNIFORMS, uniformInfo, ACTIVE_COUNT_OFFSET);
-        gles.glGetProgramiv(program, GLES20.GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, attribInfo, MAX_NAME_LENGTH_OFFSET);
-        gles.glGetProgramiv(program, GLES20.GL_ACTIVE_UNIFORM_MAX_LENGTH, uniformInfo, MAX_NAME_LENGTH_OFFSET);
+        ProgramInfo info = gles.getProgramInfo(program);
         GLUtils.handleError(gles, GET_PROGRAM_INFO_ERROR);
-        shaderVariables = new ShaderVariable[getVariableCount()];
-        fetchActiveVariables(gles, VariableType.ATTRIBUTE, attribInfo);
-        fetchActiveVariables(gles, VariableType.UNIFORM, uniformInfo);
+        shaderVariables = new ShaderVariable[CommonShaderVariables.values().length];
+        int uniformBlocks = info.getActiveVariables(VariableType.UNIFORM_BLOCK);
+        if (uniformBlocks > 0) {
+            variableBlocks = gles.getUniformBlocks(info);
+            for (VariableBlock block : variableBlocks) {
+                fetchActiveVariables(gles, VariableType.UNIFORM_BLOCK, info, block);
+            }
+        }
+        fetchActiveVariables(gles, VariableType.ATTRIBUTE, info, null);
+        fetchActiveVariables(gles, VariableType.UNIFORM, info, null);
         attributeVariables = new ShaderVariable[attributeBufferCount][];
         attributesPerVertex = new int[attributeBufferCount];
         mapAttributeVariablePerBuffer(attributeVariables);
         if (useDynamicVariables()) {
             dynamicMapVariables();
         }
-        for (int i = 0; i < attributesPerVertex.length; i++) {
+        for (int i = 0; i < attributeBufferCount; i++) {
             attributesPerVertex[i] = getVariableSize(attributeVariables[i], VariableType.ATTRIBUTE);
         }
     }
@@ -714,33 +743,62 @@ public abstract class ShaderProgram {
      * @param gles
      * @param type Type of variable to fetch info for.
      * @param info
+     * @param block Variable block info or null - store block variables here
      * @throws GLException If attribute or uniform location(s) are -1, ie they could not be found using the name.
      */
-    private void fetchActiveVariables(GLES20Wrapper gles, VariableType type, int[] info) throws GLException {
-
-        int count = info[ACTIVE_COUNT_OFFSET];
-        byte[] nameBuffer = new byte[info[MAX_NAME_LENGTH_OFFSET]];
-        int[] written = new int[3];
-
-        for (int i = 0; i < count; i++) {
-            switch (type) {
-                case ATTRIBUTE:
-                    gles.glGetActiveAttrib(program, i, written, NAME_LENGTH_OFFSET, written,
-                            SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
-                    break;
-                case UNIFORM:
-                    gles.glGetActiveUniform(program, i, written, NAME_LENGTH_OFFSET, written,
-                            SIZE_OFFSET, written, TYPE_OFFSET, nameBuffer);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Not implemented for " + type);
-            }
-            ShaderVariable variable = new ShaderVariable(type, nameBuffer, written, NAME_LENGTH_OFFSET, SIZE_OFFSET,
-                    TYPE_OFFSET);
-            setVariableLocation(gles, program, variable);
-            setVariableStaticOffset(gles, program, variable);
-            addShaderVariable(variable);
+    private void fetchActiveVariables(GLES20Wrapper gles, VariableType type, ProgramInfo info, VariableBlock block)
+            throws GLException {
+        int count = info.getActiveVariables(type);
+        if (count == 0) {
+            return;
         }
+        byte[] nameBuffer = new byte[info.getMaxNameLength(type)];
+        ShaderVariable variable = null;
+        for (int i = 0; i < count; i++) {
+            variable = null;
+            if (block != null) {
+                variable = gles.getActiveVariable(program, type, block.indices[i], nameBuffer);
+                // Add to current block uniforms
+                this.blockVariables.put(variable.getActiveIndex(), variable);
+                addShaderVariable(variable);
+            } else {
+                // Check if uniform variable already has been fetched from block - then check that it is used in type of
+                // shader.
+                variable = getBlockVariable(type, i);
+                if (variable != null) {
+                    SimpleLogger.d(getClass(),
+                            type.name() + " using block variable for index " + i + ", " + variable.getName());
+                } else {
+                    variable = gles.getActiveVariable(program, type, i, nameBuffer);
+                    setVariableLocation(gles, program, variable);
+                    setVariableStaticOffset(gles, program, variable);
+                    addShaderVariable(variable);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns ShaderVariable from variable blocks, if the block variable is used in the type.
+     * 
+     * @param type Shader type
+     * @param index
+     * @return
+     */
+    protected ShaderVariable getBlockVariable(VariableType type, int index) {
+        ShaderVariable var = blockVariables.get(index);
+        if (var != null) {
+            VariableBlock block = variableBlocks[var.getBlockIndex()];
+            switch (block.usage) {
+                case VERTEX_SHADER:
+                    return type == VariableType.UNIFORM ? var : null;
+                case FRAGMENT_SHADER:
+                    return type == VariableType.ATTRIBUTE ? var : null;
+                case VERTEX_FRAGMENT_SHADER:
+                    return var;
+            }
+        }
+        return null;
     }
 
     /**
@@ -761,6 +819,9 @@ public abstract class ShaderProgram {
             case UNIFORM:
                 variable.setLocation(gles.glGetUniformLocation(program, variable.getName()));
                 break;
+            case UNIFORM_BLOCK:
+                // Location is already set - do nothing.
+                break;
         }
         if (variable.getLocation() < 0) {
             throw new GLException(VARIABLE_LOCATION_ERROR + variable.getName(), 0);
@@ -775,8 +836,42 @@ public abstract class ShaderProgram {
      * @param variable
      */
     protected void setVariableStaticOffset(GLES20Wrapper gles, int program, ShaderVariable variable) {
-        ShaderVariables v = ShaderVariables.valueOf(variable.getName());
-        variable.setOffset(v.offset);
+        VariableMapping v = getMappingByName(variable);
+        // If variable is null then not defined in mapping used when class is created - treat this as an error
+        if (v == null) {
+            throw new IllegalArgumentException("No mapping for shader variable " + variable);
+        }
+        variable.setOffset(v.getOffset());
+    }
+
+    /**
+     * Returns the VariableMapping from list of set attributes for the shader program.
+     * 
+     * @param name
+     * @return
+     */
+    public VariableMapping getMappingByName(ShaderVariable variable) {
+        String name = variable.getName();
+        switch (variable.getType()) {
+            case ATTRIBUTE:
+                for (VariableMapping vm : attributes) {
+                    if (name.contentEquals(vm.getName())) {
+                        return vm;
+                    }
+                }
+                break;
+            case UNIFORM:
+            case UNIFORM_BLOCK:
+                for (VariableMapping vm : sourceUniforms) {
+                    if (name.contentEquals(vm.getName())) {
+                        return vm;
+                    }
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + variable.getType());
+        }
+        return null;
     }
 
     /**
@@ -784,37 +879,41 @@ public abstract class ShaderProgram {
      * 
      * @param gles GLES20 platform specific wrapper.
      * @param program
-     * @param vertexShader
+     * @param shaderNames
      * @param commonVertexShaders List with shared vertex shaders or null
-     * @param fragmentShader
      * @throws GLException If the program could not be linked with the shaders.
      */
-    public void linkProgram(GLES20Wrapper gles, int program, int vertexShader, ArrayList<Integer> commonVertexShaders,
-            int fragmentShader) throws GLException {
+    public void linkProgram(GLES20Wrapper gles, int program, int[] shaderNames, ArrayList<Integer> commonVertexShaders)
+            throws GLException {
         if (commonVertexShaders != null) {
             for (Integer shader : commonVertexShaders) {
                 gles.glAttachShader(program, shader);
             }
         }
-        gles.glAttachShader(program, vertexShader);
-        gles.glAttachShader(program, fragmentShader);
+        for (int name : shaderNames) {
+            gles.glAttachShader(program, name);
+        }
         gles.glLinkProgram(program);
         SimpleLogger.d(getClass(), gles.glGetProgramInfoLog(program));
         GLUtils.handleError(gles, LINK_PROGRAM_ERROR);
     }
 
-    private void logShaderSources(GLES20Wrapper gles, ArrayList<Integer> commonVertexShaders, int vertexShader,
-            int fragmentShader) {
+    private void logShaderSources(GLES20Wrapper gles, ArrayList<Integer> commonVertexShaders, int[] shaderNames) {
         SimpleLogger.d(getClass(), "Common vertex shaders:");
         if (commonVertexShaders != null) {
             for (Integer shader : commonVertexShaders) {
                 SimpleLogger.d(getClass(), gles.glGetShaderSource(shader));
             }
         }
-        SimpleLogger.d(getClass(), "Vertex shader:");
-        SimpleLogger.d(getClass(), gles.glGetShaderSource(vertexShader));
-        SimpleLogger.d(getClass(), "Fragment shader:");
-        SimpleLogger.d(getClass(), gles.glGetShaderSource(fragmentShader));
+        // It could be an exception before shader names are allocated
+        if (shaderNames != null) {
+            int index = 1;
+            for (int name : shaderNames) {
+                SimpleLogger.d(getClass(), "Shader source for shader " + index++ + " : " + toString());
+                SimpleLogger.d(getClass(), gles.glGetShaderSource(name));
+
+            }
+        }
     }
 
     /**
@@ -829,7 +928,7 @@ public abstract class ShaderProgram {
      */
     public int compileShader(GLES20Wrapper gles, String sourceName, int type, boolean library) throws GLException {
         int shader = gles.glCreateShader(type);
-        if (vertexShader == 0) {
+        if (shader == 0) {
             throw new GLException(CREATE_SHADER_ERROR, GLES20.GL_NO_ERROR);
         }
         try {
@@ -839,8 +938,12 @@ public abstract class ShaderProgram {
             switch (type) {
                 case GLES20.GL_VERTEX_SHADER:
                     throw new RuntimeException("Could not load vertex shader: " + sourceName);
-                default:
+                case GLES31.GL_FRAGMENT_SHADER:
                     throw new RuntimeException("Could not load fragment shader: " + sourceName);
+                case GLES31.GL_COMPUTE_SHADER:
+                    throw new RuntimeException("Could not load compute shader: " + sourceName);
+                default:
+                    throw new RuntimeException("Could not load shader: " + sourceName);
             }
         }
         return shader;
@@ -854,7 +957,7 @@ public abstract class ShaderProgram {
      * @param gles GLES20 platform specific wrapper.
      * @param shaderStream Inputstream to the shader source.
      * @param shader OpenGL object to compile the shader to.
-     * @param type GL_VERTEX_SHADER or GL_FRAGMENT_SHADER
+     * @param type GL_VERTEX_SHADER, GL_FRAGMENT_SHADER or GL_COMPUTE_SHADER
      * @param sourceName Name of the sourcefile - this is used for error reporting.
      * @param libray true if this is a library function for shader
      * @throws GLException If there is an reading from stream, setting or compiling shader source.
@@ -862,10 +965,10 @@ public abstract class ShaderProgram {
     public void compileShader(GLES20Wrapper gles, InputStream shaderStream, int shader, int type, String sourceName,
             boolean library)
             throws IOException, GLException {
-        if (!gles.getInfo().hasExtensionSupport(GLES_EXTENSIONS.separate_shader_objects)) {
+        if (commonVertexShaders == null) {
             compileShader(gles,
-                    gles.getVersionedShaderSource(shaderStream, type, true)
-                            + getCommonVertexSources(),
+                    gles.getVersionedShaderSource(shaderStream, type, library)
+                            + getCommonSources(type),
                     shader, sourceName);
         } else {
             compileShader(gles, gles.getVersionedShaderSource(shaderStream, type, library), shader,
@@ -951,28 +1054,30 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Returns the shader variable for the specified index, use this to map attributes to variables.
+     * Returns the shader variable for the {@link VariableMapping}
+     * Use this to map attributes/uniforms to variables.
      * 
-     * @param attribute
-     * @return
+     * @param variable
+     * @return The ShaderVariable for the variable, or null if not used in source.
      * @throws IllegalArgumentException If shader variables are null, the program has probably not been created.
      */
-    public ShaderVariable getShaderVariable(VariableMapping attribute) {
+    public ShaderVariable getShaderVariable(VariableMapping variable) {
         if (shaderVariables == null) {
             throw new IllegalArgumentException(NULL_VARIABLES_ERROR);
         }
-        return shaderVariables[attribute.getIndex()];
+        return shaderVariables[variable.getIndex()];
     }
 
     /**
      * Utility method to return the name of a shader variable, this will remove unwanted characters such as array
      * declaration or '.' field access eg 'struct.field' will become 'struct'
      * 
-     * @param variable
+     * @param nameBuffer
+     * @param nameLength
      * @return Name of variable, without array declaration.
      */
-    public String getVariableName(ShaderVariable variable) {
-        String name = variable.getName();
+    public String getVariableName(byte[] nameBuffer, int nameLength) {
+        String name = StringUtils.createString(nameBuffer, 0, nameLength);
         if (name.endsWith("]")) {
             int end = name.indexOf("[");
             name = name.substring(0, end);
@@ -990,6 +1095,7 @@ public abstract class ShaderProgram {
     /**
      * Stores the shader variable in this program, if variable is of unmapped type, for instance Sampler, then it is
      * skipped. Also skip variables that are defined in code but not used in shader.
+     * Variables are stored in an array using the VariableMapping index
      * 
      * @param variable
      * @throws IllegalArgumentException If shader variables are null, the program has probably not been created,
@@ -1004,11 +1110,12 @@ public abstract class ShaderProgram {
             return;
         }
         try {
-            VariableMapping vm = getVariableMapping(variable);
+            VariableMapping vm = getMappingByName(variable);
             // TODO Offset is set dynamically when dynamicMapShaderOffset() is called - create a setting so that
             // it is possible to toggle between the two modes.
             // variable.setOffset(vm.getOffset());
             shaderVariables[vm.getIndex()] = variable;
+
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
                     "Variable has no mapping to shader variable (ie used in shader but not defined in program "
@@ -1025,33 +1132,48 @@ public abstract class ShaderProgram {
      * If program compiles succesfully then the program info is fetched.
      * 
      * @param gles
-     * @param vertexName Name of vertex shader to load, compile and link
-     * @param fragmentName Name of fragment shader to load, compile and link
+     * @param sourceNames Name of shaders to load, compile and link
+     * @param types Type of shaders for sourceNames
      */
-    protected void createProgram(GLES20Wrapper gles, String vertexName, String fragmentName) {
-        SimpleLogger.d(getClass(), "Creating program for: " + vertexName + " and " + fragmentName);
+    protected void createProgram(GLES20Wrapper gles, String[] sourceNames, int[] types) {
+        SimpleLogger.d(getClass(), "Creating program for: " + sourceNames.length + " shaders");
         try {
-            if (commonVertexShaders == null && commonVertexSources == null) {
+            if (shaders != Shaders.COMPUTE && commonVertexShaders == null && commonVertexSources == null) {
                 createCommonVertexShaders(gles);
             }
+            shaderNames = new int[sourceNames.length];
             program = gles.glCreateProgram();
-            SimpleLogger.d(getClass(),
-                    "Program name: " + program + ", vertex: " + vertexShader + " fragment: " + fragmentShader
-                            + " from sources: " + vertexName + ", " + fragmentName);
-            vertexShader = compileShader(gles, vertexName, GLES20.GL_VERTEX_SHADER, false);
-            fragmentShader = compileShader(gles, fragmentName, GLES20.GL_FRAGMENT_SHADER, false);
-            linkProgram(gles, program, vertexShader, commonVertexShaders, fragmentShader);
+            for (int shaderIndex = 0; shaderIndex < sourceNames.length; shaderIndex++) {
+                SimpleLogger.d(getClass(),
+                        "Compiling " + sourceNames[shaderIndex]);
+                shaderNames[shaderIndex] = compileShader(gles, sourceNames[shaderIndex], types[shaderIndex], false);
+
+            }
+            linkProgram(gles, program, shaderNames, commonVertexShaders);
             checkLinkStatus(gles, program);
             fetchProgramInfo(gles);
             bindAttributeNames(gles);
             createUniformStorage(shaderVariables);
             setSamplers();
         } catch (GLException e) {
-            logShaderSources(gles, commonVertexShaders, vertexShader, fragmentShader);
-            throw new RuntimeException(e.toString());
+            logShaderSources(gles, commonVertexShaders, shaderNames);
         } catch (IOException e) {
             throw new RuntimeException(e.toString());
         }
+    }
+
+    /**
+     * Sets the uniform data into the block
+     * 
+     * @param gles
+     * @param block
+     * @param variable
+     * @param offset
+     * @throws GLException
+     */
+    protected void setUniformBlock(GLES20Wrapper gles, VariableBlock block, ShaderVariable variable)
+            throws GLException {
+
     }
 
     /**
@@ -1062,9 +1184,9 @@ public abstract class ShaderProgram {
      * @param offset Offset into uniform array where data starts.
      * @throws GLException If there is an error setting a uniform to GL
      */
-    protected final void setUniform(GLES20Wrapper gles, ShaderVariable variable, int offset)
+    protected final void setUniform(GLES20Wrapper gles, ShaderVariable variable)
             throws GLException {
-
+        int offset = variable.getOffset();
         switch (variable.getDataType()) {
             case GLES20.GL_FLOAT_VEC2:
                 gles.glUniform2fv(variable.getLocation(), variable.getSize(), uniforms, offset);
@@ -1093,7 +1215,7 @@ public abstract class ShaderProgram {
             default:
                 throw new IllegalArgumentException("Not implemented for dataType: " + variable.getDataType());
         }
-        GLUtils.handleError(gles, "setVectorUniform(), dataType: " + variable.getDataType());
+        GLUtils.handleError(gles, "setUniform(), dataType: " + variable.getDataType());
 
     }
 
@@ -1130,6 +1252,7 @@ public abstract class ShaderProgram {
      * 
      * @param variables
      * @param type
+     * @param index BufferIndex to the buffer that the variables belong to, or null
      * @return Total size, in floats, of all defined shader variables of the specified type
      */
     protected int getVariableSize(ShaderVariable[] variables, VariableType type) {
@@ -1139,6 +1262,34 @@ public abstract class ShaderProgram {
                 size += v.getSizeInFloats();
             }
         }
+        return alignVariableSize(size, type);
+    }
+
+    /**
+     * returns the size, in basic machine units, of all active variables in the block.
+     * 
+     * @param block
+     * @return
+     */
+    protected int getVariableSize(VariableBlock block) {
+        int size = 0;
+        for (int index : block.indices) {
+            ShaderVariable variable = this.blockVariables.get(index);
+            size += variable.getSizeInBytes();
+        }
+        return size;
+    }
+
+    /**
+     * Align the size of the variables (per vertex) of the type in the buffer with index, override in
+     * subclasses if for instance
+     * Attributes shall be aligned to a specific size, eg vec4
+     * 
+     * @param size The packed size
+     * @param type
+     * @return The aligned size of variables per vertex.
+     */
+    protected int alignVariableSize(int size, VariableType type) {
         return size;
     }
 
@@ -1168,6 +1319,30 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Returns a list with samplers from array of ShaderVariables
+     * 
+     * @param variables
+     * @return
+     */
+    protected ArrayList<ShaderVariable> getSamplers(ShaderVariable[] variables) {
+        ArrayList<ShaderVariable> samplers = new ArrayList<>();
+        for (ShaderVariable v : variables) {
+            if (v != null && v.getType() == VariableType.UNIFORM)
+                switch (v.getDataType()) {
+                    case GLES20.GL_SAMPLER_2D:
+                    case GLES20.GL_SAMPLER_CUBE:
+                    case GLES30.GL_SAMPLER_2D_SHADOW:
+                    case GLES30.GL_SAMPLER_2D_ARRAY:
+                    case GLES30.GL_SAMPLER_2D_ARRAY_SHADOW:
+                    case GLES30.GL_SAMPLER_CUBE_SHADOW:
+                    case GLES30.GL_SAMPLER_3D:
+                        samplers.add(v);
+                }
+        }
+        return samplers;
+    }
+
+    /**
      * Returns the size of shader variable that are mapped to the specified buffer index.
      * Use this to fetch the size per attribute for the different buffers.
      * 
@@ -1179,7 +1354,7 @@ public abstract class ShaderProgram {
         int size = 0;
         for (ShaderVariable v : variables) {
             if (v != null) {
-                VariableMapping vm = getVariableMapping(v);
+                VariableMapping vm = getMappingByName(v);
                 if (vm.getBufferIndex() == index) {
                     size += v.getSizeInFloats();
                 }
@@ -1200,10 +1375,10 @@ public abstract class ShaderProgram {
     public void setUniformMatrices(float[] uniforms, float[][] matrices, Mesh mesh) {
         // Refresh the uniform matrixes - default is modelview and projection
         System.arraycopy(matrices[0], 0, uniforms,
-                shaderVariables[ShaderVariables.uMVMatrix.index].getOffset(),
+                shaderVariables[CommonShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(matrices[1], 0, uniforms,
-                shaderVariables[ShaderVariables.uProjectionMatrix.index].getOffset(),
+                shaderVariables[CommonShaderVariables.uProjectionMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
 
@@ -1231,7 +1406,11 @@ public abstract class ShaderProgram {
             ShaderVariable v = getShaderVariable(am);
             // If null then declared in program but not used, silently ignore
             if (v != null) {
-                setUniform(gles, v, v.getOffset());
+                if (v.getBlockIndex() != Constants.NO_VALUE) {
+                    setUniformBlock(gles, variableBlocks[v.getBlockIndex()], v);
+                } else {
+                    setUniform(gles, v);
+                }
             }
         }
     }
@@ -1327,23 +1506,31 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Creates the buffer to hold the block variable data
+     * 
+     * @param block The block to create the buffer for
+     * @param size The size, in bytes to allocate.
+     */
+    protected BlockBuffer createBlockBuffer(VariableBlock block, int size) {
+        // Size is in bytes, align to floats
+        FloatBlockBuffer fbb = new FloatBlockBuffer(size >>> 2);
+        return fbb;
+    }
+
+    /**
      * Sets the texture units to use for each sampler, default behavior is to start at unit 0 and increase for each
      * sampler.
      */
     protected void setSamplers() {
-        int index = 0;
-        if (shaderVariables[ShaderVariables.uTexture.index] != null) {
-            samplers[index] = index++;
-        }
-        if (shaderVariables[ShaderVariables.uShadowTexture.index] != null) {
-            samplers[index] = index++;
+        ArrayList<ShaderVariable> samplersList = getSamplers(shaderVariables);
+        for (int i = 0; i < samplersList.size(); i++) {
+            samplers[i] = samplersList.get(i).getOffset();
         }
     }
 
     @Override
     public String toString() {
-        return vertexShaderName + " (" + vertexShader + ") / " + fragmentShaderName + " (" + fragmentShader
-                + ") shading: " + function.shading;
+        return shaders + " : " + function.getShaderSourceName();
     }
 
     /**
@@ -1354,7 +1541,7 @@ public abstract class ShaderProgram {
      */
     private void createCommonVertexShaders(GLES20Wrapper gles) throws GLException, IOException {
         String[] sourceNames = new String[] { PROGRAM_DIRECTORY + COMMON_VERTEX_SHADER };
-        if (gles.getInfo().hasExtensionSupport(GLES_EXTENSIONS.separate_shader_objects)) {
+        if (gles.getInfo().hasExtensionSupport(GLES_EXTENSIONS.separate_shader_objects) && !appendCommonShaders) {
             SimpleLogger.d(getClass(), "Support for separate shader objects, compiling common vertex sources.");
             // Compile into shader names and link
             commonVertexShaders = new ArrayList<>();
@@ -1363,7 +1550,8 @@ public abstract class ShaderProgram {
                         .add(compileShader(gles, source, GLES20.GL_VERTEX_SHADER, false));
             }
         } else {
-            SimpleLogger.d(getClass(), "No support for separate shader objects, adding common sources.");
+            SimpleLogger.d(getClass(),
+                    "No support for separate shader objects, or flag to append shaders set, adding common sources.");
             createCommonVertexSources(gles, sourceNames);
         }
     }
@@ -1385,7 +1573,16 @@ public abstract class ShaderProgram {
         }
     }
 
-    private String getCommonVertexSources() {
+    /**
+     * 
+     * @param type Shader type GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER
+     * @return
+     */
+    private String getCommonSources(int type) {
+        // common sources can be null if Compute program
+        if (commonVertexSources == null || type != GLES20.GL_VERTEX_SHADER) {
+            return "";
+        }
         String result = new String();
         for (String source : commonVertexSources) {
             result += source;

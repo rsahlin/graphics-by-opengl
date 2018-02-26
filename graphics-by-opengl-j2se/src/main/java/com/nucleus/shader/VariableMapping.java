@@ -17,11 +17,18 @@ import com.nucleus.shader.ShaderVariable.VariableType;
 public interface VariableMapping {
 
     /**
-     * Returns the index position of the attribute
+     * Returns the index position of the attribute, this can be used to locate runtime version of variable.
+     * 
+     * @return Index of variable
+     */
+    public int getIndex();
+
+    /**
+     * Returns the (static) offset for data to the variable.
      * 
      * @return
      */
-    public int getIndex();
+    public int getOffset();
 
     /**
      * Returns the type of variable
@@ -37,5 +44,12 @@ public interface VariableMapping {
      * @param BufferIndex Index to buffer holding variables
      */
     public BufferIndex getBufferIndex();
+
+    /**
+     * Returns the name of the variable - this is the name as defined it shall be defined in shader program.
+     * 
+     * @return
+     */
+    public String getName();
 
 }

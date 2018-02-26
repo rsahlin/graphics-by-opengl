@@ -1,8 +1,5 @@
 package com.nucleus;
 
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
@@ -17,7 +14,7 @@ import com.nucleus.renderer.Window;
  * This shall take care of informing {@link RenderContextListener} when context is created.
  *
  */
-public abstract class J2SEWindow {
+public abstract class J2SEWindow implements WindowListener {
 
     protected CoreApp coreApp;
 
@@ -25,6 +22,7 @@ public abstract class J2SEWindow {
     protected CoreApp.CoreAppStarter coreAppStarter;
     protected int width;
     protected int height;
+    protected WindowListener windowListener;
 
     public J2SEWindow(CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
         if (coreAppStarter == null) {
@@ -33,9 +31,17 @@ public abstract class J2SEWindow {
         this.coreAppStarter = coreAppStarter;
         this.width = width;
         this.height = height;
-        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        Window.getInstance().setScreenSize(gd.getDisplayMode().getWidth(), gd.getDisplayMode().getHeight());
+        Window.getInstance().setScreenSize(width, height);
 
+    }
+
+    /**
+     * Sets callback for {@link WindowListener} events
+     * 
+     * @param windowListener
+     */
+    public void setWindowListener(WindowListener windowListener) {
+        this.windowListener = windowListener;
     }
 
     /**
@@ -118,6 +124,20 @@ public abstract class J2SEWindow {
                 coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, type, timestamp, pointer, new float[] {
                         xpos, ypos }, PointerData.DOWN_PRESSURE);
             default:
+        }
+    }
+
+    @Override
+    public void resize(int x, int y, int width, int height) {
+        if (windowListener != null) {
+            windowListener.resize(x, y, width, height);
+        }
+    }
+
+    @Override
+    public void windowClosed() {
+        if (windowListener != null) {
+            windowListener.windowClosed();
         }
     }
 

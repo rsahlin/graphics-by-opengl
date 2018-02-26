@@ -1,11 +1,12 @@
 package com.nucleus.shader;
 
-import com.nucleus.common.StringUtils;
+import com.nucleus.common.Constants;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
 
 /**
- * Data for an active shader variable, this can be either attribute or uniform variables.
+ * Data for an active shader variable, ie varible declared and used in a compiled shader.
+ * This can be attribute, uniform or block variables.
  * 
  * @author Richard Sahlin
  *
@@ -15,18 +16,103 @@ public class ShaderVariable {
     private final static String ILLEGAL_DATATYPE_ERROR = "Illegal datatype: ";
 
     /**
-     * The different types of active variables - either uniform or attribute.
+     * Offset to size
+     */
+    public final static int SIZE_OFFSET = 0;
+    /**
+     * Offset to type
+     */
+    public final static int TYPE_OFFSET = 1;
+
+    public static final int NAME_LENGTH_OFFSET = 2;
+
+    /**
+     * Offset to index of active (location) variable
+     */
+    public final static int ACTIVE_INDEX_OFFSET = 3;
+    /**
+     * Offset to uniform data offset
+     */
+    public final static int DATA_OFFSET = 4;
+    /**
+     * Offset to block index
+     */
+    public final static int BLOCK_INDEX_OFFSET = 5;
+
+    /**
+     * The different types of active variables - attribute, uniform or uniform block
      * 
      * @author Richard Sahlin
      *
      */
     public enum VariableType {
 
-        UNIFORM(),
-        ATTRIBUTE();
+        UNIFORM(0),
+        ATTRIBUTE(1),
+        UNIFORM_BLOCK(2);
 
-        private VariableType() {
+        public final int index;
+
+        private VariableType(int index) {
+            this.index = index;
         }
+    }
+
+    /**
+     * Containing information about a variable block
+     *
+     */
+    public static class VariableBlock {
+
+        /**
+         * Where the variable block variables are used
+         */
+        public enum Usage {
+            /**
+             * Variables used only in vertex shader
+             */
+            VERTEX_SHADER(),
+            /**
+             * Variables used only in fragment shader
+             */
+            FRAGMENT_SHADER(),
+            /**
+             * Variables used in vertex and fragment shader
+             */
+            VERTEX_FRAGMENT_SHADER();
+        }
+
+        /**
+         * Creates a new VariableBlock for the specified program and block index.
+         * blockInfo shall contain: active variables, block data size
+         * 
+         * @param program
+         * @param blockIndex
+         * @param blockName
+         * @param blockInfo active variable count, block data size is read here
+         * @param indices
+         */
+        public VariableBlock(int program, int blockIndex, String blockName, int[] blockInfo, int[] indices) {
+            this.program = program;
+            this.blockIndex = blockIndex;
+            this.activeCount = blockInfo[0];
+            this.indices = new int[indices.length];
+            this.name = blockName;
+            this.blockDataSize = blockInfo[1];
+            System.arraycopy(indices, 0, this.indices, 0, indices.length);
+            int value = blockInfo[2] + (blockInfo[3] << 1);
+            usage = value == 3 ? Usage.VERTEX_FRAGMENT_SHADER
+                    : value == 1 ? Usage.VERTEX_SHADER : Usage.FRAGMENT_SHADER;
+        }
+
+        protected int activeCount;
+        protected int[] indices;
+        protected int blockIndex;
+        protected int program;
+        protected int blockDataSize;
+        protected String name;
+        protected Usage usage;
+
     }
 
     /**
@@ -69,28 +155,39 @@ public class ShaderVariable {
      */
     private int location;
     /**
+     * The gl index of this active variable
+     */
+    private int activeIndex;
+    /**
      * Offset into buffer where the data for this variable is stored, used by GL
      */
-    private int offset;
+    private int offset = Constants.NO_VALUE;
+
+    /**
+     * If this variable belongs to a block
+     */
+    private int blockIndex = Constants.NO_VALUE;
 
     /**
      * Creates a new ActiveVariable from the specified data.
      * This constructor can be used with the data from GLES
      * 
      * @param type Type of shader variable
-     * @param name byte array containing the name
-     * @param data Array holding size and type for variable, typically fetched from GL
-     * @param nameLengthOffset Offset into array where length of name is
-     * @param sizeOffset Offset into array where size of variable is
-     * @param typeOffset Offset into array where type of variable is
+     * @param name Name of variable excluding [] and . chars.
+     * @param data Array holding data at {@value #SIZE_OFFSET}, {@value #TYPE_OFFSET}, {@value #INDEX_OFFSET},
+     * {@value #DATA_OFFSET} {@value #BLOCK_INDEX_OFFSET}
+     * @param startIndex Start of data.
      * @throws ArrayIndexOutOfBoundsException If sizeOffset or typeOffset is larger than data length, or negative.
      */
-    ShaderVariable(VariableType type, byte[] name, int[] data, int nameLengthOffset, int sizeOffset,
-            int typeOffset) {
+    public ShaderVariable(VariableType type, String name, int[] data, int startIndex) {
         this.type = type;
-        this.name = StringUtils.createString(name, 0, data[nameLengthOffset]);
-        size = data[sizeOffset];
-        dataType = data[typeOffset];
+        this.name = name;
+        size = data[startIndex + SIZE_OFFSET];
+        dataType = data[startIndex + TYPE_OFFSET];
+        activeIndex = data[startIndex + ACTIVE_INDEX_OFFSET];
+        this.offset = data.length > startIndex + DATA_OFFSET ? data[startIndex + DATA_OFFSET] : this.offset;
+        this.blockIndex = data.length > startIndex + BLOCK_INDEX_OFFSET ? data[startIndex + BLOCK_INDEX_OFFSET]
+                : this.blockIndex;
     }
 
     /**
@@ -100,6 +197,15 @@ public class ShaderVariable {
      */
     public VariableType getType() {
         return type;
+    }
+
+    /**
+     * If this variable belongs to a variable block, this contains the block index - if not this is -1
+     * 
+     * @return Block index, or -1 if not variable in a block.
+     */
+    public int getBlockIndex() {
+        return blockIndex;
     }
 
     /**
@@ -118,6 +224,15 @@ public class ShaderVariable {
      */
     public int getLocation() {
         return location;
+    }
+
+    /**
+     * Returns the active index of this shader variable
+     * 
+     * @return The index of this variable as an active variable
+     */
+    public int getActiveIndex() {
+        return activeIndex;
     }
 
     /**
@@ -164,6 +279,36 @@ public class ShaderVariable {
                 return size;
             case GLES30.GL_SAMPLER_2D_SHADOW:
                 return size;
+        }
+        throw new IllegalArgumentException(ILLEGAL_DATATYPE_ERROR + dataType);
+    }
+
+    /**
+     * Utility method that returns the total number of bytes that this variable occupies.
+     * This is needed when allocating the client (Java) side of the variable.
+     * 
+     * @return Number of bytes that this variable needs
+     */
+    public int getSizeInBytes() {
+        switch (dataType) {
+            case GLES20.GL_FLOAT:
+                return size * 4;
+            case GLES20.GL_FLOAT_VEC2:
+                return 2 * size * 4;
+            case GLES20.GL_FLOAT_VEC3:
+                return 3 * size * 4;
+            case GLES20.GL_FLOAT_VEC4:
+                return 4 * size * 4;
+            case GLES20.GL_FLOAT_MAT2:
+                return 4 * size * 4;
+            case GLES20.GL_FLOAT_MAT3:
+                return 9 * size * 4;
+            case GLES20.GL_FLOAT_MAT4:
+                return 16 * size * 4;
+            case GLES20.GL_SAMPLER_2D:
+                return size * 4;
+            case GLES30.GL_SAMPLER_2D_SHADOW:
+                return size * 4;
         }
         throw new IllegalArgumentException(ILLEGAL_DATATYPE_ERROR + dataType);
     }

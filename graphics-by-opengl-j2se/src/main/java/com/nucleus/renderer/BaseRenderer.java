@@ -545,7 +545,7 @@ class BaseRenderer implements NucleusRenderer {
             throws GLException {
         Consumer updater = mesh.getAttributeConsumer();
         if (updater != null) {
-            updater.updateAttributeData();
+            updater.updateAttributeData(this);
         }
         if (mesh.getDrawCount() == 0) {
             return;
@@ -595,7 +595,7 @@ class BaseRenderer implements NucleusRenderer {
      */
     private ShaderProgram getProgram(Material material, Pass pass) {
         ShaderProgram program = material.getProgram();
-        return program.getProgram(this, pass, program.getShading());
+        return program.getProgram(getGLES(), pass, program.getShading());
     }
 
     @Override
