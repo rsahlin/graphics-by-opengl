@@ -41,9 +41,12 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     /**
      * Implementation constructor - DO NOT USE!!!
      * TODO - protect/hide this constructor
+     * 
+     * @param platform
+     * @param renderVersion If higher than GLES20, otherwise null
      */
     protected GLES20Wrapper(Platform platform, Renderers renderVersion) {
-        super(platform, renderVersion);
+        super(platform, renderVersion == null ? Renderers.GLES20 : renderVersion);
     }
 
     @Override

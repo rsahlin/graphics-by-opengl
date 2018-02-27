@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.StringTokenizer;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.common.StringUtils;
 import com.nucleus.renderer.RendererInfo;
 import com.nucleus.shader.ShaderVariable;
@@ -81,6 +82,7 @@ public abstract class GLESWrapper {
     protected GLESWrapper(Platform platform, Renderers renderVersion) {
         this.platform = platform;
         this.renderVersion = renderVersion;
+        SimpleLogger.d(getClass(), "Created GLES wrapper " + renderVersion + " for platform " + platform);
     }
 
     public abstract class GL10 {

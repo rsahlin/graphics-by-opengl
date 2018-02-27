@@ -31,6 +31,7 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
      * Creates a new instance of the GLES30 wrapper for JOGL
      * 
      * @param gles The JOGL GLES30 instance
+     * @param renderVersion If higher than GLES30, otherwise null
      * @throws IllegalArgumentException If gles is null
      */
     public JOGLGLES30Wrapper(GL4ES3 gles, Renderers renderVersion) {
