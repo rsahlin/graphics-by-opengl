@@ -16,9 +16,12 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
     /**
      * Implementation constructor - DO NOT USE!!!
      * TODO - protect/hide this constructor
+     * 
+     * @param platform
+     * @param renderVersion If higher than GLES30, otherwise null
      */
     protected GLES30Wrapper(Platform platform, Renderers renderVersion) {
-        super(platform, renderVersion);
+        super(platform, renderVersion == null ? Renderers.GLES30 : renderVersion);
     }
 
     @Override

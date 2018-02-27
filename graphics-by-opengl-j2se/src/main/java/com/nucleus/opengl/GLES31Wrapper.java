@@ -9,9 +9,12 @@ public abstract class GLES31Wrapper extends GLES30Wrapper {
     /**
      * Implementation constructor - DO NOT USE!!!
      * TODO - protect/hide this constructor
+     * 
+     * @param platform
+     * @param renderVersion If higher than GLES31, otherwise null
      */
     protected GLES31Wrapper(Platform platform, Renderers renderVersion) {
-        super(platform, renderVersion);
+        super(platform, renderVersion == null ? Renderers.GLES31 : renderVersion);
     }
 
     public abstract void glDispatchCompute(int num_groups_x, int num_groups_y, int num_groups_z);
