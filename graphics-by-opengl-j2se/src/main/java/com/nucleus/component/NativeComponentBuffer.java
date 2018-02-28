@@ -13,7 +13,7 @@ import com.nucleus.geometry.AttributeBuffer;
 public class NativeComponentBuffer extends ComponentBuffer {
 
     FloatBuffer data;
-    float[] tempData;
+    final float[] tempData;
 
     public NativeComponentBuffer(int entityCount, int sizePerEntity) {
         super(entityCount, sizePerEntity);

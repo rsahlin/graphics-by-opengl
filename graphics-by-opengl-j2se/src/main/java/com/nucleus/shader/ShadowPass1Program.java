@@ -4,6 +4,7 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.Texture2D;
@@ -37,18 +38,17 @@ public class ShadowPass1Program extends ShaderProgram {
     }
 
     @Override
-    protected String getShaderSource(int type) {
+    protected String getShaderSource(Renderers version, int type) {
         switch (type) {
             case GLES20.GL_FRAGMENT_SHADER:
                 if (function.getPass() != null) {
                     return PROGRAM_DIRECTORY + function.getPassString() + function.getShadingString() + FRAGMENT_TYPE
                             + SHADER_SOURCE_SUFFIX;
                 } else {
-                    return PROGRAM_DIRECTORY + function.getShaderSourceName() + FRAGMENT_TYPE
-                            + SHADER_SOURCE_SUFFIX;
+                    return super.getShaderSource(version, type);
                 }
             case GLES20.GL_VERTEX_SHADER:
-                return objectProgram.getShaderSource(type);
+                return objectProgram.getShaderSource(version, type);
             default:
                 throw new IllegalArgumentException("Not implemented");
         }

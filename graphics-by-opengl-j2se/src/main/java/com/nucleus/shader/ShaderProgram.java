@@ -14,7 +14,6 @@ import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
 import com.nucleus.common.StringUtils;
 import com.nucleus.geometry.AttributeBuffer;
-import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.AttributeUpdater.Property;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
@@ -26,6 +25,7 @@ import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.GLESWrapper.GLES31;
 import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
 import com.nucleus.opengl.GLESWrapper.ProgramInfo;
+import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.Pass;
@@ -346,8 +346,9 @@ public abstract class ShaderProgram {
      * Sets the name of the shaders in this program - shall be called before the program is created.
      * Creates shaders with type based on the {@link Shaders} field {@link #shaders}
      * 
+     * @param version Highest level of GL that is supported
      */
-    protected void createShaderSource() {
+    protected void createShaderSource(Renderers version) {
         switch (shaders) {
             case VERTEX_FRAGMENT:
                 shaderSourceNames = new String[2];
@@ -361,7 +362,7 @@ public abstract class ShaderProgram {
                 throw new IllegalArgumentException("Not implemented for " + shaders);
         }
         for (int i = 0; i < shaderTypes.length; i++) {
-            shaderSourceNames[i] = getShaderSource(shaderTypes[i]);
+            shaderSourceNames[i] = getShaderSource(version, shaderTypes[i]);
         }
     }
 
@@ -369,21 +370,38 @@ public abstract class ShaderProgram {
      * Returns the name of the vertex shader source, this is taken from the function.
      * Override in sublcasses to point to other vertex shader source
      * 
+     * @param version Highest GL version that is supported
      * @param type The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER
      * @return
      */
-    protected String getShaderSource(int type) {
+    protected String getShaderSource(Renderers version, int type) {
         switch (type) {
             case GLES20.GL_VERTEX_SHADER:
-                return PROGRAM_DIRECTORY + function.getShaderSourceName() + VERTEX_TYPE + SHADER_SOURCE_SUFFIX;
+                return PROGRAM_DIRECTORY + function.getShaderSourceName() + VERTEX_TYPE
+                        + getShaderSourceVersion(version, type) + SHADER_SOURCE_SUFFIX;
             case GLES20.GL_FRAGMENT_SHADER:
-                return PROGRAM_DIRECTORY + function.getShaderSourceName() + FRAGMENT_TYPE + SHADER_SOURCE_SUFFIX;
+                return PROGRAM_DIRECTORY + function.getShaderSourceName() + FRAGMENT_TYPE
+                        + getShaderSourceVersion(version, type) + SHADER_SOURCE_SUFFIX;
             case GLES31.GL_COMPUTE_SHADER:
-                return PROGRAM_DIRECTORY + function.getShaderSourceName() + SHADER_SOURCE_SUFFIX;
+                return PROGRAM_DIRECTORY + function.getShaderSourceName() + getShaderSourceVersion(version, type)
+                        + SHADER_SOURCE_SUFFIX;
             default:
                 throw new IllegalArgumentException("Not implemented for type: " + type);
 
         }
+    }
+
+    /**
+     * Called by {@link #getShaderSource(int)} to append shader (ESSL) version to sourcename.
+     * Override this if different source shall be used depending on available renderer/shader version.
+     * 
+     * @param version Highest GL version that is supported
+     * @param type
+     * @return Empty string "", or shader version to append to source name if different shader source shall be used for
+     * a specific shader version.
+     */
+    protected String getShaderSourceVersion(Renderers version, int type) {
+        return "";
     }
 
     /**
@@ -439,7 +457,7 @@ public abstract class ShaderProgram {
      * @throws RuntimeException If there is an error reading shader sources or compiling/linking program.
      */
     public void createProgram(GLES20Wrapper gles) {
-        createShaderSource();
+        createShaderSource(gles.getInfo().getRenderVersion());
         if (shaderSourceNames == null) {
             throw new ShaderProgramException(MUST_SET_FIELDS);
         }
@@ -530,11 +548,12 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Creates the attribute buffers for the specified mesh.
+     * Creates the attribute buffers for the specified mesh, this is a factory method that shall create
+     * the needed attribute buffers for the shader program.
      * 
      * @param mesh
      * @param verticeCount Number of vertices to allocate storage for
-     * @return
+     * @return The created buffers as needed by the Mesh to render.
      */
     public AttributeBuffer[] createAttributeBuffers(Mesh mesh, int verticeCount) {
         AttributeBuffer[] buffers = new AttributeBuffer[attributeBufferCount];
@@ -586,9 +605,6 @@ public abstract class ShaderProgram {
                 int attrs = getAttributesPerVertex();
                 if (attrs > 0) {
                     AttributeBuffer buffer = new AttributeBuffer(verticeCount, attrs, GLES20.GL_FLOAT);
-                    if (mesh instanceof Consumer) {
-                        ((Consumer) mesh).bindAttributeBuffer(buffer);
-                    }
                     return buffer;
                 }
                 return null;

@@ -86,7 +86,8 @@ public interface AttributeUpdater {
     }
 
     /**
-     * This is for objects that need (consumes) attribute data, ie Meshes
+     * This is for objects that need (consumes) attribute data, can be attached to Mesh to handle updating
+     * of attribute data before mesh is rendered.
      * The data used to update Mesh shall be agnostic to this API, ie it shall be up to the implementation.
      * One implementation may use Java float[] and use the CPU to update, another may use java.nio.Buffers and move
      * updating to a shader or OpenCL program.

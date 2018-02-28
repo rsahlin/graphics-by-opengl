@@ -16,11 +16,11 @@ public abstract class ComponentBuffer extends BufferObject {
     /**
      * Number of entities that this buffer has storage for.
      */
-    protected int entityCount;
+    protected final int entityCount;
     /**
      * Storage size per entity.
      */
-    protected int sizePerEntity;
+    protected final int sizePerEntity;
 
     public ComponentBuffer(int entityCount, int sizePerEntity) {
         this.entityCount = entityCount;

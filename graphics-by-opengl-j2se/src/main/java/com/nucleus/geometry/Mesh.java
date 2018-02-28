@@ -347,9 +347,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         mapper = new PropertyMapper(program);
         this.material.setProgram(program);
         internalCreateBuffers(program, vertexCount, indiceCount);
-        if (this instanceof AttributeUpdater.Consumer) {
-            setAttributeUpdater((AttributeUpdater.Consumer) this);
-        }
     }
 
     /**
