@@ -26,6 +26,10 @@ public class AttributeBuffer extends BufferObject {
      * Number of bytes to next attrib variable.
      */
     private int attribByteStride;
+    /**
+     * TODO This buffer must be protected from multi thread access, otherwise drawing may be corrupt or buffer
+     * under/overflow when accessed (due to position being changed in other thread)
+     */
     private FloatBuffer attributes;
     private int verticeCount;
 
@@ -109,6 +113,8 @@ public class AttributeBuffer extends BufferObject {
 
     /**
      * Copies data from the data array into this buffer, the dirty flag is set.
+     * Data will be copied into attribute buffer at the current position, call {@link #setBufferPosition(int)} to set
+     * the current position
      * 
      * @param data
      * @param offset Offset into data where values are copied
@@ -117,6 +123,15 @@ public class AttributeBuffer extends BufferObject {
     public void put(float[] data, int offset, int length) {
         attributes.put(data, offset, length);
         dirty = true;
+    }
+
+    /**
+     * Sets the position of the attribute buffer
+     * 
+     * @param newPosition
+     */
+    public void setBufferPosition(int newPosition) {
+        attributes.position(newPosition);
     }
 
     /**

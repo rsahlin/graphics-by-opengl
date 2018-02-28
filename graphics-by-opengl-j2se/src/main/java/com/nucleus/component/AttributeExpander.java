@@ -14,12 +14,19 @@ import com.nucleus.vecmath.Transform;
  */
 public class AttributeExpander implements Consumer {
 
+    /**
+     * The source data, for instance entity/sprite data
+     */
     protected ComponentBuffer data;
+    /**
+     * The destination buffer, usually belonging to the mesh being rendered.
+     */
+    protected AttributeBuffer buffer;
     protected int multiplier;
     protected int sourceOffset = 0;
     protected int destOffset = 0;
     protected PropertyMapper mapper;
-    protected AttributeBuffer buffer;
+    final float[] tempData;
 
     /**
      * 
@@ -31,17 +38,18 @@ public class AttributeExpander implements Consumer {
         this.mapper = mapper;
         this.data = data;
         this.multiplier = multiplier;
+        tempData = new float[data.sizePerEntity];
     }
 
     @Override
     public void updateAttributeData(NucleusRenderer renderer) {
-        buffer.getBuffer().position(0);
+        buffer.setBufferPosition(0);
         for (int i = 0; i < data.entityCount; i++) {
+            data.get(i, tempData);
             for (int expand = 0; expand < multiplier; expand++) {
-                data.get(i, buffer);
+                buffer.put(tempData);
             }
         }
-        buffer.setDirty(true);
     }
 
     @Override
