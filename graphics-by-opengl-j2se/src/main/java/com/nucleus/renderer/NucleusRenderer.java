@@ -292,7 +292,7 @@ public interface NucleusRenderer {
      * create and initialize a buffer object's data store, from OpenGL.glBufferData()
      * 
      * @param target Specifies the target buffer object. The symbolic constant must be GL_ARRAY_BUFFER or
-     * GL_ELEMENT_ARRAY_BUFFER.
+     * GL_ELEMENT_ARRAY_BUFFER, or any of the targets allowed for the current GL implementation
      * @param size Specifies the size in bytes of the buffer object's new data store.
      * @param data Specifies a pointer to data that will be copied into the data store for initialization, or NULL if no
      * data is to be copied.

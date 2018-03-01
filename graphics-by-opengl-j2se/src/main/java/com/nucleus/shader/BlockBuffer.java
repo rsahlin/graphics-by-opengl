@@ -12,14 +12,16 @@ import com.nucleus.geometry.BufferObject;
 public abstract class BlockBuffer extends BufferObject {
 
     protected final Buffer plainBuffer;
+    protected final int blockIndex;
 
     /**
      * Name of the block as defined in the source
      */
     protected final String blockName;
 
-    public BlockBuffer(Buffer buffer, String blockName) {
+    public BlockBuffer(Buffer buffer, String blockName, int blockIndex) {
         this.blockName = blockName;
+        this.blockIndex = blockIndex;
         this.plainBuffer = buffer;
     }
 
@@ -46,6 +48,10 @@ public abstract class BlockBuffer extends BufferObject {
      */
     public String getBlockName() {
         return blockName;
+    }
+
+    public Buffer getBuffer() {
+        return plainBuffer;
     }
 
 }

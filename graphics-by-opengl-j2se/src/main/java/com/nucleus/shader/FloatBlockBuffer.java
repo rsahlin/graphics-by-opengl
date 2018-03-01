@@ -4,6 +4,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import com.nucleus.common.Constants;
+
 /**
  * Float storage for a variable block, for instance uniform block
  *
@@ -16,9 +18,12 @@ public class FloatBlockBuffer extends BlockBuffer {
      * 
      * @param blockName Name of the block, as defined in the source
      * @param size Number of floats to allocate
+     * @param blockIndex Index of the variable block that this buffer belongs to, or {@link Constants#NO_VALUE} if
+     * buffer does not belong to a variable block.
      */
-    public FloatBlockBuffer(String blockName, int size) {
-        super(ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer(), blockName);
+    public FloatBlockBuffer(String blockName, int size, int blockIndex) {
+        super(ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer(), blockName,
+                blockIndex);
         buffer = (FloatBuffer) plainBuffer;
     }
 

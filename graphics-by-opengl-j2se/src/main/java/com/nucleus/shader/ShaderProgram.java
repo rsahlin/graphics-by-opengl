@@ -19,6 +19,7 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLES30Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
@@ -693,7 +694,46 @@ public abstract class ShaderProgram {
             throws GLException {
         setUniformMatrices(matrices, mesh);
         setUniformData(mesh);
-        uploadUniforms(gles, mesh.getUniformData(), sourceUniforms);
+        uploadUniforms(gles, mesh, sourceUniforms);
+    }
+
+    protected void uploadUniforms(GLES20Wrapper gles, Mesh mesh, VariableMapping[] uniformMapping)
+            throws GLException {
+
+        uploadUniforms(gles, mesh.getUniformData(), uniformMapping);
+        BlockBuffer[] blocks = mesh.getBlockBuffers();
+        if (blocks != null) {
+            for (BlockBuffer bb : blocks) {
+                VariableBlock vars = variableBlocks[bb.blockIndex];
+                ((GLES30Wrapper) gles).glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, bb.blockIndex, bb.getBufferName());
+                GLUtils.handleError(gles, "BindBufferBase for buffer " + bb.getBlockName());
+            }
+        }
+
+    }
+
+    /**
+     * Internal method - upload uniforms to GL.
+     * Sets the uniform data from the uniform data into the mapping provided by the attribute mapping.
+     * 
+     * @param gles
+     * @param uniforms Source uniform array store
+     * @param uniformMapping Variable mapping for the uniform data
+     * @throws GLException
+     */
+    protected void uploadUniforms(GLES20Wrapper gles, float[] uniforms, VariableMapping[] uniformMapping)
+            throws GLException {
+        for (VariableMapping am : uniformMapping) {
+            ShaderVariable v = getShaderVariable(am);
+            // If null then declared in program but not used, silently ignore
+            if (v != null) {
+                if (v.getBlockIndex() != Constants.NO_VALUE) {
+                    setUniformBlock(gles, variableBlocks[v.getBlockIndex()], v);
+                } else {
+                    setUniform(gles, uniforms, v);
+                }
+            }
+        }
     }
 
     /**
@@ -1232,7 +1272,6 @@ public abstract class ShaderProgram {
      */
     protected void setUniformBlock(GLES20Wrapper gles, VariableBlock block, ShaderVariable variable)
             throws GLException {
-
     }
 
     /**
@@ -1427,30 +1466,6 @@ public abstract class ShaderProgram {
     public abstract void setUniformData(Mesh mesh);
 
     /**
-     * Internal method - upload uniforms to GL.
-     * Sets the uniform data from the uniform data into the mapping provided by the attribute mapping.
-     * 
-     * @param gles
-     * @param uniforms Source uniform array store
-     * @param uniformMapping Variable mapping for the uniform data
-     * @throws GLException
-     */
-    protected void uploadUniforms(GLES20Wrapper gles, float[] uniforms, VariableMapping[] uniformMapping)
-            throws GLException {
-        for (VariableMapping am : uniformMapping) {
-            ShaderVariable v = getShaderVariable(am);
-            // If null then declared in program but not used, silently ignore
-            if (v != null) {
-                if (v.getBlockIndex() != Constants.NO_VALUE) {
-                    setUniformBlock(gles, variableBlocks[v.getBlockIndex()], v);
-                } else {
-                    setUniform(gles, uniforms, v);
-                }
-            }
-        }
-    }
-
-    /**
      * Sets UV fraction for the tiled texture + number of frames in x.
      * Use this for programs that use tiled texture behavior.
      * 
@@ -1536,7 +1551,7 @@ public abstract class ShaderProgram {
      */
     protected BlockBuffer createBlockBuffer(VariableBlock block, int size) {
         // Size is in bytes, align to floats
-        FloatBlockBuffer fbb = new FloatBlockBuffer(block.name, size >>> 2);
+        FloatBlockBuffer fbb = new FloatBlockBuffer(block.name, size >>> 2, block.blockIndex);
         return fbb;
     }
 

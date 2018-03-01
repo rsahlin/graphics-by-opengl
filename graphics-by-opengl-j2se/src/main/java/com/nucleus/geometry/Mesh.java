@@ -168,6 +168,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             if (shapeBuilder != null) {
                 shapeBuilder.build(mesh);
             }
+            BufferObjectsFactory.getInstance().createUBOs(renderer, mesh);
             if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
                 BufferObjectsFactory.getInstance().createVBOs(renderer, mesh);
             }
