@@ -11,7 +11,7 @@ package com.nucleus.geometry;
 public class BufferObject {
 
     /**
-     * The buffer object name
+     * The buffer object name (id)
      */
     private int name;
     /**

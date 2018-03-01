@@ -10,24 +10,43 @@ import java.nio.FloatBuffer;
  */
 public class FloatBlockBuffer extends BlockBuffer {
 
-    private FloatBuffer buffer;
+    private final FloatBuffer buffer;
 
     /**
      * 
+     * @param blockName Name of the block, as defined in the source
      * @param size Number of floats to allocate
      */
-    public FloatBlockBuffer(int size) {
-        buffer = ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-    }
-
-    @Override
-    public void put(float[] src, int offset, int length) {
-        buffer.put(src, offset, length);
+    public FloatBlockBuffer(String blockName, int size) {
+        super(ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer(), blockName);
+        buffer = (FloatBuffer) plainBuffer;
     }
 
     @Override
     public void position(int newPosition) {
         buffer.position(newPosition);
+    }
+
+    /**
+     * Copies length number of values, beginning at offset from src array into this buffer.
+     * 
+     * @param src The source buffer to read from
+     * @param offset source offset
+     * @param length Number of values to put
+     */
+    public void put(float[] src, int offset, int length) {
+        buffer.put(src, offset, length);
+    }
+
+    /**
+     * Copies length number of values, beginning at offset, from this buffer into dst
+     * 
+     * @param dst The destination array
+     * @param offset destination offset
+     * @param length Number of values to get
+     */
+    public void get(float[] dst, int offset, int length) {
+        buffer.get(dst, offset, length);
     }
 
 }

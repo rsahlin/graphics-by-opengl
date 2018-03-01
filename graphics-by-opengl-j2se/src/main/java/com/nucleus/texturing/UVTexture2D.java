@@ -2,7 +2,6 @@ package com.nucleus.texturing;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.io.gson.PostDeserializable;
-import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.FloatBlockBuffer;
 
 /**
@@ -14,14 +13,16 @@ import com.nucleus.shader.FloatBlockBuffer;
  */
 public class UVTexture2D extends Texture2D implements PostDeserializable {
 
-    @SerializedName("UVAtlas")
+    public static final String UVATLAS = "UVAtlas";
+
+    @SerializedName(UVATLAS)
     UVAtlas UVAtlas;
 
     /**
      * Currently copied from UVAtlas after deserialization
      * TODO Implement using binary loader.
      */
-    transient BlockBuffer uvData;
+    transient FloatBlockBuffer uvData;
 
     public UVTexture2D() {
         super();
@@ -39,6 +40,7 @@ public class UVTexture2D extends Texture2D implements PostDeserializable {
     protected void set(UVTexture2D source) {
         super.set(source);
         this.UVAtlas = source.UVAtlas;
+        this.uvData = source.uvData;
     }
 
     /**
@@ -55,7 +57,7 @@ public class UVTexture2D extends Texture2D implements PostDeserializable {
      * 
      * @return
      */
-    public BlockBuffer getUVAtlasBuffer() {
+    public FloatBlockBuffer getUVAtlasBuffer() {
         return uvData;
     }
 
@@ -68,7 +70,7 @@ public class UVTexture2D extends Texture2D implements PostDeserializable {
     public void postDeserialize() {
         if (UVAtlas != null) {
             float[] data = UVAtlas.getUVData();
-            uvData = new FloatBlockBuffer(data.length);
+            uvData = new FloatBlockBuffer(UVATLAS, data.length);
             uvData.put(data, 0, data.length);
         }
     }

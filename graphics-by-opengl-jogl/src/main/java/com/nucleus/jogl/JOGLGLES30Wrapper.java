@@ -458,7 +458,7 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
                 nameLength, 0);
         byte[] name = new byte[nameLength[0]];
         gles.glGetActiveUniformBlockName(program, uniformBlockIndex, nameLength[0], nameLength, 0, name, 0);
-        return new String(name);
+        return new String(name).trim();
     }
 
     @Override

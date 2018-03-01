@@ -237,7 +237,7 @@ public abstract class ShaderProgram {
      */
     protected VariableMapping[] sourceUniforms;
     /**
-     * List of attributes defined by a program, ie passet to {@link #setAttributeMapping(VariableMapping[])}
+     * List of attributes defined by a program, ie passed to {@link #setAttributeMapping(VariableMapping[])}
      */
     protected VariableMapping[] attributes;
     protected int attributeBufferCount;
@@ -248,10 +248,6 @@ public abstract class ShaderProgram {
 
     protected VariableBlock[] variableBlocks;
 
-    /**
-     * Uniforms, used when rendering this Mesh depending on what ShaderProgram is used.
-     */
-    transient protected float[] uniforms;
     /**
      * Samplers (texture units)
      */
@@ -567,29 +563,6 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Creates the block (uniform) buffers, if any are used.
-     * 
-     * @return Variable block buffers for this program, or null if not used.
-     */
-    public BlockBuffer[] createBlockBuffers() {
-        BlockBuffer[] blockBuffers = null;
-        if (variableBlocks != null) {
-            blockBuffers = new BlockBuffer[variableBlocks.length];
-            int blockSize = 0;
-            for (int index = 0; index < variableBlocks.length; index++) {
-                VariableBlock vb = variableBlocks[index];
-                // TODO - need to add stride
-                blockSize = getVariableSize(vb);
-                blockBuffers[index] = createBlockBuffer(vb, blockSize);
-            }
-            if (blockSize > 0) {
-                SimpleLogger.d(getClass(), "Data for uniform block " + blockSize);
-            }
-        }
-        return blockBuffers;
-    }
-
-    /**
      * Creates the storage for attributes that are not vertices, only creates the storage will not fill buffer.
      * For some subclasses this must also create a backing attribute array in the mesh that is used as
      * intermediate storage before the vertex buffer is updated.
@@ -617,6 +590,76 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Internal method, creates the array storage for for uniform samplers, sampler usage is specific to program
+     * and does not need to be stored in mesh.
+     * 
+     * 
+     */
+    protected void createSamplerStorage() {
+        if (shaderVariables == null) {
+            throw new IllegalArgumentException("Shader variables is null, forgot to call createProgram()?");
+        }
+        int samplerSize = 0;
+        if (shaderVariables != null) {
+            samplerSize = getSamplerSize(shaderVariables);
+            if (samplerSize > 0) {
+                setSamplers(new int[samplerSize]);
+            } else {
+                SimpleLogger.d(getClass(), "No samplers used");
+            }
+        } else {
+            throw new IllegalArgumentException("Shader variables is null, forgot to call createProgram()?");
+        }
+    }
+
+    /**
+     * Creates array store for uniform data that fits this shader program.
+     * - try to use uniform blocks as much as possible instead of separate uniforms
+     * 
+     * @return
+     */
+    public float[] createUniformArray() {
+        if (shaderVariables == null) {
+            throw new IllegalArgumentException("Shader variables is null, forgot to call createProgram()?");
+        }
+        int uniformSize = getVariableSize(shaderVariables, VariableType.UNIFORM);
+        return new float[uniformSize];
+    }
+
+    /**
+     * Creates the block (uniform) buffers, if any are used.
+     * 
+     * @return Variable block buffers for this program, or null if not used.
+     */
+    public BlockBuffer[] createBlockBuffers() {
+        BlockBuffer[] blockBuffers = null;
+        if (variableBlocks != null) {
+            blockBuffers = new BlockBuffer[variableBlocks.length];
+            int blockSize = 0;
+            for (int index = 0; index < variableBlocks.length; index++) {
+                VariableBlock vb = variableBlocks[index];
+                // TODO - need to add stride
+                blockSize = getVariableSize(vb);
+                blockBuffers[index] = createBlockBuffer(vb, blockSize);
+            }
+            if (blockSize > 0) {
+                SimpleLogger.d(getClass(), "Data for uniform block " + blockSize);
+            }
+        }
+        return blockBuffers;
+    }
+
+    /**
+     * Initialize the attribute and uniform buffers with data, if data is static then it does not need to be
+     * updated after this call.
+     * Populate the attribute/uniform buffers in the mesh as needed by the shader program.
+     * 
+     * 
+     * @param mesh
+     */
+    public abstract void initBuffers(Mesh mesh);
+
+    /**
      * Set the attribute pointer(s) using the data in the vertexbuffer, this shall make the necessary calls to
      * set the pointers for used attributes, enable pointers as needed.
      * This will make the actual connection between the attribute data in the vertex buffer and the shader.
@@ -636,21 +679,21 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Updates the data uploaded to GL as uniforms, if uniforms are static then only the matrices needs to be updated.
      * Calls {@link #setUniformMatrices(float[][], Mesh)} to update uniform matrices.
      * Then call {@link #setUniformData(float[], Mesh)} to set program specific uniform data
      * Then sets uniforms to GL by calling {@link #setUniforms(GLES20Wrapper, VariableMapping[])}
      * When this method returns the uniform data has been uploaded to GL and is ready.
      * 
      * @param gles
-     * @param uniforms The uniform array store - destination
-     * @param matrices modelview, projection and renderpas matrices
+     * @param matrices modelview, projection and renderpass matrices
      * @param mesh
      */
     public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
             throws GLException {
-        setUniformMatrices(uniforms, matrices, mesh);
-        setUniformData(uniforms, mesh);
-        setUniforms(gles, uniforms, sourceUniforms);
+        setUniformMatrices(matrices, mesh);
+        setUniformData(mesh);
+        uploadUniforms(gles, mesh.getUniformData(), sourceUniforms);
     }
 
     /**
@@ -1169,7 +1212,7 @@ public abstract class ShaderProgram {
             checkLinkStatus(gles, program);
             fetchProgramInfo(gles);
             bindAttributeNames(gles);
-            createUniformStorage(shaderVariables);
+            createSamplerStorage();
             setSamplers();
         } catch (GLException e) {
             logShaderSources(gles, commonVertexShaders, shaderNames);
@@ -1196,11 +1239,12 @@ public abstract class ShaderProgram {
      * Sets one of more float uniforms for the specified variable, supports VEC2, VEC3, VEC4 and MAT2, MAT3, MAT4 types
      * 
      * @param gles
+     * @param uniforms The uniform data
      * @param variable Shader variable to set uniform data for, datatype and size is read.
      * @param offset Offset into uniform array where data starts.
      * @throws GLException If there is an error setting a uniform to GL
      */
-    protected final void setUniform(GLES20Wrapper gles, ShaderVariable variable)
+    protected final void setUniform(GLES20Wrapper gles, float[] uniforms, ShaderVariable variable)
             throws GLException {
         int offset = variable.getOffset();
         switch (variable.getDataType()) {
@@ -1233,30 +1277,6 @@ public abstract class ShaderProgram {
         }
         GLUtils.handleError(gles, "setUniform(), dataType: " + variable.getDataType());
 
-    }
-
-    /**
-     * Internal method, creates the array storage for uniform matrix and vector variables.
-     * This will create the float array storage in the mesh, indexing must be done by the apropriate program
-     * when uniform variables are set before rendering.
-     * 
-     * @param variables Shader variables, attribute variables are ignored
-     */
-    protected void createUniformStorage(ShaderVariable[] variables) {
-
-        int uniformSize = 0;
-        int samplerSize = 0;
-        if (variables != null) {
-            samplerSize = getSamplerSize(variables);
-            uniformSize = getVariableSize(variables, VariableType.UNIFORM);
-            if (uniformSize > 0) {
-                createUniforms(new float[uniformSize], new int[samplerSize]);
-            } else {
-                SimpleLogger.d(getClass(), "No uniforms used");
-            }
-        } else {
-            throw new IllegalArgumentException("Shader variables is null, forgot to call createProgram()?");
-        }
     }
 
     /**
@@ -1384,12 +1404,12 @@ public abstract class ShaderProgram {
      * Sets the data for the uniforms needed by the program - the default implementation will set the modelview and
      * projection matrices. Will NOT set uniforms to GL, only update the uniform array store
      * 
-     * @param uniforms The uniform array store - destination
      * @param matrices Source matrices
      * @param mesh
      */
-    public void setUniformMatrices(float[] uniforms, float[][] matrices, Mesh mesh) {
+    public void setUniformMatrices(float[][] matrices, Mesh mesh) {
         // Refresh the uniform matrixes - default is modelview and projection
+        float[] uniforms = mesh.getUniformData();
         System.arraycopy(matrices[0], 0, uniforms,
                 shaderVariables[CommonShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
@@ -1402,13 +1422,12 @@ public abstract class ShaderProgram {
      * Sets the shader program specific uniform data, subclasses shall set any uniform data
      * needed - but not matrices which is set in {@link #setUniformMatrices(float[][], Mesh)}
      * 
-     * @param uniforms The uniform array store - destination
      * @param mesh
      */
-    public abstract void setUniformData(float[] uniforms, Mesh mesh);
+    public abstract void setUniformData(Mesh mesh);
 
     /**
-     * Internal method - set uniforms to GL.
+     * Internal method - upload uniforms to GL.
      * Sets the uniform data from the uniform data into the mapping provided by the attribute mapping.
      * 
      * @param gles
@@ -1416,7 +1435,7 @@ public abstract class ShaderProgram {
      * @param uniformMapping Variable mapping for the uniform data
      * @throws GLException
      */
-    protected void setUniforms(GLES20Wrapper gles, float[] uniforms, VariableMapping[] uniformMapping)
+    protected void uploadUniforms(GLES20Wrapper gles, float[] uniforms, VariableMapping[] uniformMapping)
             throws GLException {
         for (VariableMapping am : uniformMapping) {
             ShaderVariable v = getShaderVariable(am);
@@ -1425,7 +1444,7 @@ public abstract class ShaderProgram {
                 if (v.getBlockIndex() != Constants.NO_VALUE) {
                     setUniformBlock(gles, variableBlocks[v.getBlockIndex()], v);
                 } else {
-                    setUniform(gles, v);
+                    setUniform(gles, uniforms, v);
                 }
             }
         }
@@ -1500,24 +1519,12 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Returns one or more defined uniform vectors used when rendering.
+     * Sets a reference to an array with float values for uniform samplers
      * 
-     * @return One or more uniform vector as used by the shader program implementation
-     */
-    public float[] getUniforms() {
-        return uniforms;
-    }
-
-    /**
-     * Sets a reference to an array with float values that can be used by when rendering this Mesh.
-     * Note that the use of uniforms is depending on the shader program used.
-     * 
-     * @param uniforms Values to reference in this class, note that values are NOT copied.
      * @param samplers Sampler (texture unit) values
      * 
      */
-    private void createUniforms(float[] uniforms, int[] samplers) {
-        this.uniforms = uniforms;
+    private void setSamplers(int[] samplers) {
         this.samplers = samplers;
     }
 
@@ -1529,7 +1536,7 @@ public abstract class ShaderProgram {
      */
     protected BlockBuffer createBlockBuffer(VariableBlock block, int size) {
         // Size is in bytes, align to floats
-        FloatBlockBuffer fbb = new FloatBlockBuffer(size >>> 2);
+        FloatBlockBuffer fbb = new FloatBlockBuffer(block.name, size >>> 2);
         return fbb;
     }
 

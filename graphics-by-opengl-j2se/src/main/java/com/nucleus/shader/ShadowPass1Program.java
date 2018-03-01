@@ -55,11 +55,12 @@ public class ShadowPass1Program extends ShaderProgram {
     }
 
     @Override
-    public void setUniformMatrices(float[] uniforms, float[][] matrices, Mesh mesh) {
-        System.arraycopy(matrices[0], 0, getUniforms(),
+    public void setUniformMatrices(float[][] matrices, Mesh mesh) {
+        float[] uniforms = mesh.getUniformData();
+        System.arraycopy(matrices[0], 0, uniforms,
                 shaderVariables[CommonShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(matrices[2], 0, getUniforms(),
+        System.arraycopy(matrices[2], 0, uniforms,
                 shaderVariables[CommonShaderVariables.uProjectionMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
@@ -77,7 +78,7 @@ public class ShadowPass1Program extends ShaderProgram {
          * This could potentially break the shadow program if needed uniform data is set in some other method.
          * TODO - Make sure that the interface declares and mandates that uniform data shall be set in #setUniformData()
          */
-        objectProgram.setUniformData(uniforms, mesh);
+        objectProgram.setUniformData(mesh);
         super.updateUniforms(gles, matrices, mesh);
     }
 
@@ -100,7 +101,13 @@ public class ShadowPass1Program extends ShaderProgram {
     }
 
     @Override
-    public void setUniformData(float[] uniforms, Mesh mesh) {
+    public void setUniformData(Mesh mesh) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void initBuffers(Mesh mesh) {
         // TODO Auto-generated method stub
 
     }

@@ -30,8 +30,14 @@ public class TranslateProgram extends ShaderProgram {
     }
 
     @Override
-    public void setUniformData(float[] uniforms, Mesh mesh) {
+    public void setUniformData(Mesh mesh) {
         // Nothing to do
+
+    }
+
+    @Override
+    public void initBuffers(Mesh mesh) {
+        // TODO Auto-generated method stub
 
     }
 
