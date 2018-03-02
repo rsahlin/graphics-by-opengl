@@ -16,10 +16,15 @@ public class AttributeExpander implements Consumer {
 
     /**
      * The source data, for instance entity/sprite data
+     * Data shall be written here and expanded into AttributeBuffer when {@link #updateAttributeData(NucleusRenderer)}
+     * is called.
      */
     protected ComponentBuffer data;
     /**
      * The destination buffer, usually belonging to the mesh being rendered.
+     * TODO - access to this buffer shall be limited to when rendering.
+     * Otherwise native buffer operations will over/underflow since position may change.
+     * 
      */
     protected AttributeBuffer buffer;
     protected int multiplier;

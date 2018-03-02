@@ -1,5 +1,7 @@
 package com.nucleus.opengl;
 
+import java.nio.ByteBuffer;
+
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.VariableBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -186,5 +188,33 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
      */
     public abstract void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int indicesOffset,
             int pname, int[] params, int paramsOffset);
+
+    /**
+     * Abstraction for void *glMapBufferRange( GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access);
+     * 
+     * @param target
+     * @param offset
+     * @param length
+     * @param access
+     * @return
+     */
+    public abstract ByteBuffer glMapBufferRange(int target, int offset, int length, int access);
+
+    /**
+     * Abstraction for GLboolean glUnmapBuffer( GLenum target);
+     * 
+     * @param target
+     * @return
+     */
+    public abstract boolean glUnmapBuffer(int target);
+
+    /**
+     * Abstraction for void glFlushMappedBufferRange(GLenum target, GLintptr offset, GLsizeiptr length);
+     * 
+     * @param target
+     * @param offset
+     * @param length
+     */
+    public abstract void glFlushMappedBufferRange(int target, int offset, int length);
 
 }

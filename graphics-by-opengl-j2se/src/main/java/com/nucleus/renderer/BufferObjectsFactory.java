@@ -1,5 +1,7 @@
 package com.nucleus.renderer;
 
+import java.nio.ByteBuffer;
+
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Mesh;
@@ -84,10 +86,16 @@ public class BufferObjectsFactory {
             gles.glUniformBlockBinding(block.program, block.blockIndex, index);
             renderer.bindBuffer(GLES30.GL_UNIFORM_BUFFER, names[index]);
             bb.position(0);
-            renderer.bufferData(GLES30.GL_UNIFORM_BUFFER, bb.getSizeInBytes(), bb.getBuffer(),
+            renderer.bufferData(GLES30.GL_UNIFORM_BUFFER, bb.getSizeInBytes(), null,
                     GLES30.GL_STATIC_DRAW);
             // bb.position(0);
             // BufferUtils.logBuffer(bb.getBuffer(), 4);
+            ByteBuffer buff = gles.glMapBufferRange(GLES30.GL_UNIFORM_BUFFER, 0, bb.getSizeInBytes(),
+                    GLES30.GL_MAP_WRITE_BIT);
+            buff.position(0);
+            byte[] data = new byte[bb.getSizeInBytes()];
+            buff.put(data);
+            boolean result = gles.glUnmapBuffer(GLES30.GL_UNIFORM_BUFFER);
             bb.setBufferName(names[index]);
             bb.setDirty(false);
             GLUtils.handleError(gles, "Create UBOs for " + bb.getBlockName());

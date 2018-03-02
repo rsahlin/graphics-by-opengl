@@ -424,4 +424,19 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
 
     }
 
+    @Override
+    public ByteBuffer glMapBufferRange(int target, int offset, int length, int access) {
+        return org.lwjgl.opengles.GLES30.glMapBufferRange(target, offset, length, access);
+    }
+
+    @Override
+    public boolean glUnmapBuffer(int target) {
+        return org.lwjgl.opengles.GLES30.glUnmapBuffer(target);
+    }
+
+    @Override
+    public void glFlushMappedBufferRange(int target, int offset, int length) {
+        org.lwjgl.opengles.GLES30.glFlushMappedBufferRange(target, offset, length);
+    }
+
 }

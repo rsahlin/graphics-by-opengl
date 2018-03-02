@@ -468,4 +468,19 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
                 paramsOffset);
     }
 
+    @Override
+    public ByteBuffer glMapBufferRange(int target, int offset, int length, int access) {
+        return gles.glMapBufferRange(target, offset, length, access);
+    }
+
+    @Override
+    public boolean glUnmapBuffer(int target) {
+        return gles.glUnmapBuffer(target);
+    }
+
+    @Override
+    public void glFlushMappedBufferRange(int target, int offset, int length) {
+        gles.glFlushMappedBufferRange(target, offset, length);
+    }
+
 }

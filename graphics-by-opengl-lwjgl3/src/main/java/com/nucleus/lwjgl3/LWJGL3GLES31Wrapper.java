@@ -1,6 +1,7 @@
 package com.nucleus.lwjgl3;
 
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -410,6 +411,21 @@ public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
             int pname, int[] params, int paramsOffset) {
         gles30.glGetActiveUniformsiv(program, uniformCount, uniformIndices, indicesOffset, pname, params,
                 paramsOffset);
+    }
+
+    @Override
+    public ByteBuffer glMapBufferRange(int target, int offset, int length, int access) {
+        return gles30.glMapBufferRange(target, offset, length, access);
+    }
+
+    @Override
+    public boolean glUnmapBuffer(int target) {
+        return gles30.glUnmapBuffer(target);
+    }
+
+    @Override
+    public void glFlushMappedBufferRange(int target, int offset, int length) {
+        gles30.glFlushMappedBufferRange(target, offset, length);
     }
 
     /**
