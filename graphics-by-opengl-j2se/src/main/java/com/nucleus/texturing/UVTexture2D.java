@@ -70,7 +70,7 @@ public class UVTexture2D extends Texture2D implements PostDeserializable {
     public void postDeserialize() {
         if (UVAtlas != null) {
             float[] data = UVAtlas.getUVData();
-            uvData = new FloatBlockBuffer(UVATLAS, data.length, -1);
+            uvData = new FloatBlockBuffer(UVATLAS, data.length);
             uvData.put(data, 0, data.length);
         }
     }

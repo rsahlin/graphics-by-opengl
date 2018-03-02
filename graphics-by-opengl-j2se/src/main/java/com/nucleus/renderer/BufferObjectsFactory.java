@@ -11,6 +11,7 @@ import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.shader.BlockBuffer;
+import com.nucleus.shader.ShaderVariable.VariableBlock;
 
 /**
  * This class takes care of allocation and release of buffer objects
@@ -79,11 +80,18 @@ public class BufferObjectsFactory {
         renderer.genBuffers(names);
         int index = 0;
         for (BlockBuffer bb : blocks) {
+            VariableBlock block = bb.getVariableBlock();
+            gles.glUniformBlockBinding(block.program, block.blockIndex, index);
             renderer.bindBuffer(GLES30.GL_UNIFORM_BUFFER, names[index]);
-            renderer.bufferData(GLES30.GL_UNIFORM_BUFFER, bb.getSizeInBytes(), bb.getBuffer(), GLES30.GL_STATIC_DRAW);
+            bb.position(0);
+            renderer.bufferData(GLES30.GL_UNIFORM_BUFFER, bb.getSizeInBytes(), bb.getBuffer(),
+                    GLES30.GL_STATIC_DRAW);
+            // bb.position(0);
+            // BufferUtils.logBuffer(bb.getBuffer(), 4);
             bb.setBufferName(names[index]);
-            GLUtils.handleError(gles, "Create UBOs for " + bb.getBlockName());
             bb.setDirty(false);
+            GLUtils.handleError(gles, "Create UBOs for " + bb.getBlockName());
+            index++;
         }
     }
 

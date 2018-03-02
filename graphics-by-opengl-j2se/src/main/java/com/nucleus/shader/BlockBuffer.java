@@ -3,6 +3,7 @@ package com.nucleus.shader;
 import java.nio.Buffer;
 
 import com.nucleus.geometry.BufferObject;
+import com.nucleus.shader.ShaderVariable.VariableBlock;
 
 /**
  * Storage for a variable block, for instance a uniform block
@@ -12,16 +13,16 @@ import com.nucleus.geometry.BufferObject;
 public abstract class BlockBuffer extends BufferObject {
 
     protected final Buffer plainBuffer;
-    protected final int blockIndex;
+    protected final VariableBlock variableBlock;
 
     /**
      * Name of the block as defined in the source
      */
     protected final String blockName;
 
-    public BlockBuffer(Buffer buffer, String blockName, int blockIndex) {
+    public BlockBuffer(Buffer buffer, String blockName, VariableBlock variableBlock) {
         this.blockName = blockName;
-        this.blockIndex = blockIndex;
+        this.variableBlock = variableBlock;
         this.plainBuffer = buffer;
     }
 
@@ -50,8 +51,22 @@ public abstract class BlockBuffer extends BufferObject {
         return blockName;
     }
 
+    /**
+     * Returns the underlying buffer as an un-typed Buffer
+     * 
+     * @return
+     */
     public Buffer getBuffer() {
         return plainBuffer;
+    }
+
+    /**
+     * Returns the variable block that this buffer belongs to
+     * 
+     * @return
+     */
+    public VariableBlock getVariableBlock() {
+        return variableBlock;
     }
 
 }

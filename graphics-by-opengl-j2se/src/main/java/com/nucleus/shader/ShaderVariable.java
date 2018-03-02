@@ -105,13 +105,13 @@ public class ShaderVariable {
                     : value == 1 ? Usage.VERTEX_SHADER : Usage.FRAGMENT_SHADER;
         }
 
-        protected int activeCount;
-        protected int[] indices;
-        protected int blockIndex;
-        protected int program;
-        protected int blockDataSize;
-        protected String name;
-        protected Usage usage;
+        protected final int activeCount;
+        protected final int[] indices;
+        public final int blockIndex;
+        public final int program;
+        protected final int blockDataSize;
+        protected final String name;
+        protected final Usage usage;
 
     }
 

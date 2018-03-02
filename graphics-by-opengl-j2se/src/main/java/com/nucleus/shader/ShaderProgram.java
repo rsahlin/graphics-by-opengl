@@ -704,8 +704,8 @@ public abstract class ShaderProgram {
         BlockBuffer[] blocks = mesh.getBlockBuffers();
         if (blocks != null) {
             for (BlockBuffer bb : blocks) {
-                VariableBlock vars = variableBlocks[bb.blockIndex];
-                ((GLES30Wrapper) gles).glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, bb.blockIndex, bb.getBufferName());
+                VariableBlock vars = bb.variableBlock;
+                ((GLES30Wrapper) gles).glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, vars.blockIndex, bb.getBufferName());
                 GLUtils.handleError(gles, "BindBufferBase for buffer " + bb.getBlockName());
             }
         }
@@ -1551,7 +1551,7 @@ public abstract class ShaderProgram {
      */
     protected BlockBuffer createBlockBuffer(VariableBlock block, int size) {
         // Size is in bytes, align to floats
-        FloatBlockBuffer fbb = new FloatBlockBuffer(block.name, size >>> 2, block.blockIndex);
+        FloatBlockBuffer fbb = new FloatBlockBuffer(block, size >>> 2);
         return fbb;
     }
 
