@@ -6,18 +6,22 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES31Wrapper;
-import com.nucleus.renderer.NucleusRenderer;
 
 public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
 
-    LWJGL3GLES20Wrapper gles20 = new LWJGL3GLES20Wrapper();
-    LWJGL3GLES30Wrapper gles30 = new LWJGL3GLES30Wrapper();
+    LWJGL3GLES20Wrapper gles20;
+    LWJGL3GLES30Wrapper gles30;
 
     /**
-     * Implementation constructor - DO NOT USE - fetch wrapper from {@link NucleusRenderer}
+     * Implementation constructor - DO NOT USE - fetch from {@link LWJGLWrapperFactory}
+     * 
+     * @param renderVersion If higher than GLES30, otherwise null
+     * 
      */
-    protected LWJGL3GLES31Wrapper() {
-        super(Platform.GL, Renderers.GLES31);
+    protected LWJGL3GLES31Wrapper(Renderers version) {
+        super(Platform.GL, version);
+        gles20 = new LWJGL3GLES20Wrapper(version);
+        gles30 = new LWJGL3GLES30Wrapper(version);
     }
 
     /**

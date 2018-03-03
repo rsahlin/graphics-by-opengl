@@ -71,11 +71,11 @@ public class BufferObjectsFactory {
     }
 
     public void createUBOs(NucleusRenderer renderer, Mesh mesh) throws GLException {
-        GLES30Wrapper gles = (GLES30Wrapper) renderer.getGLES();
         BlockBuffer[] blocks = mesh.getBlockBuffers();
         if (blocks == null) {
             return;
         }
+        GLES30Wrapper gles = (GLES30Wrapper) renderer.getGLES();
         int[] names = new int[blocks.length];
         renderer.genBuffers(names);
         int index = 0;

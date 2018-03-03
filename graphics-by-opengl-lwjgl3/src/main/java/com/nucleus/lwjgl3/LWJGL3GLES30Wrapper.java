@@ -16,13 +16,16 @@ import com.nucleus.renderer.NucleusRenderer;
  */
 public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
 
-    protected LWJGL3GLES20Wrapper gles20 = new LWJGL3GLES20Wrapper();
+    protected LWJGL3GLES20Wrapper gles20;
 
     /**
      * Implementation constructor - DO NOT USE - fetch wrapper from {@link NucleusRenderer}
+     * 
+     * @param renderVersion If higher than GLES30, otherwise null
      */
-    public LWJGL3GLES30Wrapper() {
-        super(Platform.GL, Renderers.GLES30);
+    public LWJGL3GLES30Wrapper(Renderers version) {
+        super(Platform.GL, version);
+        gles20 = new LWJGL3GLES20Wrapper(version);
     }
 
     /**

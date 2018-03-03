@@ -73,8 +73,7 @@ public class GLFWWindow extends J2SEWindow {
                 GLFW.glfwSetWindowShouldClose(windowHnd, true);
             }
         });
-
-        wrapper = LWJGLWrapperFactory.createWrapper(version);
+        wrapper = LWJGLWrapperFactory.createWrapper(gles, version);
     }
 
     @Override

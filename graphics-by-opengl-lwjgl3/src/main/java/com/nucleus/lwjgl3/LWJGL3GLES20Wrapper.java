@@ -10,8 +10,13 @@ import com.nucleus.opengl.GLES20Wrapper;
 
 public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
-    protected LWJGL3GLES20Wrapper() {
-        super(Platform.GL, Renderers.GLES20);
+    /**
+     * Implementaiton constructor - DO NOT USE
+     * 
+     * @param renderVersion If higher than GLES30, otherwise null
+     */
+    protected LWJGL3GLES20Wrapper(Renderers version) {
+        super(Platform.GL, version);
     }
 
     @Override

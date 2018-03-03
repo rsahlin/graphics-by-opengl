@@ -143,7 +143,7 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
             }
         });
 
-        wrapper = LWJGLWrapperFactory.createWrapper(version);
+        wrapper = LWJGLWrapperFactory.createWrapper(gles, version);
 
         GLFW.glfwSetKeyCallback(window, (windowHnd, key, scancode, action, mods) -> {
             if (action == GLFW.GLFW_RELEASE && key == GLFW.GLFW_KEY_ESCAPE) {
