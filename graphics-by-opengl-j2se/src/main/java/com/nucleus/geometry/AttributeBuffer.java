@@ -19,6 +19,11 @@ public class AttributeBuffer extends BufferObject {
     private final static String ILLEGAL_DATATYPE_STR = "Illegal datatype: ";
 
     /**
+     * Currently always uses float
+     */
+    public final static int DATATYPE_SIZE = 4;
+
+    /**
      * Number of floats to next set of attribute data
      */
     private int attribFloatStride;
@@ -48,6 +53,7 @@ public class AttributeBuffer extends BufferObject {
      * @throws IllegalArgumentException If type is not GLES20.GL_FLOAT
      */
     public AttributeBuffer(int verticeCount, int sizePerVertex, int type) {
+        super(verticeCount * sizePerVertex * DATATYPE_SIZE);
         init(verticeCount, sizePerVertex, type);
     }
 
@@ -63,17 +69,15 @@ public class AttributeBuffer extends BufferObject {
         if (type != GLES20.GL_FLOAT) {
             throw new IllegalArgumentException(ILLEGAL_DATATYPE_STR + type);
         }
-        int dataSize = 4;
         this.type = type;
         this.verticeCount = verticeCount;
-        sizeInBytes = verticeCount * sizePerVertex * dataSize;
         attributes = ByteBuffer.allocateDirect(sizeInBytes)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
-        attribByteStride = sizePerVertex * dataSize;
+        attribByteStride = sizePerVertex * DATATYPE_SIZE;
         attribFloatStride = sizePerVertex;
         SimpleLogger.d(getClass(),
                 "Allocated atrribute buffer with " + sizeInBytes + " bytes, sizePerVertices " + sizePerVertex
-                        + " dataSize " + dataSize + ", capacity() "
+                        + " dataSize " + DATATYPE_SIZE + ", capacity() "
                         + attributes.capacity());
     }
 

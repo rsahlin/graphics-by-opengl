@@ -1,7 +1,5 @@
 package com.nucleus.renderer;
 
-import java.nio.ByteBuffer;
-
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Mesh;
@@ -13,7 +11,7 @@ import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.shader.BlockBuffer;
-import com.nucleus.shader.ShaderVariable.VariableBlock;
+import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 
 /**
  * This class takes care of allocation and release of buffer objects
@@ -82,20 +80,12 @@ public class BufferObjectsFactory {
         renderer.genBuffers(names);
         int index = 0;
         for (BlockBuffer bb : blocks) {
-            VariableBlock block = bb.getVariableBlock();
-            gles.glUniformBlockBinding(block.program, block.blockIndex, index);
-            renderer.bindBuffer(GLES30.GL_UNIFORM_BUFFER, names[index]);
+            InterfaceBlock block = bb.getInterfaceBlock();
             bb.position(0);
-            renderer.bufferData(GLES30.GL_UNIFORM_BUFFER, bb.getSizeInBytes(), null,
+            gles.glBindBuffer(GLES30.GL_UNIFORM_BUFFER, names[index]);
+            gles.glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, block.blockIndex, names[index]);
+            renderer.bufferData(GLES30.GL_UNIFORM_BUFFER, bb.getSizeInBytes(), bb.getBuffer(),
                     GLES30.GL_STATIC_DRAW);
-            // bb.position(0);
-            // BufferUtils.logBuffer(bb.getBuffer(), 4);
-            ByteBuffer buff = gles.glMapBufferRange(GLES30.GL_UNIFORM_BUFFER, 0, bb.getSizeInBytes(),
-                    GLES30.GL_MAP_WRITE_BIT);
-            buff.position(0);
-            byte[] data = new byte[bb.getSizeInBytes()];
-            buff.put(data);
-            boolean result = gles.glUnmapBuffer(GLES30.GL_UNIFORM_BUFFER);
             bb.setBufferName(names[index]);
             bb.setDirty(false);
             GLUtils.handleError(gles, "Create UBOs for " + bb.getBlockName());

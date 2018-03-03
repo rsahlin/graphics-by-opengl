@@ -8,7 +8,7 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.common.StringUtils;
 import com.nucleus.renderer.RendererInfo;
 import com.nucleus.shader.ShaderVariable;
-import com.nucleus.shader.ShaderVariable.VariableBlock;
+import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 
 public abstract class GLESWrapper {
@@ -1051,7 +1051,7 @@ public abstract class GLESWrapper {
      * @return
      * @throws GLException
      */
-    public abstract VariableBlock[] getUniformBlocks(ProgramInfo info) throws GLException;
+    public abstract InterfaceBlock[] getUniformBlocks(ProgramInfo info) throws GLException;
 
     /**
      * Creates and returns shader variable for the program, of the specified variable type and variable index.

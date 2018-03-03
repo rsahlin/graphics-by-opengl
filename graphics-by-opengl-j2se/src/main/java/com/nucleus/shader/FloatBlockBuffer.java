@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import com.nucleus.shader.ShaderVariable.VariableBlock;
+import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 
 /**
  * Float storage for a variable block, for instance uniform block
@@ -15,27 +15,27 @@ public class FloatBlockBuffer extends BlockBuffer {
     private final FloatBuffer buffer;
 
     /**
-     * Creates a new float block buffer, with the name and size - this buffer is not tied to a {@link VariableBlock}
+     * Creates a new float block buffer, with the name and size - this buffer is not tied to a {@link InterfaceBlock}
      * 
      * @param blockName
      * @param size
      */
     public FloatBlockBuffer(String blockName, int size) {
-        super(ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer(), blockName, null);
+        super(ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer(), blockName, size * 4);
         buffer = (FloatBuffer) plainBuffer;
     }
 
     /**
-     * Creates a new float block buffer that is tied to the specified {@link VariableBlock}
+     * Creates a new float block buffer that is tied to the specified {@link InterfaceBlock}
      * 
      * @param blockName Name of the block, as defined in the source
      * @param size Number of floats to allocate
-     * @param variableBlock The variable block this buffer belongs to - or null if not used in a variable block.
+     * @param interfaceBlock The variable block this buffer belongs to - or null if not used in a variable block.
      */
 
-    public FloatBlockBuffer(VariableBlock variableBlock, int size) {
-        super(ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer(), variableBlock.name,
-                variableBlock);
+    public FloatBlockBuffer(InterfaceBlock interfaceBlock, int size) {
+        super(ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer(), interfaceBlock.name,
+                interfaceBlock);
         buffer = (FloatBuffer) plainBuffer;
     }
 

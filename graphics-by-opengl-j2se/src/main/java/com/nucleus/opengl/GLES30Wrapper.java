@@ -3,7 +3,7 @@ package com.nucleus.opengl;
 import java.nio.ByteBuffer;
 
 import com.nucleus.shader.ShaderVariable;
-import com.nucleus.shader.ShaderVariable.VariableBlock;
+import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 
 /**
@@ -41,11 +41,11 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public VariableBlock[] getUniformBlocks(ProgramInfo info) {
+    public InterfaceBlock[] getUniformBlocks(ProgramInfo info) {
         if (info == null || info.getActiveVariables(VariableType.UNIFORM_BLOCK) < 1) {
             return null;
         }
-        VariableBlock[] uniformBlock = new VariableBlock[info.getActiveVariables(VariableType.UNIFORM_BLOCK)];
+        InterfaceBlock[] uniformBlock = new InterfaceBlock[info.getActiveVariables(VariableType.UNIFORM_BLOCK)];
         int[] blockInfo = new int[4];
         int[] indices = null;
         for (int i = 0; i < uniformBlock.length; i++) {
@@ -61,7 +61,7 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
                         blockInfo, 2);
                 glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER,
                         blockInfo, 3);
-                uniformBlock[i] = new VariableBlock(info.getProgram(), i,
+                uniformBlock[i] = new InterfaceBlock(info.getProgram(), i,
                         glGetActiveUniformBlockName(info.getProgram(), i), blockInfo, indices);
             }
         }

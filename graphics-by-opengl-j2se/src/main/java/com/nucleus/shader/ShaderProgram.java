@@ -31,7 +31,7 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
-import com.nucleus.shader.ShaderVariable.VariableBlock;
+import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -247,7 +247,7 @@ public abstract class ShaderProgram {
     protected ArrayList<Integer> commonVertexShaders;
     protected ArrayList<String> commonVertexSources;
 
-    protected VariableBlock[] variableBlocks;
+    protected InterfaceBlock[] interfaceBlocks;
 
     /**
      * Samplers (texture units)
@@ -634,11 +634,11 @@ public abstract class ShaderProgram {
      */
     public BlockBuffer[] createBlockBuffers() {
         BlockBuffer[] blockBuffers = null;
-        if (variableBlocks != null) {
-            blockBuffers = new BlockBuffer[variableBlocks.length];
+        if (interfaceBlocks != null) {
+            blockBuffers = new BlockBuffer[interfaceBlocks.length];
             int blockSize = 0;
-            for (int index = 0; index < variableBlocks.length; index++) {
-                VariableBlock vb = variableBlocks[index];
+            for (int index = 0; index < interfaceBlocks.length; index++) {
+                InterfaceBlock vb = interfaceBlocks[index];
                 // TODO - need to add stride
                 blockSize = getVariableSize(vb);
                 blockBuffers[index] = createBlockBuffer(vb, blockSize);
@@ -703,9 +703,12 @@ public abstract class ShaderProgram {
         uploadUniforms(gles, mesh.getUniformData(), uniformMapping);
         BlockBuffer[] blocks = mesh.getBlockBuffers();
         if (blocks != null) {
+            int index = 0;
             for (BlockBuffer bb : blocks) {
-                VariableBlock vars = bb.variableBlock;
-                ((GLES30Wrapper) gles).glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, vars.blockIndex, bb.getBufferName());
+                InterfaceBlock vars = bb.interfaceBlock;
+                ((GLES30Wrapper) gles).glUniformBlockBinding(program, vars.blockIndex, index);
+                ((GLES30Wrapper) gles).glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, vars.blockIndex,
+                        bb.getBufferName());
                 GLUtils.handleError(gles, "BindBufferBase for buffer " + bb.getBlockName());
             }
         }
@@ -728,7 +731,7 @@ public abstract class ShaderProgram {
             // If null then declared in program but not used, silently ignore
             if (v != null) {
                 if (v.getBlockIndex() != Constants.NO_VALUE) {
-                    setUniformBlock(gles, variableBlocks[v.getBlockIndex()], v);
+                    setUniformBlock(gles, interfaceBlocks[v.getBlockIndex()], v);
                 } else {
                     setUniform(gles, uniforms, v);
                 }
@@ -803,8 +806,8 @@ public abstract class ShaderProgram {
         shaderVariables = new ShaderVariable[CommonShaderVariables.values().length];
         int uniformBlocks = info.getActiveVariables(VariableType.UNIFORM_BLOCK);
         if (uniformBlocks > 0) {
-            variableBlocks = gles.getUniformBlocks(info);
-            for (VariableBlock block : variableBlocks) {
+            interfaceBlocks = gles.getUniformBlocks(info);
+            for (InterfaceBlock block : interfaceBlocks) {
                 fetchActiveVariables(gles, VariableType.UNIFORM_BLOCK, info, block);
             }
         }
@@ -845,7 +848,7 @@ public abstract class ShaderProgram {
      * @param block Variable block info or null - store block variables here
      * @throws GLException If attribute or uniform location(s) are -1, ie they could not be found using the name.
      */
-    private void fetchActiveVariables(GLES20Wrapper gles, VariableType type, ProgramInfo info, VariableBlock block)
+    private void fetchActiveVariables(GLES20Wrapper gles, VariableType type, ProgramInfo info, InterfaceBlock block)
             throws GLException {
         int count = info.getActiveVariables(type);
         if (count == 0) {
@@ -887,7 +890,7 @@ public abstract class ShaderProgram {
     protected ShaderVariable getBlockVariable(VariableType type, int index) {
         ShaderVariable var = blockVariables.get(index);
         if (var != null) {
-            VariableBlock block = variableBlocks[var.getBlockIndex()];
+            InterfaceBlock block = interfaceBlocks[var.getBlockIndex()];
             switch (block.usage) {
                 case VERTEX_SHADER:
                     return type == VariableType.UNIFORM ? var : null;
@@ -1270,7 +1273,7 @@ public abstract class ShaderProgram {
      * @param offset
      * @throws GLException
      */
-    protected void setUniformBlock(GLES20Wrapper gles, VariableBlock block, ShaderVariable variable)
+    protected void setUniformBlock(GLES20Wrapper gles, InterfaceBlock block, ShaderVariable variable)
             throws GLException {
     }
 
@@ -1346,7 +1349,7 @@ public abstract class ShaderProgram {
      * @param block
      * @return
      */
-    protected int getVariableSize(VariableBlock block) {
+    protected int getVariableSize(InterfaceBlock block) {
         int size = 0;
         for (int index : block.indices) {
             ShaderVariable variable = this.blockVariables.get(index);
@@ -1549,7 +1552,7 @@ public abstract class ShaderProgram {
      * @param block The block to create the buffer for
      * @param size The size, in bytes to allocate.
      */
-    protected BlockBuffer createBlockBuffer(VariableBlock block, int size) {
+    protected BlockBuffer createBlockBuffer(InterfaceBlock block, int size) {
         // Size is in bytes, align to floats
         FloatBlockBuffer fbb = new FloatBlockBuffer(block, size >>> 2);
         return fbb;

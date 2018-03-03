@@ -14,7 +14,7 @@ import com.nucleus.opengl.GLException.Error;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RendererInfo;
 import com.nucleus.shader.ShaderVariable;
-import com.nucleus.shader.ShaderVariable.VariableBlock;
+import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Image;
 import com.nucleus.texturing.ParameterData;
@@ -62,7 +62,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     }
 
     @Override
-    public VariableBlock[] getUniformBlocks(ProgramInfo info) throws GLException {
+    public InterfaceBlock[] getUniformBlocks(ProgramInfo info) throws GLException {
         // Uniform blocks not supported on GLES2 - return null
         return null;
     }

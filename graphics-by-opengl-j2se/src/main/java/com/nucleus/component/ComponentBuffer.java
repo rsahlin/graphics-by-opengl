@@ -8,10 +8,13 @@ import com.nucleus.geometry.BufferObject;
  * Buffer can be optimized for usage by CPU or native (GPU)
  * The buffer holds storage for a number of entities - what they are and how they are processed is not known to the
  * buffer.
+ * Currently sets datatype size to 4, if any other size is used this must be updated.
  * 
  *
  */
 public abstract class ComponentBuffer extends BufferObject {
+
+    public final static int DATATYPE_SIZE = 4;
 
     /**
      * Number of entities that this buffer has storage for.
@@ -23,9 +26,9 @@ public abstract class ComponentBuffer extends BufferObject {
     protected final int sizePerEntity;
 
     public ComponentBuffer(int entityCount, int sizePerEntity) {
+        super((entityCount * sizePerEntity) * DATATYPE_SIZE);
         this.entityCount = entityCount;
         this.sizePerEntity = sizePerEntity;
-        sizeInBytes = (entityCount * sizePerEntity) << 2;
     }
 
     /**

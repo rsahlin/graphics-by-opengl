@@ -17,11 +17,15 @@ public class BufferObject {
     /**
      * The size of the buffer in bytes.
      */
-    protected int sizeInBytes;
+    protected final int sizeInBytes;
     /**
      * Set to true when data in the buffer changes, means it needs to be uploaded to gl
      */
     protected boolean dirty;
+
+    protected BufferObject(int sizeInBytes) {
+        this.sizeInBytes = sizeInBytes;
+    }
 
     /**
      * Sets the buffer object to use, this must be allocated by GL, or 0 to disable buffer objects.
