@@ -13,6 +13,7 @@ import com.nucleus.io.StreamUtils;
 import com.nucleus.opengl.GLException.Error;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RendererInfo;
+import com.nucleus.shader.ShaderSource;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -810,23 +811,24 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     }
 
     @Override
-    public String getVersionedShaderSource(InputStream shaderStream, int type, boolean library) throws IOException {
+    public ShaderSource getVersionedShaderSource(InputStream shaderStream, String sourceName, int type, boolean library)
+            throws IOException {
         String source = StreamUtils.readStringFromStream(shaderStream);
+        String version = hasVersion(source);
+        String versionInfo = null;
         if (!library) {
-            String version = hasVersion(source);
             if (version != null) {
-                String versionInfo = version.trim().substring(VERSION.length()).trim();
+                versionInfo = version.trim().substring(VERSION.length()).trim();
                 // Insert the correct version depending on platform implementation.
                 int number = Integer.parseInt(versionInfo.substring(0, 3));
-                return VERSION + " " + getShaderVersion(versionInfo, number) + System.lineSeparator()
+                source = getShaderVersion(versionInfo, number) + System.lineSeparator()
                         + source.substring(version.length());
             } else {
-                // Treat no version as GLES shader version 100
-                return VERSION + " " + SHADING_LANGUAGE_100 + System.lineSeparator()
-                        + source;
+                // Treat no version as GLES shader version 100 and do not insert #version
             }
         }
-        return source;
+        return new ShaderSource(sourceName, source, version, type);
+
     }
 
     @Override

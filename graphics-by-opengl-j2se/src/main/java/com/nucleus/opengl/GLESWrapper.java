@@ -7,6 +7,7 @@ import java.util.StringTokenizer;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.StringUtils;
 import com.nucleus.renderer.RendererInfo;
+import com.nucleus.shader.ShaderSource;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -961,12 +962,14 @@ public abstract class GLESWrapper {
      * or Nvidia drivers that does not fully support the GLES profiles
      * 
      * @param shaderStream
+     * @param sourceName full name of shader source, including path
      * @param type Shader type GL_VERTEX_SHADER or GL_FRAGMENT_SHADER
      * @param library True if a shader library (not main)
      * @return
      * @throws IOException
      */
-    public abstract String getVersionedShaderSource(InputStream shaderStream, int type, boolean library)
+    public abstract ShaderSource getVersionedShaderSource(InputStream shaderStream, String sourceName, int type,
+            boolean library)
             throws IOException;
 
     /**

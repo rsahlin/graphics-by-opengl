@@ -292,10 +292,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     transient protected ElementBuffer indices;
     transient protected BlockBuffer[] blockBuffers;
     /**
-     * Uniforms, used when rendering this Mesh depending on what ShaderProgram is used.
-     */
-    transient protected float[] uniforms;
-    /**
      * Number of elements to draw
      */
     transient int drawCount;
@@ -373,7 +369,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             setDrawCount(vertexCount, 0);
         }
         blockBuffers = program.createBlockBuffers();
-        uniforms = program.createUniformArray();
         program.initBuffers(this);
     }
 
@@ -424,15 +419,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     public AttributeBuffer[] getVerticeBuffers() {
         return attributes;
-    }
-
-    /**
-     * Returns the uniform data, this shall be mapped to GL by the program.
-     * 
-     * @return
-     */
-    public float[] getUniformData() {
-        return uniforms;
     }
 
     /**

@@ -94,8 +94,8 @@ public class ConvolutionProgram extends ShaderProgram {
     public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
             throws GLException {
         Matrix.mul4(matrices[0], matrices[1]);
-        System.arraycopy(matrices[0], 0, mesh.getUniformData(), 0, Matrix.MATRIX_ELEMENTS);
-        uploadUniforms(gles, mesh.getUniformData(), sourceUniforms);
+        System.arraycopy(matrices[0], 0, uniforms, 0, Matrix.MATRIX_ELEMENTS);
+        uploadUniforms(gles, uniforms, sourceUniforms);
     }
 
     @Override

@@ -138,7 +138,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
             counter = 0;
         }
         Convolution.normalize(kernel[kernelIndex], normalizedKernel, absNormalize[kernelIndex], factor);
-        System.arraycopy(normalizedKernel, 0, mesh.getUniformData(), uKernel.getOffset(),
+        System.arraycopy(normalizedKernel, 0, program.getUniformData(), uKernel.getOffset(),
                 normalizedKernel.length);
 
     }

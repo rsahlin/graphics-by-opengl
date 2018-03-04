@@ -32,6 +32,11 @@ public class AttributeExpander implements Consumer {
     protected int destOffset = 0;
     protected PropertyMapper mapper;
     final float[] tempData;
+    /**
+     * If cpu based expanding then this array is created for performance reasons (too expensive to call nio buffer a lot
+     * of times)
+     */
+    protected float[] cpuBuffer;
 
     /**
      * 

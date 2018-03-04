@@ -70,4 +70,13 @@ public abstract class ComponentBuffer extends BufferObject {
         return sizePerEntity;
     }
 
+    /**
+     * Returns the number of entities
+     * 
+     * @return
+     */
+    public int getEntityCount() {
+        return entityCount;
+    }
+
 }

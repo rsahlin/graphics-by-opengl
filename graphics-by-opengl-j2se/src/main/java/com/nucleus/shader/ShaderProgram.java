@@ -233,18 +233,19 @@ public abstract class ShaderProgram {
      */
     protected int[] attributesPerVertex;
     /**
-     * List of uniforms defined by a program, ie passed to {@link #setUniformMapping(VariableMapping[])}
-     * 
-     */
-    protected VariableMapping[] sourceUniforms;
-    /**
      * List of attributes defined by a program, ie passed to {@link #setAttributeMapping(VariableMapping[])}
      */
     protected VariableMapping[] attributes;
     protected int attributeBufferCount;
     protected HashMap<Integer, ShaderVariable> blockVariables = new HashMap<>(); // Active block uniforms, index is the
                                                                                  // uniform index from GL
+    /**
+     * TODO - make static so only created once
+     */
     protected ArrayList<Integer> commonVertexShaders;
+    /**
+     * TODO - make static so only created once
+     */
     protected ArrayList<String> commonVertexSources;
 
     protected InterfaceBlock[] interfaceBlocks;
@@ -253,6 +254,20 @@ public abstract class ShaderProgram {
      * Samplers (texture units)
      */
     transient protected int[] samplers;
+
+    /**
+     * List of uniforms defined by a program, ie passed to {@link #setUniformMapping(VariableMapping[])}
+     * 
+     */
+    protected VariableMapping[] sourceUniforms;
+    /**
+     * Uniforms, used when rendering - uniforms array shall belong to program since uniforms are a property of the
+     * program. This data is quite small and the size depends on what program is used - and not the mesh.
+     * The same mesh may be rendered with different programs, for instance different shadow passes and will have
+     * different number of uniforms depending on the program.
+     * 
+     */
+    transient protected float[] uniforms;
 
     /**
      * Unmapped variable types
@@ -700,7 +715,7 @@ public abstract class ShaderProgram {
     protected void uploadUniforms(GLES20Wrapper gles, Mesh mesh, VariableMapping[] uniformMapping)
             throws GLException {
 
-        uploadUniforms(gles, mesh.getUniformData(), uniformMapping);
+        uploadUniforms(gles, uniforms, uniformMapping);
         BlockBuffer[] blocks = mesh.getBlockBuffers();
         if (blocks != null) {
             int index = 0;
@@ -1067,14 +1082,11 @@ public abstract class ShaderProgram {
     public void compileShader(GLES20Wrapper gles, InputStream shaderStream, int shader, int type, String sourceName,
             boolean library)
             throws IOException, GLException {
+        ShaderSource source = gles.getVersionedShaderSource(shaderStream, sourceName, type, true);
         if (commonVertexShaders == null) {
-            compileShader(gles,
-                    gles.getVersionedShaderSource(shaderStream, type, library)
-                            + getCommonSources(type),
-                    shader, sourceName);
+            compileShader(gles, source.versionedSource + getCommonSources(type), shader, sourceName);
         } else {
-            compileShader(gles, gles.getVersionedShaderSource(shaderStream, type, library), shader,
-                    sourceName);
+            compileShader(gles, source.versionedSource, shader, sourceName);
         }
     }
 
@@ -1153,6 +1165,15 @@ public abstract class ShaderProgram {
      */
     public int getProgram() {
         return program;
+    }
+
+    /**
+     * Returns the uniform data, this shall be mapped to GL by the program.
+     * 
+     * @return
+     */
+    public float[] getUniformData() {
+        return uniforms;
     }
 
     /**
@@ -1255,6 +1276,7 @@ public abstract class ShaderProgram {
             checkLinkStatus(gles, program);
             fetchProgramInfo(gles);
             bindAttributeNames(gles);
+            uniforms = createUniformArray();
             createSamplerStorage();
             setSamplers();
         } catch (GLException e) {
@@ -1451,7 +1473,6 @@ public abstract class ShaderProgram {
      */
     public void setUniformMatrices(float[][] matrices, Mesh mesh) {
         // Refresh the uniform matrixes - default is modelview and projection
-        float[] uniforms = mesh.getUniformData();
         System.arraycopy(matrices[0], 0, uniforms,
                 shaderVariables[CommonShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
@@ -1609,8 +1630,9 @@ public abstract class ShaderProgram {
     public void createCommonVertexSources(GLES20Wrapper gles, String[] vertexSourceNames) throws IOException {
         commonVertexSources = new ArrayList<>();
         for (String name : vertexSourceNames) {
-            commonVertexSources.add(gles.getVersionedShaderSource(getClass().getClassLoader()
-                    .getResourceAsStream(name), GLES20.GL_VERTEX_SHADER, true));
+            ShaderSource source = gles.getVersionedShaderSource(getClass().getClassLoader()
+                    .getResourceAsStream(name), name, GLES20.GL_VERTEX_SHADER, true);
+            commonVertexSources.add(source.versionedSource);
         }
     }
 

@@ -43,7 +43,7 @@ public class ShadowPass1Program extends ShaderProgram {
             case GLES20.GL_FRAGMENT_SHADER:
                 if (function.getPass() != null) {
                     return PROGRAM_DIRECTORY + function.getPassString() + function.getShadingString() + FRAGMENT_TYPE
-                            + SHADER_SOURCE_SUFFIX;
+                            + objectProgram.getShaderSourceVersion(version, type) + SHADER_SOURCE_SUFFIX;
                 } else {
                     return super.getShaderSource(version, type);
                 }
@@ -56,7 +56,6 @@ public class ShadowPass1Program extends ShaderProgram {
 
     @Override
     public void setUniformMatrices(float[][] matrices, Mesh mesh) {
-        float[] uniforms = mesh.getUniformData();
         System.arraycopy(matrices[0], 0, uniforms,
                 shaderVariables[CommonShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);

@@ -3,7 +3,6 @@
  * Can be used for instance for line drawing
  * @author Richard Sahlin
  */
-precision mediump float;
 
 uniform sampler2D uTexture;      //The texture sampler
 varying vec2 vTexCoord;
