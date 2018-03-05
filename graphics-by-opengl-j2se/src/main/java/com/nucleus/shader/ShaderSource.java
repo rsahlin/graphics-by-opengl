@@ -24,6 +24,14 @@ public class ShaderSource {
      */
     protected int type;
 
+    /**
+     * 
+     * @param sourceName
+     * @param versionedSource
+     * @param versionString The version string -AS IS DEFINED IN SOURCE - KEEP WHITESPACE CHARS. Size will be used to
+     * substitute version String if needed.
+     * @param type
+     */
     public ShaderSource(String sourceName, String versionedSource, String versionString, int type) {
         this.sourceName = sourceName;
         this.versionedSource = versionedSource;

@@ -48,6 +48,7 @@ public class AttributeExpander implements Consumer {
 
     @Override
     public void updateAttributeData(NucleusRenderer renderer) {
+        // Move from data to buffer
         buffer.setBufferPosition(0);
         for (int i = 0; i < data.entityCount; i++) {
             data.get(i, tempData);

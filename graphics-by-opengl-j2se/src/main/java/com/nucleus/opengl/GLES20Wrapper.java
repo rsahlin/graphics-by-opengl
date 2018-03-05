@@ -803,7 +803,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      */
     protected String hasVersion(String source) {
         StringTokenizer st = new StringTokenizer(source, System.lineSeparator());
-        String t = st.nextToken().trim();
+        String t = st.nextToken();
         if (t.trim().toLowerCase().startsWith(VERSION)) {
             return t;
         }

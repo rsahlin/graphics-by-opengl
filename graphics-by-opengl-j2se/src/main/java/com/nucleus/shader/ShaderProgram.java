@@ -1,7 +1,6 @@
 package com.nucleus.shader;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -205,6 +204,9 @@ public abstract class ShaderProgram {
 
     }
 
+    /**
+     * The basic function - will be returned
+     */
     protected Function function;
 
     /**
@@ -327,6 +329,17 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Returns the function for the shader type, default is to return the function that was specified when program was
+     * created.
+     * 
+     * @param type GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER
+     * @return
+     */
+    protected Function getFunction(int type) {
+        return function;
+    }
+
+    /**
      * Returns the number of defined attribute + uniform variables in the program.
      * This is to make it easier when developing so that temporarily unused variabled do not need to be removed.
      * 
@@ -358,6 +371,26 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Loads the version correct shader sources for the sourceNames and types
+     * 
+     * @param sourceNames
+     * @param types
+     * @return
+     * @throws IOException
+     */
+    protected ShaderSource[] createShaderSources(GLESWrapper gles, String[] sourceNames, int[] types)
+            throws IOException {
+
+        int count = sourceNames.length;
+        ShaderSource[] sources = new ShaderSource[count];
+        for (int i = 0; i < count; i++) {
+            sources[i] = gles.getVersionedShaderSource(getClass().getClassLoader().getResourceAsStream(sourceNames[i]),
+                    sourceNames[i], types[i], true);
+        }
+        return sources;
+    }
+
+    /**
      * Sets the name of the shaders in this program - shall be called before the program is created.
      * Creates shaders with type based on the {@link Shaders} field {@link #shaders}
      * 
@@ -382,8 +415,8 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Returns the name of the vertex shader source, this is taken from the function.
-     * Override in sublcasses to point to other vertex shader source
+     * Returns the name of the shader source, this is taken from the function.
+     * Override in subclasses to point to other shader source
      * 
      * @param version Highest GL version that is supported
      * @param type The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER
@@ -392,13 +425,13 @@ public abstract class ShaderProgram {
     protected String getShaderSource(Renderers version, int type) {
         switch (type) {
             case GLES20.GL_VERTEX_SHADER:
-                return PROGRAM_DIRECTORY + function.getShaderSourceName() + VERTEX_TYPE
+                return PROGRAM_DIRECTORY + getFunction(type) + VERTEX_TYPE
                         + getSourceNameVersion(version, type) + SHADER_SOURCE_SUFFIX;
             case GLES20.GL_FRAGMENT_SHADER:
-                return PROGRAM_DIRECTORY + function.getShaderSourceName() + FRAGMENT_TYPE
+                return PROGRAM_DIRECTORY + getFunction(type) + FRAGMENT_TYPE
                         + getSourceNameVersion(version, type) + SHADER_SOURCE_SUFFIX;
             case GLES31.GL_COMPUTE_SHADER:
-                return PROGRAM_DIRECTORY + function.getShaderSourceName() + getSourceNameVersion(version, type)
+                return PROGRAM_DIRECTORY + getFunction(type) + getSourceNameVersion(version, type)
                         + SHADER_SOURCE_SUFFIX;
             default:
                 throw new IllegalArgumentException("Not implemented for type: " + type);
@@ -1040,32 +1073,28 @@ public abstract class ShaderProgram {
      * Creates the shader name, attaches the source and compiles the shader.
      * 
      * @param gles
-     * @param sourceName
-     * @param type
+     * @param source
      * @param library true if this is not the main shader
      * @return The created shader
-     * @throws GLException If there is an reading from stream, etting or compiling shader source.
+     * @throws GLException If there is an error setting or compiling shader source.
      */
-    public int compileShader(GLES20Wrapper gles, String sourceName, int type, boolean library) throws GLException {
-        int shader = gles.glCreateShader(type);
+    public int compileShader(GLES20Wrapper gles, ShaderSource source, boolean library) throws GLException {
+        int shader = gles.glCreateShader(source.type);
         if (shader == 0) {
             throw new GLException(CREATE_SHADER_ERROR, GLES20.GL_NO_ERROR);
         }
-        try {
-            compileShader(gles, getClass().getClassLoader().getResourceAsStream(sourceName), shader, type, sourceName,
-                    library);
-        } catch (IOException e) {
-            switch (type) {
-                case GLES20.GL_VERTEX_SHADER:
-                    throw new RuntimeException("Could not load vertex shader: " + sourceName);
-                case GLES31.GL_FRAGMENT_SHADER:
-                    throw new RuntimeException("Could not load fragment shader: " + sourceName);
-                case GLES31.GL_COMPUTE_SHADER:
-                    throw new RuntimeException("Could not load compute shader: " + sourceName);
-                default:
-                    throw new RuntimeException("Could not load shader: " + sourceName);
-            }
-        }
+        compileShader(gles, source, shader, library);
+        // } catch (IOException e) {
+        // switch (type) {
+        // case GLES20.GL_VERTEX_SHADER:
+        // throw new RuntimeException("Could not load vertex shader: " + sourceName);
+        // case GLES31.GL_FRAGMENT_SHADER:
+        // throw new RuntimeException("Could not load fragment shader: " + sourceName);
+        // case GLES31.GL_COMPUTE_SHADER:
+        // throw new RuntimeException("Could not load compute shader: " + sourceName);
+        // default:
+        // throw new RuntimeException("Could not load shader: " + sourceName);
+        // }
         return shader;
     }
 
@@ -1075,21 +1104,16 @@ public abstract class ShaderProgram {
      * The GL version will be appended to the source, calling {@link GLESWrapper#getShaderVersion()}
      * 
      * @param gles GLES20 platform specific wrapper.
-     * @param shaderStream Inputstream to the shader source.
+     * @param source The shader source
      * @param shader OpenGL object to compile the shader to.
-     * @param type GL_VERTEX_SHADER, GL_FRAGMENT_SHADER or GL_COMPUTE_SHADER
-     * @param sourceName Name of the sourcefile - this is used for error reporting.
      * @param libray true if this is a library function for shader
-     * @throws GLException If there is an reading from stream, setting or compiling shader source.
+     * @throws GLException If there is an error setting or compiling shader source.
      */
-    public void compileShader(GLES20Wrapper gles, InputStream shaderStream, int shader, int type, String sourceName,
-            boolean library)
-            throws IOException, GLException {
-        ShaderSource source = gles.getVersionedShaderSource(shaderStream, sourceName, type, true);
+    public void compileShader(GLES20Wrapper gles, ShaderSource source, int shader, boolean library) throws GLException {
         if (commonVertexShaders == null) {
-            compileShader(gles, source.versionedSource + getCommonSources(type), shader, sourceName);
+            compileShader(gles, source.versionedSource + getCommonSources(source.type), shader, source.sourceName);
         } else {
-            compileShader(gles, source.versionedSource, shader, sourceName);
+            compileShader(gles, source.versionedSource, shader, source.sourceName);
         }
     }
 
@@ -1264,15 +1288,16 @@ public abstract class ShaderProgram {
     protected void createProgram(GLES20Wrapper gles, String[] sourceNames, int[] types) {
         SimpleLogger.d(getClass(), "Creating program for: " + sourceNames.length + " shaders");
         try {
+            ShaderSource[] sources = createShaderSources(gles, sourceNames, types);
             if (shaders != Shaders.COMPUTE && commonVertexShaders == null && commonVertexSources == null) {
-                createCommonVertexShaders(gles);
+                createCommonVertexShaders(gles, sources);
             }
             shaderNames = new int[sourceNames.length];
             program = gles.glCreateProgram();
             for (int shaderIndex = 0; shaderIndex < sourceNames.length; shaderIndex++) {
                 SimpleLogger.d(getClass(),
                         "Compiling " + sourceNames[shaderIndex]);
-                shaderNames[shaderIndex] = compileShader(gles, sourceNames[shaderIndex], types[shaderIndex], false);
+                shaderNames[shaderIndex] = compileShader(gles, sources[shaderIndex], false);
 
             }
             linkProgram(gles, program, shaderNames, commonVertexShaders);
@@ -1601,47 +1626,47 @@ public abstract class ShaderProgram {
     /**
      * Creates the common vertex shaders that can be used to share functions between shaders.
      * 
-     * TODO - put in {@link #createShaderSource(Renderers)} and call before #getShaderSource(version, shaderTypes[i]);
-     * 
      * @param gles
+     * @param sources
      * @throws GLException
      */
-    private void createCommonVertexShaders(GLES20Wrapper gles) throws GLException, IOException {
-        String[] sourceNames = new String[] { PROGRAM_DIRECTORY + COMMON_VERTEX_SHADER
+    private void createCommonVertexShaders(GLES20Wrapper gles, ShaderSource[] sources) throws GLException, IOException {
+        ShaderSource[] commonSources = createShaderSources(gles, new String[] { PROGRAM_DIRECTORY + COMMON_VERTEX_SHADER
                 + getSourceNameVersion(gles.getInfo().getRenderVersion(), GLES20.GL_VERTEX_SHADER)
-                + SHADER_SOURCE_SUFFIX };
+                + SHADER_SOURCE_SUFFIX }, new int[] { GLES20.GL_VERTEX_SHADER });
         if (gles.getInfo().hasExtensionSupport(GLES_EXTENSIONS.separate_shader_objects) && !appendCommonShaders) {
             SimpleLogger.d(getClass(), "Support for separate shader objects, compiling common vertex sources.");
             // Compile into shader names and link
             commonVertexShaders = new ArrayList<>();
-            for (String source : sourceNames) {
-                commonVertexShaders.add(compileShader(gles, source, GLES20.GL_VERTEX_SHADER, true));
+            for (ShaderSource source : commonSources) {
+                commonVertexShaders.add(compileShader(gles, source, true));
             }
         } else {
             SimpleLogger.d(getClass(),
                     "No support for separate shader objects, or flag to append shaders set, adding common sources.");
-            createCommonVertexSources(gles, sourceNames);
+            createCommonVertexSources(gles, commonSources);
         }
     }
 
     /**
-     * Creates the common vertex shaders that can be used to share functions between shaders, as a collection
-     * of source strings.
-     * Use this if platform does not have support for separate shader objects.
+     * Creates the common vertex shaders that can be used to share functions between shaders, as a collection of source
+     * strings.
+     * Use this if platform does not have support for separate shader objects - append the source in commonVertexSources
+     * to shaders that needs it
      * 
      * @param gles
-     * @param vertexSourceNames Array with vertex shader sources
+     * @param commonSource Array with vertex shader common sources
      * @throws IOException
      */
-    public void createCommonVertexSources(GLES20Wrapper gles, String[] vertexSourceNames) throws IOException {
+    public void createCommonVertexSources(GLES20Wrapper gles, ShaderSource[] commonSource) throws IOException {
         commonVertexSources = new ArrayList<>();
-        for (String name : vertexSourceNames) {
-            ShaderSource source = gles.getVersionedShaderSource(getClass().getClassLoader()
-                    .getResourceAsStream(name),
-                    name + getSourceNameVersion(gles.getInfo().getRenderVersion(),
-                            GLES20.GL_VERTEX_SHADER) + SHADER_SOURCE_SUFFIX,
-                    GLES20.GL_VERTEX_SHADER, true);
-            commonVertexSources.add(source.versionedSource);
+        for (ShaderSource source : commonSource) {
+            // If source has version it must be removed since shader is not in it's own program.
+            if (source.versionString != null) {
+                commonVertexSources.add(source.versionedSource.substring(source.versionString.length() + 1));
+            } else {
+                commonVertexSources.add(source.versionedSource);
+            }
         }
     }
 
