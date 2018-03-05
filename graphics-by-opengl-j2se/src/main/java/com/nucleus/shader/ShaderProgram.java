@@ -58,7 +58,10 @@ public abstract class ShaderProgram {
 
     public static final String PROGRAM_DIRECTORY = "assets/";
     public static final String SHADER_SOURCE_SUFFIX = ".essl";
-    public static final String COMMON_VERTEX_SHADER = "commonvertex" + SHADER_SOURCE_SUFFIX;
+    /**
+     * Shader suffix as added after checking for which version to use
+     */
+    public static final String COMMON_VERTEX_SHADER = "commonvertex";
     public static final String FRAGMENT_TYPE = "fragment";
     public static final String VERTEX_TYPE = "vertex";
     protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
@@ -390,12 +393,12 @@ public abstract class ShaderProgram {
         switch (type) {
             case GLES20.GL_VERTEX_SHADER:
                 return PROGRAM_DIRECTORY + function.getShaderSourceName() + VERTEX_TYPE
-                        + getShaderSourceVersion(version, type) + SHADER_SOURCE_SUFFIX;
+                        + getSourceNameVersion(version, type) + SHADER_SOURCE_SUFFIX;
             case GLES20.GL_FRAGMENT_SHADER:
                 return PROGRAM_DIRECTORY + function.getShaderSourceName() + FRAGMENT_TYPE
-                        + getShaderSourceVersion(version, type) + SHADER_SOURCE_SUFFIX;
+                        + getSourceNameVersion(version, type) + SHADER_SOURCE_SUFFIX;
             case GLES31.GL_COMPUTE_SHADER:
-                return PROGRAM_DIRECTORY + function.getShaderSourceName() + getShaderSourceVersion(version, type)
+                return PROGRAM_DIRECTORY + function.getShaderSourceName() + getSourceNameVersion(version, type)
                         + SHADER_SOURCE_SUFFIX;
             default:
                 throw new IllegalArgumentException("Not implemented for type: " + type);
@@ -412,7 +415,7 @@ public abstract class ShaderProgram {
      * @return Empty string "", or shader version to append to source name if different shader source shall be used for
      * a specific shader version.
      */
-    protected String getShaderSourceVersion(Renderers version, int type) {
+    protected String getSourceNameVersion(Renderers version, int type) {
         return "";
     }
 
@@ -1598,18 +1601,21 @@ public abstract class ShaderProgram {
     /**
      * Creates the common vertex shaders that can be used to share functions between shaders.
      * 
+     * TODO - put in {@link #createShaderSource(Renderers)} and call before #getShaderSource(version, shaderTypes[i]);
+     * 
      * @param gles
      * @throws GLException
      */
     private void createCommonVertexShaders(GLES20Wrapper gles) throws GLException, IOException {
-        String[] sourceNames = new String[] { PROGRAM_DIRECTORY + COMMON_VERTEX_SHADER };
+        String[] sourceNames = new String[] { PROGRAM_DIRECTORY + COMMON_VERTEX_SHADER
+                + getSourceNameVersion(gles.getInfo().getRenderVersion(), GLES20.GL_VERTEX_SHADER)
+                + SHADER_SOURCE_SUFFIX };
         if (gles.getInfo().hasExtensionSupport(GLES_EXTENSIONS.separate_shader_objects) && !appendCommonShaders) {
             SimpleLogger.d(getClass(), "Support for separate shader objects, compiling common vertex sources.");
             // Compile into shader names and link
             commonVertexShaders = new ArrayList<>();
             for (String source : sourceNames) {
-                commonVertexShaders
-                        .add(compileShader(gles, source, GLES20.GL_VERTEX_SHADER, false));
+                commonVertexShaders.add(compileShader(gles, source, GLES20.GL_VERTEX_SHADER, true));
             }
         } else {
             SimpleLogger.d(getClass(),
@@ -1631,12 +1637,17 @@ public abstract class ShaderProgram {
         commonVertexSources = new ArrayList<>();
         for (String name : vertexSourceNames) {
             ShaderSource source = gles.getVersionedShaderSource(getClass().getClassLoader()
-                    .getResourceAsStream(name), name, GLES20.GL_VERTEX_SHADER, true);
+                    .getResourceAsStream(name),
+                    name + getSourceNameVersion(gles.getInfo().getRenderVersion(),
+                            GLES20.GL_VERTEX_SHADER) + SHADER_SOURCE_SUFFIX,
+                    GLES20.GL_VERTEX_SHADER, true);
             commonVertexSources.add(source.versionedSource);
         }
     }
 
     /**
+     * Returns the common shader source for the specified type - call this when appending the common shader source
+     * to a shader program.
      * 
      * @param type Shader type GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER
      * @return

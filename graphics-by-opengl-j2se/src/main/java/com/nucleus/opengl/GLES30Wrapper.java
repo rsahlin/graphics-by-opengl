@@ -99,7 +99,7 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public String getShaderVersion(String sourceVersion, int version) {
+    public String replaceShaderVersion(String sourceVersion, int version) {
         if (sourceVersion.trim().toLowerCase().endsWith(ES) && platform != Platform.GLES) {
             return GL_VERSION_430;
         }

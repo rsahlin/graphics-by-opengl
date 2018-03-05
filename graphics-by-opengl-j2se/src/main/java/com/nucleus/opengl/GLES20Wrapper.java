@@ -785,7 +785,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     }
 
     @Override
-    public String getShaderVersion(String sourceVersion, int version) {
+    public String replaceShaderVersion(String sourceVersion, int version) {
         // Make sure version is not too high for es 2
         if (version > 100) {
             throw new IllegalArgumentException("Illegal shader version " + sourceVersion);
@@ -813,18 +813,20 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     @Override
     public ShaderSource getVersionedShaderSource(InputStream shaderStream, String sourceName, int type, boolean library)
             throws IOException {
+        if (shaderStream == null) {
+            throw new IllegalArgumentException("InputStream is null for sourcename " + sourceName);
+        }
         String source = StreamUtils.readStringFromStream(shaderStream);
         String version = hasVersion(source);
         String versionInfo = null;
         if (!library) {
+            // Treat no version as GLES shader version 100 and do not replace #version
             if (version != null) {
                 versionInfo = version.trim().substring(VERSION.length()).trim();
                 // Insert the correct version depending on platform implementation.
                 int number = Integer.parseInt(versionInfo.substring(0, 3));
-                source = getShaderVersion(versionInfo, number) + System.lineSeparator()
+                source = replaceShaderVersion(versionInfo, number) + System.lineSeparator()
                         + source.substring(version.length());
-            } else {
-                // Treat no version as GLES shader version 100 and do not insert #version
             }
         }
         return new ShaderSource(sourceName, source, version, type);

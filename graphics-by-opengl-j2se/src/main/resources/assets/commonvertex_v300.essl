@@ -1,4 +1,4 @@
-#version 100
+#version 300 es
 /**
  * Returns a matrix with z axis rotation set from attribute aRotate.z, x and y axis scale.
  * @return Matrix with z axis rotation set from aRotate.z, scale from aScale.x + aScale.y

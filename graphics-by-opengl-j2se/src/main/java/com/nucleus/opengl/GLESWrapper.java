@@ -951,7 +951,7 @@ public abstract class GLESWrapper {
      * @return The possibly substituted source version, depending on platform implementation.
      * Mainly used to substitute "310 es" for "430" on desktop platforms/drivers that does not support GLES fully"
      */
-    public abstract String getShaderVersion(String sourceVersion, int version);
+    public abstract String replaceShaderVersion(String sourceVersion, int version);
 
     /**
      * Returns a versioned shader source as String - this is the main method that shall be used to fetch shader source.

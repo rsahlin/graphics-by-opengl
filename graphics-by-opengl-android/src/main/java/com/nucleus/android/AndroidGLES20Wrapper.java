@@ -357,7 +357,7 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public String getShaderVersion(String sourceVersion, int version) {
+    public String replaceShaderVersion(String sourceVersion, int version) {
         return sourceVersion;
     }
 

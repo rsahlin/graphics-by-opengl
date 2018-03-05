@@ -43,7 +43,7 @@ public class ShadowPass1Program extends ShaderProgram {
             case GLES20.GL_FRAGMENT_SHADER:
                 if (function.getPass() != null) {
                     return PROGRAM_DIRECTORY + function.getPassString() + function.getShadingString() + FRAGMENT_TYPE
-                            + objectProgram.getShaderSourceVersion(version, type) + SHADER_SOURCE_SUFFIX;
+                            + objectProgram.getSourceNameVersion(version, type) + SHADER_SOURCE_SUFFIX;
                 } else {
                     return super.getShaderSource(version, type);
                 }
