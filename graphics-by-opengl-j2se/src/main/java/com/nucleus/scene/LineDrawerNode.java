@@ -135,7 +135,8 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void setRectangle(int vertice, float[] values, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = getMesh(MeshType.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aTranslate)
+        int translate = getMesh(MeshType.MAIN).getMaterial().getProgram()
+                .getShaderVariable(CommonShaderVariables.aTranslate)
                 .getOffset();
         int color = getMesh(MeshType.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aColor)
                 .getOffset();
@@ -181,7 +182,8 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void setLine(int vertice, float[] first, float[] second, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = getMesh(MeshType.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aTranslate)
+        int translate = getMesh(MeshType.MAIN).getMaterial().getProgram()
+                .getShaderVariable(CommonShaderVariables.aTranslate)
                 .getOffset();
         int color = getMesh(MeshType.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aColor)
                 .getOffset();
@@ -191,7 +193,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     }
 
     /**
-     * Adds a vertex for next line, this is fore LINE_STRIP mode
+     * Adds a vertex for next line, this is for LINE_STRIP mode
      * 
      * @param vertice
      * @param next
@@ -200,7 +202,8 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void addLine(int vertice, float[] next, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = getMesh(MeshType.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aTranslate)
+        int translate = getMesh(MeshType.MAIN).getMaterial().getProgram()
+                .getShaderVariable(CommonShaderVariables.aTranslate)
                 .getOffset();
         int color = getMesh(MeshType.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aColor)
                 .getOffset();
@@ -216,7 +219,8 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void setPos(int vertice, float[] pos, float z) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = getMesh(MeshType.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aTranslate)
+        int translate = getMesh(MeshType.MAIN).getMaterial().getProgram()
+                .getShaderVariable(CommonShaderVariables.aTranslate)
                 .getOffset();
         internalSetVertex(offset + translate, pos, z);
 

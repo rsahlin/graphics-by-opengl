@@ -1,6 +1,5 @@
 package com.nucleus.component;
 
-import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.BufferObject;
 
 /**
@@ -32,26 +31,9 @@ public abstract class ComponentBuffer extends BufferObject {
     }
 
     /**
-     * Reads (copies) the data for the specified entity.
-     * The destination array must have enough space to store {@link #getSizePerEntity()} values
-     * 
-     * @param entity The entity to fetch, 0 to entityCount - 1
-     * @param destination Data is put here
-     */
-    public abstract void get(int entity, float[] destination);
-
-    /**
-     * Reads (copies) the data for the specified entity.
-     * The destination buffer must have enough space, at the current position, to store {@link #getSizePerEntity()}
-     * values
-     * 
-     * @param entity The entity to fetch, 0 to entityCount - 1
-     * @param destination The destination buffer
-     */
-    public abstract void get(int entity, AttributeBuffer destination);
-
-    /**
-     * Stores float values for the specified entity, with offset.
+     * Stores float values for the specified entity, with offset, use this sparingly when data for the entity shall be
+     * initialized.
+     * Avoid calling this often since it is not optimized.
      * 
      * @param entity
      * @param offset

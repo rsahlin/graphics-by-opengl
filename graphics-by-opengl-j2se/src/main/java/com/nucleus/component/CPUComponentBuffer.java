@@ -1,7 +1,5 @@
 package com.nucleus.component;
 
-import com.nucleus.geometry.AttributeBuffer;
-
 /**
  * Component buffer with a float array store - use this for CPU usecases.
  *
@@ -15,14 +13,8 @@ public class CPUComponentBuffer extends ComponentBuffer {
         data = new float[entityCount * sizePerEntity];
     }
 
-    @Override
-    public void get(int entity, float[] destination) {
-        System.arraycopy(data, entity * sizePerEntity, destination, 0, sizePerEntity);
-    }
-
-    @Override
-    public void get(int entity, AttributeBuffer destination) {
-        throw new IllegalArgumentException("Not implemented");
+    public float[] getData() {
+        return data;
     }
 
     @Override
