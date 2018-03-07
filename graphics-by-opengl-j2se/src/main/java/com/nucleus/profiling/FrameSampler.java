@@ -96,7 +96,6 @@ public class FrameSampler {
         CREATE_NODE(Level.NORMAL),
         LOAD_MAP(Level.NORMAL),
         CREATE_SHADER(Level.NORMAL),
-        COMPONENTPROCESSOR(Level.NORMAL),
         PROCESSCOMPONENT(Level.HIGH),
         RENDERNODES(Level.NORMAL),
         CREATE_TEXTURE(Level.NORMAL),

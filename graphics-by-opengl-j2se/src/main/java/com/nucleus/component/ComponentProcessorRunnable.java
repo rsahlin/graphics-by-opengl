@@ -76,10 +76,7 @@ public class ComponentProcessorRunnable implements Runnable {
 
     private void internalProcessNode(RootNode rootNode, float delta) {
         if (rootNode != null) {
-            long start = System.currentTimeMillis();
             componentProcessor.processRoot(rootNode, delta);
-            FrameSampler.getInstance().addTag(FrameSampler.Samples.COMPONENTPROCESSOR, start,
-                    System.currentTimeMillis());
         }
     }
 

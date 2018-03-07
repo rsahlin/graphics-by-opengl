@@ -1,5 +1,6 @@
 package com.nucleus.component;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
 import com.nucleus.geometry.AttributeUpdater.PropertyMapper;
 import com.nucleus.geometry.Mesh;
@@ -12,7 +13,14 @@ import com.nucleus.vecmath.AxisAngle;
 import com.nucleus.vecmath.Transform;
 
 /**
- * Sprite / Quad expander, same as AttributeExpander but adds methods for setting frame / color
+ * Sprite / Quad expander this is the connection between the source (entity) buffer, that keeps track of one set of
+ * variables for an on screen quad, and the destination buffer that tracks 4 set of attribute values.
+ * The source and destination shall have a one to one mapping in variable offsets, eg to expand the source data it shall
+ * be enough to copy it into 4 places (one for each vertex)
+ * If expander is CPU based methods to set data shall update both source and destination, meaning that
+ * {@link #updateAttributeData(NucleusRenderer)} only needs to copy
+ * the destination data into the attribute buffer.
+ *
  *
  */
 public class CPUQuadExpander extends AttributeExpander {
@@ -57,6 +65,7 @@ public class CPUQuadExpander extends AttributeExpander {
         if (texture.getTextureType() == TextureType.UVTexture2D) {
             // If mesh has block buffers then frames will be in uniform block - do not copy here
             if (spriteMesh.getBlockBuffers() == null) {
+                SimpleLogger.d(getClass(), "No uniform block - does renderer not have support for GLES3 or above?");
                 copyUVAtlas(((UVTexture2D) texture).getUVAtlas());
                 tempData = new float[mapper.attributesPerVertex];
             }
@@ -129,7 +138,7 @@ public class CPUQuadExpander extends AttributeExpander {
         if (mapper.frameOffset != Constants.NO_VALUE) {
             int index = quad * source.sizePerEntity + mapper.frameOffset;
             sourceData[index] = frame;
-            index = destination.sizePerEntity + mapper.frameOffset;
+            index = quad * destination.sizePerEntity + mapper.frameOffset;
             destinationData[index] = frame;
             index += sizePerVertex;
             destinationData[index] = frame;
@@ -218,6 +227,7 @@ public class CPUQuadExpander extends AttributeExpander {
     public final void setData(int quad, float[] data) {
         int index = quad * source.sizePerEntity;
         System.arraycopy(data, 0, sourceData, index, data.length);
+        expandQuadData(quad);
     }
 
     /**
@@ -240,30 +250,7 @@ public class CPUQuadExpander extends AttributeExpander {
         sourceData[index + mapper.scaleOffset] = transform[6];
         sourceData[index + 1 + mapper.scaleOffset] = transform[7];
         sourceData[index + 2 + mapper.scaleOffset] = transform[8];
-    }
-
-    /**
-     * Sets the xyz axis values for the transform, use this method when initializing
-     * This will set the transform in the source buffer.
-     * 
-     * @param quad
-     * @param translate
-     * @param rotate
-     * @param scale
-     */
-    public final void setTransform(int quad, float[] translate, float[] rotate, float[] scale) {
-        int index = quad * source.sizePerEntity;
-        sourceData[index + mapper.translateOffset] = translate[0];
-        sourceData[index + 1 + mapper.translateOffset] = translate[1];
-        sourceData[index + 2 + mapper.translateOffset] = translate[2];
-
-        sourceData[index + mapper.rotateOffset] = rotate[0];
-        sourceData[index + 1 + mapper.rotateOffset] = rotate[1];
-        sourceData[index + 2 + mapper.rotateOffset] = rotate[2];
-
-        sourceData[index + mapper.scaleOffset] = scale[0];
-        sourceData[index + 1 + mapper.scaleOffset] = scale[1];
-        sourceData[index + 2 + mapper.scaleOffset] = scale[2];
+        expandQuadData(quad);
     }
 
     /**
