@@ -744,14 +744,14 @@ public abstract class ShaderProgram {
     public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
             throws GLException {
         setUniformMatrices(matrices, mesh);
-        setUniformData(mesh);
-        uploadUniforms(gles, mesh, sourceUniforms);
+        setUniformData(uniforms, mesh);
+        uploadUniforms(gles, uniforms, mesh, sourceUniforms);
     }
 
-    protected void uploadUniforms(GLES20Wrapper gles, Mesh mesh, VariableMapping[] uniformMapping)
+    protected void uploadUniforms(GLES20Wrapper gles, float[] uniformData, Mesh mesh, VariableMapping[] uniformMapping)
             throws GLException {
 
-        uploadUniforms(gles, uniforms, uniformMapping);
+        uploadUniforms(gles, uniformData, uniformMapping);
         BlockBuffer[] blocks = mesh.getBlockBuffers();
         if (blocks != null) {
             int index = 0;
@@ -1493,10 +1493,10 @@ public abstract class ShaderProgram {
 
     /**
      * 
-     * Sets the data for the uniforms needed by the program - the default implementation will set the modelview and
-     * projection matrices. Will NOT set uniforms to GL, only update the uniform array store
+     * Sets the data for the uniform matrices needed by the program - the default implementation will set the modelview
+     * and projection matrices. Will NOT set uniforms to GL, only update the uniform array store
      * 
-     * @param matrices Source matrices
+     * @param matrices Source matrices to set to uniform data array.
      * @param mesh
      */
     public void setUniformMatrices(float[][] matrices, Mesh mesh) {
@@ -1510,12 +1510,14 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets the shader program specific uniform data, subclasses shall set any uniform data
-     * needed - but not matrices which is set in {@link #setUniformMatrices(float[][], Mesh)}
+     * Gets the shader program specific uniform data, storing in in the uniformData array.
+     * Subclasses shall set any uniform data needed - but not matrices which is set in
+     * {@link #setUniformMatrices(float[][], Mesh)}
      * 
+     * @param destinationUniforms
      * @param mesh
      */
-    public abstract void setUniformData(Mesh mesh);
+    public abstract void setUniformData(float[] destinationUniform, Mesh mesh);
 
     /**
      * Sets UV fraction for the tiled texture + number of frames in x.

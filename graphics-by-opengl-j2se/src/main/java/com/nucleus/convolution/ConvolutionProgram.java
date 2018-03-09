@@ -111,7 +111,7 @@ public class ConvolutionProgram extends ShaderProgram {
     }
 
     @Override
-    public void setUniformData(Mesh mesh) {
+    public void setUniformData(float[] destinationUniform, Mesh mesh) {
     }
 
     @Override

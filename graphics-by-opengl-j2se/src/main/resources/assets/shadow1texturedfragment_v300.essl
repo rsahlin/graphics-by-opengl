@@ -20,13 +20,16 @@
  
 uniform sampler2D uTexture;      //The texture sampler
 in vec2 vTexCoord;
-out vec4 fragColor;
 
 void main()
 {
+    /**
+     * TODO - To get rid of if case:
+     * maybe use clamping of alpha value and multiply with max depth. Add this value to fragcoord.z to set max clear depth if no alpha.
+     */
     if (texture(uTexture, vTexCoord).a < 1.0) {
         discard;
     } else {
-        fragColor = vec4(1,1,1,1);
+        gl_FragDepth = gl_FragCoord.z;
     }
 }

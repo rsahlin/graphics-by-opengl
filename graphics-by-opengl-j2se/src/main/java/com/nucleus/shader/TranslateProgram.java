@@ -30,7 +30,7 @@ public class TranslateProgram extends ShaderProgram {
     }
 
     @Override
-    public void setUniformData(Mesh mesh) {
+    public void setUniformData(float[] destinationUniform, Mesh mesh) {
         // Nothing to do
 
     }

@@ -70,14 +70,15 @@ public class ShadowPass1Program extends ShaderProgram {
     }
 
     @Override
-    public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh) throws GLException {
+    public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
+            throws GLException {
         /**
-         * Currently calls ShaderProgram#setUniformData() in order to set necesary data from the program int
+         * Currently calls ShaderProgram#setUniformData() in order to set necessary data from the program int
          * uniform storage.
          * This could potentially break the shadow program if needed uniform data is set in some other method.
          * TODO - Make sure that the interface declares and mandates that uniform data shall be set in #setUniformData()
          */
-        objectProgram.setUniformData(mesh);
+        objectProgram.setUniformData(uniforms, mesh);
         super.updateUniforms(gles, matrices, mesh);
     }
 
@@ -100,7 +101,7 @@ public class ShadowPass1Program extends ShaderProgram {
     }
 
     @Override
-    public void setUniformData(Mesh mesh) {
+    public void setUniformData(float[] destinationUniform, Mesh mesh) {
         // TODO Auto-generated method stub
 
     }
