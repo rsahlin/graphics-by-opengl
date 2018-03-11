@@ -825,7 +825,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                 versionInfo = version.trim().substring(VERSION.length()).trim();
                 // Insert the correct version depending on platform implementation.
                 int number = Integer.parseInt(versionInfo.substring(0, 3));
-                source = replaceShaderVersion(versionInfo, number) + System.lineSeparator()
+                source = VERSION + " " + replaceShaderVersion(versionInfo, number) + System.lineSeparator()
                         + source.substring(version.length());
             }
         }

@@ -191,7 +191,8 @@ public class Node extends BaseReference {
      */
     transient float[] projection;
     /**
-     * The node concatenated model matrix at time of render, this is set when the node is rendered.
+     * The node concatenated model matrix at time of render, this is set when the node is rendered and
+     * {@link #concatModelMatrix(float[])} is called
      * May be used when calculating bounds/collision on the current frame.
      * DO NOT WRITE TO THIS!
      */
@@ -1030,8 +1031,7 @@ public class Node extends BaseReference {
      */
     public float[] concatModelMatrix(float[] concatModel) {
         if (concatModel == null) {
-            Matrix.setIdentity(modelMatrix, 0);
-            return modelMatrix;
+            return transform != null ? transform.getMatrix() : Matrix.setIdentity(modelMatrix, 0);
         }
         Matrix.mul4(concatModel,
                 transform != null ? transform.getMatrix() : Matrix.IDENTITY_MATRIX,

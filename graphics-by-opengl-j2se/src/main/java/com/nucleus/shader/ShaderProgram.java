@@ -385,7 +385,7 @@ public abstract class ShaderProgram {
         ShaderSource[] sources = new ShaderSource[count];
         for (int i = 0; i < count; i++) {
             sources[i] = gles.getVersionedShaderSource(getClass().getClassLoader().getResourceAsStream(sourceNames[i]),
-                    sourceNames[i], types[i], true);
+                    sourceNames[i], types[i], false);
         }
         return sources;
     }

@@ -79,7 +79,6 @@ public class LayerNode extends Node {
         this.layer = layer;
     }
 
-
     /**
      * Returns the viewcontroller for this node, shall not be null.
      * 
@@ -91,11 +90,8 @@ public class LayerNode extends Node {
 
     @Override
     public float[] concatModelMatrix(float[] concatModel) {
-        if (concatModel == null) {
-            Matrix.setIdentity(modelMatrix, 0);
-            return modelMatrix;
-        }
-        return transform != null ? transform.getMatrix() : concatModel;
+        // This is a layer node with viewfrustum - do not concatenate - return this nodes transform.
+        return transform != null ? transform.getMatrix() : Matrix.setIdentity(modelMatrix, 0);
     }
 
 }

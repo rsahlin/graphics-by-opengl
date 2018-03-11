@@ -1,7 +1,9 @@
 package com.nucleus.camera;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.vecmath.Axis;
 import com.nucleus.vecmath.Matrix;
+import com.nucleus.vecmath.Transform;
 
 /**
  * The setup of the viewfrustum.
@@ -201,6 +203,34 @@ public class ViewFrustum {
      */
     public float getHeight() {
         return Math.abs(values[TOP_INDEX] - values[BOTTOM_INDEX]);
+    }
+
+    /**
+     * Transform the viewfrustum and store in result
+     * Currently only works for scaling
+     * 
+     * @param result Must have place for 6 values
+     * @param transform
+     * @throws NullPointerException If result or transform is null
+     * @throws IndexOutOfBoundsException If result does not have room for values
+     */
+    public void getTransformedValues(float[] result, Transform transform) {
+        float[] scale = transform.getScale();
+        result[LEFT_INDEX] = scale[Axis.X.index] * values[LEFT_INDEX];
+        result[RIGHT_INDEX] = scale[Axis.X.index] * values[RIGHT_INDEX];
+        result[BOTTOM_INDEX] = scale[Axis.Y.index] * values[BOTTOM_INDEX];
+        result[TOP_INDEX] = scale[Axis.Y.index] * values[TOP_INDEX];
+        result[NEAR_INDEX] = scale[Axis.Z.index] * values[NEAR_INDEX];
+        result[FAR_INDEX] = scale[Axis.Z.index] * values[FAR_INDEX];
+    }
+
+    /**
+     * Copies the values in this viewfrustum to destination
+     * 
+     * @param result
+     */
+    public void getValues(float[] result) {
+        System.arraycopy(values, 0, result, 0, PROJECTION_SIZE);
     }
 
 }
