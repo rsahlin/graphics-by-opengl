@@ -1,7 +1,6 @@
 package com.nucleus.opengl;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.StringTokenizer;
 
 import com.nucleus.SimpleLogger;
@@ -947,30 +946,25 @@ public abstract class GLESWrapper {
      * The sourceVersion String is the version part of the "#version" source declaration, eg "300 es", "430" etc.
      * 
      * @param sourceVersion The source version string minus #version, eg "310 es" - or NULL if version not defined.
-     * @param version The parsed version number, eg 100 or 0 if version not defined.
+     * @param version The parsed version number, eg 100 - must NOT be null.
      * @return The possibly substituted source version, depending on platform implementation.
      * Mainly used to substitute "310 es" for "430" on desktop platforms/drivers that does not support GLES fully"
      */
     public abstract String replaceShaderVersion(String sourceVersion, int version);
 
     /**
-     * Returns a versioned shader source as String - this is the main method that shall be used to fetch shader source.
+     * Returns a versioned shader source and puts in the sourceName object - this is the main method that shall be used
+     * to fetch shader source.
      * If the shader source has a version string it shall be checked by the gles wrapper implementation and if needed
-     * substituted for
-     * a version that is suitable for the current platform.
+     * substituted for a version that is suitable for the current platform.
      * For instance "#version 310 es" needs to be sutstitued for "#version 430" on desktop implementations (namely AMD
      * or Nvidia drivers that does not fully support the GLES profiles
      * 
-     * @param shaderStream
-     * @param sourceName full name of shader source, including path
-     * @param type Shader type GL_VERTEX_SHADER or GL_FRAGMENT_SHADER
+     * @param source The source to load - loaded and versioned source will be put in this object
      * @param library True if a shader library (not main)
-     * @return
      * @throws IOException
      */
-    public abstract ShaderSource getVersionedShaderSource(InputStream shaderStream, String sourceName, int type,
-            boolean library)
-            throws IOException;
+    public abstract void loadVersionedShaderSource(ShaderSource source, boolean library) throws IOException;
 
     /**
      * Replaces the Shader source older OpenGL ES 2.X attribute and uniform variables to in/out naming.

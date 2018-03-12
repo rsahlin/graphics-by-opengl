@@ -38,12 +38,13 @@ public class ShadowPass1Program extends ShaderProgram {
     }
 
     @Override
-    protected String getShaderSource(Renderers version, int type) {
+    protected ShaderSource getShaderSource(Renderers version, int type) {
         switch (type) {
             case GLES20.GL_FRAGMENT_SHADER:
                 if (function.getPass() != null) {
-                    return PROGRAM_DIRECTORY + function.getPassString() + function.getShadingString() + FRAGMENT_TYPE
-                            + objectProgram.getSourceNameVersion(version, type) + SHADER_SOURCE_SUFFIX;
+                    return new ShaderSource(
+                            PROGRAM_DIRECTORY + function.getPassString() + function.getShadingString() + FRAGMENT_TYPE,
+                            objectProgram.getSourceNameVersion(version, type), type);
                 } else {
                     return super.getShaderSource(version, type);
                 }

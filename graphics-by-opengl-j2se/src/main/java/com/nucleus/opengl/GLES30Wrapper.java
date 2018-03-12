@@ -2,6 +2,7 @@ package com.nucleus.opengl;
 
 import java.nio.ByteBuffer;
 
+import com.nucleus.shader.ShaderSource;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -100,7 +101,7 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
 
     @Override
     public String replaceShaderVersion(String sourceVersion, int version) {
-        if (sourceVersion.trim().toLowerCase().endsWith(ES) && platform != Platform.GLES) {
+        if (sourceVersion.trim().toLowerCase().endsWith(ShaderSource.ES) && platform != Platform.GLES) {
             return GL_VERSION_430;
         }
         return sourceVersion;
