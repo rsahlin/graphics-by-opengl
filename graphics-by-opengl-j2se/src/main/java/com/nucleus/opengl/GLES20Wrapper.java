@@ -6,7 +6,6 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
-import java.util.StringTokenizer;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.AttributeBuffer;
@@ -791,23 +790,6 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         return sourceVersion;
     }
 
-    /**
-     * Checks if the first (non empty) line contains version, if so it is returned
-     * 
-     * @param source
-     * @return The version string that is the full first line (excluding line separator char), eg "#version 310 es",
-     * "#version 430" or null if no version.
-     * The returned string can be used to calculate offset when substituting version.
-     */
-    protected String hasVersion(String source) {
-        StringTokenizer st = new StringTokenizer(source, System.lineSeparator());
-        String t = st.nextToken();
-        if (t.trim().toLowerCase().startsWith(ShaderSource.VERSION)) {
-            return t;
-        }
-        return null;
-    }
-
     @Override
     public void loadVersionedShaderSource(ShaderSource source, boolean library) throws IOException {
         InputStream shaderStream = getClass().getClassLoader().getResourceAsStream(source.getFullSourceName());
@@ -815,7 +797,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             throw new IllegalArgumentException("Could not open " + source.getFullSourceName());
         }
         String sourceStr = StreamUtils.readStringFromStream(shaderStream);
-        String version = hasVersion(sourceStr);
+        String version = ShaderSource.hasVersion(sourceStr);
         String versionInfo = null;
         if (!library) {
             // Treat no version as GLES shader version 100 and do not replace #version

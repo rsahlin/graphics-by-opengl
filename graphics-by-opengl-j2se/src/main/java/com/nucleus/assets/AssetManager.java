@@ -119,7 +119,7 @@ public class AssetManager {
     }
 
     /**
-     * Returns the texture for the rendertarget attachement, if not already create it will be created and stored in the
+     * Returns the texture for the rendertarget attachement, if not already created it will be created and stored in the
      * assetmanager with id taken from renderTarget and attachement
      * If already created the instance will be returned.
      * 
@@ -253,18 +253,25 @@ public class AssetManager {
      * @param renderer
      * @param program
      * @return An instance of the ShaderProgram that is loaded and compiled
+     * or linking the program.
+     * @throws RuntimeException If the program could not be compiled or linked
      */
     public ShaderProgram getProgram(GLES20Wrapper gles, ShaderProgram program) {
         ShaderProgram compiled = programs.get(program.getKey());
         if (compiled != null) {
             return compiled;
         }
-        long start = System.currentTimeMillis();
-        program.createProgram(gles);
-        FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, program.getClass().getSimpleName(), start,
-                System.currentTimeMillis());
-        programs.put(program.getKey(), program);
-        return program;
+        try {
+            long start = System.currentTimeMillis();
+            program.createProgram(gles);
+            FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, program.getClass().getSimpleName(),
+                    start,
+                    System.currentTimeMillis());
+            programs.put(program.getKey(), program);
+            return program;
+        } catch (GLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

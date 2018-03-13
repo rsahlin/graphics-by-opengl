@@ -1,5 +1,7 @@
 package com.nucleus.shader;
 
+import java.util.StringTokenizer;
+
 /**
  * Holds source and data related to the source for a shader
  *
@@ -59,23 +61,6 @@ public class ShaderSource {
         this.type = type;
     }
 
-    /**
-     * 
-     * @param sourceName
-     * @param sourceNameVersion The source name version info, eg "_300"
-     * @param versionedSource
-     * @param versionString The version string -AS IS DEFINED IN SOURCE - KEEP WHITESPACE CHARS. Size will be used to
-     * substitute version String if needed.
-     * @param type
-     */
-    public ShaderSource(String sourceName, String sourceNameVersion, String versionedSource, String versionString,
-            int type) {
-        this.sourceName = sourceName;
-        this.versionedSource = versionedSource;
-        this.versionString = versionString;
-        this.type = type;
-    }
-
     public String getSourceNameVersion() {
         return sourceNameVersion;
     }
@@ -84,8 +69,15 @@ public class ShaderSource {
         return sourceName + sourceNameVersion + ShaderProgram.SHADER_SOURCE_SUFFIX;
     }
 
+    /**
+     * Sets the versioned source and the versionString, if source does not contain #version the versionString will be
+     * null
+     * 
+     * @param versionedSource
+     */
     public void setSource(String versionedSource) {
         this.versionedSource = versionedSource;
+        versionString = hasVersion(versionedSource);
     }
 
     /**
@@ -95,9 +87,26 @@ public class ShaderSource {
      */
     public int getVersionNumber() {
         if (versionString != null) {
-            return Integer.parseInt(versionString.substring(VERSION.length()));
+            return Integer.parseInt(versionString.substring(VERSION.length()).trim());
         }
         return ESSLVersion.VERSION100.number;
+    }
+
+    /**
+     * Checks if the first (non empty) line contains version, if so it is returned
+     * 
+     * @param source
+     * @return The version string that is the full first line (excluding line separator char), eg "#version 310 es",
+     * "#version 430" or null if no version.
+     * The returned string can be used to calculate offset/length when substituting version.
+     */
+    public static String hasVersion(String source) {
+        StringTokenizer st = new StringTokenizer(source, System.lineSeparator());
+        String t = st.nextToken();
+        if (t.trim().toLowerCase().startsWith(VERSION)) {
+            return t;
+        }
+        return null;
     }
 
 }

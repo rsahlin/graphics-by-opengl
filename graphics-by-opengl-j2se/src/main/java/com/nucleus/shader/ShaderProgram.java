@@ -505,9 +505,9 @@ public abstract class ShaderProgram {
      * It will create the {@link #shaderSources} field, compile and link the shader sources specified.
      * 
      * @param gles The GLES20 wrapper to use when compiling and linking program.
-     * @throws RuntimeException If there is an error reading shader sources or compiling/linking program.
+     * @throws GLException If program could not be compiled and linked, possibly due to IOException
      */
-    public void createProgram(GLES20Wrapper gles) {
+    public void createProgram(GLES20Wrapper gles) throws GLException {
         shaderSources = createShaderSource(gles.getInfo().getRenderVersion());
         if (shaderSources == null) {
             throw new ShaderProgramException(MUST_SET_FIELDS);
@@ -1284,8 +1284,9 @@ public abstract class ShaderProgram {
      * 
      * @param gles
      * @param sources Name of shaders to load, compile and link
+     * @throws GLException If program could not be compiled and linked
      */
-    protected void createProgram(GLES20Wrapper gles, ShaderSource[] sources) {
+    protected void createProgram(GLES20Wrapper gles, ShaderSource[] sources) throws GLException {
         SimpleLogger.d(getClass(), "Creating program for: " + sources.length + " shaders");
         try {
             loadShaderSources(gles, sources);
@@ -1309,8 +1310,9 @@ public abstract class ShaderProgram {
             setSamplers();
         } catch (GLException e) {
             logShaderSources(gles, commonVertexShaders, shaderNames);
+            throw e;
         } catch (IOException e) {
-            throw new RuntimeException(e.toString());
+            throw new GLException(e.toString(), -1);
         }
     }
 

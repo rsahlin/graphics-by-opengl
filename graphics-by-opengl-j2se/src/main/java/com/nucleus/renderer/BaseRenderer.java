@@ -50,20 +50,6 @@ import com.nucleus.vecmath.Matrix;
  */
 class BaseRenderer implements NucleusRenderer {
 
-    public enum Matrices {
-        MODELVIEW(0),
-        PROJECTION(1),
-        RENDERPASS_1(2),
-        RENDERPASS_2(3);
-
-        public final int index;
-
-        private Matrices(int index) {
-            this.index = index;
-        }
-
-    }
-
     public final static String NOT_INITIALIZED_ERROR = "Not initialized, must call init()";
 
     protected final static String BASE_RENDERER_TAG = "BaseRenderer";
@@ -601,11 +587,6 @@ class BaseRenderer implements NucleusRenderer {
     @Override
     public boolean isInitialized() {
         return initialized;
-    }
-
-    @Override
-    public void createProgram(ShaderProgram program) {
-        program.createProgram(gles);
     }
 
     @Override

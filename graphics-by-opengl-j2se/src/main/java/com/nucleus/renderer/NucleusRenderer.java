@@ -7,7 +7,6 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
-import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
 
 /**
@@ -21,6 +20,20 @@ import com.nucleus.texturing.ImageFactory;
  *
  */
 public interface NucleusRenderer {
+
+    public enum Matrices {
+        MODELVIEW(0),
+        PROJECTION(1),
+        RENDERPASS_1(2),
+        RENDERPASS_2(3);
+
+        public final int index;
+
+        private Matrices(int index) {
+            this.index = index;
+        }
+
+    }
 
     /**
      * Min number of stack elements to supports, this is the depth of the tree
@@ -252,16 +265,6 @@ public interface NucleusRenderer {
      * @param imageFactory Used when images are loaded.
      */
     public void setImageFactory(ImageFactory imageFactory);
-
-    /**
-     * Creates the program object, loads and compiles the shader sources and links the program.
-     * This method is deprecated and should only be used internally.
-     * 
-     * @param program
-     * @throws RuntimeException If there is an error loading,compiling or linking the program.
-     */
-    @Deprecated
-    public void createProgram(ShaderProgram program);
 
     /**
      * Generate GL named object buffers
