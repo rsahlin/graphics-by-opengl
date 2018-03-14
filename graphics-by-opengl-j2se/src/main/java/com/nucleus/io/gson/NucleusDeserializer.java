@@ -20,7 +20,8 @@ public class NucleusDeserializer {
     protected Gson gson;
 
     /**
-     * Sets the gson instance to be used when deserializing - this is a static instance that only needs to be set once for all
+     * Sets the gson instance to be used when deserializing - this is a static instance that only needs to be set once
+     * for all
      * subclasses.
      * Remember to first set type adapters to the Gson builder, then call GsonBuilder.create() to create
      * a gson instance using the specified type adapters

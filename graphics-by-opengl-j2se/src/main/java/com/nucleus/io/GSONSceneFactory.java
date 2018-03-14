@@ -81,7 +81,6 @@ public class GSONSceneFactory implements SceneSerializer {
      */
     protected void createNodeDeserializer() {
         nodeDeserializer = new NucleusNodeDeserializer();
-        ;
     }
 
     @Override

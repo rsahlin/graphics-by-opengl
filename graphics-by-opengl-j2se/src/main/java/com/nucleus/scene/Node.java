@@ -33,7 +33,9 @@ import com.nucleus.vecmath.Transform;
  * Point of interest in a scene. Normally represents a visual object (vertices) that will be rendered.
  * This shall be a 'dumb' node in that sense that it shall not contain logic or behavior other than the ability to
  * be rendered and serailized.
- * This class may be serialized using GSON
+ * This class may be serialized using GSON, however since TypeAdapter is used to find implementation class of node
+ * it is currently not possible to deserialize (vanilla) Node (due to recursion of deserialization)
+ * 
  * Before the node can be rendered one or more meshes must be added using {@link #addMesh(Mesh)}
  * 
  * If a node contains properties the {@linkplain EventManager#sendObjectEvent(Object, String, String)} is called
@@ -1027,14 +1029,13 @@ public class Node extends BaseReference {
      * If this node does not have a transform an identity matrix is used.
      * 
      * @param concatModel The concatenated model matrix
-     * @return The node matrix - concatModel * this nodes transform
+     * @return The node matrix - this nodes transform * concatModel
      */
     public float[] concatModelMatrix(float[] concatModel) {
         if (concatModel == null) {
             return transform != null ? transform.getMatrix() : Matrix.setIdentity(modelMatrix, 0);
         }
-        Matrix.mul4(concatModel,
-                transform != null ? transform.getMatrix() : Matrix.IDENTITY_MATRIX,
+        Matrix.mul4(transform != null ? transform.getMatrix() : Matrix.IDENTITY_MATRIX, concatModel,
                 modelMatrix);
         return modelMatrix;
     }
