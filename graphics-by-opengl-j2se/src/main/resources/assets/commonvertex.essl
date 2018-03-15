@@ -13,8 +13,9 @@ mat4 calculateTransformMatrix(vec3 rotate, vec3 scale, vec3 translate){
     float sx = sin(rotate.x);
     float cy = cos(rotate.y);
     float sy = sin(rotate.y);
-    float cz = cos(rotate.z);
-    float sz = sin(rotate.z);
+    //Default to left handed coordinate system.
+    float cz = cos(-rotate.z);
+    float sz = sin(-rotate.z);
     
     modelview[0][0] = cz * cy * scale.x;
     modelview[0][1] =  -sz * scale.x;

@@ -1,7 +1,6 @@
 package com.nucleus.shader;
 
 import com.nucleus.geometry.Mesh;
-import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
@@ -58,7 +57,7 @@ public class ShadowPass1Program extends ShaderProgram {
 
     @Override
     public void setUniformMatrices(float[][] matrices, Mesh mesh) {
-        System.arraycopy(matrices[0], 0, uniforms,
+        System.arraycopy(matrices[Matrices.MODELVIEW.index], 0, uniforms,
                 shaderVariables[CommonShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(matrices[Matrices.RENDERPASS_1.index], 0, uniforms,
@@ -92,8 +91,10 @@ public class ShadowPass1Program extends ShaderProgram {
      * 
      */
     public static float[] getLightMatrix(float[] matrix) {
-        float[] lightVector = GlobalLight.getInstance().getLightVector();
-        Matrix.setRotateEulerM(matrix, 0, lightVector[0], lightVector[1], lightVector[2]);
+        // TODO implement light position/vector properly
+        // float[] lightVector = GlobalLight.getInstance().getLightVector();
+        // Matrix.setRotateM(matrix, 0, 0, lightVector[0], lightVector[1], lightVector[2]);
+        Matrix.setIdentity(matrix, 0);
         return matrix;
     }
 

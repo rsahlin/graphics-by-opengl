@@ -499,7 +499,7 @@ class BaseRenderer implements NucleusRenderer {
                 // Adjust the light matrix to fit inside texture coordinates
                 Matrix.setIdentity(matrices[Matrices.RENDERPASS_2.index], 0);
                 Matrix.scaleM(matrices[Matrices.RENDERPASS_2.index], 0, 0.5f, 0.5f, 1f);
-                Matrix.translate(matrices[Matrices.RENDERPASS_2.index], 0.5f, -0.5f, 0f);
+                Matrix.translate(matrices[Matrices.RENDERPASS_2.index], 0.5f, 0.5f, 0f);
                 Matrix.mul4(matrices[Matrices.RENDERPASS_1.index], matrices[Matrices.RENDERPASS_2.index]);
                 break;
             default:

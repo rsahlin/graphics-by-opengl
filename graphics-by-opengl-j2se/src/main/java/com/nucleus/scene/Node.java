@@ -476,7 +476,9 @@ public class Node extends BaseReference {
                     for (int i = 0; i < renderPass.size(); i++) {
                         p = renderPass.get(i);
                         if (p.getPass() == Pass.SHADOW1) {
-                            return p.getViewFrustum().getMatrix();
+                            // If SHADOW1 pass then matrix is set from RENDERPASS1 when uniforms are updated.
+                            // pass null
+                            return null;
                         }
                     }
                 }
