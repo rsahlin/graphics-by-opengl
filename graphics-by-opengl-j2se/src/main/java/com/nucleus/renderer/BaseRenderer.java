@@ -287,7 +287,7 @@ class BaseRenderer implements NucleusRenderer {
             pushMatrix(this.projection, matrices[Matrices.PROJECTION.index]);
             matrices[Matrices.PROJECTION.index] = projection;
         }
-        Matrix.mul4(nodeMatrix, viewMatrix, matrices[Matrices.MODELVIEW.index]);
+        Matrix.mul4(viewMatrix, nodeMatrix, matrices[Matrices.MODELVIEW.index]);
         if (node.getType().equals(NodeTypes.linedrawernode.name())) {
             gles.glLineWidth(((LineDrawerNode) node).getLineWidth());
         }

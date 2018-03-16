@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 import com.nucleus.assets.AssetManager;
+import com.nucleus.mmi.ObjectInputListener;
 import com.nucleus.renderer.NucleusRenderer;
 
 /**
@@ -51,7 +52,10 @@ public abstract class RootNode extends Node {
      * List of last displayed frame rendered nodes - this is the currently visible nodes.
      */
     transient private ArrayList<Node> visibleNodeList = new ArrayList<>();
-
+    /**
+     * Set this to get callbacks on MMI events for this node, handled by {@link NodeInputListener}
+     */
+    transient protected ObjectInputListener objectInputListener;
     /**
      * Table with all added childnodes and their id.
      */
@@ -208,6 +212,27 @@ public abstract class RootNode extends Node {
         renderNodeList = null;
         visibleNodeList = null;
         childNodeTable = null;
+    }
+
+    /**
+     * Returns the {@link ObjectInputListener}, or null if not set.
+     * This method should normally not be called, it is handled by {@link NodeInputListener}
+     * 
+     * @return The {@link ObjectInputListener} for this node or null if not set
+     */
+    protected ObjectInputListener getObjectInputListener() {
+        return objectInputListener;
+    }
+
+    /**
+     * Sets the {@link ObjectInputListener} for this rootnode, the listener will get callbacks for Nodes that
+     * have bounds specified, when there is touch interaction.
+     * Remember to set bounds for Nodes that shall get callbacks.
+     * 
+     * @param objectInputListener Listener to get callback when input interaction is registered on a Node with bounds.
+     */
+    public void setObjectInputListener(ObjectInputListener objectInputListener) {
+        this.objectInputListener = objectInputListener;
     }
 
 }

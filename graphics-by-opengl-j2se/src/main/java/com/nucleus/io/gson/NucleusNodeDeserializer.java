@@ -33,22 +33,18 @@ public class NucleusNodeDeserializer extends NucleusDeserializer implements Json
         if (element == null) {
             throw new IllegalArgumentException("Node does not contain:" + NODETYPE_JSON_KEY);
         }
-        try {
-            Node node = null;
-            NodeTypes t = NodeTypes.valueOf(element.getAsString());
-            switch (t) {
-                case node:
-                    // Throw runtimeexception since IllegalArgumentException is used to catch invalid node type.
-                    throw new RuntimeException("Can not deserialize vanilla Node - use one of the subclasses");
-                default:
-                    node = (Node) gson.fromJson(json, t.getTypeClass());
-                    break;
-            }
-            postDeserialize(node);
-            return node;
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Unknown node type " + element.getAsString());
+        Node node = null;
+        NodeTypes t = NodeTypes.valueOf(element.getAsString());
+        switch (t) {
+            case node:
+                // Throw runtimeexception since IllegalArgumentException is used to catch invalid node type.
+                throw new RuntimeException("Can not deserialize vanilla Node - use one of the subclasses");
+            default:
+                node = (Node) gson.fromJson(json, t.getTypeClass());
+                break;
         }
+        postDeserialize(node);
+        return node;
 
     }
 }

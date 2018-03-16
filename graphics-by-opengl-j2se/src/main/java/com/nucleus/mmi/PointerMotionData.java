@@ -20,6 +20,11 @@ public class PointerMotionData {
      * Each pointer data, the first will be the touch down, followed by movement.
      */
     ArrayList<PointerData> pointerMovement = new ArrayList<>();
+    /**
+     * Two dimensional min-max values for touch delta:
+     * [xMin, xMax, yMin, yMax]
+     */
+    private float[] minMax = new float[4];
 
     public PointerMotionData(PointerData.Type type) {
         this.type = type;
@@ -34,6 +39,14 @@ public class PointerMotionData {
      */
     public void add(PointerData data) {
         pointerMovement.add(data);
+        if (getCount() > 1) {
+            float[] down = getFirstPosition();
+            float[] current = getCurrentPosition();
+            minMax[0] = Math.min(current[0] - down[0], minMax[0]);
+            minMax[1] = Math.max(current[0] - down[0], minMax[1]);
+            minMax[2] = Math.min(current[1] - down[1], minMax[2]);
+            minMax[3] = Math.max(current[1] - down[1], minMax[3]);
+        }
     }
 
     /**
