@@ -122,7 +122,7 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
 
     @Override
     public void onInputEvent(MMIPointerEvent event) {
-        onInputEvent(root.getRenderedNodes(), event);
+        onInputEvent(root.getVisibleNodeList(), event);
     }
 
 }

@@ -81,31 +81,38 @@ public class PointerData {
     /**
      * Pointer index, 0 and up
      */
-    public int pointer;
+    public final int pointer;
 
-    public long timeStamp;
+    public final long timeStamp;
 
     /**
      * Touch pressure, if reported.
      */
-    public float pressure;
+    public final float pressure;
 
     /**
      * The pointer action, ie what the type of input action, DOWN, MOVE or UP
      */
-    public PointerAction action;
+    public final PointerAction action;
+
+    /**
+     * The pointer type
+     */
+    public final PointerData.Type type;
 
     /**
      * Creates a new pointerdata with pointer index and x,y pos
      * 
      * @param action The pointer action, DOWN, MOVE or UP
+     * @param type The type that the pointerevent originates from
      * @param timestamp The time of the event, in milliseconds.
      * @param pointer Pointer index, eg the touch finger index.
      * @param position Array with x and y position.
      * @param pressure Touch pressure
      */
-    public PointerData(PointerAction action, long timestamp, int pointer, float[] position, float pressure) {
+    public PointerData(PointerAction action, Type type, long timestamp, int pointer, float[] position, float pressure) {
         this.action = action;
+        this.type = type;
         this.timeStamp = timestamp;
         this.pointer = pointer;
         this.pressure = pressure;

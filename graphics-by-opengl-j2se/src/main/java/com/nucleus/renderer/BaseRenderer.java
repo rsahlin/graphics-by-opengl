@@ -293,6 +293,8 @@ class BaseRenderer implements NucleusRenderer {
         }
         renderMeshes(node.getMeshes(), matrices);
         this.modelMatrix = nodeMatrix;
+        // Add this to rendered nodes before children.
+        node.getRootNode().addRenderedNode(node);
         for (Node n : node.getChildren()) {
             pushMatrix(matrixStack, this.modelMatrix);
             render(n);
@@ -301,7 +303,6 @@ class BaseRenderer implements NucleusRenderer {
         if (projection != null) {
             matrices[Matrices.PROJECTION.index] = popMatrix(this.projection);
         }
-        node.getRootNode().addRenderedNode(node);
     }
 
     private void setupRenderTarget(RenderTarget target) throws GLException {

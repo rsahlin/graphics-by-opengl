@@ -927,6 +927,7 @@ public class Node extends BaseReference {
      * @param bounds Reference to bounds, values are not copied.
      */
     public void setBounds(Bounds bounds) {
+        this.bounds = bounds;
     }
 
     /**
@@ -950,6 +951,13 @@ public class Node extends BaseReference {
      * of this node has been created.
      */
     public void onCreated() {
+        // Check if bounds should be created explicitly
+        ViewFrustum vf = getViewFrustum();
+        if (vf != null) {
+            float[] values = vf.getValues();
+            initBounds(new Rectangle(values[ViewFrustum.LEFT_INDEX], values[ViewFrustum.TOP_INDEX], vf.getWidth(),
+                    vf.getHeight()));
+        }
     }
 
     /**
@@ -965,8 +973,7 @@ public class Node extends BaseReference {
                 && getProperty(EventHandler.EventType.POINTERINPUT.name(), Constants.FALSE)
                         .equals(Constants.TRUE)) {
             // In order to do pointer intersections the model and view matrix is needed.
-            // For this to work it is important that the view keeps the same orientation of axis as OpenGL (right
-            // and up)
+            // For this to work it is important that the view keeps the same orientation of axis (left-handed)
             // Matrix.mul4(viewNode.getTransform().getMatrix(), modelMatrix, mv);
             bounds.transform(modelMatrix, 0);
             return bounds.isPointInside(position, 0);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.nucleus.mmi.PointerData.PointerAction;
+import com.nucleus.mmi.PointerData.Type;
 
 /**
  * The pointer motion data for one pointer.
@@ -13,8 +14,6 @@ import com.nucleus.mmi.PointerData.PointerAction;
  *
  */
 public class PointerMotionData {
-
-    PointerData.Type type;
 
     /**
      * Each pointer data, the first will be the touch down, followed by movement.
@@ -26,8 +25,7 @@ public class PointerMotionData {
      */
     private float[] minMax = new float[4];
 
-    public PointerMotionData(PointerData.Type type) {
-        this.type = type;
+    public PointerMotionData() {
     }
 
     /**
@@ -105,6 +103,9 @@ public class PointerMotionData {
      * @return
      */
     public float[] getCurrentPosition() {
+        if (pointerMovement.size() == 0) {
+            return null;
+        }
         return pointerMovement.get(pointerMovement.size() - 1).position;
     }
 
@@ -144,15 +145,17 @@ public class PointerMotionData {
     /**
      * Creates pointer data for the specified parameter
      * 
-     * @param action
-     * @param timestamp
-     * @param pointer
-     * @param position
+     * @param action Pointer event action, eg DOWN, UP
+     * @param type The type that the event originates from
+     * @param timestamp Time of original low level event
+     * @param pointer Pointer number, 0 and up
+     * @param position Position of pointer
      * @param pressure
      * @return
      */
-    public PointerData create(PointerAction action, long timestamp, int pointer, float[] position, float pressure) {
-        return new PointerData(action, timestamp, pointer, position, pressure);
+    public PointerData create(PointerAction action, Type type, long timestamp, int pointer, float[] position,
+            float pressure) {
+        return new PointerData(action, type, timestamp, pointer, position, pressure);
     }
 
     /**
@@ -172,15 +175,6 @@ public class PointerMotionData {
      */
     public int getCount() {
         return pointerMovement.size();
-    }
-
-    /**
-     * Returns the type of pointer is used for the motion event, this is the same from down to up.
-     * 
-     * @return
-     */
-    public PointerData.Type getType() {
-        return type;
     }
 
 }
