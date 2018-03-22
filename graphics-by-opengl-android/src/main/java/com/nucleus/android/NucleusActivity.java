@@ -8,7 +8,7 @@ import com.nucleus.CoreApp;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
 import com.nucleus.common.Environment;
-import com.nucleus.matrix.android.AndroidMatrixEngine;
+import com.nucleus.matrix.j2se.J2SEMatrixEngine;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
@@ -343,12 +343,12 @@ public abstract class NucleusActivity extends Activity
      */
     public void onSurfaceCreated(int width, int height) {
         NucleusRenderer renderer = RendererFactory.getRenderer(gles, new AndroidImageFactory(),
-                new AndroidMatrixEngine());
+                new J2SEMatrixEngine());
         coreApp = CoreApp.createCoreApp(width, height, renderer, clientClass);
     }
 
     /**
-     * Call {@link CoreApp#contextCreated(int, int)} - this signalls that context is created and everything is ready to
+     * Call {@link CoreApp#contextCreated(int, int)} - this signals that context is created and everything is ready to
      * start render
      * 
      * @param width

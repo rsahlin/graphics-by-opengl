@@ -47,26 +47,25 @@ public class DefaultNodeFactory implements NodeFactory {
             throws NodeException {
         // Recursively create children
         for (Node nd : source.children) {
-            Node child = createNode(renderer, meshFactory, nd, parent);
-            if (child != null) {
-                parent.addChild(child);
-            }
+            createNode(renderer, meshFactory, nd, parent);
         }
     }
 
     /**
      * Creates a new node from the source node, creating child nodes as well, looking up resources as needed.
-     * The new node will be returned, it is not added to the parent node - this shall be done by the caller.
-     * The new node will have parent as its parent node
+     * The parent node will be set as parent to the created node
+     * Before returning the node #onCreated() will be called
      * 
      * @param source The node source,
      * @param parent The parent node
      * @return The created node, this will be a new instance of the source node ready to be rendered/processed
+     * @throws IllegalArgumentException If node could not be added to parent
      */
     protected Node createNode(NucleusRenderer renderer, MeshFactory meshFactory, Node source,
             Node parent) throws NodeException {
         long start = System.currentTimeMillis();
         Node created = create(renderer, meshFactory, source, parent.getRootNode());
+        parent.addChild(created);
         FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_NODE, " " + source.getId(), start,
                 System.currentTimeMillis());
         boolean isViewNode = false;
@@ -76,13 +75,14 @@ public class DefaultNodeFactory implements NodeFactory {
         }
         // created.setRootNode(parent.getRootNode());
         setViewFrustum(source, created);
+        // Call #onCreated() on the created node before handling children - parent needs to be fully created before
+        // the children.
+        created.onCreated();
         createChildNodes(renderer, meshFactory, source, created);
         if (isViewNode) {
             viewStack.pop();
         }
-        created.onCreated();
         return created;
-
     }
 
     /**

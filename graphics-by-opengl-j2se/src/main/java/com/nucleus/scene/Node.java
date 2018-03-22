@@ -953,11 +953,41 @@ public class Node extends BaseReference {
     public void onCreated() {
         // Check if bounds should be created explicitly
         ViewFrustum vf = getViewFrustum();
-        if (vf != null) {
-            float[] values = vf.getValues();
-            initBounds(new Rectangle(values[ViewFrustum.LEFT_INDEX], values[ViewFrustum.TOP_INDEX], vf.getWidth(),
-                    vf.getHeight()));
+        if (bounds != null && bounds.getBounds() == null) {
+            // Bounds object defined in node but no bound values set.
+            // try to calculate from viewfrustum.
+            if (getProperty(EventHandler.EventType.POINTERINPUT.name(), Constants.FALSE)
+                    .equals(Constants.TRUE)) {
+                // Has pointer input so must have bounds
+                vf = vf != null ? vf : getParentsView();
+                if (vf == null) {
+                    throw new IllegalArgumentException(
+                            "Node " + getId()
+                                    + " defines pointer input but does not have bounds and not defined in any parent");
+                }
+            }
+            if (vf != null) {
+                float[] values = vf.getValues();
+                initBounds(new Rectangle(values[ViewFrustum.LEFT_INDEX], values[ViewFrustum.TOP_INDEX], vf.getWidth(),
+                        vf.getHeight()));
+            }
         }
+    }
+
+    /**
+     * Look for ViewFrustum in parents nodes, stopping when ViewFrustum is found or when at root.
+     * 
+     * @return ViewFrustom from a parent node, or null if not defined.
+     */
+    protected ViewFrustum getParentsView() {
+
+        Node parent = null;
+        while ((parent = getParent()) != null) {
+            if (parent.getViewFrustum() != null) {
+                return parent.getViewFrustum();
+            }
+        }
+        return null;
     }
 
     /**
