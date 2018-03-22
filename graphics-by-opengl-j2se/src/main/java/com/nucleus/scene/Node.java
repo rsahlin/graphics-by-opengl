@@ -446,17 +446,6 @@ public class Node extends BaseReference {
     public float[] getProjection(Pass pass) {
         switch (pass) {
             case SHADOW1:
-                if (renderPass != null) {
-                    RenderPass p = null;
-                    for (int i = 0; i < renderPass.size(); i++) {
-                        p = renderPass.get(i);
-                        if (p.getPass() == Pass.SHADOW1) {
-                            // If SHADOW1 pass then matrix is set from RENDERPASS1 when uniforms are updated.
-                            // pass null
-                            return null;
-                        }
-                    }
-                }
                 return null;
             default:
                 return projection;

@@ -254,8 +254,9 @@ class BaseRenderer implements NucleusRenderer {
                 if (renderPasses != null) {
                     for (RenderPass renderPass : renderPasses) {
                         if (renderPass.getViewFrustum() != null) {
-                            Matrix.mul4(ShadowPass1Program.getLightMatrix(matrices[Matrices.RENDERPASS_1.index]),
-                                    renderPass.getViewFrustum().getMatrix());
+                            Matrix.mul4(renderPass.getViewFrustum().getMatrix(),
+                                    ShadowPass1Program.getLightMatrix(matrices[Matrices.PROJECTION.index]),
+                                    matrices[Matrices.RENDERPASS_1.index]);
                         }
                         pushPass(renderPass.getPass());
                         setRenderPass(renderPass);

@@ -34,6 +34,7 @@ import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
+import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.TextureUtils;
 import com.nucleus.texturing.TiledTexture2D;
 import com.nucleus.vecmath.Matrix;
@@ -1530,12 +1531,11 @@ public abstract class ShaderProgram {
      * @param variable The shader variable
      * @param offset Offset into destination where fraction is set
      */
-    protected void setTextureUniforms(TiledTexture2D texture, float[] uniforms, ShaderVariable variable,
-            int offset) {
+    protected void setTextureUniforms(TiledTexture2D texture, float[] uniforms, ShaderVariable variable) {
         if (texture.getWidth() == 0 || texture.getHeight() == 0) {
             SimpleLogger.d(getClass(), "ERROR! Texture size is 0: " + texture.getWidth() + ", " + texture.getHeight());
         }
-        offset += variable.getOffset();
+        int offset = variable.getOffset();
         uniforms[offset++] = (((float) texture.getWidth()) / texture.getTileWidth()) / (texture.getWidth());
         uniforms[offset++] = (((float) texture.getHeight()) / texture.getTileHeight()) / (texture.getHeight());
         uniforms[offset++] = texture.getTileWidth();
@@ -1552,6 +1552,19 @@ public abstract class ShaderProgram {
             int screenSizeOffset = uniformScreenSize.getOffset();
             uniforms[screenSizeOffset++] = Window.getInstance().getWidth();
             uniforms[screenSizeOffset++] = Window.getInstance().getHeight();
+        }
+    }
+
+    /**
+     * Sets the data related to texture uniforms in the uniform float storage
+     * 
+     * @param uniforms
+     * @param texture
+     */
+    protected void setTextureUniforms(float[] uniforms, Texture2D texture) {
+        if (texture.getTextureType() == TextureType.TiledTexture2D) {
+            setTextureUniforms((TiledTexture2D) texture, uniforms,
+                    shaderVariables[CommonShaderVariables.uTextureData.index]);
         }
     }
 
