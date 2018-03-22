@@ -59,6 +59,9 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
      */
     protected boolean onPointerEvent(Node node, MMIPointerEvent event) {
         float[] position = event.getPointerData().getCurrentPosition();
+        if (position == null) {
+            return false;
+        }
         if (node.isInside(position)) {
             if (node instanceof MMIEventListener) {
                 ((MMIEventListener) node).onInputEvent(event);
