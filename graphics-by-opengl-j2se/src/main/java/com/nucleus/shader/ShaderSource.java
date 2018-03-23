@@ -27,6 +27,19 @@ public class ShaderSource {
     public static String SHADING_LANGUAGE_100 = "100";
 
     /**
+     * Use for shader source names that are versioned 300
+     */
+    public static final String V300 = "_v300";
+    /**
+     * Use for shader source names that are versioned 310
+     */
+    public static final String V310 = "_v310";
+    /**
+     * Use for shader source names that are versioned 320
+     */
+    public static final String V320 = "_v320";
+
+    /**
      * The sourcename - excluding source name version
      */
     private String sourceName;

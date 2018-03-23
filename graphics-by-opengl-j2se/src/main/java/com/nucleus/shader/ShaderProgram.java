@@ -280,6 +280,12 @@ public abstract class ShaderProgram {
     protected List<Integer> unMappedTypes = new ArrayList<>();
 
     /**
+     * Default is to dynamically map variable names, ie map based on used variables.
+     * Only has effect if set before program is compiled/linked.
+     */
+    protected boolean useDynamicMapping = true;
+
+    /**
      * Returns the program for the specified pass and shading, this is used to resolve the correct
      * program for different passes
      * 
@@ -588,14 +594,15 @@ public abstract class ShaderProgram {
      * Returns the number of attributes per vertex
      * TODO - rename this to dynamic, since it fetches the number of attributes per vertex for dynamic buffer
      * 
-     * @return
+     * @param buffer The buffer to get attributes per vertex for
+     * @return Number of attributes per vertex, 0 or -1 if not defined.
      */
-    public int getAttributesPerVertex() {
-        if (attributesPerVertex.length > BufferIndex.ATTRIBUTES.index) {
-            return attributesPerVertex[BufferIndex.ATTRIBUTES.index];
+    public int getAttributesPerVertex(BufferIndex buffer) {
+        if (attributesPerVertex.length > buffer.index) {
+            return attributesPerVertex[buffer.index];
         } else {
             // No attribute buffer for this program.
-            return 0;
+            return -1;
         }
     }
 
@@ -631,14 +638,13 @@ public abstract class ShaderProgram {
     protected AttributeBuffer createAttributeBuffer(BufferIndex index, int verticeCount, Mesh mesh) {
         switch (index) {
             case ATTRIBUTES:
-                int attrs = getAttributesPerVertex();
+            case VERTICES:
+                int attrs = getAttributesPerVertex(index);
                 if (attrs > 0) {
                     AttributeBuffer buffer = new AttributeBuffer(verticeCount, attrs, GLES20.GL_FLOAT);
                     return buffer;
                 }
                 return null;
-            case VERTICES:
-                return new AttributeBuffer(verticeCount, getVertexStride(), GLES20.GL_FLOAT);
             case ATTRIBUTES_STATIC:
             default:
                 throw new IllegalArgumentException("Not implemented");
@@ -875,7 +881,10 @@ public abstract class ShaderProgram {
             dynamicMapVariables();
         }
         for (int i = 0; i < attributeBufferCount; i++) {
-            attributesPerVertex[i] = getVariableSize(attributeVariables[i], VariableType.ATTRIBUTE);
+            // If only attribute buffer is used the first array index will be null
+            if (attributeVariables[i] != null) {
+                attributesPerVertex[i] = getVariableSize(attributeVariables[i], VariableType.ATTRIBUTE);
+            }
         }
     }
 
@@ -885,7 +894,10 @@ public abstract class ShaderProgram {
      */
     private void dynamicMapVariables() {
         for (ShaderVariable[] sv : attributeVariables) {
-            dynamicMapShaderOffset(sv, VariableType.ATTRIBUTE);
+            // In case only attribute buffer is used the first index will be null.
+            if (sv != null) {
+                dynamicMapShaderOffset(sv, VariableType.ATTRIBUTE);
+            }
         }
         // Map the used uniforms from all used shader variables.
         dynamicMapShaderOffset(shaderVariables, VariableType.UNIFORM);
@@ -1343,6 +1355,9 @@ public abstract class ShaderProgram {
             throws GLException {
         int offset = variable.getOffset();
         switch (variable.getDataType()) {
+            case GLES20.GL_FLOAT:
+                gles.glUniform1fv(variable.getLocation(), variable.getSize(), uniforms, offset);
+                break;
             case GLES20.GL_FLOAT_VEC2:
                 gles.glUniform2fv(variable.getLocation(), variable.getSize(), uniforms, offset);
                 break;
@@ -1725,7 +1740,7 @@ public abstract class ShaderProgram {
      * @return
      */
     protected boolean useDynamicVariables() {
-        return true;
+        return useDynamicMapping;
     }
 
 }

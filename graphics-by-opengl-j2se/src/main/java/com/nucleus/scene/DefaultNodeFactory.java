@@ -10,7 +10,7 @@ import com.nucleus.geometry.MeshFactory;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.scene.Node.MeshType;
+import com.nucleus.scene.Node.MeshIndex;
 import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.shader.ShaderProgram;
 
@@ -117,7 +117,7 @@ public class DefaultNodeFactory implements NodeFactory {
             Node node = source.createInstance(root);
             Mesh mesh = meshFactory.createMesh(renderer, node);
             if (mesh != null) {
-                node.addMesh(mesh, MeshType.MAIN);
+                node.addMesh(mesh, MeshIndex.MAIN);
             }
             node.create();
             return node;
@@ -134,7 +134,7 @@ public class DefaultNodeFactory implements NodeFactory {
             // TODO Fix generics so that cast is not needed
             Mesh mesh = builder.create();
             if (mesh != null) {
-                node.addMesh(mesh, MeshType.MAIN);
+                node.addMesh(mesh, MeshIndex.MAIN);
             }
             return node;
         } catch (InstantiationException | IllegalAccessException | IOException | GLException e) {

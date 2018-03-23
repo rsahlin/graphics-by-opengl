@@ -100,7 +100,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
 
     @Override
     public void create() {
-        Mesh mesh = getMesh(MeshType.MAIN);
+        Mesh mesh = getMesh(MeshIndex.MAIN);
         mesh.setAttributeUpdater(this);
         bindAttributeBuffer(mesh.getVerticeBuffer(BufferIndex.ATTRIBUTES));
     }
@@ -135,10 +135,10 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void setRectangle(int vertice, float[] values, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = getMesh(MeshType.MAIN).getMaterial().getProgram()
+        int translate = getMesh(MeshIndex.MAIN).getMaterial().getProgram()
                 .getShaderVariable(CommonShaderVariables.aTranslate)
                 .getOffset();
-        int color = getMesh(MeshType.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aColor)
+        int color = getMesh(MeshIndex.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aColor)
                 .getOffset();
         float[] pos = new float[2];
         internalSetVertex(offset + translate, offset + color, copy(values, 0, pos), z, rgba);
@@ -182,10 +182,10 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void setLine(int vertice, float[] first, float[] second, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = getMesh(MeshType.MAIN).getMaterial().getProgram()
+        int translate = getMesh(MeshIndex.MAIN).getMaterial().getProgram()
                 .getShaderVariable(CommonShaderVariables.aTranslate)
                 .getOffset();
-        int color = getMesh(MeshType.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aColor)
+        int color = getMesh(MeshIndex.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aColor)
                 .getOffset();
         internalSetVertex(offset + translate, offset + color, first, z, rgba);
         offset += buffer.getFloatStride();
@@ -202,10 +202,10 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void addLine(int vertice, float[] next, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = getMesh(MeshType.MAIN).getMaterial().getProgram()
+        int translate = getMesh(MeshIndex.MAIN).getMaterial().getProgram()
                 .getShaderVariable(CommonShaderVariables.aTranslate)
                 .getOffset();
-        int color = getMesh(MeshType.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aColor)
+        int color = getMesh(MeshIndex.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aColor)
                 .getOffset();
         internalSetVertex(offset + translate, offset + color, next, z, rgba);
     }
@@ -219,7 +219,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void setPos(int vertice, float[] pos, float z) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = getMesh(MeshType.MAIN).getMaterial().getProgram()
+        int translate = getMesh(MeshIndex.MAIN).getMaterial().getProgram()
                 .getShaderVariable(CommonShaderVariables.aTranslate)
                 .getOffset();
         internalSetVertex(offset + translate, pos, z);
@@ -275,7 +275,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      * @param offset
      */
     private void updateDrawCount(int count, int offset) {
-        Mesh mesh = getMesh(MeshType.MAIN);
+        Mesh mesh = getMesh(MeshIndex.MAIN);
         mesh.setDrawCount(count, offset);
     }
 

@@ -55,6 +55,7 @@ public class Node extends BaseReference {
         switchnode(SwitchNode.class),
         linedrawernode(LineDrawerNode.class),
         componentnode(ComponentNode.class),
+        meshnode(MeshNode.class),
         rootnode(BaseRootNode.class);
 
         private final Class<?> theClass;
@@ -89,7 +90,7 @@ public class Node extends BaseReference {
 
     public static final String ONCLICK = "onclick";
 
-    public enum MeshType {
+    public enum MeshIndex {
         /**
          * Main mesh
          */
@@ -101,7 +102,7 @@ public class Node extends BaseReference {
 
         public final int index;
 
-        MeshType(int index) {
+        MeshIndex(int index) {
             this.index = index;
         }
 
@@ -302,12 +303,12 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Returns the mesh type, if added with a call to {@link #addMesh(Mesh, MeshType)}
+     * Returns the mesh type, if added with a call to {@link #addMesh(Mesh, MeshIndex)}
      * 
      * @param type
-     * @return Mesh for the specified type or null if not added with a call to {@link #addMesh(Mesh, MeshType)}
+     * @return Mesh for the specified type or null if not added with a call to {@link #addMesh(Mesh, MeshIndex)}
      */
-    public Mesh getMesh(MeshType type) {
+    public Mesh getMesh(MeshIndex type) {
         if (type != null && type.index < meshes.size()) {
             return meshes.get(type.index);
         }
@@ -319,7 +320,7 @@ public class Node extends BaseReference {
      * 
      * @param mesh
      */
-    public void addMesh(Mesh mesh, MeshType type) {
+    public void addMesh(Mesh mesh, MeshIndex type) {
         meshes.add(type.index, mesh);
     }
 

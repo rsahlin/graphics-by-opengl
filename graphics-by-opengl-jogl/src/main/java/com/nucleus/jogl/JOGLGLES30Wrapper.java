@@ -257,7 +257,11 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glUniform2fv(int location, int count, float[] v, int offset) {
         gles.glUniform2fv(location, count, v, offset);
+    }
 
+    @Override
+    public void glUniform1fv(int location, int count, float[] v, int offset) {
+        gles.glUniform1fv(location, count, v, offset);
     }
 
     @Override

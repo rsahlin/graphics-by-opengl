@@ -266,6 +266,11 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
+    public void glUniform1fv(int location, int count, float[] v, int offset) {
+        gles.glUniform1fv(location, count, v, offset);
+    }
+
+    @Override
     public void glTexParameterf(int target, int pname, float param) {
         gles.glTexParameterf(target, pname, param);
 

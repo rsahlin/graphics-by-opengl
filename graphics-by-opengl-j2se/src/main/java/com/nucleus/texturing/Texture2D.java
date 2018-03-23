@@ -31,8 +31,9 @@ public class Texture2D extends BaseReference {
         flat(),
         parametric(),
         textured(),
+        colorize(),
         shadow1(),
-        shadow2();
+        shadow2(),
     }
 
     /**

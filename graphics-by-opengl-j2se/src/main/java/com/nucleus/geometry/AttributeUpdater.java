@@ -1,5 +1,6 @@
 package com.nucleus.geometry;
 
+import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.ShaderProgram;
 
@@ -81,7 +82,7 @@ public interface AttributeUpdater {
             colorSpecularOffset = program.getPropertyOffset(Property.COLOR_SPECULAR);
             colorAmbientOffset = program.getPropertyOffset(Property.COLOR_AMBIENT);
             specularPowerOffset = program.getPropertyOffset(Property.SPECULAR_POWER);
-            attributesPerVertex = program.getAttributesPerVertex();
+            attributesPerVertex = program.getAttributesPerVertex(BufferIndex.ATTRIBUTES);
         }
     }
 
