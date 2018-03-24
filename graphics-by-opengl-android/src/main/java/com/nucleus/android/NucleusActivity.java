@@ -25,6 +25,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
@@ -100,9 +101,9 @@ public abstract class NucleusActivity extends Activity
             throw new IllegalArgumentException("ClientClass must be set before calling super.onCreate()");
         }
         activity = this;
-        super.onCreate(savedInstanceState);
         checkProperties();
         setup(getRenderVersion(), GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+        super.onCreate(savedInstanceState);
     }
 
     @Override
@@ -220,14 +221,21 @@ public abstract class NucleusActivity extends Activity
         SimpleLogger.d(getClass(), "Using SurfaceConfig:\n" + surfaceConfig.toString());
         createWrapper(version);
         surfaceView = createSurfaceView(version, surfaceConfig, rendermode);
+        surfaceView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         SimpleLogger.d(getClass(), "Using " + surfaceView.getClass().getSimpleName());
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setContentView(surfaceView);
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         com.nucleus.renderer.Window.getInstance().setScreenSize(size.x, size.y);
         androidUptimeDelta = System.currentTimeMillis() - android.os.SystemClock.uptimeMillis();
+
     }
 
     /**
@@ -346,6 +354,9 @@ public abstract class NucleusActivity extends Activity
         NucleusRenderer renderer = RendererFactory.getRenderer(gles, new AndroidImageFactory(),
                 new J2SEMatrixEngine());
         coreApp = CoreApp.createCoreApp(width, height, renderer, clientClass);
+        if (useEGL14) {
+            ((EGLSurfaceView) surfaceView).swapBuffers();
+        }
     }
 
     /**
