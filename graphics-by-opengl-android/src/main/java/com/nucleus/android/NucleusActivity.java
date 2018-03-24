@@ -27,6 +27,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.Display.Mode;
@@ -241,7 +242,7 @@ public abstract class NucleusActivity extends Activity
      * @return
      */
     protected SurfaceView createSurfaceView(Renderers version, SurfaceConfiguration surfaceConfig, int rendermode) {
-        if (useEGL14) {
+        if (useEGL14 && Build.VERSION.SDK_INT > 16) {
             return new EGLSurfaceView(surfaceConfig, version, this, eglSwapInterval,
                     surfaceAttribs, useChoreographer);
         } else {
