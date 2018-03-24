@@ -2,7 +2,7 @@ package com.nucleus.texturing;
 
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -135,7 +135,13 @@ public class TextureFactory {
         builder.registerTypeAdapter(Texture2D.class, new TextureDeserializer());
         Gson gson = builder.create();
         SimpleLogger.d(TextureFactory.class, "Reading texture data from: " + ref.getSource());
-        InputStreamReader reader = new InputStreamReader(ref.getAsStream(), StandardCharsets.UTF_8);
+        InputStreamReader reader;
+        try {
+            // TODO - If Android build version => 19 then java.nio.StandardCharset can be used
+            reader = new InputStreamReader(ref.getAsStream(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
         Texture2D texture = gson.fromJson(reader, Texture2D.class);
         if (texture.getId() == null) {
             throw new IllegalArgumentException("Texture object id is null for ref: " + ref.getSource());

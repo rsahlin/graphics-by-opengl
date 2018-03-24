@@ -1,6 +1,6 @@
 package com.nucleus.common;
 
-import java.nio.charset.StandardCharsets;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -208,7 +208,12 @@ public class StringUtils {
      * @return
      */
     public static String createString(byte[] data, int start, int length) {
-        return new String(data, start, length, StandardCharsets.UTF_8);
+        try {
+            // TODO - If Android build version => 19 then java.nio.StandardCharset can be used
+            return new String(data, start, length, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
