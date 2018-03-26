@@ -354,9 +354,6 @@ public abstract class NucleusActivity extends Activity
         NucleusRenderer renderer = RendererFactory.getRenderer(gles, new AndroidImageFactory(),
                 new J2SEMatrixEngine());
         coreApp = CoreApp.createCoreApp(width, height, renderer, clientClass);
-        if (useEGL14) {
-            ((EGLSurfaceView) surfaceView).swapBuffers();
-        }
     }
 
     /**

@@ -304,7 +304,7 @@ public class CoreApp implements RenderContextListener {
         Material material = new Material();
         material.setProgram(vt);
         meshBuilder.setMaterial(material);
-        meshBuilder.setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(0.2f, 0.2f, 0f, 1, 0)));
+        meshBuilder.setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(0.2f, 0.2f, 1f, 1, 0)));
         builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
                 .setNode(NodeTypes.layernode);
         RootNode root = builder.create();

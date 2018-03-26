@@ -36,6 +36,10 @@ public class AttributeBuffer extends BufferObject {
      * under/overflow when accessed (due to position being changed in other thread)
      */
     private FloatBuffer attributes;
+    /**
+     * The attribute buffer as a ByteBuffer
+     */
+    private ByteBuffer byteBuffer;
     private int verticeCount;
 
     /**
@@ -71,8 +75,8 @@ public class AttributeBuffer extends BufferObject {
         }
         this.type = type;
         this.verticeCount = verticeCount;
-        attributes = ByteBuffer.allocateDirect(sizeInBytes)
-                .order(ByteOrder.nativeOrder()).asFloatBuffer();
+        byteBuffer = ByteBuffer.allocateDirect(sizeInBytes).order(ByteOrder.nativeOrder());
+        attributes = byteBuffer.asFloatBuffer();
         attribByteStride = sizePerVertex * DATATYPE_SIZE;
         attribFloatStride = sizePerVertex;
         SimpleLogger.d(getClass(),
@@ -113,6 +117,20 @@ public class AttributeBuffer extends BufferObject {
     @Deprecated
     public FloatBuffer getBuffer() {
         return attributes;
+    }
+
+    /**
+     * Returns the underlying Buffer holding vertex buffer array data.
+     * NOTE!
+     * Take care when writing to the buffer as it may clash with copy to gl.
+     * 
+     * Avoid using this method to store data in underlying buffer - use {@link #put(float[], int, int)} etc
+     * 
+     * @return
+     */
+    @Deprecated
+    public ByteBuffer getByteBuffer() {
+        return byteBuffer;
     }
 
     /**
