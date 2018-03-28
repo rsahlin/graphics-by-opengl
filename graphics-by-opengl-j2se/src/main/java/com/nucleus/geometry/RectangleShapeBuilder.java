@@ -197,7 +197,7 @@ public class RectangleShapeBuilder extends ElementBuilder {
 
     @Override
     public void build(Mesh mesh) {
-        AttributeBuffer attributes = mesh.getVerticeBuffer(BufferIndex.VERTICES);
+        AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.VERTICES);
         int stride = attributes.getFloatStride();
         float[] data = new float[stride * QUAD_VERTICES];
         if (configuration.rectangle != null) {

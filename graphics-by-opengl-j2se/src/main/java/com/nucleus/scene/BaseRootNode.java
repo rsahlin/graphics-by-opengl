@@ -78,7 +78,7 @@ public class BaseRootNode extends RootNode {
             pass.setTarget(new RenderTarget(Target.FRAMEBUFFER, null));
             pass.setRenderState(new RenderState());
             pass.setPass(Pass.MAIN);
-            Node created = nodeFactory.create(renderer, program, builder, nodeType, root);
+            Node created = nodeFactory.create(renderer, builder, nodeType, root);
             ViewFrustum vf = new ViewFrustum();
             vf.setOrthoProjection(-0.8889f, 0.8889f, -0.5f, 0.5f, 0, 10);
             created.setViewFrustum(vf);

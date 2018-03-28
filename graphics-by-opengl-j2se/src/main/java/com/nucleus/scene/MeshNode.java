@@ -12,7 +12,6 @@ public class MeshNode extends Node {
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
      */
-    @Deprecated
     protected MeshNode() {
         super();
     }

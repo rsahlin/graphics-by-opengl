@@ -84,7 +84,7 @@ public class ConvolutionProgram extends ShaderProgram {
 
     @Override
     public void updateAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
-        AttributeBuffer buffer = mesh.getVerticeBuffer(BufferIndex.VERTICES);
+        AttributeBuffer buffer = mesh.getAttributeBuffer(BufferIndex.VERTICES);
         gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attributeVariables[BufferIndex.VERTICES.index]);
         GLUtils.handleError(gles, "glVertexAttribPointers ");
 

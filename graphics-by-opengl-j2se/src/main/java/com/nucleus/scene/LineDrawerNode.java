@@ -102,7 +102,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     public void create() {
         Mesh mesh = getMesh(MeshIndex.MAIN);
         mesh.setAttributeUpdater(this);
-        bindAttributeBuffer(mesh.getVerticeBuffer(BufferIndex.ATTRIBUTES));
+        bindAttributeBuffer(mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES));
     }
 
     public void set(LineDrawerNode source) {

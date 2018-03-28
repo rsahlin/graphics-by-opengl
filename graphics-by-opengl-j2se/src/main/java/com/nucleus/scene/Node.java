@@ -1,5 +1,6 @@
 package com.nucleus.scene;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +21,7 @@ import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
+import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.Pass;
@@ -44,6 +46,73 @@ import com.nucleus.vecmath.Transform;
  *
  */
 public class Node extends BaseReference {
+
+    /**
+     * Builder for Nodes, use this when nodes are created programmatically
+     *
+     * @param <T>
+     */
+    public static class Builder<T extends Node> {
+
+        private Type<Node> type;
+        private RootNode root;
+        private int meshCount = 1;
+        private com.nucleus.geometry.Mesh.Builder<Mesh> meshBuilder;
+
+        public Builder<T> setType(Type<Node> type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder<T> setRoot(RootNode root) {
+            this.root = root;
+            return this;
+        }
+
+        /**
+         * Sets the Mesh builder to be used to create meshes, if no meshes should be built the meshcount
+         * must be set to < 1 by calling {@link #setMeshCount(int)}
+         * 
+         * @param meshBuilder
+         * @return
+         */
+        public Builder<T> setMeshBuilder(Mesh.Builder<Mesh> meshBuilder) {
+            this.meshBuilder = meshBuilder;
+            return this;
+        }
+
+        /**
+         * Sets the number of meshes to create by calling the meshBuilder, default to 1
+         * 
+         * @param meshCount
+         * @return
+         */
+        public Builder<T> setMeshCount(int meshCount) {
+            this.meshCount = meshCount;
+            return this;
+        }
+
+        public T create() throws NodeException {
+            try {
+                if (type == null || root == null) {
+                    throw new IllegalArgumentException("Must set type and root before calling #create()");
+                }
+                if (meshCount > 0 && meshBuilder == null) {
+                    throw new IllegalArgumentException("meshCount = " + meshCount
+                            + " but mesh builder is not set. either call #setMeshBuilder() or #setMeshCount(0)");
+                }
+                Node node = Node.createInstance(type, root);
+                for (int i = 0; i < meshCount; i++) {
+                    Mesh mesh = meshBuilder.create();
+                    node.addMesh(mesh, MeshIndex.MAIN);
+                }
+                return (T) node;
+            } catch (InstantiationException | IllegalAccessException | GLException | IOException e) {
+                throw new NodeException("Could not create node: " + e.getMessage());
+            }
+        }
+
+    }
 
     /**
      * Known node types
@@ -303,25 +372,49 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Returns the mesh type, if added with a call to {@link #addMesh(Mesh, MeshIndex)}
+     * Returns the number of meshes in this node
+     * 
+     * @return
+     */
+    public int getMeshCount() {
+        return meshes.size();
+    }
+
+    /**
+     * Returns the mesh for a specific index
      * 
      * @param type
-     * @return Mesh for the specified type or null if not added with a call to {@link #addMesh(Mesh, MeshIndex)}
+     * @return Mesh for the specified index or null
      */
-    public Mesh getMesh(MeshIndex type) {
-        if (type != null && type.index < meshes.size()) {
-            return meshes.get(type.index);
+    public Mesh getMesh(MeshIndex index) {
+        if (type != null && index.index < meshes.size()) {
+            return meshes.get(index.index);
         }
         return null;
     }
 
     /**
-     * Adds a mesh to be rendered with this node.
+     * Returns the mesh at the specified index
+     * 
+     * @param index
+     * @return The mesh, or null
+     */
+    public Mesh getMesh(int index) {
+        return meshes.get(index);
+    }
+
+    /**
+     * Adds a mesh to be rendered with this node. The mesh is added at the specified index, if specified
      * 
      * @param mesh
+     * @param index The index where this mesh is added or null to add at end of current list
      */
-    public void addMesh(Mesh mesh, MeshIndex type) {
-        meshes.add(type.index, mesh);
+    public void addMesh(Mesh mesh, MeshIndex index) {
+        if (index == null) {
+            meshes.add(mesh);
+        } else {
+            meshes.add(index.index, mesh);
+        }
     }
 
     /**

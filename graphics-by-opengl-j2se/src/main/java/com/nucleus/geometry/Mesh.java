@@ -186,8 +186,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * @param textureRef
          * @throws IOException If the texture could not be loaded
          */
-        public void setTexture(ExternalReference textureRef) throws IOException {
+        public Builder<T> setTexture(ExternalReference textureRef) throws IOException {
             this.texture = AssetManager.getInstance().getTexture(renderer, textureRef);
+            return this;
         }
 
         /**
@@ -198,9 +199,10 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * @param vertexCount Number of vertices
          * @return
          */
-        public void setArrayMode(Mode mode, int vertexCount) {
+        public Builder<T> setArrayMode(Mode mode, int vertexCount) {
             this.vertexCount = vertexCount;
             this.mode = mode;
+            return this;
         }
 
         /**
@@ -211,10 +213,11 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * @param vertexCount
          * @param indiceCount
          */
-        public void setElementMode(Mode mode, int vertexCount, int indiceCount) {
+        public Builder<T> setElementMode(Mode mode, int vertexCount, int indiceCount) {
             this.indiceCount = indiceCount;
             this.vertexCount = vertexCount;
             this.mode = mode;
+            return this;
         }
 
         /**
@@ -222,8 +225,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * 
          * @param material
          */
-        public void setMaterial(Material material) {
+        public Builder<T> setMaterial(Material material) {
             this.material = material;
+            return this;
         }
 
         /**
@@ -232,8 +236,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * @param shapeBuilder The shape builder, or null
          * @return
          */
-        public void setShapeBuilder(ShapeBuilder shapeBuilder) {
+        public Builder<T> setShapeBuilder(ShapeBuilder shapeBuilder) {
             this.shapeBuilder = shapeBuilder;
+            return this;
         }
 
         /**
@@ -398,17 +403,17 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * @param buffer Index into the vertex/attribute buffer to return
      * @return The vertexbuffer
      */
-    public AttributeBuffer getVerticeBuffer(BufferIndex buffer) {
+    public AttributeBuffer getAttributeBuffer(BufferIndex buffer) {
         return attributes[buffer.index];
     }
 
     /**
-     * Returns the buffer, at the specified index, containing vertices and attribute data
+     * Returns the buffer, at the specified index, containing vertice/attribute data
      * 
      * @param buffer Index into the vertex/attribute buffer to return
-     * @return The vertexbuffer
+     * @return Buffer holding attribute data.
      */
-    public AttributeBuffer getVerticeBuffer(int index) {
+    public AttributeBuffer getAttributeBuffer(int index) {
         return attributes[index];
     }
 
@@ -417,7 +422,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * 
      * @return
      */
-    public AttributeBuffer[] getVerticeBuffers() {
+    public AttributeBuffer[] getAttributeBuffers() {
         return attributes;
     }
 
@@ -611,7 +616,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     public void setAttribute4(int index, ShaderVariable variable, float[] attribute, int verticeCount) {
         int offset = index * mapper.attributesPerVertex;
         offset += variable.getOffset();
-        AttributeBuffer buffer = getVerticeBuffer(BufferIndex.ATTRIBUTES);
+        AttributeBuffer buffer = getAttributeBuffer(BufferIndex.ATTRIBUTES);
         if (buffer != null) {
             buffer.setComponents(attribute, 4, 0, offset, verticeCount);
         }
@@ -627,7 +632,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     public void setDrawCount(int drawCount, int offset) {
         ElementBuffer buffer = getElementBuffer();
-        int max = getVerticeBuffer(BufferIndex.VERTICES).getVerticeCount();
+        int max = getAttributeBuffer(BufferIndex.VERTICES).getVerticeCount();
         if (buffer != null && buffer.getCount() > 0) {
             max = buffer.getCount();
         }

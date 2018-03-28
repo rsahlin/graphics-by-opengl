@@ -732,7 +732,7 @@ public abstract class ShaderProgram {
      */
     public void updateAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
         for (int i = 0; i < attributeVariables.length; i++) {
-            AttributeBuffer buffer = mesh.getVerticeBuffer(i);
+            AttributeBuffer buffer = mesh.getAttributeBuffer(i);
             if (buffer != null) {
                 gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attributeVariables[i]);
                 GLUtils.handleError(gles, "glVertexAttribPointers ");

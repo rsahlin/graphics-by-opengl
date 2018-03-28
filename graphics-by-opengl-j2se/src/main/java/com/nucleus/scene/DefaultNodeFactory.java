@@ -12,10 +12,10 @@ import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node.MeshIndex;
 import com.nucleus.scene.Node.NodeTypes;
-import com.nucleus.shader.ShaderProgram;
 
 /**
  * The default node factory implementation
+ * Will create one mesh for the Node by calling MeshFactory or Builder
  * 
  * @author Richard Sahlin
  *
@@ -25,6 +25,10 @@ public class DefaultNodeFactory implements NodeFactory {
     protected static final String NOT_IMPLEMENTED = "Not implemented: ";
     protected static final String ILLEGAL_NODE_TYPE = "Unknown node type: ";
     protected ArrayDeque<LayerNode> viewStack = new ArrayDeque<LayerNode>(NucleusRenderer.MIN_STACKELEMENTS);
+    /**
+     * Number of meshes to create by calling MeshFactory or Builder
+     */
+    protected int meshCount = 1;
 
     @Override
     public Node create(NucleusRenderer renderer, MeshFactory meshFactory, Node source,
@@ -115,9 +119,11 @@ public class DefaultNodeFactory implements NodeFactory {
             throws NodeException {
         try {
             Node node = source.createInstance(root);
-            Mesh mesh = meshFactory.createMesh(renderer, node);
-            if (mesh != null) {
-                node.addMesh(mesh, MeshIndex.MAIN);
+            for (int i = 0; i < meshCount; i++) {
+                Mesh mesh = meshFactory.createMesh(renderer, node);
+                if (mesh != null) {
+                    node.addMesh(mesh, MeshIndex.MAIN);
+                }
             }
             node.create();
             return node;
@@ -127,19 +133,31 @@ public class DefaultNodeFactory implements NodeFactory {
     }
 
     @Override
-    public Node create(NucleusRenderer renderer, ShaderProgram program, Mesh.Builder<Mesh> builder, Type<Node> nodeType,
+    public Node create(NucleusRenderer renderer, Mesh.Builder<Mesh> builder, Type<Node> nodeType,
             RootNode root) throws NodeException {
         try {
             Node node = Node.createInstance(nodeType, root);
             // TODO Fix generics so that cast is not needed
-            Mesh mesh = builder.create();
-            if (mesh != null) {
-                node.addMesh(mesh, MeshIndex.MAIN);
+            for (int i = 0; i < meshCount; i++) {
+                Mesh mesh = builder.create();
+                if (mesh != null) {
+                    node.addMesh(mesh, MeshIndex.MAIN);
+                }
             }
             return node;
         } catch (InstantiationException | IllegalAccessException | IOException | GLException e) {
             throw new NodeException(e);
         }
+    }
+
+    /**
+     * Sets the number of meshes to create by calling MeshFactory or Biulder in create methods.
+     * Default is 1.
+     * 
+     * @param meshCount Number of meshes to create when Node is created.
+     */
+    public void setMeshCount(int meshCount) {
+        this.meshCount = meshCount;
     }
 
 }

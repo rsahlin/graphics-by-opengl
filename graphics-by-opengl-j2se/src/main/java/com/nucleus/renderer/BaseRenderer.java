@@ -548,7 +548,7 @@ class BaseRenderer implements NucleusRenderer {
         program.updateUniforms(gles, matrices, mesh);
         program.prepareTextures(gles, mesh);
 
-        AttributeBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
+        AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.VERTICES);
         ElementBuffer indices = mesh.getElementBuffer();
 
         // TODO - is this the best place for this check - remember, this should only be done in debug cases.

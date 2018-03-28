@@ -51,7 +51,7 @@ public class BufferObjectsFactory {
         mesh.setBufferNames(0, names, 0);
         ElementBuffer indices = mesh.getElementBuffer();
         GLUtils.handleError(renderer.getGLES(), "before create vbos");
-        for (AttributeBuffer attribs : mesh.getVerticeBuffers()) {
+        for (AttributeBuffer attribs : mesh.getAttributeBuffers()) {
             if (attribs != null) {
                 renderer.bindBuffer(GLES20.GL_ARRAY_BUFFER, attribs.getBufferName());
                 renderer.bufferData(GLES20.GL_ARRAY_BUFFER, attribs.getSizeInBytes(),
