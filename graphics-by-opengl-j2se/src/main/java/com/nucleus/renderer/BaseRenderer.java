@@ -253,7 +253,7 @@ class BaseRenderer implements NucleusRenderer {
                 ArrayList<RenderPass> renderPasses = node.getRenderPass();
                 if (renderPasses != null) {
                     for (RenderPass renderPass : renderPasses) {
-                        if (renderPass.getViewFrustum() != null) {
+                        if (renderPass.getViewFrustum() != null && renderPass.getPass() == Pass.SHADOW1) {
                             Matrix.mul4(renderPass.getViewFrustum().getMatrix(),
                                     ShadowPass1Program.getLightMatrix(matrices[Matrices.PROJECTION.index]),
                                     matrices[Matrices.RENDERPASS_1.index]);

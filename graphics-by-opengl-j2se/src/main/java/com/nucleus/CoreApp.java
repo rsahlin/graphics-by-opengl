@@ -181,15 +181,6 @@ public class CoreApp implements RenderContextListener {
     @Override
     public void contextCreated(int width, int height) {
         hasCalledCreated = true;
-        if (!getRenderer().isInitialized()) {
-            getRenderer().init(new SurfaceConfiguration(), width, height);
-            try {
-                // The caller shall make sure that buffers are swapped so that the result is visible
-                displaySplash();
-            } catch (GLException | NodeException e) {
-                throw new RuntimeException(e);
-            }
-        }
         clientApp.init(this);
         renderer.contextCreated(width, height);
     }
