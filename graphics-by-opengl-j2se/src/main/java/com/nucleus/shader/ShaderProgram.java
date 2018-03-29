@@ -1008,7 +1008,7 @@ public abstract class ShaderProgram {
         VariableMapping v = getMappingByName(variable);
         // If variable is null then not defined in mapping used when class is created - treat this as an error
         if (v == null) {
-            throw new IllegalArgumentException("No mapping for shader variable " + variable);
+            throw new IllegalArgumentException("No mapping for shader variable " + variable.getName());
         }
         variable.setOffset(v.getOffset());
     }

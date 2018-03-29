@@ -38,7 +38,8 @@ public enum CommonShaderVariables implements VariableMapping {
     aScale(14, 8, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
     aColor(15, 12, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
     aFrameData(16, 16, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aData1(17, 20, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
+    aData1(17, 20, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aEmissive(18, 24, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
 
     /**
      * Index (id) of variable
