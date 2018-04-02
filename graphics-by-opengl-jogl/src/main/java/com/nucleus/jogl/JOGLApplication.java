@@ -3,6 +3,7 @@ package com.nucleus.jogl;
 import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.J2SEWindow;
 import com.nucleus.J2SEWindowApplication;
+import com.nucleus.common.Type;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
 
@@ -22,10 +23,11 @@ public class JOGLApplication extends J2SEWindowApplication {
      * 
      * @param args
      * @param version
-     * @param clientClass Must implement {@link ClientApplication}
+     * @param clientClass Implementing class for {@link ClientApplication}, must implement {@link ClientApplication}
+     * interface
      * @throws IllegalArgumentException If clientClass is null
      */
-    public JOGLApplication(String[] args, Renderers version, Class<?> clientClass) {
+    public JOGLApplication(String[] args, Renderers version, Type<Object> clientClass) {
         super(args, version, clientClass);
     }
 

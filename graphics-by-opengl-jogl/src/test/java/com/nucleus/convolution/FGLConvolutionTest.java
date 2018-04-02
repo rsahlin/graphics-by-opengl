@@ -5,6 +5,7 @@ import org.junit.Test;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.assets.AssetManager;
+import com.nucleus.common.Type;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.Mode;
@@ -33,6 +34,31 @@ import com.nucleus.texturing.TextureParameter;
 public class FGLConvolutionTest extends JOGLApplication implements FrameListener,
         MMIEventListener {
 
+    /**
+     * The types that can be used to represent classes when importing/exporting
+     * This is used as a means to decouple serialized name from implementing class.
+     * 
+     */
+    public enum ClientClasses implements Type<Object> {
+        clientclass(MyClientApplication.class);
+
+        private final Class<?> theClass;
+
+        private ClientClasses(Class<?> theClass) {
+            this.theClass = theClass;
+        }
+
+        @Override
+        public Class<Object> getTypeClass() {
+            return (Class<Object>) theClass;
+        }
+
+        @Override
+        public String getName() {
+            return name();
+        }
+    }
+
     public static class MyClientApplication implements ClientApplication {
 
         @Override
@@ -59,7 +85,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
     private ConvolutionProgram program;
 
     public FGLConvolutionTest() {
-        super(new String[] {}, Renderers.GLES20, MyClientApplication.class);
+        super(new String[] {}, Renderers.GLES20, ClientClasses.clientclass);
     }
 
     public static void main(String[] args) {

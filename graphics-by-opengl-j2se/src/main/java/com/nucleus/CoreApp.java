@@ -1,6 +1,7 @@
 package com.nucleus;
 
 import com.nucleus.assets.AssetManager;
+import com.nucleus.common.Type;
 import com.nucleus.component.ComponentProcessorRunnable;
 import com.nucleus.component.J2SEComponentProcessor;
 import com.nucleus.event.EventManager;
@@ -111,6 +112,10 @@ public class CoreApp implements RenderContextListener {
      * The implementation of main application
      */
     protected ClientApplication clientApp;
+    /**
+     * Class to instantiate for ClientApplication
+     */
+    protected static Class<?> clientClass;
     /**
      * The scene rootnode
      */
@@ -305,15 +310,27 @@ public class CoreApp implements RenderContextListener {
     }
 
     /**
+     * Sets the clientapplication implementation class.
+     * This must be called before calling {@link #createCoreApp(int, int, NucleusRenderer)}
+     * 
+     * @param client Must be a class implementing {@link ClientApplication}
+     */
+    public static void setClientClass(Type<Object> client) {
+        clientClass = client.getTypeClass();
+    }
+
+    /**
      * Util method to create the coreapp and display splash. Caller must swapp buffer for splash to be visible.
      * 
      * @param width
      * @param height
      * @param renderer
-     * @param clientClass
      * @return Instance of {@link CoreApp} with the specified clientclass {@link ClientApplication}
      */
-    public static CoreApp createCoreApp(int width, int height, NucleusRenderer renderer, Class<?> clientClass) {
+    public static CoreApp createCoreApp(int width, int height, NucleusRenderer renderer) {
+        if (clientClass == null) {
+            throw new IllegalArgumentException("Must call #setClientClass() before calling #createCoreApp()");
+        }
         renderer.init(new SurfaceConfiguration(), width, height);
         try {
             CoreApp coreApp = new CoreApp(renderer, (ClientApplication) clientClass.newInstance());

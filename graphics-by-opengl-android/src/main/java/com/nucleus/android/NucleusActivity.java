@@ -55,7 +55,6 @@ public abstract class NucleusActivity extends Activity
     private static NucleusActivity activity;
 
     protected CoreApp coreApp;
-    protected Class<?> clientClass;
     protected GLESWrapper gles;
     private long androidUptimeDelta;
     /**
@@ -97,9 +96,6 @@ public abstract class NucleusActivity extends Activity
     public void onCreate(Bundle savedInstanceState) {
         SimpleLogger.setLogger(new AndroidLogger());
         SimpleLogger.d(getClass(), "onCreate()");
-        if (clientClass == null) {
-            throw new IllegalArgumentException("ClientClass must be set before calling super.onCreate()");
-        }
         activity = this;
         checkProperties();
         setup(getRenderVersion(), GLSurfaceView.RENDERMODE_CONTINUOUSLY);
@@ -353,7 +349,7 @@ public abstract class NucleusActivity extends Activity
     public void onSurfaceCreated(int width, int height) {
         NucleusRenderer renderer = RendererFactory.getRenderer(gles, new AndroidImageFactory(),
                 new J2SEMatrixEngine());
-        coreApp = CoreApp.createCoreApp(width, height, renderer, clientClass);
+        coreApp = CoreApp.createCoreApp(width, height, renderer);
     }
 
     /**

@@ -9,9 +9,9 @@ public class GlobalLight {
     private float[] ambient = new float[] { 1f, 1f, 1f, 1 };
 
     /**
-     * Direction of global light vector.
+     * Position of light
      */
-    private float[] lightVector = new float[] { 0, 0, 0 };
+    private float[] lightPosition = new float[3];
 
     private static GlobalLight globalLight = new GlobalLight();
 
@@ -33,13 +33,7 @@ public class GlobalLight {
         return ambient;
     }
 
-    /**
-     * Returns the direction of the global light
-     * 
-     * @return
-     */
-    public float[] getLightVector() {
-        return lightVector;
+    public void getLightMatrix(float[] matrix) {
     }
 
 }
