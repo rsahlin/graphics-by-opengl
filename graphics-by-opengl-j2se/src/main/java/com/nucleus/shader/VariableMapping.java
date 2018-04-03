@@ -39,7 +39,7 @@ public interface VariableMapping {
 
     /**
      * Returns the buffer index in the mesh.
-     * This value can be used to call {@link Mesh#getVerticeBuffer(BufferIndex)}
+     * This value can be used to call {@link Mesh#getAttributeBuffer(BufferIndex)}
      * 
      * @param BufferIndex Index to buffer holding variables
      */

@@ -4,8 +4,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import com.nucleus.geometry.AttributeBuffer;
-
 /**
  * ComponentBuffer with a native underlying buffer - this is for native usecases such as for Compute shaders or OpenCL.
  *
@@ -13,25 +11,13 @@ import com.nucleus.geometry.AttributeBuffer;
 public class NativeComponentBuffer extends ComponentBuffer {
 
     FloatBuffer data;
-    float[] tempData;
+    final float[] tempData;
 
     public NativeComponentBuffer(int entityCount, int sizePerEntity) {
         super(entityCount, sizePerEntity);
         data = ByteBuffer.allocateDirect(entityCount * sizePerEntity * 4).order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
         tempData = new float[sizePerEntity];
-    }
-
-    @Override
-    public void get(int entity, float[] destination) {
-        data.position(entity * sizePerEntity);
-        data.get(destination);
-    }
-
-    @Override
-    public void get(int entity, AttributeBuffer destination) {
-        get(entity, tempData);
-        destination.put(tempData);
     }
 
     @Override

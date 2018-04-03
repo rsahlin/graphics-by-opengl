@@ -1,5 +1,6 @@
 package com.nucleus.scene;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,7 +21,7 @@ import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.mmi.ObjectInputListener;
+import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.Pass;
@@ -33,7 +34,9 @@ import com.nucleus.vecmath.Transform;
  * Point of interest in a scene. Normally represents a visual object (vertices) that will be rendered.
  * This shall be a 'dumb' node in that sense that it shall not contain logic or behavior other than the ability to
  * be rendered and serailized.
- * This class may be serialized using GSON
+ * This class may be serialized using GSON, however since TypeAdapter is used to find implementation class of node
+ * it is currently not possible to deserialize (vanilla) Node (due to recursion of deserialization)
+ * 
  * Before the node can be rendered one or more meshes must be added using {@link #addMesh(Mesh)}
  * 
  * If a node contains properties the {@linkplain EventManager#sendObjectEvent(Object, String, String)} is called
@@ -45,6 +48,73 @@ import com.nucleus.vecmath.Transform;
 public class Node extends BaseReference {
 
     /**
+     * Builder for Nodes, use this when nodes are created programmatically
+     *
+     * @param <T>
+     */
+    public static class Builder<T extends Node> {
+
+        private Type<Node> type;
+        private RootNode root;
+        private int meshCount = 1;
+        private com.nucleus.geometry.Mesh.Builder<Mesh> meshBuilder;
+
+        public Builder<T> setType(Type<Node> type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder<T> setRoot(RootNode root) {
+            this.root = root;
+            return this;
+        }
+
+        /**
+         * Sets the Mesh builder to be used to create meshes, if no meshes should be built the meshcount
+         * must be set to < 1 by calling {@link #setMeshCount(int)}
+         * 
+         * @param meshBuilder
+         * @return
+         */
+        public Builder<T> setMeshBuilder(Mesh.Builder<Mesh> meshBuilder) {
+            this.meshBuilder = meshBuilder;
+            return this;
+        }
+
+        /**
+         * Sets the number of meshes to create by calling the meshBuilder, default to 1
+         * 
+         * @param meshCount
+         * @return
+         */
+        public Builder<T> setMeshCount(int meshCount) {
+            this.meshCount = meshCount;
+            return this;
+        }
+
+        public T create() throws NodeException {
+            try {
+                if (type == null || root == null) {
+                    throw new IllegalArgumentException("Must set type and root before calling #create()");
+                }
+                if (meshCount > 0 && meshBuilder == null) {
+                    throw new IllegalArgumentException("meshCount = " + meshCount
+                            + " but mesh builder is not set. either call #setMeshBuilder() or #setMeshCount(0)");
+                }
+                Node node = Node.createInstance(type, root);
+                for (int i = 0; i < meshCount; i++) {
+                    Mesh mesh = meshBuilder.create();
+                    node.addMesh(mesh, MeshIndex.MAIN);
+                }
+                return (T) node;
+            } catch (InstantiationException | IllegalAccessException | GLException | IOException e) {
+                throw new NodeException("Could not create node: " + e.getMessage());
+            }
+        }
+
+    }
+
+    /**
      * Known node types
      */
     public enum NodeTypes implements Type<Node> {
@@ -54,6 +124,7 @@ public class Node extends BaseReference {
         switchnode(SwitchNode.class),
         linedrawernode(LineDrawerNode.class),
         componentnode(ComponentNode.class),
+        meshnode(MeshNode.class),
         rootnode(BaseRootNode.class);
 
         private final Class<?> theClass;
@@ -88,7 +159,7 @@ public class Node extends BaseReference {
 
     public static final String ONCLICK = "onclick";
 
-    public enum MeshType {
+    public enum MeshIndex {
         /**
          * Main mesh
          */
@@ -100,7 +171,7 @@ public class Node extends BaseReference {
 
         public final int index;
 
-        MeshType(int index) {
+        MeshIndex(int index) {
             this.index = index;
         }
 
@@ -191,7 +262,8 @@ public class Node extends BaseReference {
      */
     transient float[] projection;
     /**
-     * The node concatenated model matrix at time of render, this is set when the node is rendered.
+     * The node concatenated model matrix at time of render, this is set when the node is rendered and
+     * {@link #concatModelMatrix(float[])} is called
      * May be used when calculating bounds/collision on the current frame.
      * DO NOT WRITE TO THIS!
      */
@@ -206,11 +278,6 @@ public class Node extends BaseReference {
      * The root node
      */
     transient private RootNode rootNode;
-
-    /**
-     * Set this to get callbacks on MMI events for this node, handled by {@link NodeInputListener}
-     */
-    transient protected ObjectInputListener objectInputListener;
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -305,44 +372,49 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Returns the mesh type, if added with a call to {@link #addMesh(Mesh, MeshType)}
+     * Returns the number of meshes in this node
+     * 
+     * @return
+     */
+    public int getMeshCount() {
+        return meshes.size();
+    }
+
+    /**
+     * Returns the mesh for a specific index
      * 
      * @param type
-     * @return Mesh for the specified type or null if not added with a call to {@link #addMesh(Mesh, MeshType)}
+     * @return Mesh for the specified index or null
      */
-    public Mesh getMesh(MeshType type) {
-        if (type != null && type.index < meshes.size()) {
-            return meshes.get(type.index);
+    public Mesh getMesh(MeshIndex index) {
+        if (type != null && index.index < meshes.size()) {
+            return meshes.get(index.index);
         }
         return null;
     }
 
     /**
-     * Returns the {@link ObjectInputListener}, or null if not set.
-     * This method should normally not be called, it is handled by {@link NodeInputListener}
+     * Returns the mesh at the specified index
      * 
-     * @return The {@link ObjectInputListener} for this node or null if not set
+     * @param index
+     * @return The mesh, or null
      */
-    protected ObjectInputListener getObjectInputListener() {
-        return objectInputListener;
+    public Mesh getMesh(int index) {
+        return meshes.get(index);
     }
 
     /**
-     * Sets the {@link ObjectInputListener} for this node, to be handle by the {@link NodeInputListener}
-     * 
-     * @param objectInputListener
-     */
-    public void setObjectInputListener(ObjectInputListener objectInputListener) {
-        this.objectInputListener = objectInputListener;
-    }
-
-    /**
-     * Adds a mesh to be rendered with this node.
+     * Adds a mesh to be rendered with this node. The mesh is added at the specified index, if specified
      * 
      * @param mesh
+     * @param index The index where this mesh is added or null to add at end of current list
      */
-    public void addMesh(Mesh mesh, MeshType type) {
-        meshes.add(type.index, mesh);
+    public void addMesh(Mesh mesh, MeshIndex index) {
+        if (index == null) {
+            meshes.add(mesh);
+        } else {
+            meshes.add(index.index, mesh);
+        }
     }
 
     /**
@@ -468,15 +540,6 @@ public class Node extends BaseReference {
     public float[] getProjection(Pass pass) {
         switch (pass) {
             case SHADOW1:
-                if (renderPass != null) {
-                    RenderPass p = null;
-                    for (int i = 0; i < renderPass.size(); i++) {
-                        p = renderPass.get(i);
-                        if (p.getPass() == Pass.SHADOW1) {
-                            return p.getViewFrustum().getMatrix();
-                        }
-                    }
-                }
                 return null;
             default:
                 return projection;
@@ -947,6 +1010,7 @@ public class Node extends BaseReference {
      * @param bounds Reference to bounds, values are not copied.
      */
     public void setBounds(Bounds bounds) {
+        this.bounds = bounds;
     }
 
     /**
@@ -970,6 +1034,43 @@ public class Node extends BaseReference {
      * of this node has been created.
      */
     public void onCreated() {
+        // Check if bounds should be created explicitly
+        ViewFrustum vf = getViewFrustum();
+        if (bounds != null && bounds.getBounds() == null) {
+            // Bounds object defined in node but no bound values set.
+            // try to calculate from viewfrustum.
+            if (getProperty(EventHandler.EventType.POINTERINPUT.name(), Constants.FALSE)
+                    .equals(Constants.TRUE)) {
+                // Has pointer input so must have bounds
+                vf = vf != null ? vf : getParentsView();
+                if (vf == null) {
+                    throw new IllegalArgumentException(
+                            "Node " + getId()
+                                    + " defines pointer input but does not have bounds and not defined in any parent");
+                }
+            }
+            if (vf != null) {
+                float[] values = vf.getValues();
+                initBounds(new Rectangle(values[ViewFrustum.LEFT_INDEX], values[ViewFrustum.TOP_INDEX], vf.getWidth(),
+                        vf.getHeight()));
+            }
+        }
+    }
+
+    /**
+     * Look for ViewFrustum in parents nodes, stopping when ViewFrustum is found or when at root.
+     * 
+     * @return ViewFrustom from a parent node, or null if not defined.
+     */
+    protected ViewFrustum getParentsView() {
+
+        Node parent = null;
+        while ((parent = getParent()) != null) {
+            if (parent.getViewFrustum() != null) {
+                return parent.getViewFrustum();
+            }
+        }
+        return null;
     }
 
     /**
@@ -985,8 +1086,7 @@ public class Node extends BaseReference {
                 && getProperty(EventHandler.EventType.POINTERINPUT.name(), Constants.FALSE)
                         .equals(Constants.TRUE)) {
             // In order to do pointer intersections the model and view matrix is needed.
-            // For this to work it is important that the view keeps the same orientation of axis as OpenGL (right
-            // and up)
+            // For this to work it is important that the view keeps the same orientation of axis (left-handed)
             // Matrix.mul4(viewNode.getTransform().getMatrix(), modelMatrix, mv);
             bounds.transform(modelMatrix, 0);
             return bounds.isPointInside(position, 0);
@@ -1026,15 +1126,13 @@ public class Node extends BaseReference {
      * If this node does not have a transform an identity matrix is used.
      * 
      * @param concatModel The concatenated model matrix
-     * @return The node matrix - concatModel * this nodes transform
+     * @return The node matrix - this nodes transform * concatModel
      */
     public float[] concatModelMatrix(float[] concatModel) {
         if (concatModel == null) {
-            Matrix.setIdentity(modelMatrix, 0);
-            return modelMatrix;
+            return transform != null ? transform.getMatrix() : Matrix.setIdentity(modelMatrix, 0);
         }
-        Matrix.mul4(concatModel,
-                transform != null ? transform.getMatrix() : Matrix.IDENTITY_MATRIX,
+        Matrix.mul4(transform != null ? transform.getMatrix() : Matrix.IDENTITY_MATRIX, concatModel,
                 modelMatrix);
         return modelMatrix;
     }

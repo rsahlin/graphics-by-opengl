@@ -6,15 +6,17 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
-import java.util.StringTokenizer;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.opengl.GLException.Error;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RendererInfo;
+import com.nucleus.shader.ShaderSource;
+import com.nucleus.shader.ShaderSource.ESSLVersion;
 import com.nucleus.shader.ShaderVariable;
-import com.nucleus.shader.ShaderVariable.VariableBlock;
+import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Image;
 import com.nucleus.texturing.ParameterData;
@@ -34,16 +36,15 @@ import com.nucleus.texturing.TextureUtils;
  */
 public abstract class GLES20Wrapper extends GLESWrapper {
 
-    public static String VERSION = "#version";
-    public static String ES = "es";
-    public static String SHADING_LANGUAGE_100 = "100";
-
     /**
      * Implementation constructor - DO NOT USE!!!
      * TODO - protect/hide this constructor
+     * 
+     * @param platform
+     * @param renderVersion If higher than GLES20, otherwise null
      */
     protected GLES20Wrapper(Platform platform, Renderers renderVersion) {
-        super(platform, renderVersion);
+        super(platform, renderVersion == null ? Renderers.GLES20 : renderVersion);
     }
 
     @Override
@@ -59,7 +60,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     }
 
     @Override
-    public VariableBlock[] getUniformBlocks(ProgramInfo info) throws GLException {
+    public InterfaceBlock[] getUniformBlocks(ProgramInfo info) throws GLException {
         // Uniform blocks not supported on GLES2 - return null
         return null;
     }
@@ -516,6 +517,8 @@ public abstract class GLES20Wrapper extends GLESWrapper {
 
     public abstract void glUniform2fv(int location, int count, float[] v, int offset);
 
+    public abstract void glUniform1fv(int location, int count, float[] v, int offset);
+
     /**
      * Abstraction for glTexParemeterf()
      * 
@@ -781,49 +784,37 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     }
 
     @Override
-    public String getShaderVersion(String sourceVersion, int version) {
+    public String replaceShaderVersion(String sourceVersion, int version) {
         // Make sure version is not too high for es 2
-        if (version > 100) {
+        if (version > ESSLVersion.VERSION100.number) {
             throw new IllegalArgumentException("Illegal shader version " + sourceVersion);
         }
-        return SHADING_LANGUAGE_100;
-    }
-
-    /**
-     * Checks if the first (non empty) line contains version, if so it is returned
-     * 
-     * @param source
-     * @return The version string that is the full first line (excluding line separator char), eg "#version 310 es",
-     * "#version 430" or null if no version.
-     * The returned string can be used to calculate offset when substituting version.
-     */
-    protected String hasVersion(String source) {
-        StringTokenizer st = new StringTokenizer(source, System.lineSeparator());
-        String t = st.nextToken().trim();
-        if (t.trim().toLowerCase().startsWith(VERSION)) {
-            return t;
-        }
-        return null;
+        return sourceVersion;
     }
 
     @Override
-    public String getVersionedShaderSource(InputStream shaderStream, int type, boolean library) throws IOException {
-        String source = StreamUtils.readStringFromStream(shaderStream);
+    public void loadVersionedShaderSource(ShaderSource source, boolean library) throws IOException {
+        InputStream shaderStream = getClass().getClassLoader().getResourceAsStream(source.getFullSourceName());
+        if (shaderStream == null) {
+            throw new IllegalArgumentException("Could not open " + source.getFullSourceName());
+        }
+        String sourceStr = StreamUtils.readStringFromStream(shaderStream);
+        String version = ShaderSource.hasVersion(sourceStr);
+        String versionInfo = null;
         if (!library) {
-            String version = hasVersion(source);
+            // Treat no version as GLES shader version 100 and do not replace #version
             if (version != null) {
-                String versionInfo = version.trim().substring(VERSION.length()).trim();
+                versionInfo = version.trim().substring(ShaderSource.VERSION.length()).trim();
                 // Insert the correct version depending on platform implementation.
                 int number = Integer.parseInt(versionInfo.substring(0, 3));
-                return VERSION + " " + getShaderVersion(versionInfo, number) + System.lineSeparator()
-                        + source.substring(version.length());
+                sourceStr = ShaderSource.VERSION + " " + replaceShaderVersion(versionInfo, number)
+                        + sourceStr.substring(version.length());
             } else {
-                // Treat no version as GLES shader version 100
-                return VERSION + " " + SHADING_LANGUAGE_100 + System.lineSeparator()
-                        + source;
+                SimpleLogger.d(getClass(),
+                        "Warning, source for " + source.getFullSourceName() + " does not specify #version");
             }
         }
-        return source;
+        source.setSource(sourceStr);
     }
 
     @Override

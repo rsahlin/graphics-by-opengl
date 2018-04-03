@@ -59,13 +59,13 @@ public class ShaderVariable {
     }
 
     /**
-     * Containing information about a variable block
+     * Containing information about a interface block
      *
      */
-    public static class VariableBlock {
+    public static class InterfaceBlock {
 
         /**
-         * Where the variable block variables are used
+         * Where the block variables are used
          */
         public enum Usage {
             /**
@@ -83,7 +83,7 @@ public class ShaderVariable {
         }
 
         /**
-         * Creates a new VariableBlock for the specified program and block index.
+         * Creates a new interface block for the specified program and block index.
          * blockInfo shall contain: active variables, block data size
          * 
          * @param program
@@ -92,7 +92,7 @@ public class ShaderVariable {
          * @param blockInfo active variable count, block data size is read here
          * @param indices
          */
-        public VariableBlock(int program, int blockIndex, String blockName, int[] blockInfo, int[] indices) {
+        public InterfaceBlock(int program, int blockIndex, String blockName, int[] blockInfo, int[] indices) {
             this.program = program;
             this.blockIndex = blockIndex;
             this.activeCount = blockInfo[0];
@@ -105,13 +105,13 @@ public class ShaderVariable {
                     : value == 1 ? Usage.VERTEX_SHADER : Usage.FRAGMENT_SHADER;
         }
 
-        protected int activeCount;
-        protected int[] indices;
-        protected int blockIndex;
-        protected int program;
-        protected int blockDataSize;
-        protected String name;
-        protected Usage usage;
+        protected final int activeCount;
+        protected final int[] indices;
+        public final int blockIndex;
+        public final int program;
+        protected final int blockDataSize;
+        protected final String name;
+        protected final Usage usage;
 
     }
 

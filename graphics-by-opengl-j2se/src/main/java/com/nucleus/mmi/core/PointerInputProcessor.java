@@ -80,7 +80,8 @@ public class PointerInputProcessor implements PointerListener {
                 } else {
                     addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.MOVE, pointer,
                             pointerMotionData[pointer]),
-                            pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition, pressure));
+                            pointerMotionData[pointer].create(action, type, timestamp, pointer, scaledPosition,
+                                    pressure));
                     // More than one pointer is or has been active.
                     if (processTwoPointers && pointerCount == 2 && pointer == 1) {
                         processTwoPointers();
@@ -89,10 +90,10 @@ public class PointerInputProcessor implements PointerListener {
                 break;
             case DOWN:
                 pointerCount = pointer + 1;
-                pointerMotionData[pointer] = new PointerMotionData(type);
+                pointerMotionData[pointer] = new PointerMotionData();
                 addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ACTIVE, pointer,
                         pointerMotionData[pointer]),
-                        pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition, pressure));
+                        pointerMotionData[pointer].create(action, type, timestamp, pointer, scaledPosition, pressure));
                 break;
             case UP:
                 pointerCount--;
@@ -101,11 +102,11 @@ public class PointerInputProcessor implements PointerListener {
                 }
                 addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.INACTIVE, pointer,
                         pointerMotionData[pointer]),
-                        pointerMotionData[pointer].create(action, timestamp, pointer, scaledPosition, pressure));
+                        pointerMotionData[pointer].create(action, type, timestamp, pointer, scaledPosition, pressure));
                 break;
             case ZOOM:
                 if (pointerMotionData[pointer] == null) {
-                    pointerMotionData[pointer] = new PointerMotionData(type);
+                    pointerMotionData[pointer] = new PointerMotionData();
                 }
                 MMIPointerEvent zoom = new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ZOOM, pointer,
                         pointerMotionData[pointer]);

@@ -16,13 +16,16 @@ import com.nucleus.renderer.NucleusRenderer;
  */
 public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
 
-    protected LWJGL3GLES20Wrapper gles20 = new LWJGL3GLES20Wrapper();
+    protected LWJGL3GLES20Wrapper gles20;
 
     /**
      * Implementation constructor - DO NOT USE - fetch wrapper from {@link NucleusRenderer}
+     * 
+     * @param renderVersion If higher than GLES30, otherwise null
      */
-    public LWJGL3GLES30Wrapper() {
-        super(Platform.GL, Renderers.GLES30);
+    public LWJGL3GLES30Wrapper(Renderers version) {
+        super(Platform.GL, version);
+        gles20 = new LWJGL3GLES20Wrapper(version);
     }
 
     /**
@@ -237,7 +240,11 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glUniform2fv(int location, int count, float[] v, int offset) {
         gles20.glUniform2fv(location, count, v, offset);
+    }
 
+    @Override
+    public void glUniform1fv(int location, int count, float[] v, int offset) {
+        gles20.glUniform1fv(location, count, v, offset);
     }
 
     @Override
@@ -422,6 +429,21 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
         paramsBuffer.position(0);
         paramsBuffer.get(params, paramsOffset, uniformCount);
 
+    }
+
+    @Override
+    public ByteBuffer glMapBufferRange(int target, int offset, int length, int access) {
+        return org.lwjgl.opengles.GLES30.glMapBufferRange(target, offset, length, access);
+    }
+
+    @Override
+    public boolean glUnmapBuffer(int target) {
+        return org.lwjgl.opengles.GLES30.glUnmapBuffer(target);
+    }
+
+    @Override
+    public void glFlushMappedBufferRange(int target, int offset, int length) {
+        org.lwjgl.opengles.GLES30.glFlushMappedBufferRange(target, offset, length);
     }
 
 }

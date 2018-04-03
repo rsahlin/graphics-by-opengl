@@ -71,7 +71,8 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener, Mou
         frame.setVisible(true);
         frame.addMouseListener(this);
         frame.addMouseMotionListener(this);
-        wrapper = LWJGLWrapperFactory.createWrapper(version);
+        // TODO How to find GL capabilities so that wrapper can select highest level of GLES
+        wrapper = LWJGLWrapperFactory.createWrapper(null, version);
     }
 
     @Override

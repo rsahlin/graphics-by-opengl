@@ -342,4 +342,13 @@ public class TextureParameter {
         return parameters;
     }
 
+    /**
+     * Sets the optional texture parameters
+     * 
+     * @param parameterData
+     */
+    public void setParameterData(ParameterData[] parameterData) {
+        this.parameters = parameterData;
+    }
+
 }

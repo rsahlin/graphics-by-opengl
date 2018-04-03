@@ -20,7 +20,7 @@ import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
-import com.nucleus.scene.Node.MeshType;
+import com.nucleus.scene.Node.MeshIndex;
 import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.RootNode;
@@ -103,7 +103,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
                 .setNode(NodeTypes.layernode);
         try {
             RootNode root = builder.create();
-            mesh = root.getNodeByType(NodeTypes.layernode).getMesh(MeshType.MAIN);
+            mesh = root.getNodeByType(NodeTypes.layernode).getMesh(MeshIndex.MAIN);
             uKernel = program.getShaderVariable(ConvolutionProgram.VARIABLES.uKernel);
             renderer.addFrameListener(this);
             coreApp.setRootNode(root);
@@ -138,7 +138,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
             counter = 0;
         }
         Convolution.normalize(kernel[kernelIndex], normalizedKernel, absNormalize[kernelIndex], factor);
-        System.arraycopy(normalizedKernel, 0, program.getUniforms(), uKernel.getOffset(),
+        System.arraycopy(normalizedKernel, 0, program.getUniformData(), uKernel.getOffset(),
                 normalizedKernel.length);
 
     }

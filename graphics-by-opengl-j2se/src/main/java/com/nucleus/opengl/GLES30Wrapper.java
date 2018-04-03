@@ -1,7 +1,10 @@
 package com.nucleus.opengl;
 
+import java.nio.ByteBuffer;
+
+import com.nucleus.shader.ShaderSource;
 import com.nucleus.shader.ShaderVariable;
-import com.nucleus.shader.ShaderVariable.VariableBlock;
+import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 
 /**
@@ -16,9 +19,12 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
     /**
      * Implementation constructor - DO NOT USE!!!
      * TODO - protect/hide this constructor
+     * 
+     * @param platform
+     * @param renderVersion If higher than GLES30, otherwise null
      */
     protected GLES30Wrapper(Platform platform, Renderers renderVersion) {
-        super(platform, renderVersion);
+        super(platform, renderVersion == null ? Renderers.GLES30 : renderVersion);
     }
 
     @Override
@@ -36,11 +42,11 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public VariableBlock[] getUniformBlocks(ProgramInfo info) {
+    public InterfaceBlock[] getUniformBlocks(ProgramInfo info) {
         if (info == null || info.getActiveVariables(VariableType.UNIFORM_BLOCK) < 1) {
             return null;
         }
-        VariableBlock[] uniformBlock = new VariableBlock[info.getActiveVariables(VariableType.UNIFORM_BLOCK)];
+        InterfaceBlock[] uniformBlock = new InterfaceBlock[info.getActiveVariables(VariableType.UNIFORM_BLOCK)];
         int[] blockInfo = new int[4];
         int[] indices = null;
         for (int i = 0; i < uniformBlock.length; i++) {
@@ -56,7 +62,7 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
                         blockInfo, 2);
                 glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER,
                         blockInfo, 3);
-                uniformBlock[i] = new VariableBlock(info.getProgram(), i,
+                uniformBlock[i] = new InterfaceBlock(info.getProgram(), i,
                         glGetActiveUniformBlockName(info.getProgram(), i), blockInfo, indices);
             }
         }
@@ -94,8 +100,8 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public String getShaderVersion(String sourceVersion, int version) {
-        if (sourceVersion.trim().toLowerCase().endsWith(ES) && platform != Platform.GLES) {
+    public String replaceShaderVersion(String sourceVersion, int version) {
+        if (sourceVersion.trim().toLowerCase().endsWith(ShaderSource.ES) && platform != Platform.GLES) {
             return GL_VERSION_430;
         }
         return sourceVersion;
@@ -183,5 +189,33 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
      */
     public abstract void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int indicesOffset,
             int pname, int[] params, int paramsOffset);
+
+    /**
+     * Abstraction for void *glMapBufferRange( GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access);
+     * 
+     * @param target
+     * @param offset
+     * @param length
+     * @param access
+     * @return
+     */
+    public abstract ByteBuffer glMapBufferRange(int target, int offset, int length, int access);
+
+    /**
+     * Abstraction for GLboolean glUnmapBuffer( GLenum target);
+     * 
+     * @param target
+     * @return
+     */
+    public abstract boolean glUnmapBuffer(int target);
+
+    /**
+     * Abstraction for void glFlushMappedBufferRange(GLenum target, GLintptr offset, GLsizeiptr length);
+     * 
+     * @param target
+     * @param offset
+     * @param length
+     */
+    public abstract void glFlushMappedBufferRange(int target, int offset, int length);
 
 }

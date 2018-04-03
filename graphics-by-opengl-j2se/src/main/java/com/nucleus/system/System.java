@@ -14,6 +14,12 @@ public abstract class System {
     private String type;
 
     /**
+     * Keep track if system is initialized, for instance make sure
+     * {@link #initSystem(NucleusRenderer, RootNode, Component)} not called more than once.
+     */
+    protected boolean initialized = false;
+
+    /**
      * Updates the component using this system.
      * 
      * @param component The component to update
@@ -58,6 +64,15 @@ public abstract class System {
      */
     protected void setType(String type) {
         this.type = type;
+    }
+
+    /**
+     * Returns true if this system has been initialized
+     * 
+     * @return
+     */
+    public boolean isInitialized() {
+        return initialized;
     }
 
 }

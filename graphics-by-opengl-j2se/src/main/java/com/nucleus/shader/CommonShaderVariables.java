@@ -27,6 +27,9 @@ public enum CommonShaderVariables implements VariableMapping {
     uTextureData(6, 54, ShaderVariable.VariableType.UNIFORM, null),
     uAmbientLight(7, 58, ShaderVariable.VariableType.UNIFORM, null),
     uDiffuseLight(8, 62, ShaderVariable.VariableType.UNIFORM, null),
+    /**
+     * The uvData field within the UVData block
+     */
     uvData(9, 0, ShaderVariable.VariableType.UNIFORM, null),
     aVertex(10, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
     aTexCoord(11, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
@@ -35,7 +38,8 @@ public enum CommonShaderVariables implements VariableMapping {
     aScale(14, 8, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
     aColor(15, 12, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
     aFrameData(16, 16, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aData1(17, 20, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
+    aData1(17, 20, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aEmissive(18, 24, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
 
     /**
      * Index (id) of variable

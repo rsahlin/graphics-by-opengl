@@ -4,9 +4,14 @@ import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLES30Wrapper;
 import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.shader.BlockBuffer;
+import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 
 /**
  * This class takes care of allocation and release of buffer objects
@@ -46,22 +51,45 @@ public class BufferObjectsFactory {
         mesh.setBufferNames(0, names, 0);
         ElementBuffer indices = mesh.getElementBuffer();
         GLUtils.handleError(renderer.getGLES(), "before create vbos");
-        for (AttributeBuffer attribs : mesh.getVerticeBuffers()) {
+        for (AttributeBuffer attribs : mesh.getAttributeBuffers()) {
             if (attribs != null) {
-                renderer.bindBuffer(GLESWrapper.GLES20.GL_ARRAY_BUFFER, attribs.getBufferName());
-                renderer.bufferData(GLESWrapper.GLES20.GL_ARRAY_BUFFER, attribs.getSizeInBytes(),
+                renderer.bindBuffer(GLES20.GL_ARRAY_BUFFER, attribs.getBufferName());
+                renderer.bufferData(GLES20.GL_ARRAY_BUFFER, attribs.getSizeInBytes(),
                         attribs.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
                 attribs.setDirty(false);
             }
             GLUtils.handleError(renderer.getGLES(), "createVBOs GL_ARRAY_BUFFER name " + attribs.getBufferName());
         }
         if (indices != null) {
-            renderer.bindBuffer(GLESWrapper.GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
-            renderer.bufferData(GLESWrapper.GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getSizeInBytes(),
+            renderer.bindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
+            renderer.bufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getSizeInBytes(),
                     indices.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
             indices.setDirty(false);
             GLUtils.handleError(renderer.getGLES(),
                     "createVBOs  GL_ELEMENT_ARRAY_BUFFER name " + indices.getBufferName());
+        }
+    }
+
+    public void createUBOs(NucleusRenderer renderer, Mesh mesh) throws GLException {
+        BlockBuffer[] blocks = mesh.getBlockBuffers();
+        if (blocks == null) {
+            return;
+        }
+        GLES30Wrapper gles = (GLES30Wrapper) renderer.getGLES();
+        int[] names = new int[blocks.length];
+        renderer.genBuffers(names);
+        int index = 0;
+        for (BlockBuffer bb : blocks) {
+            InterfaceBlock block = bb.getInterfaceBlock();
+            bb.position(0);
+            gles.glBindBuffer(GLES30.GL_UNIFORM_BUFFER, names[index]);
+            gles.glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, block.blockIndex, names[index]);
+            renderer.bufferData(GLES30.GL_UNIFORM_BUFFER, bb.getSizeInBytes(), bb.getBuffer(),
+                    GLES30.GL_STATIC_DRAW);
+            bb.setBufferName(names[index]);
+            bb.setDirty(false);
+            GLUtils.handleError(gles, "Create UBOs for " + bb.getBlockName());
+            index++;
         }
     }
 

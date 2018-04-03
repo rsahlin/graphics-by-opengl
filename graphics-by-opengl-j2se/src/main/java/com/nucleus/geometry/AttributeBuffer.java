@@ -19,6 +19,11 @@ public class AttributeBuffer extends BufferObject {
     private final static String ILLEGAL_DATATYPE_STR = "Illegal datatype: ";
 
     /**
+     * Currently always uses float
+     */
+    public final static int DATATYPE_SIZE = 4;
+
+    /**
      * Number of floats to next set of attribute data
      */
     private int attribFloatStride;
@@ -26,7 +31,15 @@ public class AttributeBuffer extends BufferObject {
      * Number of bytes to next attrib variable.
      */
     private int attribByteStride;
+    /**
+     * TODO This buffer must be protected from multi thread access, otherwise drawing may be corrupt or buffer
+     * under/overflow when accessed (due to position being changed in other thread)
+     */
     private FloatBuffer attributes;
+    /**
+     * The attribute buffer as a ByteBuffer
+     */
+    private ByteBuffer byteBuffer;
     private int verticeCount;
 
     /**
@@ -44,6 +57,7 @@ public class AttributeBuffer extends BufferObject {
      * @throws IllegalArgumentException If type is not GLES20.GL_FLOAT
      */
     public AttributeBuffer(int verticeCount, int sizePerVertex, int type) {
+        super(verticeCount * sizePerVertex * DATATYPE_SIZE);
         init(verticeCount, sizePerVertex, type);
     }
 
@@ -59,17 +73,15 @@ public class AttributeBuffer extends BufferObject {
         if (type != GLES20.GL_FLOAT) {
             throw new IllegalArgumentException(ILLEGAL_DATATYPE_STR + type);
         }
-        int dataSize = 4;
         this.type = type;
         this.verticeCount = verticeCount;
-        sizeInBytes = verticeCount * sizePerVertex * dataSize;
-        attributes = ByteBuffer.allocateDirect(sizeInBytes)
-                .order(ByteOrder.nativeOrder()).asFloatBuffer();
-        attribByteStride = sizePerVertex * dataSize;
+        byteBuffer = ByteBuffer.allocateDirect(sizeInBytes).order(ByteOrder.nativeOrder());
+        attributes = byteBuffer.asFloatBuffer();
+        attribByteStride = sizePerVertex * DATATYPE_SIZE;
         attribFloatStride = sizePerVertex;
         SimpleLogger.d(getClass(),
                 "Allocated atrribute buffer with " + sizeInBytes + " bytes, sizePerVertices " + sizePerVertex
-                        + " dataSize " + dataSize + ", capacity() "
+                        + " dataSize " + DATATYPE_SIZE + ", capacity() "
                         + attributes.capacity());
     }
 
@@ -108,7 +120,23 @@ public class AttributeBuffer extends BufferObject {
     }
 
     /**
+     * Returns the underlying Buffer holding vertex buffer array data.
+     * NOTE!
+     * Take care when writing to the buffer as it may clash with copy to gl.
+     * 
+     * Avoid using this method to store data in underlying buffer - use {@link #put(float[], int, int)} etc
+     * 
+     * @return
+     */
+    @Deprecated
+    public ByteBuffer getByteBuffer() {
+        return byteBuffer;
+    }
+
+    /**
      * Copies data from the data array into this buffer, the dirty flag is set.
+     * Data will be copied into attribute buffer at the current position, call {@link #setBufferPosition(int)} to set
+     * the current position
      * 
      * @param data
      * @param offset Offset into data where values are copied
@@ -117,6 +145,15 @@ public class AttributeBuffer extends BufferObject {
     public void put(float[] data, int offset, int length) {
         attributes.put(data, offset, length);
         dirty = true;
+    }
+
+    /**
+     * Sets the position of the attribute buffer
+     * 
+     * @param newPosition
+     */
+    public void setBufferPosition(int newPosition) {
+        attributes.position(newPosition);
     }
 
     /**

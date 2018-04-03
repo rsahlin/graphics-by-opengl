@@ -1,12 +1,9 @@
 package com.nucleus.scene;
 
-import java.util.List;
-
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshFactory;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.shader.ShaderProgram;
 
 /**
  * Factory methods for node creation, implements support for new nodes in sublcasses.
@@ -42,14 +39,13 @@ public interface NodeFactory {
      * Use this when nodes are created programmatically.
      * 
      * @param renderer
-     * @param program
-     * @param builder
+     * @param builder The Mesh builder to use when creating mesh for the node.
      * @param nodeType Type and class of node to create
-     * @param root
-     * @return
+     * @param root The rootnode of the created node
+     * @return A new instance of a Node of the specified type
      * @throws NodeException
      */
-    public Node create(NucleusRenderer renderer, ShaderProgram program, Mesh.Builder<Mesh> builder, Type<Node> nodeType,
+    public Node create(NucleusRenderer renderer, Mesh.Builder<Mesh> builder, Type<Node> nodeType,
             RootNode root) throws NodeException;
 
     /**
@@ -66,6 +62,5 @@ public interface NodeFactory {
      */
     public void createChildNodes(NucleusRenderer renderer, MeshFactory meshFactory, Node source, Node parent)
             throws NodeException;
-
 
 }

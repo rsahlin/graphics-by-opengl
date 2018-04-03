@@ -62,7 +62,7 @@ public class Image extends BufferObject {
         /**
          * Depth texture 16
          */
-        DEPTH_16(0x1403,2),
+        DEPTH_16(0x1403, 2),
         /**
          * Depth texture 24 bits
          */
@@ -70,9 +70,12 @@ public class Image extends BufferObject {
         /**
          * Float depth texture
          */
-        DEPTH_32F(0x1406,4);
+        DEPTH_32F(0x1406, 4);
 
         public final int type;
+        /**
+         * The size in bytes of each pixel
+         */
         public final int size;
 
         ImageFormat(int type, int size) {
@@ -112,24 +115,24 @@ public class Image extends BufferObject {
      * @throws NullPointerException If format is null
      */
     public Image(int width, int height, ImageFormat format) {
+        super(width * height * format.size);
         this.format = format;
         this.width = width;
         this.height = height;
         switch (format) {
 
-        case RGB565:
-        case RGB5_A1:
-        case RGBA4:
-        case RGB:
-        case RGBA:
-        case LUMINANCE_ALPHA:
-        case LUMINANCE:
-        case ALPHA:
-            sizeInBytes = width * height * format.size;
-            buffer = ByteBuffer.allocateDirect(sizeInBytes).order(ByteOrder.nativeOrder());
-            break;
-        default:
-            throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE + ", " + format);
+            case RGB565:
+            case RGB5_A1:
+            case RGBA4:
+            case RGB:
+            case RGBA:
+            case LUMINANCE_ALPHA:
+            case LUMINANCE:
+            case ALPHA:
+                buffer = ByteBuffer.allocateDirect(sizeInBytes).order(ByteOrder.nativeOrder());
+                break;
+            default:
+                throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE + ", " + format);
         }
     }
 

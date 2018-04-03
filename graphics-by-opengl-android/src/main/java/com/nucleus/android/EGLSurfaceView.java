@@ -41,6 +41,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     protected final int eglSwapInterval;
     protected boolean useChoreographer = true;
     Environment env;
+    private boolean displayingSplash = false;
     /**
      * Special surface attribs that may be specified when creating the surface - see
      * https://www.khronos.org/registry/EGL/sdk/docs/man/html/eglCreateWindowSurface.xhtml
@@ -211,10 +212,10 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         SimpleLogger.d(getClass(), "surfaceCreated() ");
         surface = holder.getSurface();
         if (useChoreographer) {
-            SimpleLogger.d(getClass(), "Using Choreographer to drive rendering on UI thread.");
-            createEGL();
-            choreographer = Choreographer.getInstance();
-            choreographer.postFrameCallback(this);
+            if (useChoreographer) {
+                choreographer = Choreographer.getInstance();
+                choreographer.postFrameCallback(this);
+            }
         } else {
             SimpleLogger.d(getClass(), "Not using Choreographer, creating thread to drive rendering.");
             if (thread == null) {
@@ -240,7 +241,6 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     protected void createEGL() {
-        boolean created = EGLContext == null;
         createEglContext();
         createEglSurface();
         makeCurrent();
@@ -252,11 +252,9 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             SimpleLogger.d(getClass(),
                     "Set surfaceattrib for: " + EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh);
         }
-        if (created) {
-            nucleusActivity.onSurfaceCreated(getWidth(), getHeight());
-            EGL14.eglSwapBuffers(EglDisplay, EGLSurface);
-            nucleusActivity.contextCreated(getWidth(), getHeight());
-        }
+        nucleusActivity.onSurfaceCreated(getWidth(), getHeight());
+        swapBuffers();
+        displayingSplash = true;
     }
 
     @Override
@@ -271,6 +269,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         surface = null;
         EGLSurface = null;
         EglDisplay = null;
+        choreographer = null;
     }
 
     protected void makeCurrent() {
@@ -323,6 +322,8 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     public void run() {
         SimpleLogger.d(getClass(), "Starting EGL surface thread");
         createEGL();
+        nucleusActivity.contextCreated(getWidth(), getHeight());
+        displayingSplash = false;
         while (surface != null) {
             internalDoFrame();
         }
@@ -358,10 +359,22 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     @Override
     public void doFrame(long frameTimeNanos) {
-        internalDoFrame();
+        // In order to be able to display splash we should create EGL context, display splash - postFrameCallback
+        // then call context created.
+        if (surface != null && EglDisplay == null) {
+            createEGL();
+        } else {
+            if (displayingSplash) {
+                nucleusActivity.contextCreated(getWidth(), getHeight());
+                displayingSplash = false;
+            } else {
+                internalDoFrame();
+            }
+        }
         if (choreographer != null) {
             choreographer.postFrameCallback(this);
         }
+
     }
 
 }

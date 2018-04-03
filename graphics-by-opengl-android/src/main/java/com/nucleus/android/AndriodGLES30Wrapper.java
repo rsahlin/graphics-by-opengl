@@ -1,6 +1,7 @@
 package com.nucleus.android;
 
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES30Wrapper;
@@ -193,6 +194,11 @@ public class AndriodGLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glUniform2fv(int location, int count, float[] v, int offset) {
         android.opengl.GLES30.glUniform2fv(location, count, v, offset);
+    }
+
+    @Override
+    public void glUniform1fv(int location, int count, float[] v, int offset) {
+        android.opengl.GLES20.glUniform1fv(location, count, v, offset);
     }
 
     @Override
@@ -407,6 +413,21 @@ public class AndriodGLES30Wrapper extends GLES30Wrapper {
             int[] params, int paramsOffset) {
         android.opengl.GLES30.glGetActiveUniformsiv(program, uniformCount, uniformIndices, indicesOffset, pname,
                 params, paramsOffset);
+    }
+
+    @Override
+    public ByteBuffer glMapBufferRange(int target, int offset, int length, int access) {
+        return (ByteBuffer) android.opengl.GLES30.glMapBufferRange(target, offset, length, access);
+    }
+
+    @Override
+    public boolean glUnmapBuffer(int target) {
+        return android.opengl.GLES30.glUnmapBuffer(target);
+    }
+
+    @Override
+    public void glFlushMappedBufferRange(int target, int offset, int length) {
+        android.opengl.GLES30.glFlushMappedBufferRange(target, offset, length);
     }
 
 }

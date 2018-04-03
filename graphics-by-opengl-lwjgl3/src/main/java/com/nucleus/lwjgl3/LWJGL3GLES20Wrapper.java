@@ -10,8 +10,13 @@ import com.nucleus.opengl.GLES20Wrapper;
 
 public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
-    protected LWJGL3GLES20Wrapper() {
-        super(Platform.GL, Renderers.GLES20);
+    /**
+     * Implementaiton constructor - DO NOT USE
+     * 
+     * @param renderVersion If higher than GLES30, otherwise null
+     */
+    protected LWJGL3GLES20Wrapper(Renderers version) {
+        super(Platform.GL, version);
     }
 
     @Override
@@ -263,7 +268,11 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glUniform2fv(int location, int count, float[] v, int offset) {
         org.lwjgl.opengles.GLES20.glUniform2fv(location, LWJGLUtils.toFloatBuffer(v, 2 * count, offset));
+    }
 
+    @Override
+    public void glUniform1fv(int location, int count, float[] v, int offset) {
+        org.lwjgl.opengles.GLES20.glUniform1fv(location, LWJGLUtils.toFloatBuffer(v, count, offset));
     }
 
     @Override

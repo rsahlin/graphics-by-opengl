@@ -26,16 +26,18 @@ public class ElementBuffer extends BufferObject {
         /**
          * Unsigned byte storage, same as GL_UNSIGNED_BYTE
          */
-        BYTE(5121),
+        BYTE(5121, 1),
         /**
          * Unsigned short storage, same as GL_UNSIGNED_SHORT
          */
-        SHORT(5123);
+        SHORT(5123, 2);
 
         public final int type;
+        public final int sizeInBytes;
 
-        private Type(int type) {
+        private Type(int type, int sizeInBytes) {
             this.type = type;
+            this.sizeInBytes = sizeInBytes;
         }
 
     }
@@ -63,23 +65,12 @@ public class ElementBuffer extends BufferObject {
      * 
      * @param count
      * @param type
-     * @throws IllegalArgumentException if type is null
+     * @throws NullPointerException if type is null
      */
     public ElementBuffer(int count, Type type) {
-        if (type == null) {
-            throw new IllegalArgumentException(NULL_TYPE_STR);
-        }
+        super(count * type.sizeInBytes);
         this.count = count;
         this.type = type;
-        int size = 1;
-        switch (type) {
-            case BYTE:
-                break;
-            case SHORT:
-                size = 2;
-                break;
-        }
-        sizeInBytes = count * size;
         indices = ByteBuffer.allocateDirect(sizeInBytes).order(ByteOrder.nativeOrder());
         SimpleLogger.d(getClass(), "Allocated element buffer with " + sizeInBytes);
     }

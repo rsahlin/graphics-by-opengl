@@ -1,4 +1,4 @@
-#version 100
+#version 300 es
 /* Copyright 2015 Richard Sahlin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -10,19 +10,17 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-
- /**
+ *
  * Fragment shader for tiled sprite renderer
  * @author Richard Sahlin
  */
 precision mediump float;
 
-uniform sampler2D uTexture;      //The texture sampler
-varying vec2 vTexCoord;
-varying vec4 color;
+uniform lowp sampler2D uTexture;      //The texture sampler
+in vec2 vTexCoord;
+out vec4 fragColor;
 
 void main()
 {
-    gl_FragColor = color;
+	fragColor = texture(uTexture, vTexCoord);
 }

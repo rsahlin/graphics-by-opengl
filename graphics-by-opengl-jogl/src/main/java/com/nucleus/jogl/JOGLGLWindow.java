@@ -100,14 +100,29 @@ public abstract class JOGLGLWindow extends J2SEWindow
         // Screen screen = NewtFactory.createScreen(display, SCREEN_ID);
 
         SimpleLogger.d(getClass(), "os.and.arch: " + Platform.os_and_arch);
+        GLProfile defaultProfile = GLProfile.getDefault();
+        if (defaultProfile != null) {
+            SimpleLogger.d(getClass(), "Default profile implName: " + defaultProfile.getImplName() + ", name: "
+                    + defaultProfile.getName());
+        } else {
+            SimpleLogger.d(getClass(), "Default profile is NULL");
+        }
         GLProfile profile = null;
         switch (version) {
             case GLES20:
-                profile = GLProfile.get(GLProfile.GL2ES2);
+                if (defaultProfile != null && (defaultProfile.isGLES2() || defaultProfile.isGL2ES2())) {
+                    profile = defaultProfile;
+                } else {
+                    profile = GLProfile.get(GLProfile.GL2ES2);
+                }
                 break;
             case GLES30:
             case GLES31:
-                profile = GLProfile.get(GLProfile.GL4ES3);
+                if (defaultProfile.isGLES3() || defaultProfile.isGL4ES3()) {
+                    profile = defaultProfile;
+                } else {
+                    profile = GLProfile.get(GLProfile.GL4ES3);
+                }
                 break;
             default:
                 throw new IllegalArgumentException("Invalid version " + version);

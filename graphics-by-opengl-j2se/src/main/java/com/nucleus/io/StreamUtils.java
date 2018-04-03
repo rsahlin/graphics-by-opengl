@@ -3,7 +3,6 @@ package com.nucleus.io;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,7 +77,8 @@ public class StreamUtils {
      * @throws IOException
      */
     public static String readStringFromStream(InputStream in) throws IOException {
-        return new String(readFromStream(in), StandardCharsets.UTF_8);
+        // TODO - If Android build version => 19 then java.nio.StandardCharset can be used
+        return new String(readFromStream(in), "UTF-8");
     }
 
     /**

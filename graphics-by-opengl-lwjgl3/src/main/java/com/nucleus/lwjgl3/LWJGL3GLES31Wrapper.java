@@ -1,22 +1,27 @@
 package com.nucleus.lwjgl3;
 
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES31Wrapper;
-import com.nucleus.renderer.NucleusRenderer;
 
 public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
 
-    LWJGL3GLES20Wrapper gles20 = new LWJGL3GLES20Wrapper();
-    LWJGL3GLES30Wrapper gles30 = new LWJGL3GLES30Wrapper();
+    LWJGL3GLES20Wrapper gles20;
+    LWJGL3GLES30Wrapper gles30;
 
     /**
-     * Implementation constructor - DO NOT USE - fetch wrapper from {@link NucleusRenderer}
+     * Implementation constructor - DO NOT USE - fetch from {@link LWJGLWrapperFactory}
+     * 
+     * @param renderVersion If higher than GLES30, otherwise null
+     * 
      */
-    protected LWJGL3GLES31Wrapper() {
-        super(Platform.GL, Renderers.GLES31);
+    protected LWJGL3GLES31Wrapper(Renderers version) {
+        super(Platform.GL, version);
+        gles20 = new LWJGL3GLES20Wrapper(version);
+        gles30 = new LWJGL3GLES30Wrapper(version);
     }
 
     /**
@@ -231,7 +236,11 @@ public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
     @Override
     public void glUniform2fv(int location, int count, float[] v, int offset) {
         gles20.glUniform2fv(location, count, v, offset);
+    }
 
+    @Override
+    public void glUniform1fv(int location, int count, float[] v, int offset) {
+        gles20.glUniform1fv(location, count, v, offset);
     }
 
     @Override
@@ -410,6 +419,21 @@ public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
             int pname, int[] params, int paramsOffset) {
         gles30.glGetActiveUniformsiv(program, uniformCount, uniformIndices, indicesOffset, pname, params,
                 paramsOffset);
+    }
+
+    @Override
+    public ByteBuffer glMapBufferRange(int target, int offset, int length, int access) {
+        return gles30.glMapBufferRange(target, offset, length, access);
+    }
+
+    @Override
+    public boolean glUnmapBuffer(int target) {
+        return gles30.glUnmapBuffer(target);
+    }
+
+    @Override
+    public void glFlushMappedBufferRange(int target, int offset, int length) {
+        gles30.glFlushMappedBufferRange(target, offset, length);
     }
 
     /**

@@ -77,7 +77,13 @@ public class ComputeShader extends ShaderProgram {
     }
 
     @Override
-    public void setUniformData(float[] uniforms, Mesh mesh) {
+    public void setUniformData(float[] destinationUniform, Mesh mesh) {
+
+    }
+
+    @Override
+    public void initBuffers(Mesh mesh) {
+        // TODO Auto-generated method stub
 
     }
 

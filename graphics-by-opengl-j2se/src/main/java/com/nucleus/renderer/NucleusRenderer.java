@@ -7,7 +7,6 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
-import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
 
 /**
@@ -21,6 +20,20 @@ import com.nucleus.texturing.ImageFactory;
  *
  */
 public interface NucleusRenderer {
+
+    public enum Matrices {
+        MODELVIEW(0),
+        PROJECTION(1),
+        RENDERPASS_1(2),
+        RENDERPASS_2(3);
+
+        public final int index;
+
+        private Matrices(int index) {
+            this.index = index;
+        }
+
+    }
 
     /**
      * Min number of stack elements to supports, this is the depth of the tree
@@ -254,16 +267,6 @@ public interface NucleusRenderer {
     public void setImageFactory(ImageFactory imageFactory);
 
     /**
-     * Creates the program object, loads and compiles the shader sources and links the program.
-     * This method is deprecated and should only be used internally.
-     * 
-     * @param program
-     * @throws RuntimeException If there is an error loading,compiling or linking the program.
-     */
-    @Deprecated
-    public void createProgram(ShaderProgram program);
-
-    /**
      * Generate GL named object buffers
      * 
      * @param names Destination for buffer names
@@ -292,7 +295,7 @@ public interface NucleusRenderer {
      * create and initialize a buffer object's data store, from OpenGL.glBufferData()
      * 
      * @param target Specifies the target buffer object. The symbolic constant must be GL_ARRAY_BUFFER or
-     * GL_ELEMENT_ARRAY_BUFFER.
+     * GL_ELEMENT_ARRAY_BUFFER, or any of the targets allowed for the current GL implementation
      * @param size Specifies the size in bytes of the buffer object's new data store.
      * @param data Specifies a pointer to data that will be copied into the data store for initialization, or NULL if no
      * data is to be copied.

@@ -1,6 +1,5 @@
 package com.nucleus.component;
 
-import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.BufferObject;
 
 /**
@@ -8,47 +7,33 @@ import com.nucleus.geometry.BufferObject;
  * Buffer can be optimized for usage by CPU or native (GPU)
  * The buffer holds storage for a number of entities - what they are and how they are processed is not known to the
  * buffer.
+ * Currently sets datatype size to 4, if any other size is used this must be updated.
  * 
  *
  */
 public abstract class ComponentBuffer extends BufferObject {
 
+    public final static int DATATYPE_SIZE = 4;
+
     /**
      * Number of entities that this buffer has storage for.
      */
-    protected int entityCount;
+    protected final int entityCount;
     /**
      * Storage size per entity.
      */
-    protected int sizePerEntity;
+    protected final int sizePerEntity;
 
     public ComponentBuffer(int entityCount, int sizePerEntity) {
+        super((entityCount * sizePerEntity) * DATATYPE_SIZE);
         this.entityCount = entityCount;
         this.sizePerEntity = sizePerEntity;
-        sizeInBytes = (entityCount * sizePerEntity) << 2;
     }
 
     /**
-     * Reads (copies) the data for the specified entity.
-     * The destination array must have enough space to store {@link #getSizePerEntity()} values
-     * 
-     * @param entity The entity to fetch, 0 to entityCount - 1
-     * @param destination Data is put here
-     */
-    public abstract void get(int entity, float[] destination);
-
-    /**
-     * Reads (copies) the data for the specified entity.
-     * The destination buffer must have enough space, at the current position, to store {@link #getSizePerEntity()}
-     * values
-     * 
-     * @param entity The entity to fetch, 0 to entityCount - 1
-     * @param destination The destination buffer
-     */
-    public abstract void get(int entity, AttributeBuffer destination);
-
-    /**
-     * Stores float values for the specified entity, with offset.
+     * Stores float values for the specified entity, with offset, use this sparingly when data for the entity shall be
+     * initialized.
+     * Avoid calling this often since it is not optimized.
      * 
      * @param entity
      * @param offset
@@ -65,6 +50,15 @@ public abstract class ComponentBuffer extends BufferObject {
      */
     public int getSizePerEntity() {
         return sizePerEntity;
+    }
+
+    /**
+     * Returns the number of entities
+     * 
+     * @return
+     */
+    public int getEntityCount() {
+        return entityCount;
     }
 
 }

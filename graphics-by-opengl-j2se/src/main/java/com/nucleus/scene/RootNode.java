@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 import com.nucleus.assets.AssetManager;
+import com.nucleus.mmi.ObjectInputListener;
 import com.nucleus.renderer.NucleusRenderer;
 
 /**
@@ -46,11 +47,17 @@ public abstract class RootNode extends Node {
      * When a node is rendered it is added to this list, this is for the current frame - will change as nodes are
      * rendered
      */
-    transient private ArrayList<Node> renderNodeList = new ArrayList<>();
+    transient private ArrayList<Node>[] renderNodeList;
     /**
      * List of last displayed frame rendered nodes - this is the currently visible nodes.
      */
-    transient private ArrayList<Node> visibleNodeList = new ArrayList<>();
+    transient private ArrayList<Node>[] visibleNodeList;
+    /**
+     * Set this to get callbacks on MMI events for this node, handled by {@link NodeInputListener}
+     */
+    transient protected ObjectInputListener objectInputListener;
+    transient private int currentListIndex = 1;
+    transient private int previousListIndex = 0;
 
     /**
      * Table with all added childnodes and their id.
@@ -60,6 +67,12 @@ public abstract class RootNode extends Node {
     protected RootNode() {
         super();
         setType(NodeTypes.rootnode);
+        renderNodeList = new ArrayList[2];
+        visibleNodeList = new ArrayList[2];
+        for (int i = 0; i < renderNodeList.length; i++) {
+            renderNodeList[i] = new ArrayList<>();
+            visibleNodeList[i] = new ArrayList<>();
+        }
     }
 
     /**
@@ -128,7 +141,7 @@ public abstract class RootNode extends Node {
      * @param node
      */
     public void addRenderedNode(Node node) {
-        renderNodeList.add(node);
+        renderNodeList[currentListIndex].add(node);
     }
 
     /**
@@ -137,7 +150,7 @@ public abstract class RootNode extends Node {
      * @return
      */
     public ArrayList<Node> getRenderedNodes() {
-        return visibleNodeList;
+        return renderNodeList[previousListIndex];
     }
 
     /**
@@ -147,9 +160,11 @@ public abstract class RootNode extends Node {
      * visible nodes
      */
     public void swapNodeList() {
-        visibleNodeList = renderNodeList;
-        renderNodeList = null;
-        renderNodeList = new ArrayList<>();
+        visibleNodeList[previousListIndex].clear();
+        visibleNodeList[previousListIndex].addAll(renderNodeList[previousListIndex]);
+        renderNodeList[previousListIndex].clear();
+        currentListIndex = previousListIndex;
+        previousListIndex = (currentListIndex + 1) & 1;
     }
 
     /**
@@ -159,7 +174,7 @@ public abstract class RootNode extends Node {
      * @return
      */
     public ArrayList<Node> getVisibleNodeList() {
-        return visibleNodeList;
+        return visibleNodeList[currentListIndex];
     }
 
     /**
@@ -208,6 +223,27 @@ public abstract class RootNode extends Node {
         renderNodeList = null;
         visibleNodeList = null;
         childNodeTable = null;
+    }
+
+    /**
+     * Returns the {@link ObjectInputListener}, or null if not set.
+     * This method should normally not be called, it is handled by {@link NodeInputListener}
+     * 
+     * @return The {@link ObjectInputListener} for this node or null if not set
+     */
+    protected ObjectInputListener getObjectInputListener() {
+        return objectInputListener;
+    }
+
+    /**
+     * Sets the {@link ObjectInputListener} for this rootnode, the listener will get callbacks for Nodes that
+     * have bounds specified, when there is touch interaction.
+     * Remember to set bounds for Nodes that shall get callbacks.
+     * 
+     * @param objectInputListener Listener to get callback when input interaction is registered on a Node with bounds.
+     */
+    public void setObjectInputListener(ObjectInputListener objectInputListener) {
+        this.objectInputListener = objectInputListener;
     }
 
 }

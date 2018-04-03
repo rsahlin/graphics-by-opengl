@@ -1,4 +1,4 @@
-#version 100
+#version 300 es
 /**
  * Returns a matrix with rotate, scale and translate set.
  * @return Matrix with rotate, scale and translate set
@@ -36,5 +36,4 @@ mat4 calculateTransformMatrix(vec3 rotate, vec3 scale, vec3 translate){
     tMatrix[2][3] = translate.z;
     
     return modelview * tMatrix;
-
 }

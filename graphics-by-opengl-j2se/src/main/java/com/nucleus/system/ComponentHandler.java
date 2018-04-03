@@ -86,7 +86,11 @@ public class ComponentHandler {
      */
     public void initSystems(RootNode root, NucleusRenderer renderer) {
         for (System s : componentSystem.values()) {
+            if (s.initialized) {
+                throw new IllegalArgumentException("Already initalized system " + s.getClass().getName());
+            }
             s.initSystem(renderer, root, systemComponent.get(s.getType()));
+            s.initialized = true;
         }
     }
 

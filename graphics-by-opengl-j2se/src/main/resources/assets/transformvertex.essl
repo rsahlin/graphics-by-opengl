@@ -1,3 +1,4 @@
+#version 100
 /* Copyright 2017 Richard Sahlin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -10,6 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+precision highp float;
 
 /**
  * Vertex shader that transforms the vertex using matrix, then applies second transform using translate,rotate and scale
@@ -32,10 +35,10 @@ varying vec2 vTexCoord;
 /**
  * From commonvertex.essl
  */
-mat3 calculateTransformMatrix(vec3 rotate, vec3 scale);
+mat4 calculateTransformMatrix(vec3 rotate, vec3 scale, vec3 translate);
 
 void main() {
-    vec4 pos = uMVMatrix * (vec4(aTranslate.x, aTranslate.y, aTranslate.z, 1.0) + vec4(calculateTransformMatrix(aRotate, aScale) * aVertex, 0.0));
+    vec4 pos =  vec4(aVertex.xyz, 1) * (calculateTransformMatrix(aRotate, aScale, aTranslate) * uMVMatrix);
     gl_Position = uProjectionMatrix * pos;
     vTexCoord = aVertex.st;
 }

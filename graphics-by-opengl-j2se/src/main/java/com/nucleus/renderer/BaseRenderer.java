@@ -50,20 +50,6 @@ import com.nucleus.vecmath.Matrix;
  */
 class BaseRenderer implements NucleusRenderer {
 
-    public enum Matrices {
-        MODELVIEW(0),
-        PROJECTION(1),
-        RENDERPASS_1(2),
-        RENDERPASS_2(3);
-
-        public final int index;
-
-        private Matrices(int index) {
-            this.index = index;
-        }
-
-    }
-
     public final static String NOT_INITIALIZED_ERROR = "Not initialized, must call init()";
 
     protected final static String BASE_RENDERER_TAG = "BaseRenderer";
@@ -267,9 +253,10 @@ class BaseRenderer implements NucleusRenderer {
                 ArrayList<RenderPass> renderPasses = node.getRenderPass();
                 if (renderPasses != null) {
                     for (RenderPass renderPass : renderPasses) {
-                        if (renderPass.getViewFrustum() != null) {
-                            Matrix.mul4(ShadowPass1Program.getLightMatrix(matrices[Matrices.RENDERPASS_1.index]),
-                                    renderPass.getViewFrustum().getMatrix());
+                        if (renderPass.getViewFrustum() != null && renderPass.getPass() == Pass.SHADOW1) {
+                            Matrix.mul4(renderPass.getViewFrustum().getMatrix(),
+                                    ShadowPass1Program.getLightMatrix(matrices[Matrices.PROJECTION.index]),
+                                    matrices[Matrices.RENDERPASS_1.index]);
                         }
                         pushPass(renderPass.getPass());
                         setRenderPass(renderPass);
@@ -301,12 +288,14 @@ class BaseRenderer implements NucleusRenderer {
             pushMatrix(this.projection, matrices[Matrices.PROJECTION.index]);
             matrices[Matrices.PROJECTION.index] = projection;
         }
-        Matrix.mul4(nodeMatrix, viewMatrix, matrices[Matrices.MODELVIEW.index]);
+        Matrix.mul4(viewMatrix, nodeMatrix, matrices[Matrices.MODELVIEW.index]);
         if (node.getType().equals(NodeTypes.linedrawernode.name())) {
             gles.glLineWidth(((LineDrawerNode) node).getLineWidth());
         }
         renderMeshes(node.getMeshes(), matrices);
         this.modelMatrix = nodeMatrix;
+        // Add this to rendered nodes before children.
+        node.getRootNode().addRenderedNode(node);
         for (Node n : node.getChildren()) {
             pushMatrix(matrixStack, this.modelMatrix);
             render(n);
@@ -315,7 +304,6 @@ class BaseRenderer implements NucleusRenderer {
         if (projection != null) {
             matrices[Matrices.PROJECTION.index] = popMatrix(this.projection);
         }
-        node.getRootNode().addRenderedNode(node);
     }
 
     private void setupRenderTarget(RenderTarget target) throws GLException {
@@ -560,7 +548,7 @@ class BaseRenderer implements NucleusRenderer {
         program.updateUniforms(gles, matrices, mesh);
         program.prepareTextures(gles, mesh);
 
-        AttributeBuffer vertices = mesh.getVerticeBuffer(BufferIndex.VERTICES);
+        AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.VERTICES);
         ElementBuffer indices = mesh.getElementBuffer();
 
         // TODO - is this the best place for this check - remember, this should only be done in debug cases.
@@ -601,11 +589,6 @@ class BaseRenderer implements NucleusRenderer {
     @Override
     public boolean isInitialized() {
         return initialized;
-    }
-
-    @Override
-    public void createProgram(ShaderProgram program) {
-        program.createProgram(gles);
     }
 
     @Override
@@ -705,7 +688,7 @@ class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void setProjection(float[] matrix, int index) {
-        System.arraycopy(matrix, index, matrices[1], 0, 16);
+        System.arraycopy(matrix, index, matrices[Matrices.PROJECTION.index], 0, 16);
     }
 
     @Override

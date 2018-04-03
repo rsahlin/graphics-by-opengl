@@ -1,10 +1,11 @@
 package com.nucleus.shader;
 
 import com.nucleus.geometry.Mesh;
-import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -37,29 +38,29 @@ public class ShadowPass1Program extends ShaderProgram {
     }
 
     @Override
-    protected String getShaderSource(int type) {
+    protected ShaderSource getShaderSource(Renderers version, int type) {
         switch (type) {
             case GLES20.GL_FRAGMENT_SHADER:
                 if (function.getPass() != null) {
-                    return PROGRAM_DIRECTORY + function.getPassString() + function.getShadingString() + FRAGMENT_TYPE
-                            + SHADER_SOURCE_SUFFIX;
+                    return new ShaderSource(
+                            PROGRAM_DIRECTORY + function.getPassString() + function.getShadingString() + FRAGMENT_TYPE,
+                            objectProgram.getSourceNameVersion(version, type), type);
                 } else {
-                    return PROGRAM_DIRECTORY + function.getShaderSourceName() + FRAGMENT_TYPE
-                            + SHADER_SOURCE_SUFFIX;
+                    return super.getShaderSource(version, type);
                 }
             case GLES20.GL_VERTEX_SHADER:
-                return objectProgram.getShaderSource(type);
+                return objectProgram.getShaderSource(version, type);
             default:
                 throw new IllegalArgumentException("Not implemented");
         }
     }
 
     @Override
-    public void setUniformMatrices(float[] uniforms, float[][] matrices, Mesh mesh) {
-        System.arraycopy(matrices[0], 0, getUniforms(),
+    public void setUniformMatrices(float[][] matrices, Mesh mesh) {
+        System.arraycopy(matrices[Matrices.MODELVIEW.index], 0, uniforms,
                 shaderVariables[CommonShaderVariables.uMVMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(matrices[2], 0, getUniforms(),
+        System.arraycopy(matrices[Matrices.RENDERPASS_1.index], 0, uniforms,
                 shaderVariables[CommonShaderVariables.uProjectionMatrix.index].getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
@@ -70,9 +71,10 @@ public class ShadowPass1Program extends ShaderProgram {
     }
 
     @Override
-    public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh) throws GLException {
+    public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
+            throws GLException {
         /**
-         * Currently calls ShaderProgram#setUniformData() in ordet to set necesarry data from the program int
+         * Currently calls ShaderProgram#setUniformData() in order to set necessary data from the program int
          * uniform storage.
          * This could potentially break the shadow program if needed uniform data is set in some other method.
          * TODO - Make sure that the interface declares and mandates that uniform data shall be set in #setUniformData()
@@ -89,8 +91,10 @@ public class ShadowPass1Program extends ShaderProgram {
      * 
      */
     public static float[] getLightMatrix(float[] matrix) {
-        float[] lightVector = GlobalLight.getInstance().getLightVector();
-        Matrix.setRotateEulerM(matrix, 0, lightVector[0], lightVector[1], lightVector[2]);
+        // TODO implement light position/vector properly
+        // float[] lightVector = GlobalLight.getInstance().getLightVector();
+        // Matrix.setRotateM(matrix, 0, 0, lightVector[0], lightVector[1], lightVector[2]);
+        Matrix.setIdentity(matrix, 0);
         return matrix;
     }
 
@@ -100,7 +104,13 @@ public class ShadowPass1Program extends ShaderProgram {
     }
 
     @Override
-    public void setUniformData(float[] uniforms, Mesh mesh) {
+    public void setUniformData(float[] destinationUniform, Mesh mesh) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void initBuffers(Mesh mesh) {
         // TODO Auto-generated method stub
 
     }

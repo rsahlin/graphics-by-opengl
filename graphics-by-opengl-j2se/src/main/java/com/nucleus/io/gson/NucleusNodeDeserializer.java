@@ -21,15 +21,30 @@ import com.nucleus.scene.Node.NodeTypes;
  */
 public class NucleusNodeDeserializer extends NucleusDeserializer implements JsonDeserializer<Node> {
 
+    // TODO where is a good place to store this constant?
+    public final static String NODETYPE_JSON_KEY = "type";
+
     @Override
     public Node deserialize(JsonElement json, Type type, JsonDeserializationContext context)
             throws JsonParseException {
 
         JsonObject obj = json.getAsJsonObject();
-        NodeTypes t = NodeTypes.valueOf(obj.get(Node.TYPE).getAsString());
-        Node node = (Node) gson.fromJson(json, t.getTypeClass());
+        JsonElement element = obj.get(NODETYPE_JSON_KEY);
+        if (element == null) {
+            throw new IllegalArgumentException("Node does not contain:" + NODETYPE_JSON_KEY);
+        }
+        Node node = null;
+        NodeTypes t = NodeTypes.valueOf(element.getAsString());
+        switch (t) {
+            case node:
+                // Throw runtimeexception since IllegalArgumentException is used to catch invalid node type.
+                throw new RuntimeException("Can not deserialize vanilla Node - use one of the subclasses");
+            default:
+                node = (Node) gson.fromJson(json, t.getTypeClass());
+                break;
+        }
         postDeserialize(node);
         return node;
-    }
 
+    }
 }

@@ -81,7 +81,6 @@ public class GSONSceneFactory implements SceneSerializer {
      */
     protected void createNodeDeserializer() {
         nodeDeserializer = new NucleusNodeDeserializer();
-        ;
     }
 
     @Override
@@ -217,8 +216,9 @@ public class GSONSceneFactory implements SceneSerializer {
             Node created = nodeFactory.create(renderer, meshFactory, node, root);
             root.addChild(created);
             setViewFrustum(node, created);
-            nodeFactory.createChildNodes(renderer, meshFactory, node, created);
+            // TODO - what if created node depends on childnodes being created before calling onCreate()?
             created.onCreated();
+            nodeFactory.createChildNodes(renderer, meshFactory, node, created);
         }
     }
 

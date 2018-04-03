@@ -2,6 +2,7 @@ package com.nucleus.geometry;
 
 import java.io.IOException;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.opengl.GLException;
@@ -15,6 +16,8 @@ import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
 
 public class DefaultMeshFactory implements MeshFactory {
+
+    private MeshFactory.MeshCreator customMeshCreator;
 
     @Override
     public Mesh createMesh(NucleusRenderer renderer, Node parent) throws IOException, GLException {
@@ -46,19 +49,26 @@ public class DefaultMeshFactory implements MeshFactory {
                 builder.setMaterial(m);
                 builder.setTexture(tex);
                 builder.setShapeBuilder(((LineDrawerNode) parent).getShapeBuilder());
-                // RectangleShapeBuilder.Configuration config = new RectangleShapeBuilder.Configuration(0.5f, 0.5f, 0f,
-                // 1,
-                // 0);
-                // builder.setShapeBuilder(new RectangleShapeBuilder(config));
                 Mesh mesh = builder.create();
                 return mesh;
             case switchnode:
             case layernode:
                 // No mesh for switch node, or layernode
                 return null;
+            case meshnode:
+                if (customMeshCreator != null) {
+                    return customMeshCreator.createCustomMesh(renderer);
+                }
+                // TODO is this an error?
+                SimpleLogger.d(getClass(), "No custom MeshCreator registered.");
             default:
                 throw new IllegalArgumentException("Not implemented for " + parent.getType());
         }
+    }
+
+    @Override
+    public void setMeshCreator(MeshCreator creator) {
+        this.customMeshCreator = creator;
     }
 
 }

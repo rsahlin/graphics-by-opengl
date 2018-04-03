@@ -59,11 +59,14 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
      */
     protected boolean onPointerEvent(Node node, MMIPointerEvent event) {
         float[] position = event.getPointerData().getCurrentPosition();
+        if (position == null) {
+            return false;
+        }
         if (node.isInside(position)) {
             if (node instanceof MMIEventListener) {
                 ((MMIEventListener) node).onInputEvent(event);
             }
-            ObjectInputListener listener = node.getObjectInputListener();
+            ObjectInputListener listener = root.getObjectInputListener();
             switch (event.getAction()) {
                 case ACTIVE:
                     down[0] = position[0];
@@ -79,17 +82,17 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
                         }
                     }
                     if (listener != null) {
-                        listener.onInputEvent(event.getPointerData().getCurrent());
+                        listener.onInputEvent(node, event.getPointerData().getCurrent());
                     }
                     return true;
                 case INACTIVE:
                     if (listener != null) {
-                        listener.onInputEvent(event.getPointerData().getCurrent());
+                        listener.onInputEvent(node, event.getPointerData().getCurrent());
                     }
                     return true;
                 case MOVE:
                     if (listener != null) {
-                        listener.onDrag(event.getPointerData());
+                        listener.onDrag(node, event.getPointerData());
                     }
                     return true;
                 case ZOOM:
@@ -103,8 +106,7 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
 
     /**
      * Checks children for pointer event, calling {@link #onPointerEvent(MMIPointerEvent)} recursively and stopping when
-     * a
-     * child returns true.
+     * a child returns true.
      * 
      * @param event
      * @return true if one of the children has a match for the pointer event, false otherwise
@@ -123,7 +125,7 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
 
     @Override
     public void onInputEvent(MMIPointerEvent event) {
-        onInputEvent(root.getRenderedNodes(), event);
+        onInputEvent(root.getVisibleNodeList(), event);
     }
 
 }

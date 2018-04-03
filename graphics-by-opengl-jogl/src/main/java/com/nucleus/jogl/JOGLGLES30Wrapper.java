@@ -31,6 +31,7 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
      * Creates a new instance of the GLES30 wrapper for JOGL
      * 
      * @param gles The JOGL GLES30 instance
+     * @param renderVersion If higher than GLES30, otherwise null
      * @throws IllegalArgumentException If gles is null
      */
     public JOGLGLES30Wrapper(GL4ES3 gles, Renderers renderVersion) {
@@ -256,7 +257,11 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glUniform2fv(int location, int count, float[] v, int offset) {
         gles.glUniform2fv(location, count, v, offset);
+    }
 
+    @Override
+    public void glUniform1fv(int location, int count, float[] v, int offset) {
+        gles.glUniform1fv(location, count, v, offset);
     }
 
     @Override
@@ -457,7 +462,7 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
                 nameLength, 0);
         byte[] name = new byte[nameLength[0]];
         gles.glGetActiveUniformBlockName(program, uniformBlockIndex, nameLength[0], nameLength, 0, name, 0);
-        return new String(name);
+        return new String(name).trim();
     }
 
     @Override
@@ -465,6 +470,21 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
             int pname, int[] params, int paramsOffset) {
         gles.glGetActiveUniformsiv(program, uniformCount, uniformIndices, indicesOffset, pname, params,
                 paramsOffset);
+    }
+
+    @Override
+    public ByteBuffer glMapBufferRange(int target, int offset, int length, int access) {
+        return gles.glMapBufferRange(target, offset, length, access);
+    }
+
+    @Override
+    public boolean glUnmapBuffer(int target) {
+        return gles.glUnmapBuffer(target);
+    }
+
+    @Override
+    public void glFlushMappedBufferRange(int target, int offset, int length) {
+        gles.glFlushMappedBufferRange(target, offset, length);
     }
 
 }

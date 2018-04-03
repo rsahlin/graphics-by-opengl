@@ -16,10 +16,13 @@ import com.nucleus.vecmath.Axis;
  */
 public class TiledTexture2D extends Texture2D {
 
+    public final static String FRAME = "frame";
+    public final static String TILE = "tile";
+
     /**
      * Size of tiled texture, ie how many frames in x and y
      */
-    @SerializedName("tile")
+    @SerializedName(TILE)
     private int[] tile;
 
     /**

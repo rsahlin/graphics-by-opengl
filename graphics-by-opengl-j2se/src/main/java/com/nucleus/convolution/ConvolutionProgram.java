@@ -84,7 +84,7 @@ public class ConvolutionProgram extends ShaderProgram {
 
     @Override
     public void updateAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
-        AttributeBuffer buffer = mesh.getVerticeBuffer(BufferIndex.VERTICES);
+        AttributeBuffer buffer = mesh.getAttributeBuffer(BufferIndex.VERTICES);
         gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attributeVariables[BufferIndex.VERTICES.index]);
         GLUtils.handleError(gles, "glVertexAttribPointers ");
 
@@ -94,8 +94,8 @@ public class ConvolutionProgram extends ShaderProgram {
     public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
             throws GLException {
         Matrix.mul4(matrices[0], matrices[1]);
-        System.arraycopy(matrices[0], 0, getUniforms(), 0, Matrix.MATRIX_ELEMENTS);
-        setUniforms(gles, uniforms, sourceUniforms);
+        System.arraycopy(matrices[0], 0, uniforms, 0, Matrix.MATRIX_ELEMENTS);
+        uploadUniforms(gles, uniforms, sourceUniforms);
     }
 
     @Override
@@ -111,7 +111,13 @@ public class ConvolutionProgram extends ShaderProgram {
     }
 
     @Override
-    public void setUniformData(float[] uniforms, Mesh mesh) {
+    public void setUniformData(float[] destinationUniform, Mesh mesh) {
+    }
+
+    @Override
+    public void initBuffers(Mesh mesh) {
+        // TODO Auto-generated method stub
+
     }
 
 }

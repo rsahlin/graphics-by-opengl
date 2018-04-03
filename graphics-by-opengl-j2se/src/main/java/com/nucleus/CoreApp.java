@@ -181,15 +181,6 @@ public class CoreApp implements RenderContextListener {
     @Override
     public void contextCreated(int width, int height) {
         hasCalledCreated = true;
-        if (!getRenderer().isInitialized()) {
-            getRenderer().init(new SurfaceConfiguration(), width, height);
-            try {
-                // The caller shall make sure that buffers are swapped so that the result is visible
-                displaySplash();
-            } catch (GLException | NodeException e) {
-                throw new RuntimeException(e);
-            }
-        }
         clientApp.init(this);
         renderer.contextCreated(width, height);
     }
@@ -303,8 +294,8 @@ public class CoreApp implements RenderContextListener {
                 new TranslateProgram(Texture2D.Shading.textured));
         Material material = new Material();
         material.setProgram(vt);
-        meshBuilder.setMaterial(material);
-        meshBuilder.setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(0.2f, 0.2f, 0f, 1, 0)));
+        meshBuilder.setMaterial(material)
+                .setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(0.2f, 0.2f, 1f, 1, 0)));
         builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
                 .setNode(NodeTypes.layernode);
         RootNode root = builder.create();

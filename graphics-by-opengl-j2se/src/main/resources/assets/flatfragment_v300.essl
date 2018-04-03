@@ -1,4 +1,4 @@
-#version 100
+#version 300 es
 /* Copyright 2015 Richard Sahlin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,10 +19,12 @@
 precision mediump float;
 
 uniform sampler2D uTexture;      //The texture sampler
-varying vec2 vTexCoord;
-varying vec4 color;
+in vec2 vTexCoord;
+in vec4 color;
+
+out vec4 fragColor;
 
 void main()
 {
-    gl_FragColor = color;
+    fragColor = color;
 }
