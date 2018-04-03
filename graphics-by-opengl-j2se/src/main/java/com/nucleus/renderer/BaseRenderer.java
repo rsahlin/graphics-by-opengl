@@ -255,7 +255,8 @@ class BaseRenderer implements NucleusRenderer {
                     for (RenderPass renderPass : renderPasses) {
                         if (renderPass.getViewFrustum() != null && renderPass.getPass() == Pass.SHADOW1) {
                             Matrix.mul4(renderPass.getViewFrustum().getMatrix(),
-                                    ShadowPass1Program.getLightMatrix(matrices[Matrices.PROJECTION.index]),
+                                    // TODO Is is safe to use matrix from renderpass2? Use temp matrix instead?
+                                    ShadowPass1Program.getLightMatrix(matrices[Matrices.RENDERPASS_2.index]),
                                     matrices[Matrices.RENDERPASS_1.index]);
                         }
                         pushPass(renderPass.getPass());

@@ -34,6 +34,7 @@ public class CPUQuadExpander extends AttributeExpander {
     protected CPUComponentBuffer destination;
     protected float[] sourceData;
     protected float[] destinationData;
+    protected final float[] DEFAULT_SCALE = new float[] { 1, 1, 1 };
 
     private transient Texture2D texture;
     /**
@@ -205,14 +206,16 @@ public class CPUQuadExpander extends AttributeExpander {
             }
         }
         float[] scale = transform.getScale();
-        if (scale != null) {
-            int index = start + mapper.scaleOffset;
-            for (int i = 0; i < 4; i++) {
-                sourceData[index++] = scale[0];
-                sourceData[index++] = scale[1];
-                sourceData[index] = scale[2];
-                index += sizePerVertex - 2;
-            }
+        // Must set scale
+        if (scale == null) {
+            scale = DEFAULT_SCALE;
+        }
+        int index = start + mapper.scaleOffset;
+        for (int i = 0; i < 4; i++) {
+            sourceData[index++] = scale[0];
+            sourceData[index++] = scale[1];
+            sourceData[index] = scale[2];
+            index += sizePerVertex - 2;
         }
         expandQuadData(quad);
     }
