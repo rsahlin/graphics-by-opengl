@@ -3,6 +3,7 @@ package com.nucleus.lwjgl3;
 import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.J2SEWindow;
 import com.nucleus.J2SEWindowApplication;
+import com.nucleus.common.Type;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 
 /**
@@ -19,10 +20,11 @@ public class LWJGL3Application extends J2SEWindowApplication {
      * 
      * @param args
      * @param version
-     * @param clientClass Must implement {@link ClientApplication}
+     * @param clientClass Implementing class for {@link ClientApplication}, must implement {@link ClientApplication}
+     * interface
      * @throws IllegalArgumentException If clientClass is null
      */
-    public LWJGL3Application(String[] args, Renderers version, Class<?> clientClass) {
+    public LWJGL3Application(String[] args, Renderers version, Type<Object> clientClass) {
         super(args, version, clientClass);
         switch (windowType) {
             case GLFW:

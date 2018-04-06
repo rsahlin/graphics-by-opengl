@@ -6,7 +6,10 @@ import static com.nucleus.vecmath.Rectangle.X;
 import static com.nucleus.vecmath.Rectangle.Y;
 
 import com.nucleus.geometry.Mesh.BufferIndex;
+import com.nucleus.renderer.Window;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.TextureParameter;
+import com.nucleus.texturing.TextureParameter.Parameter;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.TiledTexture2D;
 import com.nucleus.vecmath.Rectangle;
@@ -108,69 +111,48 @@ public class RectangleShapeBuilder extends ElementBuilder {
     }
 
     private RectangleConfiguration configuration;
+    /**
+     * Quad data stored here after created.
+     */
+    private float[] quadStoreage;
 
     public RectangleShapeBuilder(RectangleConfiguration configuration) {
         this.configuration = configuration;
     }
 
     /**
-     * Sets 3 component position in the destination array and the quad vertex index.
-     * The vertexIndex is used to keep track of which of the 4 vertices is processed, for instance when
-     * setting up uv coordinates for a UV frame.
-     * This method is not speed efficient, only use when very few positions shall be set.
+     * Sets the quad to build
      * 
-     * @param vertexIndex The vertex index in the quad - 0 to 3, this is stored AFTER xyz
-     * @param x
-     * @param y
-     * @param z
-     * @param dest position will be set here, must contain at least pos + 3 values.
-     * @param pos The index where data is written.
+     * @param quad The quad, 0 for first quad, 1 for second etc
+     * @return
      */
-    public static void setPosition(int vertexIndex, float x, float y, float z, float[] dest, int pos) {
-        dest[pos++] = x;
-        dest[pos++] = y;
-        dest[pos++] = z;
-        dest[pos++] = vertexIndex;
+    public RectangleShapeBuilder setStartQuad(int quad) {
+        configuration.startVertex = quad * 4;
+        return this;
     }
 
     /**
-     * Sets 3 component position in the destination array.
-     * This method is not speed efficient, only use when very few positions shall be set.
+     * Sets the rectangle to use when creating positions
      * 
-     * @param x
-     * @param y
-     * @param z
-     * @param dest position will be set here, must contain at least pos + 3 values.
-     * @param pos The index where data is written.
+     * @param rectangle
+     * @return
      */
-    public static void setPosition(float x, float y, float z, float[] dest, int pos) {
-        dest[pos++] = x;
-        dest[pos++] = y;
-        dest[pos++] = z;
+    public RectangleShapeBuilder setRectangle(Rectangle rectangle) {
+        configuration.rectangle = rectangle;
+        return this;
     }
 
     /**
-     * Sets 3 component position plus uv in the destination array.
-     * This method is not speed efficient, only use when very few positions shall be set.
-     * For instance when creating one quad.
+     * Sets the state of the vertex index flag, if enabled then the vertex index in the Quad (0 - 3) is stored
+     * after position. Use this for texture types that calculate UV based on vertex index in quad, for instance tiled
+     * texture.
      * 
-     * @param vertexIndex The vertex index in the quad - 0 to 3, this is stored AFTER xyz
-     * @param x
-     * @param y
-     * @param z
-     * @param u
-     * @param v
-     * @param dest position will be set here, must contain at least pos + 5 values.
-     * @param pos The index where data is written.
+     * @param enable
+     * @return
      */
-    public static void setPositionUV(int vertexIndex, float x, float y, float z, float u, float v, float[] dest,
-            int pos) {
-        dest[pos++] = x;
-        dest[pos++] = y;
-        dest[pos++] = z;
-        dest[pos++] = vertexIndex;
-        dest[pos++] = u;
-        dest[pos++] = v;
+    public RectangleShapeBuilder setEnableVertexIndex(boolean enable) {
+        configuration.enableVertexIndex = enable;
+        return this;
     }
 
     /**
@@ -178,42 +160,43 @@ public class RectangleShapeBuilder extends ElementBuilder {
      * This method is not speed efficient, only use when very few positions shall be set.
      * For instance when creating one quad.
      * 
+     * @param vertexIndex The vertex index in the quad - 0 to 3, this is stored AFTER xyz
      * @param x
      * @param y
-     * @param z
-     * @param u
-     * @param v
-     * @param dest position will be set here, must contain at least pos + 5 values.
+     * @param optional uv
+     * @param dest Destination array
      * @param pos The index where data is written.
      */
-    public static void setPositionUV(float x, float y, float z, float u, float v, float[] dest,
-            int pos) {
+    public void setPositionUV(int vertexIndex, float x, float y, float[] uv, float[] dest, int pos) {
         dest[pos++] = x;
         dest[pos++] = y;
-        dest[pos++] = z;
-        dest[pos++] = u;
-        dest[pos++] = v;
+        dest[pos++] = configuration.z;
+        if (configuration.enableVertexIndex) {
+            dest[pos++] = vertexIndex;
+        }
+        if (uv != null) {
+            dest[pos++] = uv[vertexIndex * 2];
+            dest[pos++] = uv[vertexIndex * 2 + 1];
+        }
     }
 
     @Override
     public void build(Mesh mesh) {
         AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.VERTICES);
         int stride = attributes.getFloatStride();
-        float[] data = new float[stride * QUAD_VERTICES];
+        if (quadStoreage == null) {
+            quadStoreage = new float[stride * QUAD_VERTICES];
+        }
         if (configuration.rectangle != null) {
-            createQuadArray(configuration.rectangle, mesh.getTexture(Texture2D.TEXTURE_0), stride,
-                    configuration.z, configuration.enableVertexIndex, data);
+            createQuadArray(mesh.getTexture(Texture2D.TEXTURE_0), mesh.getMode(), stride, quadStoreage);
         }
         int startIndex = configuration.startVertex * stride;
         int count = configuration.getRectangleCount();
-        if (data != null) {
-            int components = data.length / QUAD_VERTICES;
-            stride = stride * QUAD_VERTICES;
-            for (int i = 0; i < count; i++) {
-                attributes.setComponents(data, components, 0, startIndex, QUAD_VERTICES);
-                startIndex += stride;
-            }
+        for (int i = 0; i < count; i++) {
+            attributes.setComponents(quadStoreage, stride, 0, startIndex, QUAD_VERTICES);
+            startIndex += stride * QUAD_VERTICES;
         }
+        attributes.setDirty(true);
         buildElements(mesh, count, configuration.startVertex);
     }
 
@@ -221,114 +204,97 @@ public class RectangleShapeBuilder extends ElementBuilder {
      * Creates an array of values that define the quad attribute values using the texture.
      * If vertex stride > 4 and texture type is not untextured then UV array is created.
      * 
-     * @param rectangle Size of quad
      * @param texture Texture or null
+     * @param mode The drawmode used for the quad
      * @param vertexStride Number of values between vertices
-     * @param z Z axis value for quad.
-     * @param useVertexIndex If true then the index into the quad (0 - 3) is added after xyz.
      * @destination Values where quad array positions, and optional uv, are written.
      */
-    public static void createQuadArray(Rectangle rectangle, Texture2D texture, int vertexStride, float z,
-            boolean useVertexIndex, float[] destination) {
-        float[] values = rectangle.getValues();
-        // TODO Should it be possible to pass UV to this method?
+    protected void createQuadArray(Texture2D texture, Mesh.Mode mode, int vertexStride, float[] destination) {
+        float[] values = configuration.rectangle.getValues();
         float[] uvCoordinates = null;
         if (vertexStride > 4 && texture != null && texture.textureType != TextureType.Untextured) {
-            uvCoordinates = createUVCoordinates(texture);
+            uvCoordinates = new float[8];
+            createUVCoordinates(texture, uvCoordinates);
         }
-        if (useVertexIndex) {
-            createQuadArrayVertexIndex(values, z, vertexStride, uvCoordinates, destination);
-        } else {
-            createQuadArray(values, z, vertexStride, uvCoordinates, destination);
-        }
+        createQuadArray(mode, values, vertexStride, uvCoordinates, destination);
     }
 
     /**
-     * Creates an array of vertex position including the index of the vertex in the quad, and optional UV coordinates.
+     * Creates an array of vertex positions from a rectangle, including the index of the vertex in the quad, and
+     * optional UV coordinates.
      * The index in the vertex can be used to calculate the UV positions from a UV frame, so that only the frame number
-     * needs to be specified.
+     * needs to be specified. This is used by some texture types.
      * 
-     * @param values x, y, width, height of quad. X, Y is upper left corner.
-     * @param z
+     * @param values x, y, width, height of quad. X, Y is upper left corner of created quad.
      * @param vertexStride
      * @param uv Optional UV or null if not used
+     * @param useVertexIndex
      * @param destination Result is written here, must contain 4 * vertexStride values
      */
-    protected static void createQuadArrayVertexIndex(float[] values, float z, int vertexStride, float[] uv,
-            float[] destination) {
-        if (uv != null) {
-            setPositionUV(0, values[X], values[Y], z, uv[0], uv[1], destination, 0);
-            setPositionUV(1, values[X] + values[WIDTH], values[Y], z, uv[2], uv[3],
-                    destination,
-                    vertexStride);
-            setPositionUV(2, values[X] + values[WIDTH], values[Y] - values[HEIGHT],
-                    z, uv[4], uv[5], destination, vertexStride * 2);
-            setPositionUV(3, values[X], values[Y] - values[HEIGHT], z, uv[6], uv[7],
-                    destination,
-                    vertexStride * 3);
-        } else {
-            setPosition(0, values[X], values[Y], z, destination, 0);
-            setPosition(1, values[X] + values[WIDTH], values[Y], z,
-                    destination, vertexStride);
-            setPosition(2, values[X] + values[WIDTH], values[Y] - values[HEIGHT], z,
-                    destination, vertexStride * 2);
-            setPosition(3, values[X], values[Y] - values[HEIGHT], z,
-                    destination, vertexStride * 3);
-        }
-    }
-
-    /**
-     * Creates an array of vertex position and optional UV coordinates.
-     * 
-     * @param values x, y, width, height of quad. X, Y is upper left corner.
-     * @param z
-     * @param vertexStride
-     * @param uv Optional UV or null if not used
-     * @param destination Result is written here, must contain 4 * vertexStride values
-     */
-    protected static void createQuadArray(float[] values, float z, int vertexStride, float[] uv, float[] destination) {
-        if (uv != null) {
-            setPositionUV(values[X], values[Y], z, uv[0], uv[1], destination, 0);
-            setPositionUV(values[X] + values[WIDTH], values[Y], z, uv[2], uv[3],
-                    destination,
-                    vertexStride);
-            setPositionUV(values[X] + values[WIDTH], values[Y] - values[HEIGHT],
-                    z, uv[4], uv[5], destination, vertexStride * 2);
-            setPositionUV(values[X], values[Y] - values[HEIGHT], z, uv[6], uv[7],
-                    destination,
-                    vertexStride * 3);
-        } else {
-            setPosition(values[X], values[Y], z, destination, 0);
-            setPosition(values[X] + values[WIDTH], values[Y], z,
-                    destination, vertexStride);
-            setPosition(values[X] + values[WIDTH], values[Y] - values[HEIGHT], z,
-                    destination, vertexStride * 2);
-            setPosition(values[X], values[Y] - values[HEIGHT], z,
-                    destination, vertexStride * 3);
+    protected void createQuadArray(Mesh.Mode mode, float[] values, int vertexStride, float[] uv, float[] destination) {
+        switch (mode) {
+            case TRIANGLES:
+            case TRIANGLE_FAN:
+                setPositionUV(0, values[X], values[Y], uv, destination, 0);
+                setPositionUV(1, values[X] + values[WIDTH], values[Y], uv, destination, vertexStride);
+                setPositionUV(2, values[X] + values[WIDTH], values[Y] - values[HEIGHT], uv, destination,
+                        vertexStride * 2);
+                setPositionUV(3, values[X], values[Y] - values[HEIGHT], uv, destination,
+                        vertexStride * 3);
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for mode " + mode);
         }
     }
 
     /**
      * creates the uv coordinates for the texture, if texture does not use UV, for instance for type
      * {@link TextureType#Untextured} then null is returned.
+     * If texture type is Texture2D the texture parameters are checked and UV adopted to REPEAT if specified.
      * 
      * @param texture
-     * @return Array with UV values or null if not supported
+     * @param destination
      */
-    protected static float[] createUVCoordinates(Texture2D texture) {
+    protected static void createUVCoordinates(Texture2D texture, float[] destination) {
         switch (texture.textureType) {
             case Texture2D:
-                return UV_COORDINATES;
+                Parameter[] params = texture.getTexParams().getParameters();
+                createUVCoordinates(texture, params[TextureParameter.WRAP_S_INDEX],
+                        params[TextureParameter.WRAP_T_INDEX], destination);
+                break;
             case TiledTexture2D:
                 TiledTexture2D t = (TiledTexture2D) texture;
                 float maxU = (1f / (t.getTileWidth()));
                 float maxV = (1f / (t.getTileHeight()));
-                return new float[] { 0, 0, maxU, 0, maxU, maxV, 0, maxV };
+                destination[0] = 0;
+                destination[1] = 0;
+                destination[2] = maxU;
+                destination[3] = 0;
+                destination[4] = maxU;
+                destination[5] = maxV;
+                destination[6] = 0;
+                destination[7] = maxV;
+                break;
             case UVTexture2D:
             case Untextured:
             default:
-                return null;
         }
+    }
+
+    protected static void createUVCoordinates(Texture2D texture, Parameter wrapS, Parameter wrapT,
+            float[] destination) {
+        if (wrapS == Parameter.REPEAT || wrapT == Parameter.REPEAT) {
+            float x = wrapS == Parameter.REPEAT ? (float) Window.getInstance().getWidth() / texture.getWidth() : 1f;
+            float y = wrapT == Parameter.REPEAT ? (float) Window.getInstance().getHeight() / texture.getHeight() : 1f;
+            int index = 0;
+            while (index < UV_COORDINATES.length) {
+                destination[index] = UV_COORDINATES[index++] * x;
+                destination[index] = UV_COORDINATES[index++] * y;
+            }
+        } else {
+            System.arraycopy(UV_COORDINATES, 0, destination, 0, UV_COORDINATES.length);
+        }
+
     }
 
     @Override

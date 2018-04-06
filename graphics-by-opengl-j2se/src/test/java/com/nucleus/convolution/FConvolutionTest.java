@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -48,7 +49,7 @@ public class FConvolutionTest implements WindowListener {
 
     }
 
-    // @AfterClass
+    @AfterClass
     public static void waitForUser() {
         wait = true;
         while (wait) {
@@ -108,6 +109,19 @@ public class FConvolutionTest implements WindowListener {
 
         Image destination2 = new Image(source.getWidth() >>> 1, source.getHeight() >>> 1, source.getFormat());
         executeTest(source, destination2, "Scale 1/2 3X3", Kernel.SIZE_3X3, new float[] { 1, 4, 1, 4, 4, 4, 1, 4, 1 },
+                1);
+
+    }
+
+    @Test
+    public void testProcessScaleHalfRGB() throws IOException {
+        Image source = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGB);
+        Image destination = new Image(source.getWidth() >>> 1, source.getHeight() >>> 1, source.getFormat());
+        executeTest(source, destination, "Scale 1/2 RGB 2X2", Kernel.SIZE_2X2, new float[] { 1, 1, 1, 1 }, 1);
+
+        Image destination2 = new Image(source.getWidth() >>> 1, source.getHeight() >>> 1, source.getFormat());
+        executeTest(source, destination2, "Scale 1/2 RGB 3X3", Kernel.SIZE_3X3,
+                new float[] { 1, 4, 1, 4, 4, 4, 1, 4, 1 },
                 1);
 
     }

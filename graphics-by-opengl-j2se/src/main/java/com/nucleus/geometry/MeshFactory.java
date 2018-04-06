@@ -47,15 +47,16 @@ public interface MeshFactory {
     public interface MeshCreator {
 
         /**
-         * Called by the MeshFactory when a meshnode is found. Implementations shall create and return the apropriate
+         * Called by the MeshFactory when a meshnode is found. Implementations shall create and return the appropriate
          * mesh.
          * 
          * @param renderer
+         * @param parent
          * @return
          * @throws IOException
          * @throws GLException
          */
-        public Mesh createCustomMesh(NucleusRenderer renderer) throws IOException, GLException;
+        public Mesh createCustomMesh(NucleusRenderer renderer, Node parent) throws IOException, GLException;
 
     }
 
