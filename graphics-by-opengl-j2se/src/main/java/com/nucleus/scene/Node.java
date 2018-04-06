@@ -92,7 +92,7 @@ public class Node extends BaseReference {
             return this;
         }
 
-        public T create() throws NodeException {
+        public T create(String id) throws NodeException {
             try {
                 if (type == null || root == null) {
                     throw new IllegalArgumentException("Must set type and root before calling #create()");
@@ -106,6 +106,7 @@ public class Node extends BaseReference {
                     Mesh mesh = meshBuilder.create();
                     node.addMesh(mesh, MeshIndex.MAIN);
                 }
+                node.setId(id);
                 return (T) node;
             } catch (InstantiationException | IllegalAccessException | GLException | IOException e) {
                 throw new NodeException("Could not create node: " + e.getMessage());
@@ -361,14 +362,44 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Retuns the meshes for this node, THIS IS AN INTERNAL METHOD AND SHOULD NOT BE USED!
-     * TODO renderer needs list of meshes to render, find solution where list of meshes is hidden.
+     * Retuns the meshes for this node, current meshes are copied into the list
      * 
      * @return List of added meshes
      */
+    public ArrayList<Mesh> getMeshes(ArrayList<Mesh> list) {
+        list.addAll(meshes);
+        return list;
+    }
+
+    /**
+     * Adds a mesh to be rendered with this node. The mesh is added at the specified index, if specified
+     * NOT THREADSAFE
+     * THIS IS AN INTERNAL METHOD AND SHOULD NOT BE USED!
+     * 
+     * @param mesh
+     * @param index The index where this mesh is added or null to add at end of current list
+     */
     @Deprecated
-    public ArrayList<Mesh> getMeshes() {
-        return meshes;
+    public void addMesh(Mesh mesh, MeshIndex index) {
+        if (index == null) {
+            meshes.add(mesh);
+        } else {
+            meshes.add(index.index, mesh);
+        }
+    }
+
+    /**
+     * Removes the mesh from this node, if present.
+     * If many meshes are added this method may have a performance impact.
+     * NOT THREADSAFE
+     * THIS IS AN INTERNAL METHOD AND SHOULD NOT BE USED!
+     * 
+     * @param mesh The mesh to remove from this Node.
+     * @return true if the mesh was removed
+     */
+    @Deprecated
+    public boolean removeMesh(Mesh mesh) {
+        return meshes.remove(mesh);
     }
 
     /**
@@ -401,30 +432,6 @@ public class Node extends BaseReference {
      */
     public Mesh getMesh(int index) {
         return meshes.get(index);
-    }
-
-    /**
-     * Adds a mesh to be rendered with this node. The mesh is added at the specified index, if specified
-     * 
-     * @param mesh
-     * @param index The index where this mesh is added or null to add at end of current list
-     */
-    public void addMesh(Mesh mesh, MeshIndex index) {
-        if (index == null) {
-            meshes.add(mesh);
-        } else {
-            meshes.add(index.index, mesh);
-        }
-    }
-
-    /**
-     * Removes the mesh from this node, if present.
-     * If many meshes are added this method may have a performance impact.
-     * 
-     * @param mesh The mesh to remove from this Node.
-     */
-    public void removeMesh(Mesh mesh) {
-        meshes.remove(mesh);
     }
 
     /**
@@ -791,7 +798,7 @@ public class Node extends BaseReference {
     /**
      * Returns the first matching viewnode, this is a conveniance method to find node with view
      * 
-     * @param layer Which layer the ViewNode to return belongs to.
+     * @param layer Which layer the ViewNode to return belongs to, or null to return first found LayerNode
      * @return The viewnode or null if not found
      */
     public LayerNode getViewNode(Layer layer) {
@@ -805,23 +812,17 @@ public class Node extends BaseReference {
     }
 
     private LayerNode getViewNode(Layer layer, Node node) {
+        if (node.getType().equals(NodeTypes.layernode.name())) {
+            if (layer == null || ((LayerNode) node).getLayer() == layer) {
+                return (LayerNode) node;
+            }
+        }
         return getViewNode(layer, node.getChildren());
     }
 
     private LayerNode getViewNode(Layer layer, ArrayList<Node> children) {
         for (Node n : children) {
-            if (n.getType().equals(NodeTypes.layernode.name())) {
-                if (((LayerNode) n).getLayer() == layer) {
-                    return (LayerNode) n;
-                }
-            }
-        }
-        // Search through children recusively
-        for (Node n : children) {
-            LayerNode view = getViewNode(layer, n);
-            if (view != null) {
-                return view;
-            }
+            return getViewNode(layer, n);
         }
         return null;
     }
@@ -1130,7 +1131,8 @@ public class Node extends BaseReference {
      */
     public float[] concatModelMatrix(float[] concatModel) {
         if (concatModel == null) {
-            return transform != null ? transform.getMatrix() : Matrix.setIdentity(modelMatrix, 0);
+            return transform != null ? Matrix.copy(transform.getMatrix(), 0, modelMatrix, 0)
+                    : Matrix.setIdentity(modelMatrix, 0);
         }
         Matrix.mul4(transform != null ? transform.getMatrix() : Matrix.IDENTITY_MATRIX, concatModel,
                 modelMatrix);

@@ -67,6 +67,7 @@ class BaseRenderer implements NucleusRenderer {
     protected ArrayDeque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<float[]> projection = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<Pass> renderPassStack = new ArrayDeque<>();
+    protected ArrayList<Mesh> nodeMeshes = new ArrayList<>();
     // TODO - move this into a class together with render pass deque so that access of stack and current pass
     // is handled consistently
     private Pass currentPass;
@@ -293,7 +294,8 @@ class BaseRenderer implements NucleusRenderer {
         if (node.getType().equals(NodeTypes.linedrawernode.name())) {
             gles.glLineWidth(((LineDrawerNode) node).getLineWidth());
         }
-        renderMeshes(node.getMeshes(), matrices);
+        nodeMeshes.clear();
+        renderMeshes(node.getMeshes(nodeMeshes), matrices);
         this.modelMatrix = nodeMatrix;
         // Add this to rendered nodes before children.
         node.getRootNode().addRenderedNode(node);

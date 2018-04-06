@@ -57,7 +57,7 @@ public class DefaultMeshFactory implements MeshFactory {
                 return null;
             case meshnode:
                 if (customMeshCreator != null) {
-                    return customMeshCreator.createCustomMesh(renderer);
+                    return customMeshCreator.createCustomMesh(renderer, parent);
                 }
                 // TODO is this an error?
                 SimpleLogger.d(getClass(), "No custom MeshCreator registered.");
