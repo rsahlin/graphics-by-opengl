@@ -23,6 +23,14 @@ public class Texture2D extends BaseReference {
 
     public static final String RESOLUTION = "resolution";
     public static final String MIPMAP = "mipmap";
+    /**
+     * Name of the serialized field textureType
+     */
+    public static final String TEXTURETYPE = "textureType";
+    public static final String TEXPARAMETERS = "texParameters";
+    public static final String FORMAT = "format";
+    public static final String TYPE = "type";
+    public static final String FLIPV = "flipv";
 
     /**
      * TODO - is this really a property of the texture, maybe move to ShaderProgram?
@@ -35,11 +43,6 @@ public class Texture2D extends BaseReference {
         shadow1(),
         shadow2(),
     }
-
-    /**
-     * Name of the serialized field textureType
-     */
-    public final static String TEXTURETYPE = "textureType";
 
     /**
      * The GL texture formats
@@ -106,7 +109,7 @@ public class Texture2D extends BaseReference {
      * This is the originating asset target resolution - the actual assets used may be scaled if the system
      * has a lower resolution.
      */
-    @SerializedName("resolution")
+    @SerializedName(RESOLUTION)
     RESOLUTION resolution;
     @SerializedName(MIPMAP)
     private int levels;
@@ -114,19 +117,26 @@ public class Texture2D extends BaseReference {
     /**
      * Texture parameter values.
      */
-    @SerializedName("texParameters")
+    @SerializedName(TEXPARAMETERS)
     protected TextureParameter texParameters;
     /**
      * The texture format
      */
-    @SerializedName("format")
+    @SerializedName(FORMAT)
     private Format format;
 
     /**
      * The texture type
      */
-    @SerializedName("type")
+    @SerializedName(TYPE)
     private Type type;
+
+    /**
+     * Set to true to flip texture V, ie flipping the Y axis.
+     * Used to display framebuffer target rendered to texture properly.
+     */
+    @SerializedName(FLIPV)
+    private boolean flipV = false;
 
     /**
      * The texture name, this is a loose reference to the allocated texture name.
@@ -195,6 +205,7 @@ public class Texture2D extends BaseReference {
         height = source.height;
         type = source.type;
         format = source.format;
+        flipV = source.flipV;
     }
 
     /**
@@ -355,6 +366,16 @@ public class Texture2D extends BaseReference {
      */
     public Format getFormat() {
         return format;
+    }
+
+    /**
+     * Returns true if the texture V coordinate shall be flipped for this texture.
+     * If true this will flip the texture on Y axis.
+     * 
+     * @return
+     */
+    public boolean isFlipV() {
+        return flipV;
     }
 
     /**

@@ -171,6 +171,8 @@ public class TextureFactory {
                 return new UVTexture2D();
             case Untextured:
                 return new Untextured();
+            case DynamicTexture2D:
+                return new DynamicTexture2D();
             default:
                 throw new IllegalArgumentException("Not implemented support for " + type);
         }

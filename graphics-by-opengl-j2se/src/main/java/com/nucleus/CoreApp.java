@@ -18,8 +18,7 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.NucleusRenderer.FrameListener;
-import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
@@ -47,7 +46,7 @@ import com.nucleus.texturing.TextureParameter;
  * @author Richard Sahlin
  *
  */
-public class CoreApp implements RenderContextListener {
+public class CoreApp implements FrameRenderer {
 
     private static final String NOT_CALLED_CREATECONTEXT = "Must call contextCreated() before rendering.";
     private static final String SPLASH_FILENAME = "assets/splash.png";
@@ -102,6 +101,24 @@ public class CoreApp implements RenderContextListener {
          */
         public void init(CoreApp coreApp);
 
+        /**
+         * Called before a new frame is renderer, after this call the scene will be processed to produce the next frame.
+         * Can be used to update objects that needs to be synchronized to a pre-frame behavior.
+         * 
+         * @param deltaTime Time, in seconds, that it took to create last frame
+         */
+        public void beginFrame(float deltaTime);
+
+        /**
+         * Called after a new frame has been rendered. Make no assumptions of what is currently on screen as the swap
+         * behavior is unknown.
+         * All draw calls have been sent to graphics layer, though they may not have finished processing.
+         * Can be used to update objects that needs to be synchronized to a post-frame behavior.
+         * 
+         * @param deltaTime Time, in seconds, that it took to create last frame
+         */
+        public void endFrame(float deltaTime);
+
     }
 
     /**
@@ -126,7 +143,7 @@ public class CoreApp implements RenderContextListener {
      */
     protected PointerInputProcessor inputProcessor = new PointerInputProcessor();
 
-    ComponentProcessorRunnable logicRunnable;
+    ComponentProcessorRunnable componentRunnable;
 
     /**
      * Set to true when {@link #contextCreated(int, int)} is called
@@ -140,7 +157,7 @@ public class CoreApp implements RenderContextListener {
 
     /**
      * Creates a new Core application with the specified renderer.
-     * Call {@link #drawFrame()} to produce frames and call attached {@link FrameListener}
+     * Use {@link FrameRenderer} to produce frames and keep track of context events.
      * 
      * @param renderer Initialized renderer
      * @param clientApp The client main app implementation
@@ -159,7 +176,7 @@ public class CoreApp implements RenderContextListener {
         this.renderer = renderer;
         this.clientApp = clientApp;
 
-        logicRunnable = new ComponentProcessorRunnable(renderer, new J2SEComponentProcessor(), false);
+        componentRunnable = new ComponentProcessorRunnable(renderer, new J2SEComponentProcessor(), false);
 
     }
 
@@ -212,7 +229,7 @@ public class CoreApp implements RenderContextListener {
         AssetManager.getInstance().destroy(renderer);
         rootNode.destroy(renderer);
         renderer = null;
-        logicRunnable.destroy();
+        componentRunnable.destroy();
     }
 
     /**
@@ -228,7 +245,7 @@ public class CoreApp implements RenderContextListener {
      * The normal case is to call it from window/surface that has onDraw/display callbacks.
      */
     @Override
-    public void drawFrame() {
+    public void renderFrame() {
         if (!hasCalledCreated) {
             throw new IllegalArgumentException(NOT_CALLED_CREATECONTEXT);
         }
@@ -236,20 +253,22 @@ public class CoreApp implements RenderContextListener {
         if (renderer != null) {
             try {
                 // If multiple threads used this method will return immediately
-                logicRunnable.process(rootNode, FrameSampler.getInstance().getDelta());
+                componentRunnable.process(rootNode, FrameSampler.getInstance().getDelta());
                 renderer.beginFrame();
+                clientApp.beginFrame(FrameSampler.getInstance().getDelta());
                 if (rootNode != null) {
                     renderer.render(rootNode);
                 }
+                clientApp.endFrame(FrameSampler.getInstance().getDelta());
+                renderer.endFrame();
+                if (rootNode != null) {
+                    rootNode.swapNodeList();
+                }
+                if (destroy) {
+                    destroy();
+                }
             } catch (GLException e) {
                 throw new RuntimeException(e);
-            }
-            renderer.endFrame();
-            if (rootNode != null) {
-                rootNode.swapNodeList();
-            }
-            if (destroy) {
-                destroy();
             }
         }
     }
@@ -263,7 +282,7 @@ public class CoreApp implements RenderContextListener {
      */
     public void setRootNode(RootNode node) {
         this.rootNode = node;
-        logicRunnable.setRootNode(node);
+        componentRunnable.setRootNode(node);
         ViewController vc = new ViewController();
         vc.registerEventHandler(null);
         NodeController nc = new NodeController(node);

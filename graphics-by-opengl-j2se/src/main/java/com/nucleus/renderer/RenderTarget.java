@@ -48,14 +48,18 @@ public class RenderTarget extends BaseReference {
 
         private Attachement attachement;
         /**
-         * The format, this depends on what the {@link Attachement} is.
+         * The image format for the attachement, this depends on what the {@link Attachement} is.
          * 
          */
-        private String format;
+        private ImageFormat format;
         /**
          * The scale of the target, compared to Window size, in x and y axis
          */
         private float[] scale;
+        /**
+         * Init (clear) value for the target
+         */
+        private float[] init;
         transient private int[] size;
         /**
          * Used if target is TEXTURE
@@ -64,11 +68,6 @@ public class RenderTarget extends BaseReference {
 
         public AttachementData() {
 
-        }
-
-        public AttachementData(Attachement attachement, ImageFormat format) {
-            this.attachement = attachement;
-            this.format = format.name();
         }
 
         /**
@@ -80,8 +79,17 @@ public class RenderTarget extends BaseReference {
             return attachement;
         }
 
-        public String getFormat() {
+        public ImageFormat getFormat() {
             return format;
+        }
+
+        /**
+         * Returns the value to init the target to after creation, or null if not set
+         * 
+         * @return
+         */
+        public float[] getInitValue() {
+            return init;
         }
 
         /**
@@ -95,6 +103,7 @@ public class RenderTarget extends BaseReference {
 
         /**
          * Returns the texture object, if the target TEXTURE
+         * 
          * @return
          */
         public Texture2D getTexture() {
@@ -217,6 +226,7 @@ public class RenderTarget extends BaseReference {
     /**
      * Returns the id of the attachement data (point), this is the name of the attachement point + rendertarget id
      * Eg, use this to store and fetch texture
+     * 
      * @param attachement
      * @return Id of attachement point
      */

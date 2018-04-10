@@ -126,6 +126,7 @@ public class Node extends BaseReference {
         linedrawernode(LineDrawerNode.class),
         componentnode(ComponentNode.class),
         meshnode(MeshNode.class),
+        rendertotarget(RenderToTargetNode.class),
         rootnode(BaseRootNode.class);
 
         private final Class<?> theClass;

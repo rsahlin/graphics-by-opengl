@@ -22,48 +22,42 @@ public class DefaultMeshFactory implements MeshFactory {
     @Override
     public Mesh createMesh(NucleusRenderer renderer, Node parent) throws IOException, GLException {
 
-        switch (Node.NodeTypes.valueOf(parent.getType())) {
-            case linedrawernode:
-                LineDrawerNode lineDrawer = (LineDrawerNode) parent;
-                Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
-                int count = lineDrawer.getLineCount();
-                switch (lineDrawer.getLineMode()) {
-                    case LINES:
-                        builder.setArrayMode(Mode.LINES, count * 2);
-                        break;
-                    case LINE_STRIP:
-                        builder.setArrayMode(Mode.LINE_STRIP, count * 2);
-                        break;
-                    case RECTANGLE:
-                        // Rectangle shares vertices, 4 vertices per rectangle
-                        builder.setElementMode(Mode.LINES, count, count * 2);
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Not implemented for mode " + lineDrawer.getLineMode());
-                }
-                Material m = new Material();
-                TranslateProgram program = (TranslateProgram) AssetManager.getInstance()
-                        .getProgram(renderer.getGLES(), new TranslateProgram(Shading.flat));
-                m.setProgram(program);
-                Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
-                builder.setMaterial(m);
-                builder.setTexture(tex);
-                builder.setShapeBuilder(((LineDrawerNode) parent).getShapeBuilder());
-                Mesh mesh = builder.create();
-                return mesh;
-            case switchnode:
-            case layernode:
-                // No mesh for switch node, or layernode
-                return null;
-            case meshnode:
-                if (customMeshCreator != null) {
-                    return customMeshCreator.createCustomMesh(renderer, parent);
-                }
-                // TODO is this an error?
-                SimpleLogger.d(getClass(), "No custom MeshCreator registered.");
-            default:
-                throw new IllegalArgumentException("Not implemented for " + parent.getType());
+        if (parent instanceof LineDrawerNode) {
+            LineDrawerNode lineDrawer = (LineDrawerNode) parent;
+            Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
+            int count = lineDrawer.getLineCount();
+            switch (lineDrawer.getLineMode()) {
+                case LINES:
+                    builder.setArrayMode(Mode.LINES, count * 2);
+                    break;
+                case LINE_STRIP:
+                    builder.setArrayMode(Mode.LINE_STRIP, count * 2);
+                    break;
+                case RECTANGLE:
+                    // Rectangle shares vertices, 4 vertices per rectangle
+                    builder.setElementMode(Mode.LINES, count, count * 2);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Not implemented for mode " + lineDrawer.getLineMode());
+            }
+            Material m = new Material();
+            TranslateProgram program = (TranslateProgram) AssetManager.getInstance()
+                    .getProgram(renderer.getGLES(), new TranslateProgram(Shading.flat));
+            m.setProgram(program);
+            Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
+            builder.setMaterial(m);
+            builder.setTexture(tex);
+            builder.setShapeBuilder(((LineDrawerNode) parent).getShapeBuilder());
+            Mesh mesh = builder.create();
+            return mesh;
+
         }
+        if (customMeshCreator != null) {
+            return customMeshCreator.createCustomMesh(renderer, parent);
+        }
+        // TODO is this an error?
+        SimpleLogger.d(getClass(), "No custom MeshCreator registered.");
+        return null;
     }
 
     @Override

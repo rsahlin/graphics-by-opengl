@@ -36,12 +36,6 @@ public class DefaultNodeFactory implements NodeFactory {
         if (source.getType() == null) {
             throw new NodeException("Type not set in source node - was it created programatically?");
         }
-        try {
-            NodeTypes type = NodeTypes.valueOf(source.getType());
-        } catch (IllegalArgumentException e) {
-            // This means the node type is not known.
-            throw new IllegalArgumentException(ILLEGAL_NODE_TYPE + source.getType());
-        }
         Node copy = internalCreateNode(renderer, root, source, meshFactory);
         return copy;
     }
@@ -119,6 +113,12 @@ public class DefaultNodeFactory implements NodeFactory {
             throws NodeException {
         try {
             Node node = source.createInstance(root);
+            // Make sure same class instance as source - if not then new Node introduced without proper
+            // createInstance() method
+            if (!node.getClass().getSimpleName().contentEquals(source.getClass().getSimpleName())) {
+                throw new IllegalArgumentException("Class is not same, forgot to implement createInstance()? source: "
+                        + source.getClass().getSimpleName() + ", instance: " + node.getClass().getSimpleName());
+            }
             for (int i = 0; i < meshCount; i++) {
                 Mesh mesh = meshFactory.createMesh(renderer, node);
                 if (mesh != null) {

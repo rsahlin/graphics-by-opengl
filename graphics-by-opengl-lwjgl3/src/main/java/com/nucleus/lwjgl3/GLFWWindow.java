@@ -84,7 +84,7 @@ public class GLFWWindow extends J2SEWindow {
         // creates the GLCapabilities instance and makes the OpenGL
         // bindings available for use.
         GLES.setCapabilities(gles);
-        coreApp.drawFrame();
+        coreApp.renderFrame();
         GLFW.glfwSwapBuffers(window); // swap the color buffers
         // Poll for window events. The key callback above will only be
         // invoked during this call.

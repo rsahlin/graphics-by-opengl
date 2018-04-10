@@ -25,8 +25,14 @@ public class RectangleShapeBuilder extends ElementBuilder {
     public static final float DEFAULT_Z = 0;
     /**
      * Default UV coordinates for a full texture frame
+     * Do not access directly, use {@link #getUV(Texture2D)} to get correct uv
      */
-    public final static float[] UV_COORDINATES = new float[] { 0, 0, 1, 0, 1, 1, 0, 1 };
+    private final static float[] UV_COORDINATES = new float[] { 0, 0, 1, 0, 1, 1, 0, 1 };
+    /**
+     * Default UV coordinates for a full texture frame, V flipped for inverted Y axis.
+     * Do not access directly, use {@link #getUV(Texture2D)} to get correct uv
+     */
+    private final static float[] UVFLIPPED_COORDINATES = new float[] { 0, 1, 1, 1, 1, 0, 0, 0 };
 
     /**
      * Number of vertices for an quad, works with indexed, triangle strip and triangle fan.
@@ -258,6 +264,7 @@ public class RectangleShapeBuilder extends ElementBuilder {
     protected static void createUVCoordinates(Texture2D texture, float[] destination) {
         switch (texture.textureType) {
             case Texture2D:
+            case DynamicTexture2D:
                 Parameter[] params = texture.getTexParams().getParameters();
                 createUVCoordinates(texture, params[TextureParameter.WRAP_S_INDEX],
                         params[TextureParameter.WRAP_T_INDEX], destination);
@@ -283,16 +290,17 @@ public class RectangleShapeBuilder extends ElementBuilder {
 
     protected static void createUVCoordinates(Texture2D texture, Parameter wrapS, Parameter wrapT,
             float[] destination) {
+        float[] uv = getUV(texture);
         if (wrapS == Parameter.REPEAT || wrapT == Parameter.REPEAT) {
             float x = wrapS == Parameter.REPEAT ? (float) Window.getInstance().getWidth() / texture.getWidth() : 1f;
             float y = wrapT == Parameter.REPEAT ? (float) Window.getInstance().getHeight() / texture.getHeight() : 1f;
             int index = 0;
-            while (index < UV_COORDINATES.length) {
-                destination[index] = UV_COORDINATES[index++] * x;
-                destination[index] = UV_COORDINATES[index++] * y;
+            while (index < uv.length) {
+                destination[index] = uv[index++] * x;
+                destination[index] = uv[index++] * y;
             }
         } else {
-            System.arraycopy(UV_COORDINATES, 0, destination, 0, UV_COORDINATES.length);
+            System.arraycopy(uv, 0, destination, 0, uv.length);
         }
 
     }
@@ -313,6 +321,20 @@ public class RectangleShapeBuilder extends ElementBuilder {
                     throw new IllegalArgumentException("Not implemented for " + mesh.getMode());
             }
         }
+    }
+
+    /**
+     * Returns the coordinates for a rectangle texture based on the flipV flag in the texture.
+     * Y axis will be inverted if flipV flag is set in the texture.
+     * 
+     * @param texture
+     * @return
+     */
+    public static final float[] getUV(Texture2D texture) {
+        if (texture.isFlipV()) {
+            return UVFLIPPED_COORDINATES;
+        }
+        return UV_COORDINATES;
     }
 
 }

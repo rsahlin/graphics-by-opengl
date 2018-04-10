@@ -66,6 +66,18 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
 
         }
 
+        @Override
+        public void beginFrame(float deltaTime) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void endFrame(float deltaTime) {
+            // TODO Auto-generated method stub
+
+        }
+
     }
 
     private final static float[] kernel1 = new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 };

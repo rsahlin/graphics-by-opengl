@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshFactory;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.RootNode;
@@ -34,6 +36,24 @@ public interface SceneSerializer {
      * @throws IllegalArgumentException If renderer is null
      */
     public void init(NucleusRenderer renderer, NodeFactory nodeFactory, MeshFactory meshFactory);
+
+    /**
+     * Adds a node type to list of known node name/classes. Use this to add support for custom node when
+     * importing/exporting.
+     * 
+     * @param type
+     * @throws IllegalArgumentException If type has already been registered
+     */
+    public void addNodeType(Type<Node> type);
+
+    /**
+     * Adds a list of node types to list of known node name/classes. Use this to add support for custom node when
+     * importing/exporting.
+     * 
+     * @param type
+     * @throws IllegalArgumentException If type has already been registered
+     */
+    public void addNodeTypes(Type<Node>[] types);
 
     /**
      * Creates nodetree from a scene, the scene will be loaded using filename and the node returned shall be the root

@@ -36,12 +36,15 @@ public interface MeshFactory {
      * If a node containing custom mesh, currently the meshnode, is used the MeshCreator can be set to get callback
      * when the mesh shall be created.
      * 
+     * TODO Shall custom mesh creator be used on all node types if set?
+     * 
      * @param creator The implementation that shall create the custom mesh.
      */
     public void setMeshCreator(MeshCreator creator);
 
     /**
-     * For custom implementations of a mesh creator - this is used when
+     * For custom implementations of a mesh creator - this is used when implementation of MeshFactory finds a node
+     * that is of type 'meshnode'
      *
      */
     public interface MeshCreator {

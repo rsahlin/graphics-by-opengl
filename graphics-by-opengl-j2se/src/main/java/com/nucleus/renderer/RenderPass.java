@@ -6,15 +6,16 @@ import com.nucleus.io.BaseReference;
 
 /**
  * Definition of a renderpass
+ * This class can be serialized using GSON
  *
  */
 public class RenderPass extends BaseReference {
-    
+
     public static final String RENDERPASS = "renderPass";
     public static final String TARGET = "target";
     public static final String RENDERSTATE = "renderState";
     public static final String PASS = "pass";
-    
+
     /**
      * Defines the result output
      */
@@ -33,9 +34,10 @@ public class RenderPass extends BaseReference {
      */
     @SerializedName(PASS)
     private Pass pass;
-    
+
     /**
      * Returns the render target
+     * 
      * @return
      */
     public RenderTarget getTarget() {
@@ -44,28 +46,29 @@ public class RenderPass extends BaseReference {
 
     /**
      * Returns the renderstate for the target
+     * 
      * @return
      */
     public RenderState getRenderState() {
         return renderState;
     }
-    
+
     public void setTarget(RenderTarget renderTarget) {
         this.target = renderTarget;
     }
-    
+
     public void setRenderState(RenderState renderState) {
         this.renderState = renderState;
     }
-    
+
     public void setPass(Pass pass) {
         this.pass = pass;
     }
-    
+
     public Pass getPass() {
         return pass;
     }
-    
+
     /**
      * Returns the viewfrustum to be used when rendering to this renderpass
      * 
@@ -74,5 +77,5 @@ public class RenderPass extends BaseReference {
     public ViewFrustum getViewFrustum() {
         return viewFrustum;
     }
-    
+
 }

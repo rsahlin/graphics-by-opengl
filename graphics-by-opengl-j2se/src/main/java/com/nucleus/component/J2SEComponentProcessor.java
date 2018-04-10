@@ -63,7 +63,7 @@ public class J2SEComponentProcessor implements ComponentProcessor {
         if (bounds == null) {
             return false;
         }
-        return node.cullNode(bounds, Pass.LOGIC);
+        return node.cullNode(bounds, Pass.MAIN);
     }
 
 }

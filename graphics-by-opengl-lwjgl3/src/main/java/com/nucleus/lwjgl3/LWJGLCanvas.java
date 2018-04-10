@@ -126,7 +126,7 @@ public abstract class LWJGLCanvas extends Canvas {
                             GLES.setCapabilities(caps);
                         }
                         if (coreApp != null) {
-                            coreApp.drawFrame();
+                            coreApp.renderFrame();
                             swapBuffers(hdc);
                         } else {
                             SimpleLogger.d(getClass(), "CoreApp is null");

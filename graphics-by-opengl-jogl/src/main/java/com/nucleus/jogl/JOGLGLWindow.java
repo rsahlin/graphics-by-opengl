@@ -239,7 +239,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void display(GLAutoDrawable drawable) {
-        coreApp.drawFrame();
+        coreApp.renderFrame();
     }
 
     protected void handleMouseEvent(MouseEvent e, PointerAction action) {

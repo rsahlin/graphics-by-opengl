@@ -24,15 +24,19 @@ public enum TextureType {
     /**
      * No texture is used
      */
-    Untextured(Untextured.class);
+    Untextured(Untextured.class),
+    /**
+     * Dynamic texture created on demand
+     */
+    DynamicTexture2D(DynamicTexture2D.class);
     private final Class<?> clazz;
 
     TextureType(Class<?> clazz) {
         this.clazz = clazz;
     }
-    
+
     public Class<?> getImplementation() {
         return clazz;
     }
-    
+
 }
