@@ -7,6 +7,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.nucleus.common.TypeResolver;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.NodeTypes;
 
@@ -24,6 +25,32 @@ public class NucleusNodeDeserializer extends NucleusDeserializer implements Json
     // TODO where is a good place to store this constant?
     public final static String NODETYPE_JSON_KEY = "type";
 
+    private TypeResolver nodeResolver = new TypeResolver();
+
+    public NucleusNodeDeserializer() {
+        addNodeTypes(NodeTypes.values());
+    }
+
+    /**
+     * Adds a list with known type name/classes to the deserializer.
+     * Use this to add custom nodes for import.
+     * 
+     * @param types
+     */
+    public void addNodeTypes(com.nucleus.common.Type<Node>[] types) {
+        nodeResolver.registerTypes(types);
+    }
+
+    /**
+     * Adds a type name/class to the deserializer.
+     * Use this to add custom nodes for import.
+     * 
+     * @param types
+     */
+    public void addNodeType(com.nucleus.common.Type<Node> type) {
+        nodeResolver.registerType(type);
+    }
+
     @Override
     public Node deserialize(JsonElement json, Type type, JsonDeserializationContext context)
             throws JsonParseException {
@@ -34,15 +61,8 @@ public class NucleusNodeDeserializer extends NucleusDeserializer implements Json
             throw new IllegalArgumentException("Node does not contain:" + NODETYPE_JSON_KEY);
         }
         Node node = null;
-        NodeTypes t = NodeTypes.valueOf(element.getAsString());
-        switch (t) {
-            case node:
-                // Throw runtimeexception since IllegalArgumentException is used to catch invalid node type.
-                throw new RuntimeException("Can not deserialize vanilla Node - use one of the subclasses");
-            default:
-                node = (Node) gson.fromJson(json, t.getTypeClass());
-                break;
-        }
+        com.nucleus.common.Type<?> t = nodeResolver.getType(element.getAsString());
+        node = (Node) gson.fromJson(json, t.getTypeClass());
         postDeserialize(node);
         return node;
 

@@ -310,8 +310,10 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     private void setupRenderTarget(RenderTarget target) throws GLException {
+        boolean init = false;
         if (target.getFramebufferName() == Constants.NO_VALUE && target.getAttachements() != null) {
             createBuffers(target);
+            init = true;
         }
         switch (target.getTarget()) {
             case FRAMEBUFFER:
@@ -322,6 +324,34 @@ class BaseRenderer implements NucleusRenderer {
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented");
+        }
+        if (init) {
+            initAttachements(target);
+        }
+    }
+
+    /**
+     * Initialize, ie clear to start values, the targets after the buffers are created and target bound
+     * 
+     * @param target
+     */
+    private void initAttachements(RenderTarget target) {
+        int mask = 0;
+        for (AttachementData ad : target.getAttachements()) {
+            float[] initValue = ad.getInitValue();
+            if (initValue != null) {
+                switch (ad.getAttachement()) {
+                    case COLOR:
+                        mask |= GLES20.GL_COLOR_BUFFER_BIT;
+                        gles.glClearColor(initValue[0], initValue[1], initValue[2], initValue[3]);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Not implemented for attachement " + ad.getAttachement());
+                }
+            }
+        }
+        if (mask != 0) {
+            gles.glClear(mask);
         }
     }
 
@@ -697,6 +727,15 @@ class BaseRenderer implements NucleusRenderer {
     @Override
     public SurfaceConfiguration getSurfaceConfiguration() {
         return surfaceConfig;
+    }
+
+    @Override
+    public void renderToTexture(float[] matrix, ArrayList<Mesh> meshes, Texture2D texture, RenderPass renderPass)
+            throws GLException {
+        pushPass(currentPass);
+        setRenderPass(renderPass);
+        renderMeshes(meshes, matrices);
+        popPass();
     }
 
 }

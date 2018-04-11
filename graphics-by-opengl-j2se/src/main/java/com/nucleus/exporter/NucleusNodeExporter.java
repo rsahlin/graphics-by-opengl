@@ -4,11 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.nucleus.common.Type;
-import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
-import com.nucleus.scene.SwitchNode;
-import com.nucleus.scene.Node.NodeTypes;
 
 public class NucleusNodeExporter implements NodeExporter {
 
@@ -44,7 +41,7 @@ public class NucleusNodeExporter implements NodeExporter {
                 NodeExporter exporter2 = nodeExporters.get(child.getType());
                 // export.addChild(exporter2.exportNode(child, rootNode));
             }
-        	
+
         }
     }
 
@@ -54,25 +51,9 @@ public class NucleusNodeExporter implements NodeExporter {
 
     }
 
-
     @Override
     public Node exportNode(Node source, RootNode rootNode) {
-        NodeTypes type = NodeTypes.valueOf(source.getType());
-        Node created;
-        switch (type) {
-        case node:
-            created = source.createInstance(rootNode);
-            break;
-        case layernode:
-            created = ((LayerNode) source).createInstance(rootNode);
-            break;
-        case switchnode:
-            created = ((SwitchNode) source).createInstance(rootNode);
-            break;
-        default:
-            throw new IllegalArgumentException(NOT_IMPLEMENTED + type);
-        }
-        return created;
+        return source.createInstance(rootNode);
     }
 
     @Override

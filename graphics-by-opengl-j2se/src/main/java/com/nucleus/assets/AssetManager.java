@@ -101,6 +101,8 @@ public class AssetManager {
     /**
      * If the reference texture is id reference and the reference is registered then the texture data is copied into
      * the reference, overwriting transient values and non-set (null) values.
+     * The reference texture must NOT set format/type/name/width/height of texture since these values are taken from
+     * the target texture.
      * 
      * @param reference
      */
@@ -111,10 +113,13 @@ public class AssetManager {
                 throw new IllegalArgumentException("Could not find texture with id reference: "
                         + reference.getExternalReference().getIdReference());
             }
+            // Make sure reference values not specified.
+            if (reference.getFormat() != null || reference.getType() != null) {
+                throw new IllegalArgumentException("Dynamic texture must not define format/type");
+            }
             TextureFactory.copyTextureInstance(source, reference);
         } else {
-            // What should be done?
-            SimpleLogger.d(getClass(), "Called getIdReference with null reference:");
+            throw new IllegalArgumentException("Called getIdReference with null reference, for texture " + reference);
         }
     }
 
@@ -136,13 +141,13 @@ public class AssetManager {
         Texture2D texture = textures.get(renderTarget.getAttachementId(attachement));
         if (texture == null) {
             // TODO - What values should be used when creating the texture?
-            TextureType type = TextureType.Texture2D;
+            TextureType type = TextureType.DynamicTexture2D;
             RESOLUTION resolution = RESOLUTION.HD;
             int[] size = attachement.getSize();
             TextureParameter texParams = new TextureParameter(
                     new Parameter[] { Parameter.NEAREST, Parameter.NEAREST, Parameter.CLAMP,
                             Parameter.CLAMP });
-            ImageFormat format = ImageFormat.valueOf(attachement.getFormat());
+            ImageFormat format = attachement.getFormat();
             texture = TextureFactory.createTexture(renderer.getGLES(), type, resolution, size, format, texParams,
                     GLES20.GL_TEXTURE_2D);
             texture.setId(renderTarget.getAttachementId(attachement));

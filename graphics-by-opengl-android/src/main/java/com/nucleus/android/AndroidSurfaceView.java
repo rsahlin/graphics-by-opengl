@@ -10,8 +10,9 @@ import javax.microedition.khronos.opengles.GL10;
 import com.nucleus.SimpleLogger;
 import com.nucleus.android.egl10.EGL10Utils;
 import com.nucleus.opengl.GLESWrapper.Renderers;
-import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
 import com.nucleus.renderer.SurfaceConfiguration;
+
 import android.annotation.SuppressLint;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.EGLWindowSurfaceFactory;
@@ -36,7 +37,7 @@ public class AndroidSurfaceView extends GLSurfaceView
     private boolean surfaceDestroyed = false;
     private long lastDraw;
     private NucleusActivity nucleusActivity;
-    protected RenderContextListener renderListener;
+    protected FrameRenderer frameRenderer;
 
     /**
      * The result surface configuration from EGL
@@ -111,7 +112,7 @@ public class AndroidSurfaceView extends GLSurfaceView
             return;
         }
         try {
-            renderListener.drawFrame();
+            frameRenderer.renderFrame();
         } catch (Throwable t) {
             handleThrowable(t);
         }
@@ -151,13 +152,13 @@ public class AndroidSurfaceView extends GLSurfaceView
             eglSurface = null;
             eglDisplay = null;
         }
-        if (renderListener != null) {
-            renderListener.surfaceLost();
+        if (frameRenderer != null) {
+            frameRenderer.surfaceLost();
         }
     }
 
-    public void setRenderContextListener(RenderContextListener listener) {
-        this.renderListener = listener;
+    public void setRenderContextListener(FrameRenderer frameRenderer) {
+        this.frameRenderer = frameRenderer;
     }
 
 }

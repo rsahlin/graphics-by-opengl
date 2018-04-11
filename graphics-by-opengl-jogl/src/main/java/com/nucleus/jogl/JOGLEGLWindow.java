@@ -22,7 +22,7 @@ import com.nucleus.common.Constants;
 import com.nucleus.common.Environment;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.profiling.FrameSampler;
-import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
 import com.nucleus.renderer.SurfaceConfiguration;
 
 import jogamp.opengl.egl.EGLDisplayUtil;
@@ -39,7 +39,7 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
     protected long EGLSurface = Constants.NO_VALUE;
     protected long surface;
     protected SurfaceConfiguration surfaceConfig;
-    protected RenderContextListener renderListener;
+    protected FrameRenderer frameRenderer;
     protected boolean waitForClient = false;
     protected int sleep = 0;
     protected GLContext glContext;
@@ -155,14 +155,8 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
         internalContextCreated(width, height);
     }
 
-    private void makeCurrent() {
-        if (!EGL.eglMakeCurrent(EglDisplay, EGLSurface, EGLSurface, EGLContext)) {
-            throw new IllegalArgumentException("Could not make egl current");
-        }
-    }
-
-    public void setRenderContextListener(RenderContextListener listener) {
-        this.renderListener = listener;
+    public void setRenderContextListener(FrameRenderer frameRenderer) {
+        this.frameRenderer = frameRenderer;
     }
 
     /**
@@ -216,7 +210,7 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
 
     @Override
     public void drawFrame() {
-        renderListener.drawFrame();
+        frameRenderer.renderFrame();
     }
 
     @Override
@@ -247,8 +241,8 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
                 }
             }
         }
-        if (renderListener != null) {
-            renderListener.surfaceLost();
+        if (frameRenderer != null) {
+            frameRenderer.surfaceLost();
         }
         SimpleLogger.d(getClass(), "Exiting surface thread");
         thread = null;

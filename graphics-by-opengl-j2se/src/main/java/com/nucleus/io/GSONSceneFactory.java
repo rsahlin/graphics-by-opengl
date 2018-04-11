@@ -33,7 +33,6 @@ import com.nucleus.scene.RootNode;
 
 /**
  * GSON Serializer for nucleus scenegraph.
- * Do not create this class directly use {@linkplain SceneSerializerFactory}
  * 
  * @author Richard Sahlin
  *
@@ -150,7 +149,7 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     /**
-     * Retister type adapter(s), implement in subclasses as needed and call super
+     * Register type adapter(s), implement in subclasses as needed and call super
      * 
      * @param builder
      */
@@ -291,6 +290,16 @@ public class GSONSceneFactory implements SceneSerializer {
         nodeDeserializer.setGson(gson);
         boundsDeserializer.setGson(gson);
 
+    }
+
+    @Override
+    public void addNodeType(Type<Node> type) {
+        nodeDeserializer.addNodeType(type);
+    }
+
+    @Override
+    public void addNodeTypes(Type<Node>[] types) {
+        nodeDeserializer.addNodeTypes(types);
     }
 
 }

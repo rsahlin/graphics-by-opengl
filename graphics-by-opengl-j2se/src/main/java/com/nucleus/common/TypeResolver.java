@@ -58,6 +58,18 @@ public class TypeResolver {
     }
 
     /**
+     * Registers a list of types
+     * 
+     * @param types
+     * @throws IllegalArgumentException If a type already has been registered with the same name as is in the list
+     */
+    public void registerTypes(Type<?>[] types) {
+        for (Type<?> t : types) {
+            registerType(t);
+        }
+    }
+
+    /**
      * Returns the class for the type name
      * 
      * @param name Name of type, as registered by calling {@link #registerType(Type)}
@@ -70,6 +82,22 @@ public class TypeResolver {
             throw new IllegalArgumentException(NO_TYPE_FOR_NAME + name);
         }
         return type.getTypeClass();
+    }
+
+    /**
+     * Returns the type object for the type name
+     * 
+     * @param name Name of type, as registered by calling {@link #registerType(Type)}
+     * @return
+     * @throws IllegalArgumentException If there is no type registered for the name
+     */
+    public Type<?> getType(String name) {
+        Type<?> type = types.get(name);
+        if (type == null) {
+            throw new IllegalArgumentException(NO_TYPE_FOR_NAME + name);
+        }
+        return type;
+
     }
 
     /**

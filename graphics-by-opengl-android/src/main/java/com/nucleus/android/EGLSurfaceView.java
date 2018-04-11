@@ -7,7 +7,7 @@ import com.nucleus.egl.EGL14Constants;
 import com.nucleus.egl.EGLUtils;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.profiling.FrameSampler;
-import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
 import com.nucleus.renderer.SurfaceConfiguration;
 
 import android.annotation.SuppressLint;
@@ -37,7 +37,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     protected EGLSurface EGLSurface;
     protected SurfaceConfiguration surfaceConfig;
     protected Surface surface;
-    protected RenderContextListener renderListener;
+    protected FrameRenderer frameRenderer;
     protected final int eglSwapInterval;
     protected boolean useChoreographer = true;
     Environment env;
@@ -278,8 +278,8 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         }
     }
 
-    public void setRenderContextListener(RenderContextListener listener) {
-        this.renderListener = listener;
+    public void setRenderContextListener(FrameRenderer frameRenderer) {
+        this.frameRenderer = frameRenderer;
     }
 
     /**
@@ -315,7 +315,7 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
      * Draws the current frame.
      */
     protected void drawFrame() {
-        renderListener.drawFrame();
+        frameRenderer.renderFrame();
     }
 
     @Override
@@ -327,8 +327,8 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         while (surface != null) {
             internalDoFrame();
         }
-        if (renderListener != null) {
-            renderListener.surfaceLost();
+        if (frameRenderer != null) {
+            frameRenderer.surfaceLost();
         }
         SimpleLogger.d(getClass(), "Exiting surface thread");
         thread = null;

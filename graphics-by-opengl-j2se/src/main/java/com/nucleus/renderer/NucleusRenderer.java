@@ -1,13 +1,18 @@
 package com.nucleus.renderer;
 
 import java.nio.Buffer;
+import java.util.ArrayList;
 
+import com.nucleus.CoreApp;
+import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.camera.ViewFrustum;
+import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
 import com.nucleus.texturing.ImageFactory;
+import com.nucleus.texturing.Texture2D;
 
 /**
  * An interface for rendering scenes. This is done by supporting a Node base hierarchy.
@@ -67,6 +72,25 @@ public interface NucleusRenderer {
 
     }
 
+    /**
+     * Interface for producer of frames, this is normally only used by the internal implementation, target user is
+     * the implementation that takes care of rendering and window handling.
+     *
+     */
+    public interface FrameRenderer extends RenderContextListener {
+
+        /**
+         * Produces one whole frame and if needed swaps buffers so that it will be visible.
+         * When this method returns the contents for the next frame shall be ready and sent to the graphics layer.
+         */
+        public void renderFrame();
+    }
+
+    /**
+     * Keep track of when context is created or lost. This is used by internal implementation and can be used by
+     * clients to keep track of when rendering context is created or lost.
+     *
+     */
     public interface RenderContextListener {
 
         public final static String INVALID_CONTEXT_DIMENSION = "Illegal size of context: ";
@@ -82,12 +106,6 @@ public interface NucleusRenderer {
          * @throws IllegalArgumentException If width or height <= 0
          */
         public void contextCreated(int width, int height);
-
-        /**
-         * Produces the next frame, when this method returns buffers shall be swapped and
-         * contents posted to display.
-         */
-        public void drawFrame();
 
         /**
          * Called when the underlying surface (EGL) is lost, this means the context is
@@ -183,8 +201,7 @@ public interface NucleusRenderer {
 
     /**
      * Signals the start of a frame, implement if needed in subclasses.
-     * This shall be called by the thread driving rendering and will call {@link FrameListener#updateGLData()} to copy
-     * GL data from sprites/objects.
+     * This must be called by the thread driving rendering.
      * Shall call the framesampler so that the frame delta is updated.
      * Do not perform rendering or time consuming tasks in this method.
      * 
@@ -195,7 +212,7 @@ public interface NucleusRenderer {
     /**
      * Renders one specific layer or all layers.
      * Uses the current mvp matrix, will call children recursively.
-     * This shall be called by the thread driving rendering.
+     * This must be called by the thread driving rendering.
      * 
      * @param root The root node to render
      * @throws GLException If there is a GL error when rendering.
@@ -205,7 +222,7 @@ public interface NucleusRenderer {
     /**
      * Signals the end of a frame - rendering is considered to be finished and implementations should call
      * EGL.swapBuffers() if needed
-     * This shall be called by the thread driving rendering.
+     * This must be called by the thread driving rendering.
      */
     public void endFrame();
 
@@ -219,6 +236,17 @@ public interface NucleusRenderer {
     public void render(Node node) throws GLException;
 
     /**
+     * 
+     * @param matrix modelview matrix for the object, will use current projection matrix
+     * @param meshes List of meshes to draw
+     * @param texture The target texture
+     * @param renderpass
+     * @throws GLException If there is an error in GL while drawing this node.
+     */
+    public void renderToTexture(float[] matrix, ArrayList<Mesh> meshes, Texture2D texture, RenderPass renderpass)
+            throws GLException;
+
+    /**
      * Returns true if this renderer has been initialized by calling init() when
      * the context is created.
      * 
@@ -228,9 +256,11 @@ public interface NucleusRenderer {
 
     /**
      * Adds a listener for render context created, if listener is already added nothing is done.
+     * TODO Add to {@link CoreApp} or {@link ClientApplication} - normal usage should not need to access NucleusRenderer
      * 
      * @param listener Listener to get callback when render context is created.
      */
+    @Deprecated
     public void addContextListener(RenderContextListener listener);
 
     /**
@@ -239,6 +269,7 @@ public interface NucleusRenderer {
      * 
      * @param listener The listener to get callback before a frame is rendered.
      */
+    @Deprecated
     public void addFrameListener(FrameListener listener);
 
     /**
