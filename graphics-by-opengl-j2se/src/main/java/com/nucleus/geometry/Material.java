@@ -14,9 +14,9 @@ import com.nucleus.shader.ShaderProgram;
 public class Material {
 
     public static final String MATERIAL = "material";
-    
+
     public static final String BLEND_EQUATION = "blendEquation";
-    public static final String BLEND_FUNC = "blendFunc";
+    public static final String BLEND_FUNC = "blendFunction";
     public static final String AMBIENT = "ambient";
     public static final String DIFFUSE = "diffuse";
 
@@ -65,7 +65,7 @@ public class Material {
         GL_CONSTANT_ALPHA(GLES20.GL_CONSTANT_ALPHA),
         GL_ONE_MINUS_CONSTANT_ALPHA(GLES20.GL_ONE_MINUS_CONSTANT_ALPHA),
         GL_SRC_ALPHA_SATURATE(GLES20.GL_SRC_ALPHA_SATURATE);
-        
+
         public final int value;
 
         private BlendFunc(int value) {
@@ -160,7 +160,6 @@ public class Material {
     public ShaderProgram getProgram() {
         return program;
     }
-
 
     /**
      * Returns the blend equation(s), used when setting the blendEquation or blendEquationSeparate
