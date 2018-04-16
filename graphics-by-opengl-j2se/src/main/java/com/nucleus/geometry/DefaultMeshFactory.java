@@ -2,11 +2,13 @@ package com.nucleus.geometry;
 
 import java.io.IOException;
 
-import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
+import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.geometry.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.LineDrawerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.shader.TranslateProgram;
@@ -22,41 +24,61 @@ public class DefaultMeshFactory implements MeshFactory {
     @Override
     public Mesh createMesh(NucleusRenderer renderer, Node parent) throws IOException, GLException {
 
-        if (parent instanceof LineDrawerNode) {
-            LineDrawerNode lineDrawer = (LineDrawerNode) parent;
-            Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
-            int count = lineDrawer.getLineCount();
-            switch (lineDrawer.getLineMode()) {
-                case LINES:
-                    builder.setArrayMode(Mode.LINES, count * 2);
-                    break;
-                case LINE_STRIP:
-                    builder.setArrayMode(Mode.LINE_STRIP, count * 2);
-                    break;
-                case RECTANGLE:
-                    // Rectangle shares vertices, 4 vertices per rectangle
-                    builder.setElementMode(Mode.LINES, count, count * 2);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Not implemented for mode " + lineDrawer.getLineMode());
-            }
-            Material m = new Material();
-            TranslateProgram program = (TranslateProgram) AssetManager.getInstance()
-                    .getProgram(renderer.getGLES(), new TranslateProgram(Shading.flat));
-            m.setProgram(program);
-            Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
-            builder.setMaterial(m);
-            builder.setTexture(tex);
-            builder.setShapeBuilder(((LineDrawerNode) parent).getShapeBuilder());
-            Mesh mesh = builder.create();
-            return mesh;
+        TranslateProgram program = null;
+        Mesh.Builder<Mesh> builder = null;
 
+        switch (Node.NodeTypes.valueOf(parent.getType())) {
+            case linedrawernode:
+                LineDrawerNode lineDrawer = (LineDrawerNode) parent;
+                builder = new Mesh.Builder<>(renderer);
+                int count = lineDrawer.getLineCount();
+                switch (lineDrawer.getLineMode()) {
+                    case LINES:
+                        builder.setArrayMode(Mode.LINES, count * 2);
+                        break;
+                    case LINE_STRIP:
+                        builder.setArrayMode(Mode.LINE_STRIP, count * 2);
+                        break;
+                    case RECTANGLE:
+                        // Rectangle shares vertices, 4 vertices per rectangle
+                        builder.setElementMode(Mode.LINES, count, count * 2);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Not implemented for mode " + lineDrawer.getLineMode());
+                }
+                Material m = new Material();
+                program = (TranslateProgram) AssetManager.getInstance()
+                        .getProgram(renderer.getGLES(), new TranslateProgram(Shading.flat));
+                m.setProgram(program);
+                Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
+                builder.setMaterial(m);
+                builder.setTexture(tex);
+                builder.setShapeBuilder(((LineDrawerNode) parent).getShapeBuilder());
+                Mesh mesh = builder.create();
+                return mesh;
+            case switchnode:
+            case layernode:
+                // No mesh for switch node, or layernode
+                return null;
+            case meshnode:
+                if (customMeshCreator != null) {
+                    return customMeshCreator.createCustomMesh(renderer, parent);
+                }
+                /**
+                 * TODO - is it feasible to add serialized fields to the Node that gives data for creating mesh builder?
+                 */
+                LayerNode layer = parent.getRootNode().getViewNode(null);
+                ViewFrustum view = layer.getViewFrustum();
+                program = (TranslateProgram) AssetManager.getInstance()
+                        .getProgram(renderer.getGLES(), new TranslateProgram(Shading.textured));
+                builder = MeshBuilder.createBuilder(renderer, 4,
+                        parent.getMaterial() != null ? parent.getMaterial() : new Material(),
+                        program, AssetManager.getInstance().getTexture(renderer, parent.getTextureRef()),
+                        new RectangleShapeBuilder(
+                                new RectangleConfiguration(view.getWidth(), view.getHeight(), 0f, 1, 0)),
+                        Mode.TRIANGLE_FAN);
+                return builder.create();
         }
-        if (customMeshCreator != null) {
-            return customMeshCreator.createCustomMesh(renderer, parent);
-        }
-        // TODO is this an error?
-        SimpleLogger.d(getClass(), "No custom MeshCreator registered.");
         return null;
     }
 
