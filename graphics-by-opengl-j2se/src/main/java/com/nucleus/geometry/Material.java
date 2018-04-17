@@ -104,7 +104,7 @@ public class Material {
             BlendEquation.GL_FUNC_ADD };
     @SerializedName(BLEND_FUNC)
     private BlendFunc[] blendFunction = new BlendFunc[] { BlendFunc.GL_SRC_ALPHA, BlendFunc.GL_ONE_MINUS_SRC_ALPHA,
-            BlendFunc.GL_SRC_ALPHA, BlendFunc.GL_DST_ALPHA };
+            BlendFunc.GL_ONE, BlendFunc.GL_ONE };
 
     @SerializedName(AMBIENT)
     private float[] ambient = new float[] { 1, 1, 1, 1 };
