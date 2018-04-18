@@ -1,6 +1,7 @@
 package com.nucleus.jogl;
 
 import java.awt.Frame;
+import java.awt.event.WindowListener;
 
 import com.jogamp.common.os.Platform;
 import com.jogamp.nativewindow.util.Dimension;
@@ -36,7 +37,7 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
  *
  */
 public abstract class JOGLGLWindow extends J2SEWindow
-        implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener, KeyListener {
+        implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener, KeyListener, WindowListener {
 
     /**
      * A zoom on the wheel equals 1 / 5 screen height
@@ -85,20 +86,12 @@ public abstract class JOGLGLWindow extends J2SEWindow
         }
         this.coreAppStarter = coreAppStarter;
         windowSize = new Dimension(width, height);
-        createNEWTWindow(width, height, version);
+        GLProfile profile = getProfile(version);
+        // createAWTWindow(width, height, profile);
+        createNEWTWindow(width, height, profile);
     }
 
-    /**
-     * Creates the JOGL display and OpenGLES
-     * 
-     * @param width
-     * @param height
-     * @version
-     */
-    private void createNEWTWindow(int width, int height, Renderers version) {
-        // Display display = NewtFactory.createDisplay(null);
-        // Screen screen = NewtFactory.createScreen(display, SCREEN_ID);
-
+    protected GLProfile getProfile(Renderers version) {
         SimpleLogger.d(getClass(), "os.and.arch: " + Platform.os_and_arch);
         GLProfile defaultProfile = GLProfile.getDefault();
         if (defaultProfile != null) {
@@ -127,12 +120,23 @@ public abstract class JOGLGLWindow extends J2SEWindow
             default:
                 throw new IllegalArgumentException("Invalid version " + version);
         }
+        return profile;
+    }
 
+    /**
+     * Creates the JOGL display and OpenGLES
+     * 
+     * @param width
+     * @param height
+     * @param profile
+     * @version
+     */
+    private void createNEWTWindow(int width, int height, GLProfile profile) {
         GLCapabilities glCapabilities = new GLCapabilities(profile);
-        glCapabilities.setSampleBuffers(true);
-        glCapabilities.setNumSamples(4);
-        glCapabilities.setAlphaBits(8);
-        // Window window = NewtFactory.createWindow(glCapabilities);
+        glCapabilities.setSampleBuffers(false);
+        glCapabilities.setNumSamples(0);
+        glCapabilities.setBackgroundOpaque(true);
+        glCapabilities.setAlphaBits(0);
         glWindow = GLWindow.create(glCapabilities);
         glWindow.setUndecorated(undecorated);
         InsetsImmutable insets = glWindow.getInsets();
@@ -157,22 +161,18 @@ public abstract class JOGLGLWindow extends J2SEWindow
     private void createAWTWindow(int width, int height, GLProfile glProfile) {
         GLCapabilities caps = new GLCapabilities(glProfile);
         caps.setBackgroundOpaque(true);
-        glWindow = GLWindow.create(caps);
+        caps.setAlphaBits(0);
+        // glWindow = GLWindow.create(caps);
         frame = new java.awt.Frame("Nucleus");
         frame.setSize(width, height);
         frame.setLayout(new java.awt.BorderLayout());
-        canvas = new GLCanvas();
+        canvas = new GLCanvas(caps);
+        canvas.addGLEventListener(this);
         frame.add(canvas, java.awt.BorderLayout.CENTER);
         frame.validate();
-
-        // GLProfile glp = GLProfile.getDefault();
-        // GLCapabilities caps = new GLCapabilities(glp);
-        // canvas = new GLCanvas(caps);
-        // frame = new Frame("JOGL GLESWindow");
-        // frame.setSize(width, height);
-        // frame.add(canvas);
-        // frame.validate();
-        // GLProfile.initSingleton();
+        frame.addWindowListener(this);
+        // frame.addMouseListener(this);
+        frame.setVisible(true);
     }
 
     public void setTitle(String title) {
@@ -349,6 +349,47 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void windowRepaint(WindowUpdateEvent e) {
+    }
+
+    @Override
+    public void windowOpened(java.awt.event.WindowEvent e) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void windowClosing(java.awt.event.WindowEvent e) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void windowClosed(java.awt.event.WindowEvent e) {
+        windowClosed();
+    }
+
+    @Override
+    public void windowIconified(java.awt.event.WindowEvent e) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void windowDeiconified(java.awt.event.WindowEvent e) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void windowActivated(java.awt.event.WindowEvent e) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void windowDeactivated(java.awt.event.WindowEvent e) {
+        // TODO Auto-generated method stub
+
     }
 
     @Override
