@@ -13,6 +13,7 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.Window;
+import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.texturing.Image.ImageFormat;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.Texture2D.Type;
@@ -89,7 +90,13 @@ public class TextureUtils {
         SimpleLogger.d(TextureUtils.class, "Loading image " + texture.getExternalReference().getSource());
         float scale = (float) Window.getInstance().getHeight() / texture.resolution.lines;
         if (scale < 0.9) {
-            factory.createImage(texture.getExternalReference().getSource(), scale, scale, getImageFormat(texture));
+            RESOLUTION res = RESOLUTION.getResolution(Window.getInstance().getHeight());
+            Image img = factory.createImage(texture.getExternalReference().getSource(), scale, scale,
+                    getImageFormat(texture), res);
+            SimpleLogger.d(TextureUtils.class,
+                    "Image scaled " + scale + " to " + img.getWidth() + ", " + img.getHeight()
+                            + " for target resolution " + res);
+            return img;
         }
         return factory.createImage(texture.getExternalReference().getSource(), getImageFormat(texture));
 

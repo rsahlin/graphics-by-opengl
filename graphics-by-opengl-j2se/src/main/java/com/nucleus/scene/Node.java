@@ -823,7 +823,15 @@ public class Node extends BaseReference {
 
     private LayerNode getViewNode(Layer layer, ArrayList<Node> children) {
         for (Node n : children) {
-            return getViewNode(layer, n);
+            if (n.getType().equals(NodeTypes.layernode.name())) {
+                if (((LayerNode) n).getLayer() == layer || layer == null) {
+                    return (LayerNode) n;
+                }
+            }
+            LayerNode view = getViewNode(layer, n);
+            if (view != null) {
+                return view;
+            }
         }
         return null;
     }

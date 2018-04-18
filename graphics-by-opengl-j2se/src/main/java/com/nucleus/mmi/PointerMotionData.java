@@ -22,6 +22,7 @@ public class PointerMotionData {
     /**
      * Two dimensional min-max values for touch delta:
      * [xMin, xMax, yMin, yMax]
+     * Updated when {@link #add(PointerData)} is called.
      */
     private float[] minMax = new float[4];
 
@@ -175,6 +176,16 @@ public class PointerMotionData {
      */
     public int getCount() {
         return pointerMovement.size();
+    }
+
+    /**
+     * Returns reference to array with 4 values, min and max for x and y:
+     * [xmin,ymin,xmax,ymax]
+     * 
+     * @return
+     */
+    public float[] getMinMax() {
+        return minMax;
     }
 
 }

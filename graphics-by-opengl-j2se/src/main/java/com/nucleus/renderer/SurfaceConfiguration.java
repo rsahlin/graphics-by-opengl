@@ -17,7 +17,7 @@ public class SurfaceConfiguration {
     public final static int DEFAULT_RED_BITS = 8;
     public final static int DEFAULT_GREEN_BITS = 8;
     public final static int DEFAULT_BLUE_BITS = 8;
-    public final static int DEFAULT_ALPHA_BITS = 8;
+    public final static int DEFAULT_ALPHA_BITS = 0;
     public final static int DEFAULT_DEPTH_BITS = 16;
     public final static int DEFAULT_STENCIL_BITS = 0;
     public final static int DEFAULT_SAMPLES = 0;

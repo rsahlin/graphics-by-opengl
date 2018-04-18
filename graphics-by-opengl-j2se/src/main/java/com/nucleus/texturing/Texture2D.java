@@ -315,6 +315,15 @@ public class Texture2D extends BaseReference {
     }
 
     /**
+     * Sets the resolution of the texture, this should only be changed if images are scaled due to screensize.
+     * 
+     * @param resolution
+     */
+    public void setResolution(RESOLUTION resolution) {
+        this.resolution = resolution;
+    }
+
+    /**
      * Returns the texture name
      * 
      * @return
@@ -399,15 +408,12 @@ public class Texture2D extends BaseReference {
     /**
      * Calculates a normalized rectangle that covers one frame of this texture, based on size of the Window
      * and the source resolution of this texture.
-     * A texture frame that will cover the whole screen (adjusted for texture resolution) will return a rectangle
-     * with size 1 X 1
-     * Width of returned rectangle will be texture frame width / WindowWidth
-     * Height of returned rectangle will be texture frame height / height
      * 
-     * @return A normalized rectangle, based on window width and height.
+     * @param frame
+     * @return A normalized rectangle, based on window width and height, using aspect.
      * The rectangle will be centered horizontally and vertically
      */
-    public Rectangle calculateWindowRectangle() {
+    public Rectangle calculateRectangle(int frame) {
         Window w = Window.getInstance();
         float aspect = (float) w.getWidth() / w.getHeight();
         float scaleFactor = (float) w.getHeight() / getResolution().lines;

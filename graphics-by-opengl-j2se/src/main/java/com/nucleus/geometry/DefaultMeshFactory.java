@@ -2,12 +2,15 @@ package com.nucleus.geometry;
 
 import java.io.IOException;
 
-import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
+import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.geometry.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.LineDrawerNode;
+import com.nucleus.scene.MeshNode;
 import com.nucleus.scene.Node;
 import com.nucleus.shader.TranslateProgram;
 import com.nucleus.texturing.Texture2D;
@@ -22,9 +25,11 @@ public class DefaultMeshFactory implements MeshFactory {
     @Override
     public Mesh createMesh(NucleusRenderer renderer, Node parent) throws IOException, GLException {
 
+        TranslateProgram program = null;
+        Mesh.Builder<Mesh> builder = null;
         if (parent instanceof LineDrawerNode) {
             LineDrawerNode lineDrawer = (LineDrawerNode) parent;
-            Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
+            builder = new Mesh.Builder<>(renderer);
             int count = lineDrawer.getLineCount();
             switch (lineDrawer.getLineMode()) {
                 case LINES:
@@ -41,7 +46,7 @@ public class DefaultMeshFactory implements MeshFactory {
                     throw new IllegalArgumentException("Not implemented for mode " + lineDrawer.getLineMode());
             }
             Material m = new Material();
-            TranslateProgram program = (TranslateProgram) AssetManager.getInstance()
+            program = (TranslateProgram) AssetManager.getInstance()
                     .getProgram(renderer.getGLES(), new TranslateProgram(Shading.flat));
             m.setProgram(program);
             Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
@@ -55,8 +60,19 @@ public class DefaultMeshFactory implements MeshFactory {
         if (customMeshCreator != null) {
             return customMeshCreator.createCustomMesh(renderer, parent);
         }
-        // TODO is this an error?
-        SimpleLogger.d(getClass(), "No custom MeshCreator registered.");
+        if (parent instanceof MeshNode) {
+            LayerNode layer = parent.getRootNode().getViewNode(null);
+            ViewFrustum view = layer.getViewFrustum();
+            program = (TranslateProgram) AssetManager.getInstance()
+                    .getProgram(renderer.getGLES(), new TranslateProgram(Shading.textured));
+            builder = MeshBuilder.createBuilder(renderer, 4,
+                    parent.getMaterial() != null ? parent.getMaterial() : new Material(),
+                    program, AssetManager.getInstance().getTexture(renderer, parent.getTextureRef()),
+                    new RectangleShapeBuilder(
+                            new RectangleConfiguration(view.getWidth(), view.getHeight(), 0f, 1, 0)),
+                    Mode.TRIANGLE_FAN);
+            return builder.create();
+        }
         return null;
     }
 

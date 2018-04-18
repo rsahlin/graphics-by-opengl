@@ -7,6 +7,7 @@ import java.nio.ByteOrder;
 
 import com.nucleus.ErrorMessage;
 import com.nucleus.geometry.BufferObject;
+import com.nucleus.resource.ResourceBias.RESOLUTION;
 
 /**
  * Container for pixel based images that can be used for texturing in OpenGL, this is for a straightforward
@@ -104,6 +105,24 @@ public class Image extends BufferObject {
     Buffer buffer;
     int width;
     int height;
+    /**
+     * The resolution the image was created for, if specified.
+     */
+    RESOLUTION resolution;
+
+    /**
+     * Allocates the buffer to match the specified image size and format.
+     * The image is ready to be filled with data.
+     * 
+     * @param width
+     * @param height
+     * @param format
+     * @throws NullPointerException If format is null
+     */
+    public Image(int width, int height, ImageFormat format, RESOLUTION resolution) {
+        super(width * height * format.size);
+        create(width, height, format, resolution);
+    }
 
     /**
      * Allocates the buffer to match the specified image size and format.
@@ -116,9 +135,14 @@ public class Image extends BufferObject {
      */
     public Image(int width, int height, ImageFormat format) {
         super(width * height * format.size);
+        create(width, height, format, null);
+    }
+
+    protected void create(int width, int height, ImageFormat format, RESOLUTION resolution) {
         this.format = format;
         this.width = width;
         this.height = height;
+        this.resolution = resolution;
         switch (format) {
 
             case RGB565:
@@ -170,6 +194,15 @@ public class Image extends BufferObject {
      */
     public int getHeight() {
         return height;
+    }
+
+    /**
+     * Returns the resolution of the image, if specified.
+     * 
+     * @return Image resolution or null
+     */
+    public RESOLUTION getResolution() {
+        return resolution;
     }
 
     /**

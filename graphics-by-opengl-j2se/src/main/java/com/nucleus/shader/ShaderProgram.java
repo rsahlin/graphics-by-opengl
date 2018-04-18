@@ -225,8 +225,6 @@ public abstract class ShaderProgram {
      */
     protected ShaderVariable[] shaderVariables;
 
-    private AttribNameMapping attribNameMapping = null;
-
     /**
      * Calculated in create program
      */
@@ -523,7 +521,7 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Maps the attributes used based on BufferIndex - attribute variables are sorted based on buffer in the specified
+     * Sorts the attributes used based on BufferIndex - attribute variables are sorted based on buffer in the specified
      * result array.
      * Finds the shader attribute variables per buffer using VariableMapping, iterate through defined (by subclasses)
      * attribute variable mapping.
@@ -533,7 +531,7 @@ public abstract class ShaderProgram {
      * Meaning that if the declared ShaderVariables are used, and of same size as declared, then the resulting offsets
      * will match the offsets in ShaderVariables.
      * 
-     * TODO Add check for mismatch of size, ie if ShaderVariables hase one variable as float3 and it is defined is
+     * TODO Add check for mismatch of size, ie if ShaderVariables has one variable as float3 and it is defined is
      * program as float4 then raise error.
      * 
      * @param resultArray Array to store shader variables for each attribute buffer in, attributes for buffer 1 will go
@@ -592,7 +590,6 @@ public abstract class ShaderProgram {
 
     /**
      * Returns the number of attributes per vertex
-     * TODO - rename this to dynamic, since it fetches the number of attributes per vertex for dynamic buffer
      * 
      * @param buffer The buffer to get attributes per vertex for
      * @return Number of attributes per vertex, 0 or -1 if not defined.
@@ -814,44 +811,27 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Checks the status of the attribute name mapping and if enabled the attributes are bound to locations
-     * that correspond to location that is appended or prefixed to the name.
+     * Binds attribute location to the location specified in {@link #shaderVariables} - use this to enforce specific
+     * locations for attribute bindings.
      * 
      * @param gles
      * @throws GLException
      */
-    protected void bindAttributeNames(GLES20Wrapper gles) throws GLException {
-        if (attribNameMapping == null) {
-            return;
-        }
+    protected void bindAttributeLocations(GLES20Wrapper gles) throws GLException {
         for (ShaderVariable attribute : shaderVariables) {
-            if (attribute.getType() == VariableType.ATTRIBUTE) {
-                int location = 0;
-                switch (attribNameMapping) {
-                    case PREFIX:
-                        location = Integer.parseInt(attribute.getName().substring(0, 2));
+            if (attribute != null) {
+                switch (attribute.getType()) {
+                    case ATTRIBUTE:
+                        gles.glBindAttribLocation(program, attribute.getLocation(), attribute.getName());
                         break;
-                    case APPEND:
-                        int length = attribute.getName().length();
-                        location = Integer.parseInt(attribute.getName().substring(length - 2, length));
+                    case UNIFORM:
+                    case UNIFORM_BLOCK:
+                        // Uploaded separately when uploading uniforms
                         break;
                 }
-                gles.glBindAttribLocation(program, location, attribute.getName());
-                GLUtils.handleError(gles, BIND_ATTRIBUTE_ERROR);
-                attribute.setLocation(location);
             }
         }
-
-    }
-
-    /**
-     * Sets the mode for automatic name mapping of attribute locations.
-     * 
-     * @see AttribNameMapping
-     * @param attribMapping Or null to not automatically bind attributes.
-     */
-    public void setAttributeNameMapping(AttribNameMapping attribMapping) {
-        this.attribNameMapping = attribMapping;
+        GLUtils.handleError(gles, BIND_ATTRIBUTE_ERROR);
     }
 
     /**
@@ -879,11 +859,25 @@ public abstract class ShaderProgram {
         mapAttributeVariablePerBuffer(attributeVariables);
         if (useDynamicVariables()) {
             dynamicMapVariables();
-        }
-        for (int i = 0; i < attributeBufferCount; i++) {
-            // If only attribute buffer is used the first array index will be null
-            if (attributeVariables[i] != null) {
-                attributesPerVertex[i] = getVariableSize(attributeVariables[i], VariableType.ATTRIBUTE);
+            // Fetch packed size for uniform/attribute data
+            for (int i = 0; i < attributeBufferCount; i++) {
+                // If only attribute buffer is used the first array index will be null
+                if (attributeVariables[i] != null) {
+                    attributesPerVertex[i] = getVariableSize(attributeVariables[i], VariableType.ATTRIBUTE);
+                }
+            }
+        } else {
+            bindAttributeLocations(gles);
+            /**
+             * Fetch defined size of uniform/attributes from attribute variables.
+             * TODO - If not using dynamic variables the size of attributes per vertex should be calculated from
+             * declared shadervariable list
+             */
+            for (int i = 0; i < attributeBufferCount; i++) {
+                // If only attribute buffer is used the first array index will be null
+                if (attributeVariables[i] != null) {
+                    attributesPerVertex[i] = getVariableSize(attributeVariables[i], VariableType.ATTRIBUTE);
+                }
             }
         }
     }
@@ -999,6 +993,7 @@ public abstract class ShaderProgram {
 
     /**
      * Set the variable static offset, if dynamic offset is used it is computed after all variables has been collected.
+     * TODO If dynamic offset shall be used this mehtod does not need to be called.
      * 
      * @param gles
      * @param program
@@ -1260,7 +1255,7 @@ public abstract class ShaderProgram {
     /**
      * Stores the shader variable in this program, if variable is of unmapped type, for instance Sampler, then it is
      * skipped. Also skip variables that are defined in code but not used in shader.
-     * Variables are stored in an array using the VariableMapping index
+     * Variables are stored in {@link #shaderVariables} array using the VariableMapping index
      * 
      * @param variable
      * @throws IllegalArgumentException If shader variables are null, the program has probably not been created,
@@ -1317,7 +1312,6 @@ public abstract class ShaderProgram {
             linkProgram(gles, program, shaderNames, commonVertexShaders);
             checkLinkStatus(gles, program);
             fetchProgramInfo(gles);
-            bindAttributeNames(gles);
             uniforms = createUniformArray();
             createSamplerStorage();
             setSamplers();

@@ -22,6 +22,23 @@ public class ResourceBias {
         private RESOLUTION(int lines) {
             this.lines = lines;
         }
+
+        /**
+         * Returns the best resolution match for the specified number of lines
+         * 
+         * @param lines
+         * @return
+         */
+        public static RESOLUTION getResolution(int lines) {
+            RESOLUTION[] res = RESOLUTION.values();
+            for (RESOLUTION r : res) {
+                if (r.lines >= lines * 0.9f) {
+                    return r;
+                }
+            }
+            return RESOLUTION.ULTRA_HD;
+        }
+
     }
 
     /**

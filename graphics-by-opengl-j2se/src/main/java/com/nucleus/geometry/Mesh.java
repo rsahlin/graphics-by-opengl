@@ -309,6 +309,12 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * Drawmode, if indices is null then glDrawArrays shall be used with this mode
      */
     transient protected Mode mode;
+    /**
+     * TODO - material should not be specified both in Node and in Mesh, this instance is copied here from Builder which
+     * normally takes it from the Node.
+     * Perhaps material should be divided into program and texture/render properties.
+     * Each node should render with same programs.
+     */
     transient protected Material material;
 
     /**

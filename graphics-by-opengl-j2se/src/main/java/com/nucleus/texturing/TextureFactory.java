@@ -217,6 +217,9 @@ public class TextureFactory {
         TextureFactory.createTextureName(gles, texture);
         Image[] textureImg = TextureUtils
                 .loadTextureMIPMAP(imageFactory, texture);
+        if (textureImg[0].getResolution() != null) {
+            texture.setResolution(textureImg[0].getResolution());
+        }
         try {
             TextureUtils.uploadTextures(gles, texture, textureImg);
             SimpleLogger.d(TextureFactory.class, "Uploaded texture " + texture.toString());
