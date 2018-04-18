@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import com.nucleus.ErrorMessage;
+import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.texturing.Convolution.Kernel;
 import com.nucleus.texturing.Image.ImageFormat;
 
@@ -21,7 +22,7 @@ public abstract class BaseImageFactory implements ImageFactory {
     private final static String INVALID_SCALE = "Invalid scale";
 
     @Override
-    public Image createScaledImage(Image source, int width, int height, ImageFormat format) {
+    public Image createScaledImage(Image source, int width, int height, ImageFormat format, RESOLUTION resolution) {
         if (format == null) {
             throw new IllegalArgumentException(NULL_PARAMETER);
         }
@@ -32,78 +33,78 @@ public abstract class BaseImageFactory implements ImageFactory {
         int scale = (source.getWidth() / width + source.getHeight() / height) / 2;
         Convolution c = null;
         switch (scale) {
-        case 1:
-        case 2:
-            c = new Convolution(Kernel.SIZE_2X2);
-            c.set(new float[] { 1, 1, 1, 1 }, 0, 0, Kernel.SIZE_2X2.size);
-            // c = new Convolution(Kernel.SIZE_4X4);
-            // c.set(new float[] { 1, 1, 1, 1,
-            // 1, 3, 2, 1,
-            // 1, 2, 3, 1,
-            // 1, 1, 1, 1 }, 0, 0, Kernel.SIZE_4X4.size);
-            break;
-        case 3:
-            c = new Convolution(Kernel.SIZE_3X3);
-            c.set(new float[] { 1, 4, 1, 4, 4, 4, 1, 4, 1 }, 0, 0, Kernel.SIZE_3X3.size);
-            break;
-        case 4:
-            c = new Convolution(Kernel.SIZE_4X4);
-            c.set(new float[] { 1, 1, 1, 1,
-                    1, 3, 2, 1,
-                    1, 2, 3, 1,
-                    1, 1, 1, 1 }, 0, 0, Kernel.SIZE_4X4.size);
-            break;
-        case 5:
-            c = new Convolution(Kernel.SIZE_5X5);
-            c.set(new float[] { 1, 2, 3, 2, 1,
-                    2, 3, 4, 3, 2,
-                    3, 4, 5, 4, 3,
-                    2, 3, 4, 3, 2,
-                    1, 2, 3, 2, 1 }, 0, 0, Kernel.SIZE_5X5.size);
-            break;
-        case 6:
-        case 7:
-        case 8:
-            c = new Convolution(Kernel.SIZE_8X8);
-            c.set(new float[] {
-                    1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1,
-            }, 0, 0, Kernel.SIZE_8X8.size);
-            break;
-        case 16:
-            c = new Convolution(Kernel.SIZE_16X16);
-            c.set(new float[] {
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-            }, 0, 0, Kernel.SIZE_16X16.size);
-            break;
-        default:
-            c = new Convolution(Kernel.SIZE_8X8);
+            case 1:
+            case 2:
+                c = new Convolution(Kernel.SIZE_2X2);
+                c.set(new float[] { 1, 1, 1, 1 }, 0, 0, Kernel.SIZE_2X2.size);
+                // c = new Convolution(Kernel.SIZE_4X4);
+                // c.set(new float[] { 1, 1, 1, 1,
+                // 1, 3, 2, 1,
+                // 1, 2, 3, 1,
+                // 1, 1, 1, 1 }, 0, 0, Kernel.SIZE_4X4.size);
+                break;
+            case 3:
+                c = new Convolution(Kernel.SIZE_3X3);
+                c.set(new float[] { 1, 4, 1, 4, 4, 4, 1, 4, 1 }, 0, 0, Kernel.SIZE_3X3.size);
+                break;
+            case 4:
+                c = new Convolution(Kernel.SIZE_4X4);
+                c.set(new float[] { 1, 1, 1, 1,
+                        1, 3, 2, 1,
+                        1, 2, 3, 1,
+                        1, 1, 1, 1 }, 0, 0, Kernel.SIZE_4X4.size);
+                break;
+            case 5:
+                c = new Convolution(Kernel.SIZE_5X5);
+                c.set(new float[] { 1, 2, 3, 2, 1,
+                        2, 3, 4, 3, 2,
+                        3, 4, 5, 4, 3,
+                        2, 3, 4, 3, 2,
+                        1, 2, 3, 2, 1 }, 0, 0, Kernel.SIZE_5X5.size);
+                break;
+            case 6:
+            case 7:
+            case 8:
+                c = new Convolution(Kernel.SIZE_8X8);
+                c.set(new float[] {
+                        1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1,
+                }, 0, 0, Kernel.SIZE_8X8.size);
+                break;
+            case 16:
+                c = new Convolution(Kernel.SIZE_16X16);
+                c.set(new float[] {
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+                }, 0, 0, Kernel.SIZE_16X16.size);
+                break;
+            default:
+                c = new Convolution(Kernel.SIZE_8X8);
 
         }
 
         c.normalize(false);
-        Image destination = new Image(width, height, source.getFormat());
+        Image destination = new Image(width, height, source.getFormat(), resolution);
         c.process(source, destination);
         // if (scale >= 2) {
         // return sharpen(destination);
@@ -112,7 +113,8 @@ public abstract class BaseImageFactory implements ImageFactory {
     }
 
     @Override
-    public Image createImage(String name, float scaleX, float scaleY, ImageFormat format) throws IOException {
+    public Image createImage(String name, float scaleX, float scaleY, ImageFormat format, RESOLUTION resolution)
+            throws IOException {
         if (name == null || format == null) {
             throw new IllegalArgumentException(NULL_PARAMETER);
         }
@@ -120,7 +122,8 @@ public abstract class BaseImageFactory implements ImageFactory {
             throw new IllegalArgumentException(INVALID_SCALE);
         }
         Image image = createImage(name, format);
-        return createScaledImage(image, (int) (image.width * scaleX), (int) (image.height * scaleY), format);
+        return createScaledImage(image, (int) (image.width * scaleX), (int) (image.height * scaleY), format,
+                resolution);
     }
 
     private Image sharpen(Image source) {
@@ -150,50 +153,52 @@ public abstract class BaseImageFactory implements ImageFactory {
 
         ByteBuffer buffer = (ByteBuffer) destination.getBuffer().rewind();
         switch (sourceFormat) {
-        case ABGR4:
-            switch (destination.getFormat()) {
+            case ABGR4:
+                switch (destination.getFormat()) {
+                    case RGBA:
+                        copyPixels_4BYTE_ABGR_TO_RGBA(source, buffer);
+                        break;
+                    case LUMINANCE_ALPHA:
+                        copyPixels_4BYTE_ABGR_TO_LUMINANCE_ALPHA(source, buffer);
+                        break;
+                    case RGB565:
+                        copyPixels_4BYTE_ABGR_TO_RGB565(source, buffer);
+                        break;
+                    case RGB5_A1:
+                        copyPixels_4BYTE_ABGR_TO_RGB5551(source, buffer);
+                        break;
+                    case RGB:
+                        copyPixels_4BYTE_ABGR_TO_RGB(source, buffer);
+                        break;
+                    default:
+                        throw new IllegalArgumentException(
+                                ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
+                }
+                break;
             case RGBA:
-                copyPixels_4BYTE_ABGR_TO_RGBA(source, buffer);
-                break;
-            case LUMINANCE_ALPHA:
-                copyPixels_4BYTE_ABGR_TO_LUMINANCE_ALPHA(source, buffer);
-                break;
-            case RGB565:
-                copyPixels_4BYTE_ABGR_TO_RGB565(source, buffer);
-                break;
-            case RGB5_A1:
-                copyPixels_4BYTE_ABGR_TO_RGB5551(source, buffer);
-                break;
-            case RGB:
-                copyPixels_4BYTE_ABGR_TO_RGB(source, buffer);
+                switch (destination.getFormat()) {
+                    case RGBA:
+                        copyPixels_4BYTE_RGBA_TO_RGBA(source, buffer);
+                        break;
+                    case RGB:
+                        copyPixels_4BYTE_RGBA_TO_RGB(source, buffer);
+                        break;
+                    case LUMINANCE_ALPHA:
+                        copyPixels_4BYTE_RGBA_TO_LUMINANCE_ALPHA(source, buffer);
+                        break;
+                    case RGB565:
+                        copyPixels_4BYTE_RGBA_TO_RGB565(source, buffer);
+                        break;
+                    case RGB5_A1:
+                        copyPixels_4BYTE_RGBA_TO_RGB5551(source, buffer);
+                        break;
+                    default:
+                        throw new IllegalArgumentException(
+                                ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
+                }
                 break;
             default:
-                throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
-            }
-            break;
-        case RGBA:
-            switch (destination.getFormat()) {
-            case RGBA:
-                copyPixels_4BYTE_RGBA_TO_RGBA(source, buffer);
-                break;
-            case RGB:
-                copyPixels_4BYTE_RGBA_TO_RGB(source, buffer);
-                break;
-            case LUMINANCE_ALPHA:
-                copyPixels_4BYTE_RGBA_TO_LUMINANCE_ALPHA(source, buffer);
-                break;
-            case RGB565:
-                copyPixels_4BYTE_RGBA_TO_RGB565(source, buffer);
-                break;
-            case RGB5_A1:
-                copyPixels_4BYTE_RGBA_TO_RGB5551(source, buffer);
-                break;
-            default:
-                throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
-            }
-            break;
-        default:
-            throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + sourceFormat);
+                throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + sourceFormat);
         }
     }
 

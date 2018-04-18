@@ -2,6 +2,7 @@ package com.nucleus.texturing;
 
 import java.io.IOException;
 
+import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.texturing.Image.ImageFormat;
 
 /**
@@ -50,11 +51,13 @@ public interface ImageFactory {
      * @param scaleX X axis scale factor, 1 = normal scale, 0.5 = half size
      * @param scaleY Y axis scale factor, 1 = normal scale, 0.5 = half size
      * @param format
+     * @param resolution The resolution of the scaled image
      * @return The loaded and scaled image
      * @throws IOException If there is an error loading the image.
      * @throws IllegalArgumentException If name or format is null, or scaleX or scaleY is zero or less
      */
-    public Image createImage(String name, float scaleX, float scaleY, Image.ImageFormat format) throws IOException;
+    public Image createImage(String name, float scaleX, float scaleY, Image.ImageFormat format, RESOLUTION resolution)
+            throws IOException;
 
     /**
      * Creates a scaled copy of the image
@@ -63,10 +66,11 @@ public interface ImageFactory {
      * @param width Width of scaled image
      * @param height Height of scaled image
      * @param type The format of the image to create
+     * @param resolution The resolution of the scaled image
      * @return Scaled copy of the source image in the specified format
      * @throws IllegalArgumentException If source or format is null, if width or height <= 0
      */
-    public Image createScaledImage(Image source, int width, int height, ImageFormat format);
+    public Image createScaledImage(Image source, int width, int height, ImageFormat format, RESOLUTION resolution);
 
     /**
      * Creates an image with the specified size and format.

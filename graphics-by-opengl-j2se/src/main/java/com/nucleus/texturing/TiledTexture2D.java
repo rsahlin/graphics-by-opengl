@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.vecmath.Axis;
+import com.nucleus.vecmath.Rectangle;
 
 /**
  * A texture that can be used for tiling, ie using a texture atlas where many images/frames are stored
@@ -114,6 +115,19 @@ public class TiledTexture2D extends Texture2D {
     @Override
     public int getFrameCount() {
         return tile[0] * tile[1];
+    }
+
+    @Override
+    public Rectangle calculateRectangle(int frame) {
+        Rectangle rect = super.calculateRectangle(frame);
+        float scaleX = 1f / getTileWidth();
+        float scaleY = 1f / getTileHeight();
+        float[] values = rect.getValues();
+        values[Rectangle.X] *= scaleX;
+        values[Rectangle.Y] *= scaleY;
+        values[Rectangle.WIDTH] *= scaleX;
+        values[Rectangle.HEIGHT] *= scaleY;
+        return rect;
     }
 
 }
