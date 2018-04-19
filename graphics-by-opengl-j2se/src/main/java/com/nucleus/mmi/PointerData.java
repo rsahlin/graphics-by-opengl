@@ -14,10 +14,20 @@ public class PointerData {
      *
      */
     public enum Type {
-        STYLUS(),
-        ERASER(),
-        MOUSE(),
-        FINGER();
+        STYLUS(0),
+        ERASER(1),
+        MOUSE(2),
+        FINGER(3);
+
+        /**
+         * Can be used to offset value into array - must start at 0 and increase
+         */
+        public final int index;
+
+        private Type(int index) {
+            this.index = index;
+        }
+
     }
 
     /**
