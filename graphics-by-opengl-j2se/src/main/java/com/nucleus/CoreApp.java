@@ -37,6 +37,7 @@ import com.nucleus.system.ComponentHandler;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
+import com.nucleus.vecmath.Rectangle;
 
 /**
  * The platform agnostic application, this is the main app for J2SE platform independent code.
@@ -310,7 +311,7 @@ public class CoreApp implements FrameRenderer {
         BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
         Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), "texture",
-                new ExternalReference(SPLASH_FILENAME), RESOLUTION.HD, texParam, 1);
+                new ExternalReference(SPLASH_FILENAME), RESOLUTION.ULTRA_HD, texParam, 1);
         Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
         meshBuilder.setElementMode(Mode.TRIANGLES, 4, 6);
         meshBuilder.setTexture(texture);
@@ -318,8 +319,9 @@ public class CoreApp implements FrameRenderer {
                 new TranslateProgram(Texture2D.Shading.textured));
         Material material = new Material();
         material.setProgram(vt);
+        Rectangle rect = texture.calculateRectangle(0);
         meshBuilder.setMaterial(material)
-                .setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(0.2f, 0.2f, 1f, 1, 0)));
+                .setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(rect, 1f, 1, 0)));
         builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
                 .setNode(NodeTypes.layernode);
         RootNode root = builder.create();
