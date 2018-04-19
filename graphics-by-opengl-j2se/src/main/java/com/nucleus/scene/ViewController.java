@@ -57,7 +57,7 @@ public class ViewController implements EventHandler<Node> {
 
     @Override
     public void handleEvent(Node object, String category, String value) {
-        LayerNode target = object.getViewParent();
+        LayerNode target = object.getParentLayer();
         if (target != null) {
             try {
                 Actions action = Actions.valueOf(category);

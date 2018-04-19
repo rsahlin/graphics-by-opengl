@@ -219,7 +219,7 @@ public class Node extends BaseReference {
     @SerializedName(Transform.TRANSFORM)
     protected Transform transform;
     @SerializedName(ViewFrustum.VIEWFRUSTUM)
-    private ViewFrustum viewFrustum;
+    protected ViewFrustum viewFrustum;
     /**
      * The childnodes shall always be processed/rendered in the order they are defined.
      * This makes it possible to treat the children as a list that is rendered in a set order.
@@ -588,20 +588,36 @@ public class Node extends BaseReference {
     }
 
     /**
+     * Returns the first (closest) parent node that has defined ViewFrustum
+     * 
+     * @return Closest parent node that has defined ViewFrustum, or null if not found
+     */
+    public Node getParentView() {
+        Node parent = getParent();
+        if (parent != null) {
+            if (parent.getViewFrustum() != null) {
+                return parent;
+            }
+            return parent.getParentView();
+        }
+        return null;
+    }
+
+    /**
      * Returns the first (closest from this node) {@linkplain LayerNode} parent.
      * The search starts with the parent node of this node, if that is not a {@linkplain LayerNode} that nodes parent
      * is checked, continuing until root node.
      * 
-     * @return The view parent of this node, or null if none could be found
+     * @return The parent layer of this node, or null if none could be found
      */
-    public LayerNode getViewParent() {
+    public LayerNode getParentLayer() {
         if (parent == null) {
             return null;
         }
         if (NodeTypes.layernode.name().equals(parent.getType())) {
             return (LayerNode) parent;
         }
-        return parent.getViewParent();
+        return parent.getParentLayer();
     }
 
     /**
@@ -799,12 +815,12 @@ public class Node extends BaseReference {
     /**
      * Returns the first matching viewnode, this is a conveniance method to find node with view
      * 
-     * @param layer Which layer the ViewNode to return belongs to, or null to return first found LayerNode
-     * @return The viewnode or null if not found
+     * @param layer Which layer the Node to return belongs to, or null to return first found LayerNode
+     * @return The layernode or null if not found
      */
-    public LayerNode getViewNode(Layer layer) {
+    public LayerNode getLayerNode(Layer layer) {
         for (Node node : children) {
-            LayerNode layerNode = getViewNode(layer, node);
+            LayerNode layerNode = getLayerNode(layer, node);
             if (layerNode != null) {
                 return layerNode;
             }
@@ -812,23 +828,23 @@ public class Node extends BaseReference {
         return null;
     }
 
-    private LayerNode getViewNode(Layer layer, Node node) {
+    private LayerNode getLayerNode(Layer layer, Node node) {
         if (node.getType().equals(NodeTypes.layernode.name())) {
             if (layer == null || ((LayerNode) node).getLayer() == layer) {
                 return (LayerNode) node;
             }
         }
-        return getViewNode(layer, node.getChildren());
+        return getLayerNode(layer, node.getChildren());
     }
 
-    private LayerNode getViewNode(Layer layer, ArrayList<Node> children) {
+    private LayerNode getLayerNode(Layer layer, ArrayList<Node> children) {
         for (Node n : children) {
             if (n.getType().equals(NodeTypes.layernode.name())) {
                 if (((LayerNode) n).getLayer() == layer || layer == null) {
                     return (LayerNode) n;
                 }
             }
-            LayerNode view = getViewNode(layer, n);
+            LayerNode view = getLayerNode(layer, n);
             if (view != null) {
                 return view;
             }
@@ -1056,7 +1072,7 @@ public class Node extends BaseReference {
                 if (vf == null) {
                     throw new IllegalArgumentException(
                             "Node " + getId()
-                                    + " defines pointer input but does not have bounds and not defined in any parent");
+                                    + " defines pointer input but does not have bounds and ViewFrustum not defined in any parent");
                 }
             }
             if (vf != null) {
@@ -1073,14 +1089,8 @@ public class Node extends BaseReference {
      * @return ViewFrustom from a parent node, or null if not defined.
      */
     protected ViewFrustum getParentsView() {
-
-        Node parent = null;
-        while ((parent = getParent()) != null) {
-            if (parent.getViewFrustum() != null) {
-                return parent.getViewFrustum();
-            }
-        }
-        return null;
+        Node viewparent = getParentView();
+        return viewparent != null ? viewparent.viewFrustum : null;
     }
 
     /**
