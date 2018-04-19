@@ -263,9 +263,6 @@ public class EGLSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         if (EGLSurface != null) {
             EGL14.eglDestroySurface(EglDisplay, EGLSurface);
         }
-        if (EGLContext != null) {
-            EGL14.eglDestroyContext(EglDisplay, EGLContext);
-        }
         surface = null;
         EGLSurface = null;
         EglDisplay = null;
