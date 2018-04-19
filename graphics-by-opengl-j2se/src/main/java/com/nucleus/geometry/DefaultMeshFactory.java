@@ -61,7 +61,7 @@ public class DefaultMeshFactory implements MeshFactory {
             return customMeshCreator.createCustomMesh(renderer, parent);
         }
         if (parent instanceof MeshNode) {
-            LayerNode layer = parent.getRootNode().getViewNode(null);
+            LayerNode layer = parent.getRootNode().getLayerNode(null);
             ViewFrustum view = layer.getViewFrustum();
             program = (TranslateProgram) AssetManager.getInstance()
                     .getProgram(renderer.getGLES(), new TranslateProgram(Shading.textured));
