@@ -36,11 +36,13 @@ public class FrameSampler {
         public int max;
         public int min;
         public int count;
+        public long startTime;
 
         /**
          * Creates an empty sample
          */
         public Sample() {
+            startTime = System.currentTimeMillis();
         }
 
         /**
@@ -49,6 +51,7 @@ public class FrameSampler {
          * @param millis
          */
         public Sample(int millis) {
+            startTime = System.currentTimeMillis();
             total = millis;
             max = millis;
             min = millis;
@@ -79,6 +82,7 @@ public class FrameSampler {
             max = 0;
             min = Integer.MAX_VALUE;
             count = 0;
+            startTime = System.currentTimeMillis();
         }
 
         @Override
@@ -127,7 +131,7 @@ public class FrameSampler {
     public final static int DEFAULT_MIN_FPS = 30;
     private static FrameSampler frameSampler = new FrameSampler();
 
-    private final static int DEFAULT_AVERAGE_VALUES = 300;
+    private final static int DEFAULT_LOG_DELAY = 5000;
 
     /**
      * Start time of sampler
@@ -138,6 +142,10 @@ public class FrameSampler {
     private int minFPS = DEFAULT_MIN_FPS;
     private float delta = (float) 1 / DEFAULT_MIN_FPS;
     private float maxDelta;
+    /**
+     * sampling is auto logged after this number of millis
+     */
+    private int logDelay = DEFAULT_LOG_DELAY;
 
     private float totalDelta;
     private int frames;
@@ -377,7 +385,7 @@ public class FrameSampler {
                 tagTimings.put(tag, sample);
             } else {
                 sample.add(millis);
-                if (sample.getCount() >= DEFAULT_AVERAGE_VALUES) {
+                if (sample.startTime + logDelay < System.currentTimeMillis()) {
                     logAverage(tag, sample);
                     sample.reset();
                 }

@@ -183,13 +183,17 @@ public class Material {
     /**
      * Sets the blend equation to use
      * 
-     * @param blendEquation
+     * @param blendEquation The blend equation to use or null to disable blending.
      */
     public void setBlendEquation(BlendEquation[] blendEquation) {
-        if (this.blendEquation == null || this.blendEquation.length < blendEquation.length) {
-            this.blendEquation = new BlendEquation[blendEquation.length];
+        if (blendEquation == null) {
+            this.blendEquation = null;
+        } else {
+            if (this.blendEquation == null || this.blendEquation.length < blendEquation.length) {
+                this.blendEquation = new BlendEquation[blendEquation.length];
+            }
+            System.arraycopy(blendEquation, 0, this.blendEquation, 0, blendEquation.length);
         }
-        System.arraycopy(blendEquation, 0, this.blendEquation, 0, blendEquation.length);
     }
 
     /**
