@@ -17,6 +17,8 @@ import com.nucleus.mmi.core.PointerInputProcessor;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.profiling.FrameSampler.Sample;
+import com.nucleus.profiling.FrameSampler.Samples;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
 import com.nucleus.renderer.SurfaceConfiguration;
@@ -268,8 +270,20 @@ public class CoreApp implements FrameRenderer {
                 if (destroy) {
                     destroy();
                 }
+                logPerformance();
             } catch (GLException e) {
                 throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void logPerformance() {
+        Sample sample = FrameSampler.getInstance().getSample(Samples.POINTER_INPUT.name());
+        if (sample != null) {
+            if (sample.nano > 0) {
+                int millis = sample.nano / 1000000;
+                sample.add(millis);
+                FrameSampler.getInstance().autoLog(Samples.POINTER_INPUT.name(), sample);
             }
         }
     }

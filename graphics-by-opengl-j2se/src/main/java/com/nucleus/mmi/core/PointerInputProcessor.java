@@ -11,6 +11,9 @@ import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
 import com.nucleus.mmi.PointerMotionData;
+import com.nucleus.profiling.FrameSampler;
+import com.nucleus.profiling.FrameSampler.Sample;
+import com.nucleus.profiling.FrameSampler.Samples;
 import com.nucleus.vecmath.Vector2D;
 
 /**
@@ -71,6 +74,8 @@ public class PointerInputProcessor implements PointerListener {
         if (pointer >= maxPointers) {
             return;
         }
+        Sample sample = getSample();
+        long start = System.nanoTime();
         scaledPosition[X] = position[X] * transform[X] + transform[2];
         scaledPosition[Y] = position[Y] * transform[Y] + transform[3];
         switch (action) {
@@ -89,20 +94,20 @@ public class PointerInputProcessor implements PointerListener {
                 }
                 break;
             case DOWN:
-                pointerCount = pointer + 1;
                 pointerMotionData[pointer] = new PointerMotionData();
                 addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ACTIVE, pointer,
                         pointerMotionData[pointer]),
                         pointerMotionData[pointer].create(action, type, timestamp, pointer, scaledPosition, pressure));
+                pointerCount = getActivePointerCount();
                 break;
             case UP:
-                pointerCount--;
                 if (pointerCount < 0) {
                     SimpleLogger.d(getClass(), "PointerInputProcessor: ERROR: pointerCount= " + pointerCount);
                 }
                 addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.INACTIVE, pointer,
                         pointerMotionData[pointer]),
                         pointerMotionData[pointer].create(action, type, timestamp, pointer, scaledPosition, pressure));
+                pointerCount--;
                 break;
             case ZOOM:
                 if (pointerMotionData[pointer] == null) {
@@ -116,6 +121,26 @@ public class PointerInputProcessor implements PointerListener {
             default:
                 throw new IllegalArgumentException();
         }
+        sample.addNano((int) (System.nanoTime() - start));
+    }
+
+    private int getActivePointerCount() {
+        int count = 0;
+        for (int i = 0; i < pointerMotionData.length; i++) {
+            if (pointerMotionData[i] != null && pointerMotionData[i].isDown()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private Sample getSample() {
+        Sample sample = FrameSampler.getInstance().getSample(Samples.POINTER_INPUT.name());
+        if (sample == null) {
+            sample = new Sample();
+            FrameSampler.getInstance().setSample(Samples.POINTER_INPUT.name(), sample);
+        }
+        return sample;
     }
 
     private void addAndSend(MMIPointerEvent event, PointerData pointerData) {

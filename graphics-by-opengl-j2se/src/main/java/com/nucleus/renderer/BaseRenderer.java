@@ -691,7 +691,7 @@ class BaseRenderer implements NucleusRenderer {
                 render(node);
             }
         }
-        FrameSampler.getInstance().addTag(FrameSampler.Samples.RENDERNODES, start, System.currentTimeMillis());
+        timeKeeper.addTag(FrameSampler.Samples.RENDERNODES, start, System.currentTimeMillis());
     }
 
     @Override
