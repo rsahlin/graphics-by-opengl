@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 import com.nucleus.assets.AssetManager;
+import com.nucleus.common.ManagedList;
 import com.nucleus.mmi.ObjectInputListener;
 import com.nucleus.renderer.NucleusRenderer;
 
@@ -47,17 +48,15 @@ public abstract class RootNode extends Node {
      * When a node is rendered it is added to this list, this is for the current frame - will change as nodes are
      * rendered
      */
-    transient private ArrayList<Node>[] renderNodeList;
+    transient private ArrayList<Node> renderNodeList = new ArrayList<>();
     /**
      * List of last displayed frame rendered nodes - this is the currently visible nodes.
      */
-    transient private ArrayList<Node>[] visibleNodeList;
+    transient private ManagedList<Node> visibleNodeList = new ManagedList<>();
     /**
      * Set this to get callbacks on MMI events for this node, handled by {@link NodeInputListener}
      */
     transient protected ObjectInputListener objectInputListener;
-    transient private int currentListIndex = 1;
-    transient private int previousListIndex = 0;
 
     /**
      * Table with all added childnodes and their id.
@@ -67,12 +66,6 @@ public abstract class RootNode extends Node {
     protected RootNode() {
         super();
         setType(NodeTypes.rootnode);
-        renderNodeList = new ArrayList[2];
-        visibleNodeList = new ArrayList[2];
-        for (int i = 0; i < renderNodeList.length; i++) {
-            renderNodeList[i] = new ArrayList<>();
-            visibleNodeList[i] = new ArrayList<>();
-        }
     }
 
     /**
@@ -141,16 +134,7 @@ public abstract class RootNode extends Node {
      * @param node
      */
     public void addRenderedNode(Node node) {
-        renderNodeList[currentListIndex].add(node);
-    }
-
-    /**
-     * Returns a list with previous frames rendered nodes.
-     * 
-     * @return
-     */
-    public ArrayList<Node> getRenderedNodes() {
-        return renderNodeList[previousListIndex];
+        renderNodeList.add(node);
     }
 
     /**
@@ -160,21 +144,19 @@ public abstract class RootNode extends Node {
      * visible nodes
      */
     public void swapNodeList() {
-        visibleNodeList[previousListIndex].clear();
-        visibleNodeList[previousListIndex].addAll(renderNodeList[previousListIndex]);
-        renderNodeList[previousListIndex].clear();
-        currentListIndex = previousListIndex;
-        previousListIndex = (currentListIndex + 1) & 1;
+        visibleNodeList.updateList(renderNodeList);
+        renderNodeList.clear();
     }
 
     /**
-     * Returns list of visible nodes, this is the list of nodes that have been rendered and is currently visible.
-     * DO NOT MODIFY THIS LIST
+     * Returns a copy of visible nodes, this is the list of nodes that have been rendered and is currently visible.
      * 
-     * @return
+     * @param visibleList List of visible nodes written here
+     * @id Last id returned by calling this method, use this to avoid copying of contents have not changed.
+     * @return Id of returned list
      */
-    public ArrayList<Node> getVisibleNodeList() {
-        return visibleNodeList[currentListIndex];
+    public int getVisibleNodeList(ArrayList<Node> visibleList, int id) {
+        return visibleNodeList.getList(visibleList, id);
     }
 
     /**

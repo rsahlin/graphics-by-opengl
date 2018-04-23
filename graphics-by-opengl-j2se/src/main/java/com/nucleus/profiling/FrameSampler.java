@@ -32,6 +32,8 @@ public class FrameSampler {
     }
 
     public static class Sample {
+
+        public int nano;
         public int total;
         public int max;
         public int min;
@@ -58,27 +60,66 @@ public class FrameSampler {
             count = 1;
         }
 
+        /**
+         * Adds a nanosecond sample, does not update any other values such as count, or min/max
+         * Use this to aggregate multiple calls with nano precision
+         * 
+         * @param nano
+         */
+        public void addNano(int nano) {
+            this.nano += nano;
+        }
+
+        /**
+         * Adds a millisecond sample, min/max will be updated.
+         * 
+         * @param millis
+         */
         public void add(int millis) {
             total += millis;
+            updateMinMax(millis);
+            count++;
+        }
+
+        private void updateMinMax(int millis) {
             if (max < millis) {
                 max = millis;
             }
             if (min > millis) {
                 min = millis;
             }
-            count++;
+
         }
 
+        /**
+         * Returns the number of values added to the sample
+         * 
+         * @return
+         */
         public int getCount() {
             return count;
         }
 
+        /**
+         * Returns the average value, including time added to {@link #addNano(int)}
+         * 
+         * @return
+         */
         public int getAverage() {
-            return total / count;
+            int total = this.total + (nano / 1000000);
+            if (total > 0 && count > 0) {
+                return total / count;
+            } else {
+                return 0;
+            }
         }
 
+        /**
+         * Resets the sample to be used again.
+         */
         public void reset() {
             total = 0;
+            nano = 0;
             max = 0;
             min = Integer.MAX_VALUE;
             count = 0;
@@ -87,7 +128,7 @@ public class FrameSampler {
 
         @Override
         public String toString() {
-            return "Average: " + getAverage() + " Max: " + max + " Min: " + min;
+            return "Average: " + getAverage() + " Max: " + max + " Min: " + min + ", number of values " + count;
         }
     }
 
@@ -108,7 +149,8 @@ public class FrameSampler {
         COPY_IMAGE(Level.NORMAL),
         GENERATE_MIPMAPS(Level.NORMAL),
         EGLSWAPBUFFERS(Level.HIGH),
-        EGLWAITNATIVE(Level.HIGH);
+        EGLWAITNATIVE(Level.HIGH),
+        POINTER_INPUT(Level.NORMAL);
 
         public final Level detail;
 
@@ -385,11 +427,21 @@ public class FrameSampler {
                 tagTimings.put(tag, sample);
             } else {
                 sample.add(millis);
-                if (sample.startTime + logDelay < System.currentTimeMillis()) {
-                    logAverage(tag, sample);
-                    sample.reset();
-                }
+                autoLog(tag, sample);
             }
+        }
+    }
+
+    /**
+     * Checks if the log period for sample has been reached, if so the sample is logged using tag then reset.
+     * 
+     * @param tag
+     * @param sample
+     */
+    public void autoLog(String tag, Sample sample) {
+        if (sample.startTime + logDelay < System.currentTimeMillis()) {
+            logAverage(tag, sample);
+            sample.reset();
         }
     }
 
@@ -488,6 +540,24 @@ public class FrameSampler {
 
     private void logAverage(String tag, Sample sample) {
         SimpleLogger.d(getClass(), "Sampler tag " + tag + " : " + sample.toString());
+    }
+
+    /**
+     * Sets the millisecond delay between logs when calling one of the #addTag() methods
+     * 
+     * @param millis
+     */
+    public void setLogDelay(int millis) {
+        this.logDelay = millis;
+    }
+
+    /**
+     * Returns the log delay in millis, this is the frequency of log output.
+     * 
+     * @return
+     */
+    public int getLogDelay() {
+        return logDelay;
     }
 
 }

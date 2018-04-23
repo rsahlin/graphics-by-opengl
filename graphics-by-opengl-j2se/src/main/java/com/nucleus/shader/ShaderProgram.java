@@ -87,26 +87,11 @@ public abstract class ShaderProgram {
      */
     public final static int DEFAULT_COMPONENTS = 3;
 
-    /**
-     * Enum used when the attribute locations shall be automatically bound.
-     * The mode can be either APPEND or PREFIX.
-     * APPEND means that the location to bind the attribute to is appended after the name - must contain 2 numbers,
-     * eg 00 for first location.
-     * PREFIX means that the name is prefixed with the attribute location, must contain 2 numbers, eg 00 for first
-     * location.
-     * 
-     * @author Richard Sahlin
-     *
-     */
-    public enum AttribNameMapping {
-        APPEND(),
-        PREFIX();
-    }
-
     public final static String SHADER_SOURCE_ERROR = "Error setting shader source: ";
     public final static String COMPILE_SHADER_ERROR = "Error compiling shader: ";
     public final static String COMPILE_STATUS_ERROR = "Failed compile status: ";
     public final static String CREATE_SHADER_ERROR = "Can not create shader object, context not active?";
+    public final static String ATTACH_SOURCE_ERROR = "Error attaching shader source";
     public final static String LINK_PROGRAM_ERROR = "Error linking program: ";
     public final static String BIND_ATTRIBUTE_ERROR = "Error binding attribute: ";
     public final static String VARIABLE_LOCATION_ERROR = "Could not get shader variable location: ";
@@ -1049,14 +1034,15 @@ public abstract class ShaderProgram {
      */
     public void linkProgram(GLES20Wrapper gles, int program, int[] shaderNames, ArrayList<Integer> commonVertexShaders)
             throws GLException {
+        for (int name : shaderNames) {
+            gles.glAttachShader(program, name);
+        }
         if (commonVertexShaders != null) {
             for (Integer shader : commonVertexShaders) {
                 gles.glAttachShader(program, shader);
             }
         }
-        for (int name : shaderNames) {
-            gles.glAttachShader(program, name);
-        }
+        GLUtils.handleError(gles, ATTACH_SOURCE_ERROR);
         gles.glLinkProgram(program);
         SimpleLogger.d(getClass(), gles.glGetProgramInfoLog(program));
         GLUtils.handleError(gles, LINK_PROGRAM_ERROR);
@@ -1171,7 +1157,7 @@ public abstract class ShaderProgram {
         int[] linkStatus = new int[1];
         gles.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
         if (linkStatus[0] != GLES20.GL_TRUE) {
-            throw new GLException(LINK_PROGRAM_ERROR, GLES20.GL_FALSE);
+            throw new GLException(LINK_PROGRAM_ERROR + Integer.toString(program));
         }
     }
 

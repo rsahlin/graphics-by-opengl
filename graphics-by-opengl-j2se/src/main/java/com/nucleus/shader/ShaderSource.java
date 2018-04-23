@@ -100,7 +100,13 @@ public class ShaderSource {
      */
     public int getVersionNumber() {
         if (versionString != null) {
-            return Integer.parseInt(versionString.substring(VERSION.length()).trim());
+            // Check for ES index in version number.
+            int index = versionString.indexOf(ES);
+            if (index > 0) {
+                return Integer.parseInt(versionString.substring(VERSION.length() + 1, index).trim());
+            } else {
+                return Integer.parseInt(versionString.substring(VERSION.length() + 1).trim());
+            }
         }
         return ESSLVersion.VERSION100.number;
     }

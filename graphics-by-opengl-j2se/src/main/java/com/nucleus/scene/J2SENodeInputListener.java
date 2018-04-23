@@ -3,6 +3,7 @@ package com.nucleus.scene;
 import java.util.ArrayList;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.Constants;
 import com.nucleus.event.EventManager;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
@@ -19,6 +20,8 @@ import com.nucleus.scene.Node.State;
 public class J2SENodeInputListener implements NodeInputListener, MMIEventListener {
 
     private final RootNode root;
+    private final ArrayList<Node> visibleNodes = new ArrayList<>();
+    private int nodeId = Constants.NO_VALUE;
 
     private float[] down = new float[2];
 
@@ -125,7 +128,8 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
 
     @Override
     public void onInputEvent(MMIPointerEvent event) {
-        onInputEvent(root.getVisibleNodeList(), event);
+        nodeId = root.getVisibleNodeList(visibleNodes, nodeId);
+        onInputEvent(visibleNodes, event);
     }
 
 }
