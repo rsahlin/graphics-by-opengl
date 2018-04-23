@@ -64,6 +64,15 @@ public class GLException extends Throwable {
     }
 
     /**
+     * Creates a new GLException with detail message
+     * 
+     * @param detailMessage
+     */
+    public GLException(String detailMessage) {
+        super(detailMessage);
+    }
+
+    /**
      * Creates a new GLException with message and list of error codes.
      * 
      * @param detailMessage
