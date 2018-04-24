@@ -44,8 +44,9 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
     protected int sleep = 0;
     protected GLContext glContext;
 
-    public JOGLEGLWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
-        super(coreAppStarter, width, height);
+    public JOGLEGLWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, SurfaceConfiguration config,
+            int width, int height) {
+        super(coreAppStarter, width, height, config);
         this.version = version;
         Thread t = new Thread(this);
         t.start();

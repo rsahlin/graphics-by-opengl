@@ -6,6 +6,7 @@ import com.nucleus.mmi.PointerData.Type;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.renderer.Window;
 
 /**
@@ -23,14 +24,16 @@ public abstract class J2SEWindow implements WindowListener {
     protected int width;
     protected int height;
     protected WindowListener windowListener;
+    protected SurfaceConfiguration config;
 
-    public J2SEWindow(CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
+    public J2SEWindow(CoreApp.CoreAppStarter coreAppStarter, int width, int height, SurfaceConfiguration config) {
         if (coreAppStarter == null) {
             throw new IllegalArgumentException("Appstarter is null");
         }
         this.coreAppStarter = coreAppStarter;
         this.width = width;
         this.height = height;
+        this.config = config;
         Window.getInstance().setScreenSize(width, height);
 
     }

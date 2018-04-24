@@ -9,6 +9,7 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.RendererFactory;
+import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.texturing.J2SEImageFactory;
 
 /**
@@ -39,6 +40,8 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     public static final String WINDOW_HEIGHT_KEY = "WINDOW-HEIGHT";
     public static final String WINDOW_UNDECORATED_KEY = "WINDOW-UNDECORATED";
     public static final String FULLSCREEN_KEY = "FULLSCREEN";
+    public static final String SAMPLES = "SAMPLES";
+    public static final String ALPHA_BITS = "ALPHA";
 
     protected CoreApp coreApp;
     protected int swapInterval = 1;
@@ -48,6 +51,11 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     protected boolean fullscreen = false;
     protected J2SEWindow j2seWindow;
     protected WindowType windowType;
+    protected int samples = 0;
+    /**
+     * Number of bits of alpha in background
+     */
+    protected int alpha = 0;
 
     protected RenderContextListener contextListener;
 
@@ -117,6 +125,14 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
             windowType = WindowType.valueOf(str.substring(WINDOW_TYPE_KEY.length() + 1));
             SimpleLogger.d(getClass(), WINDOW_TYPE_KEY + " set to " + windowType);
         }
+        if (str.toUpperCase().startsWith(ALPHA_BITS)) {
+            alpha = Integer.parseInt(str.substring(ALPHA_BITS.length() + 1));
+            SimpleLogger.d(getClass(), ALPHA_BITS + " set to " + alpha);
+        }
+        if (str.toUpperCase().startsWith(SAMPLES)) {
+            samples = Integer.parseInt(str.substring(SAMPLES.length() + 1));
+            SimpleLogger.d(getClass(), SAMPLES + " set to " + samples);
+        }
 
     }
 
@@ -168,6 +184,18 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         if (coreApp != null) {
             coreApp.setDestroyFlag();
         }
+    }
+
+    /**
+     * Returns surface configuration
+     * 
+     * @return
+     */
+    protected SurfaceConfiguration getConfiguration() {
+        SurfaceConfiguration config = new SurfaceConfiguration();
+        config.setAlphaBits(alpha);
+        config.setSamples(samples);
+        return config;
     }
 
 }

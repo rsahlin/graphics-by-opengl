@@ -21,13 +21,15 @@ import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.renderer.SurfaceConfiguration;
 
 public class JAWTWindow extends J2SEWindow implements RenderContextListener, MouseMotionListener, MouseListener {
 
     LWJGLCanvas canvas;
 
-    public JAWTWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
-        super(coreAppStarter, width, height);
+    public JAWTWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, SurfaceConfiguration config, int width,
+            int height) {
+        super(coreAppStarter, width, height, config);
         init(version, coreAppStarter, width, height);
     }
 

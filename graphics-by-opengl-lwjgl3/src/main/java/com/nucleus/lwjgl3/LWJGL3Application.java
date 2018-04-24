@@ -47,13 +47,13 @@ public class LWJGL3Application extends J2SEWindowApplication {
     protected J2SEWindow createWindow(Renderers version) {
         switch (windowType) {
             case GLFW:
-                j2seWindow = new GLFWWindow(version, this, windowWidth, windowHeight);
+                j2seWindow = new GLFWWindow(version, this, getConfiguration(), windowWidth, windowHeight);
                 break;
             case JAWT:
-                j2seWindow = new JAWTWindow(version, this, windowWidth, windowHeight);
+                j2seWindow = new JAWTWindow(version, this, getConfiguration(), windowWidth, windowHeight);
                 break;
             case EGL:
-                j2seWindow = new LWJGLEGLWindow(version, this, windowWidth, windowHeight);
+                j2seWindow = new LWJGLEGLWindow(version, this, getConfiguration(), windowWidth, windowHeight);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + windowType);

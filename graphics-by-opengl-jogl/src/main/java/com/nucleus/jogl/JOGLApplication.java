@@ -41,11 +41,12 @@ public class JOGLApplication extends J2SEWindowApplication {
     protected J2SEWindow createWindow(Renderers version) {
         switch (windowType) {
             case NEWT:
-                j2seWindow = new JOGLGLESWindow(version, this, windowWidth, windowHeight, windowUndecorated,
+                j2seWindow = new JOGLGLESWindow(version, this, getConfiguration(), windowWidth, windowHeight,
+                        windowUndecorated,
                         fullscreen, swapInterval);
                 break;
             case EGL:
-                j2seWindow = new JOGLEGLWindow(version, this, windowWidth, windowHeight);
+                j2seWindow = new JOGLEGLWindow(version, this, getConfiguration(), windowWidth, windowHeight);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + windowType);
