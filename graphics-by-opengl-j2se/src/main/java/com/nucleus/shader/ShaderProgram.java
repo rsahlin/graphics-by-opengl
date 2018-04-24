@@ -70,7 +70,7 @@ public abstract class ShaderProgram {
      * Set to true to force appending common shader to shader source
      * TODO Move setting to environment
      */
-    protected static boolean appendCommonShaders = false;
+    protected static boolean appendCommonShaders = true;
 
     protected final Shaders shaders;
 

@@ -47,8 +47,9 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
      */
     protected int[] surfaceAttribs;
 
-    public LWJGLEGLWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
-        super(coreAppStarter, width, height);
+    public LWJGLEGLWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, SurfaceConfiguration config,
+            int width, int height) {
+        super(coreAppStarter, width, height, config);
         env = Environment.getInstance();
         this.version = version;
         Thread t = new Thread(this);

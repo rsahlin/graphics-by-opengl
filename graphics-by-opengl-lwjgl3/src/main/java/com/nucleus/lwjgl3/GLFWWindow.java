@@ -14,6 +14,7 @@ import org.lwjgl.system.MemoryUtil;
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
 import com.nucleus.opengl.GLESWrapper.Renderers;
+import com.nucleus.renderer.SurfaceConfiguration;
 
 /**
  * The lwjgl3 window
@@ -31,8 +32,9 @@ public class GLFWWindow extends J2SEWindow {
      * @param width
      * @param height
      */
-    public GLFWWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
-        super(coreAppStarter, width, height);
+    public GLFWWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, SurfaceConfiguration config, int width,
+            int height) {
+        super(coreAppStarter, width, height, config);
         init(version, coreAppStarter, width, height);
     }
 

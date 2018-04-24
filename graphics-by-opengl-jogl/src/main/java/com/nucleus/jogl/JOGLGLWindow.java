@@ -27,6 +27,7 @@ import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
 import com.nucleus.opengl.GLESWrapper.Renderers;
+import com.nucleus.renderer.SurfaceConfiguration;
 
 /**
  * 
@@ -50,7 +51,8 @@ public abstract class JOGLGLWindow extends J2SEWindow
     private boolean fullscreen = false;
     private boolean mouseVisible = true;
     private boolean mouseConfined = false;
-    private int swapInterval = 1;
+    private int swapInterval = 0;
+    private boolean autoSwapBuffer = false;
     protected volatile boolean contextCreated = false;
     protected GLCanvas canvas;
     protected Frame frame;
@@ -63,6 +65,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
      * 
      * @param version
      * @param coreAppStarter
+     * @param config Surface configuration
      * @param width
      * @param height
      * @param undecorated
@@ -70,9 +73,10 @@ public abstract class JOGLGLWindow extends J2SEWindow
      * @param swapInterval
      * @throws IllegalArgumentException If coreAppStarter is null
      */
-    public JOGLGLWindow(Renderers version, CoreAppStarter coreAppStarter, int width, int height, boolean undecorated,
+    public JOGLGLWindow(Renderers version, CoreAppStarter coreAppStarter, SurfaceConfiguration config, int width,
+            int height, boolean undecorated,
             boolean fullscreen, int swapInterval) {
-        super(coreAppStarter, width, height);
+        super(coreAppStarter, width, height, config);
         this.swapInterval = swapInterval;
         this.undecorated = undecorated;
         this.fullscreen = fullscreen;
@@ -133,10 +137,10 @@ public abstract class JOGLGLWindow extends J2SEWindow
      */
     private void createNEWTWindow(int width, int height, GLProfile profile) {
         GLCapabilities glCapabilities = new GLCapabilities(profile);
-        glCapabilities.setSampleBuffers(false);
-        glCapabilities.setNumSamples(0);
-        glCapabilities.setBackgroundOpaque(true);
-        glCapabilities.setAlphaBits(0);
+        glCapabilities.setSampleBuffers(true);
+        glCapabilities.setNumSamples(config.getSamples());
+        glCapabilities.setBackgroundOpaque(config.getAlphaBits() == 0);
+        glCapabilities.setAlphaBits(config.getAlphaBits());
         glWindow = GLWindow.create(glCapabilities);
         glWindow.setUndecorated(undecorated);
         InsetsImmutable insets = glWindow.getInsets();
@@ -156,6 +160,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
         animator.add(glWindow);
         animator.start();
         glWindow.setVisible(true);
+        glWindow.setAutoSwapBufferMode(autoSwapBuffer);
     }
 
     private void createAWTWindow(int width, int height, GLProfile glProfile) {
@@ -239,7 +244,11 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void display(GLAutoDrawable drawable) {
+        drawable.getGL().setSwapInterval(swapInterval);
         coreApp.renderFrame();
+        if (glWindow != null) {
+            glWindow.swapBuffers();
+        }
     }
 
     protected void handleMouseEvent(MouseEvent e, PointerAction action) {
