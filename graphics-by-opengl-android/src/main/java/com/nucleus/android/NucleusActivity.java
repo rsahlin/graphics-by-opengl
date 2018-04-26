@@ -339,17 +339,23 @@ public abstract class NucleusActivity extends Activity
     }
 
     /**
-     * Called when an EGL surface for rendering has been created, this will call to create core app and display splash.
-     * Swap buffers after this method returns to make splash visible.
+     * Called when an EGL surface for rendering has been created.
+     * If coreApp is null it is created and splash is displayed.
+     * Swap buffers after this method returns to make splash visible, if true is returned.
      * Then call {@link CoreApp#contextCreated(int, int)}
      * 
      * @param width
      * @param height
+     * @return true if CoreApp was created and splash displayed.
      */
-    public void onSurfaceCreated(int width, int height) {
+    public boolean onSurfaceCreated(int width, int height) {
         NucleusRenderer renderer = RendererFactory.getRenderer(gles, new AndroidImageFactory(),
                 new J2SEMatrixEngine());
-        coreApp = CoreApp.createCoreApp(width, height, renderer);
+        if (coreApp == null) {
+            coreApp = CoreApp.createCoreApp(width, height, renderer);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -427,6 +433,7 @@ public abstract class NucleusActivity extends Activity
                 }
                 break;
             default:
+                SimpleLogger.d(getClass(), "Not handled MotionEvent: " + event.getActionMasked());
         }
     }
 
