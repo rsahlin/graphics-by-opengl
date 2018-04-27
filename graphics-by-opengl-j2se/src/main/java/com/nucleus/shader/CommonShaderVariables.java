@@ -31,15 +31,16 @@ public enum CommonShaderVariables implements VariableMapping {
      * The uvData field within the UVData block
      */
     uvData(9, 0, ShaderVariable.VariableType.UNIFORM, null),
-    aVertex(10, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-    aTexCoord(11, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-    aTranslate(12, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aRotate(13, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aScale(14, 8, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aColor(15, 12, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aFrameData(16, 16, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aData1(17, 20, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
-    aEmissive(18, 24, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
+    uPointSize(10, 66, ShaderVariable.VariableType.UNIFORM, null),
+    aVertex(11, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+    aTexCoord(12, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+    aTranslate(13, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aRotate(14, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aScale(15, 8, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aColor(16, 12, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aFrameData(17, 16, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aData1(18, 20, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
+    aEmissive(19, 24, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES);
 
     /**
      * Index (id) of variable

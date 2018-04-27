@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.SimpleLogger;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.bounds.CircularBounds;
 import com.nucleus.bounds.RectangularBounds;
@@ -101,12 +102,17 @@ public class Node extends BaseReference {
                     throw new IllegalArgumentException("meshCount = " + meshCount
                             + " but mesh builder is not set. either call #setMeshBuilder() or #setMeshCount(0)");
                 }
+                if (meshCount == 0 && meshBuilder != null) {
+                    // Treat this as a warning - it may be wanted behavior.
+                    SimpleLogger.d(getClass(), "MeshBuilder is set but meshcount is 0 - no mesh will be created");
+                }
                 Node node = Node.createInstance(type, root);
                 for (int i = 0; i < meshCount; i++) {
                     Mesh mesh = meshBuilder.create();
                     node.addMesh(mesh, MeshIndex.MAIN);
                 }
                 node.setId(id);
+                node.create();
                 return (T) node;
             } catch (InstantiationException | IllegalAccessException | GLException | IOException e) {
                 throw new NodeException("Could not create node: " + e.getMessage());

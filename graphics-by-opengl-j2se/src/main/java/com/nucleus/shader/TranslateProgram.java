@@ -13,6 +13,10 @@ import com.nucleus.texturing.Texture2D.Shading;
  */
 public class TranslateProgram extends ShaderProgram {
 
+    ShaderVariable uPointSize;
+
+    private float pointSize = 1;
+
     public TranslateProgram(Texture2D.Shading shading) {
         super(null, shading, null, CommonShaderVariables.values(), Shaders.VERTEX_FRAGMENT);
     }
@@ -30,9 +34,18 @@ public class TranslateProgram extends ShaderProgram {
     }
 
     @Override
-    public void setUniformData(float[] destinationUniform, Mesh mesh) {
-        // Nothing to do
+    protected void setShaderVariable(ShaderVariable variable) {
+        super.setShaderVariable(variable);
+        if (variable.getName().contentEquals(CommonShaderVariables.uPointSize.name())) {
+            uPointSize = variable;
+        }
+    }
 
+    @Override
+    public void updateUniformData(float[] destinationUniform, Mesh mesh) {
+        if (uPointSize != null) {
+            destinationUniform[uPointSize.getOffset()] = pointSize;
+        }
     }
 
     @Override

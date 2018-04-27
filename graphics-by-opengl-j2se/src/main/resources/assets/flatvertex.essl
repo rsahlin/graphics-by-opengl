@@ -7,8 +7,7 @@
 //Put array declaration after name for GLSL compatibility
 uniform mat4 uMVMatrix;
 uniform mat4 uProjectionMatrix;
-uniform vec4 uAmbientLight;
-uniform vec4 uDiffuseLight;
+uniform float uPointSize;
 
 attribute vec3 aTranslate; //Position of vertex, offset from matrix
 attribute vec3 aVertex;
@@ -20,4 +19,5 @@ void main() {
     vec4 pos = uMVMatrix * vec4(aVertex + aTranslate, 1.0);
     gl_Position = uProjectionMatrix * pos;
     color = aColor;
+    gl_PointSize = uPointSize;
 }
