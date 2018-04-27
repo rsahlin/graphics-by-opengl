@@ -16,6 +16,7 @@ import com.nucleus.scene.Node.NodeTypes;
 /**
  * The default node factory implementation
  * Will create one mesh for the Node by calling MeshFactory or Builder
+ * TODO - cleanup this and {@link Node.Builder}
  * 
  * @author Richard Sahlin
  *
