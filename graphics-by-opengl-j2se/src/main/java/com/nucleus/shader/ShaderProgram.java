@@ -723,10 +723,32 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Sets one float value into the uniform data array for this program. The data array needs to be uploaded
+     * to GL before changes take effect.
+     * 
+     * @param variable offset into uniformData where data is put
+     * @param data
+     */
+    public void setUniformData(ShaderVariable variable, float data) {
+        uniforms[variable.getOffset()] = data;
+    }
+
+    /**
+     * Sets the float values from data at the offset from variable, use this to set more than one value.
+     * 
+     * @param variable
+     * @param data
+     */
+    public void setUniformData(ShaderVariable variable, float[] data) {
+        int offset = variable.getOffset();
+        System.arraycopy(data, 0, uniforms, offset, data.length);
+    }
+
+    /**
      * Updates the data uploaded to GL as uniforms, if uniforms are static then only the matrices needs to be updated.
      * Calls {@link #setUniformMatrices(float[][], Mesh)} to update uniform matrices.
-     * Then call {@link #setUniformData(float[], Mesh)} to set program specific uniform data
-     * Then sets uniforms to GL by calling {@link #setUniforms(GLES20Wrapper, VariableMapping[])}
+     * Then call {@link #updateUniformData(float[], Mesh)} to set program specific uniform data
+     * Then sets uniforms to GL by calling {@link #uploadUniforms(GLES20Wrapper, float[], Mesh, VariableMapping[])
      * When this method returns the uniform data has been uploaded to GL and is ready.
      * 
      * @param gles
@@ -736,7 +758,7 @@ public abstract class ShaderProgram {
     public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
             throws GLException {
         setUniformMatrices(matrices, mesh);
-        setUniformData(uniforms, mesh);
+        updateUniformData(uniforms, mesh);
         uploadUniforms(gles, uniforms, mesh, sourceUniforms);
     }
 
@@ -776,7 +798,7 @@ public abstract class ShaderProgram {
                 if (v.getBlockIndex() != Constants.NO_VALUE) {
                     setUniformBlock(gles, interfaceBlocks[v.getBlockIndex()], v);
                 } else {
-                    setUniform(gles, uniforms, v);
+                    uploadUniform(gles, uniforms, v);
                 }
             }
         }
@@ -1024,6 +1046,21 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Returns the active shader variable by name, or null if not found
+     * 
+     * @param variableName
+     * @return
+     */
+    public ShaderVariable getVariableByName(String variableName) {
+        for (ShaderVariable v : shaderVariables) {
+            if (v != null && v.getName().contentEquals(variableName)) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Links the specified vertex and fragment shaders to the specified program.
      * 
      * @param gles GLES20 platform specific wrapper.
@@ -1255,6 +1292,15 @@ public abstract class ShaderProgram {
         if (unMappedTypes.contains(variable.getDataType())) {
             return;
         }
+        setShaderVariable(variable);
+    }
+
+    /**
+     * Sets the active shader variable - call this when variable has been validated.
+     * 
+     * @param variable
+     */
+    protected void setShaderVariable(ShaderVariable variable) {
         try {
             VariableMapping vm = getMappingByName(variable);
             // TODO Offset is set dynamically when dynamicMapShaderOffset() is called - create a setting so that
@@ -1323,7 +1369,8 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets one of more float uniforms for the specified variable, supports VEC2, VEC3, VEC4 and MAT2, MAT3, MAT4 types
+     * Uploads one of more float uniforms for the specified variable to GL, supports VEC2, VEC3, VEC4 and MAT2, MAT3,
+     * MAT4 types
      * 
      * @param gles
      * @param uniforms The uniform data
@@ -1331,7 +1378,7 @@ public abstract class ShaderProgram {
      * @param offset Offset into uniform array where data starts.
      * @throws GLException If there is an error setting a uniform to GL
      */
-    protected final void setUniform(GLES20Wrapper gles, float[] uniforms, ShaderVariable variable)
+    protected final void uploadUniform(GLES20Wrapper gles, float[] uniforms, ShaderVariable variable)
             throws GLException {
         int offset = variable.getOffset();
         switch (variable.getDataType()) {
@@ -1508,14 +1555,14 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Gets the shader program specific uniform data, storing in in the uniformData array.
+     * Updates the shader program specific uniform data, storing in in the uniformData array.
      * Subclasses shall set any uniform data needed - but not matrices which is set in
      * {@link #setUniformMatrices(float[][], Mesh)}
      * 
      * @param destinationUniforms
      * @param mesh
      */
-    public abstract void setUniformData(float[] destinationUniform, Mesh mesh);
+    public abstract void updateUniformData(float[] destinationUniform, Mesh mesh);
 
     /**
      * Sets UV fraction for the tiled texture + number of frames in x.
