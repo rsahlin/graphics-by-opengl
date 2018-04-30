@@ -2,6 +2,7 @@ package com.nucleus.scene;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.renderer.NucleusRenderer.Layer;
+import com.nucleus.renderer.Window;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -11,6 +12,7 @@ import com.nucleus.vecmath.Matrix;
  * One ViewNode could be the scene, and the next the UI
  * The ViewNode must have transform, when rendering each layer shall re-set the node view tansform making it independent
  * from parent.
+ * If ViewFrustum width or height is zero then the corresponding values are taken from screen width/height.
  * 
  * @author Richard Sahlin
  *
@@ -41,6 +43,8 @@ public class LayerNode extends Node {
 
     @Override
     public LayerNode createInstance(RootNode root) {
+        // Check if frustum defined with zero width or height, if so adjust to screen values
+        checkViewFrustum();
         LayerNode copy = new LayerNode(root);
         copy.set(this);
         return copy;
@@ -57,6 +61,21 @@ public class LayerNode extends Node {
         // Make sure ViewNode has transform
         if (transform == null) {
             throw new IllegalArgumentException(getClass().getSimpleName() + " " + getId() + " must have transform");
+        }
+    }
+
+    private void checkViewFrustum() {
+        if (viewFrustum == null) {
+            return;
+        }
+        Window w = Window.getInstance();
+        if (viewFrustum.getWidth() == 0) {
+            float width = w.getWidth() / 2;
+            viewFrustum.setLeftRight(-width, width);
+        }
+        if (viewFrustum.getHeight() == 0) {
+            float height = w.getHeight() / 2;
+            viewFrustum.setBottomTop(-height, height);
         }
     }
 

@@ -214,9 +214,8 @@ public class GSONSceneFactory implements SceneSerializer {
         for (Node node : children) {
             Node created = nodeFactory.create(renderer, meshFactory, node, root);
             root.addChild(created);
-            setViewFrustum(node, created);
-            // TODO - what if created node depends on childnodes being created before calling onCreate()?
             created.onCreated();
+            setViewFrustum(node, created);
             nodeFactory.createChildNodes(renderer, meshFactory, node, created);
         }
     }

@@ -1,19 +1,28 @@
 package com.nucleus.scene;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
+import com.nucleus.geometry.AttributeUpdater.PropertyMapper;
+import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
+import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.RectangleShapeBuilder;
 import com.nucleus.geometry.ShapeBuilder;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.CommonShaderVariables;
+import com.nucleus.shader.TranslateProgram;
+import com.nucleus.texturing.Texture2D.Shading;
+import com.nucleus.texturing.TextureFactory;
+import com.nucleus.texturing.TextureType;
 
 /**
- * Contains a mesh that draws lines
+ * Contains a mesh that draws lines or points
  * The intended usage is to put this node in a layer and access it programatically.
  * Default is to draw rectangles
  * This is not performance optimal for many lines, use only if a few lines are drawn in the UI.
@@ -23,28 +32,52 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     public enum LineMode {
         RECTANGLE(),
         LINES(),
-        LINE_STRIP();
+        LINE_STRIP(),
+        POINTS();
     }
 
     public static final String LINE_COUNT = "lineCount";
     public static final String LINE_MODE = "lineMode";
-    public static final String LINE_WIDTH = "lineWidth";
+    public static final String POINT_SIZE = "pointSize";
 
     @SerializedName(LINE_COUNT)
     private int lineCount;
     @SerializedName(LINE_MODE)
     private LineMode lineMode = LineMode.RECTANGLE;
-    @SerializedName(LINE_WIDTH)
-    private float lineWidth = 1;
+    @SerializedName(POINT_SIZE)
+    private float pointSize = 1;
 
     transient private float[] attributes;
     transient private boolean attributesDirty = false;
     transient AttributeBuffer buffer;
+    transient PropertyMapper mapper;
     /**
      * If drawcount is updated it must be set to buffer in {@link #updateAttributeData()} method.
      */
     transient int drawCount = Constants.NO_VALUE;
     transient int drawOffset = Constants.NO_VALUE;
+
+    /**
+     * Creates a nodebuilder that can be used to create LineDrawerNodes with mesh(es)
+     * 
+     * @param renderer
+     * @param nodeBuilder
+     * @param vertices Number of vertices in mesh
+     * @param meshCount Number of meshes to create
+     * @param mode Mesh drawmode
+     * @return
+     */
+    public static Node.Builder<Node> createBuilder(NucleusRenderer renderer, Node.Builder<Node> nodeBuilder,
+            int vertices, int meshCount, Mode mode) {
+        nodeBuilder.setType(NodeTypes.linedrawernode);
+        TranslateProgram program = (TranslateProgram) AssetManager.getInstance()
+                .getProgram(renderer.getGLES(), new TranslateProgram(Shading.flat));
+        com.nucleus.geometry.Mesh.Builder<Mesh> pointMeshBuilder = MeshBuilder.createBuilder(renderer, vertices,
+                new Material(),
+                program, TextureFactory.createTexture(TextureType.Untextured), null, mode);
+        nodeBuilder.setMeshBuilder(pointMeshBuilder).setMeshCount(meshCount);
+        return nodeBuilder;
+    }
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -83,12 +116,21 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     }
 
     /**
-     * Returns the linewidth
+     * Returns size to use for points and lines
      * 
      * @return
      */
-    public float getLineWidth() {
-        return lineWidth;
+    public float getPointSize() {
+        return pointSize;
+    }
+
+    /**
+     * Sets size used for points and lines
+     * 
+     * @param pointSize
+     */
+    public void setPointSize(float pointSize) {
+        this.pointSize = pointSize;
     }
 
     @Override
@@ -103,13 +145,14 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         Mesh mesh = getMesh(MeshIndex.MAIN);
         mesh.setAttributeUpdater(this);
         bindAttributeBuffer(mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES));
+        mapper = mesh.getMapper();
     }
 
     public void set(LineDrawerNode source) {
         super.set(source);
         lineCount = source.lineCount;
         lineMode = source.lineMode;
-        lineWidth = source.lineWidth;
+        pointSize = source.pointSize;
     }
 
     public ShapeBuilder getShapeBuilder() {
@@ -182,32 +225,26 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void setLine(int vertice, float[] first, float[] second, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = getMesh(MeshIndex.MAIN).getMaterial().getProgram()
-                .getShaderVariable(CommonShaderVariables.aTranslate)
-                .getOffset();
-        int color = getMesh(MeshIndex.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aColor)
-                .getOffset();
-        internalSetVertex(offset + translate, offset + color, first, z, rgba);
+        internalSetVertex(offset + mapper.translateOffset, offset + mapper.colorOffset, first, z, rgba);
         offset += buffer.getFloatStride();
-        internalSetVertex(offset + translate, offset + color, second, z, rgba);
+        internalSetVertex(offset + mapper.translateOffset, offset + mapper.colorOffset, second, z, rgba);
     }
 
     /**
-     * Adds a vertex for next line, this is for LINE_STRIP mode
+     * Adds a vertex at the offset for vertice.
+     * Depending on mode this can be used to add a point or line.
+     * The caller must update the drawcount for the change to be visible
+     * Before calling this method, an AttributeBuffer must be connected to this node - this is normally done
+     * when the node factory is configure with a mesh builder.
      * 
-     * @param vertice
-     * @param next
-     * @param z
-     * @param rgba
+     * @param vertice The vertex number to add.
+     * @param pos Position of vertex (xy)
+     * @param z z position to use
+     * @param rgba Colour
      */
-    public void addLine(int vertice, float[] next, float z, float[] rgba) {
+    public void addVertex(int vertice, float[] next, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = getMesh(MeshIndex.MAIN).getMaterial().getProgram()
-                .getShaderVariable(CommonShaderVariables.aTranslate)
-                .getOffset();
-        int color = getMesh(MeshIndex.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aColor)
-                .getOffset();
-        internalSetVertex(offset + translate, offset + color, next, z, rgba);
+        internalSetVertex(offset + mapper.translateOffset, offset + mapper.colorOffset, next, z, rgba);
     }
 
     /**
@@ -219,10 +256,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void setPos(int vertice, float[] pos, float z) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = getMesh(MeshIndex.MAIN).getMaterial().getProgram()
-                .getShaderVariable(CommonShaderVariables.aTranslate)
-                .getOffset();
-        internalSetVertex(offset + translate, pos, z);
+        internalSetVertex(offset + mapper.translateOffset, pos, z);
 
     }
 

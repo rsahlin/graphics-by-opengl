@@ -18,6 +18,10 @@ import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
 
+/**
+ * TODO cleanup and use Mesh.Builder as much as possible - should this class be removed in favor of Builder?
+ *
+ */
 public class DefaultMeshFactory implements MeshFactory {
 
     private MeshFactory.MeshCreator customMeshCreator;

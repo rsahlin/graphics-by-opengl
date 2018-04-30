@@ -16,6 +16,8 @@ import com.nucleus.vecmath.Transform;
 public class ViewFrustum {
 
     public static final String VIEWFRUSTUM = "viewFrustum";
+    public static final String VALUES = "values";
+    public static final String PROJECTION = "projection";
 
     public enum Projection {
         PERSPECTIVE(),
@@ -36,9 +38,9 @@ public class ViewFrustum {
     /**
      * The projection values, left,right,bottom,top,near,far
      */
-    @SerializedName("values")
+    @SerializedName(VALUES)
     private float[] values = new float[PROJECTION_SIZE];
-    @SerializedName("projection")
+    @SerializedName(PROJECTION)
     private Projection projection = Projection.PERSPECTIVE;
 
     /**
@@ -203,6 +205,28 @@ public class ViewFrustum {
      */
     public float getHeight() {
         return Math.abs(values[TOP_INDEX] - values[BOTTOM_INDEX]);
+    }
+
+    /**
+     * Sets the left/right values of the viewfrustum
+     * 
+     * @param left
+     * @param right
+     */
+    public void setLeftRight(float left, float right) {
+        values[LEFT_INDEX] = left;
+        values[RIGHT_INDEX] = right;
+    }
+
+    /**
+     * Sets the bottom/top values of the viewfrustum
+     * 
+     * @param bottom
+     * @param top
+     */
+    public void setBottomTop(float bottom, float top) {
+        values[BOTTOM_INDEX] = bottom;
+        values[TOP_INDEX] = top;
     }
 
     /**

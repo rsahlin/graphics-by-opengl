@@ -41,7 +41,7 @@ public class TransformProgram extends ShaderProgram {
     }
 
     @Override
-    public void setUniformData(float[] uniformData, Mesh mesh) {
+    public void updateUniformData(float[] uniformData, Mesh mesh) {
         // TODO Auto-generated method stub
 
     }

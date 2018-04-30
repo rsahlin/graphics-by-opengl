@@ -28,6 +28,7 @@ import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.scene.LineDrawerNode;
+import com.nucleus.scene.LineDrawerNode.LineMode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.Node.State;
@@ -292,7 +293,10 @@ class BaseRenderer implements NucleusRenderer {
         }
         Matrix.mul4(viewMatrix, nodeMatrix, matrices[Matrices.MODELVIEW.index]);
         if (node.getType().equals(NodeTypes.linedrawernode.name())) {
-            gles.glLineWidth(((LineDrawerNode) node).getLineWidth());
+            LineDrawerNode ld = (LineDrawerNode) node;
+            if (ld.getLineMode() != LineMode.POINTS) {
+                gles.glLineWidth(ld.getPointSize());
+            }
         }
         nodeMeshes.clear();
         renderMeshes(node.getMeshes(nodeMeshes), matrices);
