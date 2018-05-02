@@ -11,12 +11,13 @@ import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.Mesh.Mode;
-import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.RectangleShapeBuilder;
 import com.nucleus.geometry.ShapeBuilder;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.CommonShaderVariables;
+import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.TranslateProgram;
+import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
@@ -58,7 +59,9 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     transient int drawOffset = Constants.NO_VALUE;
 
     /**
-     * Creates a nodebuilder that can be used to create LineDrawerNodes with mesh(es)
+     * Creates a nodebuilder that can be used to create LineDrawerNodes with mesh(es), that can be used to draw points
+     * or lines.
+     * Use for instance when node is created programatically.
      * 
      * @param renderer
      * @param nodeBuilder
@@ -72,11 +75,51 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         nodeBuilder.setType(NodeTypes.linedrawernode);
         TranslateProgram program = (TranslateProgram) AssetManager.getInstance()
                 .getProgram(renderer.getGLES(), new TranslateProgram(Shading.flat));
-        com.nucleus.geometry.Mesh.Builder<Mesh> pointMeshBuilder = MeshBuilder.createBuilder(renderer, vertices,
+        com.nucleus.geometry.Mesh.Builder<Mesh> pointMeshBuilder = Mesh.createBuilder(renderer, vertices,
                 new Material(),
                 program, TextureFactory.createTexture(TextureType.Untextured), null, mode);
         nodeBuilder.setMeshBuilder(pointMeshBuilder).setMeshCount(meshCount);
         return nodeBuilder;
+    }
+
+    /**
+     * Creates a meshbuilder that can be used to create meshes for this node, takes parameters from the parent
+     * linedrawer node.
+     * Use for instance when serializing (loading) nodes.
+     * 
+     * @param renderer
+     * @param parent
+     * @return
+     */
+    public static Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, LineDrawerNode parent) {
+        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
+        int count = parent.getLineCount();
+        switch (parent.getLineMode()) {
+            case LINES:
+                builder.setArrayMode(Mode.LINES, count * 2);
+                break;
+            case LINE_STRIP:
+                builder.setArrayMode(Mode.LINE_STRIP, count * 2);
+                break;
+            case POINTS:
+                builder.setArrayMode(Mode.POINTS, count);
+                break;
+            case RECTANGLE:
+                // Rectangle shares vertices, 4 vertices per rectangle
+                builder.setElementMode(Mode.LINES, count, count * 2);
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for mode " + parent.getLineMode());
+        }
+        Material m = new Material();
+        ShaderProgram program = AssetManager.getInstance()
+                .getProgram(renderer.getGLES(), new TranslateProgram(Shading.flat));
+        m.setProgram(program);
+        Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
+        builder.setMaterial(m);
+        builder.setTexture(tex);
+        builder.setShapeBuilder(parent.getShapeBuilder());
+        return builder;
     }
 
     /**

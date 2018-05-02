@@ -963,7 +963,8 @@ public class Node extends BaseReference {
     }
 
     /**
-     * Sets the state of this node and all children.
+     * Sets the state of this node, and the state of childnodes.
+     * TODO - How to affect the state of SharedMeshQuad?
      * 
      * @param state
      */

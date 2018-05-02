@@ -7,7 +7,6 @@ import com.nucleus.common.TypeResolver;
 import com.nucleus.component.Component;
 import com.nucleus.component.ComponentController;
 import com.nucleus.component.ComponentException;
-import com.nucleus.component.ComponentController.ComponentState;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.system.ComponentHandler;
 import com.nucleus.system.System;
@@ -51,6 +50,7 @@ public class ComponentNode extends Node implements ComponentController {
                 throw new NodeException(e);
             }
             node.addComponent(component);
+            // node.createComponents(renderer);
             return node;
         }
 

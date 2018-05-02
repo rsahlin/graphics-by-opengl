@@ -111,6 +111,11 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
     }
 
+    /**
+     * Builder for meshes
+     *
+     * @param <T>
+     */
     public static class Builder<T extends Mesh> extends MeshBuilder<Mesh> {
 
         protected NucleusRenderer renderer;
@@ -260,6 +265,29 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             return null;
         }
 
+    }
+
+    /**
+     * Creates a Builder to create a mesh that can be rendered in a Node
+     * 
+     * @param renderer
+     * @param maxVerticeCount
+     * @param material
+     * @param program
+     * @param texture
+     * @param shapeBuilder
+     * @param mode
+     * @return
+     */
+    public static Builder<Mesh> createBuilder(NucleusRenderer renderer, int maxVerticeCount, Material material,
+            ShaderProgram program, Texture2D texture, ShapeBuilder shapeBuilder, Mesh.Mode mode) {
+        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
+        material.setProgram(program);
+        builder.setTexture(texture);
+        builder.setMaterial(material);
+        builder.setArrayMode(mode, maxVerticeCount);
+        builder.setShapeBuilder(shapeBuilder);
+        return builder;
     }
 
     public final static int MAX_TEXTURE_COUNT = 1;

@@ -25,7 +25,7 @@ public class NucleusNodeDeserializer extends NucleusDeserializer implements Json
     // TODO where is a good place to store this constant?
     public final static String NODETYPE_JSON_KEY = "type";
 
-    private TypeResolver nodeResolver = new TypeResolver();
+    private TypeResolver nodeResolver = TypeResolver.getInstance();
 
     public NucleusNodeDeserializer() {
         addNodeTypes(NodeTypes.values());
