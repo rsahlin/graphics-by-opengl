@@ -15,7 +15,6 @@ import com.nucleus.bounds.RectangularBounds;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Constants;
 import com.nucleus.common.Type;
-import com.nucleus.component.ComponentNode;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.geometry.Material;
@@ -57,7 +56,7 @@ public class Node extends BaseReference {
 
         private Type<Node> type;
         private RootNode root;
-        private int meshCount = 1;
+        private int meshCount = 0;
         private com.nucleus.geometry.Mesh.Builder<Mesh> meshBuilder;
 
         public Builder<T> setType(Type<Node> type) {
@@ -93,6 +92,15 @@ public class Node extends BaseReference {
             return this;
         }
 
+        /**
+         * Creates an instance of Node using the specified builder parameters, first checking that the minimal
+         * configuraiton is set.
+         * 
+         * @param id
+         * @return
+         * @throws NodeException
+         * @throws {@link IllegalArgumentException} If not all needed parameters are set
+         */
         public T create(String id) throws NodeException {
             try {
                 if (type == null || root == null) {

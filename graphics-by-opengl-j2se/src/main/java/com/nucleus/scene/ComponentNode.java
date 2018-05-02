@@ -1,11 +1,14 @@
-package com.nucleus.component;
+package com.nucleus.scene;
 
 import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.common.TypeResolver;
+import com.nucleus.component.Component;
+import com.nucleus.component.ComponentController;
+import com.nucleus.component.ComponentException;
+import com.nucleus.component.ComponentController.ComponentState;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.scene.Node;
-import com.nucleus.scene.RootNode;
 import com.nucleus.system.ComponentHandler;
 import com.nucleus.system.System;
 
@@ -18,10 +21,59 @@ import com.nucleus.system.System;
  */
 public class ComponentNode extends Node implements ComponentController {
 
+    /**
+     * Builder for Nodes, use this when nodes are created programmatically
+     *
+     * @param <T>
+     */
+    public static class Builder extends Node.Builder<ComponentNode> {
+
+        private String component;
+        private String system;
+
+        public Builder setComponent(String component) {
+            this.component = component;
+            return this;
+        }
+
+        public Builder setSystem(String system) {
+            this.system = system;
+            return this;
+        }
+
+        @Override
+        public ComponentNode create(String id) throws NodeException {
+            ComponentNode node = super.create(id);
+            Component component;
+            try {
+                component = (Component) TypeResolver.getInstance().create(this.component);
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new NodeException(e);
+            }
+            node.addComponent(component);
+            return node;
+        }
+
+    }
+
     transient public ComponentState componentState = ComponentState.CREATED;
 
     @SerializedName("components")
     private ArrayList<Component> components = new ArrayList<>();
+
+    /**
+     * Creates a nodebuilder that can be used to create ComponentNodes
+     * 
+     * @param renderer
+     * @param nodeBuilder
+     * @return
+     */
+    public static Builder createBuilder(NucleusRenderer renderer, RootNode root, String component, String system) {
+        Builder nodeBuilder = new Builder();
+        nodeBuilder.setComponent(component).setSystem(system);
+        nodeBuilder.setRoot(root).setType(NodeTypes.componentnode);
+        return nodeBuilder;
+    }
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -42,6 +94,10 @@ public class ComponentNode extends Node implements ComponentController {
         ComponentNode copy = new ComponentNode(root);
         copy.set(this);
         return copy;
+    }
+
+    protected void addComponent(Component component) {
+        components.add(component);
     }
 
     @Override

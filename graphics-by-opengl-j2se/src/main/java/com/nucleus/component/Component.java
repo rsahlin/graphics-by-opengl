@@ -4,8 +4,10 @@ import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.common.Type;
+import com.nucleus.common.TypeResolver;
 import com.nucleus.io.BaseReference;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.scene.ComponentNode;
 import com.nucleus.system.System;
 
 /**
@@ -50,12 +52,22 @@ public abstract class Component extends BaseReference {
     public abstract void create(NucleusRenderer renderer, ComponentNode parent, System system)
             throws ComponentException;
 
+    /**
+     * Returns the system name, a name that can be resolved using the {@link TypeResolver}
+     * 
+     * @return
+     */
     public String getSystem() {
         return system;
     }
 
-    public String getType() {
-        return type;
+    /**
+     * Sets the system name, must be possible to resolve using {@link TypeResolver}
+     * 
+     * @param system
+     */
+    public void setSystem(String system) {
+        this.system = system;
     }
 
     public Component copy() {
