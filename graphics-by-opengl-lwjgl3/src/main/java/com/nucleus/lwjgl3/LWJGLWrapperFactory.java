@@ -17,6 +17,9 @@ public class LWJGLWrapperFactory {
     public static GLES20Wrapper createWrapper(GLESCapabilities caps, Renderers version) {
 
         if (caps != null) {
+            if (caps.GLES32) {
+                return new LWJGL3GLES32Wrapper(Renderers.GLES32);
+            }
             if (caps.GLES31) {
                 return new LWJGL3GLES31Wrapper(Renderers.GLES31);
             }
@@ -29,12 +32,14 @@ public class LWJGLWrapperFactory {
             throw new IllegalArgumentException("No gles support");
         }
         switch (version) {
+            case GLES20:
+                return new LWJGL3GLES20Wrapper(Renderers.GLES20);
             case GLES30:
                 return new LWJGL3GLES30Wrapper(Renderers.GLES30);
             case GLES31:
                 return new LWJGL3GLES31Wrapper(Renderers.GLES31);
-            case GLES20:
-                return new LWJGL3GLES20Wrapper(Renderers.GLES20);
+            case GLES32:
+                return new LWJGL3GLES32Wrapper(Renderers.GLES32);
             default:
                 throw new IllegalArgumentException("Not imeplemented for " + version);
         }

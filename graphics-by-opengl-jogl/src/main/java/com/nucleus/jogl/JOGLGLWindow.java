@@ -115,6 +115,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
                 break;
             case GLES30:
             case GLES31:
+            case GLES32:
                 if (defaultProfile.isGLES3() || defaultProfile.isGL4ES3()) {
                     profile = defaultProfile;
                 } else {

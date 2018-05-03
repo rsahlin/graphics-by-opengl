@@ -2,18 +2,25 @@ package com.nucleus.android;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import com.nucleus.opengl.GLES30Wrapper;
+import com.nucleus.opengl.GLES31Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
 
-public class AndriodGLES30Wrapper extends GLES30Wrapper {
+public class AndroidGLES31Wrapper extends GLES31Wrapper {
+
+    /**
+     * Wrapper for gles20/30 methods that can be used if they are not a simple one liner.
+     */
+    private AndroidGLES30Wrapper gles30;
 
     /**
      * Implementation constructor - DO NOT USE - fetch wrapper from {@link NucleusRenderer}
      */
-    protected AndriodGLES30Wrapper() {
-        super(Platform.GLES, Renderers.GLES30);
+    protected AndroidGLES31Wrapper() {
+        super(Platform.GLES, Renderers.GLES31);
+        gles30 = new AndroidGLES30Wrapper();
     }
 
     @Override
@@ -74,15 +81,13 @@ public class AndriodGLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glGetActiveAttrib(int program, int index, int[] length, int lengthOffset, int[] size,
             int sizeOffset, int[] type, int typeOffset, byte[] name) {
-        // Fix for some stupid devices that can't write into the same destination array.
-        int[] l = new int[1];
-        int[] t = new int[1];
-        int[] s = new int[1];
-        android.opengl.GLES30.glGetActiveAttrib(program, index, name.length, l, 0, s, 0, t,
-                0, name, 0);
-        length[lengthOffset] = l[0];
-        type[typeOffset] = t[0];
-        size[sizeOffset] = s[0];
+        gles30.glGetActiveAttrib(program, index, length, lengthOffset, size, sizeOffset, type, typeOffset, name);
+    }
+
+    @Override
+    public void glGetActiveUniform(int program, int index, int[] length, int lengthOffset, int[] size,
+            int sizeOffset, int[] type, int typeOffset, byte[] name) {
+        gles30.glGetActiveUniform(program, index, length, lengthOffset, size, sizeOffset, type, typeOffset, name);
     }
 
     @Override
@@ -128,20 +133,6 @@ public class AndriodGLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glBindAttribLocation(int program, int index, String name) {
         android.opengl.GLES30.glBindAttribLocation(program, index, name);
-    }
-
-    @Override
-    public void glGetActiveUniform(int program, int index, int[] length, int lengthOffset, int[] size,
-            int sizeOffset, int[] type, int typeOffset, byte[] name) {
-        // Fix for some stupid devices that can't write into the same destination array.
-        int[] l = new int[1];
-        int[] t = new int[1];
-        int[] s = new int[1];
-        android.opengl.GLES30.glGetActiveUniform(program, index, name.length, l, 0, s, 0, t,
-                0, name, 0);
-        length[lengthOffset] = l[0];
-        type[typeOffset] = t[0];
-        size[sizeOffset] = s[0];
     }
 
     @Override
@@ -388,6 +379,14 @@ public class AndriodGLES30Wrapper extends GLES30Wrapper {
         android.opengl.GLES30.glUniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding);
     }
 
+    /**
+     * 
+     * *********************************************
+     * GLES30
+     * *********************************************
+     * 
+     */
+
     @Override
     public void glBindBufferRange(int target, int index, int buffer, int offset, int size) {
         android.opengl.GLES30.glBindBufferRange(target, index, buffer, offset, size);
@@ -428,6 +427,260 @@ public class AndriodGLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glFlushMappedBufferRange(int target, int offset, int length) {
         android.opengl.GLES30.glFlushMappedBufferRange(target, offset, length);
+    }
+
+    /**
+     * **************************************************************************************************
+     * GLES31
+     * **************************************************************************************************
+     */
+
+    @Override
+    public void glDispatchCompute(int num_groups_x, int num_groups_y, int num_groups_z) {
+        android.opengl.GLES31.glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
+
+    }
+
+    @Override
+    public void glDispatchComputeIndirect(int offset) {
+        android.opengl.GLES31.glDispatchComputeIndirect(offset);
+    }
+
+    @Override
+    public void glDrawArraysIndirect(int mode, int offset) {
+        android.opengl.GLES31.glDrawArraysIndirect(mode, offset);
+    }
+
+    @Override
+    public void glDrawElementsIndirect(int mode, int type, int offset) {
+        android.opengl.GLES31.glDrawElementsIndirect(mode, type, offset);
+    }
+
+    @Override
+    public void glGetFramebufferParameteriv(int target, int pname, IntBuffer params) {
+        android.opengl.GLES31.glGetFramebufferParameteriv(target, pname, params);
+    }
+
+    @Override
+    public void glGetProgramInterfaceiv(int program, int programInterface, int pname, IntBuffer params) {
+        android.opengl.GLES31.glGetProgramInterfaceiv(program, programInterface, pname, params);
+    }
+
+    @Override
+    public int glGetProgramResourceIndex(int program, int programInterface, String name) {
+        return android.opengl.GLES31.glGetProgramResourceIndex(program, programInterface, name);
+    }
+
+    @Override
+    public String glGetProgramResourceName(int program, int programInterface, int index) {
+        return android.opengl.GLES31.glGetProgramResourceName(program, programInterface, index);
+    }
+
+    @Override
+    public void glGetProgramResourceiv(int program, int programInterface, int index, int propCount, IntBuffer props,
+            int bufSize, IntBuffer length, IntBuffer params) {
+        android.opengl.GLES31.glGetProgramResourceiv(program, programInterface, index, propCount, props, bufSize,
+                length, params);
+    }
+
+    @Override
+    public int glGetProgramResourceLocation(int program, int programInterface, String name) {
+        return android.opengl.GLES31.glGetProgramResourceLocation(program, programInterface, name);
+    }
+
+    @Override
+    public void glUseProgramStages(int pipeline, int stages, int program) {
+        android.opengl.GLES31.glUseProgramStages(pipeline, stages, program);
+    }
+
+    @Override
+    public void glActiveShaderProgram(int pipeline, int program) {
+        android.opengl.GLES31.glActiveShaderProgram(pipeline, program);
+    }
+
+    @Override
+    public int glCreateShaderProgramv(int type, String[] strings) {
+        return android.opengl.GLES31.glCreateShaderProgramv(type, strings);
+    }
+
+    @Override
+    public void glBindProgramPipeline(int pipeline) {
+        android.opengl.GLES31.glBindProgramPipeline(pipeline);
+    }
+
+    @Override
+    public void glDeleteProgramPipelines(int n, IntBuffer pipelines) {
+        android.opengl.GLES31.glDeleteProgramPipelines(n, pipelines);
+    }
+
+    @Override
+    public void glGenProgramPipelines(int n, IntBuffer pipelines) {
+        android.opengl.GLES31.glGenProgramPipelines(n, pipelines);
+    }
+
+    @Override
+    public boolean glIsProgramPipeline(int pipeline) {
+        return android.opengl.GLES31.glIsProgramPipeline(pipeline);
+    }
+
+    @Override
+    public void glGetProgramPipelineiv(int pipeline, int pname, IntBuffer params) {
+        android.opengl.GLES31.glGetProgramPipelineiv(pipeline, pname, params);
+    }
+
+    @Override
+    public void glProgramUniform1i(int program, int location, int v0) {
+        android.opengl.GLES31.glProgramUniform1f(program, location, v0);
+    }
+
+    @Override
+    public void glProgramUniform4i(int program, int location, int v0, int v1, int v2, int v3) {
+        android.opengl.GLES31.glProgramUniform4i(program, location, v0, v1, v2, v3);
+    }
+
+    @Override
+    public void glProgramUniform4ui(int program, int location, int v0, int v1, int v2, int v3) {
+        android.opengl.GLES31.glProgramUniform4ui(program, location, v0, v1, v2, v3);
+    }
+
+    @Override
+    public void glProgramUniform4f(int program, int location, float v0, float v1, float v2, float v3) {
+        android.opengl.GLES31.glProgramUniform4f(program, location, v0, v1, v2, v3);
+    }
+
+    @Override
+    public void glProgramUniform4iv(int program, int location, int count, IntBuffer value) {
+        android.opengl.GLES31.glProgramUniform4iv(program, location, count, value);
+    }
+
+    @Override
+    public void glProgramUniform4uiv(int program, int location, int count, IntBuffer value) {
+        android.opengl.GLES31.glProgramUniform4uiv(program, location, count, value);
+    }
+
+    @Override
+    public void glProgramUniform4fv(int program, int location, int count, FloatBuffer value) {
+        android.opengl.GLES31.glProgramUniform4fv(program, location, count, value);
+    }
+
+    @Override
+    public void glProgramUniformMatrix2fv(int program, int location, int count, boolean transpose, FloatBuffer value) {
+        android.opengl.GLES31.glProgramUniformMatrix2fv(program, location, count, transpose, value);
+    }
+
+    @Override
+    public void glProgramUniformMatrix3fv(int program, int location, int count, boolean transpose, FloatBuffer value) {
+        android.opengl.GLES31.glProgramUniformMatrix3fv(program, location, count, transpose, value);
+    }
+
+    @Override
+    public void glProgramUniformMatrix4fv(int program, int location, int count, boolean transpose, FloatBuffer value) {
+        android.opengl.GLES31.glProgramUniformMatrix4fv(program, location, count, transpose, value);
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x4fv(int program, int location, int count, boolean transpose,
+            FloatBuffer value) {
+        android.opengl.GLES31.glProgramUniformMatrix3x4fv(program, location, count, transpose, value);
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x3fv(int program, int location, int count, boolean transpose,
+            FloatBuffer value) {
+        android.opengl.GLES31.glProgramUniformMatrix4x3fv(program, location, count, transpose, value);
+    }
+
+    @Override
+    public void glValidateProgramPipeline(int pipeline) {
+        android.opengl.GLES31.glValidateProgramPipeline(pipeline);
+    }
+
+    @Override
+    public String glGetProgramPipelineInfoLog(int program) {
+        return android.opengl.GLES31.glGetProgramPipelineInfoLog(program);
+    }
+
+    @Override
+    public void glBindImageTexture(int unit, int texture, int level, boolean layered, int layer, int access,
+            int format) {
+        android.opengl.GLES31.glBindImageTexture(unit, texture, level, layered, layer, access, format);
+    }
+
+    @Override
+    public void glGetBooleani_v(int target, int index, IntBuffer data) {
+        android.opengl.GLES31.glGetBooleani_v(target, index, data);
+    }
+
+    @Override
+    public void glMemoryBarrier(int barriers) {
+        android.opengl.GLES31.glMemoryBarrier(barriers);
+    }
+
+    @Override
+    public void glMemoryBarrierByRegion(int barriers) {
+        android.opengl.GLES31.glMemoryBarrierByRegion(barriers);
+    }
+
+    @Override
+    public void glTexStorage2DMultisample(int target, int samples, int internalformat, int width, int height,
+            boolean fixedsamplelocations) {
+        android.opengl.GLES31.glTexStorage2DMultisample(target, samples, internalformat, width, height,
+                fixedsamplelocations);
+    }
+
+    @Override
+    public void glGetMultisamplefv(int pname, int index, FloatBuffer val) {
+        android.opengl.GLES31.glGetMultisamplefv(pname, index, val);
+    }
+
+    @Override
+    public void glSampleMaski(int maskNumber, int mask) {
+        android.opengl.GLES31.glSampleMaski(maskNumber, mask);
+    }
+
+    @Override
+    public void glGetTexLevelParameteriv(int target, int level, int pname, IntBuffer params) {
+        android.opengl.GLES31.glGetTexLevelParameteriv(target, level, pname, params);
+    }
+
+    @Override
+    public void glGetTexLevelParameterfv(int target, int level, int pname, FloatBuffer params) {
+        android.opengl.GLES31.glGetTexLevelParameterfv(target, level, pname, params);
+    }
+
+    @Override
+    public void glBindVertexBuffer(int bindingindex, int buffer, long offset, int stride) {
+        android.opengl.GLES31.glBindVertexBuffer(bindingindex, buffer, offset, stride);
+    }
+
+    @Override
+    public void glVertexAttribFormat(int attribindex, int size, int type, boolean normalized, int relativeoffset) {
+        android.opengl.GLES31.glVertexAttribFormat(attribindex, size, type, normalized, relativeoffset);
+    }
+
+    @Override
+    public void glVertexAttribIFormat(int attribindex, int size, int type, int relativeoffset) {
+        android.opengl.GLES31.glVertexAttribIFormat(attribindex, size, type, relativeoffset);
+    }
+
+    @Override
+    public void glVertexAttribBinding(int attribindex, int bindingindex) {
+        android.opengl.GLES31.glVertexAttribBinding(attribindex, bindingindex);
+    }
+
+    @Override
+    public void glVertexBindingDivisor(int bindingindex, int divisor) {
+        android.opengl.GLES31.glVertexBindingDivisor(bindingindex, divisor);
+    }
+
+    @Override
+    public void glDrawRangeElements(int mode, int start, int end, int count, int type, int offset) {
+        android.opengl.GLES31.glDrawRangeElements(mode, start, end, count, type, offset);
+    }
+
+    @Override
+    public void glTexStorage2D(int target, int levels, int internalformat, int width, int height) {
+        android.opengl.GLES31.glTexStorage2D(target, levels, internalformat, width, height);
     }
 
 }

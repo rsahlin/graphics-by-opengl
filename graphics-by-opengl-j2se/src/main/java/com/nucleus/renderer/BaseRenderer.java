@@ -124,6 +124,7 @@ class BaseRenderer implements NucleusRenderer {
         if (matrixEngine == null) {
             throw new IllegalArgumentException(NULL_MATRIXENGINE_ERROR);
         }
+        gles.createInfo();
         this.gles = gles;
         this.imageFactory = imageFactory;
         this.matrixEngine = matrixEngine;
@@ -229,7 +230,7 @@ class BaseRenderer implements NucleusRenderer {
             }
         }
         if ((flags & RenderState.CHANGE_FLAG_MULTISAMPLE) != 0) {
-            if (gles.getInfo()
+            if (GLES20Wrapper.getInfo()
                     .hasExtensionSupport(GLESWrapper.GLES_EXTENSIONS.multisample_compatibility)) {
                 if (surfaceConfig != null && surfaceConfig.getSamples() > 1 && state.isMultisampling()) {
                     gles.glEnable(GLES_EXTENSION_TOKENS.MULTISAMPLE_EXT.value);

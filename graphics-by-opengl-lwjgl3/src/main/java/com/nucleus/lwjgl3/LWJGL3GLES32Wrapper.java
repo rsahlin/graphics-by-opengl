@@ -6,9 +6,9 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import com.nucleus.opengl.GLES31Wrapper;
+import com.nucleus.opengl.GLES32Wrapper;
 
-public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
+public class LWJGL3GLES32Wrapper extends GLES32Wrapper {
 
     LWJGL3GLES20Wrapper gles20;
     LWJGL3GLES30Wrapper gles30;
@@ -19,7 +19,7 @@ public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
      * @param renderVersion If higher than GLES30, otherwise null
      * 
      */
-    protected LWJGL3GLES31Wrapper(Renderers version) {
+    protected LWJGL3GLES32Wrapper(Renderers version) {
         super(Platform.GL, version);
         gles20 = new LWJGL3GLES20Wrapper(version);
         gles30 = new LWJGL3GLES30Wrapper(version);
@@ -455,7 +455,7 @@ public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
     /**
      * 
      * -----------------------------------------------------------------------------
-     * GLES31 methods
+     * GLES31 methods, pass on to gles31 if not simple oneliner
      * -----------------------------------------------------------------------------
      * 
      */
@@ -694,6 +694,275 @@ public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
     @Override
     public void glVertexBindingDivisor(int bindingindex, int divisor) {
         org.lwjgl.opengles.GLES31.glVertexBindingDivisor(bindingindex, divisor);
+    }
+
+    /**
+     * 
+     * ****************************************************************************************************
+     * GLES 32
+     * ****************************************************************************************************
+     * 
+     */
+
+    @Override
+    public void glDrawElementsBaseVertex(int mode, int count, int type, ByteBuffer indices, int basevertex) {
+    }
+
+    @Override
+    public void glDrawRangeElementsBaseVertex(int mode, int start, int end, int count, int type, ByteBuffer indices,
+            int basevertex) {
+
+    }
+
+    @Override
+    public void glDrawElementsInstancedBaseVertex(int mode, int count, int type, ByteBuffer indices, int instancecount,
+            int basevertex) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glFramebufferTexture(int target, int attachment, int texture, int level) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glPrimitiveBoundingBox(float minX, float minY, float minZ, float minW, float maxX, float maxY,
+            float maxZ, float maxW) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public int glGetGraphicsResetStatus() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public void glMinSampleShading(float value) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glPatchParameteri(int pname, int value) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glTexParameterIiv(int target, int pname, IntBuffer params) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glTexParameterIuiv(int target, int pname, IntBuffer params) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glSamplerParameterIiv(int sampler, int pname, IntBuffer param) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glSamplerParameterIuiv(int sampler, int pname, IntBuffer param) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glTexBuffer(int target, int internalformat, int buffer) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glTexBufferRange(int target, int internalformat, int buffer, int offset, int size) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glTexStorage3DMultisample(int target, int samples, int internalformat, int width, int height, int depth,
+            boolean fixedsamplelocations) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glBlendBarrier() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glCopyImageSubData(int srcName, int srcTarget, int srcLevel, int srcX, int srcY, int srcZ, int dstName,
+            int dstTarget, int dstLevel, int dstX, int dstY, int dstZ, int srcWidth, int srcHeight, int srcDepth) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glDebugMessageControl(int source, int type, int severity, int count, IntBuffer ids, boolean enabled) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glDebugMessageInsert(int source, int type, int id, int severity, int length, String buf) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public int glGetDebugMessageLog(int count, int bufSize, IntBuffer sources, IntBuffer types, IntBuffer ids,
+            IntBuffer severities, IntBuffer lengths, ByteBuffer messageLog) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public void glPushDebugGroup(int source, int id, int length, String message) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glPopDebugGroup() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glObjectLabel(int identifier, int name, int length, String label) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public String glGetObjectLabel(int identifier, int name) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void glObjectPtrLabel(long ptr, String label) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public String glGetObjectPtrLabel(long ptr) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public long glGetPointerv(int pname) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public void glEnablei(int target, int index) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glDisablei(int target, int index) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glBlendEquationi(int buf, int mode) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glBlendEquationSeparatei(int buf, int modeRGB, int modeAlpha) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glBlendFunci(int buf, int src, int dst) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glBlendFuncSeparatei(int buf, int srcRGB, int dstRGB, int srcAlpha, int dstAlpha) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glColorMaski(int index, boolean r, boolean g, boolean b, boolean a) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public boolean glIsEnabledi(int target, int index) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public void glReadnPixels(int x, int y, int width, int height, int format, int type, int bufSize, Buffer data) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetnUniformfv(int program, int location, int bufSize, FloatBuffer params) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetnUniformiv(int program, int location, int bufSize, IntBuffer params) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetnUniformuiv(int program, int location, int bufSize, IntBuffer params) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetTexParameterIiv(int target, int pname, IntBuffer params) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetTexParameterIuiv(int target, int pname, IntBuffer params) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetSamplerParameterIiv(int sampler, int pname, IntBuffer params) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void glGetSamplerParameterIuiv(int sampler, int pname, IntBuffer params) {
+        // TODO Auto-generated method stub
+
     }
 
 }

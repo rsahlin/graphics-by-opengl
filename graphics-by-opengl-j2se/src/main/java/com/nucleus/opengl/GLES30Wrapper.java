@@ -108,6 +108,19 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
     }
 
     /**
+     * This method works with buffer object, add method with element buffer if needed.
+     * 
+     * @param mode
+     * @param start
+     * @param end
+     * @param count
+     * @param type
+     * @param offset Specifies a byte offset into the buffer bound to GL_ELEMENT_ARRAY_BUFFER to start reading indices
+     * from
+     */
+    public abstract void glDrawRangeElements(int mode, int start, int end, int count, int type, int offset);
+
+    /**
      * Abstraction for glSamplerParameteri( GLuint sampler, GLenum pname, GLint param);
      * 
      * @param sampler
@@ -217,5 +230,15 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
      * @param length
      */
     public abstract void glFlushMappedBufferRange(int target, int offset, int length);
+
+    /**
+     * 
+     * @param target
+     * @param levels
+     * @param internalformat
+     * @param width
+     * @param height
+     */
+    public abstract void glTexStorage2D(int target, int levels, int internalformat, int width, int height);
 
 }

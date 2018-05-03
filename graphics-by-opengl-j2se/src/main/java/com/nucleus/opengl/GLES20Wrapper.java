@@ -60,6 +60,13 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     }
 
     @Override
+    public void createInfo() {
+        if (rendererInfo == null) {
+            rendererInfo = new RendererInfo(this, renderVersion);
+        }
+    }
+
+    @Override
     public InterfaceBlock[] getUniformBlocks(ProgramInfo info) throws GLException {
         // Uniform blocks not supported on GLES2 - return null
         return null;
@@ -817,11 +824,13 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         source.setSource(sourceStr);
     }
 
-    @Override
-    public RendererInfo getInfo() {
-        if (rendererInfo == null) {
-            rendererInfo = new RendererInfo(this, renderVersion);
-        }
+    /**
+     * Returns the renderer info, must first be created by calling {@link #createInfo()}
+     * This is normally done when creating the renderer.
+     * 
+     * @return The renderer info, or null if {@link #createInfo()} has not been called.
+     */
+    public static RendererInfo getInfo() {
         return rendererInfo;
     }
 

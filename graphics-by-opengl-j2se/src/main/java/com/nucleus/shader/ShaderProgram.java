@@ -23,6 +23,7 @@ import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.GLESWrapper.GLES31;
+import com.nucleus.opengl.GLESWrapper.GLES32;
 import com.nucleus.opengl.GLESWrapper.GLES_EXTENSIONS;
 import com.nucleus.opengl.GLESWrapper.ProgramInfo;
 import com.nucleus.opengl.GLESWrapper.Renderers;
@@ -53,7 +54,8 @@ public abstract class ShaderProgram {
 
     public enum Shaders {
         VERTEX_FRAGMENT(),
-        COMPUTE();
+        COMPUTE(),
+        VERTEX_GEOMETRY_FRAGMENT();
     }
 
     public static final String PROGRAM_DIRECTORY = "assets/";
@@ -64,6 +66,7 @@ public abstract class ShaderProgram {
     public static final String COMMON_VERTEX_SHADER = "commonvertex";
     public static final String FRAGMENT_TYPE = "fragment";
     public static final String VERTEX_TYPE = "vertex";
+    public static final String GEOMETRY_TYPE = "geometry";
     protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
 
     /**
@@ -72,7 +75,12 @@ public abstract class ShaderProgram {
      */
     protected static boolean appendCommonShaders = true;
 
-    protected final Shaders shaders;
+    /**
+     * Read when shader source is created in {@link #createShaderSource(Renderers)}
+     * Subclasses may modify before {@link #createProgram(GLES20Wrapper)} is called - or before they call
+     * super.createProgram()
+     */
+    protected Shaders shaders;
 
     /**
      * Number of vertices per sprite - this is for a quad that is created using element buffer.
@@ -395,6 +403,11 @@ public abstract class ShaderProgram {
                 sources = new ShaderSource[1];
                 shaderTypes = new int[] { GLES31.GL_COMPUTE_SHADER };
                 break;
+            case VERTEX_GEOMETRY_FRAGMENT:
+                sources = new ShaderSource[3];
+                shaderTypes = new int[] { GLES20.GL_VERTEX_SHADER, GLES32.GL_GEOMETRY_SHADER,
+                        GLES20.GL_FRAGMENT_SHADER };
+                break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + shaders);
         }
@@ -423,6 +436,9 @@ public abstract class ShaderProgram {
                         getSourceNameVersion(version, type), type);
             case GLES31.GL_COMPUTE_SHADER:
                 return new ShaderSource(PROGRAM_DIRECTORY + getFunction(type),
+                        getSourceNameVersion(version, type), type);
+            case GLES32.GL_GEOMETRY_SHADER:
+                return new ShaderSource(PROGRAM_DIRECTORY + getFunction(type) + GEOMETRY_TYPE,
                         getSourceNameVersion(version, type), type);
             default:
                 throw new IllegalArgumentException("Not implemented for type: " + type);
@@ -498,7 +514,7 @@ public abstract class ShaderProgram {
      * @throws GLException If program could not be compiled and linked, possibly due to IOException
      */
     public void createProgram(GLES20Wrapper gles) throws GLException {
-        shaderSources = createShaderSource(gles.getInfo().getRenderVersion());
+        shaderSources = createShaderSource(GLES20Wrapper.getInfo().getRenderVersion());
         if (shaderSources == null) {
             throw new ShaderProgramException(MUST_SET_FIELDS);
         }
@@ -1698,7 +1714,8 @@ public abstract class ShaderProgram {
             commonSources[i] = new ShaderSource(common[i], sources[0].getSourceNameVersion(), sources[0].type);
         }
         loadShaderSources(gles, commonSources);
-        if (gles.getInfo().hasExtensionSupport(GLES_EXTENSIONS.separate_shader_objects) && !appendCommonShaders) {
+        if (GLES20Wrapper.getInfo().hasExtensionSupport(GLES_EXTENSIONS.separate_shader_objects)
+                && !appendCommonShaders) {
             SimpleLogger.d(getClass(), "Support for separate shader objects, compiling common vertex sources.");
             // Compile into shader names and link
             commonVertexShaders = new ArrayList<>();

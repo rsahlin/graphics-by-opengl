@@ -272,7 +272,13 @@ public abstract class NucleusActivity extends Activity
                 gles = new AndroidGLES20Wrapper();
                 break;
             case GLES30:
-                gles = new AndriodGLES30Wrapper();
+                gles = new AndroidGLES30Wrapper();
+                break;
+            case GLES31:
+                gles = new AndroidGLES31Wrapper();
+                break;
+            case GLES32:
+                gles = new AndroidGLES32Wrapper();
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for version:" + version);
