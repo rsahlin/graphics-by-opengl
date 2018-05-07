@@ -319,8 +319,6 @@ public abstract class ShaderProgram {
         }
         if (v != null) {
             return v.getOffset();
-        } else {
-            SimpleLogger.d(getClass(), "No ShaderVariable for " + property);
         }
         return -1;
     }
