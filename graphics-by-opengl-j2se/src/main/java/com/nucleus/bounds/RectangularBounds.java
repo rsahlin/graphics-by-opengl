@@ -146,10 +146,10 @@ public class RectangularBounds extends Bounds implements PostDeserializable {
 
     private void setFromRectangle(float[] rectangle) {
         createBounds();
-        float x = rectangle[Rectangle.X];
-        float y = rectangle[Rectangle.Y];
-        float width = rectangle[Rectangle.WIDTH];
-        float height = rectangle[Rectangle.HEIGHT];
+        float x = rectangle[Rectangle.INDEX_X];
+        float y = rectangle[Rectangle.INDEX_Y];
+        float width = rectangle[Rectangle.INDEX_WIDTH];
+        float height = rectangle[Rectangle.INDEX_HEIGHT];
         bounds[X1] = x;
         bounds[Y1] = y;
         bounds[X2] = x + width;

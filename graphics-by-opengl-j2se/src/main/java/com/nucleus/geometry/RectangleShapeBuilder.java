@@ -1,9 +1,9 @@
 package com.nucleus.geometry;
 
-import static com.nucleus.vecmath.Rectangle.HEIGHT;
-import static com.nucleus.vecmath.Rectangle.WIDTH;
-import static com.nucleus.vecmath.Rectangle.X;
-import static com.nucleus.vecmath.Rectangle.Y;
+import static com.nucleus.vecmath.Rectangle.INDEX_HEIGHT;
+import static com.nucleus.vecmath.Rectangle.INDEX_WIDTH;
+import static com.nucleus.vecmath.Rectangle.INDEX_X;
+import static com.nucleus.vecmath.Rectangle.INDEX_Y;
 
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.renderer.Window;
@@ -241,11 +241,11 @@ public class RectangleShapeBuilder extends ElementBuilder {
         switch (mode) {
             case TRIANGLES:
             case TRIANGLE_FAN:
-                setPositionUV(0, values[X], values[Y], uv, destination, 0);
-                setPositionUV(1, values[X] + values[WIDTH], values[Y], uv, destination, vertexStride);
-                setPositionUV(2, values[X] + values[WIDTH], values[Y] - values[HEIGHT], uv, destination,
+                setPositionUV(0, values[INDEX_X], values[INDEX_Y], uv, destination, 0);
+                setPositionUV(1, values[INDEX_X] + values[INDEX_WIDTH], values[INDEX_Y], uv, destination, vertexStride);
+                setPositionUV(2, values[INDEX_X] + values[INDEX_WIDTH], values[INDEX_Y] - values[INDEX_HEIGHT], uv, destination,
                         vertexStride * 2);
-                setPositionUV(3, values[X], values[Y] - values[HEIGHT], uv, destination,
+                setPositionUV(3, values[INDEX_X], values[INDEX_Y] - values[INDEX_HEIGHT], uv, destination,
                         vertexStride * 3);
                 break;
             default:

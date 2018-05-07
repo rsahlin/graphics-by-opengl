@@ -20,6 +20,7 @@ import com.nucleus.exporter.NucleusNodeExporter;
 import com.nucleus.geometry.MeshFactory;
 import com.nucleus.io.gson.BoundsDeserializer;
 import com.nucleus.io.gson.NucleusNodeDeserializer;
+import com.nucleus.io.gson.ShapeDeserializer;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.BaseRootNode;
@@ -30,6 +31,7 @@ import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.RootNode;
+import com.nucleus.vecmath.Shape;
 
 /**
  * GSON Serializer for nucleus scenegraph.
@@ -42,6 +44,7 @@ public class GSONSceneFactory implements SceneSerializer {
     protected ArrayDeque<LayerNode> viewStack = new ArrayDeque<LayerNode>(NucleusRenderer.MIN_STACKELEMENTS);
     protected NucleusNodeDeserializer nodeDeserializer;
     protected BoundsDeserializer boundsDeserializer = new BoundsDeserializer();
+    protected ShapeDeserializer shapeDeserializer = new ShapeDeserializer();
 
     private final static String ERROR_CLOSING_STREAM = "Error closing stream:";
     private final static String NULL_PARAMETER_ERROR = "Parameter is null: ";
@@ -155,6 +158,7 @@ public class GSONSceneFactory implements SceneSerializer {
     protected void registerTypeAdapter(GsonBuilder builder) {
         builder.registerTypeAdapter(Bounds.class, boundsDeserializer);
         builder.registerTypeAdapter(Node.class, nodeDeserializer);
+        builder.registerTypeAdapter(Shape.class, shapeDeserializer);
     }
 
     /**
@@ -287,7 +291,7 @@ public class GSONSceneFactory implements SceneSerializer {
         this.gson = gson;
         nodeDeserializer.setGson(gson);
         boundsDeserializer.setGson(gson);
-
+        shapeDeserializer.setGson(gson);
     }
 
     @Override
