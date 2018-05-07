@@ -138,7 +138,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
      */
     private void createNEWTWindow(int width, int height, GLProfile profile) {
         GLCapabilities glCapabilities = new GLCapabilities(profile);
-        glCapabilities.setSampleBuffers(true);
+        glCapabilities.setSampleBuffers(config.getSamples() > 0);
         glCapabilities.setNumSamples(config.getSamples());
         glCapabilities.setBackgroundOpaque(config.getAlphaBits() == 0);
         glCapabilities.setAlphaBits(config.getAlphaBits());
