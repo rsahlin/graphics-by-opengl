@@ -1,7 +1,9 @@
-package com.nucleus.geometry;
+package com.nucleus.geometry.shape;
 
 import java.nio.ShortBuffer;
 
+import com.nucleus.geometry.ElementBuffer;
+import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.ElementBuffer.Type;
 
 /**

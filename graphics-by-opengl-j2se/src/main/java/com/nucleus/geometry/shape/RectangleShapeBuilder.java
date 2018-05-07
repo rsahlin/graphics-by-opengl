@@ -1,11 +1,15 @@
-package com.nucleus.geometry;
+package com.nucleus.geometry.shape;
 
 import static com.nucleus.vecmath.Rectangle.INDEX_HEIGHT;
 import static com.nucleus.vecmath.Rectangle.INDEX_WIDTH;
 import static com.nucleus.vecmath.Rectangle.INDEX_X;
 import static com.nucleus.vecmath.Rectangle.INDEX_Y;
 
+import com.nucleus.geometry.AttributeBuffer;
+import com.nucleus.geometry.ElementBuffer;
+import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
+import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.renderer.Window;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureParameter;
@@ -15,7 +19,7 @@ import com.nucleus.texturing.TiledTexture2D;
 import com.nucleus.vecmath.Rectangle;
 
 /**
- * Use this builder to create rectangles in a mesh.
+ * Use this builder to create 2D rectangles in a mesh.
  * Will use indexbuffer and vertexbuffer, to use resulting mesh draw using elements.
  * 
  *
@@ -96,24 +100,8 @@ public class RectangleShapeBuilder extends ElementBuilder {
             return vertexCount >>> 2;
         }
 
-        /**
-         * Enable or disables the vertex index, of set to true then each vertex has the vertex index in the quad. 0 for
-         * the first vertex, 1 for the next - up to 3.
-         * 
-         * @param enable
-         */
-        public void enableVertexIndex(boolean enable) {
-            this.enableVertexIndex = enable;
-        }
-
         protected Rectangle rectangle;
         protected float z;
-        /**
-         * Set to true to add vertex index for each vertex in the quad, ie the first vertex will have index 0, the next
-         * 1 and so on.
-         * The index is stored after vertex xyz.
-         */
-        protected boolean enableVertexIndex = false;
     }
 
     private RectangleConfiguration configuration;
@@ -243,7 +231,8 @@ public class RectangleShapeBuilder extends ElementBuilder {
             case TRIANGLE_FAN:
                 setPositionUV(0, values[INDEX_X], values[INDEX_Y], uv, destination, 0);
                 setPositionUV(1, values[INDEX_X] + values[INDEX_WIDTH], values[INDEX_Y], uv, destination, vertexStride);
-                setPositionUV(2, values[INDEX_X] + values[INDEX_WIDTH], values[INDEX_Y] - values[INDEX_HEIGHT], uv, destination,
+                setPositionUV(2, values[INDEX_X] + values[INDEX_WIDTH], values[INDEX_Y] - values[INDEX_HEIGHT], uv,
+                        destination,
                         vertexStride * 2);
                 setPositionUV(3, values[INDEX_X], values[INDEX_Y] - values[INDEX_HEIGHT], uv, destination,
                         vertexStride * 3);

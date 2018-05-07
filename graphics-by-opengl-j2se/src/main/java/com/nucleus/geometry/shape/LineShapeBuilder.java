@@ -1,4 +1,7 @@
-package com.nucleus.geometry;
+package com.nucleus.geometry.shape;
+
+import com.nucleus.geometry.ElementBuffer;
+import com.nucleus.geometry.Mesh;
 
 /**
  * Builder for line shapes - this builder will not set vertice data since lines are primitives.

@@ -1,4 +1,7 @@
-package com.nucleus.geometry;
+package com.nucleus.geometry.shape;
+
+import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.Mesh.Builder;
 
 /**
  * Defines methods for building a shape (surface) using a mesh, ie connecting vertices so that a shape is drawn.
@@ -18,7 +21,13 @@ public abstract class ShapeBuilder {
          */
         protected int vertexCount = 0;
         protected int startVertex = 0;
-        
+        /**
+         * Set to true to add vertex index for each vertex in the quad, ie the first vertex will have index 0, the next
+         * 1 and so on.
+         * The index is stored after vertex xyz.
+         */
+        protected boolean enableVertexIndex = false;
+
         /**
          * Inits the builder with the specified number of vertices and a start vertex index.
          * 
@@ -29,6 +38,17 @@ public abstract class ShapeBuilder {
             this.vertexCount = vertexCount;
             this.startVertex = startVertex;
         }
+
+        /**
+         * Enable or disables the vertex index, of set to true then each vertex has the vertex index in the quad. 0 for
+         * the first vertex, 1 for the next - up to 3.
+         * 
+         * @param enable
+         */
+        public void enableVertexIndex(boolean enable) {
+            this.enableVertexIndex = enable;
+        }
+
     }
 
     /**

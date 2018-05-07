@@ -9,7 +9,7 @@ import com.nucleus.common.Type;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.Mode;
-import com.nucleus.geometry.RectangleShapeBuilder;
+import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.jogl.JOGLApplication;
 import com.nucleus.mmi.MMIEventListener;
