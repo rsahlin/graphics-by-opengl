@@ -70,12 +70,23 @@ public abstract class Component extends BaseReference {
         this.system = system;
     }
 
+    /**
+     * Creates a copy of the components - subclasses must implement {@link #set(Component)} and call
+     * super.set(Component)
+     * 
+     * @return A new copy of this component.
+     */
     public Component copy() {
         Component copy = createInstance();
         copy.set(this);
         return copy;
     }
 
+    /**
+     * Sets data into this from source - subclasses must implement and call super.set(Component)
+     * 
+     * @param source
+     */
     public void set(Component source) {
         this.type = source.type;
         this.system = source.system;

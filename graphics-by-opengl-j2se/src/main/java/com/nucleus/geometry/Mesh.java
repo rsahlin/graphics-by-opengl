@@ -124,6 +124,10 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         protected Material material;
         protected int vertexCount = -1;
         protected int indiceCount = 0;
+        /**
+         * Optional builder parameter that can be used to determine number of vertices.
+         */
+        protected int objectCount = 1;
         protected ElementBuffer.Type indiceBufferType = Type.SHORT;
         protected Mode mode;
         protected ShapeBuilder shapeBuilder;
@@ -139,6 +143,18 @@ public class Mesh extends BaseReference implements AttributeUpdater {
                 throw new IllegalArgumentException("Renderer may not be null");
             }
             this.renderer = renderer;
+        }
+
+        /**
+         * Sets the number of objects the builder shall create mesh for, used for instance when mesh uses
+         * batching/instancing, or is a geometryshader
+         * 
+         * @param objectCount Number of objects to create when building the mesh
+         * @return
+         */
+        public Builder<T> setObjectCount(int objectCount) {
+            this.objectCount = objectCount;
+            return this;
         }
 
         /**
