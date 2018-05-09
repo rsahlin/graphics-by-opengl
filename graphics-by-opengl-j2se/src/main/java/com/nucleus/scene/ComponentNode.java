@@ -1,5 +1,6 @@
 package com.nucleus.scene;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
@@ -7,6 +8,8 @@ import com.nucleus.common.TypeResolver;
 import com.nucleus.component.Component;
 import com.nucleus.component.ComponentController;
 import com.nucleus.component.ComponentException;
+import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.system.ComponentHandler;
 import com.nucleus.system.System;
@@ -202,6 +205,16 @@ public class ComponentNode extends Node implements ComponentController {
     @Override
     public void init() {
         componentState = ComponentState.INITIALIZED;
+    }
+
+    @Override
+    public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, Node parent, int count,
+            ShapeBuilder shapeBuilder)
+            throws IOException {
+        /**
+         * Mesh created using component as parent when #createComponents() is called
+         */
+        return null;
     }
 
 }

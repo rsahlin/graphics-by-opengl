@@ -19,6 +19,8 @@ import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.MeshBuilder.MeshBuilderFactory;
+import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLException;
@@ -45,7 +47,7 @@ import com.nucleus.vecmath.Transform;
  * @author Richard Sahlin
  *
  */
-public class Node extends BaseReference {
+public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
 
     /**
      * Builder for Nodes, use this when nodes are created programmatically
@@ -1243,6 +1245,35 @@ public class Node extends BaseReference {
      */
     public ArrayList<RenderPass> getRenderPass() {
         return renderPass;
+    }
+
+    @Override
+    public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, Node parent, int count,
+            ShapeBuilder shapeBuilder)
+            throws IOException {
+
+        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
+        return initMeshBuilder(renderer, parent, count, shapeBuilder, builder);
+    }
+
+    /**
+     * Sets texture and material from the parent node
+     * 
+     * @param renderer
+     * @param parent
+     * @param count Number of objects
+     * @param shapeBuilder
+     * @param builder
+     * @throws IOException
+     */
+    protected Mesh.Builder<Mesh> initMeshBuilder(NucleusRenderer renderer, Node parent, int count,
+            ShapeBuilder shapeBuilder, Mesh.Builder<Mesh> builder)
+            throws IOException {
+        builder.setTexture(parent.getTextureRef());
+        builder.setMaterial(parent.getMaterial() != null ? parent.getMaterial() : new Material());
+        builder.setObjectCount(count);
+        builder.setShapeBuilder(shapeBuilder);
+        return builder;
     }
 
 }
