@@ -38,16 +38,11 @@ public interface AttributeUpdater {
         /**
          * (Diffuse) Color
          */
-        COLOR(),
+        ALBEDO(),
         /**
-         * Specular reflection property
+         * Emissive color
          */
-        COLOR_SPECULAR(),
-        /**
-         * Ambient color
-         */
-        COLOR_AMBIENT(),
-        SPECULAR_POWER();
+        EMISSIVE();
 
     }
 
@@ -62,10 +57,8 @@ public interface AttributeUpdater {
         public final int rotateOffset;
         public final int scaleOffset;
         public final int frameOffset;
-        public final int colorOffset;
-        public final int colorSpecularOffset;
-        public final int colorAmbientOffset;
-        public final int specularPowerOffset;
+        public final int albedoOffset;
+        public final int emissiveOffset;
         public final int attributesPerVertex;
 
         /**
@@ -78,10 +71,8 @@ public interface AttributeUpdater {
             rotateOffset = program.getPropertyOffset(Property.ROTATE);
             scaleOffset = program.getPropertyOffset(Property.SCALE);
             frameOffset = program.getPropertyOffset(Property.FRAME);
-            colorOffset = program.getPropertyOffset(Property.COLOR);
-            colorSpecularOffset = program.getPropertyOffset(Property.COLOR_SPECULAR);
-            colorAmbientOffset = program.getPropertyOffset(Property.COLOR_AMBIENT);
-            specularPowerOffset = program.getPropertyOffset(Property.SPECULAR_POWER);
+            albedoOffset = program.getPropertyOffset(Property.ALBEDO);
+            emissiveOffset = program.getPropertyOffset(Property.EMISSIVE);
             attributesPerVertex = program.getAttributesPerVertex(BufferIndex.ATTRIBUTES);
         }
     }

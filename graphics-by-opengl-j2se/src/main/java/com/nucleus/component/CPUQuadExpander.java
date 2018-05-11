@@ -114,8 +114,8 @@ public class CPUQuadExpander extends AttributeExpander {
      * @param color
      */
     public void setColor(int quad, float[] color) {
-        int index = quad * source.sizePerEntity + mapper.colorOffset;
-        int destIndex = quad * destination.sizePerEntity + mapper.colorOffset;
+        int index = quad * source.sizePerEntity + mapper.albedoOffset;
+        int destIndex = quad * destination.sizePerEntity + mapper.albedoOffset;
         sourceData[index++] = color[0];
         sourceData[index++] = color[1];
         sourceData[index++] = color[2];
@@ -154,25 +154,32 @@ public class CPUQuadExpander extends AttributeExpander {
      * Sets the position
      * 
      * @param quad
-     * @param x
-     * @param y
+     * @param pos
+     * @param offset
      */
-    public final void setPosition(int quad, float x, float y) {
+    public final void setPosition(int quad, float[] pos, int offset) {
         int index = quad * source.sizePerEntity + mapper.translateOffset;
+        float x = pos[offset++];
+        float y = pos[offset++];
+        float z = pos[offset++];
         sourceData[index] = x;
         sourceData[index + 1] = y;
         index = quad * destination.sizePerEntity + mapper.translateOffset;
         destinationData[index] = x;
         destinationData[index + 1] = y;
+        destinationData[index + 2] = z;
         index += sizePerVertex;
         destinationData[index] = x;
         destinationData[index + 1] = y;
+        destinationData[index + 2] = z;
         index += sizePerVertex;
         destinationData[index] = x;
         destinationData[index + 1] = y;
+        destinationData[index + 2] = z;
         index += sizePerVertex;
         destinationData[index] = x;
         destinationData[index + 1] = y;
+        destinationData[index + 2] = z;
     }
 
     /**
@@ -226,10 +233,11 @@ public class CPUQuadExpander extends AttributeExpander {
      * 
      * @param quad
      * @param data
+     * @param offset Offset into data where values are read
      */
-    public final void setData(int quad, float[] data) {
+    public final void setData(int quad, float[] data, int offset) {
         int index = quad * source.sizePerEntity;
-        System.arraycopy(data, 0, sourceData, index, data.length);
+        System.arraycopy(data, offset, sourceData, index, data.length);
         expandQuadData(quad);
     }
 

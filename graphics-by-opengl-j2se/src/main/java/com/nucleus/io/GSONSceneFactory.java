@@ -59,33 +59,36 @@ public class GSONSceneFactory implements SceneSerializer {
     protected Gson gson;
 
     /**
-     * Creates a default scenefactory with {@link NucleusNodeExporter}.
-     * Calls {@link #createNodeExporter()} and {@link #registerNodeExporters()}
-     * This constructor will call {@link #init(NucleusRenderer, NodeFactory, MeshFactory)}
+     * Use as singleton since serializers depend on {@link TypeResolver} (which is also singleton)
+     */
+    protected static SceneSerializer sceneFactory;
+
+    /**
+     * Returns the singleton instance of sceneserializer
      * 
      * @param renderer
-     * @param nodeFactory
-     * @param meshFactory
-     * @param types The types to be registered {@linkplain TypeResolver}
+     * @return
      */
-    public GSONSceneFactory(NucleusRenderer renderer, NodeFactory nodeFactory, MeshFactory meshFactory,
-            List<Type<?>> types) {
-        createNodeExporter();
-        registerNodeExporters();
-        init(renderer, nodeFactory, meshFactory);
-        TypeResolver.getInstance().registerTypes(types);
+    public static SceneSerializer getInstance() {
+        if (sceneFactory == null) {
+            sceneFactory = new GSONSceneFactory();
+        }
+        return sceneFactory;
+    }
+
+    protected GSONSceneFactory() {
     }
 
     /**
      * Creates the instance of the {@link NucleusNodeDeserializer} to be used, called from constructor
-     * Override in sublcasses to change
+     * Override in subclasses to change
      */
     protected void createNodeDeserializer() {
         nodeDeserializer = new NucleusNodeDeserializer();
     }
 
     @Override
-    public void init(NucleusRenderer renderer, NodeFactory nodeFactory, MeshFactory meshFactory) {
+    public void init(NucleusRenderer renderer, NodeFactory nodeFactory, MeshFactory meshFactory, Type<?>[] types) {
         if (renderer == null) {
             throw new IllegalArgumentException(NULL_RENDERER_ERROR);
         }
@@ -99,6 +102,9 @@ public class GSONSceneFactory implements SceneSerializer {
         this.nodeFactory = nodeFactory;
         this.meshFactory = meshFactory;
         createNodeDeserializer();
+        if (types != null) {
+            registerTypes(types);
+        }
     }
 
     @Override
@@ -123,7 +129,7 @@ public class GSONSceneFactory implements SceneSerializer {
 
     @Override
     public RootNode importScene(InputStream is) throws NodeException {
-        if (renderer == null || nodeFactory == null) {
+        if (!isInitialized()) {
             throw new IllegalStateException(INIT_NOT_CALLED_ERROR);
         }
         if (is == null) {
@@ -140,7 +146,7 @@ public class GSONSceneFactory implements SceneSerializer {
             RootNode scene = getSceneFromJson(gson, reader);
             long loaded = System.currentTimeMillis();
             FrameSampler.getInstance().logTag(FrameSampler.Samples.LOAD_SCENE, start, loaded);
-            RootNode root = createInstance();
+            RootNode root = createRoot();
             scene.copyTo(root);
             createScene(root, scene.getChildren());
             FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SCENE, loaded, System.currentTimeMillis());
@@ -201,7 +207,7 @@ public class GSONSceneFactory implements SceneSerializer {
      * 
      * @return The root node implementation to use
      */
-    protected RootNode createInstance() {
+    protected RootNode createRoot() {
         return new BaseRootNode();
     }
 
@@ -302,6 +308,16 @@ public class GSONSceneFactory implements SceneSerializer {
     @Override
     public void addNodeTypes(Type<Node>[] types) {
         nodeDeserializer.addNodeTypes(types);
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return (renderer != null && nodeFactory != null && meshFactory != null);
+    }
+
+    @Override
+    public void registerTypes(Type<?>[] types) {
+        TypeResolver.getInstance().registerTypes(types);
     }
 
 }

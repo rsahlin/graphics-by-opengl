@@ -268,9 +268,9 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void setLine(int vertice, float[] first, float[] second, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        internalSetVertex(offset + mapper.translateOffset, offset + mapper.colorOffset, first, z, rgba);
+        internalSetVertex(offset + mapper.translateOffset, offset + mapper.albedoOffset, first, z, rgba);
         offset += buffer.getFloatStride();
-        internalSetVertex(offset + mapper.translateOffset, offset + mapper.colorOffset, second, z, rgba);
+        internalSetVertex(offset + mapper.translateOffset, offset + mapper.albedoOffset, second, z, rgba);
     }
 
     /**
@@ -287,7 +287,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void addVertex(int vertice, float[] next, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        internalSetVertex(offset + mapper.translateOffset, offset + mapper.colorOffset, next, z, rgba);
+        internalSetVertex(offset + mapper.translateOffset, offset + mapper.albedoOffset, next, z, rgba);
     }
 
     /**

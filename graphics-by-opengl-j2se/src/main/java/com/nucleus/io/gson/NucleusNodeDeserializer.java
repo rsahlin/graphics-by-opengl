@@ -8,6 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.nucleus.common.TypeResolver;
+import com.nucleus.io.GSONSceneFactory;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.NodeTypes;
 
@@ -16,6 +17,9 @@ import com.nucleus.scene.Node.NodeTypes;
  * for graphics-by-opengl
  * If subclasses register a different deserializer they must make sure to call super.
  * {@link #deserialize(JsonElement, Type, JsonDeserializationContext)}
+ * 
+ * Avoid using directly use {@link GSONSceneFactory} instead
+ * 
  * 
  * @author Richard Sahlin
  *

@@ -311,8 +311,8 @@ public abstract class ShaderProgram {
             case FRAME:
                 v = getShaderVariable(CommonShaderVariables.aFrameData);
                 break;
-            case COLOR_AMBIENT:
-            case COLOR:
+            case EMISSIVE:
+            case ALBEDO:
                 v = getShaderVariable(CommonShaderVariables.aColor);
                 break;
             default:
@@ -1625,18 +1625,18 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets the ambient light color in uniform data
+     * Sets the emissive light color in uniform data
      * 
      * @param uniforms
-     * @param uniformAmbient
+     * @param uniformEmissive
      * @param material
      */
-    protected void setAmbient(float[] uniforms, ShaderVariable uniformAmbient, float[] ambient) {
-        int offset = uniformAmbient.getOffset();
-        uniforms[offset++] = ambient[0];
-        uniforms[offset++] = ambient[1];
-        uniforms[offset++] = ambient[2];
-        uniforms[offset++] = ambient[3];
+    protected void setEmissive(float[] uniforms, ShaderVariable uniformEmissive, float[] emissive) {
+        int offset = uniformEmissive.getOffset();
+        uniforms[offset++] = emissive[0];
+        uniforms[offset++] = emissive[1];
+        uniforms[offset++] = emissive[2];
+        uniforms[offset++] = emissive[3];
     }
 
     /**

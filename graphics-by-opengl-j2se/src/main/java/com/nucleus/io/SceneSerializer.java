@@ -24,7 +24,8 @@ public interface SceneSerializer {
     public final static String NULL_RENDERER_ERROR = "Renderer is null.";
     public final static String NULL_NODEFACTORY_ERROR = "Node factory is null.";
     public final static String NULL_MESHFACTORY_ERROR = "Mesh factory is null.";
-    public final static String INIT_NOT_CALLED_ERROR = "Renderer or NodeFactory is not set, must set before calling this method.";
+
+    public final static String INIT_NOT_CALLED_ERROR = "Init not called before import, must call #init(NucleusRenderer, NodeFactory, MeshFactory)";
 
     /**
      * Sets the renderer and node factory needed when scenes are imported.
@@ -33,9 +34,26 @@ public interface SceneSerializer {
      * @param renderer
      * @param nodeFactory
      * @param meshFactory
+     * @param types List of key/value classnames and types that can be serialized, or null
      * @throws IllegalArgumentException If renderer is null
      */
-    public void init(NucleusRenderer renderer, NodeFactory nodeFactory, MeshFactory meshFactory);
+    public void init(NucleusRenderer renderer, NodeFactory nodeFactory, MeshFactory meshFactory, Type<?>[] types);
+
+    /**
+     * Registers a list of types that can be resolved to classes, these are the user defined classes serialized by
+     * projects.
+     * 
+     * @param types List of key/value classes that shall be serialized
+     * @throws IllegalArgumentException If a type already has been registered with the same name as is in the list
+     */
+    public void registerTypes(Type<?>[] types);
+
+    /**
+     * Returns true if the serializer is initialized by calling {@link #init(NucleusRenderer, NodeFactory, MeshFactory)}
+     * 
+     * @return
+     */
+    public boolean isInitialized();
 
     /**
      * Adds a node type to list of known node name/classes. Use this to add support for custom node when
