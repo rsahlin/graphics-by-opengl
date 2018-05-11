@@ -92,6 +92,11 @@ public abstract class NucleusActivity extends Activity
      */
     protected boolean eglWaitClient = false;
 
+    /**
+     * If true this activity is moved to background in {@link #onBackPressed()} otherwise activity is finished.
+     */
+    protected boolean backgroundTaskOnBackPressed = true;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         SimpleLogger.setLogger(new AndroidLogger());
@@ -115,11 +120,10 @@ public abstract class NucleusActivity extends Activity
 
     @Override
     public void onBackPressed() {
-        if (coreApp != null) {
-            if (coreApp.onBackPressed()) {
-                coreApp.setDestroyFlag();
-                finish();
-            }
+        if (backgroundTaskOnBackPressed) {
+            moveTaskToBack(true);
+        } else {
+            super.onBackPressed();
         }
     }
 
