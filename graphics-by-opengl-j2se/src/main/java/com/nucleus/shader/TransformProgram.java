@@ -3,6 +3,8 @@ package com.nucleus.shader;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -19,10 +21,28 @@ public class TransformProgram extends ShaderProgram {
     /**
      * Name of this shader - TODO where should this be defined?
      */
-    protected static final String CATEGORY = "transform";
+    public static final String CATEGORY = "transform";
 
-    protected TransformProgram(Pass pass, Texture2D.Shading shading, String category) {
+    public TransformProgram(Pass pass, Texture2D.Shading shading, String category) {
         super(pass, shading, category, CommonShaderVariables.values(), Shaders.VERTEX_FRAGMENT);
+    }
+
+    @Override
+    protected String getSourceNameVersion(Renderers version, int type) {
+        if (version.major >= 3) {
+            return ShaderSource.V300;
+        }
+        return super.getSourceNameVersion(version, type);
+    }
+
+    @Override
+    protected Function getFunction(int type) {
+        switch (type) {
+            case GLES20.GL_FRAGMENT_SHADER:
+                // Ignore category for fragment shader
+                return new Function(function.getPass(), function.getShading(), null);
+        }
+        return super.getFunction(type);
     }
 
     @Override

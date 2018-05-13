@@ -1,0 +1,41 @@
+#version 300 es
+/* Copyright 2017 Richard Sahlin
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+ /**
+ * Vertex shader for transformed textured vertex
+ * @author Richard Sahlin
+ */
+
+precision highp float;
+
+//Put array declaration after name for GLSL compatibility
+uniform mat4 uMVMatrix;
+uniform mat4 uProjectionMatrix;
+
+in vec4 aVertex; //vertex position
+in vec2 aTexCoord;
+in vec3 aTranslate; //sprite x, sprite y, sprite z
+in vec3 aRotate;
+in vec3 aScale;
+
+out vec2 vTexCoord;
+
+mat4 calculateTransformMatrix(vec3 rotate, vec3 scale, vec3 translate);
+
+void main() {
+    vec4 pos =  vec4(aVertex.xyz, 1) * (calculateTransformMatrix(aRotate, aScale, aTranslate) * uMVMatrix);
+    gl_Position = uProjectionMatrix * pos;
+    vTexCoord = vec2(aTexCoord.x, aTexCoord.y);
+                     
+}

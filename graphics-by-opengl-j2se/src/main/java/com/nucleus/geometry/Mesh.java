@@ -176,7 +176,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         }
 
         /**
-         * Creates the mesh for the arguments supplied to this builder.
+         * Creates the mesh for the arguments supplied to this builder - vertexcount, texture, material and drawmode.
+         * If a shapebuilder is specified it is called to build (populate) the mesh.
+         * Creates UBOs and VBOs as configured.
          * 
          * @return The mesh
          * @throws IllegalArgumentException If the needed arguments has not been set
