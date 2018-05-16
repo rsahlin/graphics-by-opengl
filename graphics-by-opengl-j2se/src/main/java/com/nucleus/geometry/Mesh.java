@@ -16,6 +16,7 @@ import com.nucleus.renderer.BufferObjectsFactory;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.shader.ShaderProperty.PropertyMapper;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.VariableMapping;
 import com.nucleus.texturing.Texture2D;
@@ -125,6 +126,10 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         protected int vertexCount = -1;
         protected int indiceCount = 0;
         /**
+         * Extra attributes to allocate for each vertex
+         */
+        protected int vertexStride;
+        /**
          * Optional builder parameter that can be used to determine number of vertices.
          */
         protected int objectCount = 1;
@@ -161,18 +166,33 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * Sets the drawmode for the mesh
          * 
          * @param mode
+         * @return;
          */
-        public void setMode(Mode mode) {
+        public Builder<T> setMode(Mode mode) {
             this.mode = mode;
+            return this;
         }
 
         /**
          * Sets the texture to use for the created mesh
          * 
          * @param texture
+         * @return
          */
-        public void setTexture(Texture2D texture) {
+        public Builder<T> setTexture(Texture2D texture) {
             this.texture = texture;
+            return this;
+        }
+
+        /**
+         * 
+         * @param vertexStride Extra attributes to allocate per vertex, if a value larger than 0 is specified then this
+         * number of attributes will be added to the attributes allocated for the mesh (for each vertex)
+         * @return
+         */
+        public Builder<T> setVertexStride(int vertexStride) {
+            this.vertexStride = vertexStride;
+            return this;
         }
 
         /**
@@ -221,11 +241,14 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * 
          * @param mode The drawmode for vertices
          * @param vertexCount Number of vertices
+         * @param vertexStride Extra attributes to allocate per vertex, if a value larger than 0 is specified then this
+         * number of attributes will be added to the attributes allocated for the mesh (for each vertex)
          * @return
          */
-        public Builder<T> setArrayMode(Mode mode, int vertexCount) {
+        public Builder<T> setArrayMode(Mode mode, int vertexCount, int vertexStride) {
             this.vertexCount = vertexCount;
             this.mode = mode;
+            this.vertexStride = vertexStride;
             return this;
         }
 
@@ -235,12 +258,15 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * 
          * @param mode
          * @param vertexCount
+         * @param vertexStride Extra attributes to allocate per vertex, if a value larger than 0 is specified then this
+         * number of attributes will be added to the attributes allocated for the mesh (for each vertex)
          * @param indiceCount
          */
-        public Builder<T> setElementMode(Mode mode, int vertexCount, int indiceCount) {
+        public Builder<T> setElementMode(Mode mode, int vertexCount, int vertexStride, int indiceCount) {
             this.indiceCount = indiceCount;
             this.vertexCount = vertexCount;
             this.mode = mode;
+            this.vertexStride = vertexStride;
             return this;
         }
 
@@ -304,7 +330,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         material.setProgram(program);
         builder.setTexture(texture);
         builder.setMaterial(material);
-        builder.setArrayMode(mode, maxVerticeCount);
+        builder.setArrayMode(mode, maxVerticeCount, 0);
         builder.setShapeBuilder(shapeBuilder);
         return builder;
     }
