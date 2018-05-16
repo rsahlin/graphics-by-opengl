@@ -25,7 +25,7 @@ public class ComponentHandler {
     /**
      * Lookup system from the component id
      */
-    private Map<String, System> componentSystem = new HashMap<>();
+    private Map<String, System<Component>> componentSystem = new HashMap<>();
 
     private static ComponentHandler handler;
 
@@ -66,7 +66,7 @@ public class ComponentHandler {
      * @throws IllegalArgumentException If no system is registered for the component (type)
      */
     public void processComponent(Component component, float deltaTime) {
-        System system = componentSystem.get(component.getSystem());
+        System<Component> system = componentSystem.get(component.getSystem());
         if (system == null) {
             throw new IllegalArgumentException(
                     "No system registered for " + component.getSystem() + " componentId: " + component.getId());
@@ -85,7 +85,7 @@ public class ComponentHandler {
      * @param renderer
      */
     public void initSystems(RootNode root, NucleusRenderer renderer) {
-        for (System s : componentSystem.values()) {
+        for (System<Component> s : componentSystem.values()) {
             if (s.initialized) {
                 throw new IllegalArgumentException("Already initalized system " + s.getClass().getName());
             }
@@ -103,11 +103,11 @@ public class ComponentHandler {
      * returned.
      * @throws IllegalAccessException | InstantiationException If the system could not be created
      */
-    public System createSystem(Component component) throws IllegalAccessException, InstantiationException {
+    public System<Component> createSystem(Component component) throws IllegalAccessException, InstantiationException {
         if (componentSystem.containsKey(component.getSystem())) {
             return componentSystem.get(component.getSystem());
         }
-        System system = (System) TypeResolver.getInstance().create(component.getSystem());
+        System<Component> system = (System) TypeResolver.getInstance().create(component.getSystem());
         system.setType(component.getSystem());
         componentSystem.put(component.getSystem(), system);
         return system;
