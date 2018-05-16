@@ -2,7 +2,7 @@ package com.nucleus.component;
 
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
-import com.nucleus.geometry.AttributeUpdater.PropertyMapper;
+import com.nucleus.shader.ShaderProperty.PropertyMapper;
 
 /**
  * Copy and expand attribute data from source to destination.

@@ -2,9 +2,9 @@ package com.nucleus.component;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
-import com.nucleus.geometry.AttributeUpdater.PropertyMapper;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.shader.ShaderProperty.PropertyMapper;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.UVAtlas;
@@ -54,7 +54,8 @@ public class CPUQuadExpander extends AttributeExpander {
      * @param mapper
      * @param data
      */
-    public CPUQuadExpander(Mesh spriteMesh, PropertyMapper mapper, CPUComponentBuffer source,
+    public CPUQuadExpander(Mesh spriteMesh, PropertyMapper mapper,
+            CPUComponentBuffer source,
             CPUComponentBuffer destination) {
         super(mapper, destination, 4);
         this.source = source;

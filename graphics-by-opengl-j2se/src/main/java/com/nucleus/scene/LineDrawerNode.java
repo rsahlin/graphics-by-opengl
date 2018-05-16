@@ -6,7 +6,6 @@ import com.nucleus.common.Constants;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
-import com.nucleus.geometry.AttributeUpdater.PropertyMapper;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
@@ -16,6 +15,7 @@ import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.CommonShaderVariables;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.shader.ShaderProperty.PropertyMapper;
 import com.nucleus.shader.TranslateProgram;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -96,17 +96,17 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         int count = parent.getLineCount();
         switch (parent.getLineMode()) {
             case LINES:
-                builder.setArrayMode(Mode.LINES, count * 2);
+                builder.setArrayMode(Mode.LINES, count * 2, 0);
                 break;
             case LINE_STRIP:
-                builder.setArrayMode(Mode.LINE_STRIP, count * 2);
+                builder.setArrayMode(Mode.LINE_STRIP, count * 2, 0);
                 break;
             case POINTS:
-                builder.setArrayMode(Mode.POINTS, count);
+                builder.setArrayMode(Mode.POINTS, count, 0);
                 break;
             case RECTANGLE:
                 // Rectangle shares vertices, 4 vertices per rectangle
-                builder.setElementMode(Mode.LINES, count, count * 2);
+                builder.setElementMode(Mode.LINES, count, 0, count * 2);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for mode " + parent.getLineMode());
