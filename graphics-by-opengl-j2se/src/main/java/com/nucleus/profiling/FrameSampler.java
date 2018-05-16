@@ -170,7 +170,8 @@ public class FrameSampler {
 
     }
 
-    public final static int DEFAULT_MIN_FPS = 30;
+    public static int DEFAULT_MIN_FPS = 0;
+    public static float DEFAULT_FRAMEDELTA = 0.16f;
     private static FrameSampler frameSampler = new FrameSampler();
 
     private final static int DEFAULT_LOG_DELAY = 5000;
@@ -182,7 +183,7 @@ public class FrameSampler {
     private long previousTime;
     private long currentTime;
     private int minFPS = DEFAULT_MIN_FPS;
-    private float delta = (float) 1 / DEFAULT_MIN_FPS;
+    private float delta = DEFAULT_FRAMEDELTA;
     private float maxDelta;
     /**
      * sampling is auto logged after this number of millis
@@ -231,24 +232,29 @@ public class FrameSampler {
      * 
      * @return Delta time in seconds from previous frame, this value will be checked for minimum fps. If min fps is 10
      * then this value will not be greater than 1/10 second.
-     * The max delta value will be returned the first time this method is called (ie the first frame)
+     * First frame the value {@link #DEFAULT_FRAMEDELTA} will be returned
      */
     public float update() {
         previousTime = currentTime;
         currentTime = System.currentTimeMillis();
+        if (previousTime == 0) {
+            return DEFAULT_FRAMEDELTA;
+        }
         delta = (float) (currentTime - previousTime) / 1000;
         frames++;
         totalDelta += delta;
-        if (delta > (1f / minFPS)) {
-            delta = 1f / minFPS;
+        if (minFPS > 0) {
+            if (delta > (1f / minFPS)) {
+                delta = 1f / minFPS;
+            }
         }
         return delta;
     }
 
     /**
-     * Sets the min fps value
+     * Sets the min fps value, or disables by setting to 0 or lower.
      * 
-     * @param minFps
+     * @param minFps Minimum fps value, in number of frames per second. Set to < 1 to disable.
      */
     public void setMinFps(int minFps) {
         minFPS = minFps;
@@ -274,7 +280,7 @@ public class FrameSampler {
     /**
      * Returns the current delta value, time in seconds from previous frame.
      * If a call to {@link #setMinFPS(int)} has been made then the delta value is limited according to this.
-     * Will be 1 / DEFAULT_MIN_FPS before the first frame has finished.
+     * Will be {@link #DEFAULT_FRAMEDELTA} before the first frame has finished.
      * 
      * @return The delta value for previous -> current frame, will be limited if {@link #setMinFPS(int)} has been
      * called.
@@ -333,7 +339,11 @@ public class FrameSampler {
      * @param fps Min fps, the value of getDelta() will be larger than (1/fps)
      */
     public void setMinFPS(int fps) {
-        maxDelta = (float) 1 / fps;
+        if (fps > 0) {
+            maxDelta = (float) 1 / fps;
+        } else {
+            maxDelta = 0;
+        }
     }
 
     @Override
