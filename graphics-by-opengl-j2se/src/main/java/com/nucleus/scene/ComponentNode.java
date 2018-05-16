@@ -125,9 +125,9 @@ public class ComponentNode extends Node implements ComponentController {
         ComponentHandler handler = ComponentHandler.getInstance();
         try {
             for (Component c : components) {
-                System s = handler.createSystem(c);
+                handler.createSystem(c);
                 handler.registerComponent(c);
-                c.create(renderer, this, s);
+                c.create(renderer, this);
             }
         } catch (InstantiationException | IllegalAccessException e) {
             throw new ComponentException(e);

@@ -8,7 +8,6 @@ import com.nucleus.common.TypeResolver;
 import com.nucleus.io.BaseReference;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.ComponentNode;
-import com.nucleus.system.System;
 
 /**
  * The component part of behavior, this holds the data needed to perform actions.
@@ -46,11 +45,17 @@ public abstract class Component extends BaseReference {
      * 
      * @param renderer
      * @param parent
-     * @param system The system that will handle processing of the component
      * @throws ComponentException If there is an error preventing the component to be created
      */
-    public abstract void create(NucleusRenderer renderer, ComponentNode parent, System system)
+    public abstract void create(NucleusRenderer renderer, ComponentNode parent)
             throws ComponentException;
+
+    /**
+     * Returns the size of data for each entity needed by the system to do processing.
+     * 
+     * @return Size of data for each entity.
+     */
+    public abstract int getEntityDataSize();
 
     /**
      * Returns the system name, a name that can be resolved using the {@link TypeResolver}
