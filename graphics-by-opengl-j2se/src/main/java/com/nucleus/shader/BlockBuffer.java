@@ -99,15 +99,13 @@ public abstract class BlockBuffer extends BufferObject {
         BlockBuffer[] blockBuffers = null;
         if (interfaceBlocks != null) {
             blockBuffers = new BlockBuffer[interfaceBlocks.length];
-            int blockSize = 0;
             for (int index = 0; index < interfaceBlocks.length; index++) {
-                InterfaceBlock vb = interfaceBlocks[index];
                 // TODO - need to add stride
                 blockBuffers[index] = new FloatBlockBuffer(interfaceBlocks[index],
                         interfaceBlocks[index].blockDataSize >>> 2);
-            }
-            if (blockSize > 0) {
-                SimpleLogger.d(BlockBuffer.class, "Data for uniform block " + blockSize);
+                if (interfaceBlocks[index].blockDataSize > 0) {
+                    SimpleLogger.d(BlockBuffer.class, "Data for uniform block " + interfaceBlocks[index].blockDataSize);
+                }
             }
         }
         return blockBuffers;

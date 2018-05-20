@@ -3,6 +3,7 @@ package com.nucleus.component;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.ShaderProperty.PropertyMapper;
 import com.nucleus.texturing.Texture2D;
@@ -64,9 +65,9 @@ public class CPUQuadExpander extends AttributeExpander {
         this.texture = spriteMesh.getTexture(Texture2D.TEXTURE_0);
         this.sizePerVertex = mapper.attributesPerVertex;
         if (texture.getTextureType() == TextureType.UVTexture2D) {
-            // If mesh has block buffers then frames will be in uniform block - do not copy here
-            if (spriteMesh.getBlockBuffers() == null) {
-                SimpleLogger.d(getClass(), "No uniform block - does renderer not have support for GLES3 or above?");
+            // TODO - how to sync this with the creation of uniform block buffer in shader program?
+            if (GLES20Wrapper.getInfo().getRenderVersion().major < 3) {
+                SimpleLogger.d(getClass(), "GLES version < 3 - not using uniform block buffers for UV data");
                 copyUVAtlas(((UVTexture2D) texture).getUVAtlas());
                 tempData = new float[mapper.attributesPerVertex];
             }

@@ -1393,14 +1393,15 @@ public abstract class ShaderProgram {
                     blockBuffer.getBuffer().position(0),
                     GLES30.GL_STATIC_DRAW);
             blockBuffer.setDirty(false);
-            GLUtils.handleError(gles, "Create UBOs for " + blockBuffer.getBlockName());
+            GLUtils.handleError(gles, "setUniformBlock " + blockBuffer.getBlockName());
 
+        } else {
+            InterfaceBlock vars = blockBuffer.interfaceBlock;
+            gles.glUniformBlockBinding(program, vars.blockIndex, variable.getBlockIndex());
+            gles.glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, vars.blockIndex,
+                    blockBuffer.getBufferName());
+            GLUtils.handleError(gles, "setUniformBlock " + blockBuffer.getBlockName());
         }
-        InterfaceBlock vars = blockBuffer.interfaceBlock;
-        gles.glUniformBlockBinding(program, vars.blockIndex, variable.getBlockIndex());
-        gles.glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, vars.blockIndex,
-                blockBuffer.getBufferName());
-        GLUtils.handleError(gles, "BindBufferBase for buffer " + blockBuffer.getBlockName());
     }
 
     /**
