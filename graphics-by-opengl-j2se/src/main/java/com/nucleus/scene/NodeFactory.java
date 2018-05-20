@@ -1,7 +1,5 @@
 package com.nucleus.scene;
 
-import com.nucleus.common.Type;
-import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshFactory;
 import com.nucleus.renderer.NucleusRenderer;
 
@@ -31,21 +29,6 @@ public interface NodeFactory {
      * compiling shaders. Will be thrown if the source node was not loaded (type field is not set)
      */
     public Node create(NucleusRenderer renderer, MeshFactory meshFactory, Node source,
-            RootNode root) throws NodeException;
-
-    /**
-     * Creates a new instance of the node as specified by the classResolver, allocating buffers, programs and fetching
-     * textures as needed.
-     * Use this when nodes are created programmatically.
-     * 
-     * @param renderer
-     * @param builder The Mesh builder to use when creating mesh for the node.
-     * @param nodeType Type and class of node to create
-     * @param root The rootnode of the created node
-     * @return A new instance of a Node of the specified type
-     * @throws NodeException
-     */
-    public Node create(NucleusRenderer renderer, Mesh.Builder<Mesh> builder, Type<Node> nodeType,
             RootNode root) throws NodeException;
 
     /**

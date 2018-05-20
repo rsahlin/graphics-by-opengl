@@ -300,7 +300,18 @@ class BaseRenderer implements NucleusRenderer {
             }
         }
         nodeMeshes.clear();
-        renderMeshes(node.getMeshes(nodeMeshes), matrices);
+        node.getMeshes(nodeMeshes);
+        if (nodeMeshes.size() > 0) {
+            ShaderProgram program = getProgram(node, currentPass);
+            gles.glUseProgram(program.getProgram());
+            GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
+            // TODO - is this the best place for this check - remember, this should only be done in debug cases.
+            if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
+                program.validateProgram(getGLES());
+            }
+
+            renderMeshes(program, node.getMeshes(nodeMeshes), matrices);
+        }
         this.modelMatrix = nodeMatrix;
         // Add this to rendered nodes before children.
         node.getRootNode().addRenderedNode(node);
@@ -547,9 +558,9 @@ class BaseRenderer implements NucleusRenderer {
         }
     }
 
-    protected void renderMeshes(ArrayList<Mesh> meshes, float[][] matrices) throws GLException {
+    protected void renderMeshes(ShaderProgram program, ArrayList<Mesh> meshes, float[][] matrices) throws GLException {
         for (Mesh mesh : meshes) {
-            renderMesh(mesh, matrices);
+            renderMesh(program, mesh, matrices);
         }
     }
 
@@ -560,6 +571,7 @@ class BaseRenderer implements NucleusRenderer {
      * If mesh contains an index buffer it is used and glDrawElements is called, otherwise
      * drawArrays is called.
      * 
+     * @param program The active program
      * @param mesh The mesh to be rendered.
      * @param matrices accumulated modelview matrix for this mesh, this will be sent to uniform.
      * projectionMatrix The projection matrix, depending on shader this is either concatenated
@@ -567,7 +579,7 @@ class BaseRenderer implements NucleusRenderer {
      * renderPassMatrix Optional matrix for renderpass
      * @throws GLException If there is an error in GL while drawing this mesh.
      */
-    protected void renderMesh(Mesh mesh, float[][] matrices)
+    protected void renderMesh(ShaderProgram program, Mesh mesh, float[][] matrices)
             throws GLException {
         Consumer updater = mesh.getAttributeConsumer();
         if (updater != null) {
@@ -577,22 +589,15 @@ class BaseRenderer implements NucleusRenderer {
             return;
         }
         Material material = mesh.getMaterial();
-        ShaderProgram program = getProgram(material, currentPass);
-        gles.glUseProgram(program.getProgram());
-        GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
 
-        material.setBlendModeSeparate(gles);
         program.updateAttributes(gles, mesh);
         program.updateUniforms(gles, matrices, mesh);
         program.prepareTextures(gles, mesh);
 
+        material.setBlendModeSeparate(gles);
+
         AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.VERTICES);
         ElementBuffer indices = mesh.getElementBuffer();
-
-        // TODO - is this the best place for this check - remember, this should only be done in debug cases.
-        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
-            program.validateProgram(getGLES());
-        }
 
         if (indices == null) {
             gles.glDrawArrays(mesh.getMode().mode, mesh.getOffset(), mesh.getDrawCount());
@@ -615,12 +620,15 @@ class BaseRenderer implements NucleusRenderer {
 
     /**
      * 
-     * @param material
+     * @param node The node being rendered
      * @param pass The currently defined pass
      * @return
      */
-    private ShaderProgram getProgram(Material material, Pass pass) {
-        ShaderProgram program = material.getProgram();
+    private ShaderProgram getProgram(Node node, Pass pass) {
+        ShaderProgram program = node.getProgram();
+        if (program == null) {
+            throw new IllegalArgumentException("No program for node " + node.getId());
+        }
         return program.getProgram(getGLES(), pass, program.getShading());
     }
 
@@ -735,11 +743,12 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void renderToTexture(float[] matrix, ArrayList<Mesh> meshes, Texture2D texture, RenderPass renderPass)
+    public void renderToTexture(float[] matrix, ShaderProgram program, ArrayList<Mesh> meshes, Texture2D texture,
+            RenderPass renderPass)
             throws GLException {
         pushPass(currentPass);
         setRenderPass(renderPass);
-        renderMeshes(meshes, matrices);
+        renderMeshes(program, meshes, matrices);
         popPass();
     }
 

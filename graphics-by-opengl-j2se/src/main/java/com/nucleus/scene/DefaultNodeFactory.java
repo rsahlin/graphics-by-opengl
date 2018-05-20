@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 
 import com.nucleus.camera.ViewFrustum;
-import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshFactory;
 import com.nucleus.opengl.GLException;
@@ -133,26 +132,8 @@ public class DefaultNodeFactory implements NodeFactory {
         }
     }
 
-    @Override
-    public Node create(NucleusRenderer renderer, Mesh.Builder<Mesh> builder, Type<Node> nodeType,
-            RootNode root) throws NodeException {
-        try {
-            Node node = Node.createInstance(nodeType, root);
-            // TODO Fix generics so that cast is not needed
-            for (int i = 0; i < meshCount; i++) {
-                Mesh mesh = builder.create();
-                if (mesh != null) {
-                    node.addMesh(mesh, MeshIndex.MAIN);
-                }
-            }
-            return node;
-        } catch (InstantiationException | IllegalAccessException | IOException | GLException e) {
-            throw new NodeException(e);
-        }
-    }
-
     /**
-     * Sets the number of meshes to create by calling MeshFactory or Biulder in create methods.
+     * Sets the number of meshes to create by calling MeshFactory in create methods.
      * Default is 1.
      * 
      * @param meshCount Number of meshes to create when Node is created.

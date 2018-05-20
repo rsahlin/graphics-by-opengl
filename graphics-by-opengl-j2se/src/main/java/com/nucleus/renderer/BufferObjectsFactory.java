@@ -70,21 +70,27 @@ public class BufferObjectsFactory {
         }
     }
 
-    public void createUBOs(NucleusRenderer renderer, Mesh mesh) throws GLException {
-        BlockBuffer[] blocks = mesh.getBlockBuffers();
-        if (blocks == null) {
+    /**
+     * Creates buffer objects for the uniform blocks, buffers are allocated and names stored in uniformBlocks
+     * 
+     * @param gles
+     * @param uniformBlocks uniform block buffers to create buffer objects for, or null
+     * @throws GLException
+     */
+    public void createUBOs(GLES30Wrapper gles, BlockBuffer[] uniformBlocks) throws GLException {
+        if (uniformBlocks == null) {
             return;
         }
-        GLES30Wrapper gles = (GLES30Wrapper) renderer.getGLES();
-        int[] names = new int[blocks.length];
-        renderer.genBuffers(names);
+        int[] names = new int[uniformBlocks.length];
+        gles.glGenBuffers(names);
         int index = 0;
-        for (BlockBuffer bb : blocks) {
+        for (BlockBuffer bb : uniformBlocks) {
             InterfaceBlock block = bb.getInterfaceBlock();
             bb.position(0);
+            gles.glUniformBlockBinding(block.program, block.blockIndex, index);
             gles.glBindBuffer(GLES30.GL_UNIFORM_BUFFER, names[index]);
             gles.glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, block.blockIndex, names[index]);
-            renderer.bufferData(GLES30.GL_UNIFORM_BUFFER, bb.getSizeInBytes(), bb.getBuffer(),
+            gles.glBufferData(GLES30.GL_UNIFORM_BUFFER, bb.getSizeInBytes(), bb.getBuffer(),
                     GLES30.GL_STATIC_DRAW);
             bb.setBufferName(names[index]);
             bb.setDirty(false);

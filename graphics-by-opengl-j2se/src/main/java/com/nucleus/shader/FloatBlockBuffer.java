@@ -53,6 +53,7 @@ public class FloatBlockBuffer extends BlockBuffer {
      */
     public void put(float[] src, int offset, int length) {
         buffer.put(src, offset, length);
+        dirty = true;
     }
 
     /**

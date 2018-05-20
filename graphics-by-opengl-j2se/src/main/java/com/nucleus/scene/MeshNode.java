@@ -45,8 +45,12 @@ public class MeshNode extends Node {
     public static Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, MeshNode parent) throws IOException {
         LayerNode layer = parent.getRootNode().getLayerNode(null);
         ViewFrustum view = layer.getViewFrustum();
-        ShaderProgram program = AssetManager.getInstance()
-                .getProgram(renderer.getGLES(), new TranslateProgram(Shading.textured));
+        ShaderProgram program = parent.getProgram();
+        if (program == null) {
+            program = AssetManager.getInstance()
+                    .getProgram(renderer.getGLES(), new TranslateProgram(Shading.textured));
+            parent.setProgram(program);
+        }
         Mesh.Builder<Mesh> builder = Mesh.createBuilder(renderer, 4,
                 parent.getMaterial() != null ? parent.getMaterial() : new Material(),
                 program, AssetManager.getInstance().getTexture(renderer, parent.getTextureRef()),

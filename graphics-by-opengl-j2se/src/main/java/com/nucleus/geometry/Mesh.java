@@ -16,9 +16,7 @@ import com.nucleus.renderer.BufferObjectsFactory;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.shader.ShaderProperty.PropertyMapper;
-import com.nucleus.shader.ShaderVariable;
-import com.nucleus.shader.VariableMapping;
+import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;
 
@@ -123,6 +121,13 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         protected NucleusRenderer renderer;
         protected Texture2D texture;
         protected Material material;
+        /**
+         * TODO Mesh shall be built without explicit reference to shaderprogram, specify size of attribute buffers
+         * instead
+         */
+        @Deprecated
+        public ShaderProgram program;
+        protected int[] attributesPerVertex;
         protected int vertexCount = -1;
         protected int indiceCount = 0;
         /**
@@ -174,6 +179,17 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         }
 
         /**
+         * Sets the number of attributes (floats) per vertex to create for each buffer
+         * 
+         * @param sizePerVertex
+         * @return
+         */
+        public Builder<T> setAttributesPerVertex(int[] sizePerVertex) {
+            this.attributesPerVertex = sizePerVertex;
+            return this;
+        }
+
+        /**
          * Sets the texture to use for the created mesh
          * 
          * @param texture
@@ -208,11 +224,10 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         public Mesh create() throws IOException, GLException {
             validate();
             Mesh mesh = createMesh();
-            mesh.createMesh(texture, material, vertexCount, indiceCount, mode);
+            mesh.createMesh(texture, attributesPerVertex, null, material, vertexCount, indiceCount, mode);
             if (shapeBuilder != null) {
                 shapeBuilder.build(mesh);
             }
-            BufferObjectsFactory.getInstance().createUBOs(renderer, mesh);
             if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
                 BufferObjectsFactory.getInstance().createVBOs(renderer, mesh);
             }
@@ -281,6 +296,18 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         }
 
         /**
+         * Sets the program the mesh will be rendered using
+         * 
+         * @param program
+         * @return
+         */
+        @Deprecated
+        public Builder<T> setProgram(ShaderProgram program) {
+            this.program = program;
+            return this;
+        }
+
+        /**
          * Sets the shapebuilder to be used when building mesh shape(s)
          * 
          * @param shapeBuilder The shape builder, or null
@@ -295,9 +322,11 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * Checks that the needed arguments has been set
          */
         protected void validate() {
-            if (texture == null || vertexCount <= 0 || mode == null || material == null) {
-                throw new IllegalArgumentException("Missing argument when creating mesh: " + texture + ", "
-                        + vertexCount + ", " + mode + ", " + material);
+            if ((program == null && attributesPerVertex == null) || texture == null || vertexCount <= 0 || mode == null
+                    || material == null) {
+                throw new IllegalArgumentException(
+                        "Missing argument when creating mesh: " + program + ", " + texture + ", "
+                                + vertexCount + ", " + mode + ", " + material);
             }
         }
 
@@ -327,11 +356,10 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     public static Builder<Mesh> createBuilder(NucleusRenderer renderer, int maxVerticeCount, Material material,
             ShaderProgram program, Texture2D texture, ShapeBuilder shapeBuilder, Mesh.Mode mode) {
         Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
-        material.setProgram(program);
         builder.setTexture(texture);
         builder.setMaterial(material);
         builder.setArrayMode(mode, maxVerticeCount, 0);
-        builder.setShapeBuilder(shapeBuilder);
+        builder.setShapeBuilder(shapeBuilder).setAttributesPerVertex(program.getAttributeSizes());
         return builder;
     }
 
@@ -349,11 +377,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     @SerializedName("textureref")
     protected String textureRef;
-
-    /**
-     * The mapper used to find positions of property attributes.
-     */
-    protected transient PropertyMapper mapper;
 
     /**
      * Optional consumer for attributes, use this when dynamic mesh is needed. ie when the generic attribute data must
@@ -407,31 +430,16 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         textureRef = source.textureRef;
     }
 
-    /**
-     * Creates the Mesh to be rendered, creating buffers as needed.
-     * After this method returns it shall be possible to render the mesh although it must be filled with data, for
-     * instance using a {@link ShapeBuilder}
-     * The program will be set to the material in this mesh.
-     * 
-     * @param texture The texture to use, depends on mesh implementation
-     * @param material
-     * @param vertexCount Number of vertices to create storage for
-     * @param indiceCount Number of indices in elementbuffer
-     * @param mode The drawmode, eg how primitives are drawn
-     * @return
-     * @throws IllegalArgumentException If texture, material or mode is null
-     */
-    public void createMesh(Texture2D texture, Material material, int vertexCount, int indiceCount, Mode mode) {
+    public void createMesh(Texture2D texture, int[] attributeSizes, InterfaceBlock[] interfaceBlocks, Material material,
+            int vertexCount,
+            int indiceCount, Mode mode) {
         if (texture == null || material == null || mode == null) {
             throw new IllegalArgumentException("Null parameter: " + texture + ", " + material + ", " + mode);
         }
         setTexture(texture, Texture2D.TEXTURE_0);
         setMode(mode);
         this.material = new Material(material);
-        ShaderProgram program = material.getProgram();
-        mapper = new PropertyMapper(program);
-        this.material.setProgram(program);
-        internalCreateBuffers(program, vertexCount, indiceCount);
+        internalCreateBuffers(attributeSizes, interfaceBlocks, vertexCount, indiceCount);
     }
 
     /**
@@ -439,21 +447,22 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * If texture is {@link TiledTexture2D} then vertice and index storage will be createde for 1 sprite.
      * Do not call this method directly - it is called from {@link #createMesh(ShaderProgram, Texture2D, Material)}
      * 
-     * @param program
+     * @param attributeSizes Number of (float) attributes to allocate for each vertex. One float = 4 bytes.
+     * @param interfaceBlocks Number of block buffers to allocate and their sizes
      * @param vertexCount Number of vertices to create storage for
      * @param indiceCount Number of elementbuffer indices
      * @param drawMode Mesh drawmode
      */
-    protected void internalCreateBuffers(ShaderProgram program, int vertexCount, int indiceCount) {
-        attributes = program.createAttributeBuffers(this, vertexCount);
+    protected void internalCreateBuffers(int[] attributeSizes, InterfaceBlock[] interfaceBlocks, int vertexCount,
+            int indiceCount) {
+        attributes = AttributeBuffer.createAttributeBuffers(attributeSizes, vertexCount, GLES20.GL_FLOAT);
         if (indiceCount > 0) {
             indices = new ElementBuffer(indiceCount, Type.SHORT);
             setDrawCount(indiceCount, 0);
         } else {
             setDrawCount(vertexCount, 0);
         }
-        blockBuffers = program.createBlockBuffers();
-        program.initBuffers(this);
+        blockBuffers = BlockBuffer.createBlockBuffers(interfaceBlocks);
     }
 
     /**
@@ -644,7 +653,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     public void destroy(NucleusRenderer renderer) {
         texture = null;
         textureRef = null;
-        mapper = null;
         attributeConsumer = null;
         attributes = null;
         indices = null;
@@ -663,41 +671,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
                     renderer.deleteBuffers(1, new int[] { buffer.getBufferName() }, 0);
                 }
             }
-        }
-    }
-
-    @Override
-    public PropertyMapper getMapper() {
-        return mapper;
-    }
-
-    /**
-     * Sets attribute data for the specified vertex
-     * 
-     * @param index Index to the vertex to set attribute data for
-     * @param mapping The variable to set
-     * @param attribute The data to set, must contain at least 4 values
-     * @param verticeCount The number of vertices to set the attribute to
-     */
-    public void setAttribute4(int index, VariableMapping mapping, float[] attribute, int verticeCount) {
-        ShaderVariable variable = getMaterial().getProgram().getShaderVariable(mapping);
-        setAttribute4(index, variable, attribute, verticeCount);
-    }
-
-    /**
-     * Sets attribute data for the specified vertex
-     * 
-     * @param index Index to the vertex to set attribute data for
-     * @param variable The variable to set
-     * @param attribute The data to set, must contain at least 4 values
-     * @param verticeCount The number of vertices to set the attribute to
-     */
-    public void setAttribute4(int index, ShaderVariable variable, float[] attribute, int verticeCount) {
-        int offset = index * mapper.attributesPerVertex;
-        offset += variable.getOffset();
-        AttributeBuffer buffer = getAttributeBuffer(BufferIndex.ATTRIBUTES);
-        if (buffer != null) {
-            buffer.setComponents(attribute, 4, 0, offset, verticeCount);
         }
     }
 

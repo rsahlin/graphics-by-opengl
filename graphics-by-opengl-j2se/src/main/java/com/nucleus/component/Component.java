@@ -51,13 +51,6 @@ public abstract class Component extends BaseReference {
             throws ComponentException;
 
     /**
-     * Returns the size of data for each entity needed by the system to do processing.
-     * 
-     * @return Size of data for each entity.
-     */
-    public abstract int getEntityDataSize();
-
-    /**
      * Returns the system name, a name that can be resolved using the {@link TypeResolver}
      * 
      * @return

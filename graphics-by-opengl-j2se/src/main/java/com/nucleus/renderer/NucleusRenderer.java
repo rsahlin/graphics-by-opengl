@@ -11,6 +11,7 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
+import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
 
@@ -243,7 +244,8 @@ public interface NucleusRenderer {
      * @param renderpass
      * @throws GLException If there is an error in GL while drawing this node.
      */
-    public void renderToTexture(float[] matrix, ArrayList<Mesh> meshes, Texture2D texture, RenderPass renderpass)
+    public void renderToTexture(float[] matrix, ShaderProgram program, ArrayList<Mesh> meshes, Texture2D texture,
+            RenderPass renderpass)
             throws GLException;
 
     /**

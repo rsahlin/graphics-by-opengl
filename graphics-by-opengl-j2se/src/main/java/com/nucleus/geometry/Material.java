@@ -3,7 +3,6 @@ package com.nucleus.geometry;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.shader.ShaderProgram;
 
 /**
  * The material properties for a renderable object.
@@ -73,8 +72,6 @@ public class Material {
         }
     }
 
-    public final static String NULL_PROGRAM_STRING = "Program is null";
-
     /**
      * Index for 4 emissive color properties.
      */
@@ -83,11 +80,6 @@ public class Material {
      * Index for 4 diffuse color properties.
      */
     public final static int DIFFUSE_INDEX = 4;
-
-    /**
-     * The shader program to use when rendering
-     */
-    transient ShaderProgram program;
 
     @SerializedName(BLEND_EQUATION)
     private BlendEquation[] blendEquation = new BlendEquation[] { BlendEquation.GL_FUNC_ADD,
@@ -117,38 +109,15 @@ public class Material {
     }
 
     /**
-     * Sets the program to use when rendering.
-     * 
-     * @param program
-     * @throws IllegalArgumentException If program is null
-     */
-    public void setProgram(ShaderProgram program) {
-        if (program == null) {
-            throw new IllegalArgumentException(NULL_PROGRAM_STRING);
-        }
-        this.program = program;
-    }
-
-    /**
      * Copies the source material
      * 
      * @param source
      */
     public void copy(Material source) {
-        program = source.program;
         setBlendFunc(source.blendFunction);
         setBlendEquation(source.blendEquation);
         setEmissive(source);
 
-    }
-
-    /**
-     * Returns the program to use for this material.
-     * 
-     * @return
-     */
-    public ShaderProgram getProgram() {
-        return program;
     }
 
     /**
@@ -263,8 +232,7 @@ public class Material {
 
     @Override
     public String toString() {
-        return "RGB:" + blendEquation[0] + ", ALPHA:" + blendEquation[1] + " program:"
-                + (program != null ? program.getClass().getSimpleName() : "null");
+        return "RGB:" + blendEquation[0] + ", ALPHA:" + blendEquation[1];
     }
 
 }

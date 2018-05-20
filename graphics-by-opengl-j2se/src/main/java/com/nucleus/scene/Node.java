@@ -28,6 +28,8 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
+import com.nucleus.shader.ShaderProgram;
+import com.nucleus.shader.ShaderProperty.PropertyMapper;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Transform;
@@ -49,6 +51,8 @@ import com.nucleus.vecmath.Transform;
  */
 public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
 
+    public final static String NULL_PROGRAM_STRING = "Program is null";
+
     /**
      * Builder for Nodes, use this when nodes are created programmatically
      *
@@ -56,10 +60,11 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
      */
     public static class Builder<T extends Node> {
 
-        private Type<Node> type;
-        private RootNode root;
-        private int meshCount = 0;
-        private com.nucleus.geometry.Mesh.Builder<Mesh> meshBuilder;
+        protected Type<Node> type;
+        protected RootNode root;
+        protected int meshCount = 0;
+        protected com.nucleus.geometry.Mesh.Builder<Mesh> meshBuilder;
+        protected ShaderProgram program;
 
         public Builder<T> setType(Type<Node> type) {
             this.type = type;
@@ -72,8 +77,19 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
         }
 
         /**
-         * Sets the Mesh builder to be used to create meshes, if no meshes should be built the meshcount
-         * must be set to < 1 by calling {@link #setMeshCount(int)}
+         * Sets the program to use for this node.
+         * 
+         * @param program
+         * @return
+         */
+        public Builder<T> setProgram(ShaderProgram program) {
+            this.program = program;
+            return this;
+        }
+
+        /**
+         * Sets the Mesh builder to be used to create meshes, set number of meshes to build by calling
+         * {@link #setMeshCount(int)}
          * 
          * @param meshBuilder
          * @return
@@ -96,7 +112,7 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
 
         /**
          * Creates an instance of Node using the specified builder parameters, first checking that the minimal
-         * configuraiton is set.
+         * configuration is set.
          * 
          * @param id
          * @return
@@ -105,8 +121,8 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
          */
         public T create(String id) throws NodeException {
             try {
-                if (type == null || root == null) {
-                    throw new IllegalArgumentException("Must set type and root before calling #create()");
+                if (type == null || root == null || program == null) {
+                    throw new IllegalArgumentException("Must set type, root and program before calling #create()");
                 }
                 if (meshCount > 0 && meshBuilder == null) {
                     throw new IllegalArgumentException("meshCount = " + meshCount
@@ -117,12 +133,14 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
                     SimpleLogger.d(getClass(), "MeshBuilder is set but meshcount is 0 - no mesh will be created");
                 }
                 Node node = Node.createInstance(type, root);
+                node.setProgram(program);
                 for (int i = 0; i < meshCount; i++) {
                     Mesh mesh = meshBuilder.create();
                     node.addMesh(mesh, MeshIndex.MAIN);
                 }
                 node.setId(id);
                 node.create();
+                // node.getProgram().initBuffers(mesh);
                 return (T) node;
             } catch (InstantiationException | IllegalAccessException | GLException | IOException e) {
                 throw new NodeException("Could not create node: " + e.getMessage());
@@ -287,6 +305,8 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
      */
     transient float[] modelMatrix = Matrix.createMatrix();
     transient ArrayList<Mesh> meshes = new ArrayList<Mesh>();
+    transient protected ShaderProgram program;
+    transient protected PropertyMapper mapper;
 
     /**
      * The parent node, this shall be set when node is added as child
@@ -362,17 +382,7 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
     }
 
     /**
-     * Constructs a new Node with the specified mesh.
-     * This node can be rendered.
-     * 
-     * @param mesh Containing the vertices, variables, program, textures to be rendered.
-     */
-    public Node(Mesh mesh) {
-        meshes.add(mesh);
-    }
-
-    /**
-     * Creates the transient values needed in runtime - implement in subclasses
+     * Creates the transient values needed in runtime - implement in subclasses and call super.
      * This method is called after the mesh has been created.
      */
     public void create() {
@@ -417,6 +427,28 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
     @Deprecated
     public boolean removeMesh(Mesh mesh) {
         return meshes.remove(mesh);
+    }
+
+    /**
+     * Sets the program to use when rendering.
+     * 
+     * @param program
+     * @throws IllegalArgumentException If program is null
+     */
+    public void setProgram(ShaderProgram program) {
+        if (program == null) {
+            throw new IllegalArgumentException(NULL_PROGRAM_STRING);
+        }
+        this.program = program;
+    }
+
+    /**
+     * Returns the program to use when rendering the meshes in this node.
+     * 
+     * @return
+     */
+    public ShaderProgram getProgram() {
+        return program;
     }
 
     /**

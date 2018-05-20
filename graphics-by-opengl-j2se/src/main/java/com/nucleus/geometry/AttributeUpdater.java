@@ -1,7 +1,6 @@
 package com.nucleus.geometry;
 
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.shader.ShaderProperty.PropertyMapper;
 
 /**
  * For usecases where the attribute data needs to be updated (in the mesh), ie it is not sufficient to set static
@@ -64,12 +63,5 @@ public interface AttributeUpdater {
      * @param renderer
      */
     public void destroy(NucleusRenderer renderer);
-
-    /**
-     * Returns the propertymapper to be used to find positions of property attributes.
-     * 
-     * @return The propertymapper.
-     */
-    public PropertyMapper getMapper();
 
 }

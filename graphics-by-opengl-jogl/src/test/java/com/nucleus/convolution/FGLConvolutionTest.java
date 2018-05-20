@@ -20,7 +20,6 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
-import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.Node.MeshIndex;
 import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.NodeException;
@@ -133,12 +132,10 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         program = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
                 new ConvolutionProgram());
         Material material = new Material();
-        material.setProgram(program);
-        meshBuilder.setMaterial(material);
+        meshBuilder.setMaterial(material).setAttributesPerVertex(program.getAttributeSizes());
         meshBuilder.setShapeBuilder(
                 new RectangleShapeBuilder(new RectangleShapeBuilder.RectangleConfiguration(1f, 1f, 0f, 1, 0)));
-        builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
-                .setNode(NodeTypes.layernode);
+        builder.setType(NodeTypes.layernode).setMeshBuilder(meshBuilder).setMeshCount(1);
         try {
             RootNode root = builder.create();
             mesh = root.getNodeByType(NodeTypes.layernode).getMesh(MeshIndex.MAIN);
