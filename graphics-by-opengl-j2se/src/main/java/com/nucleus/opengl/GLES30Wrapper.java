@@ -62,6 +62,7 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
                         blockInfo, 2);
                 glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER,
                         blockInfo, 3);
+                // Block name is fetched using blockIndex so we know the blockIndex to be correct.
                 uniformBlock[i] = new InterfaceBlock(info.getProgram(), i,
                         glGetActiveUniformBlockName(info.getProgram(), i), blockInfo, indices);
             }

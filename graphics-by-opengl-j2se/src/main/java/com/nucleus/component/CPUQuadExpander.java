@@ -55,8 +55,7 @@ public class CPUQuadExpander extends AttributeExpander {
      * @param data
      */
     public CPUQuadExpander(Mesh spriteMesh, PropertyMapper mapper,
-            CPUComponentBuffer source,
-            CPUComponentBuffer destination) {
+            CPUComponentBuffer source, CPUComponentBuffer destination) {
         super(mapper, destination, 4);
         this.source = source;
         this.sourceData = source.data;

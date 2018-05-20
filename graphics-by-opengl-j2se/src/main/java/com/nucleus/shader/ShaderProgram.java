@@ -28,6 +28,7 @@ import com.nucleus.opengl.GLESWrapper.ProgramInfo;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.renderer.BufferObjectsFactory;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
 import com.nucleus.shader.ShaderProperty.Property;
@@ -244,8 +245,11 @@ public abstract class ShaderProgram {
      */
     protected ArrayList<String> commonVertexSources;
 
-    protected InterfaceBlock[] interfaceBlocks;
-
+    /**
+     * Uniform interface blocks
+     */
+    protected InterfaceBlock[] uniformInterfaceBlocks;
+    protected BlockBuffer[] uniformBlockBuffers;
     /**
      * Samplers (texture units)
      */
@@ -603,20 +607,36 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Creates the attribute buffers for the specified mesh, this is a factory method that shall create
+     * Returns an array with number of attributes per vertex, for each attribute buffer that is used by this program.
+     * This is the minimal storage that this program needs per vertex.
+     * 
+     * @return
+     */
+    public int[] getAttributeSizes() {
+        int[] attributeSize = new int[attributeBufferCount];
+        for (BufferIndex index : BufferIndex.values()) {
+            if (index.index >= attributeSize.length) {
+                break;
+            }
+            attributeSize[index.index] = getAttributesPerVertex(index);
+        }
+        return attributeSize;
+    }
+
+    /**
+     * Creates the attribute buffers for this program, this is a factory method that shall create
      * the needed attribute buffers for the shader program.
      * 
-     * @param mesh
      * @param verticeCount Number of vertices to allocate storage for
      * @return The created buffers as needed by the Mesh to render.
      */
-    public AttributeBuffer[] createAttributeBuffers(Mesh mesh, int verticeCount) {
+    public AttributeBuffer[] createAttributeBuffers(int verticeCount) {
         AttributeBuffer[] buffers = new AttributeBuffer[attributeBufferCount];
         for (BufferIndex index : BufferIndex.values()) {
             if (index.index >= buffers.length) {
                 break;
             }
-            buffers[index.index] = createAttributeBuffer(index, verticeCount, mesh);
+            buffers[index.index] = createAttributeBuffer(index, verticeCount);
         }
         return buffers;
     }
@@ -628,10 +648,9 @@ public abstract class ShaderProgram {
      * 
      * @param index The attribute buffer to create
      * @param verticeCount Number of vertices
-     * @param mesh
      * @return The buffer for attribute storage or null if not needed.
      */
-    protected AttributeBuffer createAttributeBuffer(BufferIndex index, int verticeCount, Mesh mesh) {
+    protected AttributeBuffer createAttributeBuffer(BufferIndex index, int verticeCount) {
         switch (index) {
             case ATTRIBUTES:
             case VERTICES:
@@ -685,26 +704,17 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Creates the block (uniform) buffers, if any are used.
+     * Creates the block (uniform) buffers needed for this program, if any are used.
+     * Always creates a {@link FloatBlockBuffer} for uniforms.
+     * If BlockBuffer is needed for other type than uniforms it needs to be implemented.
      * 
-     * @return Variable block buffers for this program, or null if not used.
+     * @param gles
+     * @return Uniform variable block buffers, using buffer objects, for this program, or null if not used.
      */
-    public BlockBuffer[] createBlockBuffers() {
-        BlockBuffer[] blockBuffers = null;
-        if (interfaceBlocks != null) {
-            blockBuffers = new BlockBuffer[interfaceBlocks.length];
-            int blockSize = 0;
-            for (int index = 0; index < interfaceBlocks.length; index++) {
-                InterfaceBlock vb = interfaceBlocks[index];
-                // TODO - need to add stride
-                blockSize = getVariableSize(vb);
-                blockBuffers[index] = createBlockBuffer(vb, blockSize);
-            }
-            if (blockSize > 0) {
-                SimpleLogger.d(getClass(), "Data for uniform block " + blockSize);
-            }
-        }
-        return blockBuffers;
+    public BlockBuffer[] createUniformBlockBuffers(GLES30Wrapper gles) throws GLException {
+        BlockBuffer[] buffers = BlockBuffer.createBlockBuffers(uniformInterfaceBlocks);
+        BufferObjectsFactory.getInstance().createUBOs(gles, buffers);
+        return buffers;
     }
 
     /**
@@ -773,44 +783,30 @@ public abstract class ShaderProgram {
             throws GLException {
         setUniformMatrices(matrices, mesh);
         updateUniformData(uniforms, mesh);
-        uploadUniforms(gles, uniforms, mesh, sourceUniforms);
-    }
-
-    protected void uploadUniforms(GLES20Wrapper gles, float[] uniformData, Mesh mesh, VariableMapping[] uniformMapping)
-            throws GLException {
-
-        uploadUniforms(gles, uniformData, uniformMapping);
-        BlockBuffer[] blocks = mesh.getBlockBuffers();
-        if (blocks != null) {
-            int index = 0;
-            for (BlockBuffer bb : blocks) {
-                InterfaceBlock vars = bb.interfaceBlock;
-                ((GLES30Wrapper) gles).glUniformBlockBinding(program, vars.blockIndex, index);
-                ((GLES30Wrapper) gles).glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, vars.blockIndex,
-                        bb.getBufferName());
-                GLUtils.handleError(gles, "BindBufferBase for buffer " + bb.getBlockName());
-            }
-        }
-
+        uploadUniforms(gles, uniforms, sourceUniforms);
     }
 
     /**
-     * Internal method - upload uniforms to GL.
-     * Sets the uniform data from the uniform data into the mapping provided by the attribute mapping.
+     * Uploads uniforms to GL, float array data is uploaded and if blockbuffer is used it is bound.
+     * If uniform block buffer is dirty and uses UBO the data is first uploaded to buffer object then uniform block is
+     * bound.
+     * 
      * 
      * @param gles
-     * @param uniforms Source uniform array store
-     * @param uniformMapping Variable mapping for the uniform data
+     * @param uniformData
+     * @param mesh
+     * @param uniformMapping
      * @throws GLException
      */
-    protected void uploadUniforms(GLES20Wrapper gles, float[] uniforms, VariableMapping[] uniformMapping)
+    protected void uploadUniforms(GLES20Wrapper gles, float[] uniformData, VariableMapping[] uniformMapping)
             throws GLException {
+
         for (VariableMapping am : uniformMapping) {
             ShaderVariable v = getShaderVariable(am);
             // If null then declared in program but not used, silently ignore
             if (v != null) {
                 if (v.getBlockIndex() != Constants.NO_VALUE) {
-                    setUniformBlock(gles, interfaceBlocks[v.getBlockIndex()], v);
+                    setUniformBlock((GLES30Wrapper) gles, uniformBlockBuffers[v.getBlockIndex()], v);
                 } else {
                     uploadUniform(gles, uniforms, v);
                 }
@@ -866,10 +862,10 @@ public abstract class ShaderProgram {
         ProgramInfo info = gles.getProgramInfo(program);
         GLUtils.handleError(gles, GET_PROGRAM_INFO_ERROR);
         shaderVariables = new ShaderVariable[CommonShaderVariables.values().length];
-        int uniformBlocks = info.getActiveVariables(VariableType.UNIFORM_BLOCK);
-        if (uniformBlocks > 0) {
-            interfaceBlocks = gles.getUniformBlocks(info);
-            for (InterfaceBlock block : interfaceBlocks) {
+        int uniformBlockCount = info.getActiveVariables(VariableType.UNIFORM_BLOCK);
+        if (uniformBlockCount > 0) {
+            uniformInterfaceBlocks = gles.getUniformBlocks(info);
+            for (InterfaceBlock block : uniformInterfaceBlocks) {
                 fetchActiveVariables(gles, VariableType.UNIFORM_BLOCK, info, block);
             }
         }
@@ -972,7 +968,7 @@ public abstract class ShaderProgram {
     protected ShaderVariable getBlockVariable(VariableType type, int index) {
         ShaderVariable var = blockVariables.get(index);
         if (var != null) {
-            InterfaceBlock block = interfaceBlocks[var.getBlockIndex()];
+            InterfaceBlock block = uniformInterfaceBlocks[var.getBlockIndex()];
             switch (block.usage) {
                 case VERTEX_SHADER:
                     return type == VariableType.UNIFORM ? var : null;
@@ -1359,6 +1355,9 @@ public abstract class ShaderProgram {
             checkLinkStatus(gles, program);
             fetchProgramInfo(gles);
             uniforms = createUniformArray();
+            if (GLES20Wrapper.getInfo().getRenderVersion().major >= 3) {
+                uniformBlockBuffers = createUniformBlockBuffers((GLES30Wrapper) gles);
+            }
             createSamplerStorage();
             setSamplers();
         } catch (GLException e) {
@@ -1370,7 +1369,7 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets the uniform data into the block
+     * Sets the uniform data into the block - if BlockBuffer is dirty the UBO is updated.
      * 
      * @param gles
      * @param block
@@ -1378,8 +1377,30 @@ public abstract class ShaderProgram {
      * @param offset
      * @throws GLException
      */
-    protected void setUniformBlock(GLES20Wrapper gles, InterfaceBlock block, ShaderVariable variable)
+    protected void setUniformBlock(GLES30Wrapper gles, BlockBuffer blockBuffer, ShaderVariable variable)
             throws GLException {
+        if (blockBuffer.isDirty()) {
+            gles.glUniformBlockBinding(program, blockBuffer.interfaceBlock.blockIndex, variable.getBlockIndex());
+            gles.glBindBuffer(GLES30.GL_UNIFORM_BUFFER, blockBuffer.getBufferName());
+            gles.glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, variable.getBlockIndex(), blockBuffer.getBufferName());
+            /**
+             * TODO - Another solution is to use glBufferSubData - but the benefit may not be obvious since reusing the
+             * same buffer with new content may trigger wait for buffer to be finished in rendering.
+             * Theoretically GL should handle allocation of buffers in an optimized manner, effectively reusing a
+             * discarded buffer.
+             */
+            gles.glBufferData(GLES30.GL_UNIFORM_BUFFER, blockBuffer.getSizeInBytes(),
+                    blockBuffer.getBuffer().position(0),
+                    GLES30.GL_STATIC_DRAW);
+            blockBuffer.setDirty(false);
+            GLUtils.handleError(gles, "Create UBOs for " + blockBuffer.getBlockName());
+
+        }
+        InterfaceBlock vars = blockBuffer.interfaceBlock;
+        gles.glUniformBlockBinding(program, vars.blockIndex, variable.getBlockIndex());
+        gles.glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, vars.blockIndex,
+                blockBuffer.getBufferName());
+        GLUtils.handleError(gles, "BindBufferBase for buffer " + blockBuffer.getBlockName());
     }
 
     /**
@@ -1569,7 +1590,8 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Updates the shader program specific uniform data, storing in in the uniformData array.
+     * Updates the shader program specific uniform data, storing in in the uniformData array or
+     * {@link #uniformBlockBuffers}
      * Subclasses shall set any uniform data needed - but not matrices which is set in
      * {@link #setUniformMatrices(float[][], Mesh)}
      * 

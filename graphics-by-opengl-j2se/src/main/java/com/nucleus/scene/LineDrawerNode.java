@@ -14,7 +14,6 @@ import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.CommonShaderVariables;
-import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderProperty.PropertyMapper;
 import com.nucleus.shader.TranslateProgram;
 import com.nucleus.texturing.Texture2D;
@@ -51,7 +50,6 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     transient private float[] attributes;
     transient private boolean attributesDirty = false;
     transient AttributeBuffer buffer;
-    transient PropertyMapper mapper;
     /**
      * If drawcount is updated it must be set to buffer in {@link #updateAttributeData()} method.
      */
@@ -75,6 +73,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         nodeBuilder.setType(NodeTypes.linedrawernode);
         TranslateProgram program = (TranslateProgram) AssetManager.getInstance()
                 .getProgram(renderer.getGLES(), new TranslateProgram(Shading.flat));
+        nodeBuilder.setProgram(program);
         com.nucleus.geometry.Mesh.Builder<Mesh> pointMeshBuilder = Mesh.createBuilder(renderer, vertices,
                 new Material(),
                 program, TextureFactory.createTexture(TextureType.Untextured), null, mode);
@@ -112,11 +111,8 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
                 throw new IllegalArgumentException("Not implemented for mode " + parent.getLineMode());
         }
         Material m = new Material();
-        ShaderProgram program = AssetManager.getInstance()
-                .getProgram(renderer.getGLES(), new TranslateProgram(Shading.flat));
-        m.setProgram(program);
         Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
-        builder.setMaterial(m);
+        builder.setMaterial(m).setAttributesPerVertex(parent.getProgram().getAttributeSizes());
         builder.setTexture(tex);
         builder.setShapeBuilder(parent.getShapeBuilder());
         return builder;
@@ -188,7 +184,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         Mesh mesh = getMesh(MeshIndex.MAIN);
         mesh.setAttributeUpdater(this);
         bindAttributeBuffer(mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES));
-        mapper = mesh.getMapper();
+        mapper = new PropertyMapper(program);
     }
 
     public void set(LineDrawerNode source) {
@@ -221,11 +217,8 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void setRectangle(int vertice, float[] values, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = getMesh(MeshIndex.MAIN).getMaterial().getProgram()
-                .getShaderVariable(CommonShaderVariables.aTranslate)
-                .getOffset();
-        int color = getMesh(MeshIndex.MAIN).getMaterial().getProgram().getShaderVariable(CommonShaderVariables.aColor)
-                .getOffset();
+        int translate = getProgram().getShaderVariable(CommonShaderVariables.aTranslate).getOffset();
+        int color = getProgram().getShaderVariable(CommonShaderVariables.aColor).getOffset();
         float[] pos = new float[2];
         internalSetVertex(offset + translate, offset + color, copy(values, 0, pos), z, rgba);
         internalSetVertex(offset + translate, offset + color, copy(values, 1, pos), z, rgba);
