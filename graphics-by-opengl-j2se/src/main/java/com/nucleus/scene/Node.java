@@ -1281,15 +1281,19 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
 
     @Override
     public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, Node parent, int count,
-            ShapeBuilder shapeBuilder)
-            throws IOException {
+            ShapeBuilder shapeBuilder) throws IOException {
 
         Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
         return initMeshBuilder(renderer, parent, count, shapeBuilder, builder);
     }
 
     /**
-     * Sets texture and material from the parent node
+     * Sets texture, material and shapebuilder from the parent node - if not already set in builder.
+     * Sets objectcount and attribute per vertex size.
+     * If parent does not have program the
+     * {@link com.nucleus.geometry.Mesh.Builder#createProgram(com.nucleus.opengl.GLES20Wrapper)}
+     * method is called to create a suitable program.
+     * The returned builder shall have needed values to create a mesh.
      * 
      * @param renderer
      * @param parent
@@ -1298,13 +1302,23 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
      * @param builder
      * @throws IOException
      */
-    protected Mesh.Builder<Mesh> initMeshBuilder(NucleusRenderer renderer, Node parent, int count,
+    public Mesh.Builder<Mesh> initMeshBuilder(NucleusRenderer renderer, Node parent, int count,
             ShapeBuilder shapeBuilder, Mesh.Builder<Mesh> builder)
             throws IOException {
-        builder.setTexture(parent.getTextureRef());
-        builder.setMaterial(parent.getMaterial() != null ? parent.getMaterial() : new Material());
+        if (builder.getTexture() == null) {
+            builder.setTexture(parent.getTextureRef());
+        }
+        if (builder.getMaterial() == null) {
+            builder.setMaterial(parent.getMaterial() != null ? parent.getMaterial() : new Material());
+        }
         builder.setObjectCount(count);
-        builder.setShapeBuilder(shapeBuilder);
+        if (builder.getShapeBuilder() == null) {
+            builder.setShapeBuilder(shapeBuilder);
+        }
+        if (parent.getProgram() == null) {
+            parent.setProgram(builder.createProgram(renderer.getGLES()));
+        }
+        builder.setAttributesPerVertex(parent.getProgram().getAttributeSizes());
         return builder;
     }
 

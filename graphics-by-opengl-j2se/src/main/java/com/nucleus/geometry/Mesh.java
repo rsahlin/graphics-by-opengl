@@ -17,6 +17,7 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
+import com.nucleus.shader.TranslateProgram;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;
 
@@ -121,12 +122,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         protected NucleusRenderer renderer;
         protected Texture2D texture;
         protected Material material;
-        /**
-         * TODO Mesh shall be built without explicit reference to shaderprogram, specify size of attribute buffers
-         * instead
-         */
-        @Deprecated
-        public ShaderProgram program;
         protected int[] attributesPerVertex;
         protected int vertexCount = -1;
         protected int indiceCount = 0;
@@ -234,6 +229,18 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             return mesh;
         }
 
+        /**
+         * Returns the shader program that can be used to draw the mesh. This is normally only used when program to use
+         * is not known.
+         * For instance when loading nodes, or other scenarios where mesh type is known (but not program)
+         * 
+         * @param gles
+         * @return Shader program to use for drawing mesh.
+         */
+        public ShaderProgram createProgram(GLES20Wrapper gles) {
+            return AssetManager.getInstance().getProgram(gles, new TranslateProgram(texture));
+        }
+
         @Override
         protected Mesh createMesh() {
             return new Mesh();
@@ -296,18 +303,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         }
 
         /**
-         * Sets the program the mesh will be rendered using
-         * 
-         * @param program
-         * @return
-         */
-        @Deprecated
-        public Builder<T> setProgram(ShaderProgram program) {
-            this.program = program;
-            return this;
-        }
-
-        /**
          * Sets the shapebuilder to be used when building mesh shape(s)
          * 
          * @param shapeBuilder The shape builder, or null
@@ -322,11 +317,12 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * Checks that the needed arguments has been set
          */
         protected void validate() {
-            if ((program == null && attributesPerVertex == null) || texture == null || vertexCount <= 0 || mode == null
+            if ((attributesPerVertex == null) || texture == null || vertexCount <= 0 || mode == null
                     || material == null) {
                 throw new IllegalArgumentException(
-                        "Missing argument when creating mesh: " + program + ", " + texture + ", "
-                                + vertexCount + ", " + mode + ", " + material);
+                        "Missing argument when creating mesh: texture=" + texture + ", vertexcount="
+                                + vertexCount + ", mode=" + mode + ", material=" + material + ", attributesPerVertex="
+                                + attributesPerVertex);
             }
         }
 
@@ -337,6 +333,18 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          */
         public Bounds createBounds() {
             return null;
+        }
+
+        public Texture2D getTexture() {
+            return texture;
+        }
+
+        public Material getMaterial() {
+            return material;
+        }
+
+        public ShapeBuilder getShapeBuilder() {
+            return shapeBuilder;
         }
 
     }
@@ -433,8 +441,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     public void createMesh(Texture2D texture, int[] attributeSizes, InterfaceBlock[] interfaceBlocks, Material material,
             int vertexCount,
             int indiceCount, Mode mode) {
-        if (texture == null || material == null || mode == null) {
-            throw new IllegalArgumentException("Null parameter: " + texture + ", " + material + ", " + mode);
+        if (texture == null || material == null || mode == null || attributeSizes == null) {
+            throw new IllegalArgumentException(
+                    "Null parameter: " + texture + ", " + material + ", " + mode + ", " + attributeSizes);
         }
         setTexture(texture, Texture2D.TEXTURE_0);
         setMode(mode);

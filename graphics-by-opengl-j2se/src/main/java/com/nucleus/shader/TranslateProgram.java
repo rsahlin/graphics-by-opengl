@@ -5,6 +5,7 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
+import com.nucleus.texturing.TextureType;
 
 /**
  * Program for translated vertices, shader calculates vertex position with position offset
@@ -16,6 +17,12 @@ public class TranslateProgram extends ShaderProgram {
     ShaderVariable uPointSize;
 
     private float pointSize = 1;
+
+    public TranslateProgram(Texture2D texture) {
+        super(null,
+                (texture == null || texture.textureType == TextureType.Untextured) ? Shading.flat : Shading.textured,
+                null, CommonShaderVariables.values(), Shaders.VERTEX_FRAGMENT);
+    }
 
     public TranslateProgram(Texture2D.Shading shading) {
         super(null, shading, null, CommonShaderVariables.values(), Shaders.VERTEX_FRAGMENT);

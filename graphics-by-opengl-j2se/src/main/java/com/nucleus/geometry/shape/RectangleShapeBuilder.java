@@ -9,7 +9,6 @@ import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
-import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.renderer.Window;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureParameter;
@@ -100,11 +99,20 @@ public class RectangleShapeBuilder extends ElementBuilder {
             return vertexCount >>> 2;
         }
 
+        /**
+         * Returns the rectangle defining the shape
+         * 
+         * @return
+         */
+        public Rectangle getRectangle() {
+            return rectangle;
+        }
+
         protected Rectangle rectangle;
         protected float z;
     }
 
-    private RectangleConfiguration configuration;
+    protected RectangleConfiguration configuration;
     /**
      * Quad data stored here after created.
      */

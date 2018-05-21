@@ -2,18 +2,13 @@ package com.nucleus.scene;
 
 import java.io.IOException;
 
-import com.nucleus.assets.AssetManager;
-import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
-import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.Mode;
-import com.nucleus.geometry.shape.RectangleShapeBuilder;
-import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
+import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.shader.ShaderProgram;
-import com.nucleus.shader.TranslateProgram;
-import com.nucleus.texturing.Texture2D.Shading;
+import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.TextureFactory;
+import com.nucleus.texturing.TextureType;
 
 /**
  * Node for a custom mesh, the mesh can either be created programmatically in runtime or by using a custom
@@ -42,22 +37,14 @@ public class MeshNode extends Node {
      * @return
      * @throws IOException
      */
-    public static Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, MeshNode parent) throws IOException {
-        LayerNode layer = parent.getRootNode().getLayerNode(null);
-        ViewFrustum view = layer.getViewFrustum();
-        ShaderProgram program = parent.getProgram();
-        if (program == null) {
-            program = AssetManager.getInstance()
-                    .getProgram(renderer.getGLES(), new TranslateProgram(Shading.textured));
-            parent.setProgram(program);
-        }
-        Mesh.Builder<Mesh> builder = Mesh.createBuilder(renderer, 4,
-                parent.getMaterial() != null ? parent.getMaterial() : new Material(),
-                program, AssetManager.getInstance().getTexture(renderer, parent.getTextureRef()),
-                new RectangleShapeBuilder(
-                        new RectangleConfiguration(view.getWidth(), view.getHeight(), 0f, 1, 0)),
-                Mode.TRIANGLE_FAN);
-        return builder;
+    @Override
+    public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, Node parent, int count,
+            ShapeBuilder shapeBuilder) throws IOException {
+
+        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
+        Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
+        builder.setTexture(tex);
+        return initMeshBuilder(renderer, parent, count, shapeBuilder, builder);
 
     }
 

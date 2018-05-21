@@ -1,5 +1,7 @@
 package com.nucleus.scene;
 
+import java.io.IOException;
+
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
@@ -81,19 +83,12 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         return nodeBuilder;
     }
 
-    /**
-     * Creates a meshbuilder that can be used to create meshes for this node, takes parameters from the parent
-     * linedrawer node.
-     * Use for instance when serializing (loading) nodes.
-     * 
-     * @param renderer
-     * @param parent
-     * @return
-     */
-    public static Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, LineDrawerNode parent) {
+    @Override
+    public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, Node parent, int count,
+            ShapeBuilder shapeBuilder) throws IOException {
+        LineDrawerNode lineParent = (LineDrawerNode) parent;
         Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
-        int count = parent.getLineCount();
-        switch (parent.getLineMode()) {
+        switch (lineParent.getLineMode()) {
             case LINES:
                 builder.setArrayMode(Mode.LINES, count * 2, 0);
                 break;
@@ -108,14 +103,11 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
                 builder.setElementMode(Mode.LINES, count, 0, count * 2);
                 break;
             default:
-                throw new IllegalArgumentException("Not implemented for mode " + parent.getLineMode());
+                throw new IllegalArgumentException("Not implemented for mode " + lineParent.getLineMode());
         }
-        Material m = new Material();
         Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
-        builder.setMaterial(m).setAttributesPerVertex(parent.getProgram().getAttributeSizes());
         builder.setTexture(tex);
-        builder.setShapeBuilder(parent.getShapeBuilder());
-        return builder;
+        return initMeshBuilder(renderer, parent, count, lineParent.getShapeBuilder(), builder);
     }
 
     /**
