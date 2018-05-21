@@ -540,7 +540,7 @@ public abstract class ShaderProgram {
      * @param resultArray Array to store shader variables for each attribute buffer in, attributes for buffer 1 will go
      * at index 0.
      */
-    private void mapAttributeVariablePerBuffer(ShaderVariable[][] resultArray) {
+    private void sortAttributeVariablePerBuffer(ShaderVariable[][] resultArray) {
 
         HashMap<BufferIndex, ArrayList<ShaderVariable>> svPerBuffer = new HashMap<BufferIndex, ArrayList<ShaderVariable>>();
         for (VariableMapping vm : attributes) {
@@ -707,11 +707,20 @@ public abstract class ShaderProgram {
      * Creates the block (uniform) buffers needed for this program, if any are used.
      * Always creates a {@link FloatBlockBuffer} for uniforms.
      * If BlockBuffer is needed for other type than uniforms it needs to be implemented.
+     * Binds uniform block to a binding point using the block index, this means that there is one binding point
+     * per uniform block.
      * 
      * @param gles
      * @return Uniform variable block buffers, using buffer objects, for this program, or null if not used.
      */
     public BlockBuffer[] createUniformBlockBuffers(GLES30Wrapper gles) throws GLException {
+        if (uniformInterfaceBlocks == null) {
+            return null;
+        }
+        for (InterfaceBlock block : uniformInterfaceBlocks) {
+            // Here the binding point and block index is the same.
+            gles.glUniformBlockBinding(program, block.blockIndex, block.blockIndex);
+        }
         BlockBuffer[] buffers = BlockBuffer.createBlockBuffers(uniformInterfaceBlocks);
         BufferObjectsFactory.getInstance().createUBOs(gles, buffers);
         return buffers;
@@ -873,7 +882,19 @@ public abstract class ShaderProgram {
         fetchActiveVariables(gles, VariableType.UNIFORM, info, null);
         attributeVariables = new ShaderVariable[attributeBufferCount][];
         attributesPerVertex = new int[attributeBufferCount];
-        mapAttributeVariablePerBuffer(attributeVariables);
+        sortAttributeVariablePerBuffer(attributeVariables);
+    }
+
+    /**
+     * Binds shader variables to defined offsets or updates the shader variable offsets to runtime values - depending
+     * on the value returned by {@link #useDynamicVariables()}
+     * If true is returned then the attribute binding is not changed and attribute count per vertex is calculated.
+     * If false is returned then the attributes are bound using shader variables {@link #shaderVariables}
+     * 
+     * @param gles
+     * @throws GLException
+     */
+    protected void bindVariables(GLES20Wrapper gles) throws GLException {
         if (useDynamicVariables()) {
             dynamicMapVariables();
             // Fetch packed size for uniform/attribute data
@@ -897,6 +918,7 @@ public abstract class ShaderProgram {
                 }
             }
         }
+
     }
 
     /**
@@ -1354,6 +1376,7 @@ public abstract class ShaderProgram {
             linkProgram(gles, program, shaderNames, commonVertexShaders);
             checkLinkStatus(gles, program);
             fetchProgramInfo(gles);
+            bindVariables(gles);
             uniforms = createUniformArray();
             if (GLES20Wrapper.getInfo().getRenderVersion().major >= 3) {
                 uniformBlockBuffers = createUniformBlockBuffers((GLES30Wrapper) gles);
@@ -1380,8 +1403,6 @@ public abstract class ShaderProgram {
     protected void setUniformBlock(GLES30Wrapper gles, BlockBuffer blockBuffer, ShaderVariable variable)
             throws GLException {
         if (blockBuffer.isDirty()) {
-            gles.glUniformBlockBinding(program, blockBuffer.interfaceBlock.blockIndex, variable.getBlockIndex());
-            gles.glBindBuffer(GLES30.GL_UNIFORM_BUFFER, blockBuffer.getBufferName());
             gles.glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, variable.getBlockIndex(), blockBuffer.getBufferName());
             /**
              * TODO - Another solution is to use glBufferSubData - but the benefit may not be obvious since reusing the
@@ -1397,7 +1418,6 @@ public abstract class ShaderProgram {
 
         } else {
             InterfaceBlock vars = blockBuffer.interfaceBlock;
-            gles.glUniformBlockBinding(program, vars.blockIndex, variable.getBlockIndex());
             gles.glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, vars.blockIndex,
                     blockBuffer.getBufferName());
             GLUtils.handleError(gles, "setUniformBlock " + blockBuffer.getBlockName());
