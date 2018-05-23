@@ -13,7 +13,7 @@ import com.nucleus.scene.ComponentNode;
  * The component part of behavior, this holds the data needed to perform actions.
  * Component describes what actions are possible on an entity by defining the data.
  * This holds the data needed to process the behavior, this processing shall be done by the system handling the
- * component.
+ * component - processing should be done on the dataset (not using methods) for instance in an OpenCL or compute shader.
  * This is to ensure that behavior is data driven and uses composition rather than inheritance.
  * In order to be compatible with hardware acceleration such as OpenCL it is important NOT to break down into too
  * small components and to use buffers that are available on the native side (GPU)

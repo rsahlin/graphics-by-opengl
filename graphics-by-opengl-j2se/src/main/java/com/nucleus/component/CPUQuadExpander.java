@@ -152,38 +152,6 @@ public class CPUQuadExpander extends AttributeExpander {
     }
 
     /**
-     * Sets the position
-     * 
-     * @param quad
-     * @param pos
-     * @param offset
-     */
-    public final void setPosition(int quad, float[] pos, int offset) {
-        int index = quad * source.sizePerEntity + mapper.translateOffset;
-        float x = pos[offset++];
-        float y = pos[offset++];
-        float z = pos[offset++];
-        sourceData[index] = x;
-        sourceData[index + 1] = y;
-        index = quad * destination.sizePerEntity + mapper.translateOffset;
-        destinationData[index] = x;
-        destinationData[index + 1] = y;
-        destinationData[index + 2] = z;
-        index += sizePerVertex;
-        destinationData[index] = x;
-        destinationData[index + 1] = y;
-        destinationData[index + 2] = z;
-        index += sizePerVertex;
-        destinationData[index] = x;
-        destinationData[index + 1] = y;
-        destinationData[index + 2] = z;
-        index += sizePerVertex;
-        destinationData[index] = x;
-        destinationData[index + 1] = y;
-        destinationData[index + 2] = z;
-    }
-
-    /**
      * Sets the transform in the source and destination buffer buffer.
      * This method will call {@link #expandQuadData(int)} after setting the source data
      * 
@@ -229,51 +197,43 @@ public class CPUQuadExpander extends AttributeExpander {
     }
 
     /**
-     * Sets all the data for the specified quad, the caller shall make sure the data is indexed using the appropriate
-     * mapper.
+     * Sets the data for the specified quad, the caller shall make sure the data is indexed using the appropriate
+     * mapper. The data will be expanded into quad.
+     * Use this method when initializing - not performance optimized.
      * 
      * @param quad
+     * @param quadOffset
      * @param data
      * @param offset Offset into data where values are read
+     * @param length Number of values to set
      */
-    public final void setData(int quad, float[] data, int offset) {
-        int index = quad * source.sizePerEntity;
-        System.arraycopy(data, offset, sourceData, index, data.length);
-        expandQuadData(quad);
-    }
-
-    /**
-     * Sets the xyz axis values for the transform, use this method when initializing
-     * This will set the transform in the source buffer.
-     * 
-     * @param quad
-     * @param transform 3 axis translate, rotate and scale values
-     */
-    public final void setTransform(int quad, float[] transform) {
-        int index = quad * source.sizePerEntity;
-        sourceData[index + mapper.translateOffset] = transform[0];
-        sourceData[index + 1 + mapper.translateOffset] = transform[1];
-        sourceData[index + 2 + mapper.translateOffset] = transform[2];
-
-        sourceData[index + mapper.rotateOffset] = transform[3];
-        sourceData[index + 1 + mapper.rotateOffset] = transform[4];
-        sourceData[index + 2 + mapper.rotateOffset] = transform[5];
-
-        sourceData[index + mapper.scaleOffset] = transform[6];
-        sourceData[index + 1 + mapper.scaleOffset] = transform[7];
-        sourceData[index + 2 + mapper.scaleOffset] = transform[8];
-        expandQuadData(quad);
+    public final void setData(int quad, int quadOffset, float[] data, int offset, int length) {
+        int index = quad * source.sizePerEntity + quadOffset;
+        int quadIndex = quad * destination.sizePerEntity + quadOffset;
+        float val;
+        for (int i = 0; i < length; i++) {
+            val = data[offset++];
+            sourceData[index++] = val;
+            if (i + quadOffset < sizePerVertex) {
+                destinationData[quadIndex] = val;
+                destinationData[quadIndex + sizePerVertex] = val;
+                destinationData[quadIndex + sizePerVertex * 2] = val;
+                destinationData[quadIndex + sizePerVertex * 3] = val;
+                quadIndex++;
+            }
+        }
     }
 
     /**
      * Expands the data for one quad, from source into destination for all 4 vertices of the quad.
+     * Not optimized - only use this when setting a limited number of quads or outside game loop.
      * 
      * @param quad
      * @param srcData
      * @param offset
      * @return
      */
-    public final void expandQuadData(int quad) {
+    protected final void expandQuadData(int quad) {
         int index = quad * destination.sizePerEntity;
         int sourceIndex = quad * source.sizePerEntity;
         System.arraycopy(sourceData, sourceIndex, destinationData, index, sizePerVertex);

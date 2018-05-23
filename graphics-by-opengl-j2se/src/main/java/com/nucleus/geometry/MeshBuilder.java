@@ -16,9 +16,15 @@ import com.nucleus.scene.Node;
  */
 public abstract class MeshBuilder<T extends Mesh> {
 
+    /**
+     * Interface for creating mesh builders - use this to create a mesh that can be used on the specified node, for
+     * instance when loading nodes or when creating meshes to be used in a component.
+     * 
+     * @param <T>
+     */
     public interface MeshBuilderFactory<T extends Mesh> {
         /**
-         * Creates a mesh builder that can be used to create a mesh for the node.
+         * Creates a mesh builder that can be used to create a mesh for the node or component.
          * Subclasses may need to override this to create the necessary Mesh.Builder
          * 
          * @param renderer

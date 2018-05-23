@@ -310,7 +310,7 @@ class BaseRenderer implements NucleusRenderer {
                 program.validateProgram(getGLES());
             }
 
-            renderMeshes(program, node.getMeshes(nodeMeshes), matrices);
+            renderMeshes(program, nodeMeshes, matrices);
         }
         this.modelMatrix = nodeMatrix;
         // Add this to rendered nodes before children.
