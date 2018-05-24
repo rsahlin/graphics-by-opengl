@@ -208,6 +208,10 @@ public abstract class ShaderProgram {
      * The GL program object
      */
     private int program = Constants.NO_VALUE;
+    /**
+     * Available after {@link #fetchProgramInfo(GLES20Wrapper)} has been called
+     */
+    private ProgramInfo info;
 
     private ShaderSource[] shaderSources;
     private int[] shaderNames;
@@ -218,6 +222,14 @@ public abstract class ShaderProgram {
      * Use {@link #getShaderVariable(VariableMapping)} to fetch variable.
      */
     protected ShaderVariable[] shaderVariables;
+    protected ShaderVariable[] activeAttributes;
+    protected ShaderVariable[] activeUniforms;
+
+    /**
+     * Increased as shader variables are added to the {@link #shaderVariables} array - may be less than
+     * shaderVariables.length
+     */
+    protected int shaderMappingCount = 0;
 
     /**
      * Calculated in create program
@@ -232,7 +244,12 @@ public abstract class ShaderProgram {
     /**
      * List of attributes defined by a program, ie passed to {@link #setAttributeMapping(VariableMapping[])}
      */
-    protected VariableMapping[] attributes;
+    protected VariableMapping[] sourceAttributes;
+    /**
+     * List of uniforms defined by a program, ie passed to {@link #setUniformMapping(VariableMapping[])}
+     * 
+     */
+    protected VariableMapping[] sourceUniforms;
     protected int attributeBufferCount;
     protected HashMap<Integer, ShaderVariable> blockVariables = new HashMap<>(); // Active block uniforms, index is the
                                                                                  // uniform index from GL
@@ -255,11 +272,6 @@ public abstract class ShaderProgram {
      */
     transient protected int[] samplers;
 
-    /**
-     * List of uniforms defined by a program, ie passed to {@link #setUniformMapping(VariableMapping[])}
-     * 
-     */
-    protected VariableMapping[] sourceUniforms;
     /**
      * Uniforms, used when rendering - uniforms array shall belong to program since uniforms are a property of the
      * program. This data is quite small and the size depends on what program is used - and not the mesh.
@@ -365,8 +377,14 @@ public abstract class ShaderProgram {
     }
 
     protected void setMapping(VariableMapping[] mapping) {
-        setUniformMapping(mapping);
-        setAttributeMapping(mapping);
+        if (mapping != null) {
+            setUniformMapping(mapping);
+            setAttributeMapping(mapping);
+        } else {
+            // Without mapping we default to using one buffer
+            // TODO - break out into method that can be overridden.
+            attributeBufferCount = 1;
+        }
     }
 
     /**
@@ -504,7 +522,7 @@ public abstract class ShaderProgram {
                 }
             }
         }
-        attributes = attributeList.toArray(new VariableMapping[attributeList.size()]);
+        sourceAttributes = attributeList.toArray(new VariableMapping[attributeList.size()]);
     }
 
     /**
@@ -529,7 +547,7 @@ public abstract class ShaderProgram {
      * Finds the shader attribute variables per buffer using VariableMapping, iterate through defined (by subclasses)
      * attribute variable mapping.
      * Put the result in the result array and set the {@linkplain ShaderVariable} offset based on used attributes.
-     * Sorting shall be done in the order that variables are added to the {@link #attributes} array, as this will
+     * Sorting shall be done in the order that variables are added to the {@link #sourceAttributes} array, as this will
      * preserve the order.
      * Meaning that if the declared ShaderVariables are used, and of same size as declared, then the resulting offsets
      * will match the offsets in ShaderVariables.
@@ -541,24 +559,36 @@ public abstract class ShaderProgram {
      * at index 0.
      */
     private void sortAttributeVariablePerBuffer(ShaderVariable[][] resultArray) {
+        if (sourceAttributes == null) {
+            // If mapping not specified then use one buffer.
+            resultArray[0] = new ShaderVariable[info.getActiveVariables(VariableType.ATTRIBUTE)];
+            int readIndex = 0;
+            for (int i = 0; i < resultArray[0].length; i++) {
+                while (shaderVariables[readIndex].getType() != VariableType.ATTRIBUTE) {
+                    readIndex++;
+                }
+                resultArray[0][i] = shaderVariables[readIndex++];
+            }
+        } else {
+            HashMap<BufferIndex, ArrayList<ShaderVariable>> svPerBuffer = new HashMap<BufferIndex, ArrayList<ShaderVariable>>();
+            for (VariableMapping vm : sourceAttributes) {
+                ArrayList<ShaderVariable> array = svPerBuffer.get(vm.getBufferIndex());
+                if (array == null) {
+                    array = new ArrayList<ShaderVariable>();
+                    svPerBuffer.put(vm.getBufferIndex(), array);
+                }
+                ShaderVariable sv = getShaderVariable(vm);
+                if (sv != null) {
+                    array.add(getShaderVariable(vm));
+                }
+            }
+            for (BufferIndex key : svPerBuffer.keySet()) {
+                ArrayList<ShaderVariable> defined = svPerBuffer.get(key);
+                if (defined != null) {
+                    resultArray[key.index] = defined.toArray(new ShaderVariable[defined.size()]);
+                }
+            }
 
-        HashMap<BufferIndex, ArrayList<ShaderVariable>> svPerBuffer = new HashMap<BufferIndex, ArrayList<ShaderVariable>>();
-        for (VariableMapping vm : attributes) {
-            ArrayList<ShaderVariable> array = svPerBuffer.get(vm.getBufferIndex());
-            if (array == null) {
-                array = new ArrayList<ShaderVariable>();
-                svPerBuffer.put(vm.getBufferIndex(), array);
-            }
-            ShaderVariable sv = getShaderVariable(vm);
-            if (sv != null) {
-                array.add(getShaderVariable(vm));
-            }
-        }
-        for (BufferIndex key : svPerBuffer.keySet()) {
-            ArrayList<ShaderVariable> defined = svPerBuffer.get(key);
-            if (defined != null) {
-                resultArray[key.index] = defined.toArray(new ShaderVariable[defined.size()]);
-            }
         }
     }
 
@@ -792,7 +822,7 @@ public abstract class ShaderProgram {
             throws GLException {
         setUniformMatrices(matrices, mesh);
         updateUniformData(uniforms, mesh);
-        uploadUniforms(gles, uniforms, sourceUniforms);
+        uploadUniforms(gles, uniforms, activeUniforms);
     }
 
     /**
@@ -804,14 +834,13 @@ public abstract class ShaderProgram {
      * @param gles
      * @param uniformData
      * @param mesh
-     * @param uniformMapping
+     * @param activeUniforms
      * @throws GLException
      */
-    protected void uploadUniforms(GLES20Wrapper gles, float[] uniformData, VariableMapping[] uniformMapping)
+    protected void uploadUniforms(GLES20Wrapper gles, float[] uniformData, ShaderVariable[] activeUniforms)
             throws GLException {
 
-        for (VariableMapping am : uniformMapping) {
-            ShaderVariable v = getShaderVariable(am);
+        for (ShaderVariable v : activeUniforms) {
             // If null then declared in program but not used, silently ignore
             if (v != null) {
                 if (v.getBlockIndex() != Constants.NO_VALUE) {
@@ -868,9 +897,16 @@ public abstract class ShaderProgram {
      * @throws GLException If attribute or uniform locations could not be found.
      */
     protected void fetchProgramInfo(GLES20Wrapper gles) throws GLException {
-        ProgramInfo info = gles.getProgramInfo(program);
+        info = gles.getProgramInfo(program);
         GLUtils.handleError(gles, GET_PROGRAM_INFO_ERROR);
-        shaderVariables = new ShaderVariable[CommonShaderVariables.values().length];
+        if (sourceAttributes != null && sourceUniforms != null) {
+            shaderVariables = new ShaderVariable[sourceAttributes.length + sourceUniforms.length];
+        } else {
+            shaderVariables = new ShaderVariable[info.getActiveVariables(VariableType.ATTRIBUTE)
+                    + info.getActiveVariables(VariableType.UNIFORM)];
+        }
+        activeAttributes = new ShaderVariable[info.getActiveVariables(VariableType.ATTRIBUTE)];
+        activeUniforms = new ShaderVariable[info.getActiveVariables(VariableType.UNIFORM)];
         int uniformBlockCount = info.getActiveVariables(VariableType.UNIFORM_BLOCK);
         if (uniformBlockCount > 0) {
             uniformInterfaceBlocks = gles.getUniformBlocks(info);
@@ -1032,19 +1068,21 @@ public abstract class ShaderProgram {
 
     /**
      * Set the variable static offset, if dynamic offset is used it is computed after all variables has been collected.
-     * TODO If dynamic offset shall be used this mehtod does not need to be called.
+     * If VariableMapping has not been specified then nothing is done.
+     * TODO If dynamic offset shall be used this method does not need to be called.
      * 
      * @param gles
      * @param program
      * @param variable
      */
     protected void setVariableStaticOffset(GLES20Wrapper gles, int program, ShaderVariable variable) {
-        VariableMapping v = getMappingByName(variable);
-        // If variable is null then not defined in mapping used when class is created - treat this as an error
-        if (v == null) {
-            throw new IllegalArgumentException("No mapping for shader variable " + variable.getName());
+        if (sourceAttributes != null || sourceUniforms != null) {
+            VariableMapping v = getMappingByName(variable);
+            // If variable is null then not defined in mapping - or mapping is not specified
+            if (v != null) {
+                variable.setOffset(v.getOffset());
+            }
         }
-        variable.setOffset(v.getOffset());
     }
 
     /**
@@ -1057,7 +1095,7 @@ public abstract class ShaderProgram {
         String name = variable.getName();
         switch (variable.getType()) {
             case ATTRIBUTE:
-                for (VariableMapping vm : attributes) {
+                for (VariableMapping vm : sourceAttributes) {
                     if (name.contentEquals(vm.getName())) {
                         return vm;
                     }
@@ -1280,7 +1318,7 @@ public abstract class ShaderProgram {
         if (shaderVariables == null) {
             throw new IllegalArgumentException(NULL_VARIABLES_ERROR);
         }
-        return shaderVariables[variable.getIndex()];
+        return variable.getIndex() < shaderVariables.length ? shaderVariables[variable.getIndex()] : null;
     }
 
     /**
@@ -1328,23 +1366,47 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets the active shader variable - call this when variable has been validated.
+     * Sets the active shader variable into {@link ShaderVariable} array - call this when variable has been validated.
      * 
      * @param variable
      */
     protected void setShaderVariable(ShaderVariable variable) {
-        try {
-            VariableMapping vm = getMappingByName(variable);
-            // TODO Offset is set dynamically when dynamicMapShaderOffset() is called - create a setting so that
-            // it is possible to toggle between the two modes.
-            // variable.setOffset(vm.getOffset());
-            shaderVariables[vm.getIndex()] = variable;
+        if (sourceAttributes != null && sourceUniforms != null) {
+            try {
+                VariableMapping vm = getMappingByName(variable);
+                // TODO Offset is set dynamically when dynamicMapShaderOffset() is called - create a setting so that
+                // it is possible to toggle between the two modes.
+                // variable.setOffset(vm.getOffset());
+                shaderVariables[vm.getIndex()] = variable;
 
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(
-                    "Variable has no mapping to shader variable (ie used in shader but not defined in program "
-                            + getClass().getSimpleName() + ") : "
-                            + variable.getName());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(
+                        "Variable has no mapping to shader variable (ie used in shader but not defined in program "
+                                + getClass().getSimpleName() + ") : "
+                                + variable.getName());
+            }
+        } else {
+            // Mapping has not been specified
+            shaderVariables[shaderMappingCount++] = variable;
+        }
+        switch (variable.getType()) {
+            case ATTRIBUTE:
+                activeAttributes[variable.getActiveIndex()] = variable;
+                break;
+            case UNIFORM:
+                if (activeUniforms[variable.getActiveIndex()] != null) {
+                    throw new IllegalArgumentException("Not null");
+                }
+                activeUniforms[variable.getActiveIndex()] = variable;
+                break;
+            case UNIFORM_BLOCK:
+                if (activeUniforms[variable.getActiveIndex()] != null) {
+                    throw new IllegalArgumentException("Not null");
+                }
+                activeUniforms[variable.getActiveIndex()] = variable;
+                break;
+            default:
+                // DO NOTHING
         }
     }
 
@@ -1569,27 +1631,6 @@ public abstract class ShaderProgram {
                 }
         }
         return samplers;
-    }
-
-    /**
-     * Returns the size of shader variable that are mapped to the specified buffer index.
-     * Use this to fetch the size per attribute for the different buffers.
-     * 
-     * @param variables
-     * @param index
-     * @return
-     */
-    protected int getVariableSize(ShaderVariable[] variables, BufferIndex index) {
-        int size = 0;
-        for (ShaderVariable v : variables) {
-            if (v != null) {
-                VariableMapping vm = getMappingByName(v);
-                if (vm.getBufferIndex() == index) {
-                    size += v.getSizeInFloats();
-                }
-            }
-        }
-        return size;
     }
 
     /**

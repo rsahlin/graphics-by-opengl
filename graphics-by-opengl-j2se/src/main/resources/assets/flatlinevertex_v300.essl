@@ -1,0 +1,25 @@
+#version 300 es
+ /**
+ * Vertex shader for lines
+ */
+
+precision highp float;
+
+//Put array declaration after name for GLSL compatibility
+uniform mat4 uMVMatrix;
+uniform mat4 uProjectionMatrix;
+
+in vec4 aVertex; 
+in vec4 aColor;
+
+out vec4 color;
+
+/**
+ * Used for objects that uses only position, plus color, for instance lines
+ */
+void main() {
+    vec4 pos = uMVMatrix * vec4(aTranslate, 1.0);
+    gl_Position = uProjectionMatrix * pos;
+    color = aColor;
+    gl_PointSize = uPointSize;
+}

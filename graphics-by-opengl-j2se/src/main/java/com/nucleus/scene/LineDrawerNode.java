@@ -16,6 +16,8 @@ import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.CommonShaderVariables;
+import com.nucleus.shader.GenericShaderProgram;
+import com.nucleus.shader.ShaderProgram.Shaders;
 import com.nucleus.shader.ShaderProperty.PropertyMapper;
 import com.nucleus.shader.TranslateProgram;
 import com.nucleus.texturing.Texture2D;
@@ -107,6 +109,11 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         }
         Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
         builder.setTexture(tex);
+        if (parent.getProgram() == null) {
+            parent.setProgram(
+                    AssetManager.getInstance().getProgram(renderer.getGLES(), new GenericShaderProgram("flat",
+                            CommonShaderVariables.values(), Shaders.VERTEX_FRAGMENT)));
+        }
         return initMeshBuilder(renderer, parent, count, lineParent.getShapeBuilder(), builder);
     }
 
@@ -209,7 +216,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void setRectangle(int vertice, float[] values, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = getProgram().getShaderVariable(CommonShaderVariables.aTranslate).getOffset();
+        int translate = getProgram().getShaderVariable(CommonShaderVariables.aVertex).getOffset();
         int color = getProgram().getShaderVariable(CommonShaderVariables.aColor).getOffset();
         float[] pos = new float[2];
         internalSetVertex(offset + translate, offset + color, copy(values, 0, pos), z, rgba);

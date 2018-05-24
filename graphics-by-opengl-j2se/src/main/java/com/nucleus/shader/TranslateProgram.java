@@ -9,14 +9,9 @@ import com.nucleus.texturing.TextureType;
 
 /**
  * Program for translated vertices, shader calculates vertex position with position offset
- * Can be used to draw lines, polygons or similar - objects cannot be independently rotated or scaled
- * - use {@link TransformProgram}
+ * Can be used to draw objects that cannot be independently rotated or scaled, for instance a quad.
  */
 public class TranslateProgram extends ShaderProgram {
-
-    ShaderVariable uPointSize;
-
-    private float pointSize = 1;
 
     public TranslateProgram(Texture2D texture) {
         super(null,
@@ -41,24 +36,11 @@ public class TranslateProgram extends ShaderProgram {
     }
 
     @Override
-    protected void setShaderVariable(ShaderVariable variable) {
-        super.setShaderVariable(variable);
-        if (variable.getName().contentEquals(CommonShaderVariables.uPointSize.name())) {
-            uPointSize = variable;
-        }
-    }
-
-    @Override
     public void updateUniformData(float[] destinationUniform, Mesh mesh) {
-        if (uPointSize != null) {
-            destinationUniform[uPointSize.getOffset()] = pointSize;
-        }
     }
 
     @Override
     public void initBuffers(Mesh mesh) {
-        // TODO Auto-generated method stub
-
     }
 
 }

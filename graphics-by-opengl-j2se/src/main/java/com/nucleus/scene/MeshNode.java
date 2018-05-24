@@ -2,8 +2,13 @@ package com.nucleus.scene;
 
 import java.io.IOException;
 
+import com.nucleus.assets.AssetManager;
+import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.geometry.shape.RectangleShapeBuilder;
+import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.texturing.Texture2D;
@@ -30,7 +35,7 @@ public class MeshNode extends Node {
 
     /**
      * Creates a Mesh builder for this node.
-     * Default behavior is to create a mesh builder using textured translate program and a fullscreen rectangle.
+     * if shapebuilder is null then Mode is set to TRIANGLE_FAN with 4 vertices and a rectangle shapebuilder is created.
      * 
      * @param renderer
      * @param parent
@@ -40,10 +45,23 @@ public class MeshNode extends Node {
     @Override
     public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, Node parent, int count,
             ShapeBuilder shapeBuilder) throws IOException {
-
         Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
-        Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
+        Texture2D tex = null;
+        if (parent.getTextureRef() == null) {
+            tex = TextureFactory.createTexture(TextureType.Untextured);
+
+        } else {
+            tex = AssetManager.getInstance().getTexture(renderer, parent.getTextureRef());
+        }
         builder.setTexture(tex);
+        if (shapeBuilder == null) {
+            LayerNode layer = parent.getRootNode().getLayerNode(null);
+            ViewFrustum view = layer.getViewFrustum();
+            builder.setArrayMode(Mode.TRIANGLE_FAN, 4, 0);
+            shapeBuilder = new RectangleShapeBuilder(
+                    new RectangleConfiguration(view.getWidth(), view.getHeight(), 0f, 1, 0));
+        }
+        // If program is not present in parent then the meshbuilder is called to create program.
         return initMeshBuilder(renderer, parent, count, shapeBuilder, builder);
 
     }

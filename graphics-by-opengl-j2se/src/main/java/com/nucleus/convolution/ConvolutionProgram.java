@@ -95,7 +95,7 @@ public class ConvolutionProgram extends ShaderProgram {
             throws GLException {
         Matrix.mul4(matrices[0], matrices[1]);
         System.arraycopy(matrices[0], 0, uniforms, 0, Matrix.MATRIX_ELEMENTS);
-        uploadUniforms(gles, uniforms, sourceUniforms);
+        uploadUniforms(gles, uniforms, activeUniforms);
     }
 
     @Override

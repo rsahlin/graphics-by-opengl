@@ -496,11 +496,15 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
     /**
      * Returns the buffer, at the specified index, containing vertices and attribute data
+     * If the mesh only has one buffer - it is returned regardless of index.
      * 
      * @param buffer Index into the vertex/attribute buffer to return
      * @return The vertexbuffer
      */
     public AttributeBuffer getAttributeBuffer(BufferIndex buffer) {
+        if (attributes.length == 1) {
+            return attributes[0];
+        }
         return attributes[buffer.index];
     }
 
