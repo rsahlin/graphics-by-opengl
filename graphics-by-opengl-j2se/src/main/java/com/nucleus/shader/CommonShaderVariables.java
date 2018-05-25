@@ -32,8 +32,8 @@ public enum CommonShaderVariables implements VariableMapping {
      */
     uvData(9, 0, ShaderVariable.VariableType.UNIFORM, null),
     uPointSize(10, 66, ShaderVariable.VariableType.UNIFORM, null),
-    aVertex(11, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-    aTexCoord(12, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
+    aVertex(11, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES_STATIC),
+    aTexCoord(12, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES_STATIC),
     aTranslate(13, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
     aRotate(14, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),
     aScale(15, 8, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES),

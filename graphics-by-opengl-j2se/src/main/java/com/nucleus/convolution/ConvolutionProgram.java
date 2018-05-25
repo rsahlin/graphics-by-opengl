@@ -22,8 +22,8 @@ public class ConvolutionProgram extends ShaderProgram {
     protected enum VARIABLES implements VariableMapping {
         uMVPMatrix(0, 0, ShaderVariable.VariableType.UNIFORM, null),
         uKernel(1, 16, ShaderVariable.VariableType.UNIFORM, null),
-        aTranslate(2, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-        aTexCoord(3, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES);
+        aTranslate(2, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES_STATIC),
+        aTexCoord(3, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.ATTRIBUTES_STATIC);
 
         private final int index;
         private final int offset;
@@ -84,8 +84,8 @@ public class ConvolutionProgram extends ShaderProgram {
 
     @Override
     public void updateAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
-        AttributeBuffer buffer = mesh.getAttributeBuffer(BufferIndex.VERTICES);
-        gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attributeVariables[BufferIndex.VERTICES.index]);
+        AttributeBuffer buffer = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
+        gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attributeVariables[BufferIndex.ATTRIBUTES_STATIC.index]);
         GLUtils.handleError(gles, "glVertexAttribPointers ");
 
     }

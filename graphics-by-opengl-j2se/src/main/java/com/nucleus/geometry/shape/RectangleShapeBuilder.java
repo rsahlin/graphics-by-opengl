@@ -184,7 +184,8 @@ public class RectangleShapeBuilder extends ElementBuilder {
 
     @Override
     public void build(Mesh mesh) {
-        AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.VERTICES);
+        // TODO - what if this buffer is not present, for instance if program created without mapping?
+        AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
         int stride = attributes.getFloatStride();
         if (quadStoreage == null) {
             quadStoreage = new float[stride * QUAD_VERTICES];

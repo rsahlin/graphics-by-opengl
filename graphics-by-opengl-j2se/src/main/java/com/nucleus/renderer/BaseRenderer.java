@@ -596,7 +596,7 @@ class BaseRenderer implements NucleusRenderer {
 
         material.setBlendModeSeparate(gles);
 
-        AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.VERTICES);
+        AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
         ElementBuffer indices = mesh.getElementBuffer();
 
         if (indices == null) {

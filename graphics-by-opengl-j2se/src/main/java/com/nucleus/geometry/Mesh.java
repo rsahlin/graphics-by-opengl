@@ -77,17 +77,13 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     public enum BufferIndex {
         /**
-         * Vertex storage buffer, this is usually not updated
-         */
-        VERTICES(0),
-        /**
          * Attribute buffer storage, this is usually dynamic
          */
-        ATTRIBUTES(1),
+        ATTRIBUTES(0),
         /**
-         * Static attributes
+         * Static attribute vertex storage, use this for static attributes
          */
-        ATTRIBUTES_STATIC(2);
+        ATTRIBUTES_STATIC(1);
 
         public final int index;
 
@@ -405,6 +401,10 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     transient int drawCount;
     /**
+     * Max number of vertices in buffer
+     */
+    transient int maxVertexCount;
+    /**
      * Offset to first element
      */
     transient int offset;
@@ -465,6 +465,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     protected void internalCreateBuffers(int[] attributeSizes, InterfaceBlock[] interfaceBlocks, int vertexCount,
             int indiceCount) {
         attributes = AttributeBuffer.createAttributeBuffers(attributeSizes, vertexCount, GLES20.GL_FLOAT);
+        maxVertexCount = vertexCount;
         if (indiceCount > 0) {
             indices = new ElementBuffer(indiceCount, Type.SHORT);
             setDrawCount(indiceCount, 0);
@@ -502,9 +503,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * @return The vertexbuffer
      */
     public AttributeBuffer getAttributeBuffer(BufferIndex buffer) {
-        if (attributes.length == 1) {
-            return attributes[0];
-        }
         return attributes[buffer.index];
     }
 
@@ -697,7 +695,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     public void setDrawCount(int drawCount, int offset) {
         ElementBuffer buffer = getElementBuffer();
-        int max = getAttributeBuffer(BufferIndex.VERTICES).getVerticeCount();
+        int max = maxVertexCount;
         if (buffer != null && buffer.getCount() > 0) {
             max = buffer.getCount();
         }

@@ -12,13 +12,12 @@ import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.Mesh.Mode;
-import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.shader.AttributeIndexer.Indexer;
 import com.nucleus.shader.CommonShaderVariables;
 import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderProgram.Shaders;
-import com.nucleus.shader.ShaderProperty.PropertyMapper;
 import com.nucleus.shader.TranslateProgram;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -111,8 +110,8 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         builder.setTexture(tex);
         if (parent.getProgram() == null) {
             parent.setProgram(
-                    AssetManager.getInstance().getProgram(renderer.getGLES(), new GenericShaderProgram("flat",
-                            CommonShaderVariables.values(), Shaders.VERTEX_FRAGMENT)));
+                    AssetManager.getInstance().getProgram(renderer.getGLES(), new GenericShaderProgram("flatline",
+                            null, Shaders.VERTEX_FRAGMENT)));
         }
         return initMeshBuilder(renderer, parent, count, lineParent.getShapeBuilder(), builder);
     }
@@ -183,7 +182,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         Mesh mesh = getMesh(MeshIndex.MAIN);
         mesh.setAttributeUpdater(this);
         bindAttributeBuffer(mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES));
-        mapper = new PropertyMapper(program);
+        mapper = new Indexer(program);
     }
 
     public void set(LineDrawerNode source) {
@@ -195,8 +194,6 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
 
     public ShapeBuilder getShapeBuilder() {
         switch (lineMode) {
-            case RECTANGLE:
-                return new RectangleShapeBuilder(new RectangleShapeBuilder.RectangleConfiguration(lineCount / 4, 0));
             case LINES:
             case LINE_STRIP:
                 return null;
@@ -249,23 +246,6 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     }
 
     /**
-     * Sets data for one line at index, this sets first and second positions.
-     * Suitable for LINES mode.
-     * 
-     * @param vertice
-     * @param first x,y,z values for first vertice
-     * @param second x,y,z values for second vertice
-     * @param z
-     * @param rgba Color for 2 vertices
-     */
-    public void setLine(int vertice, float[] first, float[] second, float z, float[] rgba) {
-        int offset = buffer.getFloatStride() * vertice;
-        internalSetVertex(offset + mapper.translateOffset, offset + mapper.albedoOffset, first, z, rgba);
-        offset += buffer.getFloatStride();
-        internalSetVertex(offset + mapper.translateOffset, offset + mapper.albedoOffset, second, z, rgba);
-    }
-
-    /**
      * Adds a vertex at the offset for vertice.
      * Depending on mode this can be used to add a point or line.
      * The caller must update the drawcount for the change to be visible
@@ -279,20 +259,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void addVertex(int vertice, float[] next, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        internalSetVertex(offset + mapper.translateOffset, offset + mapper.albedoOffset, next, z, rgba);
-    }
-
-    /**
-     * Updated the position of a vertice in the line array
-     * 
-     * @param vertice
-     * @param pos
-     * @param z
-     */
-    public void setPos(int vertice, float[] pos, float z) {
-        int offset = buffer.getFloatStride() * vertice;
-        internalSetVertex(offset + mapper.translateOffset, pos, z);
-
+        internalSetVertex(offset + mapper.vertex, offset + mapper.albedo, next, z, rgba);
     }
 
     private void internalSetVertex(int translate, int color, float[] pos, float z, float[] rgba) {
@@ -303,13 +270,6 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         attributes[color++] = rgba[1];
         attributes[color++] = rgba[2];
         attributes[color] = rgba[3];
-        attributesDirty = true;
-    }
-
-    private void internalSetVertex(int translate, float[] pos, float z) {
-        attributes[translate++] = pos[0];
-        attributes[translate++] = pos[1];
-        attributes[translate] = z;
         attributesDirty = true;
     }
 

@@ -16,11 +16,11 @@ public class GenericShaderProgram extends ShaderProgram {
      * Creates a shader program that will load shaders from default location
      * 
      * @param source
-     * @param mapping
+     * @param mapping Variable mapping to specify separate buffers or null.
      * @param shaders
      */
     public GenericShaderProgram(String source, VariableMapping[] mapping, Shaders shaders) {
-        super(null, null, source, null, shaders);
+        super(null, null, source, mapping, shaders);
     }
 
     @Override

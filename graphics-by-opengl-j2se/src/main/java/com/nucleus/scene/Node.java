@@ -29,7 +29,7 @@ import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.shader.ShaderProperty.PropertyMapper;
+import com.nucleus.shader.AttributeIndexer.Indexer;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Transform;
@@ -306,7 +306,7 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
     transient float[] modelMatrix = Matrix.createMatrix();
     transient ArrayList<Mesh> meshes = new ArrayList<Mesh>();
     transient protected ShaderProgram program;
-    transient protected PropertyMapper mapper;
+    transient protected Indexer mapper;
 
     /**
      * The parent node, this shall be set when node is added as child

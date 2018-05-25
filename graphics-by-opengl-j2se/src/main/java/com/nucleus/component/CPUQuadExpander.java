@@ -5,7 +5,7 @@ import com.nucleus.common.Constants;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.shader.ShaderProperty.PropertyMapper;
+import com.nucleus.shader.AttributeIndexer.Indexer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.UVAtlas;
@@ -55,7 +55,7 @@ public class CPUQuadExpander extends AttributeExpander {
      * @param mapper
      * @param data
      */
-    public CPUQuadExpander(Mesh spriteMesh, PropertyMapper mapper,
+    public CPUQuadExpander(Mesh spriteMesh, Indexer mapper,
             CPUComponentBuffer source, CPUComponentBuffer destination) {
         super(mapper, destination, 4);
         this.source = source;
@@ -92,12 +92,12 @@ public class CPUQuadExpander extends AttributeExpander {
             buffer.setBufferPosition(0);
             for (int i = 0; i < source.getEntityCount(); i++) {
                 uvIndex = 0;
-                frame = (int) tempData[mapper.frameOffset];
+                frame = (int) tempData[mapper.frame];
                 // data.get(i, tempData);
                 for (int expand = 0; expand < multiplier; expand++) {
                     // Store the UV for the vertex
-                    tempData[mapper.frameOffset] = uvData[frame][uvIndex++];
-                    tempData[mapper.frameOffset + 1] = uvData[frame][uvIndex++];
+                    tempData[mapper.frame] = uvData[frame][uvIndex++];
+                    tempData[mapper.frame + 1] = uvData[frame][uvIndex++];
                     buffer.put(tempData);
                 }
             }
@@ -115,8 +115,8 @@ public class CPUQuadExpander extends AttributeExpander {
      * @param color
      */
     public void setColor(int quad, float[] color) {
-        int index = quad * source.sizePerEntity + mapper.albedoOffset;
-        int destIndex = quad * destination.sizePerEntity + mapper.albedoOffset;
+        int index = quad * source.sizePerEntity + mapper.albedo;
+        int destIndex = quad * destination.sizePerEntity + mapper.albedo;
         sourceData[index++] = color[0];
         sourceData[index++] = color[1];
         sourceData[index++] = color[2];
@@ -137,10 +137,10 @@ public class CPUQuadExpander extends AttributeExpander {
      * @param frame
      */
     public final void setFrame(int quad, int frame) {
-        if (mapper.frameOffset != Constants.NO_VALUE) {
-            int index = quad * source.sizePerEntity + mapper.frameOffset;
+        if (mapper.frame != Constants.NO_VALUE) {
+            int index = quad * source.sizePerEntity + mapper.frame;
             sourceData[index] = frame;
-            index = quad * destination.sizePerEntity + mapper.frameOffset;
+            index = quad * destination.sizePerEntity + mapper.frame;
             destinationData[index] = frame;
             index += sizePerVertex;
             destinationData[index] = frame;
@@ -162,7 +162,7 @@ public class CPUQuadExpander extends AttributeExpander {
         float[] translate = transform.getTranslate();
         int start = quad * source.sizePerEntity;
         if (translate != null) {
-            int index = start + mapper.translateOffset;
+            int index = start + mapper.translate;
             for (int i = 0; i < 4; i++) {
                 sourceData[index++] = translate[0];
                 sourceData[index++] = translate[1];
@@ -171,7 +171,7 @@ public class CPUQuadExpander extends AttributeExpander {
             }
         }
         if (transform.getAxisAngle() != null) {
-            int index = start + mapper.rotateOffset;
+            int index = start + mapper.rotate;
             float[] axisangle = transform.getAxisAngle().getValues();
             float angle = axisangle[AxisAngle.ANGLE];
             for (int i = 0; i < 4; i++) {
@@ -186,7 +186,7 @@ public class CPUQuadExpander extends AttributeExpander {
         if (scale == null) {
             scale = DEFAULT_SCALE;
         }
-        int index = start + mapper.scaleOffset;
+        int index = start + mapper.scale;
         for (int i = 0; i < 4; i++) {
             sourceData[index++] = scale[0];
             sourceData[index++] = scale[1];

@@ -57,8 +57,8 @@ public class BufferObjectsFactory {
                 renderer.bufferData(GLES20.GL_ARRAY_BUFFER, attribs.getSizeInBytes(),
                         attribs.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
                 attribs.setDirty(false);
+                GLUtils.handleError(renderer.getGLES(), "createVBOs GL_ARRAY_BUFFER name " + attribs.getBufferName());
             }
-            GLUtils.handleError(renderer.getGLES(), "createVBOs GL_ARRAY_BUFFER name " + attribs.getBufferName());
         }
         if (indices != null) {
             renderer.bindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
