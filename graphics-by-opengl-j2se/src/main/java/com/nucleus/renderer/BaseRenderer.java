@@ -596,7 +596,6 @@ class BaseRenderer implements NucleusRenderer {
 
         material.setBlendModeSeparate(gles);
 
-        AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
         ElementBuffer indices = mesh.getElementBuffer();
 
         if (indices == null) {
@@ -613,6 +612,10 @@ class BaseRenderer implements NucleusRenderer {
                 gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
                         indices.getBuffer().position(mesh.getOffset()));
                 GLUtils.handleError(gles, "glDrawElements no ElementBuffer ");
+            }
+            AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
+            if (vertices == null) {
+                vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES);
             }
             timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
         }
