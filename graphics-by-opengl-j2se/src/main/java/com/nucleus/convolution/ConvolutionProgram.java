@@ -18,6 +18,7 @@ import com.nucleus.vecmath.Matrix;
 public class ConvolutionProgram extends ShaderProgram {
 
     protected final static int DEFAULT_COMPONENTS = 3;
+    protected final float[] matrix = Matrix.createMatrix();
 
     protected enum VARIABLES implements VariableMapping {
         uMVPMatrix(0, 0, ShaderVariable.VariableType.UNIFORM, null),
@@ -85,7 +86,8 @@ public class ConvolutionProgram extends ShaderProgram {
     @Override
     public void updateAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
         AttributeBuffer buffer = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
-        gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attributeVariables[BufferIndex.ATTRIBUTES_STATIC.index]);
+        gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER,
+                attributeVariables[BufferIndex.ATTRIBUTES_STATIC.index]);
         GLUtils.handleError(gles, "glVertexAttribPointers ");
 
     }
@@ -93,8 +95,8 @@ public class ConvolutionProgram extends ShaderProgram {
     @Override
     public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
             throws GLException {
-        Matrix.mul4(matrices[0], matrices[1]);
-        System.arraycopy(matrices[0], 0, uniforms, 0, Matrix.MATRIX_ELEMENTS);
+        Matrix.mul4(matrices[0], matrices[1], matrix);
+        System.arraycopy(matrix, 0, uniforms, 0, Matrix.MATRIX_ELEMENTS);
         uploadUniforms(gles, uniforms, activeUniforms);
     }
 
