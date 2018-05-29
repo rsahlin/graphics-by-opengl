@@ -18,7 +18,7 @@ out vec4 color;
  * Used for objects that uses only position, plus color, for instance lines
  */
 void main() {
-    vec4 pos = uMVMatrix * vec4(aVertex, 1.0);
-    gl_Position = uProjectionMatrix * pos;
+    vec4 pos = vec4(aVertex, 1.0) * uMVMatrix;
+    gl_Position = pos * uProjectionMatrix;
     color = aColor;
 }

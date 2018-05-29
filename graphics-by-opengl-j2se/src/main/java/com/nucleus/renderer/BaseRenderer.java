@@ -85,6 +85,11 @@ class BaseRenderer implements NucleusRenderer {
      */
     protected float[] viewMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
 
+    /**
+     * Temp matrix - not threadsafe
+     */
+    protected float[] tempMatrix = Matrix.createMatrix();
+
     protected GLES20Wrapper gles;
     protected ImageFactory imageFactory;
     protected MatrixEngine matrixEngine;
@@ -292,7 +297,7 @@ class BaseRenderer implements NucleusRenderer {
             pushMatrix(this.projection, matrices[Matrices.PROJECTION.index]);
             matrices[Matrices.PROJECTION.index] = projection;
         }
-        Matrix.mul4(viewMatrix, nodeMatrix, matrices[Matrices.MODELVIEW.index]);
+        Matrix.mul4(nodeMatrix, viewMatrix, matrices[Matrices.MODELVIEW.index]);
         if (node.getType().equals(NodeTypes.linedrawernode.name())) {
             LineDrawerNode ld = (LineDrawerNode) node;
             if (ld.getLineMode() != LineMode.POINTS) {
@@ -551,7 +556,9 @@ class BaseRenderer implements NucleusRenderer {
                 Matrix.setIdentity(matrices[Matrices.RENDERPASS_2.index], 0);
                 Matrix.scaleM(matrices[Matrices.RENDERPASS_2.index], 0, 0.5f, 0.5f, 1f);
                 Matrix.translate(matrices[Matrices.RENDERPASS_2.index], 0.5f, 0.5f, 0f);
-                Matrix.mul4(matrices[Matrices.RENDERPASS_1.index], matrices[Matrices.RENDERPASS_2.index]);
+                Matrix.mul4(matrices[Matrices.RENDERPASS_1.index], matrices[Matrices.RENDERPASS_2.index], tempMatrix);
+                System.arraycopy(tempMatrix, 0, matrices[Matrices.RENDERPASS_1.index], 0, Matrix.MATRIX_ELEMENTS);
+                // Matrix.mul4(matrices[Matrices.RENDERPASS_1.index], matrices[Matrices.RENDERPASS_2.index], );
                 break;
             default:
                 // Nothing to do

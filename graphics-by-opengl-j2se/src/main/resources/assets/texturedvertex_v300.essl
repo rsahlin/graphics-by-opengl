@@ -20,8 +20,8 @@ out vec2 vTexCoord;
 out vec4 color;
 
 void main() {
-    vec4 pos = uMVMatrix * vec4(aVertex + aTranslate, 1.0);
-    gl_Position = uProjectionMatrix * pos;
+    vec4 pos = vec4(aVertex + aTranslate, 1.0) * uMVMatrix;
+    gl_Position = pos * uProjectionMatrix;
     color = aColor;
     vTexCoord = aTexCoord;
 }
