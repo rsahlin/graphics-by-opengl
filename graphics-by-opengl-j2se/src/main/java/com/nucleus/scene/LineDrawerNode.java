@@ -17,7 +17,7 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.AttributeIndexer.Indexer;
 import com.nucleus.shader.CommonShaderVariables;
 import com.nucleus.shader.GenericShaderProgram;
-import com.nucleus.shader.ShaderProgram.Shaders;
+import com.nucleus.shader.ShaderProgram.ProgramType;
 import com.nucleus.shader.TranslateProgram;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -110,8 +110,9 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         builder.setTexture(tex);
         if (parent.getProgram() == null) {
             parent.setProgram(
-                    AssetManager.getInstance().getProgram(renderer.getGLES(), new GenericShaderProgram("flatline",
-                            null, Shaders.VERTEX_FRAGMENT)));
+                    AssetManager.getInstance().getProgram(renderer.getGLES(),
+                            new GenericShaderProgram(new String[] { "flatline" },
+                                    ProgramType.VERTEX_FRAGMENT)));
         }
         return initMeshBuilder(renderer, parent, count, lineParent.getShapeBuilder(), builder);
     }

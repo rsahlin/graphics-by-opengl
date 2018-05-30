@@ -75,7 +75,7 @@ public class ConvolutionProgram extends ShaderProgram {
     private final static String FRAGMENT_SHADER_NAME = "assets/convolutionfragment.essl";
 
     public ConvolutionProgram() {
-        super(null, null, null, VARIABLES.values(), Shaders.VERTEX_FRAGMENT);
+        super(null, null, null, VARIABLES.values(), ProgramType.VERTEX_FRAGMENT);
     }
 
     @Override

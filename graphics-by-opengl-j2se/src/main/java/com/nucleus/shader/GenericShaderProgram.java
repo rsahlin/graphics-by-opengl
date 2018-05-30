@@ -12,15 +12,24 @@ import com.nucleus.texturing.Texture2D.Shading;
  */
 public class GenericShaderProgram extends ShaderProgram {
 
+    protected String[] source;
+
     /**
      * Creates a shader program that will load shaders from default location
      * 
-     * @param source
-     * @param mapping Variable mapping to specify separate buffers or null.
+     * @param source Use as category for the shader types, must shader types in Shader. Eg if
+     * {@link ProgramType#VERTEX_FRAGMENT} then this must contain 2 values.
      * @param shaders
      */
-    public GenericShaderProgram(String source, VariableMapping[] mapping, Shaders shaders) {
-        super(null, null, source, mapping, shaders);
+    public GenericShaderProgram(String[] source, ProgramType shaders) {
+        super(null, null, null, null, shaders);
+        this.source = source;
+    }
+
+    @Override
+    protected String getShaderSource(int shaderType) {
+        ShaderType t = ShaderType.getFromType(shaderType);
+        return source[t.index];
     }
 
     @Override

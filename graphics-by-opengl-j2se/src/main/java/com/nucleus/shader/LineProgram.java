@@ -20,7 +20,7 @@ public class LineProgram extends ShaderProgram {
     private float pointSize = 1;
 
     public LineProgram(Texture2D.Shading shading) {
-        super(null, shading, CATEGORY, CommonShaderVariables.values(), Shaders.VERTEX_FRAGMENT);
+        super(null, shading, CATEGORY, CommonShaderVariables.values(), ProgramType.VERTEX_FRAGMENT);
     }
 
     @Override

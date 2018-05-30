@@ -16,11 +16,11 @@ public class TranslateProgram extends ShaderProgram {
     public TranslateProgram(Texture2D texture) {
         super(null,
                 (texture == null || texture.textureType == TextureType.Untextured) ? Shading.flat : Shading.textured,
-                null, CommonShaderVariables.values(), Shaders.VERTEX_FRAGMENT);
+                null, CommonShaderVariables.values(), ProgramType.VERTEX_FRAGMENT);
     }
 
     public TranslateProgram(Texture2D.Shading shading) {
-        super(null, shading, null, CommonShaderVariables.values(), Shaders.VERTEX_FRAGMENT);
+        super(null, shading, null, CommonShaderVariables.values(), ProgramType.VERTEX_FRAGMENT);
     }
 
     @Override

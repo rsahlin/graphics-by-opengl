@@ -52,10 +52,49 @@ import com.nucleus.vecmath.Matrix;
  */
 public abstract class ShaderProgram {
 
-    public enum Shaders {
+    /**
+     * The different type of programs that can be linked from different type of shaders.
+     *
+     */
+    public enum ProgramType {
         VERTEX_FRAGMENT(),
         COMPUTE(),
         VERTEX_GEOMETRY_FRAGMENT();
+    }
+
+    /**
+     * The different type of shaders
+     *
+     */
+    public enum ShaderType {
+        VERTEX(GLES20.GL_VERTEX_SHADER, 0),
+        FRAGMENT(GLES20.GL_FRAGMENT_SHADER, 1),
+        GEOMETRY(GLES32.GL_GEOMETRY_SHADER, 2),
+        COMPUTE(GLES31.GL_COMPUTE_SHADER, 3);
+
+        public final int value;
+        public final int index;
+
+        private ShaderType(int value, int index) {
+            this.value = value;
+            this.index = index;
+        }
+
+        /**
+         * Returns the enum from the GL shader type, eg GL_VERTEX_SHADER
+         * 
+         * @param shader
+         * @return
+         */
+        public static ShaderType getFromType(int shaderType) {
+            for (ShaderType t : values()) {
+                if (t.value == shaderType) {
+                    return t;
+                }
+            }
+            return null;
+        }
+
     }
 
     public static final String PROGRAM_DIRECTORY = "assets/";
@@ -80,7 +119,7 @@ public abstract class ShaderProgram {
      * Subclasses may modify before {@link #createProgram(GLES20Wrapper)} is called - or before they call
      * super.createProgram()
      */
-    protected Shaders shaders;
+    protected ProgramType shaders;
 
     /**
      * Number of vertices per sprite - this is for a quad that is created using element buffer.
@@ -199,7 +238,7 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * The basic function - will be returned
+     * The basic function
      */
     protected Function function;
 
@@ -344,14 +383,16 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Returns the function for the shader type, default is to return the function that was specified when program was
-     * created.
+     * Returns the name of the shader source - excluding folder path and excluding vertex shader + extension.
+     * for instance to load /asssets/flatlinevertex.essl this method shall return 'flatline' for the shaderType
+     * GL_VERTEX_SHADER
      * 
-     * @param type GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER
+     * Default behavior is to return the function as a string.
+     * 
      * @return
      */
-    protected Function getFunction(int type) {
-        return function;
+    protected String getShaderSource(int shaderType) {
+        return function.toString();
     }
 
     /**
@@ -374,7 +415,7 @@ public abstract class ShaderProgram {
      * @param shader
      */
     protected ShaderProgram(Pass pass, Texture2D.Shading shading, String category, VariableMapping[] mapping,
-            Shaders shaders) {
+            ProgramType shaders) {
         function = new Function(pass, shading, category);
         setMapping(mapping);
         this.shaders = shaders;
@@ -447,31 +488,31 @@ public abstract class ShaderProgram {
      * Override in subclasses to point to other shader source
      * 
      * @param version Highest GL version that is supported, used to fetch versioned source name.
-     * @param type The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER
+     * @param shaderType The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER
      * @return
      */
-    protected ShaderSource getShaderSource(Renderers version, int type) {
-        switch (type) {
+    protected ShaderSource getShaderSource(Renderers version, int shaderType) {
+        switch (shaderType) {
             case GLES20.GL_VERTEX_SHADER:
-                return new ShaderSource(PROGRAM_DIRECTORY + getFunction(type) + VERTEX_TYPE,
-                        getSourceNameVersion(version, type), type);
+                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSource(shaderType) + VERTEX_TYPE,
+                        getSourceNameVersion(version, shaderType), shaderType);
             case GLES20.GL_FRAGMENT_SHADER:
-                return new ShaderSource(PROGRAM_DIRECTORY + getFunction(type) + FRAGMENT_TYPE,
-                        getSourceNameVersion(version, type), type);
+                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSource(shaderType) + FRAGMENT_TYPE,
+                        getSourceNameVersion(version, shaderType), shaderType);
             case GLES31.GL_COMPUTE_SHADER:
-                return new ShaderSource(PROGRAM_DIRECTORY + getFunction(type),
-                        getSourceNameVersion(version, type), type);
+                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSource(shaderType),
+                        getSourceNameVersion(version, shaderType), shaderType);
             case GLES32.GL_GEOMETRY_SHADER:
-                return new ShaderSource(PROGRAM_DIRECTORY + getFunction(type) + GEOMETRY_TYPE,
-                        getSourceNameVersion(version, type), type);
+                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSource(shaderType) + GEOMETRY_TYPE,
+                        getSourceNameVersion(version, shaderType), shaderType);
             default:
-                throw new IllegalArgumentException("Not implemented for type: " + type);
+                throw new IllegalArgumentException("Not implemented for type: " + shaderType);
 
         }
     }
 
     /**
-     * Called by {@link #getShaderSource(int)} to append shader (ESSL) version to sourcename.
+     * Called by {@link #getShaderSource(Renderers, int)} to append shader (ESSL) version to sourcename.
      * This is used to be able to load different shader sources depending on if GLES major version is less than 3.
      * Override this if different source shall be used depending on available renderer/shader version.
      * Default is to append _v300 if GLES version is 3 or above.
@@ -1374,7 +1415,7 @@ public abstract class ShaderProgram {
         SimpleLogger.d(getClass(), "Creating program for: " + sources.length + " shaders");
         try {
             loadShaderSources(gles, sources);
-            if (shaders != Shaders.COMPUTE && commonVertexShaders == null && commonVertexSources == null) {
+            if (shaders != ProgramType.COMPUTE && commonVertexShaders == null && commonVertexSources == null) {
                 createCommonVertexShaders(gles, sources);
             }
             shaderNames = new int[sources.length];
