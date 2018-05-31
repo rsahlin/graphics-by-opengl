@@ -23,9 +23,14 @@ public class ComponentHandler {
      */
     private Map<String, Component> systemComponent = new HashMap<>();
     /**
-     * Lookup system from the component id
+     * Lookup system from the component, use this to find the System for the component.
      */
     private Map<String, System<Component>> componentSystem = new HashMap<>();
+
+    /**
+     * Lookup component by id
+     */
+    private Map<String, Component> componentById = new HashMap<>();
 
     private static ComponentHandler handler;
 
@@ -50,11 +55,11 @@ public class ComponentHandler {
         if (component == null || component.getId() == null) {
             throw new IllegalArgumentException("Null parameter: " + component);
         }
-        if (componentSystem.containsKey(component.getId())) {
+        if (componentById.containsKey(component.getId())) {
             throw new IllegalArgumentException(
                     "Already registered " + component.getId() + ", for system " + component.getSystem());
         }
-        systemComponent.put(component.getSystem(), component);
+        componentById.put(component.getId(), component);
     }
 
     /**
@@ -85,18 +90,19 @@ public class ComponentHandler {
      * @param renderer
      */
     public void initSystems(RootNode root, NucleusRenderer renderer) {
-        for (System<Component> s : componentSystem.values()) {
+        for (Component c : componentById.values()) {
+            System<Component> s = getSystem(c);
             if (s.initialized) {
                 throw new IllegalArgumentException("Already initalized system " + s.getClass().getName());
             }
-            s.initSystem(renderer, root, systemComponent.get(s.getType()));
+            s.initComponent(renderer, root, c);
             s.initialized = true;
         }
     }
 
     /**
      * Creates and registers the system for the component, if the system has already been registered for the component
-     * type then the registered system is returned.
+     * then the registered system is returned.
      * 
      * @param component The component to create the system for
      * @return If the system has not already been created then it is created, otherwise the registered system is
@@ -107,7 +113,7 @@ public class ComponentHandler {
         if (componentSystem.containsKey(component.getSystem())) {
             return componentSystem.get(component.getSystem());
         }
-        System<Component> system = (System) TypeResolver.getInstance().create(component.getSystem());
+        System<Component> system = (System<Component>) TypeResolver.getInstance().create(component.getSystem());
         system.setType(component.getSystem());
         componentSystem.put(component.getSystem(), system);
         return system;
@@ -117,7 +123,7 @@ public class ComponentHandler {
      * Returns the System for the component, if one is registered
      * 
      * @param component
-     * @return The System for the component, or null if not registered.
+     * @return The System for the component, or null if system not created by calling {@link #createSystem(Component)}
      */
     public System getSystem(Component component) {
         return componentSystem.get(component.getSystem());

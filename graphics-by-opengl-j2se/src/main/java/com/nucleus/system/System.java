@@ -16,7 +16,7 @@ public abstract class System<T extends Component> {
 
     /**
      * Keep track if system is initialized, for instance make sure
-     * {@link #initSystem(NucleusRenderer, RootNode, Component)} not called more than once.
+     * {@link #initComponent(NucleusRenderer, RootNode, Component)} not called more than once.
      */
     protected boolean initialized = false;
 
@@ -25,18 +25,19 @@ public abstract class System<T extends Component> {
      * 
      * @param component The component to update
      * @param deltaTime The time lapsed since last call to process
-     * @throws IllegalStateException If {@link #initSystem(RootNode)} has not been called.
+     * @throws IllegalStateException If {@link #initComponent(NucleusRenderer, RootNode, Component)} has not been
+     * called.
      */
     public abstract void process(T component, float deltaTime);
 
     /**
-     * Inits the system, this must be called before {@link #process(T, float)} is called.
+     * Inits the component for the system, this must be called before {@link #process(T, float)} is called.
      * 
      * @param renderer
      * @param root
      * @param component The component to be used in the system
      */
-    public abstract void initSystem(NucleusRenderer renderer, RootNode root, T component);
+    public abstract void initComponent(NucleusRenderer renderer, RootNode root, T component);
 
     /**
      * Returns the type of component, this is tied to the implementing class by {@link TypeResolver}
