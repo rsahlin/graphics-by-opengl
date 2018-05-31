@@ -1768,7 +1768,11 @@ public abstract class ShaderProgram {
 
     @Override
     public String toString() {
-        return shaders + " : " + function.getShaderSourceName();
+        StringBuffer sourceNames = new StringBuffer();
+        for (ShaderSource s : shaderSources) {
+            sourceNames.append("\n" + s.getFullSourceName());
+        }
+        return shaders + " : " + function.getShaderSourceName() + sourceNames.toString();
     }
 
     /**
