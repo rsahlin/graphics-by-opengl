@@ -263,8 +263,7 @@ class BaseRenderer implements NucleusRenderer {
                     for (RenderPass renderPass : renderPasses) {
                         if (renderPass.getViewFrustum() != null && renderPass.getPass() == Pass.SHADOW1) {
                             Matrix.mul4(renderPass.getViewFrustum().getMatrix(),
-                                    // TODO Is is safe to use matrix from renderpass2? Use temp matrix instead?
-                                    ShadowPass1Program.getLightMatrix(matrices[Matrices.RENDERPASS_2.index]),
+                                    ShadowPass1Program.getLightMatrix(tempMatrix),
                                     matrices[Matrices.RENDERPASS_1.index]);
                         }
                         pushPass(renderPass.getPass());
@@ -555,10 +554,9 @@ class BaseRenderer implements NucleusRenderer {
                 // Adjust the light matrix to fit inside texture coordinates
                 Matrix.setIdentity(matrices[Matrices.RENDERPASS_2.index], 0);
                 Matrix.scaleM(matrices[Matrices.RENDERPASS_2.index], 0, 0.5f, 0.5f, 1f);
-                Matrix.translate(matrices[Matrices.RENDERPASS_2.index], 0.5f, 0.5f, 0f);
+                Matrix.translate(matrices[Matrices.RENDERPASS_2.index], 0f, 0f, 0f);
                 Matrix.mul4(matrices[Matrices.RENDERPASS_1.index], matrices[Matrices.RENDERPASS_2.index], tempMatrix);
                 System.arraycopy(tempMatrix, 0, matrices[Matrices.RENDERPASS_1.index], 0, Matrix.MATRIX_ELEMENTS);
-                // Matrix.mul4(matrices[Matrices.RENDERPASS_1.index], matrices[Matrices.RENDERPASS_2.index], );
                 break;
             default:
                 // Nothing to do
