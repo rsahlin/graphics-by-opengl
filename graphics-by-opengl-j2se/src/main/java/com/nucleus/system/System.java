@@ -16,7 +16,7 @@ public abstract class System<T extends Component> {
 
     /**
      * Keep track if system is initialized, for instance make sure
-     * {@link #initComponent(NucleusRenderer, RootNode, Component)} not called more than once.
+     * {@link #initSystem(NucleusRenderer, RootNode)} not called more than once.
      */
     protected boolean initialized = false;
 
@@ -29,6 +29,16 @@ public abstract class System<T extends Component> {
      * called.
      */
     public abstract void process(T component, float deltaTime);
+
+    /**
+     * Initializes the system, will be called once before {@link #initComponent(NucleusRenderer, RootNode, Component)}
+     * is called.
+     * Implementors MUST set the {@link #initialized} flag to true
+     * 
+     * @param renderer
+     * @param root
+     */
+    public abstract void initSystem(NucleusRenderer renderer, RootNode root);
 
     /**
      * Inits the component for the system, this must be called before {@link #process(T, float)} is called.
