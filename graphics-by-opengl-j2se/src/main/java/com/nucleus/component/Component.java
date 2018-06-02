@@ -8,6 +8,7 @@ import com.nucleus.common.TypeResolver;
 import com.nucleus.io.BaseReference;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.ComponentNode;
+import com.nucleus.scene.RootNode;
 
 /**
  * The component part of behavior, this holds the data needed to perform actions.
@@ -31,6 +32,11 @@ public abstract class Component extends BaseReference {
     private String system;
 
     transient protected ArrayList<ComponentBuffer> buffers = new ArrayList<>();
+    /**
+     * Keep track if component is initialized, for instance make sure
+     * {@link #initComponent(NucleusRenderer, RootNode, Component)} not called more than with this component
+     */
+    transient protected boolean initialized = false;
 
     /**
      * Used to create a new instance of a component
@@ -66,6 +72,24 @@ public abstract class Component extends BaseReference {
      */
     public void setSystem(String system) {
         this.system = system;
+    }
+
+    /**
+     * Returns true if this component has been initialized
+     * 
+     * @return
+     */
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    /**
+     * Sets the initialized flag to true or false, will be returned by {@link #isInitialized()}
+     * 
+     * @param initialized
+     */
+    public void setInitialized(boolean initialized) {
+        this.initialized = initialized;
     }
 
     /**
@@ -122,6 +146,11 @@ public abstract class Component extends BaseReference {
      */
     protected ComponentBuffer getBuffer(int index) {
         return buffers.get(index);
+    }
+
+    @Override
+    public String toString() {
+        return "Component " + getId() + ", initialized: " + initialized + ", type: " + type + ", system: " + system;
     }
 
 }
