@@ -350,32 +350,7 @@ public abstract class ShaderProgram {
      * not found.
      */
     public int getVariableOffset(Property property) {
-        ShaderVariable v = null;
-        switch (property) {
-            case VERTEX:
-                v = getShaderVariable(CommonShaderVariables.aVertex);
-                break;
-            case UV:
-                v = getShaderVariable(CommonShaderVariables.aTexCoord);
-                break;
-            case TRANSLATE:
-                v = getShaderVariable(CommonShaderVariables.aTranslate);
-                break;
-            case ROTATE:
-                v = getShaderVariable(CommonShaderVariables.aRotate);
-                break;
-            case SCALE:
-                v = getShaderVariable(CommonShaderVariables.aScale);
-                break;
-            case FRAME:
-                v = getShaderVariable(CommonShaderVariables.aFrameData);
-                break;
-            case EMISSIVE:
-            case ALBEDO:
-                v = getShaderVariable(CommonShaderVariables.aColor);
-                break;
-            default:
-        }
+        ShaderVariable v = getVariableByName(property.name);
         if (v != null) {
             return v.getOffset();
         }

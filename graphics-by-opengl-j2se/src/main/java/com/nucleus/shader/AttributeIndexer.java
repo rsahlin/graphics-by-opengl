@@ -16,14 +16,21 @@ public class AttributeIndexer {
      *
      */
     public enum Property {
-        VERTEX(),
-        UV(),
-        TRANSLATE(),
-        ROTATE(),
-        SCALE(),
-        ALBEDO(),
-        EMISSIVE(),
-        FRAME();
+        VERTEX("aVertex"),
+        UV("aTexCoord"),
+        TRANSLATE("aTranslate"),
+        ROTATE("aRotate"),
+        SCALE("aScale"),
+        ALBEDO("aColor"),
+        EMISSIVE("aColor"),
+        FRAME("aFrameData");
+
+        public final String name;
+
+        private Property(String name) {
+            this.name = name;
+        }
+
     }
 
     /**
@@ -31,7 +38,7 @@ public class AttributeIndexer {
      * These are generalised names for common usecases, offset is fetched from program.
      * Subclasses can override constructor and fetch offset by using name of attribute.
      * 
-     *
+     * TODO How to get the datatype from shader?
      */
     public static class Indexer {
         public final int vertex;
