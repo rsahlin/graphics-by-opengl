@@ -57,14 +57,14 @@ public class AttributeIndexer {
          * @param program
          */
         public Indexer(ShaderProgram program) {
-            vertex = program.getVariableOffset(Property.VERTEX);
-            uv = program.getVariableOffset(Property.UV);
-            translate = program.getVariableOffset(Property.TRANSLATE);
-            rotate = program.getVariableOffset(Property.ROTATE);
-            scale = program.getVariableOffset(Property.SCALE);
-            frame = program.getVariableOffset(Property.FRAME);
-            albedo = program.getVariableOffset(Property.ALBEDO);
-            emissive = program.getVariableOffset(Property.EMISSIVE);
+            vertex = program.getAttributeOffset(Property.VERTEX);
+            uv = program.getAttributeOffset(Property.UV);
+            translate = program.getAttributeOffset(Property.TRANSLATE);
+            rotate = program.getAttributeOffset(Property.ROTATE);
+            scale = program.getAttributeOffset(Property.SCALE);
+            frame = program.getAttributeOffset(Property.FRAME);
+            albedo = program.getAttributeOffset(Property.ALBEDO);
+            emissive = program.getAttributeOffset(Property.EMISSIVE);
             attributesPerVertex = program.getAttributesPerVertex(BufferIndex.ATTRIBUTES);
         }
 

@@ -151,7 +151,7 @@ public class ShaderVariable {
     private int size;
     private int dataType;
     /**
-     * The gl location of the variable
+     * The gl location of the variable, used when calling setting attrib pointer or uploading uniforms.
      */
     private int location;
     /**
@@ -159,7 +159,8 @@ public class ShaderVariable {
      */
     private int activeIndex;
     /**
-     * Offset into buffer where the data for this variable is stored, used by GL
+     * Offset into buffer where the data for this variable is stored, used by GL when setting attrib pointer
+     * or uploading uniforms.
      */
     private int offset = Constants.NO_VALUE;
 

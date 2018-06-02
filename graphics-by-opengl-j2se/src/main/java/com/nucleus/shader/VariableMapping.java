@@ -24,7 +24,7 @@ public interface VariableMapping {
     public int getIndex();
 
     /**
-     * Returns the (static) offset for data to the variable.
+     * Returns the offset for data to the variable.
      * 
      * @return
      */

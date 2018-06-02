@@ -107,6 +107,7 @@ public abstract class ShaderProgram {
     public static final String VERTEX_TYPE = "vertex";
     public static final String GEOMETRY_TYPE = "geometry";
     protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
+    protected final static String NO_ACTIVE_UNIFORMS = "No active uniforms, forgot to call createProgram()?";
 
     /**
      * Set to true to force appending common shader to shader source
@@ -255,23 +256,17 @@ public abstract class ShaderProgram {
     private int[] shaderNames;
 
     /**
-     * This is the main array holding all active shader variables
-     * It is set when {@link #addShaderVariable(ShaderVariable)} is called.
-     * Use {@link #getShaderVariable(VariableMapping)} to fetch variable.
+     * active attributes
      */
-    protected ShaderVariable[] shaderVariables;
     protected ShaderVariable[] activeAttributes;
+    /**
+     * active uniforms
+     */
     protected ShaderVariable[] activeUniforms;
     /**
      * Calculated in create program
      */
     protected ShaderVariable[][] attributeVariables;
-
-    /**
-     * Increased as shader variables are added to the {@link #shaderVariables} array - may be less than
-     * shaderVariables.length
-     */
-    protected int shaderMappingCount = 0;
 
     protected GlobalLight globalLight = GlobalLight.getInstance();
     /**
@@ -349,8 +344,8 @@ public abstract class ShaderProgram {
      * @return Offset into attribute (buffer) where the storage for the specified variable is, or -1 if the variable is
      * not found.
      */
-    public int getVariableOffset(Property property) {
-        ShaderVariable v = getVariableByName(property.name);
+    public int getAttributeOffset(Property property) {
+        ShaderVariable v = getAttributeByName(property.name);
         if (v != null) {
             return v.getOffset();
         }
@@ -689,19 +684,15 @@ public abstract class ShaderProgram {
      * 
      */
     protected void createSamplerStorage() {
-        if (shaderVariables == null) {
-            throw new IllegalArgumentException("Shader variables is null, forgot to call createProgram()?");
+        if (activeUniforms == null) {
+            throw new IllegalArgumentException(NO_ACTIVE_UNIFORMS);
         }
         int samplerSize = 0;
-        if (shaderVariables != null) {
-            samplerSize = getSamplerSize(shaderVariables);
-            if (samplerSize > 0) {
-                setSamplers(new int[samplerSize]);
-            } else {
-                SimpleLogger.d(getClass(), "No samplers used");
-            }
+        samplerSize = getSamplerSize(activeUniforms);
+        if (samplerSize > 0) {
+            setSamplers(new int[samplerSize]);
         } else {
-            throw new IllegalArgumentException("Shader variables is null, forgot to call createProgram()?");
+            SimpleLogger.d(getClass(), "No samplers used");
         }
     }
 
@@ -712,10 +703,10 @@ public abstract class ShaderProgram {
      * @return
      */
     public float[] createUniformArray() {
-        if (shaderVariables == null) {
-            throw new IllegalArgumentException("Shader variables is null, forgot to call createProgram()?");
+        if (activeUniforms == null) {
+            throw new IllegalArgumentException(NO_ACTIVE_UNIFORMS);
         }
-        int uniformSize = getVariableSize(shaderVariables, VariableType.UNIFORM);
+        int uniformSize = getVariableSize(activeUniforms, VariableType.UNIFORM);
         return new float[uniformSize];
     }
 
@@ -852,30 +843,6 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Binds attribute location to the location specified in {@link #shaderVariables} - use this to enforce specific
-     * locations for attribute bindings.
-     * 
-     * @param gles
-     * @throws GLException
-     */
-    protected void bindAttributeLocations(GLES20Wrapper gles) throws GLException {
-        for (ShaderVariable attribute : shaderVariables) {
-            if (attribute != null) {
-                switch (attribute.getType()) {
-                    case ATTRIBUTE:
-                        gles.glBindAttribLocation(program, attribute.getLocation(), attribute.getName());
-                        break;
-                    case UNIFORM:
-                    case UNIFORM_BLOCK:
-                        // Uploaded separately when uploading uniforms
-                        break;
-                }
-            }
-        }
-        GLUtils.handleError(gles, BIND_ATTRIBUTE_ERROR);
-    }
-
-    /**
      * Fetches the program info and stores in this class.
      * This will read active attribute and uniform names, call this after the program has been compiled and linked.
      * 
@@ -885,12 +852,6 @@ public abstract class ShaderProgram {
     protected void fetchProgramInfo(GLES20Wrapper gles) throws GLException {
         info = gles.getProgramInfo(program);
         GLUtils.handleError(gles, GET_PROGRAM_INFO_ERROR);
-        if (attributeMapping != null && uniformMapping != null) {
-            shaderVariables = new ShaderVariable[attributeMapping.length + uniformMapping.length];
-        } else {
-            shaderVariables = new ShaderVariable[info.getActiveVariables(VariableType.ATTRIBUTE)
-                    + info.getActiveVariables(VariableType.UNIFORM)];
-        }
         activeAttributes = new ShaderVariable[info.getActiveVariables(VariableType.ATTRIBUTE)];
         activeUniforms = new ShaderVariable[info.getActiveVariables(VariableType.UNIFORM)];
         int uniformBlockCount = info.getActiveVariables(VariableType.UNIFORM_BLOCK);
@@ -910,8 +871,6 @@ public abstract class ShaderProgram {
     /**
      * Binds shader variables to defined offsets or updates the shader variable offsets to runtime values - depending
      * on the value returned by {@link #useDynamicVariables()}
-     * If true is returned then the attribute binding is not changed and attribute count per vertex is calculated.
-     * If false is returned then the attributes are bound using shader variables {@link #shaderVariables}
      * 
      * @param gles
      * @throws GLException
@@ -927,7 +886,7 @@ public abstract class ShaderProgram {
                 }
             }
         } else {
-            bindAttributeLocations(gles);
+            // bindAttributeLocations(gles);
             /**
              * Fetch defined size of uniform/attributes from attribute variables.
              * TODO - If not using dynamic variables the size of attributes per vertex should be calculated from
@@ -939,6 +898,7 @@ public abstract class ShaderProgram {
                     attributesPerVertex[i] = getVariableSize(attributeVariables[i], VariableType.ATTRIBUTE);
                 }
             }
+            throw new IllegalArgumentException("Not implemented");
         }
 
     }
@@ -1102,14 +1062,28 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Returns the active shader variable by name, or null if not found
+     * Returns the active shader uniform by name, or null if not found
      * 
-     * @param variableName
+     * @param uniform Name of uniform to return
      * @return
      */
-    public ShaderVariable getVariableByName(String variableName) {
-        for (ShaderVariable v : shaderVariables) {
-            if (v != null && v.getName().contentEquals(variableName)) {
+    public ShaderVariable getUniformByName(String uniform) {
+        return getVariableByName(uniform, activeUniforms);
+    }
+
+    /**
+     * Returns the active shader attribute by name, or null if not found
+     * 
+     * @param attrib Name of attribute to return
+     * @return
+     */
+    public ShaderVariable getAttributeByName(String attrib) {
+        return getVariableByName(attrib, activeAttributes);
+    }
+
+    protected ShaderVariable getVariableByName(String name, ShaderVariable[] variables) {
+        for (ShaderVariable v : variables) {
+            if (v != null && v.getName().contentEquals(name)) {
                 return v;
             }
         }
@@ -1301,29 +1275,27 @@ public abstract class ShaderProgram {
      * @throws IllegalArgumentException If shader variables are null, the program has probably not been created.
      */
     public ShaderVariable getShaderVariable(VariableMapping variable) {
-        if (shaderVariables == null) {
-            throw new IllegalArgumentException(NULL_VARIABLES_ERROR);
+        switch (variable.getType()) {
+            case UNIFORM:
+                return getUniformByName(variable.getName());
+            case ATTRIBUTE:
+                return getAttributeByName(variable.getName());
+            default:
+                throw new IllegalArgumentException("Not implemented for " + variable.getType());
         }
-        // If mapping not specified then use name.
-        if (attributeMapping != null && uniformMapping != null) {
-            return variable.getIndex() < shaderVariables.length ? shaderVariables[variable.getIndex()] : null;
-        }
-        return getVariableByName(variable.getName());
+
     }
 
     /**
      * Stores the shader variable in this program, if variable is of unmapped type, for instance Sampler, then it is
      * skipped. Also skip variables that are defined in code but not used in shader.
-     * Variables are stored in {@link #shaderVariables} array using the VariableMapping index
+     * Variables are stored in {@link #activeUniforms} or {@link #activeAttributes}
      * 
      * @param variable
      * @throws IllegalArgumentException If shader variables are null, the program has probably not been created,
      * or if a variable has no mapping in the code.
      */
     protected void addShaderVariable(ShaderVariable variable) {
-        if (shaderVariables == null) {
-            throw new IllegalArgumentException(NULL_VARIABLES_ERROR);
-        }
         // If variable type is is unMappedTypes then skip, for instance texture
         if (unMappedTypes.contains(variable.getDataType())) {
             return;
@@ -1337,24 +1309,6 @@ public abstract class ShaderProgram {
      * @param variable
      */
     protected void setShaderVariable(ShaderVariable variable) {
-        if (attributeMapping != null && uniformMapping != null) {
-            try {
-                VariableMapping vm = getMappingByName(variable);
-                // TODO Offset is set dynamically when dynamicMapShaderOffset() is called - create a setting so that
-                // it is possible to toggle between the two modes.
-                // variable.setOffset(vm.getOffset());
-                shaderVariables[vm.getIndex()] = variable;
-
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException(
-                        "Variable has no mapping to shader variable (ie used in shader but not defined in program "
-                                + getClass().getSimpleName() + ") : "
-                                + variable.getName());
-            }
-        } else {
-            // Mapping has not been specified
-            shaderVariables[shaderMappingCount++] = variable;
-        }
         switch (variable.getType()) {
             case ATTRIBUTE:
                 activeAttributes[variable.getActiveIndex()] = variable;
@@ -1609,11 +1563,10 @@ public abstract class ShaderProgram {
      */
     public void setUniformMatrices(float[][] matrices, Mesh mesh) {
         // Refresh the uniform matrixes - default is modelview and projection
-        System.arraycopy(matrices[0], 0, uniforms,
-                shaderVariables[CommonShaderVariables.uMVMatrix.index].getOffset(),
+        System.arraycopy(matrices[0], 0, uniforms, getUniformByName("uMVMatrix").getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(matrices[1], 0, uniforms,
-                shaderVariables[CommonShaderVariables.uProjectionMatrix.index].getOffset(),
+                getUniformByName("uProjectionMatrix").getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
 
@@ -1669,8 +1622,8 @@ public abstract class ShaderProgram {
      */
     protected void setTextureUniforms(float[] uniforms, Texture2D texture) {
         if (texture.getTextureType() == TextureType.TiledTexture2D) {
-            setTextureUniforms((TiledTexture2D) texture, uniforms,
-                    shaderVariables[CommonShaderVariables.uTextureData.index]);
+            // TODO - where should the uniform name be defined?
+            setTextureUniforms((TiledTexture2D) texture, uniforms, getUniformByName("uTextureData"));
         }
     }
 
@@ -1735,7 +1688,7 @@ public abstract class ShaderProgram {
      * sampler.
      */
     protected void setSamplers() {
-        ArrayList<ShaderVariable> samplersList = getSamplers(shaderVariables);
+        ArrayList<ShaderVariable> samplersList = getSamplers(activeUniforms);
         for (int i = 0; i < samplersList.size(); i++) {
             samplers[i] = samplersList.get(i).getOffset();
         }

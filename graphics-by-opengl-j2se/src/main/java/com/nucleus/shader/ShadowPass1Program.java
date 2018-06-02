@@ -58,10 +58,10 @@ public class ShadowPass1Program extends ShaderProgram {
     @Override
     public void setUniformMatrices(float[][] matrices, Mesh mesh) {
         System.arraycopy(matrices[Matrices.MODELVIEW.index], 0, uniforms,
-                shaderVariables[CommonShaderVariables.uMVMatrix.index].getOffset(),
+                getUniformByName("uMVMatrix").getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(matrices[Matrices.RENDERPASS_1.index], 0, uniforms,
-                shaderVariables[CommonShaderVariables.uProjectionMatrix.index].getOffset(),
+                getUniformByName("uProjectionMatrix").getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
 
