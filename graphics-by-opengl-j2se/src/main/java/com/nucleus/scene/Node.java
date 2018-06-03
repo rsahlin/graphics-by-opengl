@@ -28,7 +28,7 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
-import com.nucleus.shader.AttributeIndexer.Indexer;
+import com.nucleus.shader.VariableIndexer.Indexer;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Rectangle;

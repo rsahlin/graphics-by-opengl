@@ -1,0 +1,11 @@
+#version 300 es
+
+ /**
+ * shadow pass 1 fragment shader for a flat shaded object 
+ */
+ precision mediump float;
+ 
+void main()
+{
+    gl_FragDepth = gl_FragCoord.z;
+}

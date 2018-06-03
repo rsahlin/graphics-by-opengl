@@ -14,21 +14,8 @@ import com.nucleus.shader.ShaderVariable.VariableType;
  * @author Richard Sahlin
  *
  */
+@Deprecated
 public interface VariableMapping {
-
-    /**
-     * Returns the index position of the attribute, this can be used to locate runtime version of variable.
-     * 
-     * @return Index of variable
-     */
-    public int getIndex();
-
-    /**
-     * Returns the offset for data to the variable.
-     * 
-     * @return
-     */
-    public int getOffset();
 
     /**
      * Returns the type of variable

@@ -30,7 +30,6 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.BufferObjectsFactory;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
-import com.nucleus.shader.AttributeIndexer.Property;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
@@ -335,17 +334,14 @@ public abstract class ShaderProgram {
     public abstract ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, Texture2D.Shading shading);
 
     /**
-     * Returns the offset within an attribute buffer where the data is, this is used to set specific variables
-     * of an attribute (buffer).
-     * This will be the same for all vertices, you only need to fetch this once. It will not change as long
-     * as the same program is used.
+     * Returns the offset within an attribute buffer where the data is or -1 if shader variable is not defined.
      * 
-     * @param property
+     * @param name Name of the shader variable to query
      * @return Offset into attribute (buffer) where the storage for the specified variable is, or -1 if the variable is
      * not found.
      */
-    public int getAttributeOffset(Property property) {
-        ShaderVariable v = getAttributeByName(property.name);
+    public int getAttributeOffset(String name) {
+        ShaderVariable v = getAttributeByName(name);
         if (v != null) {
             return v.getOffset();
         }
@@ -955,7 +951,6 @@ public abstract class ShaderProgram {
                 } else {
                     variable = gles.getActiveVariable(program, type, i, nameBuffer);
                     setVariableLocation(gles, program, variable);
-                    setVariableStaticOffset(gles, program, variable);
                     addShaderVariable(variable);
                 }
             }
@@ -1009,25 +1004,6 @@ public abstract class ShaderProgram {
         }
         if (variable.getLocation() < 0) {
             throw new GLException(VARIABLE_LOCATION_ERROR + variable.getName(), 0);
-        }
-    }
-
-    /**
-     * Set the variable static offset, if dynamic offset is used it is computed after all variables has been collected.
-     * If VariableMapping has not been specified then nothing is done.
-     * TODO If dynamic offset shall be used this method does not need to be called.
-     * 
-     * @param gles
-     * @param program
-     * @param variable
-     */
-    protected void setVariableStaticOffset(GLES20Wrapper gles, int program, ShaderVariable variable) {
-        if (attributeMapping != null || uniformMapping != null) {
-            VariableMapping v = getMappingByName(variable);
-            // If variable is null then not defined in mapping - or mapping is not specified
-            if (v != null) {
-                variable.setOffset(v.getOffset());
-            }
         }
     }
 

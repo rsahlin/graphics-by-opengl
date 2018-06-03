@@ -42,11 +42,6 @@ public class ComputeShader extends ShaderProgram {
         }
 
         @Override
-        public int getIndex() {
-            return index;
-        }
-
-        @Override
         public VariableType getType() {
             return type;
         }
@@ -54,11 +49,6 @@ public class ComputeShader extends ShaderProgram {
         @Override
         public BufferIndex getBufferIndex() {
             return bufferIndex;
-        }
-
-        @Override
-        public int getOffset() {
-            return offset;
         }
 
         @Override

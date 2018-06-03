@@ -14,7 +14,7 @@ import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.shader.AttributeIndexer.Indexer;
+import com.nucleus.shader.VariableIndexer.Indexer;
 import com.nucleus.shader.CommonShaderVariables;
 import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
