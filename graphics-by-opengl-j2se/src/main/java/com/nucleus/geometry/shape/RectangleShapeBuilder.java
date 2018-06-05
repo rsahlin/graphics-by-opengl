@@ -184,7 +184,7 @@ public class RectangleShapeBuilder extends ElementBuilder {
 
     @Override
     public void build(Mesh mesh) {
-        // TODO - what if this buffer is not present, for instance if program created without mapping?
+        // TODO - for this shapebuilder to work the offsets of vertex and uv must be set.
         AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
         int stride = attributes.getFloatStride();
         if (quadStoreage == null) {

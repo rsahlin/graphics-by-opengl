@@ -61,16 +61,8 @@ public class ConvolutionProgram extends ShaderProgram {
 
     }
 
-    private final static String VERTEX_SHADER_NAME = "assets/convolutionvertex.essl";
-    private final static String FRAGMENT_SHADER_NAME = "assets/convolutionfragment.essl";
-
     public ConvolutionProgram() {
         super(null, null, null, VARIABLES.values(), ProgramType.VERTEX_FRAGMENT);
-    }
-
-    @Override
-    public int getVariableCount() {
-        return VARIABLES.values().length;
     }
 
     @Override

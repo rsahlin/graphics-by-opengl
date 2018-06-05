@@ -1,9 +1,11 @@
 package com.nucleus.shader;
 
 import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.Pass;
+import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
 
@@ -13,6 +15,20 @@ import com.nucleus.texturing.Texture2D.Shading;
  */
 public class LineProgram extends ShaderProgram {
 
+    public static class LineProgramIndexer extends VariableIndexer {
+
+        protected final static String[] NAMES = new String[] { "aVertex", "aColor" };
+        protected final static int[] OFFSETS = new int[] { 0, 3 };
+        protected final static VariableType[] TYPES = new VariableType[] { VariableType.ATTRIBUTE };
+        protected final static BufferIndex[] BUFFERINDEXES = new BufferIndex[] { BufferIndex.ATTRIBUTES };
+        protected final static int[] SIZEPERVERTEX = new int[] { 7 };
+
+        public LineProgramIndexer() {
+            super(NAMES, OFFSETS, TYPES, BUFFERINDEXES, SIZEPERVERTEX);
+        }
+
+    }
+
     public static final String CATEGORY = "line";
 
     ShaderVariable uPointSize;
@@ -20,7 +36,8 @@ public class LineProgram extends ShaderProgram {
     private float pointSize = 1;
 
     public LineProgram(Texture2D.Shading shading) {
-        super(null, shading, CATEGORY, CommonShaderVariables.values(), ProgramType.VERTEX_FRAGMENT);
+        super(null, shading, CATEGORY, ProgramType.VERTEX_FRAGMENT);
+        setIndexer(new LineProgramIndexer());
     }
 
     @Override
@@ -40,14 +57,6 @@ public class LineProgram extends ShaderProgram {
                 return this;
             default:
                 throw new IllegalArgumentException("Invalid pass " + pass);
-        }
-    }
-
-    @Override
-    protected void setShaderVariable(ShaderVariable variable) {
-        super.setShaderVariable(variable);
-        if (variable.getName().contentEquals(CommonShaderVariables.uPointSize.name())) {
-            uPointSize = variable;
         }
     }
 

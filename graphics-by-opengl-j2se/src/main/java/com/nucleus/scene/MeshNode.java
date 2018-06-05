@@ -2,6 +2,7 @@ package com.nucleus.scene;
 
 import java.io.IOException;
 
+import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
@@ -10,10 +11,12 @@ import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.geometry.shape.ShapeBuilder;
+import com.nucleus.geometry.shape.ShapeBuilderFactory;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
+import com.nucleus.vecmath.Shape;
 
 /**
  * Node for a custom mesh, the mesh can either be created programmatically in runtime or by using a custom
@@ -21,6 +24,12 @@ import com.nucleus.texturing.TextureType;
  *
  */
 public class MeshNode extends Node {
+
+    /**
+     * If defined this is the shape of the mesh - if not specified a fullscreen 2D rect will be created.
+     */
+    @SerializedName(Shape.SHAPE)
+    protected Shape shape;
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -58,8 +67,12 @@ public class MeshNode extends Node {
             LayerNode layer = parent.getRootNode().getLayerNode(null);
             ViewFrustum view = layer.getViewFrustum();
             builder.setArrayMode(Mode.TRIANGLE_FAN, 4, 0);
-            shapeBuilder = new RectangleShapeBuilder(
-                    new RectangleConfiguration(view.getWidth(), view.getHeight(), 0f, 1, 0));
+            if (shape == null) {
+                shapeBuilder = new RectangleShapeBuilder(
+                        new RectangleConfiguration(view.getWidth(), view.getHeight(), 0f, 1, 0));
+            } else {
+                ShapeBuilderFactory.createBuilder(shape, count, 0);
+            }
         }
         // If program is not present in parent then the meshbuilder is called to create program.
         return initMeshBuilder(renderer, parent, count, shapeBuilder, builder);
@@ -71,6 +84,10 @@ public class MeshNode extends Node {
         MeshNode copy = new MeshNode(root, NodeTypes.meshnode);
         copy.set(this);
         return copy;
+    }
+
+    public Shape getShape() {
+        return shape;
     }
 
 }

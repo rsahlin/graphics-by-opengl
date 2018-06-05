@@ -33,7 +33,8 @@ public class ShadowPass1Program extends ShaderProgram {
      * @param category
      */
     public ShadowPass1Program(ShaderProgram objectProgram, Texture2D.Shading shading, String category) {
-        super(Pass.SHADOW1, shading, category, CommonShaderVariables.values(), ProgramType.VERTEX_FRAGMENT);
+        super(Pass.SHADOW1, shading, category, ProgramType.VERTEX_FRAGMENT);
+        setIndexer(objectProgram.variableIndexer);
         this.objectProgram = objectProgram;
     }
 

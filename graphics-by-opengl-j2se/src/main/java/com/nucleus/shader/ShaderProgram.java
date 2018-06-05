@@ -356,16 +356,6 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Returns the number of defined attribute + uniform variables in the program.
-     * This is to make it easier when developing so that temporarily unused variabled do not need to be removed.
-     * 
-     * @return Number of defined variables in the shader program, all variables do not need to be used.
-     */
-    public int getVariableCount() {
-        return CommonShaderVariables.values().length;
-    }
-
-    /**
      * Creates a new shader program for the specified shading - used by subclasses
      * 
      * @param pass The pass this shader is for or null if not used

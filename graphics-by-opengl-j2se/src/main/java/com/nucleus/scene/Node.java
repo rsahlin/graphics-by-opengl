@@ -28,8 +28,8 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
-import com.nucleus.shader.VariableIndexer.Indexer;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.shader.VariableIndexer.Indexer;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Transform;
@@ -192,8 +192,6 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
     public static final String TEXTUREREF = "textureRef";
     public static final String PROPERTIES = "properties";
     public static final String PASS = "pass";
-
-    public static final String ONCLICK = "onclick";
 
     public enum MeshIndex {
         /**
@@ -1154,9 +1152,6 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
         if (bounds != null && (state == State.ON || state == State.ACTOR)
                 && getProperty(EventHandler.EventType.POINTERINPUT.name(), Constants.FALSE)
                         .equals(Constants.TRUE)) {
-            // In order to do pointer intersections the model and view matrix is needed.
-            // For this to work it is important that the view keeps the same orientation of axis (left-handed)
-            // Matrix.mul4(viewNode.getTransform().getMatrix(), modelMatrix, mv);
             bounds.transform(modelMatrix, 0);
             return bounds.isPointInside(position, 0);
         }
@@ -1202,7 +1197,7 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
             return transform != null ? Matrix.copy(transform.getMatrix(), 0, modelMatrix, 0)
                     : Matrix.setIdentity(modelMatrix, 0);
         }
-        Matrix.mul4(transform != null ? transform.getMatrix() : Matrix.IDENTITY_MATRIX, concatModel,
+        Matrix.mul4(concatModel, transform != null ? transform.getMatrix() : Matrix.IDENTITY_MATRIX,
                 modelMatrix);
         return modelMatrix;
     }

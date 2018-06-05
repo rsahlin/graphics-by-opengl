@@ -14,11 +14,10 @@ import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.shader.VariableIndexer.Indexer;
-import com.nucleus.shader.CommonShaderVariables;
 import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
 import com.nucleus.shader.TranslateProgram;
+import com.nucleus.shader.VariableIndexer.Indexer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.texturing.TextureFactory;
@@ -214,8 +213,8 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void setRectangle(int vertice, float[] values, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = getProgram().getShaderVariable(CommonShaderVariables.aVertex).getOffset();
-        int color = getProgram().getShaderVariable(CommonShaderVariables.aColor).getOffset();
+        int translate = mapper.vertex;
+        int color = mapper.emissive;
         float[] pos = new float[2];
         internalSetVertex(offset + translate, offset + color, copy(values, 0, pos), z, rgba);
         internalSetVertex(offset + translate, offset + color, copy(values, 1, pos), z, rgba);
