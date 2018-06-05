@@ -74,13 +74,25 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
     public ShaderVariable getActiveVariable(int program, VariableType type, int index, byte[] nameBuffer)
             throws GLException {
 
+        int[] params = null;
+        int[] indices = new int[] { index };
         switch (type) {
             case ATTRIBUTE:
-            case UNIFORM:
                 return super.getActiveVariable(program, type, index, nameBuffer);
+            case UNIFORM:
+                params = new int[ShaderVariable.DATA_OFFSET + 1];
+                params[ShaderVariable.ACTIVE_INDEX_OFFSET] = index;
+                glGetActiveUniform(program, index, params, ShaderVariable.NAME_LENGTH_OFFSET, params,
+                        ShaderVariable.SIZE_OFFSET, params, ShaderVariable.TYPE_OFFSET, nameBuffer);
+                glGetActiveUniformsiv(program, 1, indices, 0, GLES30.GL_UNIFORM_OFFSET, params,
+                        ShaderVariable.DATA_OFFSET);
+                GLUtils.handleError(this, "glGetActiveUniform for " + type);
+                // Create shader variable using name excluding [] and .
+                return new ShaderVariable(type,
+                        getVariableName(nameBuffer, params[ShaderVariable.NAME_LENGTH_OFFSET]),
+                        params, 0);
             case UNIFORM_BLOCK:
-                int[] params = new int[10];
-                int[] indices = new int[] { index };
+                params = new int[10];
                 params[ShaderVariable.ACTIVE_INDEX_OFFSET] = index;
                 glGetActiveUniform(program, index, params, ShaderVariable.NAME_LENGTH_OFFSET, params,
                         ShaderVariable.SIZE_OFFSET, params, ShaderVariable.TYPE_OFFSET, nameBuffer);
@@ -90,7 +102,7 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
                         ShaderVariable.DATA_OFFSET);
                 GLUtils.handleError(this, "glGetActiveUniform for " + type);
                 // Create shader variable using name excluding [] and .
-                return new ShaderVariable(VariableType.UNIFORM_BLOCK,
+                return new ShaderVariable(type,
                         getVariableName(nameBuffer, params[ShaderVariable.NAME_LENGTH_OFFSET]),
                         params, 0);
             default:

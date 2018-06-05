@@ -3,6 +3,7 @@ package com.nucleus.shader;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.Pass;
+import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
 
 /**
@@ -22,7 +23,7 @@ public class GenericShaderProgram extends ShaderProgram {
      * @param shaders
      */
     public GenericShaderProgram(String[] source, ProgramType shaders) {
-        super(null, null, null, null, shaders);
+        super((Pass) null, (Texture2D.Shading) null, (String) null, (VariableMapping[]) null, shaders);
         this.source = source;
     }
 

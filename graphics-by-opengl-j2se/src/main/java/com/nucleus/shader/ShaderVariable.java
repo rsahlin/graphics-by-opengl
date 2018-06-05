@@ -31,7 +31,7 @@ public class ShaderVariable {
      */
     public final static int ACTIVE_INDEX_OFFSET = 3;
     /**
-     * Offset to uniform data offset
+     * Offset to variable data offset
      */
     public final static int DATA_OFFSET = 4;
     /**
