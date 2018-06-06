@@ -71,7 +71,7 @@ public class MeshNode extends Node {
                 shapeBuilder = new RectangleShapeBuilder(
                         new RectangleConfiguration(view.getWidth(), view.getHeight(), 0f, 1, 0));
             } else {
-                ShapeBuilderFactory.createBuilder(shape, count, 0);
+                shapeBuilder = ShapeBuilderFactory.createBuilder(shape, count, 0);
             }
         }
         // If program is not present in parent then the meshbuilder is called to create program.
@@ -84,6 +84,16 @@ public class MeshNode extends Node {
         MeshNode copy = new MeshNode(root, NodeTypes.meshnode);
         copy.set(this);
         return copy;
+    }
+
+    /**
+     * Copy values into this node from the source, used when new instance is created
+     * 
+     * @param source
+     */
+    public void set(MeshNode source) {
+        super.set(source);
+        this.shape = source.shape;
     }
 
     public Shape getShape() {

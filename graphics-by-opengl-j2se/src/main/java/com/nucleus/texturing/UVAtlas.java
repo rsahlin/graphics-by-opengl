@@ -62,7 +62,7 @@ public class UVAtlas extends BaseReference {
      * store 4 UV coordinates that can be used to set texture coordinates from.
      * 
      * @param frame Frame number to fetch UV data for.
-     * @param destination Destination array
+     * @param destination Destination array, must have space for 8 values at destIndex
      * @param destIndex Index in destination where UV coordinates for 4 vertices are stored.
      * @throws ArrayIndexOutOfBoundsException If destination does not have room for 4 UV coordinates at destIndex
      */

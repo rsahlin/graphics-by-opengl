@@ -15,6 +15,7 @@ import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureParameter.Parameter;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.TiledTexture2D;
+import com.nucleus.texturing.UVTexture2D;
 import com.nucleus.vecmath.Rectangle;
 
 /**
@@ -260,6 +261,8 @@ public class RectangleShapeBuilder extends ElementBuilder {
      * @param destination
      */
     protected static void createUVCoordinates(Texture2D texture, float[] destination) {
+        float maxU = 1f;
+        float maxV = 1f;
         switch (texture.textureType) {
             case Texture2D:
             case DynamicTexture2D:
@@ -267,23 +270,41 @@ public class RectangleShapeBuilder extends ElementBuilder {
                 createUVCoordinates(texture, params[TextureParameter.WRAP_S_INDEX],
                         params[TextureParameter.WRAP_T_INDEX], destination);
                 break;
+            case UVTexture2D:
+                UVTexture2D uvt = (UVTexture2D) texture;
+                if (uvt.getUVAtlas() != null) {
+                    float[] frame = new float[8];
+                    uvt.getUVAtlas().getUVFrame(0, frame, 0);
+                    System.arraycopy(frame, 0, destination, 0, 8);
+                } else {
+                    RectangleShapeBuilder.setMaxUV(destination, maxU, maxV);
+                }
+                break;
             case TiledTexture2D:
                 TiledTexture2D t = (TiledTexture2D) texture;
-                float maxU = (1f / (t.getTileWidth()));
-                float maxV = (1f / (t.getTileHeight()));
-                destination[0] = 0;
-                destination[1] = 0;
-                destination[2] = maxU;
-                destination[3] = 0;
-                destination[4] = maxU;
-                destination[5] = maxV;
-                destination[6] = 0;
-                destination[7] = maxV;
+                RectangleShapeBuilder.setMaxUV(destination, (1f / (t.getTileWidth())), (1f / (t.getTileHeight())));
                 break;
-            case UVTexture2D:
             case Untextured:
             default:
         }
+    }
+
+    /**
+     * Sets uv to 0, 0 to maxU, maxV
+     * 
+     * @param destination
+     * @param maxU
+     * @param maxV
+     */
+    protected static void setMaxUV(float[] destination, float maxU, float maxV) {
+        destination[0] = 0;
+        destination[1] = 0;
+        destination[2] = maxU;
+        destination[3] = 0;
+        destination[4] = maxU;
+        destination[5] = maxV;
+        destination[6] = 0;
+        destination[7] = maxV;
     }
 
     protected static void createUVCoordinates(Texture2D texture, Parameter wrapS, Parameter wrapT,

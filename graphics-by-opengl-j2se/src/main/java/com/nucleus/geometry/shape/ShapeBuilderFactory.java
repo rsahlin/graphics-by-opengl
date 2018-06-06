@@ -31,7 +31,6 @@ public class ShapeBuilderFactory {
     public static ShapeBuilder createBuilder(Rectangle shape, int count, int startVertex) {
         RectangleConfiguration config = new RectangleShapeBuilder.RectangleConfiguration(shape,
                 RectangleShapeBuilder.DEFAULT_Z, count, 0);
-        config.enableVertexIndex(true);
         return new RectangleShapeBuilder(config);
     }
 
