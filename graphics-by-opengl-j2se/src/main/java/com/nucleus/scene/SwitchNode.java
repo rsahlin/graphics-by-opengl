@@ -37,11 +37,6 @@ public class SwitchNode extends Node implements PostDeserializable {
         return copy;
     }
 
-    @Override
-    public void copyTo(Node target) {
-        target.set(this);
-    }
-
     /**
      * Sets the values from the source to this node, this will not set transient values.
      * 

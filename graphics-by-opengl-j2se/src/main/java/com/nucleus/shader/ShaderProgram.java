@@ -45,6 +45,10 @@ import com.nucleus.vecmath.Matrix;
  * A ShaderProgram object shall contain information that is specific to the shader program compilation and linking.
  * Uniform and attribute mapping shall be included but not the uniform and attribute data - this is so that the same
  * ShaderProgram instance can be used to render multiple objects.
+ * Attribute offsets can be set after compile, if so then the attribute data will be tightly packed. Read the attribute
+ * offsets from the ShaderVariable for each attribute buffer.
+ * If a {@link VariableIndexer} is set before compile, the offsets are set to the ShaderVariables - this can be used to
+ * share attribute buffers between shaders (that have different number of attributes)
  * 
  * @author Richard Sahlin
  *
@@ -877,6 +881,9 @@ public abstract class ShaderProgram {
         for (ShaderVariable v : variables) {
             int index = indexer.getIndexByName(v.getName());
             // For now we cannot recover if variable not defined in indexer
+            if (index == -1) {
+                throw new IllegalArgumentException("Missing offset for shader variable " + v.getName());
+            }
             v.setOffset(indexer.getOffset(index));
         }
     }

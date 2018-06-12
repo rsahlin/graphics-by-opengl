@@ -1,0 +1,29 @@
+#version 320 es
+precision highp float;
+
+//Put array declaration after name for GLSL compatibility
+
+layout(points) in;
+layout(triangle_strip, max_vertices = 16484) out;
+
+in vec4 vColor[]; // Output from vertex shader for each vertex
+
+out vec4 color; // Output to fragment shader
+
+
+/**
+ * Used for objects that uses only position, plus color, for instance lines
+ */
+void main() {
+    color = vColor[0];
+    
+    gl_Position = gl_in[0].gl_Position + vec4(-0.01,-0.01,0.0,0.0);
+    EmitVertex();
+    gl_Position = gl_in[0].gl_Position + vec4(-0.01,0.01,0.0,0.0);
+    EmitVertex();
+    gl_Position = gl_in[0].gl_Position + vec4(0.01,-0.01,0.0,0.0);
+    EmitVertex();
+    gl_Position = gl_in[0].gl_Position + vec4(0.01,0.01,0.0,0.0);
+    EmitVertex();
+    EndPrimitive();
+}

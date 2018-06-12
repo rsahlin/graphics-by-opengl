@@ -38,7 +38,7 @@ public class MeshNode extends Node {
         super();
     }
 
-    public MeshNode(RootNode root, Type<Node> type) {
+    private MeshNode(RootNode root, Type<Node> type) {
         super(root, type);
     }
 

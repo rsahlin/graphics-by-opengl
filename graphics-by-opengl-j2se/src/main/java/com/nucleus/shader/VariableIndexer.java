@@ -10,7 +10,8 @@ import com.nucleus.shader.ShaderVariable.VariableType;
  * Connecting variables in shader programs with offsets so that data can be written into buffer that stores the
  * attributes. This can be seen as a type of layout where the purpose is to connect the fields defined in a shader
  * with the usage.
- * 
+ * Case be set to {@link ShaderProgram} by calling {@link ShaderProgram#setIndexer(VariableIndexer)} to set attribute
+ * offsets.
  *
  */
 public class VariableIndexer {
@@ -172,6 +173,9 @@ public class VariableIndexer {
 
         /**
          * Creates the attributer index mapping for the properties with a specific shader program.
+         * These indexes are generalised variable names, some may not be included in shader and will be -1
+         * To write to attribute data without using indexer, fetch attribute offset by variable name - OR
+         * create a VariableIndexer and pass to program when created.
          * 
          * @param program
          */

@@ -26,6 +26,7 @@ import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
+import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
 import com.nucleus.shader.ShaderProgram;
@@ -161,7 +162,8 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
         componentnode(ComponentNode.class),
         meshnode(MeshNode.class),
         rendertotarget(RenderToTargetNode.class),
-        rootnode(BaseRootNode.class);
+        rootnode(BaseRootNode.class),
+        gltfnode(GLTFNode.class);
 
         private final Class<?> theClass;
 
@@ -304,7 +306,9 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
     transient float[] modelMatrix = Matrix.createMatrix();
     transient ArrayList<Mesh> meshes = new ArrayList<Mesh>();
     transient protected ShaderProgram program;
-    transient protected Indexer mapper;
+    transient protected Indexer indexer;
+    transient public NodeRenderer<?> nodeRenderer;
+    transient Type<Node> nodeType;
 
     /**
      * The parent node, this shall be set when node is added as child
@@ -834,10 +838,6 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
         return defaultValue;
     }
 
-    public void copyTo(Node target) {
-        target.set(this);
-    }
-
     /**
      * Returns node with matching id, searching through this node and recursively searching through children.
      * Children will be searched by calling {@link #getChildren()} excluding nodes that are switched off.
@@ -959,12 +959,19 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
 
     /**
      * Returns the type of node, this is a String representation that must be understood by the implementation
-     * This may not be defined.
      * 
      * @return
      */
     public String getType() {
         return type;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public Type<Node> getNodeType() {
+        return nodeType;
     }
 
     /**
@@ -1128,6 +1135,19 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
                         vf.getHeight()));
             }
         }
+        if (nodeRenderer == null) {
+            nodeRenderer = createNodeRenderer();
+        }
+    }
+
+    /**
+     * Creates the instance of node renderer to be used with this node, override in subclasses if needed
+     * Default behavior is to create in {@link #onCreated()} method if the node renderer is not already set.
+     * 
+     * @return
+     */
+    protected NodeRenderer createNodeRenderer() {
+        return new com.nucleus.renderer.NodeRenderer(this);
     }
 
     /**

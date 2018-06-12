@@ -11,7 +11,6 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Constants;
-import com.nucleus.common.Environment;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.ElementBuffer;
@@ -27,10 +26,7 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
-import com.nucleus.scene.LineDrawerNode;
-import com.nucleus.scene.LineDrawerNode.LineMode;
 import com.nucleus.scene.Node;
-import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
@@ -297,25 +293,9 @@ class BaseRenderer implements NucleusRenderer {
             matrices[Matrices.PROJECTION.index] = projection;
         }
         Matrix.mul4(nodeMatrix, viewMatrix, matrices[Matrices.MODELVIEW.index]);
-        if (node.getType().equals(NodeTypes.linedrawernode.name())) {
-            LineDrawerNode ld = (LineDrawerNode) node;
-            if (ld.getLineMode() != LineMode.POINTS) {
-                gles.glLineWidth(ld.getPointSize());
-            }
-        }
-        nodeMeshes.clear();
-        node.getMeshes(nodeMeshes);
-        if (nodeMeshes.size() > 0) {
-            ShaderProgram program = getProgram(node, currentPass);
-            gles.glUseProgram(program.getProgram());
-            GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
-            // TODO - is this the best place for this check - remember, this should only be done in debug cases.
-            if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
-                program.validateProgram(getGLES());
-            }
 
-            renderMeshes(program, nodeMeshes, matrices);
-        }
+        node.nodeRenderer.renderNode(this, currentPass, matrices);
+
         this.modelMatrix = nodeMatrix;
         // Add this to rendered nodes before children.
         node.getRootNode().addRenderedNode(node);
@@ -554,7 +534,7 @@ class BaseRenderer implements NucleusRenderer {
                 // Adjust the light matrix to fit inside texture coordinates
                 Matrix.setIdentity(matrices[Matrices.RENDERPASS_2.index], 0);
                 Matrix.scaleM(matrices[Matrices.RENDERPASS_2.index], 0, 0.5f, 0.5f, 1f);
-                Matrix.translate(matrices[Matrices.RENDERPASS_2.index], 0f, 0f, 0f);
+                Matrix.translate(matrices[Matrices.RENDERPASS_2.index], -0.5f, 0f, 0f);
                 Matrix.mul4(matrices[Matrices.RENDERPASS_1.index], matrices[Matrices.RENDERPASS_2.index], tempMatrix);
                 System.arraycopy(tempMatrix, 0, matrices[Matrices.RENDERPASS_1.index], 0, Matrix.MATRIX_ELEMENTS);
                 break;

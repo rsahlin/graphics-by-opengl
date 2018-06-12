@@ -13,8 +13,8 @@ import com.nucleus.scene.Node.MeshIndex;
 import com.nucleus.scene.Node.NodeTypes;
 
 /**
- * The default node factory implementation
- * Will create one mesh for the Node by calling MeshFactory or Builder
+ * The default node factory implementation - use this to create instances of loaded nodes
+ * Will create one mesh for the Node by calling MeshFactory
  * TODO - cleanup this and {@link Node.Builder}
  * 
  * @author Richard Sahlin
@@ -43,7 +43,10 @@ public class DefaultNodeFactory implements NodeFactory {
     @Override
     public void createChildNodes(NucleusRenderer renderer, MeshFactory meshFactory, Node source, Node parent)
             throws NodeException {
-        // Recursively create children
+        // Recursively create children if there are any
+        if (source.children == null) {
+            return;
+        }
         for (Node nd : source.children) {
             createNode(renderer, meshFactory, nd, parent);
         }

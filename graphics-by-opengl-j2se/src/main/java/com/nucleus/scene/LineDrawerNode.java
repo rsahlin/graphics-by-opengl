@@ -13,7 +13,9 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.shape.ShapeBuilder;
+import com.nucleus.renderer.LineNodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
 import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
 import com.nucleus.shader.TranslateProgram;
@@ -182,7 +184,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         Mesh mesh = getMesh(MeshIndex.MAIN);
         mesh.setAttributeUpdater(this);
         bindAttributeBuffer(mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES));
-        mapper = new Indexer(program);
+        indexer = new Indexer(program);
     }
 
     public void set(LineDrawerNode source) {
@@ -213,8 +215,8 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void setRectangle(int vertice, float[] values, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = mapper.vertex;
-        int color = mapper.emissive;
+        int translate = indexer.vertex;
+        int color = indexer.emissive;
         float[] pos = new float[2];
         internalSetVertex(offset + translate, offset + color, copy(values, 0, pos), z, rgba);
         internalSetVertex(offset + translate, offset + color, copy(values, 1, pos), z, rgba);
@@ -259,7 +261,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     public void addVertex(int vertice, float[] next, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        internalSetVertex(offset + mapper.vertex, offset + mapper.albedo, next, z, rgba);
+        internalSetVertex(offset + indexer.vertex, offset + indexer.albedo, next, z, rgba);
     }
 
     private void internalSetVertex(int translate, int color, float[] pos, float z, float[] rgba) {
@@ -317,6 +319,11 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     public void setDrawCount(int count, int offset) {
         drawCount = count;
         drawOffset = offset;
+    }
+
+    @Override
+    protected NodeRenderer createNodeRenderer() {
+        return new LineNodeRenderer(this);
     }
 
 }

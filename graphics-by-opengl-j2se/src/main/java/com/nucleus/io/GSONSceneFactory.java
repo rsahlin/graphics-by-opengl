@@ -1,10 +1,12 @@
 package com.nucleus.io;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayDeque;
 import java.util.List;
 
@@ -108,12 +110,15 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     @Override
-    public RootNode importScene(String filename) throws NodeException {
-        SimpleLogger.d(getClass(), "Importing scene:" + filename);
+    public RootNode importScene(String path, String filename) throws NodeException {
+        if (!path.endsWith("/") && !path.endsWith("\\")) {
+            path = path + File.pathSeparator;
+        }
+        SimpleLogger.d(getClass(), "Importing scene:" + path + filename);
         ClassLoader loader = getClass().getClassLoader();
-        InputStream is = loader.getResourceAsStream(filename);
+        InputStream is = loader.getResourceAsStream(path + filename);
         try {
-            RootNode scene = importScene(is);
+            RootNode scene = importScene(path, is);
             return scene;
         } finally {
             if (is != null) {
@@ -127,8 +132,7 @@ public class GSONSceneFactory implements SceneSerializer {
         }
     }
 
-    @Override
-    public RootNode importScene(InputStream is) throws NodeException {
+    private RootNode importScene(String path, InputStream is) throws NodeException {
         if (!isInitialized()) {
             throw new IllegalStateException(INIT_NOT_CALLED_ERROR);
         }
@@ -143,7 +147,7 @@ public class GSONSceneFactory implements SceneSerializer {
             // using the specified adapters
             registerTypeAdapter(builder);
             setGson(builder.create());
-            RootNode scene = getSceneFromJson(gson, reader);
+            RootNode scene = importFromGSON(path, gson, reader);
             long loaded = System.currentTimeMillis();
             FrameSampler.getInstance().logTag(FrameSampler.Samples.LOAD_SCENE, start, loaded);
             RootNode root = createRoot();
@@ -177,15 +181,17 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     /**
-     * Returns the correct implementation of SceneData class, subclasses will override
+     * Imports gson into BaseRootNode
+     * TODO: Add type selector so that rootnode impl can be specified in scene
      * 
      * @param gson
      * @param reader
-     * @param classT
-     * @return
+     * @return Scene root with data loaded.
+     * @throws UnsupportedEncodingException
      */
-    protected RootNode getSceneFromJson(Gson gson, Reader reader) {
-        return gson.fromJson(reader, BaseRootNode.class);
+    protected RootNode importFromGSON(String path, Gson gson, Reader reader) throws IOException {
+        RootNode root = gson.fromJson(reader, BaseRootNode.class);
+        return root;
     }
 
     /**

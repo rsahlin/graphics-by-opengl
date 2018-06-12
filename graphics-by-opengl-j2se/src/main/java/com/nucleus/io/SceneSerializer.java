@@ -1,7 +1,6 @@
 package com.nucleus.io;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.nucleus.common.Type;
@@ -79,24 +78,13 @@ public interface SceneSerializer {
      * Before calling this method the renderer must be set, otherwise loading of texture and materials cannot be
      * created.
      * 
+     * @param path Path to asset folder, this is the root folder where assets are located
      * @param filename Name of file containing scene data.
      * @return The scene, including all defined children.
      * @throws NodeException If there is an exception loading the data.
      * @throws IllegalStateException If the renderer or nodefactory has not been set before calling this method.
      */
-    public RootNode importScene(String filename) throws NodeException;
-
-    /**
-     * Creates a root node from a scene, the scene will be loaded from the inputstream.
-     * Same as calling {@link #importScene(String)} but with stream instead of filename.
-     * 
-     * @param is Inputstream containing the scene data
-     * @return The scene root node, including all defined children.
-     * @throws NodeException If there is an exception loading the data.
-     * @throws IllegalArgumentException If inputstream is null
-     * @throws IllegalStateException If the renderer or nodefactory has not been set before calling this method.
-     */
-    public RootNode importScene(InputStream is) throws NodeException;
+    public RootNode importScene(String path, String filename) throws NodeException;
 
     /**
      * Exports a scene in the same format as this serializer can import.

@@ -59,6 +59,7 @@ public class BaseRootNode extends RootNode {
             ArrayList<RenderPass> rp = new ArrayList<>();
             rp.add(pass);
             created.setRenderPass(rp);
+            created.onCreated();
             root.addChild(created);
             return root;
         }
@@ -70,12 +71,6 @@ public class BaseRootNode extends RootNode {
      */
     @Deprecated
     public BaseRootNode() {
-    }
-
-    @Override
-    public RootNode createInstance() {
-        BaseRootNode root = new BaseRootNode();
-        return root;
     }
 
 }

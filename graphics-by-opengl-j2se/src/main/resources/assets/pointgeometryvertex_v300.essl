@@ -1,0 +1,22 @@
+#version 300 es
+ /**
+ */
+
+precision highp float;
+
+//Put array declaration after name for GLSL compatibility
+uniform mat4 uMVMatrix;
+uniform mat4 uProjectionMatrix;
+
+in vec3 aVertex; 
+in vec4 aColor;
+
+out vec4 vColor;
+
+/**
+ * Used for objects that uses only position, plus color, for instance lines
+ */
+void main() {
+    gl_Position = (vec4(aVertex, 1.0) * uMVMatrix) * uProjectionMatrix;
+    vColor = aColor;
+}
