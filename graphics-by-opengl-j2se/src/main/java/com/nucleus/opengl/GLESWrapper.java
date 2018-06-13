@@ -7,6 +7,7 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.common.StringUtils;
 import com.nucleus.renderer.RendererInfo;
 import com.nucleus.shader.ShaderSource;
+import com.nucleus.shader.ShaderSource.ESSLVersion;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -53,7 +54,7 @@ public abstract class GLESWrapper {
     private final static String[] GLES3_FRAGMENT_REPLACEMENTS = new String[] { "varying", "in" };
 
     protected static RendererInfo rendererInfo;
-    protected final Platform platform;
+    protected static Platform platform;
     /**
      * Must be set by implementing classes
      */
@@ -80,7 +81,7 @@ public abstract class GLESWrapper {
     }
 
     protected GLESWrapper(Platform platform, Renderers renderVersion) {
-        this.platform = platform;
+        GLESWrapper.platform = platform;
         this.renderVersion = renderVersion;
         SimpleLogger.d(getClass(), "Created GLES wrapper " + renderVersion + " for platform " + platform);
     }
@@ -1153,28 +1154,27 @@ public abstract class GLESWrapper {
 
     /**
      * Returns the GLES shader language version for the platform implementation based on the shader source version.
-     * The sourceVersion String is the version part of the "#version" source declaration, eg "300 es", "430" etc.
-     * 
-     * @param sourceVersion The source version string minus #version, eg "310 es" - or NULL if version not defined.
-     * @param version The parsed version number, eg 100 - must NOT be null.
-     * @return The possibly substituted source version, depending on platform implementation.
-     * Mainly used to substitute "310 es" for "430" on desktop platforms/drivers that does not support GLES fully"
-     */
-    public abstract String replaceShaderVersion(String sourceVersion, int version);
-
-    /**
-     * Returns a versioned shader source and puts in the sourceName object - this is the main method that shall be used
-     * to fetch shader source.
      * If the shader source has a version string it shall be checked by the gles wrapper implementation and if needed
      * substituted for a version that is suitable for the current platform.
      * For instance "#version 310 es" needs to be sutstitued for "#version 430" on desktop implementations (namely AMD
      * or Nvidia drivers that does not fully support the GLES profiles
      * 
+     * 
+     * @param version The versioning of the shader source
+     * @return The possibly substituted source version, depending on platform implementation.
+     * Mainly used to substitute "310 es" for "430" on desktop platforms/drivers that does not support GLES fully"
+     */
+    public abstract ESSLVersion replaceShaderVersion(ESSLVersion version);
+
+    /**
+     * Returns a versioned shader source and puts in the sourceName object - this is the main method that shall be used
+     * to fetch shader source.
+     * 
      * @param source The source to load - loaded and versioned source will be put in this object
-     * @param library True if a shader library (not main)
      * @throws IOException
      */
-    public abstract void loadVersionedShaderSource(ShaderSource source, boolean library) throws IOException;
+    public abstract void loadVersionedShaderSource(ShaderSource source)
+            throws IOException;
 
     /**
      * Replaces the Shader source older OpenGL ES 2.X attribute and uniform variables to in/out naming.
@@ -1271,5 +1271,19 @@ public abstract class GLESWrapper {
      */
     public abstract ShaderVariable getActiveVariable(int program, VariableType type, int index, byte[] nameBuffer)
             throws GLException;
+
+    /**
+     * Returns the renderer info, must first be created by calling {@link #createInfo()}
+     * This is normally done when creating the renderer.
+     * 
+     * @return The renderer info, or null if {@link #createInfo()} has not been called.
+     */
+    public static RendererInfo getInfo() {
+        return rendererInfo;
+    }
+
+    public static Platform getPlatform() {
+        return platform;
+    }
 
 }

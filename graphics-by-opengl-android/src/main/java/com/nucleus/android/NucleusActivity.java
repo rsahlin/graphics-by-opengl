@@ -17,7 +17,9 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RendererFactory;
 import com.nucleus.renderer.SurfaceConfiguration;
+import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
+import com.nucleus.system.System;
 import com.nucleus.texture.android.AndroidImageFactory;
 import com.super2k.nucleus.android.R;
 
@@ -31,11 +33,9 @@ import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Display;
-import android.view.Display.Mode;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 
 /**
@@ -194,7 +194,7 @@ public abstract class NucleusActivity extends Activity
     }
 
     /**
-     * Returns the version of the renderer to use
+     * Returns the version of the renderer to use - this will affect what shading language is supported.
      * 
      * @return
      */

@@ -2,7 +2,7 @@ package com.nucleus.opengl;
 
 import java.nio.ByteBuffer;
 
-import com.nucleus.shader.ShaderSource;
+import com.nucleus.shader.ShaderSource.ESSLVersion;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -12,9 +12,6 @@ import com.nucleus.shader.ShaderVariable.VariableType;
  *
  */
 public abstract class GLES30Wrapper extends GLES20Wrapper {
-
-    public static String SHADING_LANGUAGE_300 = "300";
-    public static String GL_VERSION_430 = "430";
 
     /**
      * Implementation constructor - DO NOT USE!!!
@@ -113,11 +110,19 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public String replaceShaderVersion(String sourceVersion, int version) {
-        if (sourceVersion.trim().toLowerCase().endsWith(ShaderSource.ES) && platform != Platform.GLES) {
-            return GL_VERSION_430;
+    public ESSLVersion replaceShaderVersion(ESSLVersion version) {
+        switch (version) {
+            case VERSION100:
+                return version;
+            case VERSION300:
+            case VERSION310:
+            case VERSION320:
+                return platform != Platform.GLES ? ESSLVersion.VERSION430 : version;
+            case VERSION430:
+                return version;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + version);
         }
-        return sourceVersion;
     }
 
     /**
