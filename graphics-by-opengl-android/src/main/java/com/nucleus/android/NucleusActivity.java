@@ -17,9 +17,7 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RendererFactory;
 import com.nucleus.renderer.SurfaceConfiguration;
-import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
-import com.nucleus.system.System;
 import com.nucleus.texture.android.AndroidImageFactory;
 import com.super2k.nucleus.android.R;
 
@@ -33,6 +31,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Display;
+import android.view.Display.Mode;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
@@ -225,7 +224,7 @@ public abstract class NucleusActivity extends Activity
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         SimpleLogger.d(getClass(), "Using " + surfaceView.getClass().getSimpleName());
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -234,7 +233,7 @@ public abstract class NucleusActivity extends Activity
         Point size = new Point();
         display.getSize(size);
         com.nucleus.renderer.Window.getInstance().setScreenSize(size.x, size.y);
-        androidUptimeDelta = System.currentTimeMillis() - android.os.SystemClock.uptimeMillis();
+        androidUptimeDelta = java.lang.System.currentTimeMillis() - android.os.SystemClock.uptimeMillis();
 
     }
 
@@ -329,7 +328,7 @@ public abstract class NucleusActivity extends Activity
         finish();
     }
 
-    @TargetApi(23)
+    @TargetApi(27)
     protected Mode get4KMode() {
         Mode closest = null;
         Mode[] modes = getWindowManager().getDefaultDisplay().getSupportedModes();

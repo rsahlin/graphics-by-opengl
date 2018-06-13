@@ -5,6 +5,7 @@ import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.shader.ShaderSource.ESSLVersion;
 
 public class AndroidGLES20Wrapper extends GLES20Wrapper {
 
@@ -362,8 +363,8 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public String replaceShaderVersion(String sourceVersion, int version) {
-        return sourceVersion;
+    public ESSLVersion replaceShaderVersion(ESSLVersion version) {
+        return version;
     }
 
     @Override
