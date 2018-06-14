@@ -45,8 +45,8 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
 
     protected CoreApp coreApp;
     protected int swapInterval = 1;
-    protected int windowWidth = 820;
-    protected int windowHeight = 480;
+    protected int windowWidth = 1920;
+    protected int windowHeight = 1080;
     protected boolean windowUndecorated = false;
     protected boolean fullscreen = false;
     protected J2SEWindow j2seWindow;
