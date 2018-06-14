@@ -59,8 +59,10 @@ class BaseRenderer implements NucleusRenderer {
 
     protected SurfaceConfiguration surfaceConfig;
 
+    /**
+     * Cludge to get access to the current viewfrustum - not optimal solution
+     */
     protected ViewFrustum viewFrustum = new ViewFrustum();
-
     protected ArrayDeque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<float[]> projection = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<Pass> renderPassStack = new ArrayDeque<>();
@@ -291,6 +293,7 @@ class BaseRenderer implements NucleusRenderer {
         if (projection != null) {
             pushMatrix(this.projection, matrices[Matrices.PROJECTION.index]);
             matrices[Matrices.PROJECTION.index] = projection;
+            viewFrustum = node.getViewFrustum();
         }
         Matrix.mul4(nodeMatrix, viewMatrix, matrices[Matrices.MODELVIEW.index]);
 
@@ -534,7 +537,7 @@ class BaseRenderer implements NucleusRenderer {
                 // Adjust the light matrix to fit inside texture coordinates
                 Matrix.setIdentity(matrices[Matrices.RENDERPASS_2.index], 0);
                 Matrix.scaleM(matrices[Matrices.RENDERPASS_2.index], 0, 0.5f, 0.5f, 1f);
-                Matrix.translate(matrices[Matrices.RENDERPASS_2.index], -0.5f, 0f, 0f);
+                Matrix.translate(matrices[Matrices.RENDERPASS_2.index], 0.5f, 0.5f, 0f);
                 Matrix.mul4(matrices[Matrices.RENDERPASS_1.index], matrices[Matrices.RENDERPASS_2.index], tempMatrix);
                 System.arraycopy(tempMatrix, 0, matrices[Matrices.RENDERPASS_1.index], 0, Matrix.MATRIX_ELEMENTS);
                 break;

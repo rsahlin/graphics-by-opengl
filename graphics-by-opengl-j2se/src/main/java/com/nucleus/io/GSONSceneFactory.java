@@ -14,7 +14,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nucleus.SimpleLogger;
 import com.nucleus.bounds.Bounds;
-import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.common.TypeResolver;
 import com.nucleus.exporter.NodeExporter;
@@ -230,27 +229,8 @@ public class GSONSceneFactory implements SceneSerializer {
             Node created = nodeFactory.create(renderer, meshFactory, node, root);
             root.addChild(created);
             created.onCreated();
-            setViewFrustum(node, created);
             nodeFactory.createChildNodes(renderer, meshFactory, node, created);
         }
-    }
-
-    /**
-     * Checks if the node data has viewfrustum data, if it has it is set in the node.
-     * 
-     * @param source The source node containing the viewfrustum
-     * @param node Node to check, or null
-     */
-    protected void setViewFrustum(Node source, Node node) {
-        // TODO Should this be done here?
-        if (node == null) {
-            return;
-        }
-        ViewFrustum projection = source.getViewFrustum();
-        if (projection == null) {
-            return;
-        }
-        node.setViewFrustum(new ViewFrustum(projection));
     }
 
     @Override

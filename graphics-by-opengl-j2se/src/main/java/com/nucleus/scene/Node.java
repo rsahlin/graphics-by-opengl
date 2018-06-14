@@ -1024,7 +1024,7 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
     }
 
     /**
-     * Returns the viewfrustum if defined.
+     * Returns a reference to the viewfrustum if defined.
      * 
      * @return View frustum or null
      */
@@ -1137,6 +1137,9 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
         }
         if (nodeRenderer == null) {
             nodeRenderer = createNodeRenderer();
+        }
+        if (vf != null) {
+            setProjection(vf.getMatrix());
         }
     }
 

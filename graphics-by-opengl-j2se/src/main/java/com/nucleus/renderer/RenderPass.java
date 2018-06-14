@@ -21,6 +21,9 @@ public class RenderPass extends BaseReference {
      */
     @SerializedName(TARGET)
     private RenderTarget target;
+    /**
+     * Needs to be defined for Shadow pass 1
+     */
     @SerializedName(ViewFrustum.VIEWFRUSTUM)
     private ViewFrustum viewFrustum;
     /**
@@ -70,7 +73,7 @@ public class RenderPass extends BaseReference {
     }
 
     /**
-     * Returns the viewfrustum to be used when rendering to this renderpass
+     * Returns the optional viewfrustum for this renderpass, this is for instance used in Shadow pass 1 render.
      * 
      * @return
      */

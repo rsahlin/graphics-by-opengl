@@ -3,7 +3,6 @@ package com.nucleus.scene;
 import java.io.IOException;
 import java.util.ArrayDeque;
 
-import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshFactory;
 import com.nucleus.opengl.GLException;
@@ -74,8 +73,6 @@ public class DefaultNodeFactory implements NodeFactory {
             viewStack.push((LayerNode) created);
             isViewNode = true;
         }
-        // created.setRootNode(parent.getRootNode());
-        setViewFrustum(source, created);
         // Call #onCreated() on the created node before handling children - parent needs to be fully created before
         // the children.
         created.onCreated();
@@ -84,23 +81,6 @@ public class DefaultNodeFactory implements NodeFactory {
             viewStack.pop();
         }
         return created;
-    }
-
-    /**
-     * Checks if the source node has viewfrustum, if it has it is set in the node.
-     * 
-     * @param source The source node containing the viewfrustum
-     * @param node Node to check, or null
-     */
-    protected void setViewFrustum(Node source, Node node) {
-        if (node == null) {
-            return;
-        }
-        ViewFrustum projection = source.getViewFrustum();
-        if (projection == null) {
-            return;
-        }
-        node.setViewFrustum(new ViewFrustum(projection));
     }
 
     /**
