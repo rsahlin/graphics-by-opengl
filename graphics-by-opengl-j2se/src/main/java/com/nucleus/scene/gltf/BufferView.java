@@ -1,6 +1,8 @@
 package com.nucleus.scene.gltf;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.scene.gltf.GLTF.GLTFException;
+import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 
 /**
  * 
@@ -23,7 +25,7 @@ import com.google.gson.annotations.SerializedName;
  *
  * This class can be serialized using gson
  */
-public class BufferView {
+public class BufferView implements RuntimeResolver {
 
     public enum Target {
         ARRAY_BUFFER(34962),
@@ -62,7 +64,7 @@ public class BufferView {
     private static final String NAME = "name";
 
     @SerializedName(BUFFER)
-    private int buffer = -1;
+    private int bufferIndex = -1;
     @SerializedName(BYTE_OFFSET)
     private int byteOffset = DEFAULT_BYTE_OFFSET;
     @SerializedName(BYTE_LENGTH)
@@ -75,12 +77,31 @@ public class BufferView {
      * 34963 ELEMENT_ARRAY_BUFFER
      */
     @SerializedName(TARGET)
-    private int target = -1;
+    private int targetValue = -1;
     @SerializedName(NAME)
     private String name;
 
+    transient private Target target;
+    transient private Buffer buffer;
+
+    /**
+     * Creates a BufferView based on the specified Buffer
+     * 
+     * @param buffer
+     * @param byteOffset
+     * @param byteStride
+     * @param target
+     */
+    public BufferView(Buffer buffer, int byteOffset, int byteStride, Target target) {
+        this.buffer = buffer;
+        this.byteOffset = byteOffset;
+        this.byteLength = buffer.getByteLength();
+        this.byteStride = byteStride;
+        this.target = target;
+    }
+
     public int getBufferIndex() {
-        return buffer;
+        return bufferIndex;
     }
 
     public int getByteOffset() {
@@ -95,12 +116,24 @@ public class BufferView {
         return byteStride;
     }
 
-    public int getTarget() {
+    public Target getTarget() {
+        if (target == null) {
+            target = Target.getTarget(targetValue);
+        }
         return target;
     }
 
     public String getName() {
         return name;
+    }
+
+    public Buffer getBuffer() {
+        return buffer;
+    }
+
+    @Override
+    public void resolve(GLTF asset) throws GLTFException {
+
     }
 
 }

@@ -44,20 +44,32 @@ public class Buffer {
 
     transient ByteBuffer buffer;
 
-    public String getUri() {
-        return uri;
+    /**
+     * Creates a new buffer with the specified byteLength - the buffer will be created by calling
+     * {@link #createBuffer()}
+     * 
+     * @param byteLength
+     */
+    public Buffer(int byteLength) {
+        this.byteLength = byteLength;
+        createBuffer();
     }
 
-    public void setUri(String uri) {
-        this.uri = uri;
+    public String getUri() {
+        return uri;
     }
 
     public int getByteLength() {
         return byteLength;
     }
 
-    public void setByteLength(int byteLength) {
-        this.byteLength = byteLength;
+    /**
+     * Returns the underlying ByteBuffer, or null if serialized and not called {@link #createBuffer()}
+     * 
+     * @return
+     */
+    public ByteBuffer getBuffer() {
+        return buffer;
     }
 
     public String getName() {

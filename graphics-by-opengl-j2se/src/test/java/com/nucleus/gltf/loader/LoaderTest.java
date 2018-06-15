@@ -13,7 +13,6 @@ import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Asset;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.BufferView;
-import com.nucleus.scene.gltf.BufferView.Target;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.Loader;
@@ -78,7 +77,7 @@ public class LoaderTest extends BaseTestCase {
     protected void checkBufferView(BufferView bufferView) {
         Assert.assertTrue(bufferView.getBufferIndex() >= 0);
         Assert.assertTrue(bufferView.getByteLength() > 0);
-        Assert.assertNotNull(Target.getTarget(bufferView.getTarget()));
+        Assert.assertNotNull(bufferView.getTarget());
     }
 
     protected void checkMaterial(Material material) {
