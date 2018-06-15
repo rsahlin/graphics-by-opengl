@@ -12,18 +12,19 @@ public class FShaderVariableTest {
     private final static int VARIABLE_SIZE = 1;
     private final static int VARIABLE_TYPE = GLES20.GL_FLOAT;
     private final static int VARIABLE_LOCATION = 42;
+    private final static int VARIABLE_ACTIVE_INDEX = 5;
 
-    int[] variableData = new int[] { VARIABLE_NAME.length(), VARIABLE_SIZE, VARIABLE_TYPE };
+    int[] variableData = new int[] { VARIABLE_SIZE, VARIABLE_TYPE, VARIABLE_NAME.length(), VARIABLE_ACTIVE_INDEX };
 
     @Test
     public void testCreate() {
 
         ShaderVariable variable = new ShaderVariable(VariableType.ATTRIBUTE, VARIABLE_NAME, variableData,
                 ShaderVariable.SIZE_OFFSET);
-        Assert.assertEquals(VARIABLE_NAME, variable.getName());
-        Assert.assertEquals(VARIABLE_SIZE, variable.getSize());
-        Assert.assertEquals(VARIABLE_TYPE, variable.getDataType());
-
+        Assert.assertTrue(VARIABLE_NAME == variable.getName());
+        Assert.assertTrue(VARIABLE_SIZE == variable.getSize());
+        Assert.assertTrue(VARIABLE_TYPE == variable.getDataType());
+        Assert.assertTrue(VARIABLE_ACTIVE_INDEX == variable.getActiveIndex());
     }
 
     @Test
@@ -32,7 +33,7 @@ public class FShaderVariableTest {
         ShaderVariable variable = new ShaderVariable(VariableType.ATTRIBUTE, VARIABLE_NAME, variableData,
                 ShaderVariable.SIZE_OFFSET);
         variable.setLocation(VARIABLE_LOCATION);
-        Assert.assertEquals(VARIABLE_LOCATION, variable.getLocation());
+        Assert.assertTrue(VARIABLE_LOCATION == variable.getLocation());
 
     }
 }

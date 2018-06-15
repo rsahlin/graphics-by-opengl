@@ -4,6 +4,8 @@ import com.google.gson.annotations.SerializedName;
 
 /**
  * 
+ * The BufferView as it is loaded using the glTF format.
+ * 
  * bufferView
  * A view into a buffer generally representing a subset of the buffer.
  * 

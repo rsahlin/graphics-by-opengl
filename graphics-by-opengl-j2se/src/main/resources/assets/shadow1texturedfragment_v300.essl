@@ -28,7 +28,8 @@ void main()
      * maybe use clamping of alpha value and multiply with max depth. Add this value to fragcoord.z to set max clear depth if no alpha.
      */
     if (texture(uTexture, vTexCoord).a < 1.0) {
-        discard;
+        gl_FragDepth = gl_FragCoord.z;
+//        discard;
     } else {
         gl_FragDepth = gl_FragCoord.z;
     }

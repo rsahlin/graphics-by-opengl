@@ -5,6 +5,7 @@ import java.util.HashMap;
 import com.google.gson.annotations.SerializedName;
 
 /**
+ * The Primitive as it is loaded using the glTF format.
  * 
  * primitive
  * Geometry to be rendered with the given material.

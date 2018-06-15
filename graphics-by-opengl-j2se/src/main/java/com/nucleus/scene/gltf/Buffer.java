@@ -13,6 +13,8 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
 
 /**
+ * The Buffer as it is loaded using the glTF format.
+ * 
  * A buffer points to binary geometry, animation, or skins.
  * 
  * Properties

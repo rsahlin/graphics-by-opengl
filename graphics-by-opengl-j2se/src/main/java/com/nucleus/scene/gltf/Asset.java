@@ -3,6 +3,8 @@ package com.nucleus.scene.gltf;
 import com.google.gson.annotations.SerializedName;
 
 /**
+ * The Asset as it is loaded using the glTF format.
+ * 
  * asset
  * Metadata about the glTF asset.
  * 

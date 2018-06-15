@@ -1,8 +1,13 @@
 package com.nucleus.scene.gltf;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.scene.gltf.GLTF.GLTFException;
 
 /**
+ * The Accessor as it is loaded using the glTF format.
+ * To use a runtime version of the Accessor create AccessorInstance
+ * 
  * accessor
  * A typed view into a bufferView. A bufferView contains raw binary data. An accessor provides a typed view into a
  * bufferView or a subset of a bufferView similar to how WebGL's vertexAttribPointer() defines an attribute in a buffer.
@@ -24,7 +29,7 @@ import com.google.gson.annotations.SerializedName;
  * 
  */
 
-public class Accessor {
+public class Accessor implements GLTF.RuntimeResolver {
 
     private static final String BUFFER_VIEW = "bufferView";
     private static final String BYTE_OFFSET = "byteOffset";
@@ -36,6 +41,31 @@ public class Accessor {
     private static final String MIN = "min";
     private static final String SPARSE = "sparse";
     private static final String NAME = "name";
+
+    public enum ComponentType {
+        BYTE(GLESWrapper.GLES20.GL_BYTE),
+        UNSIGNED_BYTE(GLESWrapper.GLES20.GL_UNSIGNED_BYTE),
+        SHORT(GLESWrapper.GLES20.GL_SHORT),
+        UNSIGNED_SHORT(GLESWrapper.GLES20.GL_UNSIGNED_SHORT),
+        UNSIGNED_INT(GLESWrapper.GLES20.GL_UNSIGNED_INT),
+        FLOAT(GLESWrapper.GLES20.GL_FLOAT);
+
+        public final int value;
+
+        private ComponentType(int value) {
+            this.value = value;
+        }
+
+        public static ComponentType get(int value) {
+            for (ComponentType cp : values()) {
+                if (cp.value == value) {
+                    return cp;
+                }
+            }
+            return null;
+        }
+
+    }
 
     public enum Type {
         SCALAR(),
@@ -51,7 +81,7 @@ public class Accessor {
     public static final boolean DEFAULT_NORMALIZED = false;
 
     @SerializedName(BUFFER_VIEW)
-    private int bufferView = -1;
+    private int bufferViewIndex = -1;
     /**
      * Offset into buffer relative the bufferView byte offset.
      * This is the offset for the Primitive Attribute index accessing the value in the bufferView
@@ -68,13 +98,13 @@ public class Accessor {
      * 5126 FLOAT
      */
     @SerializedName(COMPONENT_TYPE)
-    private int componentType = -1;
+    private int componentTypeValue = -1;
     @SerializedName(NORMALIZED)
     private boolean normalized = DEFAULT_NORMALIZED;
     @SerializedName(COUNT)
     private int count = -1;
     @SerializedName(TYPE)
-    private String type;
+    private Type type;
     @SerializedName(MAX)
     private float[] max;
     @SerializedName(MIN)
@@ -83,17 +113,33 @@ public class Accessor {
     @SerializedName(NAME)
     private String name;
 
-    transient Type accessorType;
+    transient ComponentType componentType;
+    transient BufferView bufferViewRef;
 
-    public int getBufferView() {
-        return bufferView;
+    public Accessor(BufferView bufferView, int byteOffset, ComponentType componentType, int count, Type type) {
+        this.bufferViewRef = bufferView;
+        this.byteOffset = byteOffset;
+        this.componentType = componentType;
+        this.count = count;
+        this.type = type;
+    }
+
+    public int getBufferViewIndex() {
+        return bufferViewIndex;
+    }
+
+    public BufferView getBufferView() {
+        return bufferViewRef;
     }
 
     public int getByteOffset() {
         return byteOffset;
     }
 
-    public int getComponentType() {
+    public ComponentType getComponentType() {
+        if (componentType == null) {
+            componentType = ComponentType.get(componentTypeValue);
+        }
         return componentType;
     }
 
@@ -118,10 +164,15 @@ public class Accessor {
     }
 
     public Type getType() {
-        if (accessorType == null) {
-            accessorType = Type.valueOf(type);
+        return type;
+    }
+
+    @Override
+    public void resolve(GLTF asset) throws GLTFException {
+        if (bufferViewRef != null) {
+            throw new GLTFException("Already resolved Accessor with name " + name);
         }
-        return accessorType;
+        bufferViewRef = asset.getBufferViews()[bufferViewIndex];
     }
 
 }

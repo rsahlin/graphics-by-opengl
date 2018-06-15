@@ -3,6 +3,7 @@ package com.nucleus.scene.gltf;
 import com.google.gson.annotations.SerializedName;
 
 /**
+ * The Node as it is loaded using the glTF format.
  * 
  * node
  * A node in the node hierarchy. When the node contains skin, all mesh.primitives must contain JOINTS_0 and WEIGHTS_0

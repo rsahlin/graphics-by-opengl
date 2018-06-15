@@ -4,6 +4,8 @@ import com.google.gson.annotations.SerializedName;
 
 /**
  * 
+ * The Mesh as it is loaded using the glTF format.
+ * 
  * mesh
  * A set of primitives to be rendered. A node can contain one mesh. A node's transform places the mesh in the scene.
  * 

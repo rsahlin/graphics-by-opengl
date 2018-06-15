@@ -201,6 +201,23 @@ public class VariableIndexer {
             albedo = source.albedo;
             emissive = source.emissive;
             attributesPerVertex = source.attributesPerVertex;
+        }
+
+        /**
+         * Internal contstructor
+         * 
+         * @param values
+         */
+        protected Indexer(int[] values) {
+            vertex = values[0];
+            uv = values[1];
+            translate = values[2];
+            rotate = values[3];
+            scale = values[4];
+            frame = values[5];
+            albedo = values[6];
+            emissive = values[7];
+            attributesPerVertex = values[8];
 
         }
 

@@ -3,6 +3,8 @@ package com.nucleus.scene.gltf;
 import com.google.gson.annotations.SerializedName;
 
 /**
+ * The Material as it is loaded using the glTF format.
+ * 
  * The material appearance of a primitive.
  * 
  * Properties

@@ -3,6 +3,8 @@ package com.nucleus.scene.gltf;
 import com.google.gson.annotations.SerializedName;
 
 /**
+ * The Scene as it is loaded using the glTF format.
+ * 
  * scene
  * The root nodes of a scene.
  * 

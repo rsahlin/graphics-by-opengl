@@ -3,6 +3,9 @@ package com.nucleus.scene.gltf;
 import com.google.gson.annotations.SerializedName;
 
 /**
+ * 
+ * The pbrMetallicRoughness as it is loaded using the glTF format.
+ * 
  * pbrMetallicRoughness
  * A set of parameter values that are used to define the metallic-roughness material model from Physically-Based
  * Rendering (PBR) methodology.
