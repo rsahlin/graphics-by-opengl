@@ -123,10 +123,10 @@ public class TiledTexture2D extends Texture2D {
         float scaleX = 1f / getTileWidth();
         float scaleY = 1f / getTileHeight();
         float[] values = rect.getValues();
-        values[Rectangle.X] *= scaleX;
-        values[Rectangle.Y] *= scaleY;
-        values[Rectangle.WIDTH] *= scaleX;
-        values[Rectangle.HEIGHT] *= scaleY;
+        values[Rectangle.INDEX_X] *= scaleX;
+        values[Rectangle.INDEX_Y] *= scaleY;
+        values[Rectangle.INDEX_WIDTH] *= scaleX;
+        values[Rectangle.INDEX_HEIGHT] *= scaleY;
         return rect;
     }
 

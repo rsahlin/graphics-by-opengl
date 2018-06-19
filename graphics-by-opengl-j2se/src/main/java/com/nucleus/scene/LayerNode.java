@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.Window;
 import com.nucleus.vecmath.Matrix;
+import com.nucleus.vecmath.Transform;
 
 /**
  * A Node representing a layer with a view, the view can be transformed using a {@link #getViewController()}
@@ -113,6 +114,14 @@ public class LayerNode extends Node {
         // The result shall be that the view transform is reset to this transform.
         return transform != null ? Matrix.copy(transform.getMatrix(), 0, modelMatrix, 0)
                 : Matrix.setIdentity(modelMatrix, 0);
+    }
+
+    @Override
+    public void create() {
+        super.create();
+        if (transform == null) {
+            transform = new Transform();
+        }
     }
 
 }

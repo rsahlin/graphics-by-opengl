@@ -1,10 +1,13 @@
-package com.nucleus.geometry;
+package com.nucleus.geometry.shape;
 
-import static com.nucleus.vecmath.Rectangle.HEIGHT;
-import static com.nucleus.vecmath.Rectangle.WIDTH;
-import static com.nucleus.vecmath.Rectangle.X;
-import static com.nucleus.vecmath.Rectangle.Y;
+import static com.nucleus.vecmath.Rectangle.INDEX_HEIGHT;
+import static com.nucleus.vecmath.Rectangle.INDEX_WIDTH;
+import static com.nucleus.vecmath.Rectangle.INDEX_X;
+import static com.nucleus.vecmath.Rectangle.INDEX_Y;
 
+import com.nucleus.geometry.AttributeBuffer;
+import com.nucleus.geometry.ElementBuffer;
+import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.renderer.Window;
 import com.nucleus.texturing.Texture2D;
@@ -12,10 +15,11 @@ import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureParameter.Parameter;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.TiledTexture2D;
+import com.nucleus.texturing.UVTexture2D;
 import com.nucleus.vecmath.Rectangle;
 
 /**
- * Use this builder to create rectangles in a mesh.
+ * Use this builder to create 2D rectangles in a mesh.
  * Will use indexbuffer and vertexbuffer, to use resulting mesh draw using elements.
  * 
  *
@@ -97,26 +101,19 @@ public class RectangleShapeBuilder extends ElementBuilder {
         }
 
         /**
-         * Enable or disables the vertex index, of set to true then each vertex has the vertex index in the quad. 0 for
-         * the first vertex, 1 for the next - up to 3.
+         * Returns the rectangle defining the shape
          * 
-         * @param enable
+         * @return
          */
-        public void enableVertexIndex(boolean enable) {
-            this.enableVertexIndex = enable;
+        public Rectangle getRectangle() {
+            return rectangle;
         }
 
         protected Rectangle rectangle;
         protected float z;
-        /**
-         * Set to true to add vertex index for each vertex in the quad, ie the first vertex will have index 0, the next
-         * 1 and so on.
-         * The index is stored after vertex xyz.
-         */
-        protected boolean enableVertexIndex = false;
     }
 
-    private RectangleConfiguration configuration;
+    protected RectangleConfiguration configuration;
     /**
      * Quad data stored here after created.
      */
@@ -188,7 +185,8 @@ public class RectangleShapeBuilder extends ElementBuilder {
 
     @Override
     public void build(Mesh mesh) {
-        AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.VERTICES);
+        // TODO - for this shapebuilder to work the offsets of vertex and uv must be set.
+        AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
         int stride = attributes.getFloatStride();
         if (quadStoreage == null) {
             quadStoreage = new float[stride * QUAD_VERTICES];
@@ -241,11 +239,12 @@ public class RectangleShapeBuilder extends ElementBuilder {
         switch (mode) {
             case TRIANGLES:
             case TRIANGLE_FAN:
-                setPositionUV(0, values[X], values[Y], uv, destination, 0);
-                setPositionUV(1, values[X] + values[WIDTH], values[Y], uv, destination, vertexStride);
-                setPositionUV(2, values[X] + values[WIDTH], values[Y] - values[HEIGHT], uv, destination,
+                setPositionUV(0, values[INDEX_X], values[INDEX_Y], uv, destination, 0);
+                setPositionUV(1, values[INDEX_X] + values[INDEX_WIDTH], values[INDEX_Y], uv, destination, vertexStride);
+                setPositionUV(2, values[INDEX_X] + values[INDEX_WIDTH], values[INDEX_Y] - values[INDEX_HEIGHT], uv,
+                        destination,
                         vertexStride * 2);
-                setPositionUV(3, values[X], values[Y] - values[HEIGHT], uv, destination,
+                setPositionUV(3, values[INDEX_X], values[INDEX_Y] - values[INDEX_HEIGHT], uv, destination,
                         vertexStride * 3);
                 break;
             default:
@@ -262,6 +261,8 @@ public class RectangleShapeBuilder extends ElementBuilder {
      * @param destination
      */
     protected static void createUVCoordinates(Texture2D texture, float[] destination) {
+        float maxU = 1f;
+        float maxV = 1f;
         switch (texture.textureType) {
             case Texture2D:
             case DynamicTexture2D:
@@ -269,23 +270,41 @@ public class RectangleShapeBuilder extends ElementBuilder {
                 createUVCoordinates(texture, params[TextureParameter.WRAP_S_INDEX],
                         params[TextureParameter.WRAP_T_INDEX], destination);
                 break;
+            case UVTexture2D:
+                UVTexture2D uvt = (UVTexture2D) texture;
+                if (uvt.getUVAtlas() != null) {
+                    float[] frame = new float[8];
+                    uvt.getUVAtlas().getUVFrame(0, frame, 0);
+                    System.arraycopy(frame, 0, destination, 0, 8);
+                } else {
+                    RectangleShapeBuilder.setMaxUV(destination, maxU, maxV);
+                }
+                break;
             case TiledTexture2D:
                 TiledTexture2D t = (TiledTexture2D) texture;
-                float maxU = (1f / (t.getTileWidth()));
-                float maxV = (1f / (t.getTileHeight()));
-                destination[0] = 0;
-                destination[1] = 0;
-                destination[2] = maxU;
-                destination[3] = 0;
-                destination[4] = maxU;
-                destination[5] = maxV;
-                destination[6] = 0;
-                destination[7] = maxV;
+                RectangleShapeBuilder.setMaxUV(destination, (1f / (t.getTileWidth())), (1f / (t.getTileHeight())));
                 break;
-            case UVTexture2D:
             case Untextured:
             default:
         }
+    }
+
+    /**
+     * Sets uv to 0, 0 to maxU, maxV
+     * 
+     * @param destination
+     * @param maxU
+     * @param maxV
+     */
+    protected static void setMaxUV(float[] destination, float maxU, float maxV) {
+        destination[0] = 0;
+        destination[1] = 0;
+        destination[2] = maxU;
+        destination[3] = 0;
+        destination[4] = maxU;
+        destination[5] = maxV;
+        destination[6] = 0;
+        destination[7] = maxV;
     }
 
     protected static void createUVCoordinates(Texture2D texture, Parameter wrapS, Parameter wrapT,

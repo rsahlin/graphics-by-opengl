@@ -1,9 +1,17 @@
 package com.nucleus.assets;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.nucleus.SimpleLogger;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
@@ -14,6 +22,9 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderTarget;
 import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
+import com.nucleus.scene.gltf.Buffer;
+import com.nucleus.scene.gltf.GLTF;
+import com.nucleus.scene.gltf.Loader;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.Image.ImageFormat;
 import com.nucleus.texturing.Texture2D;
@@ -46,6 +57,8 @@ public class AssetManager {
     private Hashtable<String, ExternalReference> sourceNames = new Hashtable<String, ExternalReference>();
 
     private HashMap<String, ShaderProgram> programs = new HashMap<>();
+
+    private ArrayList<GLTF> glTFAssets = new ArrayList<>();
 
     /**
      * Hide the constructor
@@ -308,6 +321,59 @@ public class AssetManager {
     private void deletePrograms(GLES20Wrapper wrapper) {
         for (ShaderProgram program : programs.values()) {
             wrapper.glDeleteProgram(program.getProgram());
+        }
+    }
+
+    /**
+     * Returns the asset with the specified index, or null if not loaded by calling
+     * {@link #loadGLTFAsset(String, String, int)}
+     * 
+     * @param index Index of glTF asset to get
+     * @return The glTF asset at index, or null if not loaded with {@link #loadGLTFAsset(String, String, int)}
+     */
+    public GLTF getGLTFAsset(int index) {
+        return glTFAssets.get(index);
+    }
+
+    /**
+     * Loads and returns one GLTF asset, loads binary data into buffers
+     * 
+     * 
+     * @param path Path to asset folder
+     * @param name
+     * @param index Index of the asset
+     * @return The loaded GLTF asset
+     * @throws IOException
+     */
+    public GLTF loadGLTFAsset(String path, String name, int index) throws IOException {
+        SimpleLogger.d(Loader.class, "Loading glTF asset:" + path + name);
+        ClassLoader loader = Loader.class.getClassLoader();
+        InputStream is = loader.getResourceAsStream(path + name);
+        return loadAsset(path, is);
+    }
+
+    private GLTF loadAsset(String path, InputStream is) throws IOException {
+        try {
+            Reader reader = new InputStreamReader(is, "UTF-8");
+            GsonBuilder builder = new GsonBuilder();
+            Gson gson = builder.create();
+            GLTF glTF = gson.fromJson(reader, GLTF.class);
+            glTF.setPath(path);
+            return glTF;
+        } catch (UnsupportedEncodingException e) {
+            SimpleLogger.d(Loader.class, e.getMessage());
+            return null;
+        }
+    }
+
+    private void loadBuffers(GLTF glTF, Buffer[] buffers) throws IOException {
+        try {
+            for (Buffer b : buffers) {
+                b.createBuffer();
+                b.load(glTF, b.getUri());
+            }
+        } catch (URISyntaxException e) {
+            throw new IOException(e);
         }
     }
 

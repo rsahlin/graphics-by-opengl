@@ -2,9 +2,10 @@ package com.nucleus.component;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
-import com.nucleus.geometry.AttributeUpdater.PropertyMapper;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.shader.VariableIndexer.Indexer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.UVAtlas;
@@ -54,8 +55,8 @@ public class CPUQuadExpander extends AttributeExpander {
      * @param mapper
      * @param data
      */
-    public CPUQuadExpander(Mesh spriteMesh, PropertyMapper mapper, CPUComponentBuffer source,
-            CPUComponentBuffer destination) {
+    public CPUQuadExpander(Mesh spriteMesh, Indexer mapper,
+            CPUComponentBuffer source, CPUComponentBuffer destination) {
         super(mapper, destination, 4);
         this.source = source;
         this.sourceData = source.data;
@@ -64,9 +65,9 @@ public class CPUQuadExpander extends AttributeExpander {
         this.texture = spriteMesh.getTexture(Texture2D.TEXTURE_0);
         this.sizePerVertex = mapper.attributesPerVertex;
         if (texture.getTextureType() == TextureType.UVTexture2D) {
-            // If mesh has block buffers then frames will be in uniform block - do not copy here
-            if (spriteMesh.getBlockBuffers() == null) {
-                SimpleLogger.d(getClass(), "No uniform block - does renderer not have support for GLES3 or above?");
+            // TODO - how to sync this with the creation of uniform block buffer in shader program?
+            if (GLES20Wrapper.getInfo().getRenderVersion().major < 3) {
+                SimpleLogger.d(getClass(), "GLES version < 3 - not using uniform block buffers for UV data");
                 copyUVAtlas(((UVTexture2D) texture).getUVAtlas());
                 tempData = new float[mapper.attributesPerVertex];
             }
@@ -91,12 +92,12 @@ public class CPUQuadExpander extends AttributeExpander {
             buffer.setBufferPosition(0);
             for (int i = 0; i < source.getEntityCount(); i++) {
                 uvIndex = 0;
-                frame = (int) tempData[mapper.frameOffset];
+                frame = (int) tempData[mapper.frame];
                 // data.get(i, tempData);
                 for (int expand = 0; expand < multiplier; expand++) {
                     // Store the UV for the vertex
-                    tempData[mapper.frameOffset] = uvData[frame][uvIndex++];
-                    tempData[mapper.frameOffset + 1] = uvData[frame][uvIndex++];
+                    tempData[mapper.frame] = uvData[frame][uvIndex++];
+                    tempData[mapper.frame + 1] = uvData[frame][uvIndex++];
                     buffer.put(tempData);
                 }
             }
@@ -114,8 +115,8 @@ public class CPUQuadExpander extends AttributeExpander {
      * @param color
      */
     public void setColor(int quad, float[] color) {
-        int index = quad * source.sizePerEntity + mapper.colorOffset;
-        int destIndex = quad * destination.sizePerEntity + mapper.colorOffset;
+        int index = quad * source.sizePerEntity + mapper.albedo;
+        int destIndex = quad * destination.sizePerEntity + mapper.albedo;
         sourceData[index++] = color[0];
         sourceData[index++] = color[1];
         sourceData[index++] = color[2];
@@ -136,10 +137,10 @@ public class CPUQuadExpander extends AttributeExpander {
      * @param frame
      */
     public final void setFrame(int quad, int frame) {
-        if (mapper.frameOffset != Constants.NO_VALUE) {
-            int index = quad * source.sizePerEntity + mapper.frameOffset;
+        if (mapper.frame != Constants.NO_VALUE) {
+            int index = quad * source.sizePerEntity + mapper.frame;
             sourceData[index] = frame;
-            index = quad * destination.sizePerEntity + mapper.frameOffset;
+            index = quad * destination.sizePerEntity + mapper.frame;
             destinationData[index] = frame;
             index += sizePerVertex;
             destinationData[index] = frame;
@@ -148,31 +149,6 @@ public class CPUQuadExpander extends AttributeExpander {
             index += sizePerVertex;
             destinationData[index] = frame;
         }
-    }
-
-    /**
-     * Sets the position
-     * 
-     * @param quad
-     * @param x
-     * @param y
-     */
-    public final void setPosition(int quad, float x, float y) {
-        int index = quad * source.sizePerEntity + mapper.translateOffset;
-        sourceData[index] = x;
-        sourceData[index + 1] = y;
-        index = quad * destination.sizePerEntity + mapper.translateOffset;
-        destinationData[index] = x;
-        destinationData[index + 1] = y;
-        index += sizePerVertex;
-        destinationData[index] = x;
-        destinationData[index + 1] = y;
-        index += sizePerVertex;
-        destinationData[index] = x;
-        destinationData[index + 1] = y;
-        index += sizePerVertex;
-        destinationData[index] = x;
-        destinationData[index + 1] = y;
     }
 
     /**
@@ -186,7 +162,7 @@ public class CPUQuadExpander extends AttributeExpander {
         float[] translate = transform.getTranslate();
         int start = quad * source.sizePerEntity;
         if (translate != null) {
-            int index = start + mapper.translateOffset;
+            int index = start + mapper.translate;
             for (int i = 0; i < 4; i++) {
                 sourceData[index++] = translate[0];
                 sourceData[index++] = translate[1];
@@ -195,7 +171,7 @@ public class CPUQuadExpander extends AttributeExpander {
             }
         }
         if (transform.getAxisAngle() != null) {
-            int index = start + mapper.rotateOffset;
+            int index = start + mapper.rotate;
             float[] axisangle = transform.getAxisAngle().getValues();
             float angle = axisangle[AxisAngle.ANGLE];
             for (int i = 0; i < 4; i++) {
@@ -210,7 +186,7 @@ public class CPUQuadExpander extends AttributeExpander {
         if (scale == null) {
             scale = DEFAULT_SCALE;
         }
-        int index = start + mapper.scaleOffset;
+        int index = start + mapper.scale;
         for (int i = 0; i < 4; i++) {
             sourceData[index++] = scale[0];
             sourceData[index++] = scale[1];
@@ -221,50 +197,43 @@ public class CPUQuadExpander extends AttributeExpander {
     }
 
     /**
-     * Sets all the data for the specified quad, the caller shall make sure the data is indexed using the appropriate
-     * mapper.
+     * Sets the data for the specified quad, the caller shall make sure the data is indexed using the appropriate
+     * mapper. The data will be expanded into quad.
+     * Use this method when initializing - not performance optimized.
      * 
      * @param quad
+     * @param quadOffset
      * @param data
+     * @param offset Offset into data where values are read
+     * @param length Number of values to set
      */
-    public final void setData(int quad, float[] data) {
-        int index = quad * source.sizePerEntity;
-        System.arraycopy(data, 0, sourceData, index, data.length);
-        expandQuadData(quad);
-    }
-
-    /**
-     * Sets the xyz axis values for the transform, use this method when initializing
-     * This will set the transform in the source buffer.
-     * 
-     * @param quad
-     * @param transform 3 axis translate, rotate and scale values
-     */
-    public final void setTransform(int quad, float[] transform) {
-        int index = quad * source.sizePerEntity;
-        sourceData[index + mapper.translateOffset] = transform[0];
-        sourceData[index + 1 + mapper.translateOffset] = transform[1];
-        sourceData[index + 2 + mapper.translateOffset] = transform[2];
-
-        sourceData[index + mapper.rotateOffset] = transform[3];
-        sourceData[index + 1 + mapper.rotateOffset] = transform[4];
-        sourceData[index + 2 + mapper.rotateOffset] = transform[5];
-
-        sourceData[index + mapper.scaleOffset] = transform[6];
-        sourceData[index + 1 + mapper.scaleOffset] = transform[7];
-        sourceData[index + 2 + mapper.scaleOffset] = transform[8];
-        expandQuadData(quad);
+    public final void setData(int quad, int quadOffset, float[] data, int offset, int length) {
+        int index = quad * source.sizePerEntity + quadOffset;
+        int quadIndex = quad * destination.sizePerEntity + quadOffset;
+        float val;
+        for (int i = 0; i < length; i++) {
+            val = data[offset++];
+            sourceData[index++] = val;
+            if (i + quadOffset < sizePerVertex) {
+                destinationData[quadIndex] = val;
+                destinationData[quadIndex + sizePerVertex] = val;
+                destinationData[quadIndex + sizePerVertex * 2] = val;
+                destinationData[quadIndex + sizePerVertex * 3] = val;
+                quadIndex++;
+            }
+        }
     }
 
     /**
      * Expands the data for one quad, from source into destination for all 4 vertices of the quad.
+     * Not optimized - only use this when setting a limited number of quads or outside game loop.
      * 
      * @param quad
      * @param srcData
      * @param offset
      * @return
      */
-    public final void expandQuadData(int quad) {
+    protected final void expandQuadData(int quad) {
         int index = quad * destination.sizePerEntity;
         int sourceIndex = quad * source.sizePerEntity;
         System.arraycopy(sourceData, sourceIndex, destinationData, index, sizePerVertex);

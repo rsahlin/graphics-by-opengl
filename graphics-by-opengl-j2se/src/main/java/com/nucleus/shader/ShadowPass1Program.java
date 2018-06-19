@@ -33,7 +33,8 @@ public class ShadowPass1Program extends ShaderProgram {
      * @param category
      */
     public ShadowPass1Program(ShaderProgram objectProgram, Texture2D.Shading shading, String category) {
-        super(Pass.SHADOW1, shading, category, CommonShaderVariables.values(), Shaders.VERTEX_FRAGMENT);
+        super(Pass.SHADOW1, shading, category, ProgramType.VERTEX_FRAGMENT);
+        setIndexer(objectProgram.variableIndexer);
         this.objectProgram = objectProgram;
     }
 
@@ -58,10 +59,10 @@ public class ShadowPass1Program extends ShaderProgram {
     @Override
     public void setUniformMatrices(float[][] matrices, Mesh mesh) {
         System.arraycopy(matrices[Matrices.MODELVIEW.index], 0, uniforms,
-                shaderVariables[CommonShaderVariables.uMVMatrix.index].getOffset(),
+                getUniformByName("uMVMatrix").getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(matrices[Matrices.RENDERPASS_1.index], 0, uniforms,
-                shaderVariables[CommonShaderVariables.uProjectionMatrix.index].getOffset(),
+                getUniformByName("uProjectionMatrix").getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
 

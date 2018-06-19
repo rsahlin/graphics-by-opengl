@@ -2,6 +2,7 @@ package com.nucleus.shader;
 
 import java.nio.Buffer;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.BufferObject;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 
@@ -86,6 +87,28 @@ public abstract class BlockBuffer extends BufferObject {
      */
     public InterfaceBlock getInterfaceBlock() {
         return interfaceBlock;
+    }
+
+    /**
+     * Creates the block buffers, if any are used. Creates instance of {@link FloatBlockBuffer}
+     * 
+     * @param sizes Number of buffers and size of each, in byte units
+     * @return Variable (float) block buffers for this program, or null if not used.
+     */
+    public static BlockBuffer[] createBlockBuffers(InterfaceBlock[] interfaceBlocks) {
+        BlockBuffer[] blockBuffers = null;
+        if (interfaceBlocks != null) {
+            blockBuffers = new BlockBuffer[interfaceBlocks.length];
+            for (int index = 0; index < interfaceBlocks.length; index++) {
+                // TODO - need to add stride
+                blockBuffers[index] = new FloatBlockBuffer(interfaceBlocks[index],
+                        interfaceBlocks[index].blockDataSize >>> 2);
+                if (interfaceBlocks[index].blockDataSize > 0) {
+                    SimpleLogger.d(BlockBuffer.class, "Data for uniform block " + interfaceBlocks[index].blockDataSize);
+                }
+            }
+        }
+        return blockBuffers;
     }
 
 }

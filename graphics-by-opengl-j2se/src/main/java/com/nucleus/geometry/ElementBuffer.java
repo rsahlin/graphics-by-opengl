@@ -45,14 +45,14 @@ public class ElementBuffer extends BufferObject {
     /**
      * The vertex index buffer, contains indexes to vertices to be drawn.
      */
-    ByteBuffer indices;
+    public ByteBuffer indices;
 
-    Type type;
+    public final Type type;
 
     /**
      * Number of indices in this buffer
      */
-    int count;
+    public final int count;
 
     /**
      * Offset to first element

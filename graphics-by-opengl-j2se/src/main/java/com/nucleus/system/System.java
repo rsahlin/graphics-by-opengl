@@ -7,15 +7,16 @@ import com.nucleus.scene.RootNode;
 
 /**
  * The system handling one or more components, one system shall handle all controllers of the same kind.
- * There shall only be one system of each kind, which can handle multiple components
+ * The system shall not contain the data needed to perform processing - that shall be held by the Component.
+ * There shall only be one system of each kind, which can handle multiple components (instances of data)
  */
-public abstract class System {
+public abstract class System<T extends Component> {
 
     private String type;
 
     /**
      * Keep track if system is initialized, for instance make sure
-     * {@link #initSystem(NucleusRenderer, RootNode, Component)} not called more than once.
+     * {@link #initSystem(NucleusRenderer, RootNode)} not called more than once.
      */
     protected boolean initialized = false;
 
@@ -24,28 +25,29 @@ public abstract class System {
      * 
      * @param component The component to update
      * @param deltaTime The time lapsed since last call to process
-     * @throws IllegalStateException If {@link #initSystem(RootNode)} has not been called.
+     * @throws IllegalStateException If {@link #initComponent(NucleusRenderer, RootNode, Component)} has not been
+     * called.
      */
-    public abstract void process(Component component, float deltaTime);
+    public abstract void process(T component, float deltaTime);
 
     /**
-     * Inits the system, this must be called before {@link #process(Component, float)} is called.
+     * Initializes the system, will be called once before {@link #initComponent(NucleusRenderer, RootNode, Component)}
+     * is called.
+     * Implementors MUST set the {@link #initialized} flag to true
+     * 
+     * @param renderer
+     * @param root
+     */
+    public abstract void initSystem(NucleusRenderer renderer, RootNode root);
+
+    /**
+     * Inits the component for the system, this must be called before {@link #process(T, float)} is called.
      * 
      * @param renderer
      * @param root
      * @param component The component to be used in the system
      */
-    public abstract void initSystem(NucleusRenderer renderer, RootNode root, Component component);
-
-    /**
-     * Returns the size of data for each entity needed by the system to do processing.
-     * This is called from the
-     * {@link Component#create(com.nucleus.renderer.NucleusRenderer, com.nucleus.component.ComponentNode, System)}
-     * method.
-     * 
-     * @return Size of data for each entity.
-     */
-    public abstract int getEntityDataSize();
+    public abstract void initComponent(NucleusRenderer renderer, RootNode root, T component);
 
     /**
      * Returns the type of component, this is tied to the implementing class by {@link TypeResolver}

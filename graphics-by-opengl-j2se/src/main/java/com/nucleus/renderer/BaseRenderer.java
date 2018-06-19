@@ -11,7 +11,6 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Constants;
-import com.nucleus.common.Environment;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.ElementBuffer;
@@ -27,10 +26,7 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
-import com.nucleus.scene.LineDrawerNode;
-import com.nucleus.scene.LineDrawerNode.LineMode;
 import com.nucleus.scene.Node;
-import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
@@ -63,8 +59,10 @@ class BaseRenderer implements NucleusRenderer {
 
     protected SurfaceConfiguration surfaceConfig;
 
+    /**
+     * Cludge to get access to the current viewfrustum - not optimal solution
+     */
     protected ViewFrustum viewFrustum = new ViewFrustum();
-
     protected ArrayDeque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<float[]> projection = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<Pass> renderPassStack = new ArrayDeque<>();
@@ -84,6 +82,11 @@ class BaseRenderer implements NucleusRenderer {
      * The view matrix
      */
     protected float[] viewMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
+
+    /**
+     * Temp matrix - not threadsafe
+     */
+    protected float[] tempMatrix = Matrix.createMatrix();
 
     protected GLES20Wrapper gles;
     protected ImageFactory imageFactory;
@@ -124,6 +127,7 @@ class BaseRenderer implements NucleusRenderer {
         if (matrixEngine == null) {
             throw new IllegalArgumentException(NULL_MATRIXENGINE_ERROR);
         }
+        gles.createInfo();
         this.gles = gles;
         this.imageFactory = imageFactory;
         this.matrixEngine = matrixEngine;
@@ -229,7 +233,7 @@ class BaseRenderer implements NucleusRenderer {
             }
         }
         if ((flags & RenderState.CHANGE_FLAG_MULTISAMPLE) != 0) {
-            if (gles.getInfo()
+            if (GLES20Wrapper.getInfo()
                     .hasExtensionSupport(GLESWrapper.GLES_EXTENSIONS.multisample_compatibility)) {
                 if (surfaceConfig != null && surfaceConfig.getSamples() > 1 && state.isMultisampling()) {
                     gles.glEnable(GLES_EXTENSION_TOKENS.MULTISAMPLE_EXT.value);
@@ -257,8 +261,7 @@ class BaseRenderer implements NucleusRenderer {
                     for (RenderPass renderPass : renderPasses) {
                         if (renderPass.getViewFrustum() != null && renderPass.getPass() == Pass.SHADOW1) {
                             Matrix.mul4(renderPass.getViewFrustum().getMatrix(),
-                                    // TODO Is is safe to use matrix from renderpass2? Use temp matrix instead?
-                                    ShadowPass1Program.getLightMatrix(matrices[Matrices.RENDERPASS_2.index]),
+                                    ShadowPass1Program.getLightMatrix(tempMatrix),
                                     matrices[Matrices.RENDERPASS_1.index]);
                         }
                         pushPass(renderPass.getPass());
@@ -290,16 +293,12 @@ class BaseRenderer implements NucleusRenderer {
         if (projection != null) {
             pushMatrix(this.projection, matrices[Matrices.PROJECTION.index]);
             matrices[Matrices.PROJECTION.index] = projection;
+            viewFrustum = node.getViewFrustum();
         }
-        Matrix.mul4(viewMatrix, nodeMatrix, matrices[Matrices.MODELVIEW.index]);
-        if (node.getType().equals(NodeTypes.linedrawernode.name())) {
-            LineDrawerNode ld = (LineDrawerNode) node;
-            if (ld.getLineMode() != LineMode.POINTS) {
-                gles.glLineWidth(ld.getPointSize());
-            }
-        }
-        nodeMeshes.clear();
-        renderMeshes(node.getMeshes(nodeMeshes), matrices);
+        Matrix.mul4(nodeMatrix, viewMatrix, matrices[Matrices.MODELVIEW.index]);
+
+        node.nodeRenderer.renderNode(this, currentPass, matrices);
+
         this.modelMatrix = nodeMatrix;
         // Add this to rendered nodes before children.
         node.getRootNode().addRenderedNode(node);
@@ -539,16 +538,17 @@ class BaseRenderer implements NucleusRenderer {
                 Matrix.setIdentity(matrices[Matrices.RENDERPASS_2.index], 0);
                 Matrix.scaleM(matrices[Matrices.RENDERPASS_2.index], 0, 0.5f, 0.5f, 1f);
                 Matrix.translate(matrices[Matrices.RENDERPASS_2.index], 0.5f, 0.5f, 0f);
-                Matrix.mul4(matrices[Matrices.RENDERPASS_1.index], matrices[Matrices.RENDERPASS_2.index]);
+                Matrix.mul4(matrices[Matrices.RENDERPASS_1.index], matrices[Matrices.RENDERPASS_2.index], tempMatrix);
+                System.arraycopy(tempMatrix, 0, matrices[Matrices.RENDERPASS_1.index], 0, Matrix.MATRIX_ELEMENTS);
                 break;
             default:
                 // Nothing to do
         }
     }
 
-    protected void renderMeshes(ArrayList<Mesh> meshes, float[][] matrices) throws GLException {
+    protected void renderMeshes(ShaderProgram program, ArrayList<Mesh> meshes, float[][] matrices) throws GLException {
         for (Mesh mesh : meshes) {
-            renderMesh(mesh, matrices);
+            renderMesh(program, mesh, matrices);
         }
     }
 
@@ -559,6 +559,7 @@ class BaseRenderer implements NucleusRenderer {
      * If mesh contains an index buffer it is used and glDrawElements is called, otherwise
      * drawArrays is called.
      * 
+     * @param program The active program
      * @param mesh The mesh to be rendered.
      * @param matrices accumulated modelview matrix for this mesh, this will be sent to uniform.
      * projectionMatrix The projection matrix, depending on shader this is either concatenated
@@ -566,7 +567,7 @@ class BaseRenderer implements NucleusRenderer {
      * renderPassMatrix Optional matrix for renderpass
      * @throws GLException If there is an error in GL while drawing this mesh.
      */
-    protected void renderMesh(Mesh mesh, float[][] matrices)
+    protected void renderMesh(ShaderProgram program, Mesh mesh, float[][] matrices)
             throws GLException {
         Consumer updater = mesh.getAttributeConsumer();
         if (updater != null) {
@@ -576,22 +577,14 @@ class BaseRenderer implements NucleusRenderer {
             return;
         }
         Material material = mesh.getMaterial();
-        ShaderProgram program = getProgram(material, currentPass);
-        gles.glUseProgram(program.getProgram());
-        GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
 
-        material.setBlendModeSeparate(gles);
         program.updateAttributes(gles, mesh);
         program.updateUniforms(gles, matrices, mesh);
         program.prepareTextures(gles, mesh);
 
-        AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.VERTICES);
-        ElementBuffer indices = mesh.getElementBuffer();
+        material.setBlendModeSeparate(gles);
 
-        // TODO - is this the best place for this check - remember, this should only be done in debug cases.
-        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
-            program.validateProgram(getGLES());
-        }
+        ElementBuffer indices = mesh.getElementBuffer();
 
         if (indices == null) {
             gles.glDrawArrays(mesh.getMode().mode, mesh.getOffset(), mesh.getDrawCount());
@@ -608,18 +601,25 @@ class BaseRenderer implements NucleusRenderer {
                         indices.getBuffer().position(mesh.getOffset()));
                 GLUtils.handleError(gles, "glDrawElements no ElementBuffer ");
             }
+            AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
+            if (vertices == null) {
+                vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES);
+            }
             timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
         }
     }
 
     /**
      * 
-     * @param material
+     * @param node The node being rendered
      * @param pass The currently defined pass
      * @return
      */
-    private ShaderProgram getProgram(Material material, Pass pass) {
-        ShaderProgram program = material.getProgram();
+    private ShaderProgram getProgram(Node node, Pass pass) {
+        ShaderProgram program = node.getProgram();
+        if (program == null) {
+            throw new IllegalArgumentException("No program for node " + node.getId());
+        }
         return program.getProgram(getGLES(), pass, program.getShading());
     }
 
@@ -734,11 +734,12 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void renderToTexture(float[] matrix, ArrayList<Mesh> meshes, Texture2D texture, RenderPass renderPass)
+    public void renderToTexture(float[] matrix, ShaderProgram program, ArrayList<Mesh> meshes, Texture2D texture,
+            RenderPass renderPass)
             throws GLException {
         pushPass(currentPass);
         setRenderPass(renderPass);
-        renderMeshes(meshes, matrices);
+        renderMeshes(program, meshes, matrices);
         popPass();
     }
 

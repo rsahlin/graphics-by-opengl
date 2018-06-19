@@ -9,83 +9,23 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.Pass;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.shader.ShaderVariable;
-import com.nucleus.shader.ShaderVariable.VariableType;
-import com.nucleus.shader.VariableMapping;
 import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.vecmath.Matrix;
 
 public class ConvolutionProgram extends ShaderProgram {
 
     protected final static int DEFAULT_COMPONENTS = 3;
-
-    protected enum VARIABLES implements VariableMapping {
-        uMVPMatrix(0, 0, ShaderVariable.VariableType.UNIFORM, null),
-        uKernel(1, 16, ShaderVariable.VariableType.UNIFORM, null),
-        aTranslate(2, 0, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES),
-        aTexCoord(3, 4, ShaderVariable.VariableType.ATTRIBUTE, BufferIndex.VERTICES);
-
-        private final int index;
-        private final int offset;
-        private final VariableType type;
-        private final BufferIndex bufferIndex;
-
-        /**
-         * @param index
-         * @param offset
-         * @param type Type of variable
-         * @param bufferIndex Index of buffer in mesh that holds the variable data
-         */
-        private VARIABLES(int index, int offset, VariableType type, BufferIndex bufferIndex) {
-            this.index = index;
-            this.offset = offset;
-            this.type = type;
-            this.bufferIndex = bufferIndex;
-        }
-
-        @Override
-        public int getIndex() {
-            return index;
-        }
-
-        @Override
-        public VariableType getType() {
-            return type;
-        }
-
-        @Override
-        public BufferIndex getBufferIndex() {
-            return bufferIndex;
-        }
-
-        @Override
-        public int getOffset() {
-            return offset;
-        }
-
-        @Override
-        public String getName() {
-            return name();
-        }
-
-    }
-
-    private final static String VERTEX_SHADER_NAME = "assets/convolutionvertex.essl";
-    private final static String FRAGMENT_SHADER_NAME = "assets/convolutionfragment.essl";
+    protected final float[] matrix = Matrix.createMatrix();
 
     public ConvolutionProgram() {
-        super(null, null, null, VARIABLES.values(), Shaders.VERTEX_FRAGMENT);
-    }
-
-    @Override
-    public int getVariableCount() {
-        return VARIABLES.values().length;
+        super(null, null, null, ProgramType.VERTEX_FRAGMENT);
     }
 
     @Override
     public void updateAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
-        AttributeBuffer buffer = mesh.getAttributeBuffer(BufferIndex.VERTICES);
-        gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER, attributeVariables[BufferIndex.VERTICES.index]);
+        AttributeBuffer buffer = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
+        gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER,
+                attributeVariables[BufferIndex.ATTRIBUTES_STATIC.index]);
         GLUtils.handleError(gles, "glVertexAttribPointers ");
 
     }
@@ -93,9 +33,9 @@ public class ConvolutionProgram extends ShaderProgram {
     @Override
     public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
             throws GLException {
-        Matrix.mul4(matrices[0], matrices[1]);
-        System.arraycopy(matrices[0], 0, uniforms, 0, Matrix.MATRIX_ELEMENTS);
-        uploadUniforms(gles, uniforms, sourceUniforms);
+        Matrix.mul4(matrices[0], matrices[1], matrix);
+        System.arraycopy(matrix, 0, uniforms, 0, Matrix.MATRIX_ELEMENTS);
+        uploadUniforms(gles, uniforms, activeUniforms);
     }
 
     @Override

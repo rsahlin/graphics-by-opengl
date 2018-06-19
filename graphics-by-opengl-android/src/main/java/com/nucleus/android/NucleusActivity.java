@@ -35,7 +35,6 @@ import android.view.Display.Mode;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 
 /**
@@ -92,6 +91,11 @@ public abstract class NucleusActivity extends Activity
      */
     protected boolean eglWaitClient = false;
 
+    /**
+     * If true this activity is moved to background in {@link #onBackPressed()} otherwise activity is finished.
+     */
+    protected boolean backgroundTaskOnBackPressed = true;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         SimpleLogger.setLogger(new AndroidLogger());
@@ -115,11 +119,10 @@ public abstract class NucleusActivity extends Activity
 
     @Override
     public void onBackPressed() {
-        if (coreApp != null) {
-            if (coreApp.onBackPressed()) {
-                coreApp.setDestroyFlag();
-                finish();
-            }
+        if (backgroundTaskOnBackPressed) {
+            moveTaskToBack(true);
+        } else {
+            super.onBackPressed();
         }
     }
 
@@ -190,7 +193,7 @@ public abstract class NucleusActivity extends Activity
     }
 
     /**
-     * Returns the version of the renderer to use
+     * Returns the version of the renderer to use - this will affect what shading language is supported.
      * 
      * @return
      */
@@ -221,7 +224,7 @@ public abstract class NucleusActivity extends Activity
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         SimpleLogger.d(getClass(), "Using " + surfaceView.getClass().getSimpleName());
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -230,7 +233,7 @@ public abstract class NucleusActivity extends Activity
         Point size = new Point();
         display.getSize(size);
         com.nucleus.renderer.Window.getInstance().setScreenSize(size.x, size.y);
-        androidUptimeDelta = System.currentTimeMillis() - android.os.SystemClock.uptimeMillis();
+        androidUptimeDelta = java.lang.System.currentTimeMillis() - android.os.SystemClock.uptimeMillis();
 
     }
 
@@ -272,7 +275,13 @@ public abstract class NucleusActivity extends Activity
                 gles = new AndroidGLES20Wrapper();
                 break;
             case GLES30:
-                gles = new AndriodGLES30Wrapper();
+                gles = new AndroidGLES30Wrapper();
+                break;
+            case GLES31:
+                gles = new AndroidGLES31Wrapper();
+                break;
+            case GLES32:
+                gles = new AndroidGLES32Wrapper();
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for version:" + version);
@@ -319,7 +328,7 @@ public abstract class NucleusActivity extends Activity
         finish();
     }
 
-    @TargetApi(23)
+    @TargetApi(27)
     protected Mode get4KMode() {
         Mode closest = null;
         Mode[] modes = getWindowManager().getDefaultDisplay().getSupportedModes();

@@ -3,8 +3,6 @@ package com.nucleus.scene;
 import java.io.IOException;
 import java.util.ArrayDeque;
 
-import com.nucleus.camera.ViewFrustum;
-import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshFactory;
 import com.nucleus.opengl.GLException;
@@ -14,8 +12,8 @@ import com.nucleus.scene.Node.MeshIndex;
 import com.nucleus.scene.Node.NodeTypes;
 
 /**
- * The default node factory implementation
- * Will create one mesh for the Node by calling MeshFactory or Builder
+ * The default node factory implementation - use this to create instances of loaded nodes
+ * Will create one mesh for the Node by calling MeshFactory
  * TODO - cleanup this and {@link Node.Builder}
  * 
  * @author Richard Sahlin
@@ -44,7 +42,10 @@ public class DefaultNodeFactory implements NodeFactory {
     @Override
     public void createChildNodes(NucleusRenderer renderer, MeshFactory meshFactory, Node source, Node parent)
             throws NodeException {
-        // Recursively create children
+        // Recursively create children if there are any
+        if (source.children == null) {
+            return;
+        }
         for (Node nd : source.children) {
             createNode(renderer, meshFactory, nd, parent);
         }
@@ -72,8 +73,6 @@ public class DefaultNodeFactory implements NodeFactory {
             viewStack.push((LayerNode) created);
             isViewNode = true;
         }
-        // created.setRootNode(parent.getRootNode());
-        setViewFrustum(source, created);
         // Call #onCreated() on the created node before handling children - parent needs to be fully created before
         // the children.
         created.onCreated();
@@ -82,23 +81,6 @@ public class DefaultNodeFactory implements NodeFactory {
             viewStack.pop();
         }
         return created;
-    }
-
-    /**
-     * Checks if the source node has viewfrustum, if it has it is set in the node.
-     * 
-     * @param source The source node containing the viewfrustum
-     * @param node Node to check, or null
-     */
-    protected void setViewFrustum(Node source, Node node) {
-        if (node == null) {
-            return;
-        }
-        ViewFrustum projection = source.getViewFrustum();
-        if (projection == null) {
-            return;
-        }
-        node.setViewFrustum(new ViewFrustum(projection));
     }
 
     /**
@@ -133,26 +115,8 @@ public class DefaultNodeFactory implements NodeFactory {
         }
     }
 
-    @Override
-    public Node create(NucleusRenderer renderer, Mesh.Builder<Mesh> builder, Type<Node> nodeType,
-            RootNode root) throws NodeException {
-        try {
-            Node node = Node.createInstance(nodeType, root);
-            // TODO Fix generics so that cast is not needed
-            for (int i = 0; i < meshCount; i++) {
-                Mesh mesh = builder.create();
-                if (mesh != null) {
-                    node.addMesh(mesh, MeshIndex.MAIN);
-                }
-            }
-            return node;
-        } catch (InstantiationException | IllegalAccessException | IOException | GLException e) {
-            throw new NodeException(e);
-        }
-    }
-
     /**
-     * Sets the number of meshes to create by calling MeshFactory or Biulder in create methods.
+     * Sets the number of meshes to create by calling MeshFactory in create methods.
      * Default is 1.
      * 
      * @param meshCount Number of meshes to create when Node is created.

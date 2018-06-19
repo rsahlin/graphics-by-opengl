@@ -5,6 +5,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /**
@@ -265,6 +266,27 @@ public class AttributeBuffer extends BufferObject {
             }
         }
         return result;
+    }
+
+    /**
+     * Creates attribute buffers
+     * 
+     * @param attributeSizes Attributes per vertex for each buffer, if < 1 then no buffer created.
+     * @param verticeCount Number of vertices to allocate storage for
+     * @param type Type of buffer, normally GL_FLOAT
+     * @return The created buffers as needed by the Mesh to render.
+     */
+    public static AttributeBuffer[] createAttributeBuffers(int[] attributeSizes, int verticeCount, int type) {
+        AttributeBuffer[] buffers = new AttributeBuffer[attributeSizes.length];
+        for (BufferIndex index : BufferIndex.values()) {
+            if (index.index >= buffers.length) {
+                break;
+            }
+            if (attributeSizes[index.index] > 0) {
+                buffers[index.index] = new AttributeBuffer(verticeCount, attributeSizes[index.index], type);
+            }
+        }
+        return buffers;
     }
 
 }

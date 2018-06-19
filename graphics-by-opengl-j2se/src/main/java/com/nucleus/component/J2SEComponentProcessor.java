@@ -3,6 +3,7 @@ package com.nucleus.component;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.component.ComponentController.ComponentState;
 import com.nucleus.renderer.Pass;
+import com.nucleus.scene.ComponentNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RootNode;

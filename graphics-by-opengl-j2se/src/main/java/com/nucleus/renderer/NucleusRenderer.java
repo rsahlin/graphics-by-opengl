@@ -11,6 +11,7 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
+import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
 
@@ -25,6 +26,19 @@ import com.nucleus.texturing.Texture2D;
  *
  */
 public interface NucleusRenderer {
+
+    /**
+     * Simple callback interface for render of node
+     *
+     * @param <T>
+     */
+    public abstract class NodeRenderer<T extends Node> {
+        public abstract void renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices)
+                throws GLException;
+
+        public abstract T getNode();
+
+    }
 
     public enum Matrices {
         MODELVIEW(0),
@@ -160,9 +174,11 @@ public interface NucleusRenderer {
     }
 
     /**
-     * Called when the context is created for a render surface, EGL/GL is now active and can be used to create objects,
+     * Called when the context is created for a render surface, EGL/GL is now active and can be used to create
+     * objects,
      * textures and buffers.
-     * If this method is called again - it means that the EGL context has been lost and is re-created, all EGL resources
+     * If this method is called again - it means that the EGL context has been lost and is re-created, all EGL
+     * resources
      * must be recreated.
      * 
      * @param width Width of display in pixels
@@ -171,7 +187,8 @@ public interface NucleusRenderer {
     public void contextCreated(int width, int height);
 
     /**
-     * Called when the system has resized the window, update viewport and set the new window size to the {@link Window}
+     * Called when the system has resized the window, update viewport and set the new window size to the
+     * {@link Window}
      * 
      * @param x Window x start position, normally 0
      * @param y Window y start position, normally 0
@@ -243,7 +260,8 @@ public interface NucleusRenderer {
      * @param renderpass
      * @throws GLException If there is an error in GL while drawing this node.
      */
-    public void renderToTexture(float[] matrix, ArrayList<Mesh> meshes, Texture2D texture, RenderPass renderpass)
+    public void renderToTexture(float[] matrix, ShaderProgram program, ArrayList<Mesh> meshes, Texture2D texture,
+            RenderPass renderpass)
             throws GLException;
 
     /**
@@ -256,7 +274,8 @@ public interface NucleusRenderer {
 
     /**
      * Adds a listener for render context created, if listener is already added nothing is done.
-     * TODO Add to {@link CoreApp} or {@link ClientApplication} - normal usage should not need to access NucleusRenderer
+     * TODO Add to {@link CoreApp} or {@link ClientApplication} - normal usage should not need to access
+     * NucleusRenderer
      * 
      * @param listener Listener to get callback when render context is created.
      */
@@ -328,7 +347,8 @@ public interface NucleusRenderer {
      * @param target Specifies the target buffer object. The symbolic constant must be GL_ARRAY_BUFFER or
      * GL_ELEMENT_ARRAY_BUFFER, or any of the targets allowed for the current GL implementation
      * @param size Specifies the size in bytes of the buffer object's new data store.
-     * @param data Specifies a pointer to data that will be copied into the data store for initialization, or NULL if no
+     * @param data Specifies a pointer to data that will be copied into the data store for initialization, or NULL
+     * if no
      * data is to be copied.
      * @param usage Specifies the expected usage pattern of the data store. The symbolic constant must be
      * GL_STREAM_DRAW, GL_STATIC_DRAW, or GL_DYNAMIC_DRAW.

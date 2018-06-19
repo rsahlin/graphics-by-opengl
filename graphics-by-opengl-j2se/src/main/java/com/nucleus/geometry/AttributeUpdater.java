@@ -1,8 +1,6 @@
 package com.nucleus.geometry;
 
-import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.shader.ShaderProgram;
 
 /**
  * For usecases where the attribute data needs to be updated (in the mesh), ie it is not sufficient to set static
@@ -18,73 +16,6 @@ import com.nucleus.shader.ShaderProgram;
  *
  */
 public interface AttributeUpdater {
-
-    /**
-     * Enum of properties that producer / consumer can use to find offset into attribute data
-     *
-     */
-    public enum Property {
-        TRANSLATE(),
-        /**
-         * UV information
-         */
-        UV(),
-        ROTATE(),
-        SCALE(),
-        /**
-         * Frame information, number, coordinates etc
-         */
-        FRAME(),
-        /**
-         * (Diffuse) Color
-         */
-        COLOR(),
-        /**
-         * Specular reflection property
-         */
-        COLOR_SPECULAR(),
-        /**
-         * Ambient color
-         */
-        COLOR_AMBIENT(),
-        SPECULAR_POWER();
-
-    }
-
-    /**
-     * Holds the property indexes as they will be in a shader program.
-     * 
-     * @author Richard Sahlin
-     *
-     */
-    public class PropertyMapper {
-        public final int translateOffset;
-        public final int rotateOffset;
-        public final int scaleOffset;
-        public final int frameOffset;
-        public final int colorOffset;
-        public final int colorSpecularOffset;
-        public final int colorAmbientOffset;
-        public final int specularPowerOffset;
-        public final int attributesPerVertex;
-
-        /**
-         * Creates the attributer index mapping for the properties with a specific shader program.
-         * 
-         * @param program
-         */
-        public PropertyMapper(ShaderProgram program) {
-            translateOffset = program.getPropertyOffset(Property.TRANSLATE);
-            rotateOffset = program.getPropertyOffset(Property.ROTATE);
-            scaleOffset = program.getPropertyOffset(Property.SCALE);
-            frameOffset = program.getPropertyOffset(Property.FRAME);
-            colorOffset = program.getPropertyOffset(Property.COLOR);
-            colorSpecularOffset = program.getPropertyOffset(Property.COLOR_SPECULAR);
-            colorAmbientOffset = program.getPropertyOffset(Property.COLOR_AMBIENT);
-            specularPowerOffset = program.getPropertyOffset(Property.SPECULAR_POWER);
-            attributesPerVertex = program.getAttributesPerVertex(BufferIndex.ATTRIBUTES);
-        }
-    }
 
     /**
      * This is for objects that need (consumes) attribute data, can be attached to Mesh to handle updating
@@ -132,12 +63,5 @@ public interface AttributeUpdater {
      * @param renderer
      */
     public void destroy(NucleusRenderer renderer);
-
-    /**
-     * Returns the propertymapper to be used to find positions of property attributes.
-     * 
-     * @return The propertymapper.
-     */
-    public PropertyMapper getMapper();
 
 }

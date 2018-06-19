@@ -8,6 +8,8 @@ import java.util.List;
  * names instead of implementing classes.
  * As the implementing classes may change, leaving already serialized classnames unusable, use this method to decouple
  * serialized type names from implementing classes.
+ * There should only be one instance of this class to help serializers/deserializers use same name and classes for
+ * types.
  * 
  * @author Richard Sahlin
  *
@@ -19,6 +21,13 @@ public class TypeResolver {
      * Holds registered Strings, can be used to fetch type from string name
      */
     private Hashtable<String, Type<?>> types = new Hashtable<>();
+
+    /**
+     * Private constructor - use {@link #getInstance()} to get the singleton TypeResolver
+     */
+    private TypeResolver() {
+
+    }
 
     /**
      * Returns the singleton instance of the factory.

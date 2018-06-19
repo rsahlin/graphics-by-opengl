@@ -208,6 +208,15 @@ public class ViewFrustum {
     }
 
     /**
+     * Returns the depth of the viewfrustum
+     * 
+     * @return
+     */
+    public float getDepth() {
+        return Math.abs(values[FAR_INDEX] - values[BOTTOM_INDEX]);
+    }
+
+    /**
      * Sets the left/right values of the viewfrustum
      * 
      * @param left

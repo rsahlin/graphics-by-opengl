@@ -2,7 +2,7 @@ package com.nucleus.opengl;
 
 import java.nio.ByteBuffer;
 
-import com.nucleus.shader.ShaderSource;
+import com.nucleus.shader.ShaderSource.ESSLVersion;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -12,9 +12,6 @@ import com.nucleus.shader.ShaderVariable.VariableType;
  *
  */
 public abstract class GLES30Wrapper extends GLES20Wrapper {
-
-    public static String SHADING_LANGUAGE_300 = "300";
-    public static String GL_VERSION_430 = "430";
 
     /**
      * Implementation constructor - DO NOT USE!!!
@@ -62,6 +59,7 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
                         blockInfo, 2);
                 glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER,
                         blockInfo, 3);
+                // Block name is fetched using blockIndex so we know the blockIndex to be correct.
                 uniformBlock[i] = new InterfaceBlock(info.getProgram(), i,
                         glGetActiveUniformBlockName(info.getProgram(), i), blockInfo, indices);
             }
@@ -73,13 +71,25 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
     public ShaderVariable getActiveVariable(int program, VariableType type, int index, byte[] nameBuffer)
             throws GLException {
 
+        int[] params = null;
+        int[] indices = new int[] { index };
         switch (type) {
             case ATTRIBUTE:
-            case UNIFORM:
                 return super.getActiveVariable(program, type, index, nameBuffer);
+            case UNIFORM:
+                params = new int[ShaderVariable.DATA_OFFSET + 1];
+                params[ShaderVariable.ACTIVE_INDEX_OFFSET] = index;
+                glGetActiveUniform(program, index, params, ShaderVariable.NAME_LENGTH_OFFSET, params,
+                        ShaderVariable.SIZE_OFFSET, params, ShaderVariable.TYPE_OFFSET, nameBuffer);
+                glGetActiveUniformsiv(program, 1, indices, 0, GLES30.GL_UNIFORM_OFFSET, params,
+                        ShaderVariable.DATA_OFFSET);
+                GLUtils.handleError(this, "glGetActiveUniform for " + type);
+                // Create shader variable using name excluding [] and .
+                return new ShaderVariable(type,
+                        getVariableName(nameBuffer, params[ShaderVariable.NAME_LENGTH_OFFSET]),
+                        params, 0);
             case UNIFORM_BLOCK:
-                int[] params = new int[10];
-                int[] indices = new int[] { index };
+                params = new int[10];
                 params[ShaderVariable.ACTIVE_INDEX_OFFSET] = index;
                 glGetActiveUniform(program, index, params, ShaderVariable.NAME_LENGTH_OFFSET, params,
                         ShaderVariable.SIZE_OFFSET, params, ShaderVariable.TYPE_OFFSET, nameBuffer);
@@ -89,7 +99,7 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
                         ShaderVariable.DATA_OFFSET);
                 GLUtils.handleError(this, "glGetActiveUniform for " + type);
                 // Create shader variable using name excluding [] and .
-                return new ShaderVariable(VariableType.UNIFORM_BLOCK,
+                return new ShaderVariable(type,
                         getVariableName(nameBuffer, params[ShaderVariable.NAME_LENGTH_OFFSET]),
                         params, 0);
             default:
@@ -100,12 +110,33 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public String replaceShaderVersion(String sourceVersion, int version) {
-        if (sourceVersion.trim().toLowerCase().endsWith(ShaderSource.ES) && platform != Platform.GLES) {
-            return GL_VERSION_430;
+    public ESSLVersion replaceShaderVersion(ESSLVersion version) {
+        switch (version) {
+            case VERSION100:
+                return version;
+            case VERSION300:
+            case VERSION310:
+            case VERSION320:
+                return platform != Platform.GLES ? ESSLVersion.VERSION430 : version;
+            case VERSION430:
+                return version;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + version);
         }
-        return sourceVersion;
     }
+
+    /**
+     * This method works with buffer object, add method with element buffer if needed.
+     * 
+     * @param mode
+     * @param start
+     * @param end
+     * @param count
+     * @param type
+     * @param offset Specifies a byte offset into the buffer bound to GL_ELEMENT_ARRAY_BUFFER to start reading indices
+     * from
+     */
+    public abstract void glDrawRangeElements(int mode, int start, int end, int count, int type, int offset);
 
     /**
      * Abstraction for glSamplerParameteri( GLuint sampler, GLenum pname, GLint param);
@@ -217,5 +248,15 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
      * @param length
      */
     public abstract void glFlushMappedBufferRange(int target, int offset, int length);
+
+    /**
+     * 
+     * @param target
+     * @param levels
+     * @param internalformat
+     * @param width
+     * @param height
+     */
+    public abstract void glTexStorage2D(int target, int levels, int internalformat, int width, int height);
 
 }

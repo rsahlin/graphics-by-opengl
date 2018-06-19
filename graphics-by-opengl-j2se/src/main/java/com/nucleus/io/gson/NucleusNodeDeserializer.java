@@ -8,6 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.nucleus.common.TypeResolver;
+import com.nucleus.io.GSONSceneFactory;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.NodeTypes;
 
@@ -17,6 +18,9 @@ import com.nucleus.scene.Node.NodeTypes;
  * If subclasses register a different deserializer they must make sure to call super.
  * {@link #deserialize(JsonElement, Type, JsonDeserializationContext)}
  * 
+ * Avoid using directly use {@link GSONSceneFactory} instead
+ * 
+ * 
  * @author Richard Sahlin
  *
  */
@@ -25,7 +29,7 @@ public class NucleusNodeDeserializer extends NucleusDeserializer implements Json
     // TODO where is a good place to store this constant?
     public final static String NODETYPE_JSON_KEY = "type";
 
-    private TypeResolver nodeResolver = new TypeResolver();
+    private TypeResolver nodeResolver = TypeResolver.getInstance();
 
     public NucleusNodeDeserializer() {
         addNodeTypes(NodeTypes.values());

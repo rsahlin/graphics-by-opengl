@@ -4,26 +4,17 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
-import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL2ES2;
 import com.jogamp.opengl.GL4ES3;
 import com.nucleus.opengl.GLES30Wrapper;
 
 public class JOGLGLES30Wrapper extends GLES30Wrapper {
 
-    private final static int INFO_BUFFERSIZE = 4096;
-    private final static String GLES_NULL = "GLES20 is null";
+    private final static String GLES_NULL = "GLES30 is null";
 
     /**
-     * Used in methods that fetch data from GL - since this wrapper is not threadsafe (GL must be accessed from one
-     * thread)
+     * Wrapper for gles20 methods that can be used if they are not a simple one liner.
      */
-    private IntBuffer length = IntBuffer.allocate(1);
-    /**
-     * Used in methods that fetch data from GL - since this wrapper is not threadsafe (GL must be accessed from one
-     * thread)
-     */
-    private ByteBuffer buffer = ByteBuffer.allocate(INFO_BUFFERSIZE);
+    private JOGLGLES20Wrapper gles20;
 
     GL4ES3 gles;
 
@@ -40,7 +31,14 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
             throw new IllegalArgumentException(GLES_NULL);
         }
         this.gles = gles;
+        gles20 = new JOGLGLES20Wrapper(gles, renderVersion);
     }
+
+    /**
+     * ---------------------------------------------------
+     * GLES20 calls - just pass on to GLES20 wrapper if needed
+     * ---------------------------------------------------
+     */
 
     @Override
     public void glAttachShader(int program, int shader) {
@@ -130,13 +128,7 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
 
     @Override
     public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, Buffer ptr) {
-        // This method should not be called on JOGL - future versions of GL will move to named buffer objects.
-        int[] names = JOGLGLESUtils.getName(this);
-        // int offset = ptr.position();
-        gles.glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, names[0]);
-        int numBytes = ptr.capacity() * 4;
-        gles.glBufferData(GL2ES2.GL_ARRAY_BUFFER, numBytes, ptr, GL.GL_STATIC_DRAW);
-        gles.glVertexAttribPointer(index, size, type, normalized, stride, 0);
+        gles20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
     }
 
     @Override
@@ -168,16 +160,7 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
 
     @Override
     public void glDrawElements(int mode, int count, int type, Buffer indices) {
-        // This method should not be called on JOGL - future versions of GL will move to named buffer objects.
-        int offset = indices.position();
-        int[] names = JOGLGLESUtils.getName(this);
-        gles.glBindBuffer(GL2ES2.GL_ELEMENT_ARRAY_BUFFER, names[0]);
-        int numBytes = count;
-        if (type == GLES20.GL_UNSIGNED_SHORT) {
-            numBytes = count * 2;
-        }
-        gles.glBufferData(GL2ES2.GL_ELEMENT_ARRAY_BUFFER, numBytes, indices, GL.GL_STATIC_DRAW);
-        gles.glDrawElements(mode, count, type, offset);
+        gles20.glDrawElements(mode, count, type, indices);
     }
 
     @Override
@@ -198,14 +181,12 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
 
     @Override
     public String glGetShaderInfoLog(int shader) {
-        gles.glGetShaderInfoLog(shader, INFO_BUFFERSIZE, length, buffer);
-        return new String(buffer.array(), 0, length.get(0));
+        return gles20.glGetShaderInfoLog(shader);
     }
 
     @Override
     public String glGetProgramInfoLog(int program) {
-        gles.glGetProgramInfoLog(program, INFO_BUFFERSIZE, length, buffer);
-        return new String(buffer.array(), 0, length.get(0));
+        return gles20.glGetProgramInfoLog(program);
     }
 
     @Override
@@ -425,6 +406,14 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
         gles.glValidateProgram(program);
     }
 
+    /**
+     * 
+     * ---------------------------------------------------
+     * GLES30 calls
+     * ---------------------------------------------------
+     * 
+     */
+
     @Override
     public void glGetShaderSource(int shader, int bufsize, int[] length, byte[] source) {
         gles.glGetShaderSource(shader, bufsize, length, 0, source, 0);
@@ -485,6 +474,17 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glFlushMappedBufferRange(int target, int offset, int length) {
         gles.glFlushMappedBufferRange(target, offset, length);
+    }
+
+    @Override
+    public void glDrawRangeElements(int mode, int start, int end, int count, int type, int offset) {
+        gles.glDrawRangeElements(mode, start, end, count, type, offset);
+
+    }
+
+    @Override
+    public void glTexStorage2D(int target, int levels, int internalformat, int width, int height) {
+        gles.glTexStorage2D(target, levels, internalformat, width, height);
     }
 
 }

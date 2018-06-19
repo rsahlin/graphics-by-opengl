@@ -9,8 +9,8 @@ import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.Mode;
-import com.nucleus.geometry.RectangleShapeBuilder;
-import com.nucleus.geometry.RectangleShapeBuilder.RectangleConfiguration;
+import com.nucleus.geometry.shape.RectangleShapeBuilder;
+import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.ObjectInputListener;
 import com.nucleus.mmi.core.PointerInputProcessor;
@@ -24,7 +24,6 @@ import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
-import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.J2SENodeInputListener;
 import com.nucleus.scene.NavigationController;
 import com.nucleus.scene.Node;
@@ -323,21 +322,20 @@ public class CoreApp implements FrameRenderer {
         FrameSampler.getInstance().logTag(FrameSampler.Samples.DISPLAY_SPLASH);
 
         BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
+        TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
+                new TranslateProgram(Texture2D.Shading.textured));
+        builder.setProgram(vt);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
         Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), "texture",
                 new ExternalReference(SPLASH_FILENAME), RESOLUTION.ULTRA_HD, texParam, 1);
         Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
-        meshBuilder.setElementMode(Mode.TRIANGLES, 4, 6);
+        meshBuilder.setElementMode(Mode.TRIANGLES, 4, 0, 6);
         meshBuilder.setTexture(texture);
-        TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
-                new TranslateProgram(Texture2D.Shading.textured));
         Material material = new Material();
-        material.setProgram(vt);
         Rectangle rect = texture.calculateRectangle(0);
-        meshBuilder.setMaterial(material)
+        meshBuilder.setMaterial(material).setAttributesPerVertex(vt.getAttributeSizes())
                 .setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(rect, 1f, 1, 0)));
-        builder.setMeshBuilder(meshBuilder).setNodeFactory(new DefaultNodeFactory())
-                .setNode(NodeTypes.layernode);
+        builder.setType(NodeTypes.layernode).setMeshBuilder(meshBuilder).setMeshCount(1);
         RootNode root = builder.create();
         renderer.beginFrame();
         renderer.render(root);

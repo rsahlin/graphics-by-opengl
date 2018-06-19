@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
+import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.ManagedList;
 import com.nucleus.mmi.ObjectInputListener;
@@ -22,6 +23,9 @@ import com.nucleus.renderer.NucleusRenderer;
  */
 public abstract class RootNode extends Node {
 
+    private static final String GLTF_PATH = "glTFPath";
+    private static final String GLTF_URIS = "glTFUris";
+
     /**
      * Default id for the root node
      */
@@ -39,11 +43,11 @@ public abstract class RootNode extends Node {
         about(),
     }
 
-    /**
-     * Set to true when node is added or removed
-     */
-    transient private boolean updated = false;
-    transient private Hashtable<NodeIterator, ArrayList<Node>> iterators = new Hashtable<NodeIterator, ArrayList<Node>>();
+    @SerializedName(GLTF_PATH)
+    private String glTFPath;
+    @SerializedName(GLTF_URIS)
+    private String[] glTFUris;
+
     /**
      * When a node is rendered it is added to this list, this is for the current frame - will change as nodes are
      * rendered
@@ -68,6 +72,16 @@ public abstract class RootNode extends Node {
         setType(NodeTypes.rootnode);
     }
 
+    public void copyTo(RootNode target) {
+        target.set(this);
+    }
+
+    public void set(RootNode source) {
+        super.set(source);
+        glTFPath = source.glTFPath;
+        glTFUris = source.glTFUris;
+    }
+
     /**
      * Sets the root scene node, this rootnode shall be rootnode of all added children.
      * This is the same as adding the scene by calling {@link #addChild(Node)} on each of the children.
@@ -83,49 +97,6 @@ public abstract class RootNode extends Node {
         for (Node node : scene) {
             addChild(node);
         }
-    }
-
-    /**
-     * Creates a new instance of RootNode, implement in RootNode subclasses to return the implementation instance.
-     * 
-     * @return A new instance of RootNode implementation
-     */
-    public abstract RootNode createInstance();
-
-    /**
-     * Call this when a node is added or removed to the nodetree.
-     */
-    public void updated() {
-        updated = true;
-    }
-
-    /**
-     * Returns a list with all nodes, starting with the scene node, listed using the specified node iterator.
-     * If scene has been updated, node added or removed, then the nodelist is recreated, otherwise the same list is
-     * returned.
-     * 
-     * @param iterator
-     * @return List with nodes listed by the iterator - do NOT modify this list, it will be returned in subsequent calls
-     * unless the scene
-     * tree has been altered (node added or removed)
-     */
-    public ArrayList<Node> getNodes(NodeIterator iterator) {
-        ArrayList<Node> result = iterators.get(iterator);
-        if (result == null || updated) {
-            result = createNodeList(iterator, result);
-        }
-        return result;
-    }
-
-    private ArrayList<Node> createNodeList(NodeIterator iterator, ArrayList<Node> result) {
-        if (result == null) {
-            result = new ArrayList<>();
-            iterators.put(iterator, result);
-        }
-        while (iterator.hasNext()) {
-            result.add(iterator.next());
-        }
-        return result;
     }
 
     /**
@@ -226,6 +197,28 @@ public abstract class RootNode extends Node {
      */
     public void setObjectInputListener(ObjectInputListener objectInputListener) {
         this.objectInputListener = objectInputListener;
+    }
+
+    /**
+     * Returns the index of the glTF uri
+     * 
+     * @param uri
+     * @return The index of the glTF asset or -1 if not found
+     */
+    public int getGLTFIndex(String uri) {
+        if (glTFUris == null) {
+            return -1;
+        }
+        for (int i = 0; i < glTFUris.length; i++) {
+            if (uri.contentEquals(glTFUris[i])) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public String getGLTFPath() {
+        return glTFPath;
     }
 
 }

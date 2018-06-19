@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 
-import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.opengl.GLException.Error;
@@ -57,6 +56,13 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         glGetProgramiv(program, GLES20.GL_ACTIVE_UNIFORM_MAX_LENGTH, nameLength, VariableType.UNIFORM.index);
         GLUtils.handleError(this, "glGetProgramiv");
         return new ProgramInfo(program, activeInfo, nameLength);
+    }
+
+    @Override
+    public void createInfo() {
+        if (rendererInfo == null) {
+            rendererInfo = new RendererInfo(this, renderVersion);
+        }
     }
 
     @Override
@@ -784,45 +790,21 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     }
 
     @Override
-    public String replaceShaderVersion(String sourceVersion, int version) {
+    public ESSLVersion replaceShaderVersion(ESSLVersion version) {
         // Make sure version is not too high for es 2
-        if (version > ESSLVersion.VERSION100.number) {
-            throw new IllegalArgumentException("Illegal shader version " + sourceVersion);
+        if (version.number > ESSLVersion.VERSION100.number) {
+            throw new IllegalArgumentException("Illegal shader version " + version);
         }
-        return sourceVersion;
+        return version;
     }
 
     @Override
-    public void loadVersionedShaderSource(ShaderSource source, boolean library) throws IOException {
+    public void loadVersionedShaderSource(ShaderSource source) throws IOException {
         InputStream shaderStream = getClass().getClassLoader().getResourceAsStream(source.getFullSourceName());
         if (shaderStream == null) {
             throw new IllegalArgumentException("Could not open " + source.getFullSourceName());
         }
-        String sourceStr = StreamUtils.readStringFromStream(shaderStream);
-        String version = ShaderSource.hasVersion(sourceStr);
-        String versionInfo = null;
-        if (!library) {
-            // Treat no version as GLES shader version 100 and do not replace #version
-            if (version != null) {
-                versionInfo = version.trim().substring(ShaderSource.VERSION.length()).trim();
-                // Insert the correct version depending on platform implementation.
-                int number = Integer.parseInt(versionInfo.substring(0, 3));
-                sourceStr = ShaderSource.VERSION + " " + replaceShaderVersion(versionInfo, number)
-                        + sourceStr.substring(version.length());
-            } else {
-                SimpleLogger.d(getClass(),
-                        "Warning, source for " + source.getFullSourceName() + " does not specify #version");
-            }
-        }
-        source.setSource(sourceStr);
-    }
-
-    @Override
-    public RendererInfo getInfo() {
-        if (rendererInfo == null) {
-            rendererInfo = new RendererInfo(this, renderVersion);
-        }
-        return rendererInfo;
+        source.setSource(StreamUtils.readStringFromStream(shaderStream));
     }
 
 }

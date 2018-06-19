@@ -146,10 +146,10 @@ public class RectangularBounds extends Bounds implements PostDeserializable {
 
     private void setFromRectangle(float[] rectangle) {
         createBounds();
-        float x = rectangle[Rectangle.X];
-        float y = rectangle[Rectangle.Y];
-        float width = rectangle[Rectangle.WIDTH];
-        float height = rectangle[Rectangle.HEIGHT];
+        float x = rectangle[Rectangle.INDEX_X];
+        float y = rectangle[Rectangle.INDEX_Y];
+        float width = rectangle[Rectangle.INDEX_WIDTH];
+        float height = rectangle[Rectangle.INDEX_HEIGHT];
         bounds[X1] = x;
         bounds[Y1] = y;
         bounds[X2] = x + width;
@@ -311,65 +311,6 @@ public class RectangularBounds extends Bounds implements PostDeserializable {
         destination[index++] = rotatedBounds[Y4];
     }
 
-    /**
-     * Creates one rectangular bounds to cover the bounds in the list.
-     * 
-     * @param source List with Bounds that the result bounds shall cover.
-     * Currently only supports Circular bounds in the list.
-     * @return
-     */
-    /*
-     * public static RectangularBounds createBounds(LinkedList<Bounds> source) {
-     * 
-     * float x1 = 1000;
-     * float y1 = 1000;
-     * float x2 = -1000;
-     * float y2 = -1000;
-     * 
-     * float[] pos = null;
-     * while (source.size() > 0) {
-     * Bounds b = source.remove();
-     * pos = b.position;
-     * switch (b.type) {
-     * 
-     * case RECTANGULAR:
-     * //Don't use rotated bounds.
-     * RectangularBounds r = (RectangularBounds) b;
-     * if (pos[X] - r.bounds[RectangularBounds.X1] < x1) {
-     * x1 = pos[X] - r.bounds[RectangularBounds.X1];
-     * }
-     * if (pos[Y] - r.bounds[RectangularBounds.Y1] < y1) {
-     * y1 = pos[Z] - r.bounds[RectangularBounds.Y1];
-     * }
-     * if (pos[X] + r.bounds[RectangularBounds.X2] > x2) {
-     * x2 = pos[X] + r.bounds[RectangularBounds.X2];
-     * }
-     * if (pos[Y] + r.bounds[RectangularBounds.Y3] > y2) {
-     * y2 = pos[Y] + r.bounds[RectangularBounds.Y3];
-     * }
-     * 
-     * break;
-     * case CIRCULAR:
-     * CircularBounds bounds = (CircularBounds) b;
-     * if (pos[X] - bounds.bounds[CircularBounds.RADIUS_INDEX] < x1) {
-     * x1 = pos[X] - bounds.bounds[CircularBounds.RADIUS_INDEX];
-     * }
-     * if (pos[Y] - bounds.bounds[CircularBounds.RADIUS_INDEX] < y1) {
-     * y1 = pos[Y] - bounds.bounds[CircularBounds.RADIUS_INDEX];
-     * }
-     * if (pos[X] + bounds.bounds[CircularBounds.RADIUS_INDEX] > x2) {
-     * x2 = pos[X] + bounds.bounds[CircularBounds.RADIUS_INDEX];
-     * }
-     * if (pos[Y] + bounds.bounds[CircularBounds.RADIUS_INDEX] > y2) {
-     * y2 = pos[Y] + bounds.bounds[CircularBounds.RADIUS_INDEX];
-     * }
-     * break;
-     * }
-     * }
-     * 
-     * return new RectangularBounds(x1, y1, x2 - x1, y2 - y1);
-     * }
-     */
     @Override
     public void transform(float[] matrix, int index) {
         Matrix.transformVec2(matrix, index, bounds, rotatedBounds, 4);

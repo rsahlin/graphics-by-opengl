@@ -3,6 +3,7 @@ package com.nucleus.lwjgl3;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES30Wrapper;
@@ -30,43 +31,43 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
 
     /**
      * ---------------------------------------------------
-     * GLES20 calls - just pass on to GLES20 wrapper
+     * GLES20 calls - just pass on to GLES20 wrapper unless simple oneliner
      * ---------------------------------------------------
      */
 
     @Override
     public void glAttachShader(int program, int shader) {
-        gles20.glAttachShader(program, shader);
+        org.lwjgl.opengles.GLES20.glAttachShader(program, shader);
     }
 
     @Override
     public void glLinkProgram(int program) {
-        gles20.glLinkProgram(program);
+        org.lwjgl.opengles.GLES20.glLinkProgram(program);
     }
 
     @Override
     public void glShaderSource(int shader, String shaderSource) {
-        gles20.glShaderSource(shader, shaderSource);
+        org.lwjgl.opengles.GLES20.glShaderSource(shader, shaderSource);
     }
 
     @Override
     public void glCompileShader(int shader) {
-        gles20.glCompileShader(shader);
+        org.lwjgl.opengles.GLES20.glCompileShader(shader);
     }
 
     @Override
     public int glCreateShader(int type) {
-        return gles20.glCreateShader(type);
+        return org.lwjgl.opengles.GLES20.glCreateShader(type);
     }
 
     @Override
     public int glCreateProgram() {
-        return gles20.glCreateProgram();
+        return org.lwjgl.opengles.GLES20.glCreateProgram();
     }
 
     @Override
     public void glDeleteProgram(int program) {
-        gles20.glDeleteProgram(program);
+        org.lwjgl.opengles.GLES20.glDeleteProgram(program);
     }
 
     @Override
@@ -81,7 +82,7 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
 
     @Override
     public void glBindBuffer(int target, int buffer) {
-        gles20.glBindBuffer(target, buffer);
+        org.lwjgl.opengles.GLES20.glBindBuffer(target, buffer);
     }
 
     @Override
@@ -91,12 +92,12 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
 
     @Override
     public void glGetShaderiv(int shader, int pname, IntBuffer params) {
-        gles20.glGetShaderiv(shader, pname, params);
+        org.lwjgl.opengles.GLES20.glGetShaderiv(shader, pname, params);
     }
 
     @Override
     public void glUseProgram(int program) {
-        gles20.glUseProgram(program);
+        org.lwjgl.opengles.GLES20.glUseProgram(program);
     }
 
     @Override
@@ -118,83 +119,86 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
 
     @Override
     public int glGetUniformLocation(int program, String name) {
-        return gles20.glGetUniformLocation(program, name);
+        return org.lwjgl.opengles.GLES20.glGetUniformLocation(program, name);
     }
 
     @Override
     public int glGetAttribLocation(int program, String name) {
-        return gles20.glGetAttribLocation(program, name);
+        return org.lwjgl.opengles.GLES20.glGetAttribLocation(program, name);
     }
 
     @Override
     public int glGetError() {
-        return gles20.glGetError();
+        return org.lwjgl.opengles.GLES20.glGetError();
     }
 
     @Override
     public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, Buffer ptr) {
-        gles20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
+        org.lwjgl.opengles.GLES20.glVertexAttribPointer(index, size, type, normalized, stride, (FloatBuffer) ptr);
 
     }
 
     @Override
     public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, int offset) {
-        gles20.glVertexAttribPointer(index, size, type, normalized, stride, offset);
+        org.lwjgl.opengles.GLES20.glVertexAttribPointer(index, size, type, normalized, stride, offset);
     }
 
     @Override
     public void glEnableVertexAttribArray(int index) {
-        gles20.glEnableVertexAttribArray(index);
+        org.lwjgl.opengles.GLES20.glEnableVertexAttribArray(index);
     }
 
     @Override
     public void glUniformMatrix4fv(int location, int count, boolean transpose, float[] v, int offset) {
-        gles20.glUniformMatrix4fv(location, count, transpose, v, offset);
+        org.lwjgl.opengles.GLES20.glUniformMatrix4fv(location, transpose,
+                LWJGLUtils.toFloatBuffer(v, count * 16, offset));
     }
 
     @Override
     public void glUniformMatrix3fv(int location, int count, boolean transpose, float[] v, int offset) {
-        gles20.glUniformMatrix3fv(location, count, transpose, v, offset);
+        org.lwjgl.opengles.GLES20.glUniformMatrix3fv(location, transpose,
+                LWJGLUtils.toFloatBuffer(v, count * 12, offset));
     }
 
     @Override
     public void glUniformMatrix2fv(int location, int count, boolean transpose, float[] v, int offset) {
-        gles20.glUniformMatrix2fv(location, count, transpose, v, offset);
+        org.lwjgl.opengles.GLES20.glUniformMatrix2fv(location, transpose,
+                LWJGLUtils.toFloatBuffer(v, count * 8, offset));
     }
 
     @Override
     public void glDrawArrays(int mode, int first, int count) {
-        gles20.glDrawArrays(mode, first, count);
+        org.lwjgl.opengles.GLES20.glDrawArrays(mode, first, count);
     }
 
     @Override
     public void glDrawElements(int mode, int count, int type, Buffer indices) {
-        gles20.glDrawElements(mode, count, type, indices);
+        org.lwjgl.opengles.GLES20.glDrawElements(mode, type, (ByteBuffer) indices);
     }
 
     @Override
     public void glDrawElements(int mode, int count, int type, int offset) {
-        gles20.glDrawElements(mode, count, type, offset);
+        org.lwjgl.opengles.GLES20.glDrawElements(mode, count, type, offset);
     }
 
     @Override
     public void glBindAttribLocation(int program, int index, String name) {
-        gles20.glBindAttribLocation(program, index, name);
+        org.lwjgl.opengles.GLES20.glBindAttribLocation(program, index, name);
     }
 
     @Override
     public void glViewport(int x, int y, int width, int height) {
-        gles20.glViewport(x, y, width, height);
+        org.lwjgl.opengles.GLES20.glViewport(x, y, width, height);
     }
 
     @Override
     public String glGetShaderInfoLog(int shader) {
-        return gles20.glGetShaderInfoLog(shader);
+        return org.lwjgl.opengles.GLES20.glGetShaderInfoLog(shader);
     }
 
     @Override
     public String glGetProgramInfoLog(int program) {
-        return gles20.glGetProgramInfoLog(program);
+        return org.lwjgl.opengles.GLES20.glGetProgramInfoLog(program);
     }
 
     @Override
@@ -204,17 +208,17 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
 
     @Override
     public void glActiveTexture(int texture) {
-        gles20.glActiveTexture(texture);
+        org.lwjgl.opengles.GLES20.glActiveTexture(texture);
     }
 
     @Override
     public void glBindTexture(int target, int texture) {
-        gles20.glBindTexture(target, texture);
+        org.lwjgl.opengles.GLES20.glBindTexture(target, texture);
     }
 
     @Override
     public String glGetString(int name) {
-        return gles20.glGetString(name);
+        return org.lwjgl.opengles.GLES20.glGetString(name);
     }
 
     @Override
@@ -224,150 +228,150 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
 
     @Override
     public void glUniform4fv(int location, int count, float[] v, int offset) {
-        gles20.glUniform4fv(location, count, v, offset);
+        org.lwjgl.opengles.GLES20.glUniform4fv(location, LWJGLUtils.toFloatBuffer(v, 4 * count, offset));
     }
 
     @Override
     public void glUniform3fv(int location, int count, float[] v, int offset) {
-        gles20.glUniform3fv(location, count, v, offset);
+        org.lwjgl.opengles.GLES20.glUniform3fv(location, LWJGLUtils.toFloatBuffer(v, 3 * count, offset));
     }
 
     @Override
     public void glUniform1iv(int location, int count, int[] v0, int offset) {
-        gles20.glUniform1iv(location, count, v0, offset);
+        org.lwjgl.opengles.GLES20.glUniform1iv(location, LWJGLUtils.toIntBuffer(v0, count, offset));
     }
 
     @Override
     public void glUniform2fv(int location, int count, float[] v, int offset) {
-        gles20.glUniform2fv(location, count, v, offset);
+        org.lwjgl.opengles.GLES20.glUniform2fv(location, LWJGLUtils.toFloatBuffer(v, 2 * count, offset));
     }
 
     @Override
     public void glUniform1fv(int location, int count, float[] v, int offset) {
-        gles20.glUniform1fv(location, count, v, offset);
+        org.lwjgl.opengles.GLES20.glUniform1fv(location, LWJGLUtils.toFloatBuffer(v, count, offset));
     }
 
     @Override
     public void glTexParameterf(int target, int pname, float param) {
-        gles20.glTexParameterf(target, pname, param);
+        org.lwjgl.opengles.GLES20.glTexParameterf(target, pname, param);
     }
 
     @Override
     public void glTexParameteri(int target, int pname, int param) {
-        gles20.glTexParameteri(target, pname, param);
+        org.lwjgl.opengles.GLES20.glTexParameteri(target, pname, param);
 
     }
 
     @Override
     public void glClearColor(float red, float green, float blue, float alpha) {
-        gles20.glClearColor(red, green, blue, alpha);
+        org.lwjgl.opengles.GLES20.glClearColor(red, green, blue, alpha);
     }
 
     @Override
     public void glClear(int mask) {
-        gles20.glClear(mask);
+        org.lwjgl.opengles.GLES20.glClear(mask);
     }
 
     @Override
     public void glDisable(int cap) {
-        gles20.glDisable(cap);
+        org.lwjgl.opengles.GLES20.glDisable(cap);
     }
 
     @Override
     public void glEnable(int cap) {
-        gles20.glEnable(cap);
+        org.lwjgl.opengles.GLES20.glEnable(cap);
     }
 
     @Override
     public void glCullFace(int mode) {
-        gles20.glCullFace(mode);
+        org.lwjgl.opengles.GLES20.glCullFace(mode);
     }
 
     @Override
     public void glLineWidth(float width) {
-        gles20.glLineWidth(width);
+        org.lwjgl.opengles.GLES20.glLineWidth(width);
     }
 
     @Override
     public void glDepthFunc(int func) {
-        gles20.glDepthFunc(func);
+        org.lwjgl.opengles.GLES20.glDepthFunc(func);
     }
 
     @Override
     public void glDepthMask(boolean flag) {
-        gles20.glDepthMask(flag);
+        org.lwjgl.opengles.GLES20.glDepthMask(flag);
     }
 
     @Override
     public void glClearDepthf(float depth) {
-        gles20.glClearDepthf(depth);
+        org.lwjgl.opengles.GLES20.glClearDepthf(depth);
     }
 
     @Override
     public void glDepthRangef(float nearVal, float farVal) {
-        gles20.glDepthRangef(nearVal, farVal);
+        org.lwjgl.opengles.GLES20.glDepthRangef(nearVal, farVal);
     }
 
     @Override
     public void glTexImage2D(int target, int level, int internalformat, int width, int height, int border, int format,
             int type, Buffer pixels) {
-        gles20.glTexImage2D(target, level, internalformat, width, height, border, format, type,
-                pixels);
+        org.lwjgl.opengles.GLES20.glTexImage2D(target, level, internalformat, width, height, border, format, type,
+                (ByteBuffer) pixels);
     }
 
     @Override
     public void glDeleteTextures(int[] textures) {
-        gles20.glDeleteTextures(textures);
+        org.lwjgl.opengles.GLES20.glDeleteTextures(LWJGLUtils.toIntBuffer(textures, textures.length, 0));
     }
 
     @Override
     public void glGenerateMipmap(int target) {
-        gles20.glGenerateMipmap(target);
+        org.lwjgl.opengles.GLES20.glGenerateMipmap(target);
     }
 
     @Override
     public void glBlendEquationSeparate(int modeRGB, int modeAlpha) {
-        gles20.glBlendEquationSeparate(modeRGB, modeAlpha);
+        org.lwjgl.opengles.GLES20.glBlendEquationSeparate(modeRGB, modeAlpha);
     }
 
     @Override
     public void glBlendFuncSeparate(int srcRGB, int dstRGB, int srcAlpha, int dstAlpha) {
-        gles20.glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+        org.lwjgl.opengles.GLES20.glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
     }
 
     @Override
     public void glFinish() {
-        gles20.glFinish();
+        org.lwjgl.opengles.GLES20.glFinish();
     }
 
     @Override
     public void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level) {
-        gles20.glFramebufferTexture2D(target, attachment, textarget, texture, level);
+        org.lwjgl.opengles.GLES20.glFramebufferTexture2D(target, attachment, textarget, texture, level);
     }
 
     @Override
     public void glGenFramebuffers(int[] buffers) {
-        gles20.glGenFramebuffers(buffers);
+        org.lwjgl.opengles.GLES20.glGenFramebuffers(buffers);
     }
 
     @Override
     public int glCheckFramebufferStatus(int target) {
-        return gles20.glCheckFramebufferStatus(target);
+        return org.lwjgl.opengles.GLES20.glCheckFramebufferStatus(target);
     }
 
     @Override
     public void glBindFramebuffer(int target, int framebuffer) {
-        gles20.glBindFramebuffer(target, framebuffer);
+        org.lwjgl.opengles.GLES20.glBindFramebuffer(target, framebuffer);
     }
 
     @Override
     public void glColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
-        gles20.glColorMask(red, green, blue, alpha);
+        org.lwjgl.opengles.GLES20.glColorMask(red, green, blue, alpha);
     }
 
     @Override
     public void glValidateProgram(int program) {
-        gles20.glValidateProgram(program);
+        org.lwjgl.opengles.GLES20.glValidateProgram(program);
     }
 
     @Override
@@ -377,7 +381,9 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
 
     /**
      * 
+     * **************************************************************************************
      * GLES30--------------------------------------------------------------------------------
+     * **************************************************************************************
      * 
      */
 
@@ -444,6 +450,16 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glFlushMappedBufferRange(int target, int offset, int length) {
         org.lwjgl.opengles.GLES30.glFlushMappedBufferRange(target, offset, length);
+    }
+
+    @Override
+    public void glDrawRangeElements(int mode, int start, int end, int count, int type, int offset) {
+        org.lwjgl.opengles.GLES30.glDrawRangeElements(mode, start, end, count, type, offset);
+    }
+
+    @Override
+    public void glTexStorage2D(int target, int levels, int internalformat, int width, int height) {
+        org.lwjgl.opengles.GLES30.glTexStorage2D(target, levels, internalformat, width, height);
     }
 
 }
