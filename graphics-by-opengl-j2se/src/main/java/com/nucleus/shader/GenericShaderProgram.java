@@ -23,7 +23,7 @@ public class GenericShaderProgram extends ShaderProgram {
      * @param shaders
      */
     public GenericShaderProgram(String[] source, ProgramType shaders) {
-        super((Pass) null, (Texture2D.Shading) null, (String) null, (VariableMapping[]) null, shaders);
+        super((Pass) null, (Texture2D.Shading) null, (String) null, shaders);
         this.source = source;
     }
 

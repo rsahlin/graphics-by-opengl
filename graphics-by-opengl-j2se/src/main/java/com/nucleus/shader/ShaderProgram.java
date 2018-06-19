@@ -277,11 +277,6 @@ public abstract class ShaderProgram {
      */
     protected int[] attributesPerVertex;
     /**
-     * Optional list of attributes defined by a program, set in {@link #setAttributeMapping(VariableMapping[])}
-     */
-    @Deprecated
-    protected VariableMapping[] attributeMapping;
-    /**
      * If specified then variable offsets will be taken from this.
      */
     protected VariableIndexer variableIndexer;
@@ -355,22 +350,6 @@ public abstract class ShaderProgram {
         return function.toString();
     }
 
-    /**
-     * Creates a new shader program for the specified shading - used by subclasses
-     * 
-     * @param pass The pass this shader is for or null if not used
-     * @param shading The shading function or null if not used
-     * @param category The category of function or null of not used
-     * @param mapping
-     * @param shader
-     */
-    protected ShaderProgram(Pass pass, Texture2D.Shading shading, String category, VariableMapping[] mapping,
-            ProgramType shaders) {
-        function = new Function(pass, shading, category);
-        setMapping(mapping);
-        this.shaders = shaders;
-    }
-
     protected ShaderProgram(Pass pass, Texture2D.Shading shading, String category, ProgramType shaders) {
         function = new Function(pass, shading, category);
         this.shaders = shaders;
@@ -384,13 +363,6 @@ public abstract class ShaderProgram {
      */
     public void setIndexer(VariableIndexer variableIndexer) {
         this.variableIndexer = variableIndexer;
-    }
-
-    @Deprecated
-    protected void setMapping(VariableMapping[] mapping) {
-        if (mapping != null) {
-            setAttributeMapping(mapping);
-        }
     }
 
     /**
@@ -493,26 +465,6 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Internal method
-     * Fetches the attribute variable mappings, these are used to create per buffer attribute mappings.
-     * The attribute buffer count is calculated.
-     * 
-     * @param mapping
-     */
-    protected void setAttributeMapping(VariableMapping[] mapping) {
-        ArrayList<VariableMapping> attributeList = new ArrayList<VariableMapping>();
-        for (VariableMapping v : mapping) {
-            if (v.getType() == VariableType.ATTRIBUTE) {
-                attributeList.add(v);
-                if (v.getBufferIndex().index + 1 > attributeBufferCount) {
-                    attributeBufferCount = v.getBufferIndex().index + 1;
-                }
-            }
-        }
-        attributeMapping = attributeList.toArray(new VariableMapping[attributeList.size()]);
-    }
-
-    /**
      * Create the programs for the shader program implementation.
      * This method must be called before the program is used, or the other methods are called.
      * It will create the {@link #shaderSources} field, compile and link the shader sources specified.
@@ -542,42 +494,19 @@ public abstract class ShaderProgram {
      * at index 0.
      */
     private void sortAttributeVariablePerBuffer(ShaderVariable[][] resultArray) {
-        if (attributeMapping == null) {
-            if (variableIndexer == null) {
-                // If indexer not specified then use one buffer.
-                resultArray[0] = new ShaderVariable[info.getActiveVariables(VariableType.ATTRIBUTE)];
-                if (resultArray[0].length != activeAttributes.length) {
-                    throw new IllegalArgumentException("Active variable array size mismatch - active count from info "
-                            + info.getActiveVariables(VariableType.ATTRIBUTE) + ", array size "
-                            + activeAttributes.length);
-                }
-                resultArray[BufferIndex.ATTRIBUTES.index] = activeAttributes;
-            } else {
-                for (int index = 0; index < resultArray.length; index++) {
-                    resultArray[index] = variableIndexer.sortByBuffer(activeAttributes, index);
-                }
+        if (variableIndexer == null) {
+            // If indexer not specified then use one buffer.
+            resultArray[0] = new ShaderVariable[info.getActiveVariables(VariableType.ATTRIBUTE)];
+            if (resultArray[0].length != activeAttributes.length) {
+                throw new IllegalArgumentException("Active variable array size mismatch - active count from info "
+                        + info.getActiveVariables(VariableType.ATTRIBUTE) + ", array size "
+                        + activeAttributes.length);
             }
+            resultArray[BufferIndex.ATTRIBUTES.index] = activeAttributes;
         } else {
-            HashMap<BufferIndex, ArrayList<ShaderVariable>> svPerBuffer = new HashMap<BufferIndex, ArrayList<ShaderVariable>>();
-            // Use the mapping to locate active attributes and store in buffer as defined in mapping.
-            for (VariableMapping vm : attributeMapping) {
-                ArrayList<ShaderVariable> array = svPerBuffer.get(vm.getBufferIndex());
-                if (array == null) {
-                    array = new ArrayList<ShaderVariable>();
-                    svPerBuffer.put(vm.getBufferIndex(), array);
-                }
-                ShaderVariable sv = getShaderVariable(vm);
-                if (sv != null) {
-                    array.add(getShaderVariable(vm));
-                }
+            for (int index = 0; index < resultArray.length; index++) {
+                resultArray[index] = variableIndexer.sortByBuffer(activeAttributes, index);
             }
-            for (BufferIndex key : svPerBuffer.keySet()) {
-                ArrayList<ShaderVariable> defined = svPerBuffer.get(key);
-                if (defined != null) {
-                    resultArray[key.index] = defined.toArray(new ShaderVariable[defined.size()]);
-                }
-            }
-
         }
     }
 
@@ -768,7 +697,7 @@ public abstract class ShaderProgram {
      * Updates the data uploaded to GL as uniforms, if uniforms are static then only the matrices needs to be updated.
      * Calls {@link #setUniformMatrices(float[][], Mesh)} to update uniform matrices.
      * Then call {@link #updateUniformData(float[], Mesh)} to set program specific uniform data
-     * Then sets uniforms to GL by calling {@link #uploadUniforms(GLES20Wrapper, float[], Mesh, VariableMapping[])
+     * Then sets uniforms to GL by calling {@link #uploadUniforms(GLES20Wrapper, float[], ShaderVariable[])
      * When this method returns the uniform data has been uploaded to GL and is ready.
      * 
      * @param gles
@@ -1172,26 +1101,6 @@ public abstract class ShaderProgram {
      */
     public float[] getUniformData() {
         return uniforms;
-    }
-
-    /**
-     * Returns the shader variable for the {@link VariableMapping}
-     * Use this to map attributes/uniforms to variables.
-     * 
-     * @param variable
-     * @return The ShaderVariable for the variable, or null if not used in source.
-     * @throws IllegalArgumentException If shader variables are null, the program has probably not been created.
-     */
-    public ShaderVariable getShaderVariable(VariableMapping variable) {
-        switch (variable.getType()) {
-            case UNIFORM:
-                return getUniformByName(variable.getName());
-            case ATTRIBUTE:
-                return getAttributeByName(variable.getName());
-            default:
-                throw new IllegalArgumentException("Not implemented for " + variable.getType());
-        }
-
     }
 
     /**

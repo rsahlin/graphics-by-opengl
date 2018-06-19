@@ -139,7 +139,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         try {
             RootNode root = builder.create();
             mesh = root.getNodeByType(NodeTypes.layernode).getMesh(MeshIndex.MAIN);
-            uKernel = program.getShaderVariable(ConvolutionProgram.VARIABLES.uKernel);
+            uKernel = program.getUniformByName("uKernel");
             renderer.addFrameListener(this);
             coreApp.setRootNode(root);
         } catch (NodeException e) {

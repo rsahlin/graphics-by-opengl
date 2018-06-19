@@ -59,10 +59,10 @@ public class Primitive {
         TRIANGLE_STRIP(5),
         TRIANGLE_FAN(6);
 
-        public final int mode;
+        public final int value;
 
         private Mode(int mode) {
-            this.mode = mode;
+            this.value = mode;
         }
 
         /**
@@ -73,7 +73,7 @@ public class Primitive {
          */
         public static Mode getMode(int mode) {
             for (Mode m : values()) {
-                if (m.mode == mode) {
+                if (m.value == mode) {
                     return m;
                 }
             }
@@ -99,8 +99,8 @@ public class Primitive {
      * 6 TRIANGLE_FAN
      */
     @SerializedName(MODE)
-    private int mode = DEFAULT_MODE;
-    transient private Mode modeValue;
+    private int modeValue = DEFAULT_MODE;
+    transient private Mode mode;
 
     public HashMap<Attributes, Integer> getAttributes() {
         return attributes;
@@ -123,10 +123,10 @@ public class Primitive {
     }
 
     public Mode getMode() {
-        if (modeValue == null) {
-            modeValue = Mode.getMode(mode);
+        if (mode == null) {
+            mode = Mode.getMode(modeValue);
         }
-        return modeValue;
+        return mode;
     }
 
     /**
@@ -142,11 +142,9 @@ public class Primitive {
      * @param mode
      * @throws IllegalArgumentException If mode is not one of the allowed values
      */
-    public void setMode(int mode) {
-        if ((Mode.getMode(mode)) == null) {
-            throw new IllegalArgumentException("mode is invalid : " + mode);
-        }
+    public void setMode(Mode mode) {
         this.mode = mode;
+        this.modeValue = mode.value;
     }
 
 }
