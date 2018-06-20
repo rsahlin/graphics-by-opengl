@@ -2,16 +2,11 @@ package com.nucleus.assets;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.nucleus.SimpleLogger;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
@@ -24,6 +19,7 @@ import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.GLTF;
+import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.Loader;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.Image.ImageFormat;
@@ -343,27 +339,14 @@ public class AssetManager {
      * @param name
      * @param index Index of the asset
      * @return The loaded GLTF asset
-     * @throws IOException
+     * @throws IOException If there is an io exception reading the file, or it cannot be found.
+     * @throws
      */
-    public GLTF loadGLTFAsset(String path, String name, int index) throws IOException {
+    public GLTF loadGLTFAsset(String path, String name, int index) throws IOException, GLTFException {
         SimpleLogger.d(Loader.class, "Loading glTF asset:" + path + name);
         ClassLoader loader = Loader.class.getClassLoader();
         InputStream is = loader.getResourceAsStream(path + name);
-        return loadAsset(path, is);
-    }
-
-    private GLTF loadAsset(String path, InputStream is) throws IOException {
-        try {
-            Reader reader = new InputStreamReader(is, "UTF-8");
-            GsonBuilder builder = new GsonBuilder();
-            Gson gson = builder.create();
-            GLTF glTF = gson.fromJson(reader, GLTF.class);
-            glTF.setPath(path);
-            return glTF;
-        } catch (UnsupportedEncodingException e) {
-            SimpleLogger.d(Loader.class, e.getMessage());
-            return null;
-        }
+        return Loader.loadAsset(path, is);
     }
 
     private void loadBuffers(GLTF glTF, Buffer[] buffers) throws IOException {
