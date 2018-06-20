@@ -297,7 +297,7 @@ class BaseRenderer implements NucleusRenderer {
         }
         Matrix.mul4(nodeMatrix, viewMatrix, matrices[Matrices.MODELVIEW.index]);
 
-        node.nodeRenderer.renderNode(this, currentPass, matrices);
+        node.nodeRenderer.renderNode(this, node, currentPass, matrices);
 
         this.modelMatrix = nodeMatrix;
         // Add this to rendered nodes before children.

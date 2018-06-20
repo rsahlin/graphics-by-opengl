@@ -5,7 +5,9 @@ import java.io.IOException;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Type;
+import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
 import com.nucleus.scene.gltf.GLTF;
+import com.nucleus.scene.gltf.GLTF.GLTFException;
 
 /**
  * Node containing a glTF model
@@ -52,10 +54,15 @@ public class GLTFNode extends Node {
             int index = getRootNode().getGLTFIndex(glTFName);
             try {
                 glTF = AssetManager.getInstance().loadGLTFAsset(getRootNode().getGLTFPath(), glTFName, index);
-            } catch (IOException e) {
+            } catch (IOException | GLTFException e) {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    @Override
+    protected NodeRenderer<?> createNodeRenderer() {
+        return new com.nucleus.renderer.NodeRenderer<>();
     }
 
 }

@@ -17,26 +17,88 @@ import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.Node;
 import com.nucleus.shader.ShaderProgram;
 
-public class NodeRenderer<T extends Node> extends com.nucleus.renderer.NucleusRenderer.NodeRenderer<Node> {
+/**
+ * The default noderenderer - renders the meshes in a node.
+ * By default it uses the
+ * 
+ *
+ * @param <T>
+ */
+public class NodeRenderer<T extends Node> extends com.nucleus.renderer.NucleusRenderer.NodeRenderer<T> {
+
+    /**
+     * Implementation of mesh renderer for nucleus Mesh
+     *
+     * @param <T>
+     */
+    public class MeshRenderer extends com.nucleus.renderer.NucleusRenderer.MeshRenderer<Mesh> {
+
+        @Override
+        public void renderMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, float[][] matrices)
+                throws GLException {
+            GLES20Wrapper gles = renderer.getGLES();
+            Consumer updater = mesh.getAttributeConsumer();
+            if (updater != null) {
+                updater.updateAttributeData(renderer);
+            }
+            if (mesh.getDrawCount() == 0) {
+                return;
+            }
+            Material material = mesh.getMaterial();
+
+            program.updateAttributes(gles, mesh);
+            program.updateUniforms(gles, matrices, mesh);
+            program.prepareTextures(gles, mesh);
+
+            material.setBlendModeSeparate(gles);
+
+            ElementBuffer indices = mesh.getElementBuffer();
+
+            if (indices == null) {
+                gles.glDrawArrays(mesh.getMode().mode, mesh.getOffset(), mesh.getDrawCount());
+                GLUtils.handleError(gles, "glDrawArrays ");
+                timeKeeper.addDrawArrays(mesh.getDrawCount());
+            } else {
+                if (indices.getBufferName() > 0) {
+                    gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
+                    gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
+                            mesh.getOffset());
+                    GLUtils.handleError(gles, "glDrawElements with ElementBuffer ");
+                } else {
+                    gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
+                            indices.getBuffer().position(mesh.getOffset()));
+                    GLUtils.handleError(gles, "glDrawElements no ElementBuffer ");
+                }
+                AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
+                if (vertices == null) {
+                    vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES);
+                }
+                timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
+            }
+
+        }
+
+    }
 
     protected ArrayList<Mesh> nodeMeshes = new ArrayList<>();
     protected FrameSampler timeKeeper = FrameSampler.getInstance();
-    protected T node;
+    protected com.nucleus.renderer.NucleusRenderer.MeshRenderer meshRenderer;
 
-    protected NodeRenderer() {
+    public NodeRenderer() {
+        this.meshRenderer = new MeshRenderer();
     }
 
-    public NodeRenderer(T node) {
-        this.node = node;
+    /**
+     * Creates a new node renderer using the specified mesh renderer
+     * 
+     * @param meshRenderer
+     */
+    public NodeRenderer(MeshRenderer meshRenderer) {
+        this.meshRenderer = meshRenderer;
     }
 
     @Override
-    public Node getNode() {
-        return node;
-    }
-
-    @Override
-    public void renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices)
+    public void renderNode(NucleusRenderer renderer, T node, Pass currentPass, float[][] matrices)
             throws GLException {
         GLES20Wrapper gles = renderer.getGLES();
         nodeMeshes.clear();
@@ -68,69 +130,19 @@ public class NodeRenderer<T extends Node> extends com.nucleus.renderer.NucleusRe
         return program.getProgram(gles, pass, program.getShading());
     }
 
+    /**
+     * Renders the meshes in this node.
+     * 
+     * @param renderer
+     * @param program
+     * @param meshes
+     * @param matrices
+     * @throws GLException
+     */
     protected void renderMeshes(NucleusRenderer renderer, ShaderProgram program, ArrayList<Mesh> meshes,
             float[][] matrices) throws GLException {
         for (Mesh mesh : meshes) {
-            renderMesh(renderer, program, mesh, matrices);
-        }
-    }
-
-    /**
-     * Renders one mesh, material is used to fetch program and set attributes/uniforms.
-     * If the attributeupdater is set in the mesh it is called to update buffers.
-     * If texture exists in mesh it is made active and used.
-     * If mesh contains an index buffer it is used and glDrawElements is called, otherwise
-     * drawArrays is called.
-     * 
-     * @param renderer
-     * @param program The active program
-     * @param mesh The mesh to be rendered.
-     * @param matrices accumulated modelview matrix for this mesh, this will be sent to uniform.
-     * projectionMatrix The projection matrix, depending on shader this is either concatenated
-     * with modelview set to unifom.
-     * renderPassMatrix Optional matrix for renderpass
-     * @throws GLException If there is an error in GL while drawing this mesh.
-     */
-    protected void renderMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, float[][] matrices)
-            throws GLException {
-        GLES20Wrapper gles = renderer.getGLES();
-        Consumer updater = mesh.getAttributeConsumer();
-        if (updater != null) {
-            updater.updateAttributeData(renderer);
-        }
-        if (mesh.getDrawCount() == 0) {
-            return;
-        }
-        Material material = mesh.getMaterial();
-
-        program.updateAttributes(gles, mesh);
-        program.updateUniforms(gles, matrices, mesh);
-        program.prepareTextures(gles, mesh);
-
-        material.setBlendModeSeparate(gles);
-
-        ElementBuffer indices = mesh.getElementBuffer();
-
-        if (indices == null) {
-            gles.glDrawArrays(mesh.getMode().mode, mesh.getOffset(), mesh.getDrawCount());
-            GLUtils.handleError(gles, "glDrawArrays ");
-            timeKeeper.addDrawArrays(mesh.getDrawCount());
-        } else {
-            if (indices.getBufferName() > 0) {
-                gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
-                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
-                        mesh.getOffset());
-                GLUtils.handleError(gles, "glDrawElements with ElementBuffer ");
-            } else {
-                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
-                        indices.getBuffer().position(mesh.getOffset()));
-                GLUtils.handleError(gles, "glDrawElements no ElementBuffer ");
-            }
-            AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
-            if (vertices == null) {
-                vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES);
-            }
-            timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
+            meshRenderer.renderMesh(renderer, program, mesh, matrices);
         }
     }
 

@@ -307,7 +307,7 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
     transient ArrayList<Mesh> meshes = new ArrayList<Mesh>();
     transient protected ShaderProgram program;
     transient protected Indexer indexer;
-    transient public NodeRenderer<?> nodeRenderer;
+    transient public NodeRenderer nodeRenderer;
     transient Type<Node> nodeType;
 
     /**
@@ -1147,10 +1147,10 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
      * Creates the instance of node renderer to be used with this node, override in subclasses if needed
      * Default behavior is to create in {@link #onCreated()} method if the node renderer is not already set.
      * 
-     * @return
+     * @return Node renderer to use for this node
      */
-    protected NodeRenderer createNodeRenderer() {
-        return new com.nucleus.renderer.NodeRenderer(this);
+    protected NodeRenderer<?> createNodeRenderer() {
+        return new com.nucleus.renderer.NodeRenderer<Node>();
     }
 
     /**
