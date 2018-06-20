@@ -9,13 +9,13 @@ import java.util.HashMap;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.nucleus.assets.AssetManager;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Asset;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.BufferView;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
-import com.nucleus.scene.gltf.Loader;
 import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Node;
@@ -27,7 +27,7 @@ public class LoaderTest extends BaseTestCase {
     public void loadglTFAssetBox() throws IOException, URISyntaxException, GLTFException {
 
         // Use known scene to validate that values are not null
-        GLTF asset = Loader.loadAsset("Box/glTF/", "Box.gltf");
+        GLTF asset = AssetManager.getInstance().loadGLTFAsset("Box/glTF/", "Box.gltf", 0);
 
         Assert.assertNotNull(asset);
         checkAsset(asset.getAsset());
