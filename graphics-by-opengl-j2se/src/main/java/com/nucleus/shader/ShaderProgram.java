@@ -29,6 +29,9 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.BufferObjectsFactory;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
+import com.nucleus.scene.gltf.Accessor;
+import com.nucleus.scene.gltf.Accessor.ComponentType;
+import com.nucleus.scene.gltf.AccessorDictionary;
 import com.nucleus.shader.ShaderSource.ESSLVersion;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -146,7 +149,7 @@ public abstract class ShaderProgram {
     public final static String LINK_PROGRAM_ERROR = "Error linking program: ";
     public final static String BIND_ATTRIBUTE_ERROR = "Error binding attribute: ";
     public final static String VARIABLE_LOCATION_ERROR = "Could not get shader variable location: ";
-    public final static String NULL_VARIABLES_ERROR = "ShaderVariables are null, program not created? Must call fetchProgramInfo()";
+    public final static String NULL_VARIABLES_ERROR = " are null, program not created? Must call fetchProgramInfo()";
     public final static String GET_PROGRAM_INFO_ERROR = "Error fetching program info.";
 
     /**
@@ -277,9 +280,17 @@ public abstract class ShaderProgram {
      */
     protected int[] attributesPerVertex;
     /**
+     * Optional additional storage per vertex, used when attribute buffer is created.
+     */
+    protected int[] paddingPerVertex;
+    /**
      * If specified then variable offsets will be taken from this.
      */
     protected VariableIndexer variableIndexer;
+    /**
+     * The dictionary created from linked program
+     */
+    protected AccessorDictionary<String> accessorDictionary = new AccessorDictionary<>();
     protected int attributeBufferCount = BufferIndex.values().length;
     protected HashMap<Integer, ShaderVariable> blockVariables = new HashMap<>(); // Active block uniforms, index is the
                                                                                  // uniform index from GL
@@ -531,12 +542,24 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Returns the number of attributes per vertex
+     * Internal method
+     * Returns the padding per vertex for the specified buffer index, this can be used to create a buffer with
+     * additional storage. Called by the {@link #createAttributeBuffer(BufferIndex, int)} method.
+     * 
+     * @param index
+     * @return
+     */
+    protected int getPaddingPerVertex(BufferIndex index) {
+        return 0;
+    }
+
+    /**
+     * Returns the number of attributes per vertex that are used by the program.
      * 
      * @param buffer The buffer to get attributes per vertex for
-     * @return Number of attributes per vertex, 0 or -1 if not defined.
+     * @return Number of attributes as used by this program, per vertex 0 or -1 if not defined.
      */
-    public int getAttributesPerVertex(BufferIndex buffer) {
+    protected int getAttributesPerVertex(BufferIndex buffer) {
         if (attributesPerVertex.length > buffer.index) {
             return attributesPerVertex[buffer.index];
         } else {
@@ -546,7 +569,8 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Returns an array with number of attributes per vertex, for each attribute buffer that is used by this program.
+     * Returns an array with number of attributes used per vertex, for each attribute buffer that is used by this
+     * program.
      * This is the minimal storage that this program needs per vertex.
      * 
      * @return
@@ -575,7 +599,7 @@ public abstract class ShaderProgram {
         switch (index) {
             case ATTRIBUTES:
             case ATTRIBUTES_STATIC:
-                int attrs = getAttributesPerVertex(index);
+                int attrs = getAttributesPerVertex(index) + getPaddingPerVertex(index);
                 if (attrs > 0) {
                     AttributeBuffer buffer = new AttributeBuffer(verticeCount, attrs, GLES20.GL_FLOAT);
                     return buffer;
@@ -774,6 +798,7 @@ public abstract class ShaderProgram {
         fetchActiveVariables(gles, VariableType.UNIFORM, info, null);
         attributeVariables = new ShaderVariable[attributeBufferCount][];
         attributesPerVertex = new int[attributeBufferCount];
+        paddingPerVertex = new int[attributeBufferCount];
         sortAttributeVariablePerBuffer(attributeVariables);
     }
 
@@ -809,7 +834,7 @@ public abstract class ShaderProgram {
             int index = indexer.getIndexByName(v.getName());
             // For now we cannot recover if variable not defined in indexer
             if (index == -1) {
-                throw new IllegalArgumentException("Missing offset for shader variable " + v.getName());
+                throw new IllegalArgumentException("Indexer must define offset for shader variable " + v.getName());
             }
             v.setOffset(indexer.getOffset(index));
         }
@@ -868,6 +893,7 @@ public abstract class ShaderProgram {
                     variable = gles.getActiveVariable(program, type, i, nameBuffer);
                     setVariableLocation(gles, program, variable);
                     addShaderVariable(variable);
+                    createAccessor(variable);
                 }
             }
         }
@@ -1148,10 +1174,33 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Creates the accessor, using shader variable name as key.
+     * 
+     * @param variable
+     */
+    protected void createAccessor(ShaderVariable variable) {
+        if (variable.getType() == VariableType.ATTRIBUTE) {
+            Accessor accessor = new Accessor(null, 0, ComponentType.FLOAT, 1,
+                    Accessor.Type.getFromDataType(variable.getDataType()));
+            accessorDictionary.add(variable.getName(), accessor);
+        }
+    }
+
+    /**
+     * Returns the program accessor dictionary, this is created after linking the program and stores accessors
+     * using shader variable name.
+     * 
+     * @return
+     */
+    public AccessorDictionary<String> getAccessorDictionary() {
+        return accessorDictionary;
+    }
+
+    /**
      * Utility method to create the vertex and shader program using the specified shader names.
      * The shaders will be loaded, compiled and linked.
      * Vertex shader, fragment shader and program objects will be created.
-     * If program compiles succesfully then the program info is fetched.
+     * If program compiles successfully then the program info is fetched.
      * 
      * @param gles
      * @param sources Name of shaders to load, compile and link
@@ -1208,7 +1257,7 @@ public abstract class ShaderProgram {
                 }
             }
         } else {
-            for (int i = 0; i < attributeBufferCount; i++) {
+            for (int i = 0; i < variableIndexer.sizePerVertex.length; i++) {
                 attributesPerVertex[i] = variableIndexer.getSizePerVertex(i);
             }
         }

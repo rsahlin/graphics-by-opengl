@@ -1,34 +1,52 @@
 package com.nucleus.scene.gltf;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
- * Used to map from declared attributes to Accessor - use this to map from named attribute variables to Accessor.
+ * Used to map Accessors - use this to map from keys using generics, for instance to store Accessors using shader
+ * variable name.
  *
  */
-public class AttributeDictionary {
+public class AccessorDictionary<T> {
 
-    private HashMap<String, Accessor> attributes = new HashMap();
+    private HashMap<T, Accessor> toAccessors = new HashMap<>();
 
     /**
-     * Adds a named accessor, mapping the name to an Accessor
+     * Adds a named accessor, putting the accessor using key.
      * 
-     * @param name
+     * @param key The key to map the accessor to
      * @param accessor
      */
-    public void addAttribute(String name, Accessor accessor) {
-        attributes.put(name, accessor);
+    public void add(T key, Accessor accessor) {
+        toAccessors.put(key, accessor);
     }
 
     /**
-     * Returns the Accessor for the named attribute that has been added with a call to
-     * {@link #addAttribute(String, Accessor)}
+     * Returns the Accessor for key that has been added with a call to
+     * {@link #add(T, Accessor)}
      * 
-     * @param name
+     * @param key
+     * @return The Accessor or null if not matching any name keys added by calling
+     * {@link #add(T, Accessor)}
+     */
+    public Accessor get(T key) {
+        return toAccessors.get(key);
+    }
+
+    /**
+     * Copies keys into a list and returns it.
+     * 
      * @return
      */
-    public Accessor get(String name) {
-        return attributes.get(name);
+    public ArrayList<T> getKeys() {
+        ArrayList<T> keys = new ArrayList<>();
+        Set<T> set = toAccessors.keySet();
+        for (T t : set) {
+            keys.add(t);
+        }
+        return keys;
     }
 
 }

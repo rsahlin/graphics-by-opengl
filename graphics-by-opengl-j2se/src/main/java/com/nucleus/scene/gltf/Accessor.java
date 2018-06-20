@@ -2,6 +2,7 @@ package com.nucleus.scene.gltf;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 
 /**
@@ -75,6 +76,28 @@ public class Accessor implements GLTF.RuntimeResolver {
         MAT2(),
         MAT3(),
         MAT4();
+
+        public static Type getFromDataType(int dataType) {
+            switch (dataType) {
+                case GLES20.GL_FLOAT:
+                    return SCALAR;
+                case GLES20.GL_FLOAT_MAT2:
+                    return MAT2;
+                case GLES20.GL_FLOAT_MAT3:
+                    return MAT3;
+                case GLES20.GL_FLOAT_MAT4:
+                    return MAT4;
+                case GLES20.GL_FLOAT_VEC2:
+                    return VEC2;
+                case GLES20.GL_FLOAT_VEC3:
+                    return VEC3;
+                case GLES20.GL_FLOAT_VEC4:
+                    return VEC4;
+                default:
+                    throw new IllegalArgumentException("Not implemented for " + dataType);
+            }
+        }
+
     }
 
     public static final int DEFAULT_BYTE_OFFSET = 0;
