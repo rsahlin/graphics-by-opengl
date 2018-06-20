@@ -10,9 +10,17 @@ import java.net.URISyntaxException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nucleus.SimpleLogger;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 
+/**
+ * GLTF asset loader.
+ * Use {@link AssetManager#loadGLTFAsset(String, String, int)} to load assets that are part of a scene or shall be
+ * handled in a uniform manner.
+ * 
+ *
+ */
 public class Loader {
 
     /**

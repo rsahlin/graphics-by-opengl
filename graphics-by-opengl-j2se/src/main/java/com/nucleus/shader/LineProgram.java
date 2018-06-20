@@ -19,8 +19,10 @@ public class LineProgram extends ShaderProgram {
 
         protected final static String[] NAMES = new String[] { "aVertex", "aColor" };
         protected final static int[] OFFSETS = new int[] { 0, 3 };
-        protected final static VariableType[] TYPES = new VariableType[] { VariableType.ATTRIBUTE };
-        protected final static BufferIndex[] BUFFERINDEXES = new BufferIndex[] { BufferIndex.ATTRIBUTES };
+        protected final static VariableType[] TYPES = new VariableType[] { VariableType.ATTRIBUTE,
+                VariableType.ATTRIBUTE };
+        protected final static BufferIndex[] BUFFERINDEXES = new BufferIndex[] { BufferIndex.ATTRIBUTES,
+                BufferIndex.ATTRIBUTES };
         protected final static int[] SIZEPERVERTEX = new int[] { 7 };
 
         public LineProgramIndexer() {

@@ -47,7 +47,17 @@ public class Primitive {
         COLOR_0(),
         COLOR_1(),
         WEIGHTS_0(),
-        WEIGHTS_1();
+        WEIGHTS_1(),
+        /**
+         * Custom Attributes
+         */
+        ROTATE(),
+        SCALE(),
+        TRANSLATE(),
+        FRAME(),
+        ALBEDO(),
+        EMISSIVE(),
+        BOUNDS();
     }
 
     public enum Mode {

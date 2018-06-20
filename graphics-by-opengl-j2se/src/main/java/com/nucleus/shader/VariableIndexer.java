@@ -53,10 +53,10 @@ public class VariableIndexer {
      * Returns the buffer index in the mesh.
      * This value can be used to call {@link Mesh#getAttributeBuffer(BufferIndex)}
      * 
-     * @param BufferIndex Index to buffer holding variables
+     * @param BufferIndex Index to buffer holding variables, or null if index is not valid
      */
     public BufferIndex getBufferIndex(int index) {
-        return bufferIndexes[index];
+        return index >= 0 && index < bufferIndexes.length ? bufferIndexes[index] : null;
     }
 
     /**
@@ -88,7 +88,8 @@ public class VariableIndexer {
     public ShaderVariable[] sortByBuffer(ShaderVariable[] activeVariables, int index) {
         ArrayList<ShaderVariable> result = new ArrayList<>();
         for (ShaderVariable v : activeVariables) {
-            if (getBufferIndex(getIndexByName(v.getName())).index == index) {
+            BufferIndex bi = getBufferIndex(getIndexByName(v.getName()));
+            if (bi != null && bi.index == index) {
                 result.add(v);
             }
         }
