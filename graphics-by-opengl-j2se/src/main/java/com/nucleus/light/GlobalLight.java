@@ -25,10 +25,12 @@ public class GlobalLight {
     }
 
     /**
+     * Deprecated - this is not a property of a global light, but rather a node property.
      * Returns the global ambient light
      * 
      * @return
      */
+    @Deprecated
     public float[] getAmbient() {
         return ambient;
     }

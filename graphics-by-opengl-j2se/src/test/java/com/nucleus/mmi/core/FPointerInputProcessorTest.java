@@ -16,7 +16,7 @@ import com.nucleus.mmi.MMIPointerEvent.Action;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
-import com.nucleus.vecmath.Vector2D;
+import com.nucleus.vecmath.Vec2;
 
 public class FPointerInputProcessorTest extends BaseTestCase implements MMIEventListener {
 
@@ -308,8 +308,8 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
             MMIPointerEvent event = iterator.next();
             if (event.getAction() == Action.ZOOM) {
                 found++;
-                Vector2D zoom = event.getZoom();
-                Assert.assertEquals(deltaX2 - deltaX1, zoom.vector[Vector2D.MAGNITUDE], 0f);
+                Vec2 zoom = event.getZoom();
+                Assert.assertEquals(deltaX2 - deltaX1, zoom.vector[Vec2.MAGNITUDE], 0f);
                 Assert.assertNotNull(zoom);
             }
         }

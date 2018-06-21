@@ -5,6 +5,7 @@ import java.io.IOException;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Type;
+import com.nucleus.renderer.GLTFNodeRenderer;
 import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
@@ -62,7 +63,7 @@ public class GLTFNode extends Node {
 
     @Override
     protected NodeRenderer<?> createNodeRenderer() {
-        return new com.nucleus.renderer.NodeRenderer<>();
+        return new GLTFNodeRenderer();
     }
 
 }

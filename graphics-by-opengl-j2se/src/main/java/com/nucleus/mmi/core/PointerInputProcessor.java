@@ -14,7 +14,7 @@ import com.nucleus.mmi.PointerMotionData;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.profiling.FrameSampler.Sample;
 import com.nucleus.profiling.FrameSampler.Samples;
-import com.nucleus.vecmath.Vector2D;
+import com.nucleus.vecmath.Vec2;
 
 /**
  * Process incoming pointer based events (for instance touch or mouse) and turn into easier to handle MMI actions.
@@ -155,8 +155,8 @@ public class PointerInputProcessor implements PointerListener {
         float[] middle = Vertex2D.middle(pointer1.getFirstPosition(), pointer2.getFirstPosition());
         float[] toMiddle = new float[2];
         // Fetch touch movement as 2D vectors
-        Vector2D vector1 = getDeltaAsVector(pointer1, 1);
-        Vector2D vector2 = getDeltaAsVector(pointer2, 1);
+        Vec2 vector1 = getDeltaAsVector(pointer1, 1);
+        Vec2 vector2 = getDeltaAsVector(pointer2, 1);
         // Check if movement from or towards middle.
         if (vector1 != null && vector2 != null) {
             // System.out.println("Twopointer delta1: " + vector1.vector[Vector2D.MAGNITUDE] + " pos: "
@@ -165,9 +165,9 @@ public class PointerInputProcessor implements PointerListener {
             // vector2.vector[Vector2D.MAGNITUDE] > moveThreshold) {
 
             Vertex2D.getDistance(middle, pointer1.getCurrentPosition(), toMiddle);
-            Vector2D center1 = new Vector2D(toMiddle);
+            Vec2 center1 = new Vec2(toMiddle);
             Vertex2D.getDistance(middle, pointer2.getCurrentPosition(), toMiddle);
-            Vector2D center2 = new Vector2D(toMiddle);
+            Vec2 center2 = new Vec2(toMiddle);
 
             float angle1 = (float) Math.acos(vector1.dot(center1)) * 57.2957795f;
             float angle2 = (float) Math.acos(vector2.dot(center2)) * 57.2957795f;
@@ -192,8 +192,8 @@ public class PointerInputProcessor implements PointerListener {
 
     }
 
-    private void zoom(PointerMotionData pointer1, PointerMotionData pointer2, Vector2D vector1, Vector2D vector2,
-            Vector2D center1, Vector2D center2) {
+    private void zoom(PointerMotionData pointer1, PointerMotionData pointer2, Vec2 vector1, Vec2 vector2,
+            Vec2 center1, Vec2 center2) {
         // Zoom movement
         sendToListeners(new MMIPointerEvent(pointer1, pointer2, vector1, vector2, vector1.dot(center1),
                 vector2.dot(center2)));
@@ -207,12 +207,12 @@ public class PointerInputProcessor implements PointerListener {
      * @param count Number of prior pointer values to include in delta.
      * @return Pointer delta values as Vector2D, or null if only 1 pointer data.
      */
-    private Vector2D getDeltaAsVector(PointerMotionData motionData, int count) {
+    private Vec2 getDeltaAsVector(PointerMotionData motionData, int count) {
         float[] delta = motionData.getDelta(count);
         if (delta == null || (delta[0] == 0 && delta[1] == 0)) {
             return null;
         }
-        return new Vector2D(delta);
+        return new Vec2(delta);
     }
 
     /**

@@ -8,8 +8,8 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.io.gson.PostDeserializable;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Rectangle;
-import com.nucleus.vecmath.Vector2D;
-import com.nucleus.vecmath.Vector3D;
+import com.nucleus.vecmath.Vec2;
+import com.nucleus.vecmath.Vec3;
 
 /**
  * 2 Dimensional rectangle bounds, the bounds can be rotated and can have a position array that it follows.
@@ -179,20 +179,20 @@ public class RectangularBounds extends Bounds implements PostDeserializable {
         calculateVectors();
         collideVector1[0] = position[index] - rotatedBounds[0];
         collideVector1[1] = position[index + 1] - rotatedBounds[1];
-        Vector3D.normalize2D(collideVector1, 0);
-        if (Vector2D.dot2D(collideVector1, top) < 0) {
+        Vec3.normalize2D(collideVector1, 0);
+        if (Vec2.dot2D(collideVector1, top) < 0) {
             return false;
         }
-        if (Vector2D.dot2D(collideVector1, left) < 0) {
+        if (Vec2.dot2D(collideVector1, left) < 0) {
             return false;
         }
         collideVector1[0] = position[index] - rotatedBounds[4];
         collideVector1[1] = position[index + 1] - rotatedBounds[5];
-        Vector3D.normalize2D(collideVector1, 0);
-        if (Vector2D.dot2D(collideVector1, right) < 0) {
+        Vec3.normalize2D(collideVector1, 0);
+        if (Vec2.dot2D(collideVector1, right) < 0) {
             return false;
         }
-        if (Vector2D.dot2D(collideVector1, bottom) < 0) {
+        if (Vec2.dot2D(collideVector1, bottom) < 0) {
             return false;
         }
         return true;
@@ -211,22 +211,22 @@ public class RectangularBounds extends Bounds implements PostDeserializable {
         // TOP
         top[0] = (rotatedBounds[2] - rotatedBounds[0]);
         top[1] = (rotatedBounds[3] - rotatedBounds[1]);
-        Vector3D.normalize2D(top, 0);
+        Vec3.normalize2D(top, 0);
 
         // LEFT
         left[0] = (rotatedBounds[6] - rotatedBounds[0]);
         left[1] = (rotatedBounds[7] - rotatedBounds[1]);
-        Vector3D.normalize2D(left, 0);
+        Vec3.normalize2D(left, 0);
 
         // RIGHT
         right[0] = (rotatedBounds[2] - rotatedBounds[4]);
         right[1] = (rotatedBounds[3] - rotatedBounds[5]);
-        Vector3D.normalize2D(right, 0);
+        Vec3.normalize2D(right, 0);
 
         // BOTTOM
         bottom[0] = (rotatedBounds[6] - rotatedBounds[4]);
         bottom[1] = (rotatedBounds[7] - rotatedBounds[5]);
-        Vector3D.normalize2D(bottom, 0);
+        Vec3.normalize2D(bottom, 0);
         updated = false;
     }
 
@@ -237,26 +237,26 @@ public class RectangularBounds extends Bounds implements PostDeserializable {
         float radius = bounds.bounds[CircularBounds.RADIUS_INDEX];
         collideVector1[0] = (radius * top[0]) - rotatedBounds[0];
         collideVector1[1] = (radius * top[1]) - rotatedBounds[1];
-        Vector3D.normalize2D(collideVector1, 0);
-        if (Vector2D.dot2D(collideVector1, top) < 0) {
+        Vec3.normalize2D(collideVector1, 0);
+        if (Vec2.dot2D(collideVector1, top) < 0) {
             return false;
         }
         collideVector1[0] = (radius * left[0]) - rotatedBounds[0];
         collideVector1[1] = (radius * left[1]) - rotatedBounds[1];
-        Vector3D.normalize2D(collideVector1, 0);
-        if (Vector2D.dot2D(collideVector1, left) > 0) {
+        Vec3.normalize2D(collideVector1, 0);
+        if (Vec2.dot2D(collideVector1, left) > 0) {
             return false;
         }
         collideVector1[0] = (radius * right[0]) - rotatedBounds[4];
         collideVector1[1] = (radius * right[1]) - rotatedBounds[5];
-        Vector3D.normalize2D(collideVector1, 0);
-        if (Vector2D.dot2D(collideVector1, right) > 0) {
+        Vec3.normalize2D(collideVector1, 0);
+        if (Vec2.dot2D(collideVector1, right) > 0) {
             return false;
         }
         collideVector1[0] = (radius * bottom[0]) - rotatedBounds[4];
         collideVector1[1] = (radius * bottom[1]) - rotatedBounds[5];
-        Vector3D.normalize2D(collideVector1, 0);
-        if (Vector2D.dot2D(collideVector1, bottom) < 0) {
+        Vec3.normalize2D(collideVector1, 0);
+        if (Vec2.dot2D(collideVector1, bottom) < 0) {
             return false;
         }
         return true;
@@ -283,10 +283,10 @@ public class RectangularBounds extends Bounds implements PostDeserializable {
             case Y:
                 break;
             case Z:
-                Vector2D.rotateZAxis(bounds, 0, rotatedBounds, 0, angle);
-                Vector2D.rotateZAxis(bounds, 2, rotatedBounds, 2, angle);
-                Vector2D.rotateZAxis(bounds, 4, rotatedBounds, 4, angle);
-                Vector2D.rotateZAxis(bounds, 6, rotatedBounds, 6, angle);
+                Vec2.rotateZAxis(bounds, 0, rotatedBounds, 0, angle);
+                Vec2.rotateZAxis(bounds, 2, rotatedBounds, 2, angle);
+                Vec2.rotateZAxis(bounds, 4, rotatedBounds, 4, angle);
+                Vec2.rotateZAxis(bounds, 6, rotatedBounds, 6, angle);
                 updated = true;
                 break;
         }

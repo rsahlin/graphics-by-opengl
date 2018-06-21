@@ -1,6 +1,7 @@
 package com.nucleus.shader;
 
 import com.nucleus.geometry.Mesh;
+import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
@@ -95,6 +96,7 @@ public class ShadowPass1Program extends ShaderProgram {
         // TODO implement light position/vector properly
         // float[] lightVector = GlobalLight.getInstance().getLightVector();
         // Matrix.setRotateM(matrix, 0, 0, lightVector[0], lightVector[1], lightVector[2]);
+        GlobalLight.getInstance().getLightMatrix(matrix);
         Matrix.setIdentity(matrix, 0);
         return matrix;
     }
