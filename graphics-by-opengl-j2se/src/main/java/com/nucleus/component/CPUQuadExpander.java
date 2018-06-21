@@ -159,6 +159,10 @@ public class CPUQuadExpander extends AttributeExpander {
      * @param transform
      */
     public final void setData(int quad, Transform transform) {
+        if (transform.isMatrixMode()) {
+            throw new IllegalArgumentException(
+                    "Updating expander data using transform in matrix mode is not supported");
+        }
         float[] translate = transform.getTranslate();
         int start = quad * source.sizePerEntity;
         if (translate != null) {
