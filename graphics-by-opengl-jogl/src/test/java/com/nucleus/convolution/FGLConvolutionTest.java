@@ -194,4 +194,5 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         }
 
     }
+
 }

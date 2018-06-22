@@ -575,18 +575,9 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
         if (source.getTransform() != null) {
             copyTransform(source.getTransform());
         } else {
-            setTransform(null);
+            this.transform = null;
         }
 
-    }
-
-    /**
-     * Sets the source transform as a reference.
-     * 
-     * @param source The transform reference, may be null.
-     */
-    public void setTransform(Transform source) {
-        this.transform = source;
     }
 
     /**

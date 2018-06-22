@@ -1,8 +1,12 @@
 package com.nucleus.mmi;
 
-import com.nucleus.vecmath.VecMath;
 import com.nucleus.vecmath.Vec2;
+import com.nucleus.vecmath.VecMath;
 
+/**
+ * Holds data for a MMI touch or mouse based input events.
+ *
+ */
 public class MMIPointerEvent {
 
     public enum Action {

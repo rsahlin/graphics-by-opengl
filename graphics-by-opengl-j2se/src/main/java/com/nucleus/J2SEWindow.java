@@ -1,5 +1,6 @@
 package com.nucleus;
 
+import com.nucleus.mmi.KeyEvent;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
@@ -128,6 +129,15 @@ public abstract class J2SEWindow implements WindowListener {
                         xpos, ypos }, PointerData.DOWN_PRESSURE);
             default:
         }
+    }
+
+    /**
+     * Passes the keyevent on to the {@link CoreApp} which will send to registered listeners
+     * 
+     * @param event
+     */
+    protected void handleKeyEvent(KeyEvent event) {
+        coreApp.getInputProcessor().onKeyEvent(event);
     }
 
     @Override

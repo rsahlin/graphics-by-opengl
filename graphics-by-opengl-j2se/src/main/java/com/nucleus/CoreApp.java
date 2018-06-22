@@ -13,7 +13,7 @@ import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.ObjectInputListener;
-import com.nucleus.mmi.core.PointerInputProcessor;
+import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
@@ -143,7 +143,7 @@ public class CoreApp implements FrameRenderer {
     /**
      * Touch and pointer input
      */
-    protected PointerInputProcessor inputProcessor = new PointerInputProcessor();
+    protected InputProcessor inputProcessor = new InputProcessor();
 
     ComponentProcessorRunnable componentRunnable;
 
@@ -198,7 +198,7 @@ public class CoreApp implements FrameRenderer {
      * 
      * @return
      */
-    public PointerInputProcessor getInputProcessor() {
+    public InputProcessor getInputProcessor() {
         return inputProcessor;
     }
 

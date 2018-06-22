@@ -6,6 +6,7 @@ import java.util.Set;
 import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.Vertex2D;
 import com.nucleus.mmi.MMIEventListener;
+import com.nucleus.mmi.KeyEvent;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
@@ -18,11 +19,12 @@ import com.nucleus.vecmath.Vec2;
 
 /**
  * Process incoming pointer based events (for instance touch or mouse) and turn into easier to handle MMI actions.
+ * Handles key events by passing them on to registered keylisteners
  * 
  * @author Richard Sahlin
  *
  */
-public class PointerInputProcessor implements PointerListener {
+public class InputProcessor implements PointerListener, KeyListener {
 
     public int maxPointers = 5;
 
@@ -39,7 +41,8 @@ public class PointerInputProcessor implements PointerListener {
     private final float[] transform = new float[] { 1, 1, 0, 0 };
     private final float[] scaledPosition = new float[2];
 
-    Set<MMIEventListener> mmiListeners = new HashSet<MMIEventListener>();
+    Set<MMIEventListener> mmiListeners = new HashSet<>();
+    Set<KeyListener> keyListeners = new HashSet<>();
 
     private int pointerCount = 0;
     /**
@@ -55,7 +58,7 @@ public class PointerInputProcessor implements PointerListener {
     /**
      * Default constructor
      */
-    public PointerInputProcessor() {
+    public InputProcessor() {
         pointerMotionData = new PointerMotionData[maxPointers];
     }
 
@@ -222,7 +225,17 @@ public class PointerInputProcessor implements PointerListener {
      */
     public void addMMIListener(MMIEventListener listener) {
         mmiListeners.add(listener);
-        SimpleLogger.d(getClass(), "Added listener, new total: " + mmiListeners.size());
+        SimpleLogger.d(getClass(), "Added MMI listener, new total: " + mmiListeners.size());
+    }
+
+    /**
+     * Adds the keylistener, it will not get key events
+     * 
+     * @param listener
+     */
+    public void addKeyListener(KeyListener listener) {
+        keyListeners.add(listener);
+        SimpleLogger.d(getClass(), "Added key listener, new total: " + keyListeners.size());
     }
 
     /**
@@ -232,7 +245,17 @@ public class PointerInputProcessor implements PointerListener {
      */
     public void removeMMIListener(MMIEventListener listener) {
         mmiListeners.remove(listener);
-        SimpleLogger.d(getClass(), "Removed listener, new total: " + mmiListeners.size());
+        SimpleLogger.d(getClass(), "Removed MMI listener, new total: " + mmiListeners.size());
+    }
+
+    /**
+     * Removes the key listener
+     * 
+     * @param listener
+     */
+    public void removeKeyListener(KeyListener listener) {
+        keyListeners.remove(listener);
+        SimpleLogger.d(getClass(), "Removed key listener, new total: " + keyListeners.size());
     }
 
     /**
@@ -304,6 +327,13 @@ public class PointerInputProcessor implements PointerListener {
     public float[] getScreenCoordinate(float[] normalized) {
         return new float[] { (normalized[0] - transform[2]) / transform[0],
                 (normalized[1] - transform[3]) / transform[1] };
+    }
+
+    @Override
+    public void onKeyEvent(KeyEvent event) {
+        for (KeyListener kl : keyListeners) {
+            kl.onKeyEvent(event);
+        }
     }
 
 }

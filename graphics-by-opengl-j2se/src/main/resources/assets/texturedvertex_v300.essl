@@ -13,7 +13,6 @@ uniform vec4 uDiffuseLight;
 in vec3 aTranslate; //Position of vertex, offset from matrix
 in vec3 aVertex;
 in vec2 aTexCoord;
-in vec4 aColor;
 
 out vec2 vTexCoord;
 
@@ -22,6 +21,5 @@ out vec4 color;
 void main() {
     vec4 pos = vec4(aVertex + aTranslate, 1.0) * uMVMatrix;
     gl_Position = pos * uProjectionMatrix;
-    color = aColor;
     vTexCoord = aTexCoord;
 }

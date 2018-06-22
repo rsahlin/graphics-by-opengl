@@ -10,9 +10,10 @@ package com.nucleus.mmi;
 public interface MMIEventListener {
 
     /**
-     * Callback for MMI based input event.
+     * Callback for MMI based touch/mouse input event.
      * 
      * @param event
      */
     public void onInputEvent(MMIPointerEvent event);
+
 }
