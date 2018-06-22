@@ -26,6 +26,7 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
+import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 
@@ -326,7 +327,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
     @Override
     public void mouseWheelMoved(MouseEvent e) {
         float factor = ZOOM_FACTOR;
-        coreApp.getInputProcessor().pointerEvent(PointerAction.ZOOM, PointerData.Type.MOUSE, e.getWhen(),
+        InputProcessor.getInstance().pointerEvent(PointerAction.ZOOM, PointerData.Type.MOUSE, e.getWhen(),
                 PointerData.POINTER_1, new float[] {
                         e.getRotation()[1] * factor, e.getRotation()[1] * factor },
                 0);

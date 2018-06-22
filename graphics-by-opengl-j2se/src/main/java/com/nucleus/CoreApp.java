@@ -140,11 +140,6 @@ public class CoreApp implements FrameRenderer {
      */
     protected RootNode rootNode;
 
-    /**
-     * Touch and pointer input
-     */
-    protected InputProcessor inputProcessor = new InputProcessor();
-
     ComponentProcessorRunnable componentRunnable;
 
     /**
@@ -189,17 +184,6 @@ public class CoreApp implements FrameRenderer {
      */
     public NucleusRenderer getRenderer() {
         return renderer;
-    }
-
-    /**
-     * Returns the pointer input processor, this can be used to listen to low level MMI (pointer input) events.
-     * Applications can use this to listen to low level input events - or use the NodeTree and attach pointerinput to
-     * nodes via NodeInputListener see {@link #addPointerInput(RootNode)}
-     * 
-     * @return
-     */
-    public InputProcessor getInputProcessor() {
-        return inputProcessor;
     }
 
     @Override
@@ -315,7 +299,7 @@ public class CoreApp implements FrameRenderer {
      * @param root The rootnode
      */
     public void addPointerInput(RootNode root) {
-        inputProcessor.addMMIListener(new J2SENodeInputListener(root));
+        InputProcessor.getInstance().addMMIListener(new J2SENodeInputListener(root));
     }
 
     public void displaySplash() throws GLException, NodeException {

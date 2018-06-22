@@ -14,6 +14,7 @@ import com.nucleus.io.ExternalReference;
 import com.nucleus.jogl.JOGLApplication;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
+import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
@@ -120,7 +121,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
     public void createCoreApp(int width, int height) {
         super.createCoreApp(width, height);
         NucleusRenderer renderer = coreApp.getRenderer();
-        coreApp.getInputProcessor().addMMIListener(this);
+        InputProcessor.getInstance().addMMIListener(this);
 
         BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);

@@ -5,8 +5,8 @@ import java.util.Set;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.Vertex2D;
-import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.KeyEvent;
+import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
@@ -21,8 +21,6 @@ import com.nucleus.vecmath.Vec2;
  * Process incoming pointer based events (for instance touch or mouse) and turn into easier to handle MMI actions.
  * Handles key events by passing them on to registered keylisteners
  * 
- * @author Richard Sahlin
- *
  */
 public class InputProcessor implements PointerListener, KeyListener {
 
@@ -55,10 +53,21 @@ public class InputProcessor implements PointerListener, KeyListener {
      */
     private boolean processTwoPointers = true;
 
+    private static InputProcessor inputProcessor;
+
     /**
-     * Default constructor
+     * Returns the singleton instance of the input processor.
+     * 
+     * @return
      */
-    public InputProcessor() {
+    public static InputProcessor getInstance() {
+        if (inputProcessor == null) {
+            inputProcessor = new InputProcessor();
+        }
+        return inputProcessor;
+    }
+
+    private InputProcessor() {
         pointerMotionData = new PointerMotionData[maxPointers];
     }
 

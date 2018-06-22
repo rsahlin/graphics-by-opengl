@@ -12,6 +12,7 @@ import com.nucleus.matrix.j2se.J2SEMatrixEngine;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
+import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
@@ -413,7 +414,7 @@ public abstract class NucleusActivity extends Activity
             case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_DOWN:
                 // This is the first pointer, or multitouch pointer going down.
-                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN, type,
+                InputProcessor.getInstance().pointerEvent(PointerAction.DOWN, type,
                         event.getEventTime() + androidUptimeDelta, finger,
                         new float[] { event.getX(index), event.getY(index) }, event.getPressure());
                 break;
@@ -421,7 +422,7 @@ public abstract class NucleusActivity extends Activity
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 // This is multitouch or the last pointer going up
-                coreApp.getInputProcessor().pointerEvent(PointerAction.UP, type,
+                InputProcessor.getInstance().pointerEvent(PointerAction.UP, type,
                         event.getEventTime() + androidUptimeDelta,
                         finger, new float[] { event.getX(index), event.getY(index) }, event.getPressure());
                 break;
@@ -431,12 +432,12 @@ public abstract class NucleusActivity extends Activity
                 for (int i = 0; i < count; i++) {
                     finger = event.getPointerId(i);
                     for (int h = 0; h < historySize; h++) {
-                        coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, type,
+                        InputProcessor.getInstance().pointerEvent(PointerAction.MOVE, type,
                                 event.getHistoricalEventTime(h) + androidUptimeDelta, finger,
                                 new float[] { event.getHistoricalX(i, h), event.getHistoricalY(i, h) },
                                 event.getHistoricalPressure(index, h));
                     }
-                    coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, type,
+                    InputProcessor.getInstance().pointerEvent(PointerAction.MOVE, type,
                             event.getEventTime() + androidUptimeDelta, finger,
                             new float[] { event.getX(i), event.getY(i) }, event.getPressure());
                 }

@@ -63,7 +63,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
     public void testActionDownUpAll() {
 
         // Test that action down and up result in correct event.
-        InputProcessor processor = new InputProcessor();
+        InputProcessor processor = InputProcessor.getInstance();
 
         ArrayList<AssertMMIAction> assertValues = new ArrayList<AssertMMIAction>();
         processor.addMMIListener(this);
@@ -177,7 +177,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
     @Test
     public void testActionDownMove() {
         // Test that down + one move results in correct action.
-        InputProcessor processor = new InputProcessor();
+        InputProcessor processor = InputProcessor.getInstance();
 
         processor.addMMIListener(this);
         processor.pointerEvent(PointerAction.DOWN, Type.FINGER, System.currentTimeMillis(),
@@ -199,7 +199,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
 
     @Test
     public void testMultipleDownMove() {
-        InputProcessor processor = new InputProcessor();
+        InputProcessor processor = InputProcessor.getInstance();
         processor.addMMIListener(this);
 
         ArrayList<AssertMMIAction> checkList = new ArrayList<>();
@@ -227,7 +227,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
     @Test
     public void testManyActionDownUp() {
         // Test that many action down and up in different order results in correct action
-        InputProcessor processor = new InputProcessor();
+        InputProcessor processor = InputProcessor.getInstance();
         processor.addMMIListener(this);
 
         ArrayList<AssertMMIAction> checkList = new ArrayList<>();
@@ -250,7 +250,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
     @Test
     public void testActionZoom() {
         // Test that move 2 fingers result in zoom
-        InputProcessor processor = new InputProcessor();
+        InputProcessor processor = InputProcessor.getInstance();
 
         processor.addMMIListener(this);
         processor.pointerEvent(PointerAction.DOWN, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_1,
@@ -286,7 +286,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
         int y2 = 100;
         float deltaX1 = -5;
         float deltaX2 = 5;
-        InputProcessor processor = new InputProcessor();
+        InputProcessor processor = InputProcessor.getInstance();
         processor.addMMIListener(this);
 
         processor.pointerEvent(PointerAction.DOWN, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_1,
@@ -335,7 +335,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
     @Test
     public void testActionZoomSmallValues() {
         // Test that move 2 fingers result in zoom
-        InputProcessor processor = new InputProcessor();
+        InputProcessor processor = InputProcessor.getInstance();
 
         processor.addMMIListener(this);
         processor.pointerEvent(PointerAction.DOWN, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_1,

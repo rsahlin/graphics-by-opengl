@@ -4,6 +4,7 @@ import com.nucleus.mmi.KeyEvent;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
+import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
@@ -116,16 +117,16 @@ public abstract class J2SEWindow implements WindowListener {
     protected void handleMouseEvent(PointerAction action, Type type, int xpos, int ypos, int pointer, long timestamp) {
         switch (action) {
             case DOWN:
-                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN, type,
+                InputProcessor.getInstance().pointerEvent(PointerAction.DOWN, type,
                         timestamp, pointer,
                         new float[] { xpos, ypos }, PointerData.DOWN_PRESSURE);
                 break;
             case UP:
-                coreApp.getInputProcessor().pointerEvent(PointerAction.UP, type, timestamp, pointer, new float[] {
+                InputProcessor.getInstance().pointerEvent(PointerAction.UP, type, timestamp, pointer, new float[] {
                         xpos, ypos }, PointerData.DOWN_PRESSURE);
                 break;
             case MOVE:
-                coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, type, timestamp, pointer, new float[] {
+                InputProcessor.getInstance().pointerEvent(PointerAction.MOVE, type, timestamp, pointer, new float[] {
                         xpos, ypos }, PointerData.DOWN_PRESSURE);
             default:
         }
@@ -137,7 +138,7 @@ public abstract class J2SEWindow implements WindowListener {
      * @param event
      */
     protected void handleKeyEvent(KeyEvent event) {
-        coreApp.getInputProcessor().onKeyEvent(event);
+        InputProcessor.getInstance().onKeyEvent(event);
     }
 
     @Override
