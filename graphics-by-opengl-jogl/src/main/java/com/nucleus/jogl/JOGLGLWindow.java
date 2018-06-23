@@ -6,6 +6,7 @@ import java.awt.event.WindowListener;
 import com.jogamp.common.os.Platform;
 import com.jogamp.nativewindow.util.Dimension;
 import com.jogamp.nativewindow.util.InsetsImmutable;
+import com.jogamp.newt.event.InputEvent;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseEvent;
@@ -23,6 +24,7 @@ import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
+import com.nucleus.mmi.KeyEvent.Action;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
@@ -278,12 +280,19 @@ public abstract class JOGLGLWindow extends J2SEWindow
     protected void handleKeyEvent(KeyEvent event) {
         switch (event.getEventType()) {
             case KeyEvent.EVENT_KEY_PRESSED:
+                InputProcessor.getInstance()
+                        .onKeyEvent(new com.nucleus.mmi.KeyEvent(Action.PRESSED, event.getKeyCode()));
                 switch (event.getKeyCode()) {
                     case KeyEvent.VK_ESCAPE:
                         backPressed();
                 }
                 break;
             case KeyEvent.EVENT_KEY_RELEASED:
+                InputProcessor.getInstance()
+                        .onKeyEvent(new com.nucleus.mmi.KeyEvent(Action.RELEASED, event.getKeyCode()));
+                break;
+            default:
+                // Do nothing
         }
     }
 
@@ -405,12 +414,16 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void keyPressed(KeyEvent e) {
-        handleKeyEvent(e);
+        if ((e.getModifiers() & InputEvent.AUTOREPEAT_MASK) == 0) {
+            handleKeyEvent(e);
+        }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        handleKeyEvent(e);
+        if ((e.getModifiers() & InputEvent.AUTOREPEAT_MASK) == 0) {
+            handleKeyEvent(e);
+        }
     }
 
     private void backPressed() {

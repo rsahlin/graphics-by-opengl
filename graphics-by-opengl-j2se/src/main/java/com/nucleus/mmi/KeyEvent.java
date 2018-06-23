@@ -154,4 +154,20 @@ public class KeyEvent {
 
     }
 
+    public Action getAction() {
+        return action;
+    }
+
+    public KeyCode getKeyCode() {
+        return keyCode;
+    }
+
+    public float getPressure() {
+        return pressure;
+    }
+
+    public int getKeyValue() {
+        return keyValue;
+    }
+
 }
