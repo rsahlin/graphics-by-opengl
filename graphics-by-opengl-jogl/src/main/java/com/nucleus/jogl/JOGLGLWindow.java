@@ -2,6 +2,8 @@ package com.nucleus.jogl;
 
 import java.awt.Frame;
 import java.awt.event.WindowListener;
+import java.lang.reflect.Field;
+import java.util.Hashtable;
 
 import com.jogamp.common.os.Platform;
 import com.jogamp.nativewindow.util.Dimension;
@@ -62,6 +64,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
     protected GLWindow glWindow;
     protected Renderers version;
     Animator animator;
+    private Hashtable<Integer, Integer> AWTKeycodes;
 
     /**
      * Creates a new JOGL window with the specified {@link CoreAppStarter} and swapinterval
@@ -96,6 +99,31 @@ public abstract class JOGLGLWindow extends J2SEWindow
         GLProfile profile = getProfile(version);
         // createAWTWindow(width, height, profile);
         createNEWTWindow(width, height, profile);
+
+        /**
+         * Fetch jogamp.newt fields that start with VK_ and store keycodes in array to convert to AWT values.
+         */
+        AWTKeycodes = getAWTFields();
+    }
+
+    private Hashtable<Integer, Integer> getAWTFields() {
+        Hashtable<Integer, Integer> awtFields = new Hashtable<>();
+        for (Field newtField : com.jogamp.newt.event.KeyEvent.class.getDeclaredFields()) {
+            if (java.lang.reflect.Modifier.isStatic(newtField.getModifiers())) {
+                String fieldName = newtField.getName();
+                if (fieldName.startsWith("VK_")) {
+                    try {
+                        Field awtField = java.awt.event.KeyEvent.class.getField(fieldName);
+                        int newtKeyCode = newtField.getShort(null) & 0xffff;
+                        int awtKeyCode = awtField.getInt(null);
+                        awtFields.put(newtKeyCode, awtKeyCode);
+                    } catch (NoSuchFieldException | IllegalAccessException e) {
+                        SimpleLogger.d(getClass(), e.toString());
+                    }
+                }
+            }
+        }
+        return awtFields;
     }
 
     protected GLProfile getProfile(Renderers version) {
@@ -278,10 +306,15 @@ public abstract class JOGLGLWindow extends J2SEWindow
     }
 
     protected void handleKeyEvent(KeyEvent event) {
+        /**
+         * com.jogamp.newt.event.KeyEvent keycodes are the same as the AWT KeyEvent keycodes.
+         */
+        SimpleLogger.d(getClass(), "KeyEvent " + event.getEventType() + " : " + event.getKeyCode());
         switch (event.getEventType()) {
             case KeyEvent.EVENT_KEY_PRESSED:
                 InputProcessor.getInstance()
-                        .onKeyEvent(new com.nucleus.mmi.KeyEvent(Action.PRESSED, event.getKeyCode()));
+                        .onKeyEvent(new com.nucleus.mmi.KeyEvent(Action.PRESSED,
+                                AWTKeycodes.get((int) event.getKeyCode())));
                 switch (event.getKeyCode()) {
                     case KeyEvent.VK_ESCAPE:
                         backPressed();
@@ -289,7 +322,8 @@ public abstract class JOGLGLWindow extends J2SEWindow
                 break;
             case KeyEvent.EVENT_KEY_RELEASED:
                 InputProcessor.getInstance()
-                        .onKeyEvent(new com.nucleus.mmi.KeyEvent(Action.RELEASED, event.getKeyCode()));
+                        .onKeyEvent(new com.nucleus.mmi.KeyEvent(Action.RELEASED,
+                                AWTKeycodes.get((int) event.getKeyCode())));
                 break;
             default:
                 // Do nothing
