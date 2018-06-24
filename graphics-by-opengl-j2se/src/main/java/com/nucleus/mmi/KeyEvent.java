@@ -99,6 +99,8 @@ public class KeyEvent {
     private float pressure;
     /**
      * If a key on the keyboard is pressed it is registered here.
+     * This is the value as defined by java.awt.event.KeyEvent.VK_XX values.
+     * Eg, the W key is defined by java.awt.event.KeyEvent.VK_W
      */
     private int keyValue;
 
