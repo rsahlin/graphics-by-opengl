@@ -8,7 +8,6 @@ import com.nucleus.CoreApp;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
 import com.nucleus.common.Environment;
-import com.nucleus.matrix.j2se.J2SEMatrixEngine;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
@@ -359,8 +358,7 @@ public abstract class NucleusActivity extends Activity
      * @return true if CoreApp was created and splash displayed.
      */
     public boolean onSurfaceCreated(int width, int height) {
-        NucleusRenderer renderer = RendererFactory.getRenderer(gles, new AndroidImageFactory(),
-                new J2SEMatrixEngine());
+        NucleusRenderer renderer = RendererFactory.getRenderer(gles, new AndroidImageFactory());
         if (coreApp == null) {
             coreApp = CoreApp.createCoreApp(width, height, renderer);
             return true;

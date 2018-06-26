@@ -4,7 +4,6 @@ import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.common.Environment;
 import com.nucleus.common.Type;
-import com.nucleus.matrix.j2se.J2SEMatrixEngine;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
@@ -152,8 +151,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
 
     @Override
     public void createCoreApp(int width, int height) {
-        NucleusRenderer renderer = RendererFactory.getRenderer(j2seWindow.getGLESWrapper(), new J2SEImageFactory(),
-                new J2SEMatrixEngine());
+        NucleusRenderer renderer = RendererFactory.getRenderer(j2seWindow.getGLESWrapper(), new J2SEImageFactory());
         coreApp = CoreApp.createCoreApp(width, height, renderer);
         j2seWindow.setCoreApp(coreApp);
     }

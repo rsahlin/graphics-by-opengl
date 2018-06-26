@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.ClientApplication;
-import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
@@ -190,24 +189,6 @@ public interface NucleusRenderer {
          * Implementations must update GL data that has changed during the call to {@link #processFrame(float)}
          */
         public void updateGLData();
-    }
-
-    /**
-     * Matrix functions that may be accelerated on target platform.
-     * 
-     * @author Richard Sahlin
-     *
-     */
-    public interface MatrixEngine {
-
-        /**
-         * Sets the projection matrix to be used by the renderer based on the setting in the viewFrustum
-         * 
-         * @param viewFrustum
-         * 
-         */
-        public abstract void setProjectionMatrix(ViewFrustum viewFrustum);
-
     }
 
     /**

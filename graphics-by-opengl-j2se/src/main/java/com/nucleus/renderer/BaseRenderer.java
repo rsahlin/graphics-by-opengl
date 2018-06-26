@@ -53,7 +53,6 @@ class BaseRenderer implements NucleusRenderer {
 
     private final static String NULL_GLESWRAPPER_ERROR = "GLES wrapper is null";
     private final static String NULL_IMAGEFACTORY_ERROR = "ImageFactory is null";
-    private final static String NULL_MATRIXENGINE_ERROR = "MatrixEngine is null";
 
     private final static int FPS_SAMPLER_DELAY = 5;
 
@@ -90,7 +89,6 @@ class BaseRenderer implements NucleusRenderer {
 
     protected GLES20Wrapper gles;
     protected ImageFactory imageFactory;
-    protected MatrixEngine matrixEngine;
     private Set<RenderContextListener> contextListeners = new HashSet<RenderContextListener>();
     private Set<FrameListener> frameListeners = new HashSet<BaseRenderer.FrameListener>();
 
@@ -117,20 +115,16 @@ class BaseRenderer implements NucleusRenderer {
      * TODO Remove parameters from constructor and move to setter methods, this is in order for injection to be more
      * straightforward
      */
-    BaseRenderer(GLES20Wrapper gles, ImageFactory imageFactory, MatrixEngine matrixEngine) {
+    BaseRenderer(GLES20Wrapper gles, ImageFactory imageFactory) {
         if (gles == null) {
             throw new IllegalArgumentException(NULL_GLESWRAPPER_ERROR);
         }
         if (imageFactory == null) {
             throw new IllegalArgumentException(NULL_IMAGEFACTORY_ERROR);
         }
-        if (matrixEngine == null) {
-            throw new IllegalArgumentException(NULL_MATRIXENGINE_ERROR);
-        }
         gles.createInfo();
         this.gles = gles;
         this.imageFactory = imageFactory;
-        this.matrixEngine = matrixEngine;
         matrices[Matrices.MODELVIEW.index] = Matrix.createMatrix();
         matrices[Matrices.PROJECTION.index] = Matrix.setIdentity(Matrix.createMatrix(), 0);
         matrices[Matrices.RENDERPASS_1.index] = Matrix.createMatrix();
@@ -260,9 +254,12 @@ class BaseRenderer implements NucleusRenderer {
                 if (renderPasses != null) {
                     for (RenderPass renderPass : renderPasses) {
                         if (renderPass.getViewFrustum() != null && renderPass.getPass() == Pass.SHADOW1) {
-                            Matrix.mul4(renderPass.getViewFrustum().getMatrix(),
-                                    ShadowPass1Program.getLightMatrix(tempMatrix),
-                                    matrices[Matrices.RENDERPASS_1.index]);
+                            // Save light projection
+                            ShadowPass1Program.getLightMatrix(matrices[Matrices.RENDERPASS_1.index]);
+                            // Store shadow1 projection * lightmatrix
+                            Matrix.mul4(renderPass.getViewFrustum().getMatrix(tempMatrix),
+                                    matrices[Matrices.RENDERPASS_1.index],
+                                    matrices[Matrices.RENDERPASS_2.index]);
                         }
                         pushPass(renderPass.getPass());
                         setRenderPass(renderPass);
@@ -535,9 +532,9 @@ class BaseRenderer implements NucleusRenderer {
         switch (renderPass.getPass()) {
             case SHADOW2:
                 // Adjust the light matrix to fit inside texture coordinates
+                // The scale and translate shall be taken from current viewfrustum
                 Matrix.setIdentity(matrices[Matrices.RENDERPASS_2.index], 0);
-                // TODO - this shall be taken from the shadow1 pass frustum
-                Matrix.scaleM(matrices[Matrices.RENDERPASS_2.index], 0, 1f, 1f, 1f);
+                Matrix.scaleM(matrices[Matrices.RENDERPASS_2.index], 0, 0.5f, 0.5f, 1f);
                 Matrix.translate(matrices[Matrices.RENDERPASS_2.index], 0.5f, 0.5f, 0f);
                 Matrix.mul4(matrices[Matrices.RENDERPASS_1.index], matrices[Matrices.RENDERPASS_2.index], tempMatrix);
                 System.arraycopy(tempMatrix, 0, matrices[Matrices.RENDERPASS_1.index], 0, Matrix.MATRIX_ELEMENTS);
