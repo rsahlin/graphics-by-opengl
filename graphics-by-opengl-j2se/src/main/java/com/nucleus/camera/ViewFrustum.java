@@ -164,6 +164,17 @@ public class ViewFrustum {
     }
 
     /**
+     * Sets the projection to the matrix
+     * 
+     * @param matrix The matrix where the projection will be set
+     * @return The matrix containing the projection of this ViewFrustum
+     */
+    public float[] getMatrix(float[] matrix) {
+        setProjectionMatrix(matrix, projection, values);
+        return matrix;
+    }
+
+    /**
      * Sets the projection in the matrix
      * 
      * @param matrix The matrix to set the view projection in
