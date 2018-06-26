@@ -112,7 +112,7 @@ public class LayerNode extends Node {
     public float[] concatModelMatrix(float[] concatModel) {
         // This is a layer node with viewfrustum - do not concatenate - return this nodes transform.
         // The result shall be that the view transform is reset to this transform.
-        return transform != null ? Matrix.copy(transform.getMatrix(), 0, modelMatrix, 0)
+        return transform != null ? Matrix.copy(transform.updateMatrix(), 0, modelMatrix, 0)
                 : Matrix.setIdentity(modelMatrix, 0);
     }
 

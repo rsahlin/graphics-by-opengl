@@ -1208,10 +1208,10 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
      */
     public float[] concatModelMatrix(float[] concatModel) {
         if (concatModel == null) {
-            return transform != null ? Matrix.copy(transform.getMatrix(), 0, modelMatrix, 0)
+            return transform != null ? Matrix.copy(transform.updateMatrix(), 0, modelMatrix, 0)
                     : Matrix.setIdentity(modelMatrix, 0);
         }
-        Matrix.mul4(concatModel, transform != null ? transform.getMatrix() : Matrix.IDENTITY_MATRIX,
+        Matrix.mul4(concatModel, transform != null ? transform.updateMatrix() : Matrix.IDENTITY_MATRIX,
                 modelMatrix);
         return modelMatrix;
     }
