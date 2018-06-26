@@ -62,7 +62,7 @@ public class ShadowPass1Program extends ShaderProgram {
         System.arraycopy(matrices[Matrices.MODELVIEW.index], 0, uniforms,
                 getUniformByName("uMVMatrix").getOffset(),
                 Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(matrices[Matrices.RENDERPASS_1.index], 0, uniforms,
+        System.arraycopy(matrices[Matrices.RENDERPASS_2.index], 0, uniforms,
                 getUniformByName("uProjectionMatrix").getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
