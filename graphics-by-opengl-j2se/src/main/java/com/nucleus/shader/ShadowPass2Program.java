@@ -61,14 +61,15 @@ public class ShadowPass2Program extends ShadowPassProgram {
     }
 
     @Override
-    protected String getShaderSource(int shaderType) {
-        // Shadow pass 2 shaders share fragment source
+    protected String getShaderSourceName(int shaderType) {
         switch (shaderType) {
             case GLES20.GL_FRAGMENT_SHADER:
-                return (function.getPassString() + function.getShadingString());
+                // For fragment shader ignore the category
+                return function.getShaderSourceName(shaderType);
+            default:
+                return objectProgram.getShaderSourceName(shaderType);
 
         }
-        return function.toString();
     }
 
     @Override

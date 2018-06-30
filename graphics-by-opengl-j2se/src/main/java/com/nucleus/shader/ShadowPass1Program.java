@@ -3,8 +3,6 @@ package com.nucleus.shader;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.GLESWrapper.GLES32;
-import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.Texture2D;
@@ -30,26 +28,6 @@ public class ShadowPass1Program extends ShadowPassProgram {
     public ShadowPass1Program(ShaderProgram objectProgram, Texture2D.Shading shading, String category,
             ProgramType shaders) {
         super(objectProgram, Pass.SHADOW1, shading, category, shaders);
-    }
-
-    @Override
-    protected ShaderSource getShaderSource(Renderers version, int type) {
-        switch (type) {
-            case GLES20.GL_FRAGMENT_SHADER:
-                if (function.getPass() != null) {
-                    return new ShaderSource(
-                            PROGRAM_DIRECTORY + function.getPassString() + function.getShadingString() + FRAGMENT_TYPE,
-                            objectProgram.getSourceNameVersion(version, type), type);
-                } else {
-                    return super.getShaderSource(version, type);
-                }
-            case GLES20.GL_VERTEX_SHADER:
-                return objectProgram.getShaderSource(version, type);
-            case GLES32.GL_GEOMETRY_SHADER:
-                return objectProgram.getShaderSource(version, type);
-            default:
-                throw new IllegalArgumentException("Not implemented");
-        }
     }
 
     @Override
@@ -88,6 +66,18 @@ public class ShadowPass1Program extends ShadowPassProgram {
     public void initBuffers(Mesh mesh) {
         // TODO Auto-generated method stub
 
+    }
+
+    @Override
+    protected String getShaderSourceName(int shaderType) {
+        switch (shaderType) {
+            case GLES20.GL_VERTEX_SHADER:
+                // For vertex shader ignore the pass
+                return function.getPath(shaderType) + function.getShadingString();
+            default:
+                return objectProgram.getShaderSourceName(shaderType);
+
+        }
     }
 
 }

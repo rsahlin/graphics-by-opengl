@@ -1,5 +1,6 @@
 package com.nucleus.shader;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -165,7 +166,7 @@ public abstract class ShaderProgram {
      * shadow2textureduvspritevertex.essl
      * TODO maybe put the fields below in an inner class
      */
-    public class Function {
+    public static class Function {
         protected Pass pass;
         protected Texture2D.Shading shading;
         protected String category;
@@ -206,10 +207,12 @@ public abstract class ShaderProgram {
         /**
          * Returns the shader source name, excluding directory prefix and name of shader (vertex/fragment/compute)
          * 
+         * @param shaderType The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER,
+         * GL_COMPUTE_SHADER
          * @return
          */
-        public String getShaderSourceName() {
-            return (getPassString() + getShadingString() + getCategoryString());
+        public String getShaderSourceName(int shaderType) {
+            return (getPassString() + getShadingString());
         }
 
         /**
@@ -231,6 +234,18 @@ public abstract class ShaderProgram {
         }
 
         /**
+         * Returns the relative path - by default this is the category
+         * 
+         * @param shaderType The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER,
+         * GL_COMPUTE_SHADER
+         * @return The relative path, if defined it must end with the path separator char
+         */
+        public String getPath(int shaderType) {
+            String path = getCategoryString();
+            return path.length() == 0 ? path : path + File.separator;
+        }
+
+        /**
          * Returns the pass as a lowercase string, or "" if null.
          * 
          * @return
@@ -241,7 +256,7 @@ public abstract class ShaderProgram {
 
         @Override
         public String toString() {
-            return getShaderSourceName();
+            return (getCategoryString() + File.separatorChar + getPassString() + getShadingString());
         }
 
     }
@@ -372,20 +387,37 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Returns the name of the shader source - excluding folder path and excluding vertex shader + extension.
-     * for instance to load /asssets/flatlinevertex.essl this method shall return 'flatline' for the shaderType
+     * Returns the relative path to shader source, normally this is the subfolder within the assets folder where shader
+     * sources for this program are.
+     * 
+     * @param shaderType
+     * @return The relative path to sources for this program, if defined it must end with path separator
+     */
+    protected String getShaderSourcePath(int shaderType) {
+        return function.getPath(shaderType);
+    }
+
+    /**
+     * Returns the name of the shader source - including relative source path BUT excluding vertex shader + extension.
+     * for instance to load /asssets/line/flatvertex.essl this method shall return 'line/flat' for the shaderType
      * GL_VERTEX_SHADER
      * 
-     * Default behavior is to return the function as a string.
+     * Default behavior is to return the function path + shader source name
      * 
+     * @param shaderType The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER
      * @return
      */
-    protected String getShaderSource(int shaderType) {
-        return function.toString();
+    protected String getShaderSourceName(int shaderType) {
+        return function.getPath(shaderType) + function.getShaderSourceName(shaderType);
     }
 
     protected ShaderProgram(Pass pass, Texture2D.Shading shading, String category, ProgramType shaders) {
         function = new Function(pass, shading, category);
+        this.shaders = shaders;
+    }
+
+    protected ShaderProgram(Function function, ProgramType shaders) {
+        this.function = function;
         this.shaders = shaders;
     }
 
@@ -499,16 +531,23 @@ public abstract class ShaderProgram {
     protected ShaderSource getShaderSource(Renderers version, int shaderType) {
         switch (shaderType) {
             case GLES20.GL_VERTEX_SHADER:
-                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSource(shaderType) + VERTEX_TYPE,
+                return new ShaderSource(
+                        PROGRAM_DIRECTORY + getShaderSourceName(shaderType)
+                                + VERTEX_TYPE,
                         getSourceNameVersion(version, shaderType), shaderType);
             case GLES20.GL_FRAGMENT_SHADER:
-                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSource(shaderType) + FRAGMENT_TYPE,
+                return new ShaderSource(
+                        PROGRAM_DIRECTORY + getShaderSourceName(shaderType)
+                                + FRAGMENT_TYPE,
                         getSourceNameVersion(version, shaderType), shaderType);
             case GLES31.GL_COMPUTE_SHADER:
-                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSource(shaderType),
+                return new ShaderSource(
+                        PROGRAM_DIRECTORY + getShaderSourceName(shaderType),
                         getSourceNameVersion(version, shaderType), shaderType);
             case GLES32.GL_GEOMETRY_SHADER:
-                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSource(shaderType) + GEOMETRY_TYPE,
+                return new ShaderSource(
+                        PROGRAM_DIRECTORY + getShaderSourceName(shaderType)
+                                + GEOMETRY_TYPE,
                         getSourceNameVersion(version, shaderType), shaderType);
             default:
                 throw new IllegalArgumentException("Not implemented for type: " + shaderType);
@@ -1673,7 +1712,7 @@ public abstract class ShaderProgram {
         for (ShaderSource s : shaderSources) {
             sourceNames.append("\n" + s.getFullSourceName());
         }
-        return shaders + " : " + function.getShaderSourceName() + sourceNames.toString();
+        return shaders + " : " + function.toString() + "\n" + sourceNames.toString();
     }
 
     /**

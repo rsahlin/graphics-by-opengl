@@ -32,10 +32,17 @@ public class GenericShaderProgram extends ShaderProgram {
         super(pass, shading, category, shaders);
     }
 
+    public GenericShaderProgram(Function function, ProgramType shaders) {
+        super(function, shaders);
+    }
+
     @Override
-    protected String getShaderSource(int shaderType) {
+    protected String getShaderSourceName(int shaderType) {
+        if (source == null) {
+            return super.getShaderSourceName(shaderType);
+        }
         ShaderType t = ShaderType.getFromType(shaderType);
-        return source[t.index];
+        return function.getPath(shaderType) + source[t.index];
     }
 
     @Override
