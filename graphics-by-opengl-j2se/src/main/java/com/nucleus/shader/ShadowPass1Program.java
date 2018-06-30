@@ -2,14 +2,12 @@ package com.nucleus.shader;
 
 import com.nucleus.geometry.Mesh;
 import com.nucleus.light.GlobalLight;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES32;
 import com.nucleus.opengl.GLESWrapper.Renderers;
-import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -19,12 +17,7 @@ import com.nucleus.vecmath.Matrix;
  * attributes/uniforms
  *
  */
-public class ShadowPass1Program extends ShaderProgram {
-
-    /**
-     * The program that should be used to render the object casting shadow
-     */
-    private ShaderProgram objectProgram;
+public class ShadowPass1Program extends ShadowPassProgram {
 
     /**
      * TODO Look into the shader programs using this constructor - maybe they can be unified?
@@ -32,11 +25,11 @@ public class ShadowPass1Program extends ShaderProgram {
      * @param objectProgram The program for rendering the object casting shadow
      * @param shading
      * @param category
+     * @param shaders
      */
-    public ShadowPass1Program(ShaderProgram objectProgram, Texture2D.Shading shading, String category) {
-        super(Pass.SHADOW1, shading, category, ProgramType.VERTEX_FRAGMENT);
-        setIndexer(objectProgram.variableIndexer);
-        this.objectProgram = objectProgram;
+    public ShadowPass1Program(ShaderProgram objectProgram, Texture2D.Shading shading, String category,
+            ProgramType shaders) {
+        super(objectProgram, Pass.SHADOW1, shading, category, shaders);
     }
 
     @Override
@@ -51,6 +44,8 @@ public class ShadowPass1Program extends ShaderProgram {
                     return super.getShaderSource(version, type);
                 }
             case GLES20.GL_VERTEX_SHADER:
+                return objectProgram.getShaderSource(version, type);
+            case GLES32.GL_GEOMETRY_SHADER:
                 return objectProgram.getShaderSource(version, type);
             default:
                 throw new IllegalArgumentException("Not implemented");
@@ -67,24 +62,6 @@ public class ShadowPass1Program extends ShaderProgram {
                 Matrix.MATRIX_ELEMENTS);
     }
 
-    @Override
-    public void updateAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
-        objectProgram.updateAttributes(gles, mesh);
-    }
-
-    @Override
-    public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
-            throws GLException {
-        /**
-         * Currently calls ShaderProgram#setUniformData() in order to set necessary data from the program int
-         * uniform storage.
-         * This could potentially break the shadow program if needed uniform data is set in some other method.
-         * TODO - Make sure that the interface declares and mandates that uniform data shall be set in #setUniformData()
-         */
-        objectProgram.updateUniformData(uniforms, mesh);
-        super.updateUniforms(gles, matrices, mesh);
-    }
-
     /**
      * Returns the global light direction matrix using orthographic projection
      * 
@@ -99,11 +76,6 @@ public class ShadowPass1Program extends ShaderProgram {
         GlobalLight.getInstance().getLightMatrix(matrix);
         Matrix.setIdentity(matrix, 0);
         return matrix;
-    }
-
-    @Override
-    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, Shading shading) {
-        throw new IllegalArgumentException("Not valid");
     }
 
     @Override

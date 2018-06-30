@@ -112,7 +112,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
         if (parent.getProgram() == null) {
             parent.setProgram(
                     AssetManager.getInstance().getProgram(renderer.getGLES(),
-                            new GenericShaderProgram(new String[] { "flatline", "flatline" },
+                            new GenericShaderProgram(new String[] { "flatline", "flatline" }, null, Shading.flat, null,
                                     ProgramType.VERTEX_FRAGMENT)));
         }
         return initMeshBuilder(renderer, parent, count, lineParent.getShapeBuilder(), builder);

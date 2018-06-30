@@ -127,6 +127,8 @@ public abstract class ShaderProgram {
      * super.createProgram()
      */
     protected ProgramType shaders;
+    protected ShaderProgram shadowPass1;
+    protected ShaderProgram shadowPass2;
 
     /**
      * Number of vertices per sprite - this is for a quad that is created using element buffer.
@@ -331,7 +333,28 @@ public abstract class ShaderProgram {
      * @param pass
      * @param shading
      */
-    public abstract ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, Texture2D.Shading shading);
+    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, Shading shading) {
+        switch (pass) {
+            case UNDEFINED:
+            case ALL:
+            case MAIN:
+                return this;
+            case SHADOW1:
+                if (shadowPass1 == null) {
+                    shadowPass1 = AssetManager.getInstance().getProgram(gles,
+                            new ShadowPass1Program(this, shading, function.getCategory(), shaders));
+                }
+                return shadowPass1;
+            case SHADOW2:
+                if (shadowPass2 == null) {
+                    shadowPass2 = AssetManager.getInstance().getProgram(gles,
+                            new ShadowPass2Program(this, pass, function.getCategory(), shading, shaders));
+                }
+                return shadowPass2;
+            default:
+                throw new IllegalArgumentException("Invalid pass " + pass);
+        }
+    }
 
     /**
      * Returns the offset within an attribute buffer where the data is or -1 if shader variable is not defined.
@@ -374,6 +397,42 @@ public abstract class ShaderProgram {
      */
     public void setIndexer(VariableIndexer variableIndexer) {
         this.variableIndexer = variableIndexer;
+    }
+
+    /**
+     * Returns the indexer used when creating this program, or null if not set.
+     * 
+     * @return
+     */
+    public VariableIndexer getIndexer() {
+        return variableIndexer;
+    }
+
+    /**
+     * Creates an indexer from the {@link #activeAttributes} - only use this method of the indexer is not set.
+     * 
+     * @return
+     * @throws IllegalArgumentException If an indexer has been set by calling {@link #setIndexer(VariableIndexer)}
+     */
+    public VariableIndexer createIndexer() {
+        if (variableIndexer != null) {
+            throw new IllegalArgumentException("Indexer has been set.");
+        }
+        int size = activeAttributes.length;
+        String[] names = new String[size];
+        int[] offsets = new int[size];
+        VariableType[] types = new VariableType[size];
+        BufferIndex[] bufferIndexes = new BufferIndex[size];
+        BufferIndex bufferIndex = BufferIndex.ATTRIBUTES;
+        for (int i = 0; i < size; i++) {
+            names[i] = activeAttributes[i].getName();
+            offsets[i] = activeAttributes[i].getOffset();
+            types[i] = activeAttributes[i].getType();
+            // TODO - currently only supports using one buffer
+            bufferIndexes[i] = bufferIndex;
+        }
+        return new VariableIndexer(names, offsets, types, bufferIndexes,
+                new int[] { getAttributesPerVertex(bufferIndex) });
     }
 
     /**
@@ -772,7 +831,14 @@ public abstract class ShaderProgram {
      */
     public void prepareTextures(GLES20Wrapper gles, Mesh mesh) throws GLException {
         Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
-        TextureUtils.prepareTexture(gles, texture, Texture2D.TEXTURE_0);
+        if (texture == null || texture.getTextureType() == TextureType.Untextured) {
+            return;
+        }
+        /**
+         * TODO - make texture names into enums
+         */
+        int unit = samplers[getUniformByName("uTexture").getOffset()];
+        TextureUtils.prepareTexture(gles, texture, unit);
     }
 
     /**
@@ -1207,7 +1273,12 @@ public abstract class ShaderProgram {
      * @throws GLException If program could not be compiled and linked
      */
     protected void createProgram(GLES20Wrapper gles, ShaderSource[] sources) throws GLException {
-        SimpleLogger.d(getClass(), "Creating program for: " + sources.length + " shaders");
+        SimpleLogger.d(getClass(),
+                "Creating program for: " + sources.length + " shaders in program " + getClass().getSimpleName()
+                        + ", sources are:");
+        for (ShaderSource ss : sources) {
+            SimpleLogger.d(getClass(), ss.getFullSourceName());
+        }
         try {
             loadShaderSources(gles, sources);
             if (shaders != ProgramType.COMPUTE && commonVertexSources == null) {
@@ -1514,7 +1585,18 @@ public abstract class ShaderProgram {
     protected void setTextureUniforms(float[] uniforms, Texture2D texture) {
         if (texture.getTextureType() == TextureType.TiledTexture2D) {
             // TODO - where should the uniform name be defined?
-            setTextureUniforms((TiledTexture2D) texture, uniforms, getUniformByName("uTextureData"));
+            ShaderVariable texUniform = getUniformByName("uTextureData");
+            // If null it could be because loaded program does not match with texture usage
+            if (texUniform != null) {
+                setTextureUniforms((TiledTexture2D) texture, uniforms, texUniform);
+            } else {
+                if (function.getShading() == null || function.getShading() == Shading.flat) {
+                    throw new IllegalArgumentException(
+                            "Texture type " + texture.getTextureType() + ", does not match shading " + getShading()
+                                    + " for program:\n" + toString());
+                }
+            }
+
         }
     }
 
