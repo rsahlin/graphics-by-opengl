@@ -156,22 +156,14 @@ public abstract class ShaderProgram {
     public final static String GET_PROGRAM_INFO_ERROR = "Error fetching program info.";
 
     /**
-     * The function of the shader program
-     * 
-     * How to get shader name from program:
-     * <optional pass> shading / category / type
-     * Eg:
-     * textureduvspritevertex.essl
-     * flatspritefragment.essl
-     * shadow2textureduvspritevertex.essl
-     * TODO maybe put the fields below in an inner class
+     * Used to fetch the sources for the shaders
      */
-    public static class Function {
+    public static class Categorizer {
         protected Pass pass;
         protected Texture2D.Shading shading;
         protected String category;
 
-        public Function(Pass pass, Texture2D.Shading shading, String category) {
+        public Categorizer(Pass pass, Texture2D.Shading shading, String category) {
             this.pass = pass;
             this.shading = shading;
             this.category = category;
@@ -182,7 +174,7 @@ public abstract class ShaderProgram {
          * 
          * @return
          */
-        public Texture2D.Shading getShading() {
+        protected Texture2D.Shading getShading() {
             return shading;
         }
 
@@ -191,28 +183,20 @@ public abstract class ShaderProgram {
          * 
          * @return The category name of null if not relevant
          */
-        public String getCategory() {
+        protected String getCategory() {
             return category;
         }
 
         /**
-         * If this shader can only be used in a specific pass, normally only set for passes other than {@link Pass#MAIN}
-         * 
-         * @return Pass that the shader belongs to, or null if not relevant.
-         */
-        public Pass getPass() {
-            return pass;
-        }
-
-        /**
          * Returns the shader source name, excluding directory prefix and name of shader (vertex/fragment/compute)
+         * Default behavior is to return getPath() / getPassString() + getShadingString()
          * 
          * @param shaderType The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER,
          * GL_COMPUTE_SHADER
          * @return
          */
         public String getShaderSourceName(int shaderType) {
-            return (getPassString() + getShadingString());
+            return (getPath(shaderType) + getPassString() + getShadingString());
         }
 
         /**
@@ -229,7 +213,7 @@ public abstract class ShaderProgram {
          * 
          * @return
          */
-        public String getCategoryString() {
+        protected String getCategoryString() {
             return (category != null ? category.toLowerCase() : "");
         }
 
@@ -240,7 +224,7 @@ public abstract class ShaderProgram {
          * GL_COMPUTE_SHADER
          * @return The relative path, if defined it must end with the path separator char
          */
-        public String getPath(int shaderType) {
+        protected String getPath(int shaderType) {
             String path = getCategoryString();
             return path.length() == 0 ? path : path + File.separator;
         }
@@ -250,7 +234,7 @@ public abstract class ShaderProgram {
          * 
          * @return
          */
-        public String getPassString() {
+        protected String getPassString() {
             return (pass != null ? pass.name().toLowerCase() : "");
         }
 
@@ -264,7 +248,7 @@ public abstract class ShaderProgram {
     /**
      * The basic function
      */
-    protected Function function;
+    protected Categorizer function;
 
     /**
      * The GL program object
@@ -387,17 +371,6 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Returns the relative path to shader source, normally this is the subfolder within the assets folder where shader
-     * sources for this program are.
-     * 
-     * @param shaderType
-     * @return The relative path to sources for this program, if defined it must end with path separator
-     */
-    protected String getShaderSourcePath(int shaderType) {
-        return function.getPath(shaderType);
-    }
-
-    /**
      * Returns the name of the shader source - including relative source path BUT excluding vertex shader + extension.
      * for instance to load /asssets/line/flatvertex.essl this method shall return 'line/flat' for the shaderType
      * GL_VERTEX_SHADER
@@ -408,15 +381,15 @@ public abstract class ShaderProgram {
      * @return
      */
     protected String getShaderSourceName(int shaderType) {
-        return function.getPath(shaderType) + function.getShaderSourceName(shaderType);
+        return function.getShaderSourceName(shaderType);
     }
 
     protected ShaderProgram(Pass pass, Texture2D.Shading shading, String category, ProgramType shaders) {
-        function = new Function(pass, shading, category);
+        function = new Categorizer(pass, shading, category);
         this.shaders = shaders;
     }
 
-    protected ShaderProgram(Function function, ProgramType shaders) {
+    protected ShaderProgram(Categorizer function, ProgramType shaders) {
         this.function = function;
         this.shaders = shaders;
     }

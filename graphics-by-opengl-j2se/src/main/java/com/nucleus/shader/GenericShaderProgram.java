@@ -32,7 +32,7 @@ public class GenericShaderProgram extends ShaderProgram {
         super(pass, shading, category, shaders);
     }
 
-    public GenericShaderProgram(Function function, ProgramType shaders) {
+    public GenericShaderProgram(Categorizer function, ProgramType shaders) {
         super(function, shaders);
     }
 
