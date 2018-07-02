@@ -5,7 +5,7 @@ import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
-import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -17,17 +17,32 @@ import com.nucleus.vecmath.Matrix;
  */
 public class ShadowPass1Program extends ShadowPassProgram {
 
+    static class Shadow1Categorizer extends Categorizer {
+
+        public Shadow1Categorizer(Pass pass, Shading shading, String category) {
+            super(pass, shading, category);
+        }
+
+        @Override
+        public String getShaderSourceName(int shaderType) {
+            switch (shaderType) {
+                case GLES20.GL_VERTEX_SHADER:
+                    // For vertex shader ignore the pass
+                    return getPath(shaderType) + getShadingString();
+                default:
+                    return null;
+
+            }
+        }
+    }
+
     /**
-     * TODO Look into the shader programs using this constructor - maybe they can be unified?
-     * 
      * @param objectProgram The program for rendering the object casting shadow
-     * @param shading
-     * @param category
+     * @param categorizer
      * @param shaders
      */
-    public ShadowPass1Program(ShaderProgram objectProgram, Texture2D.Shading shading, String category,
-            ProgramType shaders) {
-        super(objectProgram, Pass.SHADOW1, shading, category, shaders);
+    public ShadowPass1Program(ShaderProgram objectProgram, Categorizer categorizer, ProgramType shaders) {
+        super(objectProgram, categorizer, shaders);
     }
 
     @Override
@@ -66,18 +81,6 @@ public class ShadowPass1Program extends ShadowPassProgram {
     public void initBuffers(Mesh mesh) {
         // TODO Auto-generated method stub
 
-    }
-
-    @Override
-    protected String getShaderSourceName(int shaderType) {
-        switch (shaderType) {
-            case GLES20.GL_VERTEX_SHADER:
-                // For vertex shader ignore the pass
-                return function.getPath(shaderType) + function.getShadingString();
-            default:
-                return objectProgram.getShaderSourceName(shaderType);
-
-        }
     }
 
 }

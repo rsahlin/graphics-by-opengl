@@ -36,6 +36,7 @@ import com.nucleus.scene.gltf.AccessorDictionary;
 import com.nucleus.shader.ShaderSource.ESSLVersion;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
+import com.nucleus.shader.ShadowPass1Program.Shadow1Categorizer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.texturing.TextureType;
@@ -341,7 +342,8 @@ public abstract class ShaderProgram {
             case SHADOW1:
                 if (shadowPass1 == null) {
                     shadowPass1 = AssetManager.getInstance().getProgram(gles,
-                            new ShadowPass1Program(this, shading, function.getCategory(), shaders));
+                            new ShadowPass1Program(this, new Shadow1Categorizer(Pass.SHADOW1, shading,
+                                    function.getCategory()), shaders));
                 }
                 return shadowPass1;
             case SHADOW2:

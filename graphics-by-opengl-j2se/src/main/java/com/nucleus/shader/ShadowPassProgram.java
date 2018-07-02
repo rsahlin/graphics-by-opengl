@@ -4,7 +4,6 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.Pass;
-import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
 
 public abstract class ShadowPassProgram extends ShaderProgram {
@@ -18,13 +17,11 @@ public abstract class ShadowPassProgram extends ShaderProgram {
      * TODO Look into the shader programs using this constructor - maybe they can be unified?
      * 
      * @param objectProgram The program for rendering the object casting shadow
-     * @param shading
-     * @param category
+     * @param categorizer
      * @param shaders
      */
-    public ShadowPassProgram(ShaderProgram objectProgram, Pass pass, Texture2D.Shading shading, String category,
-            ProgramType shaders) {
-        super(pass, shading, category, shaders);
+    public ShadowPassProgram(ShaderProgram objectProgram, Categorizer categorizer, ProgramType shaders) {
+        super(categorizer, shaders);
         setIndexer(objectProgram.variableIndexer);
         this.objectProgram = objectProgram;
     }
@@ -50,6 +47,20 @@ public abstract class ShadowPassProgram extends ShaderProgram {
          */
         objectProgram.updateUniformData(uniforms, mesh);
         super.updateUniforms(gles, matrices, mesh);
+    }
+
+    @Override
+    protected String getShaderSourceName(int shaderType) {
+        /**
+         * Shadow programs may need to call the objectProgram to get the sources, this is known if categorizer returns
+         * null.
+         * returns null.
+         */
+        String name = function.getShaderSourceName(shaderType);
+        if (name == null) {
+            name = objectProgram.getShaderSourceName(shaderType);
+        }
+        return name;
     }
 
 }

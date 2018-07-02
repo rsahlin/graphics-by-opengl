@@ -12,6 +12,7 @@ import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.ParameterData;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureParameter.Name;
@@ -29,6 +30,25 @@ import com.nucleus.vecmath.Matrix;
  */
 public class ShadowPass2Program extends ShadowPassProgram {
 
+    static class Shadow2Categorizer extends Categorizer {
+
+        public Shadow2Categorizer(Pass pass, Shading shading, String category) {
+            super(pass, shading, category);
+        }
+
+        @Override
+        public String getShaderSourceName(int shaderType) {
+            switch (shaderType) {
+                case GLES20.GL_FRAGMENT_SHADER:
+                    // For fragment shader ignore the category
+                    return getPassString() + getShadingString();
+                default:
+                    return null;
+            }
+        }
+
+    }
+
     public static final String DEPTH_SHADOW_NAME = "DEPTHshadow";
 
     Texture2D shadow;
@@ -43,7 +63,7 @@ public class ShadowPass2Program extends ShadowPassProgram {
      */
     public ShadowPass2Program(ShaderProgram objectProgram, Pass pass, String category, Texture2D.Shading shading,
             ProgramType shaders) {
-        super(objectProgram, Pass.SHADOW2, shading, category, shaders);
+        super(objectProgram, new Shadow2Categorizer(Pass.SHADOW2, shading, category), shaders);
         setIndexer(
                 objectProgram.variableIndexer != null ? objectProgram.variableIndexer : objectProgram.createIndexer());
         // This defines the texture parameters for the shadow pass.
@@ -58,18 +78,6 @@ public class ShadowPass2Program extends ShadowPassProgram {
                 new ParameterData(Target.TEXTURE_2D, Name.TEXTURE_COMPARE_FUNC, Param.LESS) };
         texParam.setParameterData(extra);
         shadow.set(texParam);
-    }
-
-    @Override
-    protected String getShaderSourceName(int shaderType) {
-        switch (shaderType) {
-            case GLES20.GL_FRAGMENT_SHADER:
-                // For fragment shader ignore the category
-                return function.getShaderSourceName(shaderType);
-            default:
-                return objectProgram.getShaderSourceName(shaderType);
-
-        }
     }
 
     @Override
