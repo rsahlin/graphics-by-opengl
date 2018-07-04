@@ -43,7 +43,7 @@ public class ShadowPass2Program extends ShadowPassProgram {
                     // For fragment shader ignore the category
                     return getPassString() + getShadingString();
                 default:
-                    return null;
+                    return super.getShaderSourceName(shaderType);
             }
         }
 
