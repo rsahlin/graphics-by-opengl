@@ -24,81 +24,16 @@ import com.nucleus.shader.ShaderProgram;
  *
  * @param <T>
  */
-public class NodeRenderer<T extends Node> extends com.nucleus.renderer.NucleusRenderer.NodeRenderer<T> {
-
-    /**
-     * Implementation of mesh renderer for nucleus Mesh
-     *
-     * @param <T>
-     */
-    public class MeshRenderer extends com.nucleus.renderer.NucleusRenderer.MeshRenderer<Mesh> {
-
-        @Override
-        public void renderMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, float[][] matrices)
-                throws GLException {
-            GLES20Wrapper gles = renderer.getGLES();
-            Consumer updater = mesh.getAttributeConsumer();
-            if (updater != null) {
-                updater.updateAttributeData(renderer);
-            }
-            if (mesh.getDrawCount() == 0) {
-                return;
-            }
-            Material material = mesh.getMaterial();
-
-            program.updateAttributes(gles, mesh);
-            program.updateUniforms(gles, matrices, mesh);
-            program.prepareTextures(gles, mesh);
-
-            material.setBlendModeSeparate(gles);
-
-            ElementBuffer indices = mesh.getElementBuffer();
-
-            if (indices == null) {
-                gles.glDrawArrays(mesh.getMode().mode, mesh.getOffset(), mesh.getDrawCount());
-                GLUtils.handleError(gles, "glDrawArrays ");
-                timeKeeper.addDrawArrays(mesh.getDrawCount());
-            } else {
-                if (indices.getBufferName() > 0) {
-                    gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
-                    gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
-                            mesh.getOffset());
-                    GLUtils.handleError(gles, "glDrawElements with ElementBuffer ");
-                } else {
-                    gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
-                            indices.getBuffer().position(mesh.getOffset()));
-                    GLUtils.handleError(gles, "glDrawElements no ElementBuffer ");
-                }
-                AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
-                if (vertices == null) {
-                    vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES);
-                }
-                timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
-            }
-
-        }
-
-    }
+public class NodeRenderer<T extends Node> extends com.nucleus.renderer.NucleusRenderer.NodeRenderer<T, Mesh> {
 
     protected ArrayList<Mesh> nodeMeshes = new ArrayList<>();
     protected FrameSampler timeKeeper = FrameSampler.getInstance();
-    protected com.nucleus.renderer.NucleusRenderer.MeshRenderer meshRenderer;
 
     public NodeRenderer() {
-        this.meshRenderer = new MeshRenderer();
-    }
-
-    /**
-     * Creates a new node renderer using the specified mesh renderer
-     * 
-     * @param meshRenderer
-     */
-    public NodeRenderer(MeshRenderer meshRenderer) {
-        this.meshRenderer = meshRenderer;
     }
 
     @Override
-    public void renderNode(NucleusRenderer renderer, T node, Pass currentPass, float[][] matrices)
+    public void renderNode(NucleusRenderer renderer, Node node, Pass currentPass, float[][] matrices)
             throws GLException {
         GLES20Wrapper gles = renderer.getGLES();
         nodeMeshes.clear();
@@ -112,6 +47,50 @@ public class NodeRenderer<T extends Node> extends com.nucleus.renderer.NucleusRe
                 program.validateProgram(gles);
             }
             renderMeshes(renderer, program, nodeMeshes, matrices);
+        }
+    }
+
+    @Override
+    public void renderMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, float[][] matrices)
+            throws GLException {
+        GLES20Wrapper gles = renderer.getGLES();
+        Consumer updater = mesh.getAttributeConsumer();
+        if (updater != null) {
+            updater.updateAttributeData(renderer);
+        }
+        if (mesh.getDrawCount() == 0) {
+            return;
+        }
+        Material material = mesh.getMaterial();
+
+        program.updateAttributes(gles, mesh);
+        program.updateUniforms(gles, matrices, mesh);
+        program.prepareTextures(gles, mesh);
+
+        material.setBlendModeSeparate(gles);
+
+        ElementBuffer indices = mesh.getElementBuffer();
+
+        if (indices == null) {
+            gles.glDrawArrays(mesh.getMode().mode, mesh.getOffset(), mesh.getDrawCount());
+            GLUtils.handleError(gles, "glDrawArrays ");
+            timeKeeper.addDrawArrays(mesh.getDrawCount());
+        } else {
+            if (indices.getBufferName() > 0) {
+                gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
+                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
+                        mesh.getOffset());
+                GLUtils.handleError(gles, "glDrawElements with ElementBuffer ");
+            } else {
+                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
+                        indices.getBuffer().position(mesh.getOffset()));
+                GLUtils.handleError(gles, "glDrawElements no ElementBuffer ");
+            }
+            AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
+            if (vertices == null) {
+                vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES);
+            }
+            timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
         }
 
     }
@@ -142,7 +121,7 @@ public class NodeRenderer<T extends Node> extends com.nucleus.renderer.NucleusRe
     protected void renderMeshes(NucleusRenderer renderer, ShaderProgram program, ArrayList<Mesh> meshes,
             float[][] matrices) throws GLException {
         for (Mesh mesh : meshes) {
-            meshRenderer.renderMesh(renderer, program, mesh, matrices);
+            renderMesh(renderer, program, mesh, matrices);
         }
     }
 

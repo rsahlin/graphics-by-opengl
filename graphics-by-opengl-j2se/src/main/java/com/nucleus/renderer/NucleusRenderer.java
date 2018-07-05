@@ -27,12 +27,14 @@ import com.nucleus.texturing.Texture2D;
 public interface NucleusRenderer {
 
     /**
+     * 
      * Simple interface for render of node, use this when the node requires changes to the default behavior
      * when rendering the node.
      *
-     * @param <T>
+     * @param <S> The node type
+     * @param <T> The mesh type
      */
-    public abstract class NodeRenderer<T extends Node> {
+    public abstract class NodeRenderer<S, T> {
 
         /**
          * Renders the contents of the node for the specified render pass and using the matrices supplied.
@@ -45,17 +47,9 @@ public interface NucleusRenderer {
          * @param matrices The matrices to use
          * @throws GLException
          */
-        public abstract void renderNode(NucleusRenderer renderer, T node, Pass currentPass, float[][] matrices)
+        public abstract void renderNode(NucleusRenderer renderer, S node, Pass currentPass, float[][] matrices)
                 throws GLException;
 
-    }
-
-    /**
-     * Simple interface to support renderring of mesh
-     *
-     * @param <T> The mesh
-     */
-    public abstract class MeshRenderer<T> {
         /**
          * Renders one mesh, material is used to fetch program and set attributes/uniforms.
          * If the attributeupdater is set in the mesh it is called to update buffers.
@@ -74,6 +68,7 @@ public interface NucleusRenderer {
          */
         public abstract void renderMesh(NucleusRenderer renderer, ShaderProgram program, T mesh, float[][] matrices)
                 throws GLException;
+
     }
 
     public enum Matrices {

@@ -392,6 +392,7 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
 
     /**
      * Retuns the meshes for this node, current meshes are copied into the list
+     * TODO - This shall use generics to match {@link NodeRenderer}
      * 
      * @return List of added meshes
      */
@@ -1140,8 +1141,8 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
      * 
      * @return Node renderer to use for this node
      */
-    protected NodeRenderer<?> createNodeRenderer() {
-        return new com.nucleus.renderer.NodeRenderer<Node>();
+    protected NodeRenderer<?, ?> createNodeRenderer() {
+        return new com.nucleus.renderer.NodeRenderer();
     }
 
     /**

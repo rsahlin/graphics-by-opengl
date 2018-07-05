@@ -322,7 +322,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     }
 
     @Override
-    protected NodeRenderer<?> createNodeRenderer() {
+    protected NodeRenderer<?, ?> createNodeRenderer() {
         return new LineNodeRenderer();
     }
 
