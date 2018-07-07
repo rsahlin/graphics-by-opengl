@@ -28,7 +28,7 @@ public class ComponentNode extends Node implements ComponentController {
      *
      * @param <T>
      */
-    public static class Builder extends Node.Builder<ComponentNode> {
+    public static class Builder extends NodeBuilder<ComponentNode> {
 
         private String component;
         private String system;

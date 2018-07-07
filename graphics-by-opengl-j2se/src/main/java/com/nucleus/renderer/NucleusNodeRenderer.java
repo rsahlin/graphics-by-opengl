@@ -24,12 +24,12 @@ import com.nucleus.shader.ShaderProgram;
  *
  * @param <T>
  */
-public class NodeRenderer<T extends Node> extends com.nucleus.renderer.NucleusRenderer.NodeRenderer<T, Mesh> {
+public class NucleusNodeRenderer<T extends Node> extends com.nucleus.renderer.NucleusRenderer.NodeRenderer<T> {
 
     protected ArrayList<Mesh> nodeMeshes = new ArrayList<>();
     protected FrameSampler timeKeeper = FrameSampler.getInstance();
 
-    public NodeRenderer() {
+    public NucleusNodeRenderer() {
     }
 
     @Override

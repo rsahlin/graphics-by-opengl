@@ -62,7 +62,7 @@ public class GLTFNode extends Node {
     }
 
     @Override
-    protected NodeRenderer<?, ?> createNodeRenderer() {
+    protected NodeRenderer<?> createNodeRenderer() {
         return new GLTFNodeRenderer();
     }
 

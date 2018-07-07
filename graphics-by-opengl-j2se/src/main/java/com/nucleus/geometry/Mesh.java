@@ -202,19 +202,10 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             return this;
         }
 
-        /**
-         * Creates the mesh for the arguments supplied to this builder - vertexcount, texture, material and drawmode.
-         * If a shapebuilder is specified it is called to build (populate) the mesh.
-         * Creates UBOs and VBOs as configured.
-         * 
-         * @return The mesh
-         * @throws IllegalArgumentException If the needed arguments has not been set
-         * @throws IOException If there is an error loading data, for instance texture
-         * @throws GLException If there is a problem calling GL, for instance when setting VBO data
-         */
+        @Override
         public Mesh create() throws IOException, GLException {
             validate();
-            Mesh mesh = createMesh();
+            Mesh mesh = createInstance();
             mesh.createMesh(texture, attributesPerVertex, null, material, vertexCount, indiceCount, mode);
             if (shapeBuilder != null) {
                 shapeBuilder.build(mesh);
@@ -238,7 +229,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         }
 
         @Override
-        protected Mesh createMesh() {
+        protected Mesh createInstance() {
             return new Mesh();
         }
 

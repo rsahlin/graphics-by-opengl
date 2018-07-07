@@ -13,7 +13,7 @@ import com.nucleus.shader.ShaderProgram;
  * Renders the glTF nodes
  *
  */
-public class GLTFNodeRenderer extends NodeRenderer<GLTFNode, Mesh> {
+public class GLTFNodeRenderer extends NodeRenderer<GLTFNode> {
 
     protected ArrayList<Mesh> nodeMeshes = new ArrayList<>();
     protected FrameSampler timeKeeper = FrameSampler.getInstance();
@@ -25,7 +25,8 @@ public class GLTFNodeRenderer extends NodeRenderer<GLTFNode, Mesh> {
     }
 
     @Override
-    public void renderMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, float[][] matrices)
+    public void renderMesh(NucleusRenderer renderer, ShaderProgram program, com.nucleus.geometry.Mesh mesh,
+            float[][] matrices)
             throws GLException {
         // TODO Auto-generated method stub
 

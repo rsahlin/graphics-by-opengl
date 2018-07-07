@@ -72,7 +72,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      * @param mode Mesh drawmode
      * @return
      */
-    public static Node.Builder<Node> createBuilder(NucleusRenderer renderer, Node.Builder<Node> nodeBuilder,
+    public static NodeBuilder<Node> createBuilder(NucleusRenderer renderer, NodeBuilder<Node> nodeBuilder,
             int vertices, int meshCount, Mode mode) {
         nodeBuilder.setType(NodeTypes.linedrawernode);
         TranslateProgram program = (TranslateProgram) AssetManager.getInstance()
@@ -322,7 +322,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     }
 
     @Override
-    protected NodeRenderer<?, ?> createNodeRenderer() {
+    protected NodeRenderer<?> createNodeRenderer() {
         return new LineNodeRenderer();
     }
 

@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.SimpleLogger;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.bounds.CircularBounds;
 import com.nucleus.bounds.RectangularBounds;
@@ -23,7 +22,6 @@ import com.nucleus.geometry.MeshBuilder.MeshBuilderFactory;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
@@ -50,105 +48,9 @@ import com.nucleus.vecmath.Transform;
  * @author Richard Sahlin
  *
  */
-public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
+public abstract class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
 
     public final static String NULL_PROGRAM_STRING = "Program is null";
-
-    /**
-     * Builder for Nodes, use this when nodes are created programmatically
-     *
-     * @param <T>
-     */
-    public static class Builder<T extends Node> {
-
-        protected Type<Node> type;
-        protected RootNode root;
-        protected int meshCount = 0;
-        protected com.nucleus.geometry.Mesh.Builder<Mesh> meshBuilder;
-        protected ShaderProgram program;
-
-        public Builder<T> setType(Type<Node> type) {
-            this.type = type;
-            return this;
-        }
-
-        public Builder<T> setRoot(RootNode root) {
-            this.root = root;
-            return this;
-        }
-
-        /**
-         * Sets the program to use for this node.
-         * 
-         * @param program
-         * @return
-         */
-        public Builder<T> setProgram(ShaderProgram program) {
-            this.program = program;
-            return this;
-        }
-
-        /**
-         * Sets the Mesh builder to be used to create meshes, set number of meshes to build by calling
-         * {@link #setMeshCount(int)}
-         * 
-         * @param meshBuilder
-         * @return
-         */
-        public Builder<T> setMeshBuilder(Mesh.Builder<Mesh> meshBuilder) {
-            this.meshBuilder = meshBuilder;
-            return this;
-        }
-
-        /**
-         * Sets the number of meshes to create by calling the meshBuilder, default to 1
-         * 
-         * @param meshCount
-         * @return
-         */
-        public Builder<T> setMeshCount(int meshCount) {
-            this.meshCount = meshCount;
-            return this;
-        }
-
-        /**
-         * Creates an instance of Node using the specified builder parameters, first checking that the minimal
-         * configuration is set.
-         * 
-         * @param id
-         * @return
-         * @throws NodeException
-         * @throws {@link IllegalArgumentException} If not all needed parameters are set
-         */
-        public T create(String id) throws NodeException {
-            try {
-                if (type == null || root == null || program == null) {
-                    throw new IllegalArgumentException("Must set type, root and program before calling #create()");
-                }
-                if (meshCount > 0 && meshBuilder == null) {
-                    throw new IllegalArgumentException("meshCount = " + meshCount
-                            + " but mesh builder is not set. either call #setMeshBuilder() or #setMeshCount(0)");
-                }
-                if (meshCount == 0 && meshBuilder != null) {
-                    // Treat this as a warning - it may be wanted behavior.
-                    SimpleLogger.d(getClass(), "MeshBuilder is set but meshcount is 0 - no mesh will be created");
-                }
-                Node node = Node.createInstance(type, root);
-                node.setProgram(program);
-                for (int i = 0; i < meshCount; i++) {
-                    Mesh mesh = meshBuilder.create();
-                    node.addMesh(mesh, MeshIndex.MAIN);
-                }
-                node.setId(id);
-                node.create();
-                // node.getProgram().initBuffers(mesh);
-                return (T) node;
-            } catch (InstantiationException | IllegalAccessException | GLException | IOException e) {
-                throw new NodeException("Could not create node: " + e.getMessage());
-            }
-        }
-
-    }
 
     /**
      * Known node types
@@ -355,11 +257,7 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
      * @return New copy of this node, transient values and children will not be copied.
      * @throws IllegalArgumentException If root is null
      */
-    public Node createInstance(RootNode root) {
-        Node copy = new Node(root, NodeTypes.node);
-        copy.set(this);
-        return copy;
-    }
+    public abstract Node createInstance(RootNode root);
 
     /**
      * Creates a new, empty, instance of the specified nodeType. The type will be set.
@@ -1136,13 +1034,25 @@ public class Node extends BaseReference implements MeshBuilderFactory<Mesh> {
     }
 
     /**
+     * Called by the renderer when this node should possibly be rendered - this shall only render nodes that implement
+     * the {@link RenderableNode} node interface.
+     * 
+     * 
+     * @param renderer
+     * @param node
+     * @param currentPass
+     * @param matrices
+     */
+    // public abstract void renderNode(NucleusRenderer renderer, Node node, Pass currentPass, float[][] matrices);
+
+    /**
      * Creates the instance of node renderer to be used with this node, override in subclasses if needed
      * Default behavior is to create in {@link #onCreated()} method if the node renderer is not already set.
      * 
      * @return Node renderer to use for this node
      */
-    protected NodeRenderer<?, ?> createNodeRenderer() {
-        return new com.nucleus.renderer.NodeRenderer();
+    protected NodeRenderer<?> createNodeRenderer() {
+        return new com.nucleus.renderer.NucleusNodeRenderer();
     }
 
     /**

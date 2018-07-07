@@ -19,7 +19,7 @@ import com.nucleus.shader.ShaderProgram;
  */
 public class BaseRootNode extends RootNode {
 
-    public static class Builder extends Node.Builder<Node> {
+    public static class Builder extends NodeBuilder<RootNode> {
 
         ViewFrustum viewFrustum;
         NucleusRenderer renderer;
@@ -34,6 +34,10 @@ public class BaseRootNode extends RootNode {
         public Builder setViewFrustum(ViewFrustum viewFrustum) {
             this.viewFrustum = viewFrustum;
             return this;
+        }
+
+        public Node createInstance(RootNode root) {
+            return new BaseRootNode();
         }
 
         @Override
@@ -64,6 +68,11 @@ public class BaseRootNode extends RootNode {
             return root;
         }
 
+    }
+
+    @Override
+    public Node createInstance(RootNode root) {
+        return new BaseRootNode();
     }
 
     /**

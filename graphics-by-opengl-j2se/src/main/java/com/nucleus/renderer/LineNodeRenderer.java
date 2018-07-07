@@ -8,7 +8,7 @@ import com.nucleus.scene.LineDrawerNode.LineMode;
  * Renderer for linedrawer nodes
  *
  */
-public class LineNodeRenderer extends NodeRenderer<LineDrawerNode> {
+public class LineNodeRenderer extends NucleusNodeRenderer<LineDrawerNode> {
 
     @Override
     public void renderNode(NucleusRenderer renderer, LineDrawerNode node, Pass currentPass, float[][] matrices)

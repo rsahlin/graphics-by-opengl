@@ -31,10 +31,9 @@ public interface NucleusRenderer {
      * Simple interface for render of node, use this when the node requires changes to the default behavior
      * when rendering the node.
      *
-     * @param <S> The node type
-     * @param <T> The mesh type
+     * @param <T> The node type
      */
-    public abstract class NodeRenderer<S, T> {
+    public abstract class NodeRenderer<T> {
 
         /**
          * Renders the contents of the node for the specified render pass and using the matrices supplied.
@@ -47,7 +46,7 @@ public interface NucleusRenderer {
          * @param matrices The matrices to use
          * @throws GLException
          */
-        public abstract void renderNode(NucleusRenderer renderer, S node, Pass currentPass, float[][] matrices)
+        public abstract void renderNode(NucleusRenderer renderer, T node, Pass currentPass, float[][] matrices)
                 throws GLException;
 
         /**
@@ -66,7 +65,7 @@ public interface NucleusRenderer {
          * renderPassMatrix Optional matrix for renderpass
          * @throws GLException If there is an error in GL while drawing this mesh.
          */
-        public abstract void renderMesh(NucleusRenderer renderer, ShaderProgram program, T mesh, float[][] matrices)
+        public abstract void renderMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, float[][] matrices)
                 throws GLException;
 
     }
