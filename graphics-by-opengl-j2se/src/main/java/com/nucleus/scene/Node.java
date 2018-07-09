@@ -22,6 +22,7 @@ import com.nucleus.geometry.MeshBuilder.MeshBuilderFactory;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
+import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
@@ -209,7 +210,6 @@ public abstract class Node extends BaseReference implements MeshBuilderFactory<M
     transient ArrayList<Mesh> meshes = new ArrayList<Mesh>();
     transient protected ShaderProgram program;
     transient protected Indexer indexer;
-    transient public NodeRenderer nodeRenderer;
     transient Type<Node> nodeType;
 
     /**
@@ -294,6 +294,7 @@ public abstract class Node extends BaseReference implements MeshBuilderFactory<M
      * 
      * @return List of added meshes
      */
+    @Deprecated
     public ArrayList<Mesh> getMeshes(ArrayList<Mesh> list) {
         list.addAll(meshes);
         return list;
@@ -1025,35 +1026,22 @@ public abstract class Node extends BaseReference implements MeshBuilderFactory<M
                         vf.getHeight()));
             }
         }
-        if (nodeRenderer == null) {
-            nodeRenderer = createNodeRenderer();
-        }
         if (vf != null) {
             setProjection(vf.getMatrix());
         }
     }
 
     /**
-     * Called by the renderer when this node should possibly be rendered - this shall only render nodes that implement
-     * the {@link RenderableNode} node interface.
+     * Called by the renderer when this node should possibly be rendered, if node is renderable then the NodeRenderer
+     * shall be returned.
+     * If null is returned this node will not be rendered.
      * 
-     * 
-     * @param renderer
-     * @param node
-     * @param currentPass
-     * @param matrices
+     * @return
      */
-    // public abstract void renderNode(NucleusRenderer renderer, Node node, Pass currentPass, float[][] matrices);
+    public abstract NodeRenderer<?> getNodeRenderer();
 
-    /**
-     * Creates the instance of node renderer to be used with this node, override in subclasses if needed
-     * Default behavior is to create in {@link #onCreated()} method if the node renderer is not already set.
-     * 
-     * @return Node renderer to use for this node
-     */
-    protected NodeRenderer<?> createNodeRenderer() {
-        return new com.nucleus.renderer.NucleusNodeRenderer();
-    }
+    public abstract boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices)
+            throws GLException;
 
     /**
      * Look for ViewFrustum in parents nodes, stopping when ViewFrustum is found or when at root.

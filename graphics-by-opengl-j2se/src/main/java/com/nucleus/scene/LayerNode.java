@@ -1,7 +1,11 @@
 package com.nucleus.scene;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
+import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
+import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Transform;
@@ -122,6 +126,17 @@ public class LayerNode extends Node {
         if (transform == null) {
             transform = new Transform();
         }
+    }
+
+    @Override
+    public NodeRenderer<?> getNodeRenderer() {
+        return null;
+    }
+
+    @Override
+    public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices) throws GLException {
+        // TODO Auto-generated method stub
+        return false;
     }
 
 }

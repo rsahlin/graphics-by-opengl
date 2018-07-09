@@ -3,7 +3,9 @@ package com.nucleus.scene;
 import java.util.ArrayList;
 
 import com.nucleus.camera.ViewFrustum;
+import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
 import com.nucleus.renderer.RenderState;
@@ -80,6 +82,17 @@ public class BaseRootNode extends RootNode {
      */
     @Deprecated
     public BaseRootNode() {
+    }
+
+    @Override
+    public NodeRenderer<?> getNodeRenderer() {
+        return null;
+    }
+
+    @Override
+    public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices) throws GLException {
+        // TODO Auto-generated method stub
+        return false;
     }
 
 }

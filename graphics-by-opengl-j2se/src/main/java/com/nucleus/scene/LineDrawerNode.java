@@ -1,6 +1,7 @@
 package com.nucleus.scene;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
@@ -13,9 +14,11 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.shape.ShapeBuilder;
+import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.LineNodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
+import com.nucleus.renderer.Pass;
 import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
 import com.nucleus.shader.TranslateProgram;
@@ -31,7 +34,7 @@ import com.nucleus.texturing.TextureType;
  * Default is to draw rectangles
  * This is not performance optimal for many lines, use only if a few lines are drawn in the UI.
  */
-public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
+public class LineDrawerNode extends Node implements AttributeUpdater.Consumer, RenderableNode<Mesh> {
 
     public enum LineMode {
         RECTANGLE(),
@@ -59,6 +62,8 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
      */
     transient int drawCount = Constants.NO_VALUE;
     transient int drawOffset = Constants.NO_VALUE;
+
+    transient static NodeRenderer<LineDrawerNode> nodeRenderer = new LineNodeRenderer();
 
     /**
      * Creates a nodebuilder that can be used to create LineDrawerNodes with mesh(es), that can be used to draw points
@@ -322,8 +327,22 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     }
 
     @Override
-    protected NodeRenderer<?> createNodeRenderer() {
-        return new LineNodeRenderer();
+    public NodeRenderer<LineDrawerNode> getNodeRenderer() {
+        return LineDrawerNode.nodeRenderer;
+    }
+
+    @Override
+    public ArrayList<Mesh> getMeshes(ArrayList<Mesh> list) {
+        return super.getMeshes(list);
+    }
+
+    @Override
+    public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices) throws GLException {
+        NodeRenderer<LineDrawerNode> nodeRenderer = getNodeRenderer();
+        if (nodeRenderer != null) {
+            nodeRenderer.renderNode(renderer, this, currentPass, matrices);
+        }
+        return true;
     }
 
 }

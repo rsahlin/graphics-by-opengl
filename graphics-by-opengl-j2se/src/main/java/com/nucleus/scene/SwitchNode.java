@@ -2,6 +2,10 @@ package com.nucleus.scene;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.io.gson.PostDeserializable;
+import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
+import com.nucleus.renderer.Pass;
 
 /**
  * Node that can switch between one active child node, the active node is set by calling {@link #setActive(String)}
@@ -87,5 +91,16 @@ public class SwitchNode extends Node implements PostDeserializable {
         if (active != null) {
             setActive(active);
         }
+    }
+
+    @Override
+    public NodeRenderer<?> getNodeRenderer() {
+        return null;
+    }
+
+    @Override
+    public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices) throws GLException {
+        // TODO Auto-generated method stub
+        return false;
     }
 }

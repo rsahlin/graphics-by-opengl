@@ -5,8 +5,10 @@ import java.io.IOException;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Type;
-import com.nucleus.renderer.GLTFNodeRenderer;
+import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
+import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 
@@ -62,8 +64,18 @@ public class GLTFNode extends Node {
     }
 
     @Override
-    protected NodeRenderer<?> createNodeRenderer() {
-        return new GLTFNodeRenderer();
+    public NodeRenderer<GLTFNode> getNodeRenderer() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices) throws GLException {
+        NodeRenderer<GLTFNode> nodeRenderer = getNodeRenderer();
+        if (nodeRenderer != null) {
+            nodeRenderer.renderNode(renderer, this, currentPass, matrices);
+        }
+        return false;
     }
 
 }

@@ -12,7 +12,10 @@ import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilderFactory;
+import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
+import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
@@ -30,6 +33,8 @@ public class MeshNode extends Node {
      */
     @SerializedName(Shape.SHAPE)
     protected Shape shape;
+
+    transient static NodeRenderer<MeshNode> nodeRenderer = new com.nucleus.renderer.NucleusNodeRenderer<MeshNode>();
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -98,6 +103,20 @@ public class MeshNode extends Node {
 
     public Shape getShape() {
         return shape;
+    }
+
+    @Override
+    public NodeRenderer<MeshNode> getNodeRenderer() {
+        return MeshNode.nodeRenderer;
+    }
+
+    @Override
+    public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices) throws GLException {
+        NodeRenderer<MeshNode> nodeRenderer = getNodeRenderer();
+        if (nodeRenderer != null) {
+            nodeRenderer.renderNode(renderer, this, currentPass, matrices);
+        }
+        return true;
     }
 
 }

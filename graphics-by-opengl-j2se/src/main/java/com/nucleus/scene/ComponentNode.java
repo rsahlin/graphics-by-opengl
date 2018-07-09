@@ -10,7 +10,11 @@ import com.nucleus.component.ComponentController;
 import com.nucleus.component.ComponentException;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.shape.ShapeBuilder;
+import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.NucleusNodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
+import com.nucleus.renderer.Pass;
 import com.nucleus.system.ComponentHandler;
 import com.nucleus.system.System;
 
@@ -22,6 +26,8 @@ import com.nucleus.system.System;
  *
  */
 public class ComponentNode extends Node implements ComponentController {
+
+    transient static NodeRenderer<Node> nodeRenderer = new NucleusNodeRenderer<Node>();
 
     /**
      * Builder for Nodes, use this when nodes are created programmatically
@@ -215,6 +221,20 @@ public class ComponentNode extends Node implements ComponentController {
          * Mesh created using component as parent when #createComponents() is called
          */
         return null;
+    }
+
+    @Override
+    public NodeRenderer<Node> getNodeRenderer() {
+        return ComponentNode.nodeRenderer;
+    }
+
+    @Override
+    public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices) throws GLException {
+        NodeRenderer<Node> nodeRenderer = getNodeRenderer();
+        if (nodeRenderer != null) {
+            nodeRenderer.renderNode(renderer, this, currentPass, matrices);
+        }
+        return true;
     }
 
 }
