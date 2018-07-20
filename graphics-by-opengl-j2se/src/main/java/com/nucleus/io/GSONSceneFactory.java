@@ -24,11 +24,12 @@ import com.nucleus.io.gson.NucleusNodeDeserializer;
 import com.nucleus.io.gson.ShapeDeserializer;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.scene.AbstractNode;
+import com.nucleus.scene.AbstractNode.NodeTypes;
 import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
-import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.NodeFactory;
 import com.nucleus.scene.RootNode;
@@ -268,7 +269,8 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     /**
-     * Registers the nodetypes and nodeexporter for the scenfactory, implement in subclasses and call super.
+     * Registers the nodetypes and nodeexporter for the scenfactory using the {@link AbstractNode} implementation,
+     * implement in subclasses and call super.
      */
     protected void registerNodeExporters() {
         nodeExporter.registerNodeExporter(NodeTypes.values(), new NucleusNodeExporter());

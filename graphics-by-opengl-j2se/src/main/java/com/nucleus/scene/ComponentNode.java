@@ -1,6 +1,5 @@
 package com.nucleus.scene;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
@@ -9,7 +8,6 @@ import com.nucleus.component.Component;
 import com.nucleus.component.ComponentController;
 import com.nucleus.component.ComponentException;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusNodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
@@ -25,9 +23,9 @@ import com.nucleus.system.System;
  * @author Richard Sahlin
  *
  */
-public class ComponentNode extends Node implements ComponentController {
+public class ComponentNode extends NucleusMeshNode<Mesh> implements ComponentController {
 
-    transient static NodeRenderer<Node> nodeRenderer = new NucleusNodeRenderer<Node>();
+    transient static NodeRenderer<ComponentNode> nodeRenderer = new NucleusNodeRenderer<ComponentNode>();
 
     /**
      * Builder for Nodes, use this when nodes are created programmatically
@@ -110,7 +108,7 @@ public class ComponentNode extends Node implements ComponentController {
     }
 
     @Override
-    public void set(Node source) {
+    public void set(AbstractNode source) {
         set((ComponentNode) source);
     }
 
@@ -214,27 +212,23 @@ public class ComponentNode extends Node implements ComponentController {
     }
 
     @Override
-    public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, Node parent, int count,
-            ShapeBuilder shapeBuilder)
-            throws IOException {
-        /**
-         * Mesh created using component as parent when #createComponents() is called
-         */
-        return null;
-    }
-
-    @Override
-    public NodeRenderer<Node> getNodeRenderer() {
+    public NodeRenderer<ComponentNode> getNodeRenderer() {
         return ComponentNode.nodeRenderer;
     }
 
     @Override
     public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices) throws GLException {
-        NodeRenderer<Node> nodeRenderer = getNodeRenderer();
+        NodeRenderer<ComponentNode> nodeRenderer = getNodeRenderer();
         if (nodeRenderer != null) {
             nodeRenderer.renderNode(renderer, this, currentPass, matrices);
         }
         return true;
+    }
+
+    @Override
+    public void create() {
+        // TODO Auto-generated method stub
+
     }
 
 }

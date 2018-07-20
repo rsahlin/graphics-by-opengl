@@ -7,7 +7,6 @@ import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.opengl.GLException;
-import com.nucleus.scene.Node.MeshIndex;
 import com.nucleus.shader.ShaderProgram;
 
 /**
@@ -90,11 +89,13 @@ public class NodeBuilder<T extends Node> {
                 // Treat this as a warning - it may be wanted behavior.
                 SimpleLogger.d(getClass(), "MeshBuilder is set but meshcount is 0 - no mesh will be created");
             }
-            Node node = Node.createInstance(type, root);
-            node.setProgram(program);
-            for (int i = 0; i < meshCount; i++) {
-                Mesh mesh = meshBuilder.create();
-                node.addMesh(mesh, MeshIndex.MAIN);
+            Node node = AbstractNode.createInstance(type, root);
+            if (node instanceof RenderableNode<?>) {
+                ((RenderableNode<?>) node).setProgram(program);
+                for (int i = 0; i < meshCount; i++) {
+                    Mesh mesh = meshBuilder.create();
+                    ((RenderableNode<Mesh>) node).addMesh(mesh);
+                }
             }
             node.setId(id);
             node.create();

@@ -28,7 +28,7 @@ public interface NodeFactory {
      * @throws NodeException If there is an error creating the Node, could be due to problem reading resource or
      * compiling shaders. Will be thrown if the source node was not loaded (type field is not set)
      */
-    public Node create(NucleusRenderer renderer, MeshFactory meshFactory, Node source,
+    public Node create(NucleusRenderer renderer, MeshFactory<?> meshFactory, Node source,
             RootNode root) throws NodeException;
 
     /**
@@ -43,7 +43,7 @@ public interface NodeFactory {
      * compiling
      * shaders
      */
-    public void createChildNodes(NucleusRenderer renderer, MeshFactory meshFactory, Node source, Node parent)
+    public void createChildNodes(NucleusRenderer renderer, MeshFactory<?> meshFactory, Node source, Node parent)
             throws NodeException;
 
 }

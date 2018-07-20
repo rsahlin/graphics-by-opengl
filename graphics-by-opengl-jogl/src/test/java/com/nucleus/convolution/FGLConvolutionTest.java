@@ -21,8 +21,6 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.BaseRootNode;
-import com.nucleus.scene.Node.MeshIndex;
-import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderVariable;
@@ -90,7 +88,6 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
 
     private float factor = 1f;
     private int kernelIndex = 2;
-    Mesh mesh;
     int counter = 0;
     long start = 0;
     private ShaderVariable uKernel;
@@ -136,10 +133,9 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         meshBuilder.setMaterial(material).setAttributesPerVertex(program.getAttributeSizes());
         meshBuilder.setShapeBuilder(
                 new RectangleShapeBuilder(new RectangleShapeBuilder.RectangleConfiguration(1f, 1f, 0f, 1, 0)));
-        builder.setType(NodeTypes.layernode).setMeshBuilder(meshBuilder).setMeshCount(1);
+        builder.setType(com.nucleus.scene.AbstractNode.NodeTypes.layernode).setMeshBuilder(meshBuilder).setMeshCount(1);
         try {
             RootNode root = builder.create();
-            mesh = root.getNodeByType(NodeTypes.layernode).getMesh(MeshIndex.MAIN);
             uKernel = program.getUniformByName("uKernel");
             renderer.addFrameListener(this);
             coreApp.setRootNode(root);

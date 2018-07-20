@@ -3,8 +3,6 @@ package com.nucleus.scene;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import com.nucleus.scene.Node.NodeTypes;
-
 /**
  * Singleton implementation of navigation controller, handles navigation within scene
  */

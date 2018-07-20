@@ -1,5 +1,7 @@
 package com.nucleus.scene;
 
+import java.util.ArrayList;
+
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLException;
@@ -7,7 +9,7 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
 import com.nucleus.renderer.Pass;
 
-public class RenderToTargetNode extends Node implements RenderableNode<Mesh> {
+public class RenderToTargetNode extends NucleusMeshNode<Mesh> {
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -41,6 +43,18 @@ public class RenderToTargetNode extends Node implements RenderableNode<Mesh> {
     public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices) throws GLException {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    @Override
+    public ArrayList<Mesh> getMeshes(ArrayList<Mesh> list) {
+        list.addAll(meshes);
+        return list;
+    }
+
+    @Override
+    public void create() {
+        // TODO Auto-generated method stub
+
     }
 
 }

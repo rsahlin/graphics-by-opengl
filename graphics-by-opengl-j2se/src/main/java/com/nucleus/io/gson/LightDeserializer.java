@@ -8,7 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.nucleus.light.Light;
-import com.nucleus.scene.Node.NodeTypes;
+import com.nucleus.scene.AbstractNode.NodeTypes;
 
 /**
  * Implementation for light deserializer, the light class is abstract, read the type field and return correct

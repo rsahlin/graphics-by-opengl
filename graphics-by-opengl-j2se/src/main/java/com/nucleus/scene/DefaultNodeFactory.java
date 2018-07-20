@@ -3,13 +3,11 @@ package com.nucleus.scene;
 import java.io.IOException;
 import java.util.ArrayDeque;
 
-import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshFactory;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.scene.Node.MeshIndex;
-import com.nucleus.scene.Node.NodeTypes;
+import com.nucleus.scene.AbstractNode.NodeTypes;
 
 /**
  * The default node factory implementation - use this to create instances of loaded nodes
@@ -30,7 +28,7 @@ public class DefaultNodeFactory implements NodeFactory {
     protected int meshCount = 1;
 
     @Override
-    public Node create(NucleusRenderer renderer, MeshFactory meshFactory, Node source,
+    public Node create(NucleusRenderer renderer, MeshFactory<?> meshFactory, Node source,
             RootNode root) throws NodeException {
         if (source.getType() == null) {
             throw new NodeException("Type not set in source node - was it created programatically?");
@@ -40,13 +38,13 @@ public class DefaultNodeFactory implements NodeFactory {
     }
 
     @Override
-    public void createChildNodes(NucleusRenderer renderer, MeshFactory meshFactory, Node source, Node parent)
+    public void createChildNodes(NucleusRenderer renderer, MeshFactory<?> meshFactory, Node source, Node parent)
             throws NodeException {
         // Recursively create children if there are any
-        if (source.children == null) {
+        if (source.getChildren() == null) {
             return;
         }
-        for (Node nd : source.children) {
+        for (Node nd : source.getChildren()) {
             createNode(renderer, meshFactory, nd, parent);
         }
     }
@@ -61,7 +59,7 @@ public class DefaultNodeFactory implements NodeFactory {
      * @return The created node, this will be a new instance of the source node ready to be rendered/processed
      * @throws IllegalArgumentException If node could not be added to parent
      */
-    protected Node createNode(NucleusRenderer renderer, MeshFactory meshFactory, Node source,
+    protected Node createNode(NucleusRenderer renderer, MeshFactory<?> meshFactory, Node source,
             Node parent) throws NodeException {
         long start = System.currentTimeMillis();
         Node created = create(renderer, meshFactory, source, parent.getRootNode());
@@ -92,7 +90,7 @@ public class DefaultNodeFactory implements NodeFactory {
      * @throws NodeException If there is an error creating the node
      * @return Copy of the source node that will be prepared for usage
      */
-    protected Node internalCreateNode(NucleusRenderer renderer, RootNode root, Node source, MeshFactory meshFactory)
+    protected Node internalCreateNode(NucleusRenderer renderer, RootNode root, Node source, MeshFactory<?> meshFactory)
             throws NodeException {
         try {
             Node node = source.createInstance(root);
@@ -102,10 +100,10 @@ public class DefaultNodeFactory implements NodeFactory {
                 throw new IllegalArgumentException("Class is not same, forgot to implement createInstance()? source: "
                         + source.getClass().getSimpleName() + ", instance: " + node.getClass().getSimpleName());
             }
-            for (int i = 0; i < meshCount; i++) {
-                Mesh mesh = meshFactory.createMesh(renderer, node);
-                if (mesh != null) {
-                    node.addMesh(mesh, MeshIndex.MAIN);
+            if (node instanceof RenderableNode<?>) {
+                for (int i = 0; i < meshCount; i++) {
+                    ((RenderableNode) node)
+                            .addMesh(meshFactory.createMesh(renderer, (RenderableNode) node));
                 }
             }
             node.create();

@@ -9,7 +9,6 @@ import java.util.Set;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
-import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Constants;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
@@ -28,6 +27,7 @@ import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.State;
+import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShadowPass1Program;
@@ -58,10 +58,6 @@ class BaseRenderer implements NucleusRenderer {
 
     protected SurfaceConfiguration surfaceConfig;
 
-    /**
-     * Cludge to get access to the current viewfrustum - not optimal solution
-     */
-    protected ViewFrustum viewFrustum = new ViewFrustum();
     protected ArrayDeque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<float[]> projection = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<Pass> renderPassStack = new ArrayDeque<>();
@@ -276,11 +272,11 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     /**
-     * Internal method to render this node and all children,children are recursively rendered
-     * by calling {@link #render(Node)}
+     * Internal method to render the {@link RenderableNode} using result matrices.
+     * If node is rendered it is added to list of rendered nodes in RootNode.
+     * Will recursively render child nodes.
      * 
      * @param node
-     * @param renderPassMatrix
      * @throws GLException
      */
     private void internalRender(Node node) throws GLException {
@@ -290,13 +286,14 @@ class BaseRenderer implements NucleusRenderer {
         if (projection != null) {
             pushMatrix(this.projection, matrices[Matrices.PROJECTION.index]);
             matrices[Matrices.PROJECTION.index] = projection;
-            viewFrustum = node.getViewFrustum();
         }
         Matrix.mul4(nodeMatrix, viewMatrix, matrices[Matrices.MODELVIEW.index]);
 
-        if (node.renderNode(this, currentPass, matrices)) {
-            // Add this to rendered nodes before children.
-            node.getRootNode().addRenderedNode(node);
+        if (node instanceof RenderableNode<?>) {
+            if (((RenderableNode<?>) node).renderNode(this, currentPass, matrices)) {
+                // Add this to rendered nodes before children.
+                node.getRootNode().addRenderedNode(node);
+            }
         }
 
         this.modelMatrix = nodeMatrix;
@@ -614,7 +611,7 @@ class BaseRenderer implements NucleusRenderer {
      * @param pass The currently defined pass
      * @return
      */
-    private ShaderProgram getProgram(Node node, Pass pass) {
+    private ShaderProgram getProgram(RenderableNode<?> node, Pass pass) {
         ShaderProgram program = node.getProgram();
         if (program == null) {
             throw new IllegalArgumentException("No program for node " + node.getId());

@@ -34,7 +34,7 @@ import com.nucleus.texturing.TextureType;
  * Default is to draw rectangles
  * This is not performance optimal for many lines, use only if a few lines are drawn in the UI.
  */
-public class LineDrawerNode extends Node implements AttributeUpdater.Consumer, RenderableNode<Mesh> {
+public class LineDrawerNode extends NucleusMeshNode<Mesh> implements AttributeUpdater.Consumer {
 
     public enum LineMode {
         RECTANGLE(),
@@ -91,7 +91,7 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer, R
     }
 
     @Override
-    public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, Node parent, int count,
+    public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, RenderableNode<Mesh> parent, int count,
             ShapeBuilder shapeBuilder) throws IOException {
         LineDrawerNode lineParent = (LineDrawerNode) parent;
         Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
@@ -333,7 +333,8 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer, R
 
     @Override
     public ArrayList<Mesh> getMeshes(ArrayList<Mesh> list) {
-        return super.getMeshes(list);
+        list.addAll(meshes);
+        return list;
     }
 
     @Override

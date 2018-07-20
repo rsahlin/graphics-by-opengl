@@ -8,7 +8,7 @@ import com.nucleus.geometry.Mesh.Builder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.scene.Node;
+import com.nucleus.scene.RenderableNode;
 
 /**
  * Utility class to help build different type of Meshes.
@@ -36,7 +36,8 @@ public abstract class MeshBuilder<T> {
          * @return
          * @throws ComponentException
          */
-        public Builder<?> createMeshBuilder(NucleusRenderer renderer, Node parent, int count, ShapeBuilder shapeBuilder)
+        public Builder<?> createMeshBuilder(NucleusRenderer renderer, RenderableNode<T> parent, int count,
+                ShapeBuilder shapeBuilder)
                 throws IOException;
 
     }

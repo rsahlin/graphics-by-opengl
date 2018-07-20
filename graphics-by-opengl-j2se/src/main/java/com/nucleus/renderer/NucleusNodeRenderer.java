@@ -14,17 +14,17 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
-import com.nucleus.scene.Node;
+import com.nucleus.scene.RenderableNode;
 import com.nucleus.shader.ShaderProgram;
 
 /**
  * The default noderenderer - renders the meshes in a node.
- * By default it uses the
  * 
  *
  * @param <T>
  */
-public class NucleusNodeRenderer<T extends Node> extends com.nucleus.renderer.NucleusRenderer.NodeRenderer<T> {
+public class NucleusNodeRenderer<T extends RenderableNode<Mesh>>
+        extends com.nucleus.renderer.NucleusRenderer.NodeRenderer<T> {
 
     protected ArrayList<Mesh> nodeMeshes = new ArrayList<>();
     protected FrameSampler timeKeeper = FrameSampler.getInstance();
@@ -33,7 +33,7 @@ public class NucleusNodeRenderer<T extends Node> extends com.nucleus.renderer.Nu
     }
 
     @Override
-    public void renderNode(NucleusRenderer renderer, Node node, Pass currentPass, float[][] matrices)
+    public void renderNode(NucleusRenderer renderer, T node, Pass currentPass, float[][] matrices)
             throws GLException {
         GLES20Wrapper gles = renderer.getGLES();
         nodeMeshes.clear();
@@ -101,7 +101,7 @@ public class NucleusNodeRenderer<T extends Node> extends com.nucleus.renderer.Nu
      * @param pass The currently defined pass
      * @return
      */
-    protected ShaderProgram getProgram(GLES20Wrapper gles, Node node, Pass pass) {
+    protected ShaderProgram getProgram(GLES20Wrapper gles, RenderableNode<?> node, Pass pass) {
         ShaderProgram program = node.getProgram();
         if (program == null) {
             throw new IllegalArgumentException("No program for node " + node.getId());

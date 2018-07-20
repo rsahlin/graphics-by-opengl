@@ -21,7 +21,7 @@ import com.nucleus.renderer.NucleusRenderer;
  * @author Richard Sahlin
  *
  */
-public abstract class RootNode extends Node {
+public abstract class RootNode extends AbstractNode {
 
     private static final String GLTF_PATH = "glTFPath";
     private static final String GLTF_URIS = "glTFUris";

@@ -9,8 +9,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.nucleus.common.TypeResolver;
 import com.nucleus.io.GSONSceneFactory;
+import com.nucleus.scene.AbstractNode.NodeTypes;
 import com.nucleus.scene.Node;
-import com.nucleus.scene.Node.NodeTypes;
 
 /**
  * Implementation of graphics-by-opengl node deserialization, this shall return the correct Node implementations

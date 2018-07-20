@@ -6,24 +6,27 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.LineDrawerNode;
 import com.nucleus.scene.MeshNode;
-import com.nucleus.scene.Node;
+import com.nucleus.scene.RenderableNode;
 
 /**
  * TODO cleanup and use Mesh.Builder as much as possible - should this class be removed in favor of Builder?
  *
  */
-public class DefaultMeshFactory implements MeshFactory {
+public class DefaultMeshFactory implements MeshFactory<Mesh> {
 
-    private MeshFactory.MeshCreator customMeshCreator;
+    private MeshFactory.MeshCreator<Mesh> customMeshCreator;
 
     @Override
-    public Mesh createMesh(NucleusRenderer renderer, Node parent) throws IOException, GLException {
+    public Mesh createMesh(NucleusRenderer renderer, RenderableNode<Mesh> parent) throws IOException, GLException {
 
         if (parent instanceof LineDrawerNode) {
             LineDrawerNode lineParent = (LineDrawerNode) parent;
-            Mesh.Builder<Mesh> builder = parent.createMeshBuilder(renderer, parent, lineParent.getLineCount(),
+            MeshBuilder<Mesh> builder = parent.createMeshBuilder(renderer, parent, lineParent.getLineCount(),
                     lineParent.getShapeBuilder());
             Mesh mesh = builder.create();
+            if (mesh != null) {
+                parent.addMesh(mesh);
+            }
             return mesh;
 
         }
@@ -37,7 +40,7 @@ public class DefaultMeshFactory implements MeshFactory {
     }
 
     @Override
-    public void setMeshCreator(MeshCreator creator) {
+    public void setMeshCreator(MeshCreator<Mesh> creator) {
         this.customMeshCreator = creator;
     }
 

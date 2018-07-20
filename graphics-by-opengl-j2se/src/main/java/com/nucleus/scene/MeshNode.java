@@ -26,7 +26,7 @@ import com.nucleus.vecmath.Shape;
  * implementation of MeshFactory when node is serialized.
  *
  */
-public class MeshNode extends Node {
+public class MeshNode extends NucleusMeshNode<Mesh> {
 
     /**
      * If defined this is the shape of the mesh - if not specified a fullscreen 2D rect will be created.
@@ -34,7 +34,7 @@ public class MeshNode extends Node {
     @SerializedName(Shape.SHAPE)
     protected Shape shape;
 
-    transient static NodeRenderer<MeshNode> nodeRenderer = new com.nucleus.renderer.NucleusNodeRenderer<MeshNode>();
+    transient private static NodeRenderer<MeshNode> nodeRenderer = new com.nucleus.renderer.NucleusNodeRenderer<MeshNode>();
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -43,21 +43,12 @@ public class MeshNode extends Node {
         super();
     }
 
-    private MeshNode(RootNode root, Type<Node> type) {
+    protected MeshNode(RootNode root, Type<Node> type) {
         super(root, type);
     }
 
-    /**
-     * Creates a Mesh builder for this node.
-     * if shapebuilder is null then Mode is set to TRIANGLE_FAN with 4 vertices and a rectangle shapebuilder is created.
-     * 
-     * @param renderer
-     * @param parent
-     * @return
-     * @throws IOException
-     */
     @Override
-    public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, Node parent, int count,
+    public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, RenderableNode<Mesh> parent, int count,
             ShapeBuilder shapeBuilder) throws IOException {
         Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
         Texture2D tex = null;
@@ -106,17 +97,23 @@ public class MeshNode extends Node {
     }
 
     @Override
-    public NodeRenderer<MeshNode> getNodeRenderer() {
-        return MeshNode.nodeRenderer;
-    }
-
-    @Override
     public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices) throws GLException {
         NodeRenderer<MeshNode> nodeRenderer = getNodeRenderer();
         if (nodeRenderer != null) {
             nodeRenderer.renderNode(renderer, this, currentPass, matrices);
         }
         return true;
+    }
+
+    @Override
+    public NodeRenderer<MeshNode> getNodeRenderer() {
+        return MeshNode.nodeRenderer;
+    }
+
+    @Override
+    public void create() {
+        // TODO Auto-generated method stub
+
     }
 
 }

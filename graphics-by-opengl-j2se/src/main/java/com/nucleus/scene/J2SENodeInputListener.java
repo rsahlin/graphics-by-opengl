@@ -75,7 +75,7 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
                     down[0] = position[0];
                     down[1] = position[1];
                     SimpleLogger.d(getClass(), "HIT: " + node);
-                    String onclick = node.getProperty(ONCLICK);
+                    String onclick = node.getProperty(ONCLICK, null);
                     if (onclick != null) {
                         Property p = Property.create(onclick);
                         if (p != null) {
