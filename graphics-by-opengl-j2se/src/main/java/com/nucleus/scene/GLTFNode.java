@@ -6,10 +6,11 @@ import java.util.ArrayList;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Type;
-import com.nucleus.geometry.Mesh.Builder;
+import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.GLTFNodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
 import com.nucleus.renderer.Pass;
@@ -25,6 +26,8 @@ import com.nucleus.shader.ShaderProgram;
 public class GLTFNode extends AbstractNode implements RenderableNode<Mesh> {
 
     private static final String GLTF_NAME = "glTFName";
+
+    transient private static NodeRenderer<GLTFNode> nodeRenderer = new GLTFNodeRenderer();
 
     @SerializedName(GLTF_NAME)
     private String glTFName;
@@ -71,8 +74,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<Mesh> {
 
     @Override
     public NodeRenderer<GLTFNode> getNodeRenderer() {
-        // TODO Auto-generated method stub
-        return null;
+        return nodeRenderer;
     }
 
     @Override
@@ -91,8 +93,8 @@ public class GLTFNode extends AbstractNode implements RenderableNode<Mesh> {
     }
 
     @Override
-    public Builder<?> createMeshBuilder(NucleusRenderer renderer, RenderableNode<Mesh> parent, int count,
-            ShapeBuilder shapeBuilder) throws IOException {
+    public MeshBuilder<Mesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
+            throws IOException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -100,13 +102,11 @@ public class GLTFNode extends AbstractNode implements RenderableNode<Mesh> {
     @Override
     public void create() {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void addMesh(Mesh mesh) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -118,7 +118,6 @@ public class GLTFNode extends AbstractNode implements RenderableNode<Mesh> {
     @Override
     public void setProgram(ShaderProgram program) {
         // TODO Auto-generated method stub
-
     }
 
     @Override

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.Builder;
+import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.renderer.NucleusRenderer;
@@ -132,11 +132,11 @@ public abstract class NucleusMeshNode<T> extends AbstractNode implements Rendera
     }
 
     @Override
-    public Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, RenderableNode<T> parent, int count,
-            ShapeBuilder shapeBuilder) throws IOException {
+    public MeshBuilder<T> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
+            throws IOException {
 
         Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
-        return initMeshBuilder(renderer, parent, count, shapeBuilder, builder);
+        return initMeshBuilder(renderer, 1, shapeBuilder, builder);
     }
 
     /**
@@ -148,30 +148,29 @@ public abstract class NucleusMeshNode<T> extends AbstractNode implements Rendera
      * The returned builder shall have needed values to create a mesh.
      * 
      * @param renderer
-     * @param parent
      * @param count Number of objects
      * @param shapeBuilder
      * @param builder
      * @throws IOException
      */
-    protected Mesh.Builder<Mesh> initMeshBuilder(NucleusRenderer renderer, RenderableNode<T> parent, int count,
-            ShapeBuilder shapeBuilder, Mesh.Builder<Mesh> builder)
+    protected MeshBuilder<T> initMeshBuilder(NucleusRenderer renderer, int count, ShapeBuilder shapeBuilder,
+            Mesh.Builder<Mesh> builder)
             throws IOException {
         if (builder.getTexture() == null) {
-            builder.setTexture(parent.getTextureRef());
+            builder.setTexture(getTextureRef());
         }
         if (builder.getMaterial() == null) {
-            builder.setMaterial(parent.getMaterial() != null ? parent.getMaterial() : new Material());
+            builder.setMaterial(getMaterial() != null ? getMaterial() : new Material());
         }
         builder.setObjectCount(count);
         if (builder.getShapeBuilder() == null) {
             builder.setShapeBuilder(shapeBuilder);
         }
-        if (parent.getProgram() == null) {
-            parent.setProgram(builder.createProgram(renderer.getGLES()));
+        if (getProgram() == null) {
+            setProgram(builder.createProgram(renderer.getGLES()));
         }
-        builder.setAttributesPerVertex(parent.getProgram().getAttributeSizes());
-        return builder;
+        builder.setAttributesPerVertex(getProgram().getAttributeSizes());
+        return (MeshBuilder<T>) builder;
     }
 
 }

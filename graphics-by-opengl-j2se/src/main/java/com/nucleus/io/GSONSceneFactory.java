@@ -18,7 +18,6 @@ import com.nucleus.common.Type;
 import com.nucleus.common.TypeResolver;
 import com.nucleus.exporter.NodeExporter;
 import com.nucleus.exporter.NucleusNodeExporter;
-import com.nucleus.geometry.MeshFactory;
 import com.nucleus.io.gson.BoundsDeserializer;
 import com.nucleus.io.gson.NucleusNodeDeserializer;
 import com.nucleus.io.gson.ShapeDeserializer;
@@ -56,7 +55,6 @@ public class GSONSceneFactory implements SceneSerializer {
     protected NucleusRenderer renderer;
     protected NodeExporter nodeExporter;
     protected NodeFactory nodeFactory;
-    protected MeshFactory meshFactory;
 
     protected Gson gson;
 
@@ -90,19 +88,15 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     @Override
-    public void init(NucleusRenderer renderer, NodeFactory nodeFactory, MeshFactory meshFactory, Type<?>[] types) {
+    public void init(NucleusRenderer renderer, NodeFactory nodeFactory, Type<?>[] types) {
         if (renderer == null) {
             throw new IllegalArgumentException(NULL_RENDERER_ERROR);
         }
         if (nodeFactory == null) {
             throw new IllegalArgumentException(NULL_NODEFACTORY_ERROR);
         }
-        if (meshFactory == null) {
-            throw new IllegalArgumentException(NULL_MESHFACTORY_ERROR);
-        }
         this.renderer = renderer;
         this.nodeFactory = nodeFactory;
-        this.meshFactory = meshFactory;
         createNodeDeserializer();
         if (types != null) {
             registerTypes(types);
@@ -227,10 +221,10 @@ public class GSONSceneFactory implements SceneSerializer {
      */
     private void createNodes(RootNode root, List<Node> children) throws NodeException {
         for (Node node : children) {
-            Node created = nodeFactory.create(renderer, meshFactory, node, root);
+            Node created = nodeFactory.create(renderer, node, root);
             root.addChild(created);
             created.onCreated();
-            nodeFactory.createChildNodes(renderer, meshFactory, node, created);
+            nodeFactory.createChildNodes(renderer, node, created);
         }
     }
 
@@ -300,7 +294,7 @@ public class GSONSceneFactory implements SceneSerializer {
 
     @Override
     public boolean isInitialized() {
-        return (renderer != null && nodeFactory != null && meshFactory != null);
+        return (renderer != null && nodeFactory != null);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.nucleus.scene;
 
-import com.nucleus.geometry.MeshFactory;
 import com.nucleus.renderer.NucleusRenderer;
 
 /**
@@ -21,14 +20,13 @@ public interface NodeFactory {
      * Use this method when nodes are loaded from scene
      * 
      * @param renderer
-     * @param meshFactory The mesh factory to use when creating mesh
      * @param source The loaded source node, the returned node shall be the same type
      * @param root The rootnode of the created node
      * @return A new instance of the source node, ready to be rendered/processed
      * @throws NodeException If there is an error creating the Node, could be due to problem reading resource or
      * compiling shaders. Will be thrown if the source node was not loaded (type field is not set)
      */
-    public Node create(NucleusRenderer renderer, MeshFactory<?> meshFactory, Node source,
+    public Node create(NucleusRenderer renderer, Node source,
             RootNode root) throws NodeException;
 
     /**
@@ -43,7 +41,7 @@ public interface NodeFactory {
      * compiling
      * shaders
      */
-    public void createChildNodes(NucleusRenderer renderer, MeshFactory<?> meshFactory, Node source, Node parent)
+    public void createChildNodes(NucleusRenderer renderer, Node source, Node parent)
             throws NodeException;
 
 }

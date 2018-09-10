@@ -279,7 +279,6 @@ public class InputProcessor implements PointerListener, KeyListener {
         for (MMIEventListener listener : mmiListeners) {
             listener.onInputEvent(event);
         }
-
     }
 
     /**

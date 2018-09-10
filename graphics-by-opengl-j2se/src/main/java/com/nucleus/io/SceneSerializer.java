@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import com.nucleus.common.Type;
-import com.nucleus.geometry.MeshFactory;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeException;
@@ -32,11 +31,10 @@ public interface SceneSerializer {
      * 
      * @param renderer
      * @param nodeFactory
-     * @param meshFactory
      * @param types List of key/value classnames and types that can be serialized, or null
      * @throws IllegalArgumentException If renderer is null
      */
-    public void init(NucleusRenderer renderer, NodeFactory nodeFactory, MeshFactory meshFactory, Type<?>[] types);
+    public void init(NucleusRenderer renderer, NodeFactory nodeFactory, Type<?>[] types);
 
     /**
      * Registers a list of types that can be resolved to classes, these are the user defined classes serialized by

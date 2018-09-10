@@ -13,6 +13,7 @@ import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.LineNodeRenderer;
@@ -91,11 +92,11 @@ public class LineDrawerNode extends NucleusMeshNode<Mesh> implements AttributeUp
     }
 
     @Override
-    public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, RenderableNode<Mesh> parent, int count,
-            ShapeBuilder shapeBuilder) throws IOException {
-        LineDrawerNode lineParent = (LineDrawerNode) parent;
+    public MeshBuilder<Mesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
+            throws IOException {
+        int count = getLineCount();
         Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
-        switch (lineParent.getLineMode()) {
+        switch (getLineMode()) {
             case LINES:
                 builder.setArrayMode(Mode.LINES, count * 2, 0);
                 break;
@@ -110,17 +111,17 @@ public class LineDrawerNode extends NucleusMeshNode<Mesh> implements AttributeUp
                 builder.setElementMode(Mode.LINES, count, 0, count * 2);
                 break;
             default:
-                throw new IllegalArgumentException("Not implemented for mode " + lineParent.getLineMode());
+                throw new IllegalArgumentException("Not implemented for mode " + getLineMode());
         }
         Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
         builder.setTexture(tex);
-        if (parent.getProgram() == null) {
-            parent.setProgram(
+        if (getProgram() == null) {
+            setProgram(
                     AssetManager.getInstance().getProgram(renderer.getGLES(),
                             new GenericShaderProgram(new String[] { "flatline", "flatline" }, null, Shading.flat, null,
                                     ProgramType.VERTEX_FRAGMENT)));
         }
-        return initMeshBuilder(renderer, parent, count, lineParent.getShapeBuilder(), builder);
+        return initMeshBuilder(renderer, count, getShapeBuilder(), builder);
     }
 
     /**

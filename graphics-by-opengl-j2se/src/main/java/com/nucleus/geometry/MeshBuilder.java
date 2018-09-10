@@ -4,11 +4,9 @@ import java.io.IOException;
 
 import com.nucleus.bounds.Bounds;
 import com.nucleus.component.ComponentException;
-import com.nucleus.geometry.Mesh.Builder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.scene.RenderableNode;
 
 /**
  * Utility class to help build different type of Meshes.
@@ -27,17 +25,14 @@ public abstract class MeshBuilder<T> {
     public interface MeshBuilderFactory<T> {
         /**
          * Creates a mesh builder that can be used to create a mesh for the node or component.
-         * Subclasses may need to override this to create the necessary Mesh.Builder
+         * Subclasses may need to override this to create the necessary MeshBuilder
          * 
          * @param renderer
-         * @param parent
-         * @param count Number of objects to set the builder to create
          * @param shapeBuilder
-         * @return
+         * @return MeshBuilder that can be used to create Meshes
          * @throws ComponentException
          */
-        public Builder<?> createMeshBuilder(NucleusRenderer renderer, RenderableNode<T> parent, int count,
-                ShapeBuilder shapeBuilder)
+        public MeshBuilder<T> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
                 throws IOException;
 
     }

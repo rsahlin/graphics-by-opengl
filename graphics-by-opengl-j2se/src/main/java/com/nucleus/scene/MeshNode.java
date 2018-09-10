@@ -8,6 +8,7 @@ import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.geometry.shape.ShapeBuilder;
@@ -48,19 +49,20 @@ public class MeshNode extends NucleusMeshNode<Mesh> {
     }
 
     @Override
-    public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, RenderableNode<Mesh> parent, int count,
-            ShapeBuilder shapeBuilder) throws IOException {
+    public MeshBuilder<Mesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
+            throws IOException {
+        int count = 1;
         Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
         Texture2D tex = null;
-        if (parent.getTextureRef() == null) {
+        if (getTextureRef() == null) {
             tex = TextureFactory.createTexture(TextureType.Untextured);
 
         } else {
-            tex = AssetManager.getInstance().getTexture(renderer, parent.getTextureRef());
+            tex = AssetManager.getInstance().getTexture(renderer, getTextureRef());
         }
         builder.setTexture(tex);
         if (shapeBuilder == null) {
-            LayerNode layer = parent.getRootNode().getLayerNode(null);
+            LayerNode layer = getRootNode().getLayerNode(null);
             ViewFrustum view = layer.getViewFrustum();
             builder.setArrayMode(Mode.TRIANGLE_FAN, 4, 0);
             if (shape == null) {
@@ -71,7 +73,7 @@ public class MeshNode extends NucleusMeshNode<Mesh> {
             }
         }
         // If program is not present in parent then the meshbuilder is called to create program.
-        return initMeshBuilder(renderer, parent, count, shapeBuilder, builder);
+        return initMeshBuilder(renderer, count, shapeBuilder, builder);
 
     }
 

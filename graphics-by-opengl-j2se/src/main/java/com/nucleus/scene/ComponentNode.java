@@ -1,5 +1,6 @@
 package com.nucleus.scene;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
@@ -8,6 +9,8 @@ import com.nucleus.component.Component;
 import com.nucleus.component.ComponentController;
 import com.nucleus.component.ComponentException;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.MeshBuilder;
+import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusNodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
@@ -229,6 +232,12 @@ public class ComponentNode extends NucleusMeshNode<Mesh> implements ComponentCon
     public void create() {
         // TODO Auto-generated method stub
 
+    }
+
+    @Override
+    public MeshBuilder<Mesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
+            throws IOException {
+        return null;
     }
 
 }

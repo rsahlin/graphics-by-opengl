@@ -38,7 +38,7 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
             switch (node.getState()) {
                 case ON:
                 case ACTOR:
-                    if (onPointerEvent(node, event)) {
+                    if (checkChildren(node, event)) {
                         return true;
                     }
                     break;
@@ -117,6 +117,9 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
     protected boolean checkChildren(Node node, MMIPointerEvent event) {
         State state = node.getState();
         if (state == State.ON || state == State.ACTOR) {
+        	if (onPointerEvent(node, event)) {
+        		return true;
+        	}
             for (Node n : node.getChildren()) {
                 if (onPointerEvent(n, event)) {
                     return true;

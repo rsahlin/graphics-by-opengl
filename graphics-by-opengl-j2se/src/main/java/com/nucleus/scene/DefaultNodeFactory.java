@@ -3,7 +3,8 @@ package com.nucleus.scene;
 import java.io.IOException;
 import java.util.ArrayDeque;
 
-import com.nucleus.geometry.MeshFactory;
+import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
@@ -28,24 +29,23 @@ public class DefaultNodeFactory implements NodeFactory {
     protected int meshCount = 1;
 
     @Override
-    public Node create(NucleusRenderer renderer, MeshFactory<?> meshFactory, Node source,
-            RootNode root) throws NodeException {
+    public Node create(NucleusRenderer renderer, Node source, RootNode root) throws NodeException {
         if (source.getType() == null) {
             throw new NodeException("Type not set in source node - was it created programatically?");
         }
-        Node copy = internalCreateNode(renderer, root, source, meshFactory);
+        Node copy = internalCreateNode(renderer, root, source);
         return copy;
     }
 
     @Override
-    public void createChildNodes(NucleusRenderer renderer, MeshFactory<?> meshFactory, Node source, Node parent)
+    public void createChildNodes(NucleusRenderer renderer, Node source, Node parent)
             throws NodeException {
         // Recursively create children if there are any
         if (source.getChildren() == null) {
             return;
         }
         for (Node nd : source.getChildren()) {
-            createNode(renderer, meshFactory, nd, parent);
+            createNode(renderer, nd, parent);
         }
     }
 
@@ -59,10 +59,10 @@ public class DefaultNodeFactory implements NodeFactory {
      * @return The created node, this will be a new instance of the source node ready to be rendered/processed
      * @throws IllegalArgumentException If node could not be added to parent
      */
-    protected Node createNode(NucleusRenderer renderer, MeshFactory<?> meshFactory, Node source,
+    protected Node createNode(NucleusRenderer renderer, Node source,
             Node parent) throws NodeException {
         long start = System.currentTimeMillis();
-        Node created = create(renderer, meshFactory, source, parent.getRootNode());
+        Node created = create(renderer, source, parent.getRootNode());
         parent.addChild(created);
         FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_NODE, " " + source.getId(), start,
                 System.currentTimeMillis());
@@ -74,7 +74,7 @@ public class DefaultNodeFactory implements NodeFactory {
         // Call #onCreated() on the created node before handling children - parent needs to be fully created before
         // the children.
         created.onCreated();
-        createChildNodes(renderer, meshFactory, source, created);
+        createChildNodes(renderer, source, created);
         if (isViewNode) {
             viewStack.pop();
         }
@@ -86,11 +86,10 @@ public class DefaultNodeFactory implements NodeFactory {
      * 
      * @param renderer
      * @param source
-     * @param meshFactory
      * @throws NodeException If there is an error creating the node
      * @return Copy of the source node that will be prepared for usage
      */
-    protected Node internalCreateNode(NucleusRenderer renderer, RootNode root, Node source, MeshFactory<?> meshFactory)
+    protected Node internalCreateNode(NucleusRenderer renderer, RootNode root, Node source)
             throws NodeException {
         try {
             Node node = source.createInstance(root);
@@ -101,9 +100,15 @@ public class DefaultNodeFactory implements NodeFactory {
                         + source.getClass().getSimpleName() + ", instance: " + node.getClass().getSimpleName());
             }
             if (node instanceof RenderableNode<?>) {
+                RenderableNode<Mesh> rNode = (RenderableNode<Mesh>) node;
                 for (int i = 0; i < meshCount; i++) {
-                    ((RenderableNode) node)
-                            .addMesh(meshFactory.createMesh(renderer, (RenderableNode) node));
+                    MeshBuilder<Mesh> meshBuilder = rNode.createMeshBuilder(renderer, null);
+                    if (meshBuilder != null) {
+                        rNode.addMesh(meshBuilder.create());
+                        if (rNode.getBounds() == null) {
+                        	rNode.setBounds(meshBuilder.createBounds());
+                        }
+                    }
                 }
             }
             node.create();
