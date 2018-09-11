@@ -20,7 +20,6 @@ import com.nucleus.shader.ShaderProgram;
  */
 public interface RenderableNode<T> extends MeshBuilderFactory<T>, Node {
 
-	
     /**
      * Renders the mesh(es) in this node.
      * Shall not render childnodes
@@ -43,13 +42,25 @@ public interface RenderableNode<T> extends MeshBuilderFactory<T>, Node {
     public ArrayList<T> getMeshes(ArrayList<T> list);
 
     /**
-     * Returns the instance of node renderer to be used to render this node instance.
-     * Default behavior is to create in Node {@link #onCreated()} method if the node renderer is not already set.
+     * Renders one mesh, material is used to fetch program and set attributes/uniforms.
+     * If the attributeupdater is set in the mesh it is called to update buffers.
+     * If texture exists in mesh it is made active and used.
+     * If mesh contains an index buffer it is used and glDrawElements is called, otherwise
+     * drawArrays is called.
      * 
-     * @return Node renderer to use for this node instance - this must be able to render the mesh type as declared by implementations of this class.
+     * @param renderer
+     * @param program The active program
+     * @param mesh The mesh to be rendered.
+     * @param matrices accumulated modelview matrix for this mesh, this will be sent to uniform.
+     * projectionMatrix The projection matrix, depending on shader this is either concatenated
+     * with modelview set to unifom.
+     * renderPassMatrix Optional matrix for renderpass
+     * @throws GLException If there is an error in GL while drawing this mesh.
      */
-    public NodeRenderer<?> getNodeRenderer();
-
+    public void renderMesh(NucleusRenderer renderer, ShaderProgram program, T mesh, float[][] matrices)
+            throws GLException;
+    
+    
     /**
      * Adds a mesh to be rendered next time the {@link #renderNode(NucleusRenderer, Pass, float[][])} method is called.
      * @param mesh

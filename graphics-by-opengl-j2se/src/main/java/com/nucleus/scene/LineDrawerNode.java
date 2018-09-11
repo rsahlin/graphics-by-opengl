@@ -8,6 +8,7 @@ import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
+import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
@@ -15,12 +16,14 @@ import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
-import com.nucleus.renderer.LineNodeRenderer;
+import com.nucleus.opengl.GLUtils;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.shader.GenericShaderProgram;
+import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
 import com.nucleus.shader.TranslateProgram;
 import com.nucleus.shader.VariableIndexer.Indexer;
@@ -63,8 +66,6 @@ public class LineDrawerNode extends NucleusMeshNode<Mesh> implements AttributeUp
      */
     transient int drawCount = Constants.NO_VALUE;
     transient int drawOffset = Constants.NO_VALUE;
-
-    transient static NodeRenderer<LineDrawerNode> nodeRenderer = new LineNodeRenderer();
 
     /**
      * Creates a nodebuilder that can be used to create LineDrawerNodes with mesh(es), that can be used to draw points
@@ -328,11 +329,6 @@ public class LineDrawerNode extends NucleusMeshNode<Mesh> implements AttributeUp
     }
 
     @Override
-    public NodeRenderer<LineDrawerNode> getNodeRenderer() {
-        return LineDrawerNode.nodeRenderer;
-    }
-
-    @Override
     public ArrayList<Mesh> getMeshes(ArrayList<Mesh> list) {
         list.addAll(meshes);
         return list;
@@ -340,11 +336,57 @@ public class LineDrawerNode extends NucleusMeshNode<Mesh> implements AttributeUp
 
     @Override
     public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices) throws GLException {
-        NodeRenderer<LineDrawerNode> nodeRenderer = getNodeRenderer();
-        if (nodeRenderer != null) {
-            nodeRenderer.renderNode(renderer, this, currentPass, matrices);
+        if (getLineMode() != LineMode.POINTS) {
+            renderer.getGLES().glLineWidth(getPointSize());
         }
-        return true;
+        return super.renderNode(renderer, currentPass, matrices);
     }
 
+    @Override
+    public void renderMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, float[][] matrices)
+            throws GLException {
+        GLES20Wrapper gles = renderer.getGLES();
+        Consumer updater = mesh.getAttributeConsumer();
+        if (updater != null) {
+            updater.updateAttributeData(renderer);
+        }
+        if (mesh.getDrawCount() == 0) {
+            return;
+        }
+        Material material = mesh.getMaterial();
+
+        program.updateAttributes(gles, mesh);
+        program.updateUniforms(gles, matrices, mesh);
+        program.prepareTextures(gles, mesh);
+
+        material.setBlendModeSeparate(gles);
+
+        ElementBuffer indices = mesh.getElementBuffer();
+
+        if (indices == null) {
+            gles.glDrawArrays(mesh.getMode().mode, mesh.getOffset(), mesh.getDrawCount());
+            GLUtils.handleError(gles, "glDrawArrays ");
+            timeKeeper.addDrawArrays(mesh.getDrawCount());
+        } else {
+            if (indices.getBufferName() > 0) {
+                gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
+                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
+                        mesh.getOffset());
+                GLUtils.handleError(gles, "glDrawElements with ElementBuffer ");
+            } else {
+                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
+                        indices.getBuffer().position(mesh.getOffset()));
+                GLUtils.handleError(gles, "glDrawElements no ElementBuffer ");
+            }
+            AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
+            if (vertices == null) {
+                vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES);
+            }
+            timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
+        }
+
+    }
+    
+    
+    
 }

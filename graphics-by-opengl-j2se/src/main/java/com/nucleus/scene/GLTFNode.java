@@ -10,9 +10,7 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLException;
-import com.nucleus.renderer.GLTFNodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
@@ -26,8 +24,6 @@ import com.nucleus.shader.ShaderProgram;
 public class GLTFNode extends AbstractNode implements RenderableNode<Mesh> {
 
     private static final String GLTF_NAME = "glTFName";
-
-    transient private static NodeRenderer<GLTFNode> nodeRenderer = new GLTFNodeRenderer();
 
     @SerializedName(GLTF_NAME)
     private String glTFName;
@@ -72,19 +68,6 @@ public class GLTFNode extends AbstractNode implements RenderableNode<Mesh> {
         }
     }
 
-    @Override
-    public NodeRenderer<GLTFNode> getNodeRenderer() {
-        return nodeRenderer;
-    }
-
-    @Override
-    public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices) throws GLException {
-        NodeRenderer<GLTFNode> nodeRenderer = getNodeRenderer();
-        if (nodeRenderer != null) {
-            nodeRenderer.renderNode(renderer, this, currentPass, matrices);
-        }
-        return false;
-    }
 
     @Override
     public ArrayList<Mesh> getMeshes(ArrayList<Mesh> list) {
@@ -125,5 +108,18 @@ public class GLTFNode extends AbstractNode implements RenderableNode<Mesh> {
         // TODO Auto-generated method stub
         return null;
     }
+
+	@Override
+	public void renderMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, float[][] matrices)
+			throws GLException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices) throws GLException {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 }

@@ -3,18 +3,31 @@ package com.nucleus.scene;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.nucleus.common.Environment;
 import com.nucleus.common.Type;
+import com.nucleus.geometry.AttributeBuffer;
+import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
+import com.nucleus.geometry.AttributeUpdater.Consumer;
+import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
+import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.GLUtils;
+import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.Pass;
 import com.nucleus.shader.ShaderProgram;
 
 public abstract class NucleusMeshNode<T> extends AbstractNode implements RenderableNode<T> {
 
     transient protected ArrayList<T> meshes = new ArrayList<T>();
+    transient protected ArrayList<T> nodeMeshes = new ArrayList<>();
+    transient protected FrameSampler timeKeeper = FrameSampler.getInstance();
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -173,4 +186,54 @@ public abstract class NucleusMeshNode<T> extends AbstractNode implements Rendera
         return (MeshBuilder<T>) builder;
     }
 
+    
+    @Override
+    public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices)
+            throws GLException {
+        GLES20Wrapper gles = renderer.getGLES();
+        nodeMeshes.clear();
+        getMeshes(nodeMeshes);
+        if (nodeMeshes.size() > 0) {
+            ShaderProgram program = getProgram(gles, this, currentPass);
+            gles.glUseProgram(program.getProgram());
+            GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
+            // TODO - is this the best place for this check - remember, this should only be done in debug cases.
+            if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
+                program.validateProgram(gles);
+            }
+            renderMeshes(renderer, program, nodeMeshes, matrices);
+        }
+        return true;
+    }
+
+    /**
+     * 
+     * @param node The node being rendered
+     * @param pass The currently defined pass
+     * @return
+     */
+    protected ShaderProgram getProgram(GLES20Wrapper gles, RenderableNode<?> node, Pass pass) {
+        ShaderProgram program = node.getProgram();
+        if (program == null) {
+            throw new IllegalArgumentException("No program for node " + node.getId());
+        }
+        return program.getProgram(gles, pass, program.getShading());
+    }
+
+    /**
+     * Renders the meshes in this node.
+     * 
+     * @param renderer
+     * @param program
+     * @param meshes
+     * @param matrices
+     * @throws GLException
+     */
+    protected void renderMeshes(NucleusRenderer renderer, ShaderProgram program, ArrayList<T> meshes,
+            float[][] matrices) throws GLException {
+        for (T mesh : meshes) {
+            renderMesh(renderer, program, mesh, matrices);
+        }
+    }
+    
 }

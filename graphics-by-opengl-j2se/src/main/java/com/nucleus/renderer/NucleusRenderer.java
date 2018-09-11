@@ -9,6 +9,7 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
@@ -33,7 +34,7 @@ public interface NucleusRenderer {
      *
      * @param <T> The node type
      */
-    public abstract class NodeRenderer<T> {
+    public abstract class NodeRenderer {
 
         /**
          * Renders the contents of the node for the specified render pass and using the matrices supplied.
@@ -46,26 +47,7 @@ public interface NucleusRenderer {
          * @param matrices The matrices to use
          * @throws GLException
          */
-        public abstract void renderNode(NucleusRenderer renderer, T node, Pass currentPass, float[][] matrices)
-                throws GLException;
-
-        /**
-         * Renders one mesh, material is used to fetch program and set attributes/uniforms.
-         * If the attributeupdater is set in the mesh it is called to update buffers.
-         * If texture exists in mesh it is made active and used.
-         * If mesh contains an index buffer it is used and glDrawElements is called, otherwise
-         * drawArrays is called.
-         * 
-         * @param renderer
-         * @param program The active program
-         * @param mesh The mesh to be rendered.
-         * @param matrices accumulated modelview matrix for this mesh, this will be sent to uniform.
-         * projectionMatrix The projection matrix, depending on shader this is either concatenated
-         * with modelview set to unifom.
-         * renderPassMatrix Optional matrix for renderpass
-         * @throws GLException If there is an error in GL while drawing this mesh.
-         */
-        public abstract void renderMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, float[][] matrices)
+        public abstract void renderNode(NucleusRenderer renderer, RenderableNode<?> node, Pass currentPass, float[][] matrices)
                 throws GLException;
 
     }
