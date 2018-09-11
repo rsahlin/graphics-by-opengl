@@ -12,12 +12,15 @@ import com.nucleus.renderer.Pass;
 import com.nucleus.shader.ShaderProgram;
 
 /**
- * 
+ * Node that can be rendered - used by nodes that shall display content on screen.
+ * Note that a generic is used as Mesh type, this is to provide flexibility in how a mesh is defined and how it is rendered.
+ * To be able to render a node, a matching {@link NodeRenderer} implementation must be returned by the {@link #getNodeRenderer()} method.
  *
  * @param <T> The mesh type
  */
 public interface RenderableNode<T> extends MeshBuilderFactory<T>, Node {
 
+	
     /**
      * Renders the mesh(es) in this node.
      * Shall not render childnodes
@@ -43,10 +46,14 @@ public interface RenderableNode<T> extends MeshBuilderFactory<T>, Node {
      * Returns the instance of node renderer to be used to render this node instance.
      * Default behavior is to create in Node {@link #onCreated()} method if the node renderer is not already set.
      * 
-     * @return Node renderer to use for this node instance
+     * @return Node renderer to use for this node instance - this must be able to render the mesh type as declared by implementations of this class.
      */
     public NodeRenderer<?> getNodeRenderer();
 
+    /**
+     * Adds a mesh to be rendered next time the {@link #renderNode(NucleusRenderer, Pass, float[][])} method is called.
+     * @param mesh
+     */
     public void addMesh(T mesh);
 
     /**

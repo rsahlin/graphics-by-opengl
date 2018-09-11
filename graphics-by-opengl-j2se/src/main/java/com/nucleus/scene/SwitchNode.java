@@ -91,11 +91,6 @@ public class SwitchNode extends AbstractNode implements PostDeserializable {
     }
 
     @Override
-    public NodeRenderer<?> getNodeRenderer() {
-        return null;
-    }
-
-    @Override
     public void create() {
         // TODO Auto-generated method stub
 

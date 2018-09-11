@@ -31,13 +31,11 @@ import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Transform;
 
 /**
- * Point of interest in a scene. Normally represents a visual object (vertices) that will be rendered.
+ * Point of interest in a scene. 
  * This shall be a 'dumb' node in that sense that it shall not contain logic or behavior other than the ability to
- * be rendered and serailized.
+ * be traversed and possibly rendered.
  * This class may be serialized using GSON, however since TypeAdapter is used to find implementation class of node
  * it is currently not possible to deserialize (vanilla) Node (due to recursion of deserialization)
- * 
- * Before the node can be rendered one or more meshes must be added using {@link #addMesh(Mesh)}
  * 
  * If a node contains properties the {@linkplain EventManager#sendObjectEvent(Object, String, String)} is called
  * with the property/key and this class as object.
@@ -846,15 +844,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
             setProjection(vf.getMatrix());
         }
     }
-
-    /**
-     * Called by the renderer when this node should possibly be rendered, if node is renderable then the NodeRenderer
-     * shall be returned.
-     * If null is returned this node will not be rendered.
-     * 
-     * @return
-     */
-    public abstract NodeRenderer<?> getNodeRenderer();
 
     /**
      * Look for ViewFrustum in parents nodes, stopping when ViewFrustum is found or when at root.

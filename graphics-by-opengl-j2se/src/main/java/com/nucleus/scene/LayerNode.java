@@ -124,9 +124,4 @@ public class LayerNode extends AbstractNode {
         }
     }
 
-    @Override
-    public NodeRenderer<?> getNodeRenderer() {
-        return null;
-    }
-
 }

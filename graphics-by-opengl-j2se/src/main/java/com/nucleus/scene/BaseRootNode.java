@@ -84,11 +84,6 @@ public class BaseRootNode extends RootNode {
     }
 
     @Override
-    public NodeRenderer<?> getNodeRenderer() {
-        return null;
-    }
-
-    @Override
     public void create() {
         // TODO Auto-generated method stub
 
