@@ -5,25 +5,26 @@ import java.util.ArrayList;
 
 import com.nucleus.common.Environment;
 import com.nucleus.common.Type;
-import com.nucleus.geometry.AttributeBuffer;
-import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
-import com.nucleus.geometry.AttributeUpdater.Consumer;
-import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.shader.ShaderProgram;
 
-public abstract class NucleusMeshNode<T> extends AbstractNode implements RenderableNode<T> {
+/**
+ * Node that has support for a generic Mesh.
+ * This node can be used by implementations as a base for {@link RenderableNode} functionality.
+ *
+ * @param <T> The Mesh typeclass. This is the Mesh class that will be rendered.
+ */
+public abstract class AbstractMeshNode<T> extends AbstractNode implements RenderableNode<T> {
 
     transient protected ArrayList<T> meshes = new ArrayList<T>();
     transient protected ArrayList<T> nodeMeshes = new ArrayList<>();
@@ -32,12 +33,18 @@ public abstract class NucleusMeshNode<T> extends AbstractNode implements Rendera
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
      */
-    protected NucleusMeshNode() {
+    protected AbstractMeshNode() {
         super();
     }
 
-    protected NucleusMeshNode(RootNode root, Type<Node> type) {
+    /**
+     * Default constructor
+     * @param root
+     * @param type
+     */
+    protected AbstractMeshNode(RootNode root, Type<Node> type) {
         super(root, type);
+        createMeshRenderer();
     }
 
     @Override
@@ -191,18 +198,14 @@ public abstract class NucleusMeshNode<T> extends AbstractNode implements Rendera
     public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices)
             throws GLException {
         GLES20Wrapper gles = renderer.getGLES();
-        nodeMeshes.clear();
-        getMeshes(nodeMeshes);
-        if (nodeMeshes.size() > 0) {
-            ShaderProgram program = getProgram(gles, this, currentPass);
-            gles.glUseProgram(program.getProgram());
-            GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
-            // TODO - is this the best place for this check - remember, this should only be done in debug cases.
-            if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
-                program.validateProgram(gles);
-            }
-            renderMeshes(renderer, program, nodeMeshes, matrices);
+        ShaderProgram program = getProgram(gles, this, currentPass);
+        gles.glUseProgram(program.getProgram());
+        GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
+        // TODO - is this the best place for this check - remember, this should only be done in debug cases.
+        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
+            program.validateProgram(gles);
         }
+        getMeshRenderer().renderMeshes(renderer, program, this, matrices);
         return true;
     }
 
@@ -221,19 +224,8 @@ public abstract class NucleusMeshNode<T> extends AbstractNode implements Rendera
     }
 
     /**
-     * Renders the meshes in this node.
-     * 
-     * @param renderer
-     * @param program
-     * @param meshes
-     * @param matrices
-     * @throws GLException
+     * Creates the mesh renderer - called if {@link #meshRenderer} is null.
      */
-    protected void renderMeshes(NucleusRenderer renderer, ShaderProgram program, ArrayList<T> meshes,
-            float[][] matrices) throws GLException {
-        for (T mesh : meshes) {
-            renderMesh(renderer, program, mesh, matrices);
-        }
-    }
+    protected abstract void createMeshRenderer();
     
 }

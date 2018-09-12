@@ -9,9 +9,9 @@ import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.GLTFMeshRenderer;
+import com.nucleus.renderer.MeshRenderer;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.Mesh;
@@ -21,8 +21,10 @@ import com.nucleus.shader.ShaderProgram;
  * Node containing a glTF model
  *
  */
-public class GLTFNode extends AbstractNode implements RenderableNode<Mesh> {
+public class GLTFNode extends AbstractMeshNode<Mesh>  {
 
+    transient protected static MeshRenderer<Mesh> meshRenderer;
+    
     private static final String GLTF_NAME = "glTFName";
 
     @SerializedName(GLTF_NAME)
@@ -109,17 +111,18 @@ public class GLTFNode extends AbstractNode implements RenderableNode<Mesh> {
         return null;
     }
 
-	@Override
-	public void renderMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, float[][] matrices)
-			throws GLException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices) throws GLException {
-		// TODO Auto-generated method stub
-		return false;
-	}
+	
+    @Override
+    protected void createMeshRenderer() {
+        if (meshRenderer == null) {
+            meshRenderer = new GLTFMeshRenderer();
+        }
+    }
+    
+    @Override
+    public MeshRenderer<Mesh> getMeshRenderer() {
+        return meshRenderer;
+    }
+    
 
 }
