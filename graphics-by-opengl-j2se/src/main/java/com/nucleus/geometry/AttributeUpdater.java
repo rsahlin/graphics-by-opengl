@@ -18,6 +18,43 @@ import com.nucleus.renderer.NucleusRenderer;
 public interface AttributeUpdater {
 
     /**
+     * For the different Vertice/Attribute buffers
+     */
+    public enum BufferIndex {
+        /**
+         * Attribute buffer storage, this is usually dynamic
+         */
+        ATTRIBUTES(0),
+        /**
+         * Static attribute vertex storage, use this for static attributes
+         */
+        ATTRIBUTES_STATIC(1);
+
+        public final int index;
+
+        private BufferIndex(int index) {
+            this.index = index;
+        }
+
+        /**
+         * Returns the BufferIndex for the specified index, or null it no match.
+         * 
+         * @param index
+         * @return
+         */
+        public static BufferIndex getFromIndex(int index) {
+            for (BufferIndex bi : values()) {
+                if (bi.index == index) {
+                    return bi;
+                }
+            }
+            return null;
+        }
+
+    }
+    
+    
+    /**
      * This is for objects that need (consumes) attribute data, can be attached to Mesh to handle updating
      * of attribute data before mesh is rendered.
      * The data used to update Mesh shall be agnostic to this API, ie it shall be up to the implementation.
@@ -57,6 +94,42 @@ public interface AttributeUpdater {
 
     }
 
+    
+    /**
+     * Sets the attribute updater for this mesh, use this for meshes where the attribute data must be updated each
+     * frame.
+     * This method shall copy data, as needed, into the VertexBuffer arrays that are used when the mesh is rendered.
+     * What data to copy is implementation specific.
+     * 
+     * @param attributeConsumer Callback to set data into the generic vertex arrays, or null to remove.
+     */
+    public void setAttributeUpdater(Consumer attributeConsumer);
+
+    /**
+     * Returns the attribute consumer.
+     * 
+     * @return The attribute consumer or null if none is set.
+     */
+    public Consumer getAttributeConsumer();
+    
+    /**
+     * Returns the buffer, at the specified index, containing vertices and attribute data
+     * If the mesh only has one buffer - it is returned regardless of index.
+     * 
+     * @param buffer Index into the vertex/attribute buffer to return
+     * @return The vertexbuffer
+     */
+    public AttributeBuffer getAttributeBuffer(BufferIndex buffer);
+
+    /**
+     * Returns the buffer, at the specified index, containing vertice/attribute data
+     * 
+     * @param buffer Index into the vertex/attribute buffer to return
+     * @return Buffer holding attribute data.
+     */
+    public AttributeBuffer getAttributeBuffer(int index);
+    
+    
     /**
      * Release all resources allocated by the implementing class, call this when this object shall not be used anymore.
      * 

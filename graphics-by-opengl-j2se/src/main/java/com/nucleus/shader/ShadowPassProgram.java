@@ -1,6 +1,6 @@
 package com.nucleus.shader;
 
-import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.Pass;
@@ -32,21 +32,20 @@ public abstract class ShadowPassProgram extends ShaderProgram {
     }
 
     @Override
-    public void updateAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
+    public void updateAttributes(GLES20Wrapper gles, AttributeUpdater mesh) throws GLException {
         objectProgram.updateAttributes(gles, mesh);
     }
 
     @Override
-    public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
-            throws GLException {
+    public void updateUniforms(GLES20Wrapper gles, float[][] matrices) throws GLException {
         /**
          * Currently calls ShaderProgram#setUniformData() in order to set necessary data from the program int
          * uniform storage.
          * This could potentially break the shadow program if needed uniform data is set in some other method.
          * TODO - Make sure that the interface declares and mandates that uniform data shall be set in #setUniformData()
          */
-        objectProgram.updateUniformData(uniforms, mesh);
-        super.updateUniforms(gles, matrices, mesh);
+        objectProgram.updateUniformData(uniforms);
+        super.updateUniforms(gles, matrices);
     }
 
     @Override

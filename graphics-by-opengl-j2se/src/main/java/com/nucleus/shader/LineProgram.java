@@ -1,7 +1,6 @@
 package com.nucleus.shader;
 
-import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.BufferIndex;
+import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.Pass;
@@ -63,16 +62,14 @@ public class LineProgram extends ShaderProgram {
     }
 
     @Override
-    public void updateUniformData(float[] destinationUniform, Mesh mesh) {
+    public void updateUniformData(float[] destinationUniform) {
         if (uPointSize != null) {
             destinationUniform[uPointSize.getOffset()] = pointSize;
         }
     }
 
     @Override
-    public void initBuffers(Mesh mesh) {
-        // TODO Auto-generated method stub
-
+    public void initUniformData(float[] destinationUniforms) {
     }
 
 }

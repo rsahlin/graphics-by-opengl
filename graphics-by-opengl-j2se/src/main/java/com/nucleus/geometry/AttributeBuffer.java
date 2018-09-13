@@ -5,7 +5,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import com.nucleus.SimpleLogger;
-import com.nucleus.geometry.Mesh.BufferIndex;
+import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /**

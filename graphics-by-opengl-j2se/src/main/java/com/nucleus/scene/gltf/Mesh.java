@@ -1,6 +1,9 @@
 package com.nucleus.scene.gltf;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.geometry.AttributeBuffer;
+import com.nucleus.geometry.AttributeUpdater;
+import com.nucleus.renderer.NucleusRenderer;
 
 /**
  * 
@@ -20,7 +23,7 @@ import com.google.gson.annotations.SerializedName;
  * 
  *
  */
-public class Mesh {
+public class Mesh implements AttributeUpdater {
 
     private static final String PRIMITIVES = "primitives";
     private static final String WEIGHTS = "weights";
@@ -43,6 +46,36 @@ public class Mesh {
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public AttributeBuffer getAttributeBuffer(BufferIndex buffer) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public AttributeBuffer getAttributeBuffer(int index) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void destroy(NucleusRenderer renderer) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void setAttributeUpdater(Consumer attributeConsumer) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public Consumer getAttributeConsumer() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

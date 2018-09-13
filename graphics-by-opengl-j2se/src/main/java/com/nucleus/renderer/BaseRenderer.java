@@ -10,12 +10,6 @@ import java.util.Set;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
-import com.nucleus.geometry.AttributeBuffer;
-import com.nucleus.geometry.AttributeUpdater.Consumer;
-import com.nucleus.geometry.ElementBuffer;
-import com.nucleus.geometry.Material;
-import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
@@ -61,7 +55,6 @@ class BaseRenderer implements NucleusRenderer {
     protected ArrayDeque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<float[]> projection = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
     protected ArrayDeque<Pass> renderPassStack = new ArrayDeque<>();
-    protected ArrayList<Mesh> nodeMeshes = new ArrayList<>();
     // TODO - move this into a class together with render pass deque so that access of stack and current pass
     // is handled consistently
     private Pass currentPass;
@@ -542,69 +535,6 @@ class BaseRenderer implements NucleusRenderer {
         }
     }
 
-    protected void renderMeshes(ShaderProgram program, ArrayList<Mesh> meshes, float[][] matrices) throws GLException {
-        for (Mesh mesh : meshes) {
-            renderMesh(program, mesh, matrices);
-        }
-    }
-
-    /**
-     * Renders one mesh, material is used to fetch program and set attributes/uniforms.
-     * If the attributeupdater is set in the mesh it is called to update buffers.
-     * If texture exists in mesh it is made active and used.
-     * If mesh contains an index buffer it is used and glDrawElements is called, otherwise
-     * drawArrays is called.
-     * 
-     * @param program The active program
-     * @param mesh The mesh to be rendered.
-     * @param matrices accumulated modelview matrix for this mesh, this will be sent to uniform.
-     * projectionMatrix The projection matrix, depending on shader this is either concatenated
-     * with modelview set to unifom.
-     * renderPassMatrix Optional matrix for renderpass
-     * @throws GLException If there is an error in GL while drawing this mesh.
-     */
-    protected void renderMesh(ShaderProgram program, Mesh mesh, float[][] matrices)
-            throws GLException {
-        Consumer updater = mesh.getAttributeConsumer();
-        if (updater != null) {
-            updater.updateAttributeData(this);
-        }
-        if (mesh.getDrawCount() == 0) {
-            return;
-        }
-        Material material = mesh.getMaterial();
-
-        program.updateAttributes(gles, mesh);
-        program.updateUniforms(gles, matrices, mesh);
-        program.prepareTextures(gles, mesh);
-
-        material.setBlendModeSeparate(gles);
-
-        ElementBuffer indices = mesh.getElementBuffer();
-
-        if (indices == null) {
-            gles.glDrawArrays(mesh.getMode().mode, mesh.getOffset(), mesh.getDrawCount());
-            GLUtils.handleError(gles, "glDrawArrays ");
-            timeKeeper.addDrawArrays(mesh.getDrawCount());
-        } else {
-            if (indices.getBufferName() > 0) {
-                gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
-                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
-                        mesh.getOffset());
-                GLUtils.handleError(gles, "glDrawElements with ElementBuffer ");
-            } else {
-                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
-                        indices.getBuffer().position(mesh.getOffset()));
-                GLUtils.handleError(gles, "glDrawElements no ElementBuffer ");
-            }
-            AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
-            if (vertices == null) {
-                vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES);
-            }
-            timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
-        }
-    }
-
     /**
      * 
      * @param node The node being rendered
@@ -727,16 +657,6 @@ class BaseRenderer implements NucleusRenderer {
     @Override
     public SurfaceConfiguration getSurfaceConfiguration() {
         return surfaceConfig;
-    }
-
-    @Override
-    public void renderToTexture(float[] matrix, ShaderProgram program, ArrayList<Mesh> meshes, Texture2D texture,
-            RenderPass renderPass)
-            throws GLException {
-        pushPass(currentPass);
-        setRenderPass(renderPass);
-        renderMeshes(program, meshes, matrices);
-        popPass();
     }
 
 }

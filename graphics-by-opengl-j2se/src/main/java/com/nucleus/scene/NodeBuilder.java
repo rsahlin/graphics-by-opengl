@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Type;
-import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.opengl.GLException;
 import com.nucleus.shader.ShaderProgram;
@@ -13,22 +12,21 @@ import com.nucleus.shader.ShaderProgram;
  * Builder for Nodes, use this when nodes are created programmatically
  *
  * @param <T>
- * @param <S>
  */
 public class NodeBuilder<T extends Node> {
 
     protected Type<Node> type;
     protected RootNode root;
     protected int meshCount = 0;
-    protected MeshBuilder<Mesh> meshBuilder;
+    protected MeshBuilder<?> meshBuilder;
     protected ShaderProgram program;
 
-    public NodeBuilder<?> setType(Type<Node> type) {
+    public NodeBuilder<T> setType(Type<Node> type) {
         this.type = type;
         return this;
     }
 
-    public NodeBuilder<?> setRoot(RootNode root) {
+    public NodeBuilder<T> setRoot(RootNode root) {
         this.root = root;
         return this;
     }
@@ -39,7 +37,7 @@ public class NodeBuilder<T extends Node> {
      * @param program
      * @return
      */
-    public NodeBuilder<?> setProgram(ShaderProgram program) {
+    public NodeBuilder<T> setProgram(ShaderProgram program) {
         this.program = program;
         return this;
     }
@@ -51,7 +49,7 @@ public class NodeBuilder<T extends Node> {
      * @param meshBuilder
      * @return
      */
-    public NodeBuilder<T> setMeshBuilder(MeshBuilder meshBuilder) {
+    public NodeBuilder<T> setMeshBuilder(MeshBuilder<?> meshBuilder) {
         this.meshBuilder = meshBuilder;
         return this;
     }
@@ -93,8 +91,7 @@ public class NodeBuilder<T extends Node> {
             if (node instanceof RenderableNode<?>) {
                 ((RenderableNode<?>) node).setProgram(program);
                 for (int i = 0; i < meshCount; i++) {
-                    Mesh mesh = meshBuilder.create();
-                    ((RenderableNode<Mesh>) node).addMesh(mesh);
+                    meshBuilder.create((RenderableNode) node);
                 }
             }
             node.setId(id);

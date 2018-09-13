@@ -1,14 +1,6 @@
 package com.nucleus.renderer;
 
-import com.nucleus.geometry.AttributeBuffer;
-import com.nucleus.geometry.AttributeUpdater.Consumer;
-import com.nucleus.geometry.ElementBuffer;
-import com.nucleus.geometry.Material;
-import com.nucleus.geometry.Mesh.BufferIndex;
-import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.GLUtils;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.shader.ShaderProgram;
@@ -19,6 +11,7 @@ public class GLTFMeshRenderer implements MeshRenderer<Mesh>{
     @Override
     public void renderMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, float[][] matrices)
             throws GLException {
+/*        
         GLES20Wrapper gles = renderer.getGLES();
         Consumer updater = mesh.getAttributeConsumer();
         if (updater != null) {
@@ -30,7 +23,7 @@ public class GLTFMeshRenderer implements MeshRenderer<Mesh>{
         Material material = mesh.getMaterial();
 
         program.updateAttributes(gles, mesh);
-        program.updateUniforms(gles, matrices, mesh);
+        program.updateUniforms(gles, matrices);
         program.prepareTextures(gles, mesh);
 
         material.setBlendModeSeparate(gles);
@@ -58,13 +51,13 @@ public class GLTFMeshRenderer implements MeshRenderer<Mesh>{
             }
             timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
         }
-
+*/
     }
 
     @Override
     public boolean renderMeshes(NucleusRenderer renderer, ShaderProgram program, RenderableNode<Mesh> node,
             float[][] matrices) throws GLException {
-        
+  /*      
         GLES20Wrapper gles = renderer.getGLES();
         nodeMeshes.clear();
         node.getMeshes(nodeMeshes);
@@ -74,6 +67,7 @@ public class GLTFMeshRenderer implements MeshRenderer<Mesh>{
             }
             return true;
         }
+*/        
         return false;
     }
     

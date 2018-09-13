@@ -1,6 +1,5 @@
 package com.nucleus.shader;
 
-import com.nucleus.geometry.Mesh;
 import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
@@ -46,7 +45,7 @@ public class ShadowPass1Program extends ShadowPassProgram {
     }
 
     @Override
-    public void setUniformMatrices(float[][] matrices, Mesh mesh) {
+    public void setUniformMatrices(float[][] matrices) {
         System.arraycopy(matrices[Matrices.MODELVIEW.index], 0, uniforms,
                 getUniformByName("uMVMatrix").getOffset(),
                 Matrix.MATRIX_ELEMENTS);
@@ -72,15 +71,11 @@ public class ShadowPass1Program extends ShadowPassProgram {
     }
 
     @Override
-    public void updateUniformData(float[] destinationUniform, Mesh mesh) {
-        // TODO Auto-generated method stub
-
+    public void updateUniformData(float[] destinationUniform) {
     }
 
     @Override
-    public void initBuffers(Mesh mesh) {
-        // TODO Auto-generated method stub
-
+    public void initUniformData(float[] destinationUniforms) {
     }
 
 }

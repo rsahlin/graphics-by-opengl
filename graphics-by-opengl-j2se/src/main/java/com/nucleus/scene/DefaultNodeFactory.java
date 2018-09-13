@@ -3,7 +3,6 @@ package com.nucleus.scene;
 import java.io.IOException;
 import java.util.ArrayDeque;
 
-import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
@@ -100,11 +99,11 @@ public class DefaultNodeFactory implements NodeFactory {
                         + source.getClass().getSimpleName() + ", instance: " + node.getClass().getSimpleName());
             }
             if (node instanceof RenderableNode<?>) {
-                RenderableNode<Mesh> rNode = (RenderableNode<Mesh>) node;
+                RenderableNode<?> rNode = (RenderableNode<?>) node;
                 for (int i = 0; i < meshCount; i++) {
-                    MeshBuilder<Mesh> meshBuilder = rNode.createMeshBuilder(renderer, null);
+                    MeshBuilder meshBuilder = rNode.createMeshBuilder(renderer, null);
                     if (meshBuilder != null) {
-                        rNode.addMesh(meshBuilder.create());
+                        meshBuilder.create(rNode);
                         if (rNode.getBounds() == null) {
                         	rNode.setBounds(meshBuilder.createBounds());
                         }

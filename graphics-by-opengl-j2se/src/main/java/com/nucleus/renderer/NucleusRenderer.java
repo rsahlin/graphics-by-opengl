@@ -1,19 +1,15 @@
 package com.nucleus.renderer;
 
 import java.nio.Buffer;
-import java.util.ArrayList;
 
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.ClientApplication;
-import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
-import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.ImageFactory;
-import com.nucleus.texturing.Texture2D;
 
 /**
  * An interface for rendering scenes. This is done by supporting a Node base hierarchy.
@@ -245,18 +241,6 @@ public interface NucleusRenderer {
      * @throws GLException If there is an error in GL while drawing this node.
      */
     public void render(Node node) throws GLException;
-
-    /**
-     * 
-     * @param matrix modelview matrix for the object, will use current projection matrix
-     * @param meshes List of meshes to draw
-     * @param texture The target texture
-     * @param renderpass
-     * @throws GLException If there is an error in GL while drawing this node.
-     */
-    public void renderToTexture(float[] matrix, ShaderProgram program, ArrayList<Mesh> meshes, Texture2D texture,
-            RenderPass renderpass)
-            throws GLException;
 
     /**
      * Returns true if this renderer has been initialized by calling init() when

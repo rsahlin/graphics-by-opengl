@@ -2,7 +2,6 @@ package com.nucleus.shader;
 
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
-import com.nucleus.geometry.Mesh;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
@@ -81,7 +80,7 @@ public class ShadowPass2Program extends ShadowPassProgram {
     }
 
     @Override
-    public void setUniformMatrices(float[][] matrices, Mesh mesh) {
+    public void setUniformMatrices(float[][] matrices) {
         // Refresh the uniform matrix using light matrix
         System.arraycopy(matrices[Matrices.MODELVIEW.index], 0, uniforms,
                 getUniformByName("uMVMatrix").getOffset(),
@@ -96,7 +95,7 @@ public class ShadowPass2Program extends ShadowPassProgram {
     }
 
     @Override
-    public void prepareTextures(GLES20Wrapper gles, Mesh mesh) throws GLException {
+    public void prepareTexture(GLES20Wrapper gles, Texture2D texture) throws GLException {
         int textureID = shadow.getName();
         if (textureID == Constants.NO_VALUE) {
             AssetManager.getInstance().getIdReference(shadow);
@@ -109,7 +108,6 @@ public class ShadowPass2Program extends ShadowPassProgram {
         TextureUtils.prepareTexture(gles, shadow, unit);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_COMPARE_MODE, GLES30.GL_COMPARE_REF_TO_TEXTURE);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_COMPARE_FUNC, GLES20.GL_LESS);
-        Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
         if (texture != null && texture.textureType != TextureType.Untextured) {
             /**
              * TODO - make texture names into enums
@@ -120,13 +118,12 @@ public class ShadowPass2Program extends ShadowPassProgram {
     }
 
     @Override
-    public void initBuffers(Mesh mesh) {
-        // TODO Auto-generated method stub
+    public void updateUniformData(float[] destinationUniform) {
+        objectProgram.updateUniformData(destinationUniform);
     }
 
     @Override
-    public void updateUniformData(float[] destinationUniform, Mesh mesh) {
-        objectProgram.updateUniformData(destinationUniform, mesh);
+    public void initUniformData(float[] destinationUniforms) {
     }
 
 }

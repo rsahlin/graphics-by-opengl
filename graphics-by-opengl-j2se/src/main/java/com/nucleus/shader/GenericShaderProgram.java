@@ -1,6 +1,5 @@
 package com.nucleus.shader;
 
-import com.nucleus.geometry.Mesh;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.Texture2D.Shading;
 
@@ -46,11 +45,11 @@ public class GenericShaderProgram extends ShaderProgram {
     }
 
     @Override
-    public void updateUniformData(float[] destinationUniform, Mesh mesh) {
+    public void updateUniformData(float[] destinationUniform) {
     }
 
     @Override
-    public void initBuffers(Mesh mesh) {
+    public void initUniformData(float[] destinationUniforms) {
     }
 
 }

@@ -13,8 +13,8 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
 import com.nucleus.geometry.AttributeBuffer;
-import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.BufferIndex;
+import com.nucleus.geometry.AttributeUpdater;
+import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLES30Wrapper;
@@ -175,7 +175,7 @@ public abstract class ShaderProgram {
          * 
          * @return
          */
-        protected Texture2D.Shading getShading() {
+        public Texture2D.Shading getShading() {
             return shading;
         }
 
@@ -184,7 +184,7 @@ public abstract class ShaderProgram {
          * 
          * @return The category name of null if not relevant
          */
-        protected String getCategory() {
+        public String getCategory() {
             return category;
         }
 
@@ -214,7 +214,7 @@ public abstract class ShaderProgram {
          * 
          * @return
          */
-        protected String getCategoryString() {
+        public String getCategoryString() {
             return (category != null ? category.toLowerCase() : "");
         }
 
@@ -225,7 +225,7 @@ public abstract class ShaderProgram {
          * GL_COMPUTE_SHADER
          * @return The relative path, if defined it must end with the path separator char
          */
-        protected String getPath(int shaderType) {
+        public String getPath(int shaderType) {
             String path = getCategoryString();
             return path.length() == 0 ? path : path + File.separator;
         }
@@ -235,7 +235,7 @@ public abstract class ShaderProgram {
          * 
          * @return
          */
-        protected String getPassString() {
+        public String getPassString() {
             return (pass != null ? pass.name().toLowerCase() : "");
         }
 
@@ -687,7 +687,6 @@ public abstract class ShaderProgram {
      * Internal method, creates the array storage for for uniform samplers, sampler usage is specific to program
      * and does not need to be stored in mesh.
      * 
-     * 
      */
     protected void createSamplerStorage() {
         if (activeUniforms == null) {
@@ -740,16 +739,6 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Initialize the attribute and uniform buffers with data, if data is static then it does not need to be
-     * updated after this call.
-     * Populate the attribute/uniform buffers in the mesh as needed by the shader program.
-     * 
-     * 
-     * @param mesh
-     */
-    public abstract void initBuffers(Mesh mesh);
-
-    /**
      * Set the attribute pointer(s) using the data in the vertexbuffer, this shall make the necessary calls to
      * set the pointers for used attributes, enable pointers as needed.
      * This will make the actual connection between the attribute data in the vertex buffer and the shader.
@@ -758,7 +747,7 @@ public abstract class ShaderProgram {
      * @param gles
      * @param mesh
      */
-    public void updateAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
+    public void updateAttributes(GLES20Wrapper gles, AttributeUpdater mesh) throws GLException {
         for (int i = 0; i < attributeVariables.length; i++) {
             AttributeBuffer buffer = mesh.getAttributeBuffer(i);
             if (buffer != null) {
@@ -792,19 +781,18 @@ public abstract class ShaderProgram {
 
     /**
      * Updates the data uploaded to GL as uniforms, if uniforms are static then only the matrices needs to be updated.
-     * Calls {@link #setUniformMatrices(float[][], Mesh)} to update uniform matrices.
-     * Then call {@link #updateUniformData(float[], Mesh)} to set program specific uniform data
+     * Calls {@link #setUniformMatrices(float[][])} to update uniform matrices.
+     * Then call {@link #updateUniformData(float[])} to set program specific uniform data
      * Then sets uniforms to GL by calling {@link #uploadUniforms(GLES20Wrapper, float[], ShaderVariable[])
      * When this method returns the uniform data has been uploaded to GL and is ready.
      * 
      * @param gles
      * @param matrices modelview, projection and renderpass matrices
-     * @param mesh
      */
-    public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
+    public void updateUniforms(GLES20Wrapper gles, float[][] matrices)
             throws GLException {
-        setUniformMatrices(matrices, mesh);
-        updateUniformData(uniforms, mesh);
+        setUniformMatrices(matrices);
+        updateUniformData(uniforms);
         uploadUniforms(gles, uniforms, activeUniforms);
     }
 
@@ -816,7 +804,6 @@ public abstract class ShaderProgram {
      * 
      * @param gles
      * @param uniformData
-     * @param mesh
      * @param activeUniforms
      * @throws GLException
      */
@@ -836,15 +823,14 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Prepares each texture used before rendering starts.
+     * Prepares a texture used before rendering starts.
      * This shall set texture parameters to used textures, ie activate texture, bind texture then set parameters.
      * 
      * @param gles
-     * @param mesh
+     * @param texture
      * @throws GLException
      */
-    public void prepareTextures(GLES20Wrapper gles, Mesh mesh) throws GLException {
-        Texture2D texture = mesh.getTexture(Texture2D.TEXTURE_0);
+    public void prepareTexture(GLES20Wrapper gles, Texture2D texture) throws GLException {
         if (texture == null || texture.getTextureType() == TextureType.Untextured) {
             return;
         }
@@ -1321,6 +1307,7 @@ public abstract class ShaderProgram {
             }
             createSamplerStorage();
             setSamplers();
+            initUniformData(uniforms);
         } catch (GLException e) {
             logShaderSources(gles, shaderNames);
             throw e;
@@ -1535,9 +1522,8 @@ public abstract class ShaderProgram {
      * and projection matrices. Will NOT set uniforms to GL, only update the uniform array store
      * 
      * @param matrices Source matrices to set to uniform data array.
-     * @param mesh
      */
-    public void setUniformMatrices(float[][] matrices, Mesh mesh) {
+    public void setUniformMatrices(float[][] matrices) {
         // Refresh the uniform matrixes - default is modelview and projection
         System.arraycopy(matrices[0], 0, uniforms, getUniformByName("uMVMatrix").getOffset(),
                 Matrix.MATRIX_ELEMENTS);
@@ -1547,16 +1533,24 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Initializes the uniform data for this program. 
+     * Is called after program is linked and uniform buffers are created, variables and blocks are resolved.
+     * @param destinationUniforms
+     */
+    public abstract void initUniformData(float[] destinationUniforms);
+    
+    /**
      * Updates the shader program specific uniform data, storing in in the uniformData array or
      * {@link #uniformBlockBuffers}
      * Subclasses shall set any uniform data needed - but not matrices which is set in
-     * {@link #setUniformMatrices(float[][], Mesh)}
+     * {@link #setUniformMatrices(float[][])}
      * 
      * @param destinationUniforms
-     * @param mesh
      */
-    public abstract void updateUniformData(float[] destinationUniform, Mesh mesh);
+    public abstract void updateUniformData(float[] destinationUniform);
 
+    
+    
     /**
      * Sets UV fraction for the tiled texture + number of frames in x.
      * Use this for programs that use tiled texture behavior.
@@ -1590,29 +1584,6 @@ public abstract class ShaderProgram {
         }
     }
 
-    /**
-     * Sets the data related to texture uniforms in the uniform float storage
-     * 
-     * @param uniforms
-     * @param texture
-     */
-    protected void setTextureUniforms(float[] uniforms, Texture2D texture) {
-        if (texture.getTextureType() == TextureType.TiledTexture2D) {
-            // TODO - where should the uniform name be defined?
-            ShaderVariable texUniform = getUniformByName("uTextureData");
-            // If null it could be because loaded program does not match with texture usage
-            if (texUniform != null) {
-                setTextureUniforms((TiledTexture2D) texture, uniforms, texUniform);
-            } else {
-                if (function.getShading() == null || function.getShading() == Shading.flat) {
-                    throw new IllegalArgumentException(
-                            "Texture type " + texture.getTextureType() + ", does not match shading " + getShading()
-                                    + " for program:\n" + toString());
-                }
-            }
-
-        }
-    }
 
     /**
      * Sets the emissive light color in uniform data

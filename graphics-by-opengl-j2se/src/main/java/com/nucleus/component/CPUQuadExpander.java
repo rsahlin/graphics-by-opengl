@@ -2,7 +2,6 @@ package com.nucleus.component;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
-import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.VariableIndexer.Indexer;
@@ -37,7 +36,6 @@ public class CPUQuadExpander extends AttributeExpander {
     protected float[] destinationData;
     protected final float[] DEFAULT_SCALE = new float[] { 1, 1, 1 };
 
-    private transient Texture2D texture;
     /**
      * Only used for uniform block no uniform block in shader
      */
@@ -51,18 +49,17 @@ public class CPUQuadExpander extends AttributeExpander {
 
     /**
      * 
-     * @param spriteMesh
+     * @param texture
      * @param mapper
-     * @param data
+     * @param source
+     * @param destination
      */
-    public CPUQuadExpander(Mesh spriteMesh, Indexer mapper,
-            CPUComponentBuffer source, CPUComponentBuffer destination) {
+    public CPUQuadExpander(Texture2D texture, Indexer mapper, CPUComponentBuffer source, CPUComponentBuffer destination) {
         super(mapper, destination, 4);
         this.source = source;
         this.sourceData = source.data;
         this.destination = destination;
         this.destinationData = destination.data;
-        this.texture = spriteMesh.getTexture(Texture2D.TEXTURE_0);
         this.sizePerVertex = mapper.attributesPerVertex;
         if (texture.getTextureType() == TextureType.UVTexture2D) {
             // TODO - how to sync this with the creation of uniform block buffer in shader program?
@@ -86,7 +83,7 @@ public class CPUQuadExpander extends AttributeExpander {
     @Override
     public void updateAttributeData(NucleusRenderer renderer) {
         // Use special case if shader does not support uniform block where the frames are.
-        if (texture.getTextureType() == TextureType.UVTexture2D && tempData != null) {
+        if (tempData != null) {
             int uvIndex = 0;
             int frame;
             buffer.setBufferPosition(0);

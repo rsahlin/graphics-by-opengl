@@ -55,7 +55,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
         linedrawernode(LineDrawerNode.class),
         componentnode(ComponentNode.class),
         meshnode(MeshNode.class),
-        rendertotarget(RenderToTargetNode.class),
         rootnode(BaseRootNode.class),
         gltfnode(GLTFNode.class);
 

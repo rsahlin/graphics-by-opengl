@@ -3,12 +3,11 @@ package com.nucleus.renderer;
 import java.util.ArrayList;
 
 import com.nucleus.geometry.AttributeBuffer;
-import com.nucleus.geometry.AttributeUpdater;
+import com.nucleus.geometry.AttributeUpdater.BufferIndex;
+import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.AttributeUpdater.Consumer;
-import com.nucleus.geometry.Mesh.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
@@ -16,6 +15,7 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.texturing.Texture2D;
 
 /**
  * Implementation that can render the default Nucleus Mesh
@@ -40,8 +40,8 @@ public class NucleusMeshRenderer implements MeshRenderer<Mesh>{
         Material material = mesh.getMaterial();
 
         program.updateAttributes(gles, mesh);
-        program.updateUniforms(gles, matrices, mesh);
-        program.prepareTextures(gles, mesh);
+        program.updateUniforms(gles, matrices);
+        program.prepareTexture(gles, mesh.getTexture(Texture2D.TEXTURE_0));
 
         material.setBlendModeSeparate(gles);
 

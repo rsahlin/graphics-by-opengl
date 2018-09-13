@@ -1,6 +1,5 @@
 package com.nucleus.shader;
 
-import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -19,14 +18,11 @@ public class ComputeShader extends ShaderProgram {
     }
 
     @Override
-    public void updateUniformData(float[] destinationUniform, Mesh mesh) {
-
+    public void updateUniformData(float[] destinationUniform) {
     }
 
     @Override
-    public void initBuffers(Mesh mesh) {
-        // TODO Auto-generated method stub
-
+    public void initUniformData(float[] destinationUniforms) {
     }
 
 }

@@ -14,6 +14,7 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.BufferObjectsFactory;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.scene.RenderableNode;
 import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
@@ -71,42 +72,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
     private final static String NULL_NAMES = "Buffer names is null";
     private final static String NOT_ENOUGH_NAMES = "Not enough buffer names";
-
-    /**
-     * For the different Vertice/Attribute buffers
-     */
-    public enum BufferIndex {
-        /**
-         * Attribute buffer storage, this is usually dynamic
-         */
-        ATTRIBUTES(0),
-        /**
-         * Static attribute vertex storage, use this for static attributes
-         */
-        ATTRIBUTES_STATIC(1);
-
-        public final int index;
-
-        private BufferIndex(int index) {
-            this.index = index;
-        }
-
-        /**
-         * Returns the BufferIndex for the specified index, or null it no match.
-         * 
-         * @param index
-         * @return
-         */
-        public static BufferIndex getFromIndex(int index) {
-            for (BufferIndex bi : values()) {
-                if (bi.index == index) {
-                    return bi;
-                }
-            }
-            return null;
-        }
-
-    }
 
     /**
      * Builder for meshes
@@ -203,7 +168,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         }
 
         @Override
-        public Mesh create() throws IOException, GLException {
+        public Mesh create(RenderableNode<Mesh> parent) throws IOException, GLException {
             validate();
             Mesh mesh = createInstance();
             mesh.createMesh(texture, attributesPerVertex, null, material, vertexCount, indiceCount, mode);
@@ -212,6 +177,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             }
             if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
                 BufferObjectsFactory.getInstance().createVBOs(renderer, mesh);
+            }
+            if (parent != null) {
+                parent.addMesh(mesh);
             }
             return mesh;
         }
@@ -487,23 +455,12 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         return textureRef;
     }
 
-    /**
-     * Returns the buffer, at the specified index, containing vertices and attribute data
-     * If the mesh only has one buffer - it is returned regardless of index.
-     * 
-     * @param buffer Index into the vertex/attribute buffer to return
-     * @return The vertexbuffer
-     */
+    @Override
     public AttributeBuffer getAttributeBuffer(BufferIndex buffer) {
         return attributes[buffer.index];
     }
 
-    /**
-     * Returns the buffer, at the specified index, containing vertice/attribute data
-     * 
-     * @param buffer Index into the vertex/attribute buffer to return
-     * @return Buffer holding attribute data.
-     */
+    @Override
     public AttributeBuffer getAttributeBuffer(int index) {
         return attributes[index];
     }
@@ -566,23 +523,12 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         return texture;
     }
 
-    /**
-     * Sets the attribute updater for this mesh, use this for meshes where the attribute data must be updated each
-     * frame.
-     * This method shall copy data, as needed, into the VertexBuffer arrays that are used when the mesh is rendered.
-     * What data to copy is implementation specific.
-     * 
-     * @param attributeConsumer Callback to set data into the generic vertex arrays, or null to remove.
-     */
+    @Override
     public void setAttributeUpdater(Consumer attributeConsumer) {
         this.attributeConsumer = attributeConsumer;
     }
 
-    /**
-     * Returns the attribute updater.
-     * 
-     * @return The attribute updater or null if none is set.
-     */
+    @Override
     public Consumer getAttributeConsumer() {
         return attributeConsumer;
     }
