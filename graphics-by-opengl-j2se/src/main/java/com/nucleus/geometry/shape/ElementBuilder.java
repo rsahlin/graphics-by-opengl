@@ -2,9 +2,7 @@ package com.nucleus.geometry.shape;
 
 import java.nio.ShortBuffer;
 
-import com.nucleus.geometry.ElementBuffer;
-import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.ElementBuffer.Type;
+import com.nucleus.geometry.Mesh.Mode;
 
 /**
  * Utility to create different type of element (index) buffers.
@@ -17,11 +15,12 @@ public abstract class ElementBuilder extends ShapeBuilder {
     /**
      * Builds the element buffer if present in the mesh
      * 
-     * @param mesh The mesh to build the element buffer in
+     * @param mesh buffer
+     * @param mode
      * @param count Number of shapes, this could differ from number of vertices
      * @param startVertex First vertex index
      */
-    public abstract void buildElements(Mesh mesh, int count, int startVertex);
+    public abstract void buildElements(ShortBuffer buffer, Mode mode, int count, int startVertex);
 
     /**
      * Builds an element buffer for quads, ie 4 separate vertices are used to create one quad (2 triangles)
@@ -31,17 +30,12 @@ public abstract class ElementBuilder extends ShapeBuilder {
      * 1-2-3
      * 1-4-3
      * 
-     * @param quadStorage
+     * @param buffer
      * @param count Number of quads to build
      * @param index First vertex to index
      * @return The ElementBuffer containing the quad indices
      */
-    public ElementBuffer buildQuadBuffer(ElementBuffer quadStorage, int count, int index) {
-        if (quadStorage.type == Type.BYTE) {
-            throw new IllegalArgumentException("Invalid type " + quadStorage.type);
-        }
-
-        ShortBuffer buffer = quadStorage.indices.asShortBuffer();
+    public void buildQuadBuffer(ShortBuffer buffer, int count, int index) {
         buffer.position(0);
         short[] quadIndices = new short[6];
         for (int i = 0; i < count; i++) {
@@ -54,8 +48,6 @@ public abstract class ElementBuilder extends ShapeBuilder {
             buffer.put(quadIndices, 0, 6);
             index += 4;
         }
-
-        return quadStorage;
     }
 
     /**
@@ -65,17 +57,12 @@ public abstract class ElementBuilder extends ShapeBuilder {
      * Lines are built using this order
      * 0-1,1-2,2-3,3-0
      * 
-     * @param quadStorage
+     * @param buffer
      * @param count Number of quads to build
      * @param index First vertex to index
      * @return The ElementBuffer containing the quad indices
      */
-    public ElementBuffer buildQuadLineBuffer(ElementBuffer quadStorage, int count, int index) {
-        if (quadStorage.type == Type.BYTE) {
-            throw new IllegalArgumentException("Invalid type " + quadStorage.type);
-        }
-
-        ShortBuffer buffer = quadStorage.indices.asShortBuffer();
+    public void buildQuadLineBuffer(ShortBuffer buffer, int count, int index) {
         buffer.position(0);
         short[] quadIndices = new short[8];
         for (int i = 0; i < count; i++) {
@@ -90,8 +77,6 @@ public abstract class ElementBuilder extends ShapeBuilder {
             buffer.put(quadIndices, 0, 8);
             index += 4;
         }
-
-        return quadStorage;
     }
 
     /**
@@ -99,17 +84,12 @@ public abstract class ElementBuilder extends ShapeBuilder {
      * There is no sharing of vertices between the lines, each line is separated.
      * Only supports ElementBuffer of type SHORT
      * 
-     * @param lineStorage
+     * @param buffer
      * @param count Number of lines to build
      * @param index First vertex to index
      * @return The ElementBuffer containing the line indices
      */
-    public ElementBuffer buildLinesBuffer(ElementBuffer lineStorage, int count, int index) {
-        if (lineStorage.type != Type.SHORT) {
-            throw new IllegalArgumentException("Invalid type " + lineStorage.type);
-        }
-
-        ShortBuffer buffer = lineStorage.indices.asShortBuffer();
+    public void buildLinesBuffer(ShortBuffer buffer, int count, int index) {
         buffer.position(0);
         short[] quadIndices = new short[2];
         for (int i = 0; i < count; i++) {
@@ -118,8 +98,6 @@ public abstract class ElementBuilder extends ShapeBuilder {
             buffer.put(quadIndices, 0, 2);
             index += 2;
         }
-
-        return lineStorage;
     }
 
 }

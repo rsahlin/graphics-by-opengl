@@ -5,10 +5,13 @@ import static com.nucleus.vecmath.Rectangle.INDEX_WIDTH;
 import static com.nucleus.vecmath.Rectangle.INDEX_X;
 import static com.nucleus.vecmath.Rectangle.INDEX_Y;
 
+import java.nio.ShortBuffer;
+
 import com.nucleus.geometry.AttributeBuffer;
-import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.geometry.ElementBuffer;
+import com.nucleus.geometry.ElementBuffer.Type;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.renderer.Window;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureParameter;
@@ -184,15 +187,14 @@ public class RectangleShapeBuilder extends ElementBuilder {
     }
 
     @Override
-    public void build(Mesh mesh) {
+    public void build(AttributeBuffer attributes, Texture2D texture, ElementBuffer indices, Mode mode) {
         // TODO - for this shapebuilder to work the offsets of vertex and uv must be set.
-        AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
         int stride = attributes.getFloatStride();
         if (quadStoreage == null) {
             quadStoreage = new float[stride * QUAD_VERTICES];
         }
         if (configuration.rectangle != null) {
-            createQuadArray(mesh.getTexture(Texture2D.TEXTURE_0), mesh.getMode(), stride, quadStoreage);
+            createQuadArray(texture, mode, stride, quadStoreage);
         }
         int startIndex = configuration.startVertex * stride;
         int count = configuration.getRectangleCount();
@@ -201,7 +203,13 @@ public class RectangleShapeBuilder extends ElementBuilder {
             startIndex += stride * QUAD_VERTICES;
         }
         attributes.setDirty(true);
-        buildElements(mesh, count, configuration.startVertex);
+        // Check if indicebuffer shall be built
+        if (indices != null) {
+            if (indices.type != Type.SHORT) {
+                throw new IllegalArgumentException("Invalid type " + indices.type);
+            }
+            buildElements(indices.indices.asShortBuffer(), mode,count, configuration.startVertex);
+        }
     }
 
     /**
@@ -325,20 +333,16 @@ public class RectangleShapeBuilder extends ElementBuilder {
     }
 
     @Override
-    public void buildElements(Mesh mesh, int count, int startVertex) {
-        // Check if indicebuffer shall be built
-        ElementBuffer indices = mesh.getElementBuffer();
-        if (indices != null) {
-            switch (mesh.getMode()) {
-                case LINES:
-                    buildQuadLineBuffer(indices, count, startVertex);
-                    break;
-                case TRIANGLES:
-                    buildQuadBuffer(indices, count, startVertex);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Not implemented for " + mesh.getMode());
-            }
+    public void buildElements(ShortBuffer buffer, Mode mode, int count, int startVertex) {
+        switch (mode) {
+            case LINES:
+                buildQuadLineBuffer(buffer, count, startVertex);
+                break;
+            case TRIANGLES:
+                buildQuadBuffer(buffer, count, startVertex);
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + mode);
         }
     }
 

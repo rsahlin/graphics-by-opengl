@@ -173,7 +173,8 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             Mesh mesh = createInstance();
             mesh.createMesh(texture, attributesPerVertex, null, material, vertexCount, indiceCount, mode);
             if (shapeBuilder != null) {
-                shapeBuilder.build(mesh);
+                AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
+                shapeBuilder.build(attributes, mesh.getTexture(Texture2D.TEXTURE_0), mesh.getElementBuffer(), mesh.getMode());
             }
             if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
                 BufferObjectsFactory.getInstance().createVBOs(renderer, mesh);
