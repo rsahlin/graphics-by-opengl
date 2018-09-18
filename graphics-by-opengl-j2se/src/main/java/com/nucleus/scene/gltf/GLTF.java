@@ -112,6 +112,11 @@ public class GLTF {
      * From where the main file was loaded - this is needed for loading assets
      */
     transient private String path;
+    /**
+     * Resolved meshes that can be rendered without ref to glTF asset.
+     * Set when {@link #resolve()} method is called.
+     */
+    transient protected RenderableMesh[] renderableMeshes;
 
     public void setPath(String path) {
         this.path = path;
@@ -156,33 +161,36 @@ public class GLTF {
     }
 
     /**
-     * Resloves all glTF objects so they can be used without reference to glTF asset
+     * Resolves all glTF objects so they can be used without reference to glTF asset
      * Call this method only once, normally done when glTF is loaded using the {@link Loader}
      * 
-     * @throws GLTFException
+     * @throws GLTFException If an instance to resolve already has been resolved, ie method has already been called. 
+     * For instance if the {@link Loader} is used.
      */
     public void resolve() throws GLTFException {
         List<RuntimeResolver> resolves = getResolves();
         for (RuntimeResolver rr : resolves) {
             rr.resolve(this);
         }
+        createRenderableMeshes();
     }
 
+    private void createRenderableMeshes() {
+        if (meshes != null) {
+            renderableMeshes = new RenderableMesh[meshes.length];
+            for (int index = 0; index < meshes.length; index++) {
+                renderableMeshes[index] = new RenderableMesh(this);
+            }
+        }
+        
+    }
+    
     private List<RuntimeResolver> getResolves() {
         ArrayList<RuntimeResolver> result = new ArrayList<>();
         if (accessors != null) {
             result.addAll(Arrays.asList(accessors));
         }
         return result;
-
-    }
-
-    private void resolveAccessors() {
-        if (accessors != null) {
-            for (Accessor a : accessors) {
-
-            }
-        }
     }
 
 }

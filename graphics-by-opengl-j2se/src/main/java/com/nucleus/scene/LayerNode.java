@@ -2,7 +2,6 @@ package com.nucleus.scene;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.renderer.NucleusRenderer.Layer;
-import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
 import com.nucleus.renderer.Window;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Transform;

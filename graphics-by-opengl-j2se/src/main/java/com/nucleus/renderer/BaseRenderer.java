@@ -281,11 +281,14 @@ class BaseRenderer implements NucleusRenderer {
             matrices[Matrices.PROJECTION.index] = projection;
         }
         Matrix.mul4(nodeMatrix, viewMatrix, matrices[Matrices.MODELVIEW.index]);
-
+        
         if (node instanceof RenderableNode<?>) {
-            if (((RenderableNode<?>) node).renderNode(this, currentPass, matrices)) {
-                // Add this to rendered nodes before children.
-                node.getRootNode().addRenderedNode(node);
+            NodeRenderer nodeRenderer = ((RenderableNode) node).getNodeRenderer();
+            if (nodeRenderer != null) {
+                if (nodeRenderer.renderNode(this, node, currentPass, matrices)) {
+                    // Add this to rendered nodes before children.
+                    node.getRootNode().addRenderedNode(node);
+                }
             }
         }
 

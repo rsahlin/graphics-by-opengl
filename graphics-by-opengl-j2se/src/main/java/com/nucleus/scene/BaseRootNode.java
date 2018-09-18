@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
 import com.nucleus.renderer.RenderState;

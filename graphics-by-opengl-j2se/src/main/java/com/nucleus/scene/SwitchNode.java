@@ -2,7 +2,6 @@ package com.nucleus.scene;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.io.gson.PostDeserializable;
-import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
 
 /**
  * Node that can switch between one active child node, the active node is set by calling {@link #setActive(String)}

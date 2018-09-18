@@ -1,15 +1,19 @@
 package com.nucleus.renderer;
 
+import java.util.ArrayList;
+
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.scene.RenderableNode;
-import com.nucleus.scene.gltf.Mesh;
+import com.nucleus.scene.gltf.RenderableMesh;
 import com.nucleus.shader.ShaderProgram;
 
-public class GLTFMeshRenderer implements MeshRenderer<Mesh>{
+public class GLTFMeshRenderer implements MeshRenderer<RenderableMesh>{
 
+    transient ArrayList<RenderableMesh> nodeMeshes = new ArrayList<>();
     
     @Override
-    public void renderMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, float[][] matrices)
+    public void renderMesh(NucleusRenderer renderer, ShaderProgram program, RenderableMesh mesh, float[][] matrices)
             throws GLException {
 /*        
         GLES20Wrapper gles = renderer.getGLES();
@@ -17,10 +21,13 @@ public class GLTFMeshRenderer implements MeshRenderer<Mesh>{
         if (updater != null) {
             updater.updateAttributeData(renderer);
         }
-        if (mesh.getDrawCount() == 0) {
-            return;
+        
+        //Loop through primitives and render each.
+        for (Primitive p : mesh.getPrimitives()) {
+            p.getIndices();
         }
-        Material material = mesh.getMaterial();
+        
+        com.nucleus.scene.gltf.Material material = mesh.getMaterial();
 
         program.updateAttributes(gles, mesh);
         program.updateUniforms(gles, matrices);
@@ -51,23 +58,22 @@ public class GLTFMeshRenderer implements MeshRenderer<Mesh>{
             }
             timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
         }
-*/
+*/        
     }
 
     @Override
-    public boolean renderMeshes(NucleusRenderer renderer, ShaderProgram program, RenderableNode<Mesh> node,
+    public boolean renderMeshes(NucleusRenderer renderer, ShaderProgram program, RenderableNode<RenderableMesh> node,
             float[][] matrices) throws GLException {
-  /*      
+        
         GLES20Wrapper gles = renderer.getGLES();
         nodeMeshes.clear();
         node.getMeshes(nodeMeshes);
         if (nodeMeshes.size() > 0) {
-            for (Mesh mesh : nodeMeshes) {
+            for (RenderableMesh mesh : nodeMeshes) {
                 renderMesh(renderer, program, mesh, matrices);
             }
             return true;
         }
-*/        
         return false;
     }
     

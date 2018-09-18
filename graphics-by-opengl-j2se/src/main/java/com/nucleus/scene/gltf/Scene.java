@@ -28,14 +28,16 @@ public class Scene {
     private String name;
 
     /**
-     * Not implemented
+     * returns the nodes that make up this scene
      */
-    // private Object extensions;
-    // private Object extras;
     public int[] getNodes() {
         return nodes;
     }
 
+    /**
+     * Returns the name of this scene or null if not defined.
+     * @return
+     */
     public String getName() {
         return name;
     }

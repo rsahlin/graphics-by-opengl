@@ -3,24 +3,22 @@ package com.nucleus.scene;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import com.nucleus.common.Environment;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.renderer.DefaultNodeRenderer;
+import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.Pass;
 import com.nucleus.shader.ShaderProgram;
 
 /**
- * Node that has support for a generic Mesh.
+ * Node that has support for one or more generic Meshes.
  * This node can be used by implementations as a base for {@link RenderableNode} functionality.
+ * Use this for custom Mesh types that are not loaded assets.
  *
  * @param <T> The Mesh typeclass. This is the Mesh class that will be rendered.
  */
@@ -29,6 +27,7 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
     transient protected ArrayList<T> meshes = new ArrayList<T>();
     transient protected ArrayList<T> nodeMeshes = new ArrayList<>();
     transient protected FrameSampler timeKeeper = FrameSampler.getInstance();
+    transient protected NodeRenderer<RenderableNode<Mesh>> nodeRenderer = new DefaultNodeRenderer();
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -111,7 +110,11 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
         return material;
     }
 
-    @Override
+    /**
+     * Returns the external reference of the texture for this node, this is used when importing
+     * 
+     * @return
+     */
     public ExternalReference getTextureRef() {
         return textureRef;
     }
@@ -193,39 +196,16 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
         return (MeshBuilder<T>) builder;
     }
 
-    
-    @Override
-    public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices)
-            throws GLException {
-        GLES20Wrapper gles = renderer.getGLES();
-        ShaderProgram program = getProgram(gles, this, currentPass);
-        gles.glUseProgram(program.getProgram());
-        GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
-        // TODO - is this the best place for this check - remember, this should only be done in debug cases.
-        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
-            program.validateProgram(gles);
-        }
-        getMeshRenderer().renderMeshes(renderer, program, this, matrices);
-        return true;
-    }
-
-    /**
-     * 
-     * @param node The node being rendered
-     * @param pass The currently defined pass
-     * @return
-     */
-    protected ShaderProgram getProgram(GLES20Wrapper gles, RenderableNode<?> node, Pass pass) {
-        ShaderProgram program = node.getProgram();
-        if (program == null) {
-            throw new IllegalArgumentException("No program for node " + node.getId());
-        }
-        return program.getProgram(gles, pass, program.getShading());
-    }
-
     /**
      * Creates the mesh renderer - called if {@link #meshRenderer} is null.
      */
     protected abstract void createMeshRenderer();
+
+    @Override
+    public com.nucleus.renderer.NodeRenderer<?> getNodeRenderer() {
+        return nodeRenderer;
+    }
     
 }
+
+

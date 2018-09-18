@@ -7,7 +7,6 @@ import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.scene.Node;
-import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
 import com.nucleus.texturing.ImageFactory;
 
@@ -22,31 +21,6 @@ import com.nucleus.texturing.ImageFactory;
  *
  */
 public interface NucleusRenderer {
-
-    /**
-     * 
-     * Simple interface for render of node, use this when the node requires changes to the default behavior
-     * when rendering the node.
-     *
-     * @param <T> The node type
-     */
-    public abstract class NodeRenderer {
-
-        /**
-         * Renders the contents of the node for the specified render pass and using the matrices supplied.
-         * This method should only render the specified node - traversal of tree is handled in renderer.
-         * Do not recurse rendering of children.
-         * 
-         * @param renderer
-         * @param node The node to render
-         * @param currentPass Current render pass
-         * @param matrices The matrices to use
-         * @throws GLException
-         */
-        public abstract void renderNode(NucleusRenderer renderer, RenderableNode<?> node, Pass currentPass, float[][] matrices)
-                throws GLException;
-
-    }
 
     public enum Matrices {
         MODELVIEW(0),

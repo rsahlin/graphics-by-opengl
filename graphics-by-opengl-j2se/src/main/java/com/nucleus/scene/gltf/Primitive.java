@@ -116,6 +116,10 @@ public class Primitive {
         return attributes;
     }
 
+    /**
+     * Returns the index of the accessor that contains the indices.
+     * @return
+     */
     public int getIndices() {
         return indices;
     }
@@ -124,6 +128,10 @@ public class Primitive {
         this.indices = indices;
     }
 
+    /**
+     * Returns the index of the material to apply when rendering this primitive
+     * @return
+     */
     public int getMaterialIndex() {
         return material;
     }

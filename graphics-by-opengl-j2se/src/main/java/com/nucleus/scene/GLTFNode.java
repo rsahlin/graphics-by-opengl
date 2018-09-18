@@ -8,29 +8,31 @@ import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
-import com.nucleus.io.ExternalReference;
 import com.nucleus.renderer.GLTFMeshRenderer;
 import com.nucleus.renderer.MeshRenderer;
+import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
-import com.nucleus.scene.gltf.Mesh;
+import com.nucleus.scene.gltf.RenderableMesh;
 import com.nucleus.shader.ShaderProgram;
 
 /**
  * Node containing a glTF model
  *
  */
-public class GLTFNode extends AbstractMeshNode<Mesh>  {
+public class GLTFNode extends AbstractNode implements RenderableNode<RenderableMesh> {
 
-    transient protected static MeshRenderer<Mesh> meshRenderer;
-    
+    transient protected static MeshRenderer<RenderableMesh> meshRenderer = new GLTFMeshRenderer();
+
     private static final String GLTF_NAME = "glTFName";
 
     @SerializedName(GLTF_NAME)
     private String glTFName;
 
     transient private GLTF glTF;
+    transient ArrayList<RenderableMesh> meshes = new ArrayList<>();
 
     private GLTFNode(RootNode root, Type<Node> type) {
         super(root, type);
@@ -64,34 +66,32 @@ public class GLTFNode extends AbstractMeshNode<Mesh>  {
             int index = getRootNode().getGLTFIndex(glTFName);
             try {
                 glTF = AssetManager.getInstance().loadGLTFAsset(getRootNode().getGLTFPath(), glTFName, index);
+                setPass(Pass.ALL);
+                setState(State.ON);
             } catch (IOException | GLTFException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-
     @Override
-    public ArrayList<Mesh> getMeshes(ArrayList<Mesh> list) {
-        // TODO Auto-generated method stub
-        return null;
+    public ArrayList<RenderableMesh> getMeshes(ArrayList<RenderableMesh> list) {
+        list.addAll(meshes);
+        return list;
     }
 
-    @Override
-    public MeshBuilder<Mesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
-            throws IOException {
-        // TODO Auto-generated method stub
-        return null;
+    public GLTF getGLTF() {
+        return glTF;
     }
-
+    
     @Override
     public void create() {
         // TODO Auto-generated method stub
     }
 
     @Override
-    public void addMesh(Mesh mesh) {
-        // TODO Auto-generated method stub
+    public void addMesh(RenderableMesh mesh) {
+        meshes.add(mesh);
     }
 
     @Override
@@ -104,25 +104,23 @@ public class GLTFNode extends AbstractMeshNode<Mesh>  {
     public void setProgram(ShaderProgram program) {
         // TODO Auto-generated method stub
     }
-
+    
     @Override
-    public ExternalReference getTextureRef() {
-        // TODO Auto-generated method stub
+    public MeshBuilder<RenderableMesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
+            throws IOException {
         return null;
     }
 
-	
     @Override
-    protected void createMeshRenderer() {
-        if (meshRenderer == null) {
-            meshRenderer = new GLTFMeshRenderer();
-        }
-    }
-    
-    @Override
-    public MeshRenderer<Mesh> getMeshRenderer() {
+    public MeshRenderer<RenderableMesh> getMeshRenderer() {
         return meshRenderer;
     }
-    
 
+    @Override
+    public NodeRenderer<?> getNodeRenderer() {
+        return null;
+    }
+
+    
+    
 }

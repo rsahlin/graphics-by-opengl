@@ -15,11 +15,9 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
-import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.MeshRenderer;
 import com.nucleus.renderer.NucleusMeshRenderer;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.Pass;
 import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
 import com.nucleus.shader.TranslateProgram;
@@ -331,14 +329,6 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
     public ArrayList<Mesh> getMeshes(ArrayList<Mesh> list) {
         list.addAll(meshes);
         return list;
-    }
-
-    @Override
-    public boolean renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices) throws GLException {
-        if (getLineMode() != LineMode.POINTS) {
-            renderer.getGLES().glLineWidth(getPointSize());
-        }
-        return super.renderNode(renderer, currentPass, matrices);
     }
 
     @Override

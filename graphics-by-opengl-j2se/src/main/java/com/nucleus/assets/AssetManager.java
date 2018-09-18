@@ -43,6 +43,7 @@ import com.nucleus.texturing.TextureType;
 public class AssetManager {
     protected static AssetManager assetManager = null;
     private final static String NO_TEXTURE_SOURCE_ERROR = "No texture source for id: ";
+    private final static String NULL_PARAMETER = "Parameter is null: ";
     /**
      * Store textures using the source image name.
      */
@@ -97,8 +98,12 @@ public class AssetManager {
      * @param ref
      * @return The texture
      * @throws IOException
+     * @throws IllegalArgumentException If renderer or ref is null
      */
     public Texture2D getTexture(NucleusRenderer renderer, ExternalReference ref) throws IOException {
+        if (renderer == null || ref == null) {
+            throw new IllegalArgumentException(NULL_PARAMETER + renderer + ", " + null);
+        }
         String idRef = ref.getIdReference();
         if (idRef != null) {
             return getTexture(idRef);
