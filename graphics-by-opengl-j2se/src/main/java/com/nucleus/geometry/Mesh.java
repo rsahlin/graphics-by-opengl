@@ -78,7 +78,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      *
      * @param <T>
      */
-    public static class Builder<T extends Mesh> extends MeshBuilder<Mesh> {
+    public static class Builder<T extends Mesh> implements MeshBuilder<Mesh> {
 
         protected NucleusRenderer renderer;
         protected Texture2D texture;
@@ -198,7 +198,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         }
 
         @Override
-        protected Mesh createInstance() {
+        public Mesh createInstance() {
             return new Mesh();
         }
 

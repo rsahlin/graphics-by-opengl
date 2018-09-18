@@ -10,12 +10,12 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RenderableNode;
 
 /**
- * Utility class to help build different type of Meshes.
+ * Interface for Mesh builders
  * 
  * @author Richard Sahlin
  *
  */
-public abstract class MeshBuilder<T> {
+public interface MeshBuilder<T> {
 
     /**
      * Interface for creating mesh builders - use this to create a mesh that can be used on the specified node, for
@@ -43,7 +43,7 @@ public abstract class MeshBuilder<T> {
      * 
      * @return
      */
-    protected abstract T createInstance();
+    public T createInstance();
 
     /**
      * Creates the mesh for the arguments supplied to this builder - vertexcount, texture, material and drawmode.
@@ -57,13 +57,13 @@ public abstract class MeshBuilder<T> {
      * @throws IOException If there is an error loading data, for instance texture
      * @throws GLException If there is a problem calling GL, for instance when setting VBO data
      */
-    public abstract T create(RenderableNode<T> parent) throws IOException, GLException;
+    public T create(RenderableNode<T> parent) throws IOException, GLException;
 
     /**
      * Calculates the bounds covering this mesh - this may return null.
      * 
      * @return
      */
-    public abstract Bounds createBounds();
+    public Bounds createBounds();
 
 }

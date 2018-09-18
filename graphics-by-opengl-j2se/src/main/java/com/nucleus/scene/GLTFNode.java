@@ -9,6 +9,7 @@ import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.renderer.GLTFMeshRenderer;
+import com.nucleus.renderer.GLTFNodeRenderer;
 import com.nucleus.renderer.MeshRenderer;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
@@ -17,6 +18,8 @@ import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.RenderableMesh;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.shader.TranslateProgram;
+import com.nucleus.texturing.Texture2D.Shading;
 
 /**
  * Node containing a glTF model
@@ -24,6 +27,7 @@ import com.nucleus.shader.ShaderProgram;
  */
 public class GLTFNode extends AbstractNode implements RenderableNode<RenderableMesh> {
 
+    transient protected static NodeRenderer<GLTFNode> nodeRenderer = new GLTFNodeRenderer();
     transient protected static MeshRenderer<RenderableMesh> meshRenderer = new GLTFMeshRenderer();
 
     private static final String GLTF_NAME = "glTFName";
@@ -86,7 +90,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     
     @Override
     public void create() {
-        // TODO Auto-generated method stub
+        program = new TranslateProgram(Shading.flat);
     }
 
     @Override
@@ -96,13 +100,12 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
 
     @Override
     public ShaderProgram getProgram() {
-        // TODO Auto-generated method stub
-        return null;
+        return program;
     }
 
     @Override
     public void setProgram(ShaderProgram program) {
-        // TODO Auto-generated method stub
+        this.program = program;
     }
     
     @Override
@@ -117,10 +120,8 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     }
 
     @Override
-    public NodeRenderer<?> getNodeRenderer() {
-        return null;
+    public NodeRenderer<GLTFNode> getNodeRenderer() {
+        return nodeRenderer;
     }
-
-    
     
 }

@@ -44,6 +44,7 @@ public interface RenderableNode<T> extends MeshBuilderFactory<T>, Node {
 
     /**
      * Returns the program to use when rendering the meshes in this node.
+     * TODO - consider moving this into Material
      * 
      * @return
      */
@@ -51,6 +52,7 @@ public interface RenderableNode<T> extends MeshBuilderFactory<T>, Node {
 
     /**
      * Sets the program to use when rendering.
+     * TODO - consider moving this into Material
      * 
      * @param program
      * @throws IllegalArgumentException If program is null
