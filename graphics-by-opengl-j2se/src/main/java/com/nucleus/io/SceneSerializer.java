@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import com.nucleus.common.Type;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeException;
@@ -19,7 +20,7 @@ import com.nucleus.scene.RootNode;
  */
 public interface SceneSerializer {
 
-    public final static String NULL_RENDERER_ERROR = "Renderer is null.";
+    public final static String NULL_GLES_ERROR = "GLES is null.";
     public final static String NULL_NODEFACTORY_ERROR = "Node factory is null.";
     public final static String NULL_MESHFACTORY_ERROR = "Mesh factory is null.";
 
@@ -29,12 +30,12 @@ public interface SceneSerializer {
      * Sets the renderer and node factory needed when scenes are imported.
      * This method must be called before importScene is called.
      * 
-     * @param renderer
+     * @param gles
      * @param nodeFactory
      * @param types List of key/value classnames and types that can be serialized, or null
      * @throws IllegalArgumentException If renderer is null
      */
-    public void init(NucleusRenderer renderer, NodeFactory nodeFactory, Type<?>[] types);
+    public void init(GLES20Wrapper gles, NodeFactory nodeFactory, Type<?>[] types);
 
     /**
      * Registers a list of types that can be resolved to classes, these are the user defined classes serialized by

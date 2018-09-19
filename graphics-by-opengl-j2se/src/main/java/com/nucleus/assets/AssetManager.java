@@ -23,6 +23,7 @@ import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.Loader;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.Image.ImageFormat;
+import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
@@ -94,21 +95,22 @@ public class AssetManager {
      * If already has been loaded the loaded instance will be returned.
      * Treat textures as immutable object
      * 
-     * @param renderer
+     * @param gles
+     * @param imageFactory
      * @param ref
      * @return The texture
      * @throws IOException
      * @throws IllegalArgumentException If renderer or ref is null
      */
-    public Texture2D getTexture(NucleusRenderer renderer, ExternalReference ref) throws IOException {
-        if (renderer == null || ref == null) {
-            throw new IllegalArgumentException(NULL_PARAMETER + renderer + ", " + null);
+    public Texture2D getTexture(GLES20Wrapper gles, ImageFactory imageFactory, ExternalReference ref) throws IOException {
+        if (gles == null || ref == null) {
+            throw new IllegalArgumentException(NULL_PARAMETER + gles + ", " + null);
         }
         String idRef = ref.getIdReference();
         if (idRef != null) {
             return getTexture(idRef);
         } else {
-            return getTexture(renderer, TextureFactory.createTexture(ref));
+            return getTexture(gles, imageFactory, TextureFactory.createTexture(ref));
         }
     }
 
@@ -175,12 +177,13 @@ public class AssetManager {
      * If already has been loaded the loaded instance will be returned.
      * Treat textures as immutable object
      * 
-     * @param renderer
+     * @param gles
+     * @param imageFactory
      * @param source The external ref is used to load a texture
      * @return The texture specifying the external reference to the texture to load and return.
      * @throws IOException
      */
-    protected Texture2D getTexture(NucleusRenderer renderer, Texture2D source) throws IOException {
+    protected Texture2D getTexture(GLES20Wrapper gles, ImageFactory imageFactory, Texture2D source) throws IOException {
         /**
          * External ref for untextured needs to be "" so it can be stored and fetched.
          */
@@ -205,7 +208,7 @@ public class AssetManager {
             if (texture == null) {
                 long start = System.currentTimeMillis();
                 // Texture not loaded
-                texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), source);
+                texture = TextureFactory.createTexture(gles, imageFactory, source);
                 textures.put(refSource, texture);
                 setExternalReference(texture.getId(), ref);
                 FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_TEXTURE, " " + texture.getName(), start,
@@ -269,7 +272,7 @@ public class AssetManager {
      * added to AssetManager using shader program and function.
      * Next time this method is called with the same shaderprogram and function the existing instance is returned.
      * 
-     * @param renderer
+     * @param gles
      * @param program
      * @return An instance of the ShaderProgram that is loaded and compiled
      * or linking the program.

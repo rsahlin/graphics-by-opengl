@@ -5,8 +5,8 @@ import java.io.IOException;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.component.ComponentException;
 import com.nucleus.geometry.shape.ShapeBuilder;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
-import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RenderableNode;
 
 /**
@@ -28,12 +28,12 @@ public interface MeshBuilder<T> {
          * Creates a mesh builder that can be used to create a mesh for the node or component.
          * Subclasses may need to override this to create the necessary MeshBuilder
          * 
-         * @param renderer
+         * @param gles
          * @param shapeBuilder
          * @return MeshBuilder that can be used to create Meshes
          * @throws ComponentException
          */
-        public MeshBuilder<T> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
+        public MeshBuilder<T> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
                 throws IOException;
 
     }

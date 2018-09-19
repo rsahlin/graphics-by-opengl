@@ -49,9 +49,9 @@ public interface Node extends Reference {
     }
 
     /**
-     * Creates a new instance of this node, then copies this node into the copy.
+     * Creates a new instance of this node, then copies the data from this node into the copy.
      * This is a shallow copy, it does not copy children.
-     * Use this when nodes are loaded
+     * Use this for instance when nodes are loaded
      * 
      * @param root Root of the created node
      * @return New copy of this node, transient values and children will not be copied.
@@ -72,13 +72,6 @@ public interface Node extends Reference {
      * @return
      */
     public String getType();
-
-    /**
-     * Returns the Node type
-     * 
-     * @return
-     */
-    public Type<Node> getNodeType();
 
     /**
      * Returns the root node for this node, this is the document root.
@@ -244,16 +237,14 @@ public interface Node extends Reference {
     public void setProperty(String key, String value);
 
     /**
-     * Called by factory method when node has been created, do not call childrens {@link #onCreated()} recursively from
-     * this method.
-     * Implement in subclasses to perform actions when the node has been created, this will be called after all children
-     * of this node has been created.
+     * Called when node has been created and added to parent, if Node has Mesh it has been created.
+     * Do not call childrens {@link #onCreated()} recursively from this method.
+     * Implement in subclasses to perform actions when the node has been created, this will be called before children of this node has been created.
      */
     public void onCreated();
 
     /**
      * Creates the transient values needed in runtime - implement in subclasses and call super.
-     * This method is called after the mesh has been created.
      */
     public void create();
 

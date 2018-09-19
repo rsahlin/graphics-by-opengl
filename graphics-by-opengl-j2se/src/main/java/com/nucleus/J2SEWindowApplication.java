@@ -9,6 +9,7 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.RendererFactory;
 import com.nucleus.renderer.SurfaceConfiguration;
+import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.J2SEImageFactory;
 
 /**
@@ -71,6 +72,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
      */
     public J2SEWindowApplication(String[] args, Renderers version, Type<Object> clientClass) {
         SimpleLogger.setLogger(new J2SELogger());
+        BaseImageFactory.setFactory(new J2SEImageFactory());
         CoreApp.setClientClass(clientClass);
         setProperties(args);
         createCoreWindows(version);
@@ -151,7 +153,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
 
     @Override
     public void createCoreApp(int width, int height) {
-        NucleusRenderer renderer = RendererFactory.getRenderer(j2seWindow.getGLESWrapper(), new J2SEImageFactory());
+        NucleusRenderer renderer = RendererFactory.getRenderer(j2seWindow.getGLESWrapper());
         coreApp = CoreApp.createCoreApp(width, height, renderer);
         j2seWindow.setCoreApp(coreApp);
     }

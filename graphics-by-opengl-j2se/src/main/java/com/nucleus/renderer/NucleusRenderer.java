@@ -8,7 +8,6 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
-import com.nucleus.texturing.ImageFactory;
 
 /**
  * An interface for rendering scenes. This is done by supporting a Node base hierarchy.
@@ -252,21 +251,6 @@ public interface NucleusRenderer {
      */
     @Deprecated
     public GLES20Wrapper getGLES();
-
-    /**
-     * Returns the ImageFactory to be used with this renderer when loading image resources.
-     * 
-     * @return
-     * @throws IllegalStateException If renderer is not initialized.
-     */
-    public ImageFactory getImageFactory();
-
-    /**
-     * Sets the image factory to use when loading image resources.
-     * 
-     * @param imageFactory Used when images are loaded.
-     */
-    public void setImageFactory(ImageFactory imageFactory);
 
     /**
      * Generate GL named object buffers

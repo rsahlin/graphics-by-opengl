@@ -25,7 +25,6 @@ import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShadowPass1Program;
-import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureUtils;
 import com.nucleus.vecmath.Matrix;
@@ -46,7 +45,6 @@ class BaseRenderer implements NucleusRenderer {
     protected final static String BASE_RENDERER_TAG = "BaseRenderer";
 
     private final static String NULL_GLESWRAPPER_ERROR = "GLES wrapper is null";
-    private final static String NULL_IMAGEFACTORY_ERROR = "ImageFactory is null";
 
     private final static int FPS_SAMPLER_DELAY = 5;
 
@@ -77,7 +75,6 @@ class BaseRenderer implements NucleusRenderer {
     protected float[] tempMatrix = Matrix.createMatrix();
 
     protected GLES20Wrapper gles;
-    protected ImageFactory imageFactory;
     private Set<RenderContextListener> contextListeners = new HashSet<RenderContextListener>();
     private Set<FrameListener> frameListeners = new HashSet<BaseRenderer.FrameListener>();
 
@@ -104,16 +101,12 @@ class BaseRenderer implements NucleusRenderer {
      * TODO Remove parameters from constructor and move to setter methods, this is in order for injection to be more
      * straightforward
      */
-    BaseRenderer(GLES20Wrapper gles, ImageFactory imageFactory) {
+    BaseRenderer(GLES20Wrapper gles) {
         if (gles == null) {
             throw new IllegalArgumentException(NULL_GLESWRAPPER_ERROR);
         }
-        if (imageFactory == null) {
-            throw new IllegalArgumentException(NULL_IMAGEFACTORY_ERROR);
-        }
         gles.createInfo();
         this.gles = gles;
-        this.imageFactory = imageFactory;
         matrices[Matrices.MODELVIEW.index] = Matrix.createMatrix();
         matrices[Matrices.PROJECTION.index] = Matrix.setIdentity(Matrix.createMatrix(), 0);
         matrices[Matrices.RENDERPASS_1.index] = Matrix.createMatrix();
@@ -581,15 +574,6 @@ class BaseRenderer implements NucleusRenderer {
         return gles;
     }
 
-    @Override
-    public ImageFactory getImageFactory() {
-        if (!initialized) {
-            throw new IllegalStateException(NOT_INITIALIZED_ERROR);
-        }
-        return imageFactory;
-
-    }
-
     /**
      * Internal method to handle matrix stack, push a matrix on the stack
      * 
@@ -608,11 +592,6 @@ class BaseRenderer implements NucleusRenderer {
      */
     protected float[] popMatrix(ArrayDeque<float[]> stack) {
         return stack.pop();
-    }
-
-    @Override
-    public void setImageFactory(ImageFactory imageFactory) {
-        this.imageFactory = imageFactory;
     }
 
     @Override

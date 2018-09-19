@@ -10,11 +10,11 @@ import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
-import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.MeshRenderer;
 import com.nucleus.renderer.NucleusMeshRenderer;
 import com.nucleus.renderer.NucleusRenderer;
@@ -65,35 +65,31 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
     transient int drawOffset = Constants.NO_VALUE;
 
     /**
-     * Creates a nodebuilder that can be used to create LineDrawerNodes with mesh(es), that can be used to draw points
+     * Initializes a NodeBuilder, based on this node, that can be used to create LineDrawerNodes with mesh(es), that can be used to draw points
      * or lines.
-     * Use for instance when node is created programatically.
      * 
-     * @param renderer
+     * 
+     * @param gles
      * @param nodeBuilder
-     * @param vertices Number of vertices in mesh
-     * @param meshCount Number of meshes to create
-     * @param mode Mesh drawmode
      * @return
      */
-    public static NodeBuilder<Node> createBuilder(NucleusRenderer renderer, NodeBuilder<Node> nodeBuilder,
-            int vertices, int meshCount, Mode mode) {
+    public static NodeBuilder<Node> initBuilder(GLES20Wrapper gles, NodeBuilder<Node> nodeBuilder) {
         nodeBuilder.setType(NodeTypes.linedrawernode);
         TranslateProgram program = (TranslateProgram) AssetManager.getInstance()
-                .getProgram(renderer.getGLES(), new TranslateProgram(Shading.flat));
+                .getProgram(gles, new TranslateProgram(Shading.flat));
         nodeBuilder.setProgram(program);
-        com.nucleus.geometry.Mesh.Builder<Mesh> pointMeshBuilder = Mesh.createBuilder(renderer, vertices,
-                new Material(),
-                program, TextureFactory.createTexture(TextureType.Untextured), null, mode);
-        nodeBuilder.setMeshBuilder(pointMeshBuilder).setMeshCount(meshCount);
+//        com.nucleus.geometry.Mesh.Builder<Mesh> pointMeshBuilder = Mesh.createBuilder(gles, vertices,
+//                new Material(),
+//                program, TextureFactory.createTexture(TextureType.Untextured), null, mode);
+//        nodeBuilder.setMeshBuilder(pointMeshBuilder).setMeshCount(meshCount);
         return nodeBuilder;
     }
 
     @Override
-    public MeshBuilder<Mesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
+    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
             throws IOException {
         int count = getLineCount();
-        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
+        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(gles);
         switch (getLineMode()) {
             case LINES:
                 builder.setArrayMode(Mode.LINES, count * 2, 0);
@@ -115,11 +111,10 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
         builder.setTexture(tex);
         if (getProgram() == null) {
             setProgram(
-                    AssetManager.getInstance().getProgram(renderer.getGLES(),
-                            new GenericShaderProgram(new String[] { "flatline", "flatline" }, null, Shading.flat, null,
+                    AssetManager.getInstance().getProgram(gles, new GenericShaderProgram(new String[] { "flatline", "flatline" }, null, Shading.flat, null,
                                     ProgramType.VERTEX_FRAGMENT)));
         }
-        return initMeshBuilder(renderer, count, getShapeBuilder(), builder);
+        return initMeshBuilder(gles, count, getShapeBuilder(), builder);
     }
 
     /**

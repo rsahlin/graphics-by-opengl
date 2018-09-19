@@ -6,7 +6,6 @@ import java.awt.image.DataBufferByte;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.IntBuffer;
 
 import javax.imageio.ImageIO;
 

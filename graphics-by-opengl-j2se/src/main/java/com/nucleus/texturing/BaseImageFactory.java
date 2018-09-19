@@ -20,7 +20,31 @@ public abstract class BaseImageFactory implements ImageFactory {
     protected final static String ILLEGAL_PARAMETER = "Illegal parameter: ";
     protected final static String NULL_PARAMETER = "Null parameter";
     private final static String INVALID_SCALE = "Invalid scale";
+    protected final static String NO_FACTORY = "No ImageFactory instance set - call ";
 
+    protected static ImageFactory factory;
+    
+    /**
+     * Sets the ImageFactory instance, must be called before calling {@link #getInstance()}
+     * @param factory
+     */
+    public static void setFactory(ImageFactory factory) {
+        BaseImageFactory.factory = factory;
+    }
+    
+    /**
+     * Returns the ImageFactory - an image factory instance must be set before calling this method.
+     * @return
+     * @throws IllegalArgumentException If no factory instance has been set.
+     */
+    public static ImageFactory getInstance() {
+        if (factory == null) {
+            throw new IllegalArgumentException(NO_FACTORY);
+        }
+        return factory;
+    }
+    
+    
     @Override
     public Image createScaledImage(Image source, int width, int height, ImageFormat format, RESOLUTION resolution) {
         if (format == null) {

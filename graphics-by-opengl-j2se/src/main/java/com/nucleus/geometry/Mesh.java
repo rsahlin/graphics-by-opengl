@@ -19,6 +19,7 @@ import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.TranslateProgram;
+import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;
 
@@ -80,7 +81,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     public static class Builder<T extends Mesh> implements MeshBuilder<Mesh> {
 
-        protected NucleusRenderer renderer;
+        protected GLES20Wrapper gles;
         protected Texture2D texture;
         protected Material material;
         protected int[] attributesPerVertex;
@@ -101,14 +102,14 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         /**
          * Creates a new builder
          * 
-         * @param renderer
-         * @throws IllegalArgumentException If renderer is null
+         * @param gles
+         * @throws IllegalArgumentException If gles is null
          */
-        public Builder(NucleusRenderer renderer) {
-            if (renderer == null) {
-                throw new IllegalArgumentException("Renderer may not be null");
+        public Builder(GLES20Wrapper gles) {
+            if (gles == null) {
+                throw new IllegalArgumentException("GLES may not be null");
             }
-            this.renderer = renderer;
+            this.gles = gles;
         }
 
         /**
@@ -177,7 +178,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
                 shapeBuilder.build(attributes, mesh.getTexture(Texture2D.TEXTURE_0), mesh.getElementBuffer(), mesh.getMode());
             }
             if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
-                BufferObjectsFactory.getInstance().createVBOs(renderer, mesh);
+                BufferObjectsFactory.getInstance().createVBOs(gles, mesh);
             }
             if (parent != null) {
                 parent.addMesh(mesh);
@@ -209,7 +210,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * @throws IOException If the texture could not be loaded
          */
         public Builder<T> setTexture(ExternalReference textureRef) throws IOException {
-            this.texture = AssetManager.getInstance().getTexture(renderer, textureRef);
+            this.texture = AssetManager.getInstance().getTexture(gles, BaseImageFactory.getInstance(), textureRef);
             return this;
         }
 
@@ -309,7 +310,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     /**
      * Creates a Builder to create a mesh that can be rendered in a Node
      * 
-     * @param renderer
+     * @gles
      * @param maxVerticeCount
      * @param material
      * @param program
@@ -318,9 +319,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * @param mode
      * @return
      */
-    public static Builder<Mesh> createBuilder(NucleusRenderer renderer, int maxVerticeCount, Material material,
+    public static Builder<Mesh> createBuilder(GLES20Wrapper gles, int maxVerticeCount, Material material,
             ShaderProgram program, Texture2D texture, ShapeBuilder shapeBuilder, Mesh.Mode mode) {
-        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
+        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(gles);
         builder.setTexture(texture);
         builder.setMaterial(material);
         builder.setArrayMode(mode, maxVerticeCount, 0);

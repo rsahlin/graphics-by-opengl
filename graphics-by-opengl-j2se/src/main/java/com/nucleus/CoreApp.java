@@ -35,6 +35,7 @@ import com.nucleus.scene.RootNode;
 import com.nucleus.scene.ViewController;
 import com.nucleus.shader.TranslateProgram;
 import com.nucleus.system.ComponentHandler;
+import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
@@ -305,14 +306,14 @@ public class CoreApp implements FrameRenderer {
     public void displaySplash() throws GLException, NodeException {
         FrameSampler.getInstance().logTag(FrameSampler.Samples.DISPLAY_SPLASH);
 
-        BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
+        BaseRootNode.Builder builder = new BaseRootNode.Builder();
         TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
                 new TranslateProgram(Texture2D.Shading.textured));
         builder.setProgram(vt);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
-        Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), "texture",
+        Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), BaseImageFactory.getInstance(), "texture",
                 new ExternalReference(SPLASH_FILENAME), RESOLUTION.ULTRA_HD, texParam, 1);
-        Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
+        Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer.getGLES());
         meshBuilder.setElementMode(Mode.TRIANGLES, 4, 0, 6);
         meshBuilder.setTexture(texture);
         Material material = new Material();

@@ -24,6 +24,7 @@ import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.RootNode;
 import com.nucleus.shader.ShaderVariable;
+import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -120,11 +121,11 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         NucleusRenderer renderer = coreApp.getRenderer();
         InputProcessor.getInstance().addMMIListener(this);
 
-        BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
+        BaseRootNode.Builder builder = new BaseRootNode.Builder();
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
-        Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), "texture",
+        Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), BaseImageFactory.getInstance(), "texture",
                 new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, texParam, 1);
-        Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
+        Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer.getGLES());
         meshBuilder.setElementMode(Mode.TRIANGLES, 4, 0, 6);
         meshBuilder.setTexture(texture);
         program = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),

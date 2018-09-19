@@ -3,7 +3,6 @@ package com.nucleus.scene;
 import java.util.ArrayList;
 
 import com.nucleus.camera.ViewFrustum;
-import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
 import com.nucleus.renderer.RenderState;
@@ -22,13 +21,8 @@ public class BaseRootNode extends RootNode {
     public static class Builder extends NodeBuilder<RootNode> {
 
         ViewFrustum viewFrustum;
-        NucleusRenderer renderer;
 
-        public Builder(NucleusRenderer renderer) {
-            if (renderer == null) {
-                throw new IllegalArgumentException("Renderer may not be null");
-            }
-            this.renderer = renderer;
+        public Builder() {
         }
 
         public Builder setViewFrustum(ViewFrustum viewFrustum) {

@@ -13,9 +13,10 @@ import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilderFactory;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.MeshRenderer;
 import com.nucleus.renderer.NucleusMeshRenderer;
-import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
@@ -48,16 +49,16 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
     }
 
     @Override
-    public MeshBuilder<Mesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
+    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
             throws IOException {
         int count = 1;
-        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
+        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(gles);
         Texture2D tex = null;
         if (getTextureRef() == null) {
             tex = TextureFactory.createTexture(TextureType.Untextured);
 
         } else {
-            tex = AssetManager.getInstance().getTexture(renderer, getTextureRef());
+            tex = AssetManager.getInstance().getTexture(gles, BaseImageFactory.getInstance(), getTextureRef());
         }
         builder.setTexture(tex);
         if (shapeBuilder == null) {
@@ -72,7 +73,7 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
             }
         }
         // If program is not present in parent then the meshbuilder is called to create program.
-        return initMeshBuilder(renderer, count, shapeBuilder, builder);
+        return initMeshBuilder(gles, count, shapeBuilder, builder);
 
     }
 

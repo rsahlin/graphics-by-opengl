@@ -39,34 +39,33 @@ public class BufferObjectsFactory {
      * Creates the vbos for the specified mesh, the buffer objects will be stored in the contained buffers in the mesh.
      * After this call the mesh can be rendered using the specified buffer objects (VBO)
      * 
-     * @param renderer
+     * @param gles
      * @param mesh
      * @throws GLException If there is an error setting buffer data
      */
-    public void createVBOs(NucleusRenderer renderer, Mesh mesh) throws GLException {
+    public void createVBOs(GLES20Wrapper gles, Mesh mesh) throws GLException {
         int vboCount = mesh.getBufferNameCount();
         // TODO Need a way to tie the allocated buffer names to the element/vertex buffers
         int[] names = new int[vboCount];
-        renderer.genBuffers(names);
+        gles.glGenBuffers(names);
         mesh.setBufferNames(0, names, 0);
         ElementBuffer indices = mesh.getElementBuffer();
-        GLUtils.handleError(renderer.getGLES(), "before create vbos");
+        GLUtils.handleError(gles, "before create vbos");
         for (AttributeBuffer attribs : mesh.getAttributeBuffers()) {
             if (attribs != null) {
-                renderer.bindBuffer(GLES20.GL_ARRAY_BUFFER, attribs.getBufferName());
-                renderer.bufferData(GLES20.GL_ARRAY_BUFFER, attribs.getSizeInBytes(),
+                gles.glBindBuffer(GLES20.GL_ARRAY_BUFFER, attribs.getBufferName());
+                gles.glBufferData(GLES20.GL_ARRAY_BUFFER, attribs.getSizeInBytes(),
                         attribs.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
                 attribs.setDirty(false);
-                GLUtils.handleError(renderer.getGLES(), "createVBOs GL_ARRAY_BUFFER name " + attribs.getBufferName());
+                GLUtils.handleError(gles, "createVBOs GL_ARRAY_BUFFER name " + attribs.getBufferName());
             }
         }
         if (indices != null) {
-            renderer.bindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
-            renderer.bufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getSizeInBytes(),
+            gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
+            gles.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getSizeInBytes(),
                     indices.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
             indices.setDirty(false);
-            GLUtils.handleError(renderer.getGLES(),
-                    "createVBOs  GL_ELEMENT_ARRAY_BUFFER name " + indices.getBufferName());
+            GLUtils.handleError(gles, "createVBOs  GL_ELEMENT_ARRAY_BUFFER name " + indices.getBufferName());
         }
     }
 

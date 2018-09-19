@@ -19,6 +19,7 @@ import com.nucleus.renderer.RendererFactory;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.texture.android.AndroidImageFactory;
+import com.nucleus.texturing.BaseImageFactory;
 import com.super2k.nucleus.android.R;
 
 import android.annotation.TargetApi;
@@ -100,6 +101,7 @@ public abstract class NucleusActivity extends Activity
     public void onCreate(Bundle savedInstanceState) {
         SimpleLogger.setLogger(new AndroidLogger());
         SimpleLogger.d(getClass(), "onCreate()");
+        BaseImageFactory.setFactory(new AndroidImageFactory());
         activity = this;
         checkProperties();
         setup(getRenderVersion(), GLSurfaceView.RENDERMODE_CONTINUOUSLY);
@@ -358,7 +360,7 @@ public abstract class NucleusActivity extends Activity
      * @return true if CoreApp was created and splash displayed.
      */
     public boolean onSurfaceCreated(int width, int height) {
-        NucleusRenderer renderer = RendererFactory.getRenderer(gles, new AndroidImageFactory());
+        NucleusRenderer renderer = RendererFactory.getRenderer(gles);
         if (coreApp == null) {
             coreApp = CoreApp.createCoreApp(width, height, renderer);
             return true;

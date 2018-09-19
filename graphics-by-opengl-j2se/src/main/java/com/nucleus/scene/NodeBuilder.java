@@ -1,3 +1,4 @@
+
 package com.nucleus.scene;
 
 import java.io.IOException;
@@ -9,23 +10,63 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.shader.ShaderProgram;
 
 /**
- * Builder for Nodes, use this when nodes are created programmatically
+ * Builder for Nodes, use this when nodes are created programmatically.
+ * The name used will be the short class name to lowercase.
  *
  * @param <T>
  */
 public class NodeBuilder<T extends Node> {
 
+    public static class ClassType implements Type<Node> {
+
+        protected Class<? extends Node> clazz;
+        
+        public ClassType(Class<? extends Node> clazz) {
+            this.clazz = clazz;
+        }
+        
+        @Override
+        public Class<? extends Node> getTypeClass() {
+            return clazz;
+        }
+
+        @Override
+        public String getName() {
+            return clazz.getSimpleName().toLowerCase();
+        }
+        
+    }
+    
     protected Type<Node> type;
     protected RootNode root;
     protected int meshCount = 0;
     protected MeshBuilder<?> meshBuilder;
     protected ShaderProgram program;
 
+    /**
+     * Inits this biulder to create a new instance of the specified Node
+     * @param source
+     * @return
+     */
+    public NodeBuilder<T> init(Node source) {
+        return this;
+    }
+    
+    /**
+     * Sets the node class type to create.
+     * @param type
+     * @return
+     */
     public NodeBuilder<T> setType(Type<Node> type) {
         this.type = type;
         return this;
     }
 
+    /**
+     * Sets the root node
+     * @param root
+     * @return
+     */
     public NodeBuilder<T> setRoot(RootNode root) {
         this.root = root;
         return this;
@@ -76,8 +117,8 @@ public class NodeBuilder<T extends Node> {
      */
     public T create(String id) throws NodeException {
         try {
-            if (type == null || root == null || program == null) {
-                throw new IllegalArgumentException("Must set type, root and program before calling #create()");
+            if (type == null || root == null) {
+                throw new IllegalArgumentException("Must set type and root before calling #create()");
             }
             if (meshCount > 0 && meshBuilder == null) {
                 throw new IllegalArgumentException("meshCount = " + meshCount
@@ -88,14 +129,9 @@ public class NodeBuilder<T extends Node> {
                 SimpleLogger.d(getClass(), "MeshBuilder is set but meshcount is 0 - no mesh will be created");
             }
             Node node = AbstractNode.createInstance(type, root);
-            if (node instanceof RenderableNode<?>) {
-                ((RenderableNode<?>) node).setProgram(program);
-                for (int i = 0; i < meshCount; i++) {
-                    meshBuilder.create((RenderableNode) node);
-                }
-            }
             node.setId(id);
             node.create();
+            NodeBuilder.createMesh(meshBuilder, node, meshCount);
             // node.getProgram().initBuffers(mesh);
             return (T) node;
         } catch (InstantiationException | IllegalAccessException | GLException | IOException e) {
@@ -103,4 +139,27 @@ public class NodeBuilder<T extends Node> {
         }
     }
 
+    /**
+     * Builder method for one or more Meshes belonging to a Node
+     * 
+     * @param meshBuilder
+     * @param node
+     * @param meshCount
+     * @throws IOException
+     * @throws GLException
+     */
+    public static void createMesh(MeshBuilder meshBuilder,Node node, int meshCount) throws IOException, GLException {
+        if (node instanceof RenderableNode<?>) {
+            RenderableNode<?> rNode = (RenderableNode<?>) node;
+            for (int i = 0; i < meshCount; i++) {
+                if (meshBuilder != null) {
+                    meshBuilder.create(rNode);
+                    if (rNode.getBounds() == null) {
+                        rNode.setBounds(meshBuilder.createBounds());
+                    }
+                }
+            }
+        }
+    }
+    
 }

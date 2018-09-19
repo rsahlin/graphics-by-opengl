@@ -164,7 +164,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
     transient float[] modelMatrix = Matrix.createMatrix();
     transient protected ShaderProgram program;
     transient protected Indexer indexer;
-    transient Type<Node> nodeType;
 
     /**
      * The parent node, this shall be set when node is added as child
@@ -299,6 +298,7 @@ public abstract class AbstractNode extends BaseReference implements Node {
      * @param pass
      * @return Projection matrix for this node and childnodes, or null if not set
      */
+    @Override
     public float[] getProjection(Pass pass) {
         switch (pass) {
             case SHADOW1:
@@ -658,61 +658,27 @@ public abstract class AbstractNode extends BaseReference implements Node {
                 + (renderPass != null ? ", has renderpass" : "") + (bounds != null ? ", has bounds" : "");
     }
 
-    /**
-     * Returns the type of node, this is a String representation that must be understood by the implementation
-     * 
-     * @return
-     */
     @Override
     public String getType() {
         return type;
     }
 
-    /**
-     * 
-     * @return
-     */
-    @Override
-    public Type<Node> getNodeType() {
-        return nodeType;
-    }
 
-    /**
-     * This shall be set if node is created using {@link #createInstance(RootNode)}
-     * 
-     * @param type
-     */
     @Override
     public void setType(Type<Node> type) {
         this.type = type.getName();
     }
 
-    /**
-     * Returns the bounds for this node if set, otherwise null
-     * 
-     * @return
-     */
     @Override
     public Bounds getBounds() {
         return bounds;
     }
 
-    /**
-     * Returns the state of the node, the specifies if the node is on or off, only actor or only render
-     * 
-     * @return The state, or null if not set
-     */
     @Override
     public State getState() {
         return state;
     }
 
-    /**
-     * Sets the state of this node, and the state of childnodes.
-     * TODO - How to affect the state of SharedMeshQuad?
-     * 
-     * @param state
-     */
     @Override
     public void setState(State state) {
         this.state = state;
@@ -721,24 +687,11 @@ public abstract class AbstractNode extends BaseReference implements Node {
         }
     }
 
-    /**
-     * Returns a reference to the viewfrustum if defined.
-     * 
-     * @return View frustum or null
-     */
     @Override
     public ViewFrustum getViewFrustum() {
         return viewFrustum;
     }
 
-    /**
-     * Sets the viewfrustum as a reference to the specified source
-     * Note this will reference the source {@link ViewFrustum} any changes will be reflected here
-     * The viewfrustum matrix will be set in the projection for this node, call {@link #getProjection()} to
-     * get the matrix
-     * 
-     * @param source The frustum reference
-     */
     @Override
     public void setViewFrustum(ViewFrustum source) {
         viewFrustum = source;
@@ -808,12 +761,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
         }
     }
 
-    /**
-     * Called by factory method when node has been created, do not call childrens {@link #onCreated()} recursively from
-     * this method.
-     * Implement in subclasses to perform actions when the node has been created, this will be called after all children
-     * of this node has been created.
-     */
     @Override
     public void onCreated() {
         // Check if bounds should be created explicitly
@@ -852,14 +799,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
         return viewparent != null ? viewparent.getViewFrustum() : null;
     }
 
-    /**
-     * Checks if this node is hit by the position.
-     * If {@value State#ON} or {@value State#ACTOR} then the bounds are checked for intersection by the point.
-     * 
-     * @param position
-     * @return If node is in an enabled state, has bounds and the position is inside then true is returned, otherwise
-     * false
-     */
     @Override
     public boolean isInside(float[] position) {
         if (bounds != null && (state == State.ON || state == State.ACTOR)
@@ -916,11 +855,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
         return modelMatrix;
     }
 
-    /**
-     * Releases all resources held by this node
-     * 
-     * @param renderer
-     */
     @Override
     public void destroy(NucleusRenderer renderer) {
         transform = null;
@@ -932,15 +866,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
         rootNode = null;
     }
 
-    /**
-     * Checks if this node should be culled, returns true if this node is culled.
-     * It is up to the node implementations to decide if children should be checked, default behavior is to not call
-     * {@link #cullNode(Bounds)} on children, ie they should be culled separately.
-     * 
-     * @param cullBounds The bounds to check against
-     * @param pass The renderpass to cull this node for
-     * @return True if the node should be culled
-     */
     @Override
     public boolean cullNode(Bounds cullBounds, Pass pass) {
         boolean cull = false;
@@ -957,12 +882,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
         return cull;
     }
 
-    /**
-     * Sets the renderpass in this node, removing any existing renderpasses.
-     * Checks that the renderpasses are valid
-     * 
-     * @param renderPass, or null to remove renderpass
-     */
     @Override
     public void setRenderPass(ArrayList<RenderPass> renderPass) {
         if (renderPass != null) {
@@ -980,31 +899,16 @@ public abstract class AbstractNode extends BaseReference implements Node {
         }
     }
 
-    /**
-     * Returns the Pass(es) that this node should be used in
-     * 
-     * @return
-     */
     @Override
     public Pass getPass() {
         return pass;
     }
 
-    /**
-     * Sets the renderpass this node is active in.
-     * 
-     * @param pass
-     */
     @Override
     public void setPass(Pass pass) {
         this.pass = pass;
     }
 
-    /**
-     * Returns the renderpasses definition, or null if not defined.
-     * 
-     * @return
-     */
     @Override
     public ArrayList<RenderPass> getRenderPass() {
         return renderPass;

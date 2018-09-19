@@ -8,11 +8,11 @@ import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.GLTFMeshRenderer;
 import com.nucleus.renderer.GLTFNodeRenderer;
 import com.nucleus.renderer.MeshRenderer;
 import com.nucleus.renderer.NodeRenderer;
-import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
@@ -38,6 +38,13 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     transient private GLTF glTF;
     transient ArrayList<RenderableMesh> meshes = new ArrayList<>();
 
+    /**
+     * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
+     */
+    @Deprecated
+    protected GLTFNode() {
+    }
+    
     private GLTFNode(RootNode root, Type<Node> type) {
         super(root, type);
     }
@@ -109,7 +116,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     }
     
     @Override
-    public MeshBuilder<RenderableMesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
+    public MeshBuilder<RenderableMesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
             throws IOException {
         return null;
     }

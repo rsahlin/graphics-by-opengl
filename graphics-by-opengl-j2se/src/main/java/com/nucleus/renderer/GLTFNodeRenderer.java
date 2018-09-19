@@ -49,7 +49,4 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode>{
         return program.getProgram(gles, pass, program.getShading());
     }
     
-    
-    
-    
 }
