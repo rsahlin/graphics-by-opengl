@@ -244,9 +244,9 @@ public interface Node extends Reference {
     public void onCreated();
 
     /**
-     * Creates the transient values needed in runtime - implement in subclasses and call super.
+     * Creates the transient values needed in runtime, this is called before any mesh is created.
      */
-    public void create();
+    public void createTransient();
 
     /**
      * Releases all resources held by this node

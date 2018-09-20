@@ -321,7 +321,7 @@ public class CoreApp implements FrameRenderer {
         meshBuilder.setMaterial(material).setAttributesPerVertex(vt.getAttributeSizes())
                 .setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(rect, 1f, 1, 0)));
         builder.setType(NodeTypes.layernode).setMeshBuilder(meshBuilder).setMeshCount(1);
-        RootNode root = builder.create();
+        RootNode root = builder.create("rootnode");
         renderer.beginFrame();
         renderer.render(root);
         renderer.endFrame();

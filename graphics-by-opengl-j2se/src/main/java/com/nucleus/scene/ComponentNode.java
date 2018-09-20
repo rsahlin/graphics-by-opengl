@@ -212,7 +212,7 @@ public class ComponentNode extends AbstractMeshNode<Mesh> implements ComponentCo
     }
 
     @Override
-    public void create() {
+    public void createTransient() {
         // TODO Auto-generated method stub
 
     }

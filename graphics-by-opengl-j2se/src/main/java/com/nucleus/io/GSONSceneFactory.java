@@ -18,24 +18,19 @@ import com.nucleus.common.Type;
 import com.nucleus.common.TypeResolver;
 import com.nucleus.exporter.NodeExporter;
 import com.nucleus.exporter.NucleusNodeExporter;
-import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.io.gson.BoundsDeserializer;
 import com.nucleus.io.gson.NucleusNodeDeserializer;
 import com.nucleus.io.gson.ShapeDeserializer;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.AbstractNode;
 import com.nucleus.scene.AbstractNode.NodeTypes;
 import com.nucleus.scene.BaseRootNode;
-import com.nucleus.scene.DefaultNodeFactory;
 import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeBuilder;
 import com.nucleus.scene.NodeException;
-import com.nucleus.scene.NodeFactory;
-import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
 import com.nucleus.vecmath.Shape;
 
@@ -59,7 +54,6 @@ public class GSONSceneFactory implements SceneSerializer {
 
     protected GLES20Wrapper gles;
     protected NodeExporter nodeExporter;
-    protected NodeFactory nodeFactory;
 
     protected Gson gson;
 
@@ -93,15 +87,11 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     @Override
-    public void init(GLES20Wrapper gles, NodeFactory nodeFactory, Type<?>[] types) {
+    public void init(GLES20Wrapper gles, Type<?>[] types) {
         if (gles == null) {
             throw new IllegalArgumentException(NULL_GLES_ERROR);
         }
-        if (nodeFactory == null) {
-            throw new IllegalArgumentException(NULL_NODEFACTORY_ERROR);
-        }
         this.gles = gles;
-        this.nodeFactory = nodeFactory;
         createNodeDeserializer();
         if (types != null) {
             registerTypes(types);
@@ -171,15 +161,6 @@ public class GSONSceneFactory implements SceneSerializer {
     }
 
     /**
-     * Utility method to get the default nodefactory
-     * 
-     * @return
-     */
-    public static NodeFactory getNodeFactory() {
-        return new DefaultNodeFactory();
-    }
-
-    /**
      * Imports gson into BaseRootNode
      * TODO: Add type selector so that rootnode impl can be specified in scene
      * 
@@ -228,38 +209,8 @@ public class GSONSceneFactory implements SceneSerializer {
        NodeBuilder<Node> builder = new NodeBuilder<>();
         builder.setRoot(root);
         for (Node node : children) {
-            createNode(gles, node, root, builder, root);
-/*
-            Node created = nodeFactory.create(renderer, node, root);
-            root.addChild(created);
-            created.onCreated();
-            nodeFactory.createChildNodes(renderer, node, created);
-*/            
+            builder.create(gles, node, root);
         }
-    }
-
-    private Node createNode(GLES20Wrapper gles, Node source, Node parent, NodeBuilder<Node> builder, RootNode root) throws NodeException {
-        Node created = source.createInstance(root);
-        created.create();
-        try {
-            if (source instanceof RenderableNode<?>) {
-                RenderableNode rNode = (RenderableNode<?>) created;
-                MeshBuilder<?> meshBuilder = rNode.createMeshBuilder(gles, null);
-                NodeBuilder.createMesh(meshBuilder, created, 1);
-            }
-            parent.addChild(created);
-            created.onCreated();
-            // Recursively create children if there are any
-            if (source.getChildren() != null) {
-                for (Node nd : source.getChildren()) {
-                    createNode(gles, nd, created, builder, root);
-                }
-            }
-            return created;
-        } catch (IOException | GLException e) {
-            throw new NodeException(e);
-        }
-        
     }
     
     @Override
@@ -328,7 +279,7 @@ public class GSONSceneFactory implements SceneSerializer {
 
     @Override
     public boolean isInitialized() {
-        return (gles != null && nodeFactory != null);
+        return (gles != null);
     }
 
     @Override

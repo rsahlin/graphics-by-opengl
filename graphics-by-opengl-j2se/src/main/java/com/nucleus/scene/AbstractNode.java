@@ -200,29 +200,7 @@ public abstract class AbstractNode extends BaseReference implements Node {
     public AbstractNode(String id) {
         setId(id);
     }
-
-    /**
-     * Creates a new, empty, instance of the specified nodeType. The type will be set.
-     * Do not call this method directly, use {@link NodeFactory}
-     * 
-     * @param nodeType
-     * @paran root The root of the created instance
-     * @return
-     * @throws IllegalArgumentException If nodeType or root is null.
-     * @throws InstantiationException
-     * @throws IllegalAccessException
-     */
-    public static Node createInstance(Type<Node> nodeType, RootNode root)
-            throws InstantiationException, IllegalAccessException {
-        if (nodeType == null || root == null) {
-            throw new IllegalArgumentException("Null parameter:" + nodeType + ", " + root);
-        }
-        Node node = (Node) nodeType.getTypeClass().newInstance();
-        node.setType(nodeType);
-        node.setRootNode(root);
-        return node;
-    }
-
+    
     /**
      * Returns the transform for this node.
      * 
@@ -459,7 +437,7 @@ public abstract class AbstractNode extends BaseReference implements Node {
     /**
      * Sets (copies) the data from the source
      * Note! This will not copy children or the transient values.
-     * Call {@link #create()} to set transient values
+     * Call {@link #createTransient()} to set transient values
      * 
      * @param source
      * @throws ClassCastException If source node is not same class as this.

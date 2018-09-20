@@ -99,7 +99,7 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
     }
 
     @Override
-    public void create() {
+    public void createTransient() {
         // TODO Auto-generated method stub
     }
 

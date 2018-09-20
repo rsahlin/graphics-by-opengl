@@ -96,7 +96,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     }
     
     @Override
-    public void create() {
+    public void createTransient() {
         program = new TranslateProgram(Shading.flat);
     }
 

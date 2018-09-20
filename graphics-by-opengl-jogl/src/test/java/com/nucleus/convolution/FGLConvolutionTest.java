@@ -136,7 +136,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
                 new RectangleShapeBuilder(new RectangleShapeBuilder.RectangleConfiguration(1f, 1f, 0f, 1, 0)));
         builder.setType(com.nucleus.scene.AbstractNode.NodeTypes.layernode).setMeshBuilder(meshBuilder).setMeshCount(1);
         try {
-            RootNode root = builder.create();
+            RootNode root = builder.create("rootnode");
             uKernel = program.getUniformByName("uKernel");
             renderer.addFrameListener(this);
             coreApp.setRootNode(root);

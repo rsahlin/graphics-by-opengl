@@ -179,13 +179,17 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
     }
 
     @Override
-    public void create() {
+    public void createTransient() {
+    }
+
+    @Override
+    public void onCreated() {
         Mesh mesh = getMesh(MeshIndex.MAIN);
         mesh.setAttributeUpdater(this);
         bindAttributeBuffer(mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES));
         indexer = new Indexer(program);
     }
-
+    
     public void set(LineDrawerNode source) {
         super.set(source);
         lineCount = source.lineCount;

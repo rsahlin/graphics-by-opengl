@@ -80,12 +80,6 @@ public class LayerNode extends AbstractNode {
         }
     }
 
-    @Override
-    public void onCreated() {
-        super.onCreated();
-        viewController = new ViewController(transform);
-    }
-
     /**
      * Returns the layer this node is for
      * 
@@ -117,10 +111,11 @@ public class LayerNode extends AbstractNode {
     }
 
     @Override
-    public void create() {
+    public void createTransient() {
         if (transform == null) {
             transform = new Transform();
         }
+        viewController = new ViewController(transform);
     }
 
 }

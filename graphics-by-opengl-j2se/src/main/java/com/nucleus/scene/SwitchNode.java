@@ -90,7 +90,7 @@ public class SwitchNode extends AbstractNode implements PostDeserializable {
     }
 
     @Override
-    public void create() {
+    public void createTransient() {
         // TODO Auto-generated method stub
 
     }

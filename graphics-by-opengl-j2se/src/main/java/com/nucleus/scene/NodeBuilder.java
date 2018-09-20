@@ -6,37 +6,17 @@ import java.io.IOException;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.shader.ShaderProgram;
 
 /**
- * Builder for Nodes, use this when nodes are created programmatically.
- * The name used will be the short class name to lowercase.
+ * Builder for Nodes, use this when nodes are created programmatically or instantiated from loaded resources.
  *
  * @param <T>
  */
 public class NodeBuilder<T extends Node> {
 
-    public static class ClassType implements Type<Node> {
-
-        protected Class<? extends Node> clazz;
-        
-        public ClassType(Class<? extends Node> clazz) {
-            this.clazz = clazz;
-        }
-        
-        @Override
-        public Class<? extends Node> getTypeClass() {
-            return clazz;
-        }
-
-        @Override
-        public String getName() {
-            return clazz.getSimpleName().toLowerCase();
-        }
-        
-    }
-    
     protected Type<Node> type;
     protected RootNode root;
     protected int meshCount = 0;
@@ -107,13 +87,15 @@ public class NodeBuilder<T extends Node> {
     }
 
     /**
-     * Creates an instance of Node using the specified builder parameters, first checking that the minimal
+     * Creates an new instance of a Node using the specified builder parameters, first checking that the minimal
      * configuration is set.
+     * Specify type class of Node by calling {@link #setType(Type)}
+     * Use this method to programatically create new Nodes
      * 
-     * @param id
-     * @return
+     * @param id The id of the node
+     * @return New instance of Node
      * @throws NodeException
-     * @throws {@link IllegalArgumentException} If not all needed parameters are set
+     * @throws IllegalArgumentException If not all needed parameters are set
      */
     public T create(String id) throws NodeException {
         try {
@@ -128,17 +110,82 @@ public class NodeBuilder<T extends Node> {
                 // Treat this as a warning - it may be wanted behavior.
                 SimpleLogger.d(getClass(), "MeshBuilder is set but meshcount is 0 - no mesh will be created");
             }
-            Node node = AbstractNode.createInstance(type, root);
+            Node node = createInstance(type, root);
             node.setId(id);
-            node.create();
+            node.createTransient();
             NodeBuilder.createMesh(meshBuilder, node, meshCount);
-            // node.getProgram().initBuffers(mesh);
+            node.onCreated();
             return (T) node;
         } catch (InstantiationException | IllegalAccessException | GLException | IOException e) {
             throw new NodeException("Could not create node: " + e.getMessage());
         }
     }
 
+    /**
+     * Creates a new, empty, instance of the specified nodeType. The type will be set.
+     * Do not call this method directly, use {@link #create(String)} or {@link #create(GLES20Wrapper, Node, Node)}
+     * 
+     * @param nodeType
+     * @paran root The root of the created instance
+     * @return
+     * @throws IllegalArgumentException If nodeType or root is null.
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     */
+    Node createInstance(Type<Node> nodeType, RootNode root) throws InstantiationException, IllegalAccessException {
+        if (nodeType == null || root == null) {
+            throw new IllegalArgumentException("Null parameter:" + nodeType + ", " + root);
+        }
+        Node node = (Node) nodeType.getTypeClass().newInstance();
+        node.setType(nodeType);
+        node.setRootNode(root);
+        return node;
+    }
+
+    /**
+     * Creates a new instance of the source Node.
+     * If node is RenderableNode and the meshbuilder is set then it is used to create mesh. 
+     * If RenderableNode but meshbuilder not set the {@link RenderableNode#createMeshBuilder(GLES20Wrapper, com.nucleus.geometry.shape.ShapeBuilder)}
+     * is called to create MeshBuilder.
+     * Node is added to parent.
+     * 
+     * @param gles
+     * @param source
+     * @param parent
+     * @param builder
+     * @return
+     * @throws NodeException
+     */
+    public T create(GLES20Wrapper gles, T source, T parent) throws NodeException {
+        T created = (T) source.createInstance(root);
+        created.createTransient();
+        try {
+            if (source instanceof RenderableNode<?>) {
+                MeshBuilder<?> mBuilder = meshBuilder;
+                RenderableNode rNode = (RenderableNode<?>) created;
+                if (mBuilder == null) {
+                    mBuilder = rNode.createMeshBuilder(gles, null);
+                }
+                if (mBuilder != null) {
+                    createMesh(mBuilder, created, 1);
+                }
+            }
+            parent.addChild(created);
+            created.onCreated();
+            // Recursively create children if there are any
+            if (source.getChildren() != null) {
+                for (Node nd : source.getChildren()) {
+                    create(gles, (T) nd, created);
+                }
+            }
+            return created;
+        } catch (IOException | GLException e) {
+            throw new NodeException(e);
+        }
+        
+    }
+    
+    
     /**
      * Builder method for one or more Meshes belonging to a Node
      * 

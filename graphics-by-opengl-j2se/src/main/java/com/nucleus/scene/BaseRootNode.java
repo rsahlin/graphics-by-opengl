@@ -40,7 +40,8 @@ public class BaseRootNode extends RootNode {
             return this;
         }
 
-        public RootNode create() throws NodeException {
+        @Override
+        public RootNode create(String id) throws NodeException {
             BaseRootNode root = new BaseRootNode();
             setRoot(root);
             // TODO the builder should handle creation of renderpass in a more generic way.
@@ -77,7 +78,7 @@ public class BaseRootNode extends RootNode {
     }
 
     @Override
-    public void create() {
+    public void createTransient() {
         // TODO Auto-generated method stub
 
     }
