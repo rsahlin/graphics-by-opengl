@@ -5,10 +5,12 @@ import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
+import com.nucleus.bounds.Bounds;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.GLTFMeshRenderer;
 import com.nucleus.renderer.GLTFNodeRenderer;
 import com.nucleus.renderer.MeshRenderer;
@@ -25,7 +27,7 @@ import com.nucleus.texturing.Texture2D.Shading;
  * Node containing a glTF model
  *
  */
-public class GLTFNode extends AbstractNode implements RenderableNode<RenderableMesh> {
+public class GLTFNode extends AbstractNode implements RenderableNode<RenderableMesh>, MeshBuilder<RenderableMesh> {
 
     transient protected static NodeRenderer<GLTFNode> nodeRenderer = new GLTFNodeRenderer();
     transient protected static MeshRenderer<RenderableMesh> meshRenderer = new GLTFMeshRenderer();
@@ -37,6 +39,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
 
     transient private GLTF glTF;
     transient ArrayList<RenderableMesh> meshes = new ArrayList<>();
+    transient GLES20Wrapper gles;
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -71,21 +74,6 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     }
 
     @Override
-    public void onCreated() {
-        super.onCreated();
-        if (glTFName != null) {
-            int index = getRootNode().getGLTFIndex(glTFName);
-            try {
-                glTF = AssetManager.getInstance().loadGLTFAsset(getRootNode().getGLTFPath(), glTFName, index);
-                setPass(Pass.ALL);
-                setState(State.ON);
-            } catch (IOException | GLTFException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    @Override
     public ArrayList<RenderableMesh> getMeshes(ArrayList<RenderableMesh> list) {
         list.addAll(meshes);
         return list;
@@ -97,7 +85,6 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     
     @Override
     public void createTransient() {
-        program = new TranslateProgram(Shading.flat);
     }
 
     @Override
@@ -118,7 +105,8 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     @Override
     public MeshBuilder<RenderableMesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
             throws IOException {
-        return null;
+        this.gles = gles;
+        return this;
     }
 
     @Override
@@ -130,5 +118,40 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     public NodeRenderer<GLTFNode> getNodeRenderer() {
         return nodeRenderer;
     }
+
+    @Override
+    public RenderableMesh createInstance() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void create(RenderableNode<RenderableMesh> parent) throws IOException, GLException {
+        program = AssetManager.getInstance().getProgram(gles, new TranslateProgram(Shading.flat));
+        if (glTFName != null) {
+            int index = getRootNode().getGLTFIndex(glTFName);
+            try {
+                glTF = AssetManager.getInstance().loadGLTFAsset(getRootNode().getGLTFPath(), glTFName, index);
+                setPass(Pass.ALL);
+                setState(State.ON);
+            } catch (IOException | GLTFException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Override
+    public RenderableMesh create() throws IOException, GLException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    
+    @Override
+    public Bounds createBounds() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     
 }

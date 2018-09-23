@@ -46,10 +46,11 @@ public interface MeshBuilder<T> {
     public T createInstance();
 
     /**
-     * Creates the mesh for the arguments supplied to this builder - vertexcount, texture, material and drawmode.
-     * If parent is supplied the mesh will be added to it.
+     * Creates one mesh for the arguments supplied to this builder - vertexcount, texture, material and drawmode -
+     * and adds the meshes to the parent node.
      * If a shapebuilder is specified it is called to build (populate) the mesh.
      * Creates UBOs and VBOs as configured.
+     * This is the same as calling {@link #create()} and then adding the mesh to the parent.
      * 
      * @param parent The parent node where the Mesh will be added.
      * @return The mesh
@@ -57,8 +58,19 @@ public interface MeshBuilder<T> {
      * @throws IOException If there is an error loading data, for instance texture
      * @throws GLException If there is a problem calling GL, for instance when setting VBO data
      */
-    public T create(RenderableNode<T> parent) throws IOException, GLException;
+    public void create(RenderableNode<T> parent) throws IOException, GLException;
 
+    /**
+     * Creates one mesh using the builder and returns it.
+     * If a shapebuilder is specified it is called to build (populate) the mesh.
+     * Creates UBOs and VBOs as configured.
+     * @return The mesh
+     * @throws IllegalArgumentException If the needed arguments has not been set
+     * @throws IOException If there is an error loading data, for instance texture
+     * @throws GLException If there is a problem calling GL, for instance when setting VBO data
+     */
+    public T create() throws IOException, GLException;
+    
     /**
      * Calculates the bounds covering this mesh - this may return null.
      * 

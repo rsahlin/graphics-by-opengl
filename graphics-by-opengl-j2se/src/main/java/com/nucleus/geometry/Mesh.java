@@ -169,9 +169,17 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         }
 
         @Override
-        public Mesh create(RenderableNode<Mesh> parent) throws IOException, GLException {
+        public void create(RenderableNode<Mesh> parent) throws IOException, GLException {
+            if (parent == null) {
+                throw new IllegalArgumentException("Parent node may not be null when creating mesh");
+            }
+            parent.addMesh(create());
+        }
+
+        @Override
+        public T create() throws IOException, GLException {
             validate();
-            Mesh mesh = createInstance();
+            T mesh = (T) createInstance();
             mesh.createMesh(texture, attributesPerVertex, null, material, vertexCount, indiceCount, mode);
             if (shapeBuilder != null) {
                 AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
@@ -180,12 +188,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
                 BufferObjectsFactory.getInstance().createVBOs(gles, mesh);
             }
-            if (parent != null) {
-                parent.addMesh(mesh);
-            }
             return mesh;
         }
-
+        
         /**
          * Returns the shader program that can be used to draw the mesh. This is normally only used when program to use
          * is not known.
