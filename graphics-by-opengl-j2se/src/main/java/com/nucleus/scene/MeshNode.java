@@ -30,7 +30,7 @@ import com.nucleus.vecmath.Shape;
 public class MeshNode extends AbstractMeshNode<Mesh> {
 
     transient protected static MeshRenderer<Mesh> meshRenderer;
-    
+
     /**
      * If defined this is the shape of the mesh - if not specified a fullscreen 2D rect will be created.
      */
@@ -42,10 +42,12 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
      */
     protected MeshNode() {
         super();
+        createMeshRenderer();
     }
 
     protected MeshNode(RootNode root, Type<Node> type) {
         super(root, type);
+        createMeshRenderer();
     }
 
     @Override
@@ -109,10 +111,10 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
             meshRenderer = new NucleusMeshRenderer();
         }
     }
-    
+
     @Override
     public MeshRenderer<Mesh> getMeshRenderer() {
         return meshRenderer;
     }
-    
+
 }

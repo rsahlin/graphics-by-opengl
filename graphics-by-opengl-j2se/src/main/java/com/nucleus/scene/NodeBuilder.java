@@ -25,15 +25,17 @@ public class NodeBuilder<T extends Node> {
 
     /**
      * Inits this biulder to create a new instance of the specified Node
+     * 
      * @param source
      * @return
      */
     public NodeBuilder<T> init(Node source) {
         return this;
     }
-    
+
     /**
      * Sets the node class type to create.
+     * 
      * @param type
      * @return
      */
@@ -44,6 +46,7 @@ public class NodeBuilder<T extends Node> {
 
     /**
      * Sets the root node
+     * 
      * @param root
      * @return
      */
@@ -113,7 +116,7 @@ public class NodeBuilder<T extends Node> {
             Node node = createInstance(type, root);
             node.setId(id);
             node.createTransient();
-            NodeBuilder.createMesh(meshBuilder, node, meshCount);
+            createMesh(meshBuilder, node, meshCount);
             node.onCreated();
             return (T) node;
         } catch (InstantiationException | IllegalAccessException | GLException | IOException e) {
@@ -144,8 +147,9 @@ public class NodeBuilder<T extends Node> {
 
     /**
      * Creates a new instance of the source Node.
-     * If node is RenderableNode and the meshbuilder is set then it is used to create mesh. 
-     * If RenderableNode but meshbuilder not set the {@link RenderableNode#createMeshBuilder(GLES20Wrapper, com.nucleus.geometry.shape.ShapeBuilder)}
+     * If node is RenderableNode and the meshbuilder is set then it is used to create mesh.
+     * If RenderableNode but meshbuilder not set the
+     * {@link RenderableNode#createMeshBuilder(GLES20Wrapper, com.nucleus.geometry.shape.ShapeBuilder)}
      * is called to create MeshBuilder.
      * Node is added to parent.
      * 
@@ -182,10 +186,9 @@ public class NodeBuilder<T extends Node> {
         } catch (IOException | GLException e) {
             throw new NodeException(e);
         }
-        
+
     }
-    
-    
+
     /**
      * Builder method for one or more Meshes belonging to a Node
      * 
@@ -195,7 +198,7 @@ public class NodeBuilder<T extends Node> {
      * @throws IOException
      * @throws GLException
      */
-    public static void createMesh(MeshBuilder meshBuilder,Node node, int meshCount) throws IOException, GLException {
+    protected void createMesh(MeshBuilder meshBuilder, Node node, int meshCount) throws IOException, GLException {
         if (node instanceof RenderableNode<?>) {
             RenderableNode<?> rNode = (RenderableNode<?>) node;
             for (int i = 0; i < meshCount; i++) {
@@ -206,7 +209,10 @@ public class NodeBuilder<T extends Node> {
                     }
                 }
             }
+            if (rNode.getProgram() == null) {
+                rNode.setProgram(meshBuilder.createProgram());
+            }
         }
     }
-    
+
 }

@@ -39,6 +39,7 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
 
     /**
      * Default constructor
+     * 
      * @param root
      * @param type
      */
@@ -167,7 +168,7 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
      * Sets texture, material and shapebuilder from the parent node - if not already set in builder.
      * Sets objectcount and attribute per vertex size.
      * If parent does not have program the
-     * {@link com.nucleus.geometry.Mesh.Builder#createProgram(com.nucleus.opengl.GLES20Wrapper)}
+     * {@link com.nucleus.geometry.MeshBuilder#createProgram()}
      * method is called to create a suitable program.
      * The returned builder shall have needed values to create a mesh.
      * 
@@ -191,7 +192,7 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
             builder.setShapeBuilder(shapeBuilder);
         }
         if (getProgram() == null) {
-            setProgram(builder.createProgram(gles));
+            setProgram(builder.createProgram());
         }
         builder.setAttributesPerVertex(getProgram().getAttributeSizes());
         return (MeshBuilder<T>) builder;
@@ -206,7 +207,5 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
     public com.nucleus.renderer.NodeRenderer<?> getNodeRenderer() {
         return nodeRenderer;
     }
-    
+
 }
-
-

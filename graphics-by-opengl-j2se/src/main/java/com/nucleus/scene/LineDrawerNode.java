@@ -20,7 +20,6 @@ import com.nucleus.renderer.NucleusMeshRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
-import com.nucleus.shader.TranslateProgram;
 import com.nucleus.shader.VariableIndexer.Indexer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -35,8 +34,10 @@ import com.nucleus.texturing.TextureType;
  */
 public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeUpdater.Consumer {
 
+    protected final static String VERTEX_SHADER_NAME = "flatline";
+    protected final static String FRAGMENT_SHADER_NAME = "flatline";
     transient protected static MeshRenderer<Mesh> meshRenderer;
-    
+
     public enum LineMode {
         RECTANGLE(),
         LINES(),
@@ -64,27 +65,6 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
     transient int drawCount = Constants.NO_VALUE;
     transient int drawOffset = Constants.NO_VALUE;
 
-    /**
-     * Initializes a NodeBuilder, based on this node, that can be used to create LineDrawerNodes with mesh(es), that can be used to draw points
-     * or lines.
-     * 
-     * 
-     * @param gles
-     * @param nodeBuilder
-     * @return
-     */
-    public static NodeBuilder<Node> initBuilder(GLES20Wrapper gles, NodeBuilder<Node> nodeBuilder) {
-        nodeBuilder.setType(NodeTypes.linedrawernode);
-        TranslateProgram program = (TranslateProgram) AssetManager.getInstance()
-                .getProgram(gles, new TranslateProgram(Shading.flat));
-        nodeBuilder.setProgram(program);
-//        com.nucleus.geometry.Mesh.Builder<Mesh> pointMeshBuilder = Mesh.createBuilder(gles, vertices,
-//                new Material(),
-//                program, TextureFactory.createTexture(TextureType.Untextured), null, mode);
-//        nodeBuilder.setMeshBuilder(pointMeshBuilder).setMeshCount(meshCount);
-        return nodeBuilder;
-    }
-
     @Override
     public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
             throws IOException {
@@ -110,9 +90,10 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
         Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
         builder.setTexture(tex);
         if (getProgram() == null) {
-            setProgram(
-                    AssetManager.getInstance().getProgram(gles, new GenericShaderProgram(new String[] { "flatline", "flatline" }, null, Shading.flat, null,
-                                    ProgramType.VERTEX_FRAGMENT)));
+            setProgram(AssetManager.getInstance().getProgram(gles,
+                    new GenericShaderProgram(new String[] { VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME }, null,
+                            Shading.flat, null,
+                            ProgramType.VERTEX_FRAGMENT)));
         }
         return initMeshBuilder(gles, count, getShapeBuilder(), builder);
     }
@@ -189,7 +170,7 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
         bindAttributeBuffer(mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES));
         indexer = new Indexer(program);
     }
-    
+
     public void set(LineDrawerNode source) {
         super.set(source);
         lineCount = source.lineCount;
@@ -336,11 +317,10 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
             meshRenderer = new NucleusMeshRenderer();
         }
     }
-    
+
     @Override
     public MeshRenderer<Mesh> getMeshRenderer() {
         return meshRenderer;
     }
-    
-    
+
 }

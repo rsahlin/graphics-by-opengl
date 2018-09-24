@@ -8,6 +8,7 @@ import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.scene.RenderableNode;
+import com.nucleus.shader.ShaderProgram;
 
 /**
  * Interface for Mesh builders
@@ -64,13 +65,23 @@ public interface MeshBuilder<T> {
      * Creates one mesh using the builder and returns it.
      * If a shapebuilder is specified it is called to build (populate) the mesh.
      * Creates UBOs and VBOs as configured.
+     * 
      * @return The mesh
      * @throws IllegalArgumentException If the needed arguments has not been set
      * @throws IOException If there is an error loading data, for instance texture
      * @throws GLException If there is a problem calling GL, for instance when setting VBO data
      */
     public T create() throws IOException, GLException;
-    
+
+    /**
+     * Returns the shader program that can be used to draw the mesh. This is normally only used when program to use
+     * is not known.
+     * For instance when loading nodes, or other scenarios where mesh type is known (but not program)
+     * 
+     * @return Shader program to use for drawing mesh.
+     */
+    public ShaderProgram createProgram();
+
     /**
      * Calculates the bounds covering this mesh - this may return null.
      * 

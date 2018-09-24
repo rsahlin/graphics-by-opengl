@@ -47,7 +47,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     @Deprecated
     protected GLTFNode() {
     }
-    
+
     private GLTFNode(RootNode root, Type<Node> type) {
         super(root, type);
     }
@@ -82,7 +82,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     public GLTF getGLTF() {
         return glTF;
     }
-    
+
     @Override
     public void createTransient() {
     }
@@ -101,7 +101,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     public void setProgram(ShaderProgram program) {
         this.program = program;
     }
-    
+
     @Override
     public MeshBuilder<RenderableMesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
             throws IOException {
@@ -127,7 +127,6 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
 
     @Override
     public void create(RenderableNode<RenderableMesh> parent) throws IOException, GLException {
-        program = AssetManager.getInstance().getProgram(gles, new TranslateProgram(Shading.flat));
         if (glTFName != null) {
             int index = getRootNode().getGLTFIndex(glTFName);
             try {
@@ -145,13 +144,16 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
         // TODO Auto-generated method stub
         return null;
     }
-    
-    
+
     @Override
     public Bounds createBounds() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    
+    @Override
+    public ShaderProgram createProgram() {
+        return AssetManager.getInstance().getProgram(gles, new TranslateProgram(Shading.textured));
+    }
+
 }

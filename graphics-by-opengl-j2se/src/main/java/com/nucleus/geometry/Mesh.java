@@ -183,23 +183,17 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             mesh.createMesh(texture, attributesPerVertex, null, material, vertexCount, indiceCount, mode);
             if (shapeBuilder != null) {
                 AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
-                shapeBuilder.build(attributes, mesh.getTexture(Texture2D.TEXTURE_0), mesh.getElementBuffer(), mesh.getMode());
+                shapeBuilder.build(attributes, mesh.getTexture(Texture2D.TEXTURE_0), mesh.getElementBuffer(),
+                        mesh.getMode());
             }
             if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
                 BufferObjectsFactory.getInstance().createVBOs(gles, mesh);
             }
             return mesh;
         }
-        
-        /**
-         * Returns the shader program that can be used to draw the mesh. This is normally only used when program to use
-         * is not known.
-         * For instance when loading nodes, or other scenarios where mesh type is known (but not program)
-         * 
-         * @param gles
-         * @return Shader program to use for drawing mesh.
-         */
-        public ShaderProgram createProgram(GLES20Wrapper gles) {
+
+        @Override
+        public ShaderProgram createProgram() {
             return AssetManager.getInstance().getProgram(gles, new TranslateProgram(texture));
         }
 
