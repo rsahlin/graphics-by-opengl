@@ -183,6 +183,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             mesh.createMesh(texture, attributesPerVertex, null, material, vertexCount, indiceCount, mode);
             if (shapeBuilder != null) {
                 AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
+                if (attributes == null) {
+                    attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES);
+                }
                 shapeBuilder.build(attributes, mesh.getTexture(Texture2D.TEXTURE_0), mesh.getElementBuffer(),
                         mesh.getMode());
             }

@@ -60,6 +60,18 @@ import com.nucleus.vecmath.Matrix;
  */
 public abstract class ShaderProgram {
 
+    public static final String PROGRAM_DIRECTORY = "assets/";
+    public static final String SHADER_SOURCE_SUFFIX = ".essl";
+    /**
+     * Shader suffix as added after checking for which version to use
+     */
+    public static final String COMMON_VERTEX_SHADER = "commonvertex";
+    public static final String FRAGMENT_TYPE = "fragment";
+    public static final String VERTEX_TYPE = "vertex";
+    public static final String GEOMETRY_TYPE = "geometry";
+    protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
+    protected final static String NO_ACTIVE_UNIFORMS = "No active uniforms, forgot to call createProgram()?";
+
     /**
      * The different type of programs that can be linked from different type of shaders.
      *
@@ -104,18 +116,6 @@ public abstract class ShaderProgram {
         }
 
     }
-
-    public static final String PROGRAM_DIRECTORY = "assets/";
-    public static final String SHADER_SOURCE_SUFFIX = ".essl";
-    /**
-     * Shader suffix as added after checking for which version to use
-     */
-    public static final String COMMON_VERTEX_SHADER = "commonvertex";
-    public static final String FRAGMENT_TYPE = "fragment";
-    public static final String VERTEX_TYPE = "vertex";
-    public static final String GEOMETRY_TYPE = "geometry";
-    protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
-    protected final static String NO_ACTIVE_UNIFORMS = "No active uniforms, forgot to call createProgram()?";
 
     /**
      * Set to true to force appending common shader to shader source
@@ -272,13 +272,19 @@ public abstract class ShaderProgram {
      */
     protected ShaderVariable[] activeUniforms;
     /**
-     * Calculated in create program
+     * Calculated in create program, created using {@link #attributeBufferCount}
+     * If attributes are dynamically mapped (not using indexer) then only one buffer is used.
      */
     protected ShaderVariable[][] attributeVariables;
 
+    protected BufferIndex defaultDynamicAttribBuffer = BufferIndex.ATTRIBUTES_STATIC;
+
+    protected int attributeBufferCount = BufferIndex.values().length;
+
     protected GlobalLight globalLight = GlobalLight.getInstance();
     /**
-     * The size of each buffer for the attribute variables
+     * The size of each buffer for the attribute variables - as set either from indexer if this is used or taken
+     * from defined attributes.
      */
     protected int[] attributesPerVertex;
     /**
@@ -293,7 +299,7 @@ public abstract class ShaderProgram {
      * The dictionary created from linked program
      */
     protected AccessorDictionary<String> accessorDictionary = new AccessorDictionary<>();
-    protected int attributeBufferCount = BufferIndex.values().length;
+
     protected HashMap<Integer, ShaderVariable> blockVariables = new HashMap<>(); // Active block uniforms, index is the
                                                                                  // uniform index from GL
     /**
@@ -580,8 +586,9 @@ public abstract class ShaderProgram {
     private void sortAttributeVariablePerBuffer(ShaderVariable[][] resultArray) {
         if (variableIndexer == null) {
             // If indexer not specified then use one buffer.
-            resultArray[0] = new ShaderVariable[info.getActiveVariables(VariableType.ATTRIBUTE)];
-            if (resultArray[0].length != activeAttributes.length) {
+            resultArray[defaultDynamicAttribBuffer.index] = new ShaderVariable[info
+                    .getActiveVariables(VariableType.ATTRIBUTE)];
+            if (resultArray[defaultDynamicAttribBuffer.index].length != activeAttributes.length) {
                 throw new IllegalArgumentException("Active variable array size mismatch - active count from info "
                         + info.getActiveVariables(VariableType.ATTRIBUTE) + ", array size "
                         + activeAttributes.length);
@@ -615,18 +622,6 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Internal method
-     * Returns the padding per vertex for the specified buffer index, this can be used to create a buffer with
-     * additional storage. Called by the {@link #createAttributeBuffer(BufferIndex, int)} method.
-     * 
-     * @param index
-     * @return
-     */
-    protected int getPaddingPerVertex(BufferIndex index) {
-        return 0;
-    }
-
-    /**
      * Returns the number of attributes per vertex that are used by the program.
      * 
      * @param buffer The buffer to get attributes per vertex for
@@ -657,30 +652,6 @@ public abstract class ShaderProgram {
             attributeSize[index.index] = getAttributesPerVertex(index);
         }
         return attributeSize;
-    }
-
-    /**
-     * Creates the storage for attributes that are not vertices, only creates the storage will not fill buffer.
-     * For some subclasses this must also create a backing attribute array in the mesh that is used as
-     * intermediate storage before the vertex buffer is updated.
-     * 
-     * @param index The attribute buffer to create
-     * @param verticeCount Number of vertices
-     * @return The buffer for attribute storage or null if not needed.
-     */
-    protected AttributeBuffer createAttributeBuffer(BufferIndex index, int verticeCount) {
-        switch (index) {
-            case ATTRIBUTES:
-            case ATTRIBUTES_STATIC:
-                int attrs = getAttributesPerVertex(index) + getPaddingPerVertex(index);
-                if (attrs > 0) {
-                    AttributeBuffer buffer = new AttributeBuffer(verticeCount, attrs, GLES20.GL_FLOAT);
-                    return buffer;
-                }
-                return null;
-            default:
-                throw new IllegalArgumentException("Not implemented");
-        }
     }
 
     /**
@@ -1533,12 +1504,13 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Initializes the uniform data for this program. 
+     * Initializes the uniform data for this program.
      * Is called after program is linked and uniform buffers are created, variables and blocks are resolved.
+     * 
      * @param destinationUniforms
      */
     public abstract void initUniformData(float[] destinationUniforms);
-    
+
     /**
      * Updates the shader program specific uniform data, storing in in the uniformData array or
      * {@link #uniformBlockBuffers}
@@ -1549,8 +1521,6 @@ public abstract class ShaderProgram {
      */
     public abstract void updateUniformData(float[] destinationUniform);
 
-    
-    
     /**
      * Sets UV fraction for the tiled texture + number of frames in x.
      * Use this for programs that use tiled texture behavior.
@@ -1583,7 +1553,6 @@ public abstract class ShaderProgram {
             uniforms[screenSizeOffset++] = Window.getInstance().getHeight();
         }
     }
-
 
     /**
      * Sets the emissive light color in uniform data

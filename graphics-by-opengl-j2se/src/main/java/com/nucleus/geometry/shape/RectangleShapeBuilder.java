@@ -166,7 +166,8 @@ public class RectangleShapeBuilder extends ElementBuilder {
      * This method is not speed efficient, only use when very few positions shall be set.
      * For instance when creating one quad.
      * 
-     * @param vertexIndex The vertex index in the quad - 0 to 3, this is stored AFTER xyz
+     * @param vertexIndex The vertex index in the quad - 0 to 3, this is stored AFTER xyz if vertex index is enabled
+     * in the configuration.
      * @param x
      * @param y
      * @param optional uv
@@ -208,7 +209,7 @@ public class RectangleShapeBuilder extends ElementBuilder {
             if (indices.type != Type.SHORT) {
                 throw new IllegalArgumentException("Invalid type " + indices.type);
             }
-            buildElements(indices.indices.asShortBuffer(), mode,count, configuration.startVertex);
+            buildElements(indices.indices.asShortBuffer(), mode, count, configuration.startVertex);
         }
     }
 
