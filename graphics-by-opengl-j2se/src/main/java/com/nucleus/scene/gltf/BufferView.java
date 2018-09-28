@@ -117,9 +117,6 @@ public class BufferView implements RuntimeResolver {
     }
 
     public Target getTarget() {
-        if (target == null) {
-            target = Target.getTarget(targetValue);
-        }
         return target;
     }
 
@@ -133,7 +130,11 @@ public class BufferView implements RuntimeResolver {
 
     @Override
     public void resolve(GLTF asset) throws GLTFException {
+        this.buffer = asset.getBuffers()[bufferIndex];
+        if (targetValue >= 0) {
+            target = Target.getTarget(targetValue);
 
+        }
     }
 
 }

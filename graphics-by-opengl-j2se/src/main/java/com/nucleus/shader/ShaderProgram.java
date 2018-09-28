@@ -30,9 +30,6 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.BufferObjectsFactory;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
-import com.nucleus.scene.gltf.Accessor;
-import com.nucleus.scene.gltf.Accessor.ComponentType;
-import com.nucleus.scene.gltf.AccessorDictionary;
 import com.nucleus.shader.ShaderSource.ESSLVersion;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -295,10 +292,6 @@ public abstract class ShaderProgram {
      * If specified then variable offsets will be taken from this.
      */
     protected VariableIndexer variableIndexer;
-    /**
-     * The dictionary created from linked program
-     */
-    protected AccessorDictionary<String> accessorDictionary = new AccessorDictionary<>();
 
     protected HashMap<Integer, ShaderVariable> blockVariables = new HashMap<>(); // Active block uniforms, index is the
                                                                                  // uniform index from GL
@@ -930,7 +923,6 @@ public abstract class ShaderProgram {
                     variable = gles.getActiveVariable(program, type, i, nameBuffer);
                     setVariableLocation(gles, program, variable);
                     addShaderVariable(variable);
-                    createAccessor(variable);
                 }
             }
         }
@@ -1208,29 +1200,6 @@ public abstract class ShaderProgram {
             default:
                 // DO NOTHING
         }
-    }
-
-    /**
-     * Creates the accessor, using shader variable name as key.
-     * 
-     * @param variable
-     */
-    protected void createAccessor(ShaderVariable variable) {
-        if (variable.getType() == VariableType.ATTRIBUTE) {
-            Accessor accessor = new Accessor(null, 0, ComponentType.FLOAT, 1,
-                    Accessor.Type.getFromDataType(variable.getDataType()));
-            accessorDictionary.add(variable.getName(), accessor);
-        }
-    }
-
-    /**
-     * Returns the program accessor dictionary, this is created after linking the program and stores accessors
-     * using shader variable name.
-     * 
-     * @return
-     */
-    public AccessorDictionary<String> getAccessorDictionary() {
-        return accessorDictionary;
     }
 
     /**

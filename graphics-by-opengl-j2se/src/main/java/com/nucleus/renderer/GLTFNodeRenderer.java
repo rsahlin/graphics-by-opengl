@@ -6,15 +6,20 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.scene.GLTFNode;
 import com.nucleus.scene.RenderableNode;
+import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.GLTF;
+import com.nucleus.scene.gltf.Mesh;
+import com.nucleus.scene.gltf.Node;
+import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.RenderableMesh;
 import com.nucleus.scene.gltf.Scene;
+import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderProgram;
 
-public class GLTFNodeRenderer implements NodeRenderer<GLTFNode>{
+public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
 
     @Override
-    public boolean renderNode(NucleusRenderer renderer, GLTFNode node,Pass currentPass, float[][] matrices)
+    public boolean renderNode(NucleusRenderer renderer, GLTFNode node, Pass currentPass, float[][] matrices)
             throws GLException {
         GLES20Wrapper gles = renderer.getGLES();
         ShaderProgram program = getProgram(gles, node, currentPass);
@@ -29,10 +34,65 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode>{
         if (sceneIndex == -1) {
             sceneIndex = 0;
         }
-        Scene scene = glTF.getScenes()[sceneIndex];
-        int[] nodes = scene.getNodes();
-        node.getMeshRenderer().renderMeshes(renderer, node.getProgram(), node, matrices);
+        Scene scene = glTF.getScene(sceneIndex);
+        // Traverse the nodes and render each.
+        renderNodes(gles, glTF, (GLTFShaderProgram) program, scene.getNodes());
         return true;
+    }
+
+    /**
+     * Renders the node and then childnodes by calling {@link #renderNodes(GLTF, Node[])}
+     * This will render the Node using depth first search
+     * 
+     * @param gles
+     * @param glTF
+     * @param program
+     * @param node
+     */
+    protected void renderNode(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Node node) {
+        // Render this node.
+        renderMesh(gles, glTF, program, node.getMesh());
+        // Render children.
+        renderNodes(gles, glTF, program, node.getChildren());
+    }
+
+    protected void renderMesh(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Mesh mesh) {
+        if (mesh != null) {
+            Primitive[] primitives = mesh.getPrimitives();
+            if (primitives != null) {
+                for (Primitive p : primitives) {
+                    renderPrimitive(gles, glTF, program, p);
+                }
+            }
+        }
+    }
+
+    protected void renderPrimitive(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Primitive primitive) {
+        Accessor indices = glTF.getAccessor(primitive.getIndicesIndex());
+        if (indices != null) {
+            // Indexed mode - use glDrawElements
+            gles.glVertexAttribPointer(glTF, program, primitive);
+            gles.glDrawElements(primitive.getMode().value, indices.getCount(), indices.getComponentType().value,
+                    indices.getBufferView().getBuffer().getBuffer().position(0));
+        } else {
+            // Non indexed mode - use glDrawArrays
+        }
+    }
+
+    /**
+     * Renders an array of nodes - each node will be rendered by calling {@link #renderNode(GLTF, Node)}
+     * This means rendering will be depth first.
+     * 
+     * @param gles
+     * @param glTF
+     * @param children
+     */
+    protected void renderNodes(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Node[] children) {
+        if (children != null && children.length > 0) {
+            for (Node n : children) {
+                renderNode(gles, glTF, program, n);
+            }
+        }
     }
 
     /**
@@ -48,5 +108,5 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode>{
         }
         return program.getProgram(gles, pass, program.getShading());
     }
-    
+
 }

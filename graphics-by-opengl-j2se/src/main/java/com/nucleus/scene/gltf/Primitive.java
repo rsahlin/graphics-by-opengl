@@ -3,6 +3,8 @@ package com.nucleus.scene.gltf;
 import java.util.HashMap;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.scene.gltf.GLTF.GLTFException;
+import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 
 /**
  * The Primitive as it is loaded using the glTF format.
@@ -26,7 +28,7 @@ import com.google.gson.annotations.SerializedName;
  * extras any Application-specific data. No
  *
  */
-public class Primitive {
+public class Primitive implements RuntimeResolver {
 
     private static final int DEFAULT_MODE = 4;
 
@@ -51,13 +53,13 @@ public class Primitive {
         /**
          * Custom Attributes
          */
-        ROTATE(),
-        SCALE(),
-        TRANSLATE(),
-        FRAME(),
-        ALBEDO(),
-        EMISSIVE(),
-        BOUNDS();
+        _ROTATE(),
+        _SCALE(),
+        _TRANSLATE(),
+        _FRAME(),
+        _ALBEDO(),
+        _EMISSIVE(),
+        _BOUNDS();
     }
 
     public enum Mode {
@@ -111,25 +113,62 @@ public class Primitive {
     @SerializedName(MODE)
     private int modeValue = DEFAULT_MODE;
     transient private Mode mode;
+    transient private Accessor[] accessorList;
+    transient private Attributes[] attributeList;
 
+    /**
+     * Returns the dictionary (HashMap) with Attributes
+     * 
+     * @return
+     */
     public HashMap<Attributes, Integer> getAttributes() {
         return attributes;
     }
 
+    public Accessor[] getAccessorArray() {
+        return accessorList;
+    }
+
+    public Attributes[] getAttributesArray() {
+        return attributeList;
+    }
+
     /**
-     * Returns the index of the accessor that contains the indices.
+     * Returns the Accessor for the attribute, or null if not defined.
+     * 
+     * @param glTF
+     * @param attribute
      * @return
      */
-    public int getIndices() {
+    public Accessor getAccessor(GLTF glTF, Attributes attribute) {
+        Integer index = attributes.get(attribute);
+        if (index != null) {
+            return glTF.getAccessor(index);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the index of the accessor that contains the indices.
+     * 
+     * @return Index of indices or -1 if no indices.
+     */
+    public int getIndicesIndex() {
         return indices;
     }
 
-    public void setIndices(int indices) {
+    /**
+     * Sets the index of the accessor that contains the indices
+     * 
+     * @param indices
+     */
+    public void setIndicesIndex(int indices) {
         this.indices = indices;
     }
 
     /**
      * Returns the index of the material to apply when rendering this primitive
+     * 
      * @return
      */
     public int getMaterialIndex() {
@@ -163,6 +202,20 @@ public class Primitive {
     public void setMode(Mode mode) {
         this.mode = mode;
         this.modeValue = mode.value;
+    }
+
+    @Override
+    public void resolve(GLTF asset) throws GLTFException {
+        if (attributes != null && attributes.size() > 0) {
+            accessorList = new Accessor[attributes.size()];
+            attributeList = new Attributes[attributes.size()];
+            int index = 0;
+            for (Attributes a : attributes.keySet()) {
+                attributeList[index] = a;
+                accessorList[index] = asset.getAccessor(attributes.get(a));
+                index++;
+            }
+        }
     }
 
 }

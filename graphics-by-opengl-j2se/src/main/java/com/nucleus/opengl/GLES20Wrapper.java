@@ -12,6 +12,14 @@ import com.nucleus.io.StreamUtils;
 import com.nucleus.opengl.GLException.Error;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RendererInfo;
+import com.nucleus.scene.gltf.Accessor;
+import com.nucleus.scene.gltf.Accessor.ComponentType;
+import com.nucleus.scene.gltf.Accessor.Type;
+import com.nucleus.scene.gltf.BufferView;
+import com.nucleus.scene.gltf.GLTF;
+import com.nucleus.scene.gltf.Primitive;
+import com.nucleus.scene.gltf.Primitive.Attributes;
+import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderSource;
 import com.nucleus.shader.ShaderSource.ESSLVersion;
 import com.nucleus.shader.ShaderVariable;
@@ -348,6 +356,29 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                     glVertexAttribPointer(a.getLocation(), a.getComponentCount(), buffer.getDataType(), false,
                             buffer.getByteStride(), buffer.getBuffer().position(a.getOffset()));
                 }
+            }
+        }
+    }
+
+    /**
+     * Sets the vertexAttribPointers for the glTF primitive
+     * 
+     * @param glTF
+     * @param primitive
+     */
+    public void glVertexAttribPointer(GLTF glTF, GLTFShaderProgram program, Primitive primitive) {
+        Attributes[] attribs = primitive.getAttributesArray();
+        Accessor[] accessors = primitive.getAccessorArray();
+        for (int i = 0; i < attribs.length; i++) {
+            ShaderVariable v = program.getAttributeByName(attribs[i].name());
+            if (v != null) {
+                BufferView view = accessors[i].getBufferView();
+                ComponentType ct = accessors[i].getComponentType();
+                Type t = accessors[i].getType();
+                glVertexAttribPointer(v.getLocation(), t.size, ct.value, false, view.getByteStride(),
+                        view.getBuffer().getBuffer().position(0));
+            } else {
+                // TODO - when fully implemented this should not happen.
             }
         }
     }

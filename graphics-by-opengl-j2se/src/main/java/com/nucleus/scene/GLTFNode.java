@@ -11,7 +11,6 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
-import com.nucleus.renderer.GLTFMeshRenderer;
 import com.nucleus.renderer.GLTFNodeRenderer;
 import com.nucleus.renderer.MeshRenderer;
 import com.nucleus.renderer.NodeRenderer;
@@ -19,8 +18,9 @@ import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.RenderableMesh;
+import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.shader.TranslateProgram;
+import com.nucleus.shader.ShaderProgram.ProgramType;
 import com.nucleus.texturing.Texture2D.Shading;
 
 /**
@@ -30,7 +30,6 @@ import com.nucleus.texturing.Texture2D.Shading;
 public class GLTFNode extends AbstractNode implements RenderableNode<RenderableMesh>, MeshBuilder<RenderableMesh> {
 
     transient protected static NodeRenderer<GLTFNode> nodeRenderer = new GLTFNodeRenderer();
-    transient protected static MeshRenderer<RenderableMesh> meshRenderer = new GLTFMeshRenderer();
 
     private static final String GLTF_NAME = "glTFName";
 
@@ -111,7 +110,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
 
     @Override
     public MeshRenderer<RenderableMesh> getMeshRenderer() {
-        return meshRenderer;
+        return null;
     }
 
     @Override
@@ -153,7 +152,10 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
 
     @Override
     public ShaderProgram createProgram() {
-        return AssetManager.getInstance().getProgram(gles, new TranslateProgram(Shading.textured));
+        GLTFShaderProgram p = new GLTFShaderProgram(glTF.getMeshes(), null, Shading.textured, "gltf",
+                ProgramType.VERTEX_FRAGMENT);
+        ShaderProgram program = AssetManager.getInstance().getProgram(gles, p);
+        return program;
     }
 
 }

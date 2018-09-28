@@ -1,0 +1,18 @@
+#version 300 es
+/* Copyright 2015 Richard Sahlin
+ *
+ * Fragment shader for glTF asset
+ * @author Richard Sahlin
+ */
+precision mediump float;
+
+uniform lowp sampler2D uTexture;      //The texture sampler
+
+in vec2 vTexCoord;
+in vec4 vColor;
+out vec4 fragColor;
+
+void main()
+{
+	fragColor = texture(uTexture, vTexCoord) * vColor;
+}

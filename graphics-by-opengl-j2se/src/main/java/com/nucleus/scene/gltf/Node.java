@@ -1,6 +1,8 @@
 package com.nucleus.scene.gltf;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.scene.gltf.GLTF.GLTFException;
+import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 
 /**
  * The Node as it is loaded using the glTF format.
@@ -34,7 +36,7 @@ import com.google.gson.annotations.SerializedName;
  * extras any Application-specific data. No
  *
  */
-public class Node {
+public class Node implements RuntimeResolver {
 
     private static final String NAME = "name";
     private static final String MESH = "mesh";
@@ -48,7 +50,7 @@ public class Node {
     @SerializedName(NAME)
     private String name;
     @SerializedName(MESH)
-    private int mesh;
+    private int mesh = -1;
     @SerializedName(CHILDREN)
     private int[] children;
     @SerializedName(CAMERA)
@@ -62,19 +64,55 @@ public class Node {
     @SerializedName(MATRIX)
     private float[] matrix;
 
+    transient protected Node[] childNodes;
+    transient protected Mesh nodeMesh;
+
     public String getName() {
         return name;
     }
 
-    public int getMesh() {
+    /**
+     * Returns the index of the mesh to render with this node
+     * 
+     * @return
+     */
+    public int getMeshIndex() {
         return mesh;
     }
 
-    public int[] getChildren() {
+    /**
+     * Returns the mesh to render with this node - or null if not defined.
+     * 
+     * @return
+     */
+    public Mesh getMesh() {
+        return nodeMesh;
+    }
+
+    /**
+     * Returns the array of indexes that are the childnodes of this node
+     * 
+     * @return
+     */
+    public int[] getChildIndexes() {
         return children;
     }
 
-    public int getCamera() {
+    /**
+     * Returns the childnodes
+     * 
+     * @return
+     */
+    public Node[] getChildren() {
+        return childNodes;
+    }
+
+    /**
+     * Returns the camera index
+     * 
+     * @return
+     */
+    public int getCameraIndex() {
         return camera;
     }
 
@@ -92,6 +130,21 @@ public class Node {
 
     public float[] getMatrix() {
         return matrix;
+    }
+
+    @Override
+    public void resolve(GLTF asset) throws GLTFException {
+        if (mesh >= 0) {
+            nodeMesh = asset.getMeshes()[mesh];
+        }
+        if (children != null && children.length > 0) {
+            Node[] sources = asset.getNodes();
+            childNodes = new Node[children.length];
+            for (int i = 0; i < children.length; i++) {
+                childNodes[i] = sources[children[i]];
+            }
+        }
+
     }
 
 }

@@ -7,7 +7,6 @@ import com.nucleus.scene.gltf.GLTF.GLTFException;
 
 /**
  * The Accessor as it is loaded using the glTF format.
- * To use a runtime version of the Accessor create AccessorInstance
  * 
  * accessor
  * A typed view into a bufferView. A bufferView contains raw binary data. An accessor provides a typed view into a
@@ -69,13 +68,19 @@ public class Accessor implements GLTF.RuntimeResolver {
     }
 
     public enum Type {
-        SCALAR(),
-        VEC2(),
-        VEC3(),
-        VEC4(),
-        MAT2(),
-        MAT3(),
-        MAT4();
+        SCALAR(1),
+        VEC2(2),
+        VEC3(3),
+        VEC4(4),
+        MAT2(2),
+        MAT3(3),
+        MAT4(4);
+
+        public final int size;
+
+        private Type(int size) {
+            this.size = size;
+        }
 
         public static Type getFromDataType(int dataType) {
             switch (dataType) {
@@ -121,7 +126,7 @@ public class Accessor implements GLTF.RuntimeResolver {
      * 5126 FLOAT
      */
     @SerializedName(COMPONENT_TYPE)
-    private int componentTypeValue = -1;
+    private int componentTypeValue;
     @SerializedName(NORMALIZED)
     private boolean normalized = DEFAULT_NORMALIZED;
     @SerializedName(COUNT)
@@ -160,9 +165,6 @@ public class Accessor implements GLTF.RuntimeResolver {
     }
 
     public ComponentType getComponentType() {
-        if (componentType == null) {
-            componentType = ComponentType.get(componentTypeValue);
-        }
         return componentType;
     }
 
@@ -196,6 +198,7 @@ public class Accessor implements GLTF.RuntimeResolver {
             throw new GLTFException("Already resolved Accessor with name " + name);
         }
         bufferViewRef = asset.getBufferViews()[bufferViewIndex];
+        componentType = ComponentType.get(componentTypeValue);
     }
 
 }

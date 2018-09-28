@@ -28,6 +28,12 @@ import com.google.gson.annotations.SerializedName;
  */
 public class Material {
 
+    public enum AlphaMode {
+        OPAQUE(),
+        MASK(),
+        BLEND();
+    }
+
     private static final String NAME = "name";
     private static final String PBR_METALLIC_ROUGHNESS = "pbrMetallicRoughness";
 
@@ -35,6 +41,10 @@ public class Material {
     private String name;
     @SerializedName(PBR_METALLIC_ROUGHNESS)
     private PBRMetallicRoughness pbrMetallicRoughness;
+    private float[] emissiveFactor = new float[] { 0, 0, 0 };
+    private AlphaMode alphaMode = AlphaMode.OPAQUE;
+    private float alphaCutoff = 0.5f;
+    private boolean doubleSided = false;
 
     public String getName() {
         return name;

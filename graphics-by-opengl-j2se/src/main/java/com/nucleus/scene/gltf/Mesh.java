@@ -4,6 +4,8 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.scene.gltf.GLTF.GLTFException;
+import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 
 /**
  * 
@@ -23,7 +25,7 @@ import com.nucleus.renderer.NucleusRenderer;
  * 
  *
  */
-public class Mesh implements AttributeUpdater {
+public class Mesh implements AttributeUpdater, RuntimeResolver {
 
     private static final String PRIMITIVES = "primitives";
     private static final String WEIGHTS = "weights";
@@ -63,19 +65,29 @@ public class Mesh implements AttributeUpdater {
     @Override
     public void destroy(NucleusRenderer renderer) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public void setAttributeUpdater(Consumer attributeConsumer) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public Consumer getAttributeConsumer() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public void resolve(GLTF asset) throws GLTFException {
+        if (primitives != null) {
+            for (Primitive p : primitives) {
+                p.resolve(asset);
+            }
+        }
+
     }
 
 }

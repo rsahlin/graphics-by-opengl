@@ -135,8 +135,26 @@ public class GLTF {
         return asset;
     }
 
+    /**
+     * Returns the array holding the scenes
+     * 
+     * @return
+     */
     public Scene[] getScenes() {
         return scenes;
+    }
+
+    /**
+     * Returns the scene for the specified index, or null if invalid index
+     * 
+     * @param index
+     * @return The scene for the index or null
+     */
+    public Scene getScene(int index) {
+        if (scenes != null && index >= 0 && index < scenes.length) {
+            return scenes[index];
+        }
+        return null;
     }
 
     /**
@@ -156,15 +174,46 @@ public class GLTF {
         return meshes;
     }
 
+    /**
+     * Returns the array of Accessors
+     * 
+     * @return
+     */
     public Accessor[] getAccessors() {
         return accessors;
+    }
+
+    /**
+     * Returns the Accessor at the specified index, or null if invalid index or no Accessors in this asset.
+     * 
+     * @param index
+     * @return
+     */
+    public Accessor getAccessor(int index) {
+        if (accessors != null && index >= 0 && index < accessors.length) {
+            return accessors[index];
+        }
+        return null;
+    }
+
+    /**
+     * Returns the BufferView for the index, or null if invalid index or no BufferViews in this asset.
+     * 
+     * @param index
+     * @return
+     */
+    public BufferView getBufferView(int index) {
+        if (bufferViews != null && index >= 0 && index < bufferViews.length) {
+            return bufferViews[index];
+        }
+        return null;
     }
 
     /**
      * Resolves all glTF objects so they can be used without reference to glTF asset
      * Call this method only once, normally done when glTF is loaded using the {@link Loader}
      * 
-     * @throws GLTFException If an instance to resolve already has been resolved, ie method has already been called. 
+     * @throws GLTFException If an instance to resolve already has been resolved, ie method has already been called.
      * For instance if the {@link Loader} is used.
      */
     public void resolve() throws GLTFException {
@@ -172,7 +221,7 @@ public class GLTF {
         for (RuntimeResolver rr : resolves) {
             rr.resolve(this);
         }
-        createRenderableMeshes();
+        // createRenderableMeshes();
     }
 
     private void createRenderableMeshes() {
@@ -182,13 +231,25 @@ public class GLTF {
                 renderableMeshes[index] = new RenderableMesh(this);
             }
         }
-        
+
     }
-    
+
     private List<RuntimeResolver> getResolves() {
         ArrayList<RuntimeResolver> result = new ArrayList<>();
         if (accessors != null) {
             result.addAll(Arrays.asList(accessors));
+        }
+        if (nodes != null) {
+            result.addAll(Arrays.asList(nodes));
+        }
+        if (scenes != null) {
+            result.addAll(Arrays.asList(scenes));
+        }
+        if (bufferViews != null) {
+            result.addAll(Arrays.asList(bufferViews));
+        }
+        if (meshes != null) {
+            result.addAll(Arrays.asList(meshes));
         }
         return result;
     }

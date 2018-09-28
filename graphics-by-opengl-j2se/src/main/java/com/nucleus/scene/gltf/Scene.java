@@ -1,6 +1,8 @@
 package com.nucleus.scene.gltf;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.scene.gltf.GLTF.GLTFException;
+import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 
 /**
  * The Scene as it is loaded using the glTF format.
@@ -17,7 +19,7 @@ import com.google.gson.annotations.SerializedName;
  * extras any Application-specific data. No
  *
  */
-public class Scene {
+public class Scene implements RuntimeResolver {
 
     private static final String NODES = "nodes";
     private static final String NAME = "name";
@@ -27,19 +29,42 @@ public class Scene {
     @SerializedName(NAME)
     private String name;
 
+    transient Node[] sceneNodes;
+
     /**
-     * returns the nodes that make up this scene
+     * returns the nodes, as indexes, that make up this scene
      */
-    public int[] getNodes() {
+    public int[] getNodeIndexes() {
         return nodes;
     }
 
     /**
      * Returns the name of this scene or null if not defined.
+     * 
      * @return
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Returns the nodes that make up this scene
+     * 
+     * @return
+     */
+    public Node[] getNodes() {
+        return sceneNodes;
+    }
+
+    @Override
+    public void resolve(GLTF asset) throws GLTFException {
+        if (nodes != null && nodes.length > 0) {
+            Node[] sources = asset.getNodes();
+            sceneNodes = new Node[nodes.length];
+            for (int i = 0; i < nodes.length; i++) {
+                sceneNodes[i] = sources[i];
+            }
+        }
     }
 
 }
