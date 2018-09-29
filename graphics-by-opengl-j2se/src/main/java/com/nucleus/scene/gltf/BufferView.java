@@ -1,5 +1,9 @@
 package com.nucleus.scene.gltf;
 
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
+
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
@@ -135,6 +139,45 @@ public class BufferView implements RuntimeResolver {
             target = Target.getTarget(targetValue);
 
         }
+    }
+
+    /**
+     * Returns the contents of toString() + the contents of byteBuffer limited to {@link Buffer#MAX_BUFFER_PRINT}
+     * 
+     * @param byteBuffer
+     * @return
+     */
+    public String toString(ByteBuffer byteBuffer) {
+        return toString() + "\n" + buffer.getContentAsString(byteOffset,
+                byteLength < Buffer.MAX_BUFFER_PRINT ? byteLength : Buffer.MAX_BUFFER_PRINT, byteBuffer);
+    }
+
+    /**
+     * Returns the contents of toString() + the contents of shortBuffer limited to {@link Buffer#MAX_BUFFER_PRINT}
+     * 
+     * @param shortBuffer
+     * @return
+     */
+    public String toString(ShortBuffer shortBuffer) {
+        return toString() + "\n" + buffer.getContentAsString(byteOffset >>> 1,
+                byteLength >>> 1 < Buffer.MAX_BUFFER_PRINT ? byteLength >>> 1 : Buffer.MAX_BUFFER_PRINT, shortBuffer);
+    }
+
+    /**
+     * Returns the contents of toString() + the contents of shortBuffer limited to {@link Buffer#MAX_BUFFER_PRINT}
+     * 
+     * @param floatBuffer
+     * @return
+     */
+    public String toString(FloatBuffer floatBuffer) {
+        return toString() + "\n" + buffer.getContentAsString(byteOffset >>> 2,
+                byteLength >>> 2 < Buffer.MAX_BUFFER_PRINT ? byteLength >>> 2 : Buffer.MAX_BUFFER_PRINT, floatBuffer);
+    }
+
+    @Override
+    public String toString() {
+        return "Bufferindex: " + bufferIndex + ", byteoffset: " + byteOffset + ", byteLength: " + byteLength
+                + ", byteStride: " + byteStride + ", name: " + name;
     }
 
 }

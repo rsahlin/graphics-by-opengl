@@ -201,4 +201,28 @@ public class Accessor implements GLTF.RuntimeResolver {
         componentType = ComponentType.get(componentTypeValue);
     }
 
+    @Override
+    public String toString() {
+        String str = "Bufferviewindex: " + bufferViewIndex + ", offset: " + byteOffset + ", component: " + componentType
+                + ", type: " + type + "\n";
+        bufferViewRef.getBuffer().getBuffer().position(0);
+        switch (componentType) {
+            case BYTE:
+            case UNSIGNED_BYTE:
+                str += bufferViewRef.toString(bufferViewRef.getBuffer().getBuffer());
+                break;
+            case SHORT:
+            case UNSIGNED_SHORT:
+                str += bufferViewRef.toString(bufferViewRef.getBuffer().getBuffer().asShortBuffer());
+                break;
+            case FLOAT:
+                str += bufferViewRef.toString(bufferViewRef.getBuffer().getBuffer().asFloatBuffer());
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented");
+        }
+
+        return str;
+    }
+
 }

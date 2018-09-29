@@ -5,6 +5,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,6 +33,11 @@ import com.nucleus.SimpleLogger;
 
 public class Buffer {
 
+    /**
+     * Max number of dataelements to print from buffer in toString()
+     */
+    public static final int MAX_BUFFER_PRINT = 100;
+
     private static final String URI = "uri";
     private static final String BYTE_LENGTH = "byteLength";
     private static final String NAME = "name";
@@ -38,7 +45,7 @@ public class Buffer {
     @SerializedName(URI)
     private String uri;
     @SerializedName(BYTE_LENGTH)
-    private int byteLength = -1;
+    private int byteLength;
     @SerializedName(NAME)
     private String name;
 
@@ -122,6 +129,80 @@ public class Buffer {
         if (total != byteLength) {
             SimpleLogger.d(getClass(), "Loaded " + total + " bytes into buffer with capacity " + byteLength);
         }
+    }
+
+    @Override
+    public String toString() {
+        return toString(0, MAX_BUFFER_PRINT);
+    }
+
+    public String toString(int position, int length) {
+        String str = "URI: " + uri + ", name: " + name + ", byteLength: " + byteLength;
+        str += "\n" + getContentAsString(position, length, buffer);
+        return str;
+    }
+
+    /**
+     * Returns the contents of buffer as a String, adjusting length to match position and capacity
+     * 
+     * @param position
+     * @param length
+     * @param buffer
+     * @return
+     */
+    public String getContentAsString(int position, int length, ByteBuffer buffer) {
+        if (buffer != null) {
+            StringBuffer result = new StringBuffer();
+            length = length < buffer.capacity() - position ? length : buffer.capacity() - position;
+            buffer.position(position);
+            for (int i = 0; i < length; i++) {
+                result.append(Integer.toString(buffer.get()) + ", ");
+            }
+            return result.toString();
+        }
+        return "Null buffer";
+    }
+
+    /**
+     * Returns the contents of buffer as a String, adjusting length to match position and capacity
+     * 
+     * @param position
+     * @param length
+     * @param buffer
+     * @return
+     */
+    public String getContentAsString(int position, int length, ShortBuffer buffer) {
+        if (buffer != null) {
+            StringBuffer result = new StringBuffer();
+            length = length < buffer.capacity() - position ? length : buffer.capacity() - position;
+            buffer.position(position);
+            for (int i = 0; i < length; i++) {
+                result.append(Integer.toString(buffer.get()) + ", ");
+            }
+            return result.toString();
+        }
+        return "Null buffer";
+    }
+
+    /**
+     * Returns the contents of buffer as a String, adjusting length to match position and capacity
+     * 
+     * @param position
+     * @param length
+     * @param buffer
+     * @return
+     */
+    public String getContentAsString(int position, int length, FloatBuffer buffer) {
+        if (buffer != null) {
+            StringBuffer result = new StringBuffer();
+            length = length < buffer.capacity() - position ? length : buffer.capacity() - position;
+            buffer.position(position);
+            for (int i = 0; i < length; i++) {
+                result.append(Float.toString(buffer.get()) + ", ");
+            }
+            return result.toString();
+        }
+        return "Null buffer";
     }
 
 }
