@@ -50,7 +50,7 @@ public class ShadowPass1Program extends ShadowPassProgram {
                 getUniformByName(Matrices.MODELVIEW.name).getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(matrices[Matrices.RENDERPASS_2.index], 0, uniforms,
-                getUniformByName(Matrices.MODELVIEW.PROJECTION).getOffset(),
+                getUniformByName(Matrices.MODELVIEW.PROJECTION.name).getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
 
