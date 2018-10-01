@@ -83,10 +83,10 @@ public class ShadowPass2Program extends ShadowPassProgram {
     public void setUniformMatrices(float[][] matrices) {
         // Refresh the uniform matrix using light matrix
         System.arraycopy(matrices[Matrices.MODELVIEW.index], 0, uniforms,
-                getUniformByName("uMVMatrix").getOffset(),
+                getUniformByName(Matrices.MODELVIEW.name).getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(matrices[Matrices.PROJECTION.index], 0, uniforms,
-                getUniformByName("uProjectionMatrix").getOffset(),
+                getUniformByName(Matrices.PROJECTION.name).getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         ShaderVariable lightMatrix = getUniformByName("uLightMatrix");
         System.arraycopy(matrices[Matrices.RENDERPASS_1.index], 0, uniforms,

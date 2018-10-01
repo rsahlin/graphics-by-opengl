@@ -47,10 +47,10 @@ public class ShadowPass1Program extends ShadowPassProgram {
     @Override
     public void setUniformMatrices(float[][] matrices) {
         System.arraycopy(matrices[Matrices.MODELVIEW.index], 0, uniforms,
-                getUniformByName("uMVMatrix").getOffset(),
+                getUniformByName(Matrices.MODELVIEW.name).getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(matrices[Matrices.RENDERPASS_2.index], 0, uniforms,
-                getUniformByName("uProjectionMatrix").getOffset(),
+                getUniformByName(Matrices.MODELVIEW.PROJECTION).getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
 

@@ -28,6 +28,7 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.BufferObjectsFactory;
+import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
 import com.nucleus.shader.ShaderSource.ESSLVersion;
@@ -1465,10 +1466,11 @@ public abstract class ShaderProgram {
      */
     public void setUniformMatrices(float[][] matrices) {
         // Refresh the uniform matrixes - default is modelview and projection
-        System.arraycopy(matrices[0], 0, uniforms, getUniformByName("uMVMatrix").getOffset(),
+        System.arraycopy(matrices[Matrices.MODELVIEW.index], 0, uniforms,
+                getUniformByName(Matrices.MODELVIEW.name).getOffset(),
                 Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(matrices[1], 0, uniforms,
-                getUniformByName("uProjectionMatrix").getOffset(),
+        System.arraycopy(matrices[Matrices.PROJECTION.index], 0, uniforms,
+                getUniformByName(Matrices.PROJECTION.name).getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
 
