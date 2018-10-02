@@ -64,7 +64,6 @@ public class GLFWWindow extends J2SEWindow {
 
         GLFWVidMode vidmode = Objects.requireNonNull(GLFW.glfwGetVideoMode(monitor));
         GLFW.glfwMakeContextCurrent(window);
-        GLFW.glfwShowWindow(window);
 
         Configuration.OPENGLES_EXPLICIT_INIT.set(true);
         GLES.create(GL.getFunctionProvider());
@@ -75,7 +74,12 @@ public class GLFWWindow extends J2SEWindow {
                 GLFW.glfwSetWindowShouldClose(windowHnd, true);
             }
         });
-        wrapper = LWJGLWrapperFactory.createWrapper(gles, version);
+    }
+
+    @Override
+    public void internalCreateCoreApp(int width, int height) {
+        wrapper = LWJGLWrapperFactory.createWrapper(gles, null);
+        super.internalCreateCoreApp(width, height);
     }
 
     @Override
@@ -96,6 +100,16 @@ public class GLFWWindow extends J2SEWindow {
     public void swapBuffers() {
         GLFW.glfwSwapBuffers(window); // swap the color buffers
         GLFW.glfwSwapInterval(1);
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        if (visible) {
+            GLFW.glfwShowWindow(window);
+        } else {
+            GLFW.glfwHideWindow(window);
+        }
+
     }
 
 }

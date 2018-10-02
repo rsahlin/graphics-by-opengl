@@ -191,7 +191,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
         animator = new Animator();
         animator.add(glWindow);
         animator.start();
-        glWindow.setVisible(true);
         glWindow.setAutoSwapBufferMode(autoSwapBuffer);
     }
 
@@ -230,6 +229,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
         }
     }
 
+    @Override
     public void setVisible(boolean visible) {
         if (glWindow != null) {
             glWindow.setVisible(visible);

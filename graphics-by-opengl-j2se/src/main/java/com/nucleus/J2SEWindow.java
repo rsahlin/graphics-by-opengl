@@ -155,4 +155,10 @@ public abstract class J2SEWindow implements WindowListener {
         }
     }
 
+    /**
+     * Shows or hides this window
+     * 
+     * @param visible
+     */
+    public abstract void setVisible(boolean visible);
 }

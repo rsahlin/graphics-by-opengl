@@ -366,7 +366,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param glTF
      * @param primitive
      */
-    public void glVertexAttribPointer(GLTF glTF, GLTFShaderProgram program, Primitive primitive) {
+    public void glVertexAttribPointer(GLTF glTF, GLTFShaderProgram program, Primitive primitive) throws GLException {
         Attributes[] attribs = primitive.getAttributesArray();
         Accessor[] accessors = primitive.getAccessorArray();
         for (int i = 0; i < attribs.length; i++) {
@@ -388,6 +388,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             } else {
                 // TODO - when fully implemented this should not happen.
             }
+            GLUtils.handleError(this, "VertexAttribPointer for attribute: " + attribs[i].name());
         }
     }
 

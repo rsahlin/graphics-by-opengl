@@ -132,6 +132,7 @@ public class BufferObjectsFactory {
                 gles.glBindBuffer(GLES20.GL_ARRAY_BUFFER, buffer.getBufferName());
                 gles.glBufferData(GLES20.GL_ARRAY_BUFFER, buffer.getBufferName(), buffer.getBuffer().position(0),
                         GLESWrapper.GLES20.GL_STATIC_DRAW);
+                GLUtils.handleError(gles, "BufferData for buffer " + buffer.getUri());
             }
         }
     }

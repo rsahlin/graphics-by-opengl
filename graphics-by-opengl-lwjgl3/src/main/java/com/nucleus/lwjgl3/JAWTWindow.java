@@ -12,6 +12,7 @@ import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
+import org.lwjgl.opengles.GLES;
 import org.lwjgl.system.Platform;
 
 import com.nucleus.CoreApp;
@@ -26,6 +27,7 @@ import com.nucleus.renderer.SurfaceConfiguration;
 public class JAWTWindow extends J2SEWindow implements RenderContextListener, MouseMotionListener, MouseListener {
 
     LWJGLCanvas canvas;
+    JFrame frame;
 
     public JAWTWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, SurfaceConfiguration config, int width,
             int height) {
@@ -38,10 +40,10 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener, Mou
         SimpleLogger.d(getClass(), "Init windows for platform " + platform);
         switch (platform) {
             case WINDOWS:
-                canvas = new LWJGLWindowsCanvas(version, this, width, height);
+                canvas = new LWJGLWindowsCanvas(this, width, height);
                 break;
             case LINUX:
-                canvas = new LWJGLLinuxCanvas(version, this, width, height);
+                canvas = new LWJGLLinuxCanvas(this, width, height);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + Platform.get());
@@ -49,7 +51,7 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener, Mou
 
         canvas.addMouseListener(this);
         canvas.addMouseMotionListener(this);
-        final JFrame frame = new JFrame("JAWT Demo");
+        frame = new JFrame("JAWT Demo");
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -68,13 +70,17 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener, Mou
         });
 
         frame.setLayout(new BorderLayout());
-        frame.add(canvas, BorderLayout.CENTER);
-        frame.pack();
-        frame.setVisible(true);
         frame.addMouseListener(this);
         frame.addMouseMotionListener(this);
-        // TODO How to find GL capabilities so that wrapper can select highest level of GLES
-        wrapper = LWJGLWrapperFactory.createWrapper(null, version);
+        frame.add(canvas, BorderLayout.CENTER);
+        frame.pack();
+        // Do not make since callback may happen before this window is created in the j2sewindow
+    }
+
+    @Override
+    public void internalCreateCoreApp(int width, int height) {
+        wrapper = LWJGLWrapperFactory.createWrapper(GLES.createCapabilities(), null);
+        super.internalCreateCoreApp(width, height);
     }
 
     @Override
@@ -144,6 +150,11 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener, Mou
     public void surfaceLost() {
         // TODO Auto-generated method stub
 
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        frame.setVisible(visible);
     }
 
 }

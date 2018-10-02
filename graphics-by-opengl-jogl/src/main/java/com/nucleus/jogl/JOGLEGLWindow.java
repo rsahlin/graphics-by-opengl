@@ -43,6 +43,7 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
     protected boolean waitForClient = false;
     protected int sleep = 0;
     protected GLContext glContext;
+    protected GLWindow nativeWindow;
 
     public JOGLEGLWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, SurfaceConfiguration config,
             int width, int height) {
@@ -63,9 +64,8 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
             // AbstractGraphicsDevice agd = NativeWindowFactory.createDevice(
             // NativeWindowFactory.getDefaultDisplayConnection(),
             // true);
-            GLWindow nativeWindow = GLWindow.create(new GLCapabilities(GLProfile.get(GLProfile.GL4ES3)));
+            nativeWindow = GLWindow.create(new GLCapabilities(GLProfile.get(GLProfile.GL4ES3)));
             nativeWindow.setSize(width, height);
-            nativeWindow.setVisible(true);
             nativeWindow.setRealized(true);
 
             IntBuffer major = ByteBuffer.allocateDirect(4).asIntBuffer();
@@ -253,6 +253,11 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
     public int chooseCapabilities(CapabilitiesImmutable desired, List<? extends CapabilitiesImmutable> available,
             int windowSystemRecommendedChoice) {
         return 0;
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        nativeWindow.setVisible(visible);
     }
 
 }

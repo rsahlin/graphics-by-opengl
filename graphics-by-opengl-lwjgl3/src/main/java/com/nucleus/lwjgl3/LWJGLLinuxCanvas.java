@@ -14,15 +14,14 @@ import org.lwjgl.system.linux.X11;
 
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
-import com.nucleus.opengl.GLESWrapper.Renderers;
 
 @SuppressWarnings("serial")
 public class LWJGLLinuxCanvas extends LWJGLCanvas {
 
     private JAWTX11DrawingSurfaceInfo X11Dsi;
 
-    public LWJGLLinuxCanvas(Renderers version, J2SEWindow window, int width, int height) {
-        super(version, window, width, height);
+    public LWJGLLinuxCanvas(J2SEWindow window, int width, int height) {
+        super(window, width, height);
         SimpleLogger.d(getClass(), "Using Linux Canvas");
     }
 

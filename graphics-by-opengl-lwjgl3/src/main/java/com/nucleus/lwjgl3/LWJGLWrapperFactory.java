@@ -41,7 +41,7 @@ public class LWJGLWrapperFactory {
             case GLES32:
                 return new LWJGL3GLES32Wrapper(Renderers.GLES32);
             default:
-                throw new IllegalArgumentException("Not imeplemented for " + version);
+                throw new IllegalArgumentException("Not implemented for " + version);
         }
 
     }

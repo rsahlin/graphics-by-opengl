@@ -18,13 +18,12 @@ import org.lwjgl.system.windows.WinBase;
 
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
-import com.nucleus.opengl.GLESWrapper.Renderers;
 
 @SuppressWarnings("serial")
 public class LWJGLWindowsCanvas extends LWJGLCanvas {
 
-    public LWJGLWindowsCanvas(Renderers version, J2SEWindow window, int width, int height) {
-        super(version, window, width, height);
+    public LWJGLWindowsCanvas(J2SEWindow window, int width, int height) {
+        super(window, width, height);
         SimpleLogger.d(getClass(), "Using Windows Canvas");
     }
 

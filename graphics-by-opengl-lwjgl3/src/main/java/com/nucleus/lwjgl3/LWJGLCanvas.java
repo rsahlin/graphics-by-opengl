@@ -30,7 +30,6 @@ import org.lwjgl.system.jawt.JAWTDrawingSurfaceInfo;
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
-import com.nucleus.opengl.GLESWrapper.Renderers;
 
 /**
  * A Canvas component that uses OpenGL for rendering.
@@ -47,7 +46,7 @@ public abstract class LWJGLCanvas extends Canvas {
     int width;
     int height;
 
-    public LWJGLCanvas(Renderers version, J2SEWindow window, int width, int height) {
+    public LWJGLCanvas(J2SEWindow window, int width, int height) {
         awt = JAWT.calloc();
         awt.version(JAWT_VERSION_1_4);
         if (!JAWT_GetAWT(awt)) {

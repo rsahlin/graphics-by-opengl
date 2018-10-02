@@ -6,12 +6,8 @@ import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.scene.RenderableNode;
-import com.nucleus.scene.gltf.Accessor;
-import com.nucleus.scene.gltf.GLTF;
-import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.RenderableMesh;
-import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderProgram;
 
 public class GLTFMeshRenderer implements MeshRenderer<RenderableMesh> {
@@ -64,29 +60,6 @@ public class GLTFMeshRenderer implements MeshRenderer<RenderableMesh> {
          * timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
          * }
          */
-    }
-
-    protected void renderMesh(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Mesh mesh) {
-        if (mesh != null) {
-            Primitive[] primitives = mesh.getPrimitives();
-            if (primitives != null) {
-                for (Primitive p : primitives) {
-                    renderPrimitive(gles, glTF, program, p);
-                }
-            }
-        }
-    }
-
-    protected void renderPrimitive(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Primitive primitive) {
-        Accessor indices = glTF.getAccessor(primitive.getIndicesIndex());
-        if (indices != null) {
-            // Indexed mode - use glDrawElements
-            gles.glVertexAttribPointer(glTF, program, primitive);
-            gles.glDrawElements(primitive.getMode().value, indices.getCount(), indices.getComponentType().value,
-                    indices.getBufferView().getBuffer().getBuffer().position(0));
-        } else {
-            // Non indexed mode - use glDrawArrays
-        }
     }
 
     @Override

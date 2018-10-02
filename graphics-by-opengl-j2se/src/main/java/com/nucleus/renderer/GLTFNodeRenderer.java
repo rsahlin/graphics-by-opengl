@@ -61,7 +61,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         renderNodes(gles, glTF, program, node.getChildren(), matrices);
     }
 
-    protected void renderMesh(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Mesh mesh) {
+    protected void renderMesh(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Mesh mesh) throws GLException {
         if (mesh != null) {
             Primitive[] primitives = mesh.getPrimitives();
             if (primitives != null) {
@@ -72,7 +72,8 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         }
     }
 
-    protected void renderPrimitive(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Primitive primitive) {
+    protected void renderPrimitive(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Primitive primitive)
+            throws GLException {
         Accessor indices = glTF.getAccessor(primitive.getIndicesIndex());
         if (indices != null) {
             // Indexed mode - use glDrawElements
