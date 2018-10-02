@@ -1,5 +1,5 @@
 #version 300 es
-/* Copyright 2015 Richard Sahlin
+/* 
  *
  * Fragment shader for glTF asset
  * @author Richard Sahlin

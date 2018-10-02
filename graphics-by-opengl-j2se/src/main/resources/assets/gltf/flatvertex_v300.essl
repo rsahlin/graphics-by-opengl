@@ -1,5 +1,5 @@
 #version 300 es
-/* Copyright 2018 Richard Sahlin
+/* 
  * Vertex shader for glTF asset
  */
  precision highp float;
@@ -7,8 +7,6 @@
 //Put array declaration after name for GLSL compatibility
 uniform mat4 uMVMatrix;
 uniform mat4 uProjectionMatrix;
-uniform vec4 uAmbientLight;
-uniform vec4 uDiffuseLight;
 
 in vec3 POSITION;
 in vec4 COLOR_0;

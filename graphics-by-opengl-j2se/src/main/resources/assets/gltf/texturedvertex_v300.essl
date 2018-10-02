@@ -1,5 +1,5 @@
 #version 300 es
-/* Copyright 2018 Richard Sahlin
+/* 
  * Vertex shader for glTF asset
  */
  precision highp float;

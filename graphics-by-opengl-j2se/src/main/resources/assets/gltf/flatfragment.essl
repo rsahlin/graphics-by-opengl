@@ -1,0 +1,13 @@
+#version 100
+ /**
+ * Fragment shader for glTF asset
+ * @author Richard Sahlin
+ */
+precision mediump float;
+
+varying vec4 vColor;
+
+void main()
+{
+    gl_FragColor = vColor;
+}

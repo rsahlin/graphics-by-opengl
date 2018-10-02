@@ -1,5 +1,5 @@
 #version 300 es
-/* Copyright 2018 Richard Sahlin
+/* 
  * Vertex shader for normal vertex transform with position for each vertex.
  */
  precision highp float;
@@ -15,8 +15,6 @@ in vec3 aVertex;
 in vec2 aTexCoord;
 
 out vec2 vTexCoord;
-
-out vec4 color;
 
 void main() {
     vec4 pos = vec4(aVertex + aTranslate, 1.0) * uMVMatrix;

@@ -3,19 +3,20 @@
  * Vertex shader for normal vertex transform with position for each vertex.
  * @author Richard Sahlin
  */
+ precision highp float;
 
 //Put array declaration after name for GLSL compatibility
 uniform mat4 uMVMatrix;
 uniform mat4 uProjectionMatrix;
 
-attribute vec3 aTranslate; //Position of vertex, offset from matrix
-attribute vec3 aVertex;
-attribute vec4 aColor;
+attribute vec3 POSITION;
+attribute vec4 COLOR_0;
 
-varying vec4 color;
+varying vec4 vColor;
 
 void main() {
-    vec4 pos = vec4(aVertex + aTranslate, 1.0) * uMVMatrix;
+    vec4 pos = vec4(POSITION, 1.0) * uMVMatrix;
     gl_Position = pos * uProjectionMatrix;
-    color = aColor;
+//    vColor = COLOR_0 + vec4(1.0,1.0,1.0,1.0);
+    vColor = vec4(1.0,1.0,1.0,1.0);
 }
