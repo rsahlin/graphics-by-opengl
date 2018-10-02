@@ -1,6 +1,8 @@
 package com.nucleus.scene.gltf;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
@@ -112,9 +114,12 @@ public class Primitive implements RuntimeResolver {
      */
     @SerializedName(MODE)
     private int modeValue = DEFAULT_MODE;
+
     transient private Mode mode;
     transient private Accessor[] accessorList;
     transient private Attributes[] attributeList;
+    transient private Buffer[] bufferList;
+    transient private Material materialRef;
 
     /**
      * Returns the dictionary (HashMap) with Attributes
@@ -131,6 +136,10 @@ public class Primitive implements RuntimeResolver {
 
     public Attributes[] getAttributesArray() {
         return attributeList;
+    }
+
+    public Buffer[] getBufferArray() {
+        return bufferList;
     }
 
     /**
@@ -175,14 +184,11 @@ public class Primitive implements RuntimeResolver {
         return material;
     }
 
-    public void setMaterialIndex(int material) {
-        this.material = material;
+    public Material getMaterial() {
+        return materialRef;
     }
 
     public Mode getMode() {
-        if (mode == null) {
-            mode = Mode.getMode(modeValue);
-        }
         return mode;
     }
 
@@ -207,15 +213,25 @@ public class Primitive implements RuntimeResolver {
     @Override
     public void resolve(GLTF asset) throws GLTFException {
         if (attributes != null && attributes.size() > 0) {
+            Set<Buffer> bufferSet = new HashSet<>();
             accessorList = new Accessor[attributes.size()];
             attributeList = new Attributes[attributes.size()];
             int index = 0;
             for (Attributes a : attributes.keySet()) {
                 attributeList[index] = a;
-                accessorList[index] = asset.getAccessor(attributes.get(a));
+                Accessor accessor = asset.getAccessor(attributes.get(a));
+                accessorList[index] = accessor;
+                bufferSet.add(asset.getBuffer(accessor));
                 index++;
             }
+            bufferList = new Buffer[bufferSet.size()];
+            index = 0;
+            for (Buffer b : bufferSet) {
+                bufferList[index++] = b;
+            }
         }
+        mode = Mode.getMode(modeValue);
+        this.materialRef = asset.getMaterials()[material];
     }
 
 }

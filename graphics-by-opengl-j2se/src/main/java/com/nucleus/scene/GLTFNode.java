@@ -11,6 +11,8 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.BufferObjectsFactory;
+import com.nucleus.renderer.GLTFMeshRenderer;
 import com.nucleus.renderer.GLTFNodeRenderer;
 import com.nucleus.renderer.MeshRenderer;
 import com.nucleus.renderer.NodeRenderer;
@@ -39,6 +41,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     transient private GLTF glTF;
     transient ArrayList<RenderableMesh> meshes = new ArrayList<>();
     transient GLES20Wrapper gles;
+    transient MeshRenderer<RenderableMesh> meshRenderer = new GLTFMeshRenderer();
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -110,7 +113,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
 
     @Override
     public MeshRenderer<RenderableMesh> getMeshRenderer() {
-        return null;
+        return meshRenderer;
     }
 
     @Override
@@ -130,6 +133,9 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
             int index = getRootNode().getGLTFIndex(glTFName);
             try {
                 glTF = AssetManager.getInstance().loadGLTFAsset(getRootNode().getGLTFPath(), glTFName, index);
+                if (gles != null && com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
+                    BufferObjectsFactory.getInstance().createVBOs(gles, glTF.getBuffers());
+                }
                 setPass(Pass.ALL);
                 setState(State.ON);
             } catch (IOException | GLTFException e) {
@@ -152,7 +158,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
 
     @Override
     public ShaderProgram createProgram() {
-        GLTFShaderProgram p = new GLTFShaderProgram(glTF.getMeshes(), null, Shading.textured, "gltf",
+        GLTFShaderProgram p = new GLTFShaderProgram(glTF.getMeshes(), null, Shading.flat, "gltf",
                 ProgramType.VERTEX_FRAGMENT);
         ShaderProgram program = AssetManager.getInstance().getProgram(gles, p);
         return program;

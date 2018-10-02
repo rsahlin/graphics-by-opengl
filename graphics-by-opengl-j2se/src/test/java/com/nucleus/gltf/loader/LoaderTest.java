@@ -82,6 +82,11 @@ public class LoaderTest extends BaseTestCase {
 
     protected void checkMaterial(Material material) {
         Assert.assertNotNull(material.getPbrMetallicRoughness());
+        // Check default values.
+        Assert.assertTrue(material.getAlphaCutoff() == Material.DEFAULT_ALPHA_CUTOFF);
+        Assert.assertTrue(material.getAlphaMode() == Material.DEFAULT_ALPHA_MODE);
+        Assert.assertTrue(material.getEmissiveFactor() == Material.DEFAULT_EMISSIVE_FACTOR);
+        Assert.assertTrue(material.isDoubleSided() == Material.DEFAULT_DOUBLE_SIDED);
     }
 
 }

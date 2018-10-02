@@ -1,5 +1,6 @@
 package com.nucleus.renderer;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Mesh;
@@ -10,6 +11,8 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.scene.gltf.Buffer;
+import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 
@@ -36,7 +39,8 @@ public class BufferObjectsFactory {
     }
 
     /**
-     * Creates the vbos for the specified mesh, the buffer objects will be stored in the contained buffers in the mesh.
+     * Creates the vbos and uploads data for the specified mesh, the buffer objects will be stored in the contained
+     * buffers in the mesh.
      * After this call the mesh can be rendered using the specified buffer objects (VBO)
      * 
      * @param gles
@@ -95,6 +99,40 @@ public class BufferObjectsFactory {
             bb.setDirty(false);
             GLUtils.handleError(gles, "Create UBOs for " + bb.getBlockName());
             index++;
+        }
+    }
+
+    /**
+     * Creates VBO's and uploads data for the buffer(s) that are used by the primitive.
+     * 
+     * @param gles
+     * @param primitive
+     * @throws GLException
+     */
+    public void createVBOs(GLES20Wrapper gles, Primitive primitive) throws GLException {
+        createVBOs(gles, primitive.getBufferArray());
+    }
+
+    /**
+     * Creates VBO's and uploads data for the buffer(s)
+     * 
+     * @param gles
+     * @param buffers
+     * @throws GLException
+     */
+    public void createVBOs(GLES20Wrapper gles, Buffer[] buffers) throws GLException {
+        for (Buffer buffer : buffers) {
+            if (buffer.getBufferName() <= 0) {
+                SimpleLogger.d(getClass(),
+                        "Allocating VBO for buffer: " + buffer.getUri() + ", total size: " + buffer.getByteLength());
+                int[] names = new int[1];
+                gles.glGenBuffers(names);
+                buffer.setBufferName(names[0]);
+                GLUtils.handleError(gles, "Create VBO for buffer " + buffer.getUri());
+                gles.glBindBuffer(GLES20.GL_ARRAY_BUFFER, buffer.getBufferName());
+                gles.glBufferData(GLES20.GL_ARRAY_BUFFER, buffer.getBufferName(), buffer.getBuffer().position(0),
+                        GLESWrapper.GLES20.GL_STATIC_DRAW);
+            }
         }
     }
 

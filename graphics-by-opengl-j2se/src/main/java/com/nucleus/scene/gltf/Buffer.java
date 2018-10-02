@@ -50,6 +50,7 @@ public class Buffer {
     private String name;
 
     transient ByteBuffer buffer;
+    transient int bufferName;
 
     /**
      * Creates a new buffer with the specified byteLength - the buffer will be created by calling
@@ -85,6 +86,24 @@ public class Buffer {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * Sets the buffer object to use, this must be allocated by GL, or 0 to disable buffer objects.
+     * 
+     * @param bufferName Buffer name or 0 to disable
+     */
+    public void setBufferName(int bufferName) {
+        this.bufferName = bufferName;
+    }
+
+    /**
+     * Returns the buffer object name, if not 0 then use the buffer object when sending data to GL.
+     * 
+     * @return
+     */
+    public int getBufferName() {
+        return bufferName;
     }
 
     /**

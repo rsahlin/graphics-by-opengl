@@ -2,7 +2,6 @@ package com.nucleus.assets;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -17,7 +16,6 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderTarget;
 import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
-import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.Loader;
@@ -102,7 +100,8 @@ public class AssetManager {
      * @throws IOException
      * @throws IllegalArgumentException If renderer or ref is null
      */
-    public Texture2D getTexture(GLES20Wrapper gles, ImageFactory imageFactory, ExternalReference ref) throws IOException {
+    public Texture2D getTexture(GLES20Wrapper gles, ImageFactory imageFactory, ExternalReference ref)
+            throws IOException {
         if (gles == null || ref == null) {
             throw new IllegalArgumentException(NULL_PARAMETER + gles + ", " + null);
         }
@@ -340,8 +339,7 @@ public class AssetManager {
     }
 
     /**
-     * Loads and returns one GLTF asset, loads binary data into buffers
-     * 
+     * Loads and returns one GLTF asset, loads binary data into buffers.
      * 
      * @param path Path to asset folder
      * @param name
@@ -355,17 +353,6 @@ public class AssetManager {
         ClassLoader loader = Loader.class.getClassLoader();
         InputStream is = loader.getResourceAsStream(path + name);
         return Loader.loadAsset(path, is);
-    }
-
-    private void loadBuffers(GLTF glTF, Buffer[] buffers) throws IOException {
-        try {
-            for (Buffer b : buffers) {
-                b.createBuffer();
-                b.load(glTF, b.getUri());
-            }
-        } catch (URISyntaxException e) {
-            throw new IOException(e);
-        }
     }
 
 }

@@ -28,6 +28,11 @@ import com.google.gson.annotations.SerializedName;
  */
 public class Material {
 
+    public final static AlphaMode DEFAULT_ALPHA_MODE = AlphaMode.OPAQUE;
+    public final static float DEFAULT_ALPHA_CUTOFF = 0.5f;
+    public final static boolean DEFAULT_DOUBLE_SIDED = false;
+    public final static float[] DEFAULT_EMISSIVE_FACTOR = new float[] { 0, 0, 0 };
+
     public enum AlphaMode {
         OPAQUE(),
         MASK(),
@@ -41,10 +46,10 @@ public class Material {
     private String name;
     @SerializedName(PBR_METALLIC_ROUGHNESS)
     private PBRMetallicRoughness pbrMetallicRoughness;
-    private float[] emissiveFactor = new float[] { 0, 0, 0 };
-    private AlphaMode alphaMode = AlphaMode.OPAQUE;
-    private float alphaCutoff = 0.5f;
-    private boolean doubleSided = false;
+    private float[] emissiveFactor = DEFAULT_EMISSIVE_FACTOR;
+    private AlphaMode alphaMode = DEFAULT_ALPHA_MODE;
+    private float alphaCutoff = DEFAULT_ALPHA_CUTOFF;
+    private boolean doubleSided = DEFAULT_DOUBLE_SIDED;
 
     public String getName() {
         return name;
@@ -52,6 +57,22 @@ public class Material {
 
     public PBRMetallicRoughness getPbrMetallicRoughness() {
         return pbrMetallicRoughness;
+    }
+
+    public float[] getEmissiveFactor() {
+        return emissiveFactor;
+    }
+
+    public AlphaMode getAlphaMode() {
+        return alphaMode;
+    }
+
+    public float getAlphaCutoff() {
+        return alphaCutoff;
+    }
+
+    public boolean isDoubleSided() {
+        return doubleSided;
     }
 
 }

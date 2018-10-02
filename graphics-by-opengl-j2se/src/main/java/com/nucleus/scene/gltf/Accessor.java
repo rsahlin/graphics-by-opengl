@@ -203,9 +203,10 @@ public class Accessor implements GLTF.RuntimeResolver {
 
     @Override
     public String toString() {
-        String str = "Bufferviewindex: " + bufferViewIndex + ", offset: " + byteOffset + ", component: " + componentType
-                + ", type: " + type + "\n";
-        bufferViewRef.getBuffer().getBuffer().position(0);
+        String str = "Bufferviewindex: " + bufferViewIndex + ", count: " + count + ", offset: " + byteOffset
+                + ", component: " + componentType
+                + ", type: " + type + (name != null ? (", name: " + name) : "") + "\n";
+        bufferViewRef.getBuffer().getBuffer().position(byteOffset);
         switch (componentType) {
             case BYTE:
             case UNSIGNED_BYTE:

@@ -27,29 +27,15 @@ public class Loader {
      * Loads a glTF asset, loading buffers and binary references as needed.
      * The returned asset is resolved using {@link RuntimeResolver} and is ready to be used.
      * 
-     * @param path
-     * @param name
-     * @return
-     * @throws GLTFException If there is an error in the glTF or it cannot be resolved
-     */
-    public static GLTF loadAsset(String path, String name) throws IOException, GLTFException {
-        SimpleLogger.d(Loader.class, "Loading glTF asset:" + path + name);
-        ClassLoader loader = Loader.class.getClassLoader();
-        InputStream is = loader.getResourceAsStream(path + name);
-        return loadAsset(path, is);
-    }
-
-    /**
-     * Loads a glTF asset, loading buffers and binary references as needed.
-     * The returned asset is resolved using {@link RuntimeResolver} and is ready to be used.
-     * 
+     * @param gles
      * @param path
      * @param is
      * @return
      * @throws IOException
      * @throws GLTFException If there is an error in the glTF or it cannot be resolved
      */
-    public static GLTF loadAsset(String path, InputStream is) throws IOException, GLTFException {
+    public static GLTF loadAsset(String path, InputStream is)
+            throws IOException, GLTFException {
         try {
             Reader reader = new InputStreamReader(is, "UTF-8");
             GsonBuilder builder = new GsonBuilder();
@@ -65,6 +51,13 @@ public class Loader {
         }
     }
 
+    /**
+     * Loads the buffers
+     * 
+     * @param glTF
+     * @param buffers
+     * @throws IOException
+     */
     protected static void loadBuffers(GLTF glTF, Buffer[] buffers) throws IOException {
         try {
             for (Buffer b : buffers) {

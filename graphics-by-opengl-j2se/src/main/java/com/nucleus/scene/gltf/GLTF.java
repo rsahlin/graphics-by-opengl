@@ -70,6 +70,16 @@ public class GLTF {
         return buffers;
     }
 
+    /**
+     * Returns the buffer for the specified accessor
+     * 
+     * @param accessor
+     * @return
+     */
+    public Buffer getBuffer(Accessor accessor) {
+        return buffers[bufferViews[accessor.getBufferViewIndex()].getBufferIndex()];
+    }
+
     public BufferView[] getBufferViews() {
         return bufferViews;
     }

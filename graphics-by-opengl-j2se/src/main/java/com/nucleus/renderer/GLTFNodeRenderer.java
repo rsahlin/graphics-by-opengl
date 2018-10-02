@@ -7,6 +7,8 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.scene.GLTFNode;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.gltf.Accessor;
+import com.nucleus.scene.gltf.Buffer;
+import com.nucleus.scene.gltf.BufferView;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Node;
@@ -29,6 +31,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
             program.validateProgram(gles);
         }
+        program.updateUniforms(gles, matrices);
         GLTF glTF = node.getGLTF();
         int sceneIndex = glTF.getScene();
         if (sceneIndex == -1) {
@@ -36,7 +39,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         }
         Scene scene = glTF.getScene(sceneIndex);
         // Traverse the nodes and render each.
-        renderNodes(gles, glTF, (GLTFShaderProgram) program, scene.getNodes());
+        renderNodes(gles, glTF, (GLTFShaderProgram) program, scene.getNodes(), matrices);
         return true;
     }
 
@@ -48,12 +51,14 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param glTF
      * @param program
      * @param node
+     * @param matrices
      */
-    protected void renderNode(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Node node) {
+    protected void renderNode(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Node node, float[][] matrices)
+            throws GLException {
         // Render this node.
         renderMesh(gles, glTF, program, node.getMesh());
         // Render children.
-        renderNodes(gles, glTF, program, node.getChildren());
+        renderNodes(gles, glTF, program, node.getChildren(), matrices);
     }
 
     protected void renderMesh(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Mesh mesh) {
@@ -71,9 +76,18 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         Accessor indices = glTF.getAccessor(primitive.getIndicesIndex());
         if (indices != null) {
             // Indexed mode - use glDrawElements
+            BufferView indicesView = indices.getBufferView();
+            Buffer buffer = indicesView.getBuffer();
             gles.glVertexAttribPointer(glTF, program, primitive);
-            gles.glDrawElements(primitive.getMode().value, indices.getCount(), indices.getComponentType().value,
-                    indices.getBufferView().getBuffer().getBuffer().position(0));
+            if (buffer.getBufferName() > 0) {
+                gles.glBindBuffer(indicesView.getTarget().value, buffer.getBufferName());
+                gles.glDrawElements(primitive.getMode().value, indices.getCount(), indices.getComponentType().value,
+                        indices.getByteOffset() + indicesView.getByteOffset());
+            } else {
+                gles.glDrawElements(primitive.getMode().value, indices.getCount(), indices.getComponentType().value,
+                        indicesView.getBuffer().getBuffer()
+                                .position(indices.getByteOffset() + indicesView.getByteOffset()));
+            }
         } else {
             // Non indexed mode - use glDrawArrays
         }
@@ -86,11 +100,13 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param gles
      * @param glTF
      * @param children
+     * @param matrices
      */
-    protected void renderNodes(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Node[] children) {
+    protected void renderNodes(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Node[] children,
+            float[][] matrices) throws GLException {
         if (children != null && children.length > 0) {
             for (Node n : children) {
-                renderNode(gles, glTF, program, n);
+                renderNode(gles, glTF, program, n, matrices);
             }
         }
     }

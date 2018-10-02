@@ -372,11 +372,19 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         for (int i = 0; i < attribs.length; i++) {
             ShaderVariable v = program.getAttributeByName(attribs[i].name());
             if (v != null) {
+                boolean normalized = accessors[i].isNormalized();
                 BufferView view = accessors[i].getBufferView();
+                com.nucleus.scene.gltf.Buffer b = view.getBuffer();
                 ComponentType ct = accessors[i].getComponentType();
                 Type t = accessors[i].getType();
-                glVertexAttribPointer(v.getLocation(), t.size, ct.value, false, view.getByteStride(),
-                        view.getBuffer().getBuffer().position(0));
+                if (b.getBufferName() > 0) {
+                    glBindBuffer(view.getTarget().value, b.getBufferName());
+                    glVertexAttribPointer(v.getLocation(), t.size, ct.value, normalized, view.getByteStride(),
+                            accessors[i].getByteOffset() + view.getByteOffset());
+                } else {
+                    glVertexAttribPointer(v.getLocation(), t.size, ct.value, normalized, view.getByteStride(),
+                            view.getBuffer().getBuffer().position(accessors[i].getByteOffset() + view.getByteOffset()));
+                }
             } else {
                 // TODO - when fully implemented this should not happen.
             }
