@@ -77,14 +77,12 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
             case ATTRIBUTE:
                 return super.getActiveVariable(program, type, index, nameBuffer);
             case UNIFORM:
+                GLUtils.handleError(this, "UNIFORM_BLOCK clear error");
                 params = new int[ShaderVariable.DATA_OFFSET + 1];
                 params[ShaderVariable.ACTIVE_INDEX_OFFSET] = index;
                 glGetActiveUniform(program, index, params, ShaderVariable.NAME_LENGTH_OFFSET, params,
                         ShaderVariable.SIZE_OFFSET, params, ShaderVariable.TYPE_OFFSET, nameBuffer);
-                glGetActiveUniformsiv(program, 1, indices, 0, GLES30.GL_UNIFORM_OFFSET, params,
-                        ShaderVariable.DATA_OFFSET);
-                GLUtils.handleError(this, "glGetActiveUniform for " + type);
-                // Create shader variable using name excluding [] and .
+                GLUtils.handleError(this, "UNIFORM glGetActiveUniform for " + new String(nameBuffer));
                 return new ShaderVariable(type,
                         getVariableName(nameBuffer, params[ShaderVariable.NAME_LENGTH_OFFSET]),
                         params, 0);
@@ -93,11 +91,12 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
                 params[ShaderVariable.ACTIVE_INDEX_OFFSET] = index;
                 glGetActiveUniform(program, index, params, ShaderVariable.NAME_LENGTH_OFFSET, params,
                         ShaderVariable.SIZE_OFFSET, params, ShaderVariable.TYPE_OFFSET, nameBuffer);
+                GLUtils.handleError(this, "UNIFORM_BLOCK glGetActiveUniforms for " + new String(nameBuffer));
                 glGetActiveUniformsiv(program, 1, indices, 0, GLES30.GL_UNIFORM_BLOCK_INDEX, params,
                         ShaderVariable.BLOCK_INDEX_OFFSET);
                 glGetActiveUniformsiv(program, 1, indices, 0, GLES30.GL_UNIFORM_OFFSET, params,
                         ShaderVariable.DATA_OFFSET);
-                GLUtils.handleError(this, "glGetActiveUniform for " + type);
+                GLUtils.handleError(this, "UNIFORM_BLOCK glGetActiveUniformsiv for " + new String(nameBuffer));
                 // Create shader variable using name excluding [] and .
                 return new ShaderVariable(type,
                         getVariableName(nameBuffer, params[ShaderVariable.NAME_LENGTH_OFFSET]),
