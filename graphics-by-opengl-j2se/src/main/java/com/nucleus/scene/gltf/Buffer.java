@@ -1,15 +1,14 @@
 package com.nucleus.scene.gltf;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-import java.nio.channels.ByteChannel;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
@@ -133,21 +132,34 @@ public class Buffer {
             throw new IllegalArgumentException("Buffer storage has not bee created, must call createBuffer()");
         }
         ClassLoader loader = Loader.class.getClassLoader();
-        URL url = loader.getResource(glTF.getPath() + uri);
+        InputStream is = loader.getResourceAsStream(glTF.getPath() + uri);
         SimpleLogger.d(getClass(),
                 "Loading into buffer with size " + buffer.capacity() + " from " + glTF.getPath() + uri);
-        Path p = Paths.get(url.toURI());
-        ByteChannel bc = java.nio.file.Files.newByteChannel(p);
-        buffer.rewind();
-        int read = 0;
-        int total = 0;
-        while ((read = bc.read(buffer)) > 0) {
-            total += read;
-        }
-        bc.close();
+        int total = load(is);
+        is.close();
         if (total != byteLength) {
             SimpleLogger.d(getClass(), "Loaded " + total + " bytes into buffer with capacity " + byteLength);
         }
+    }
+
+    /**
+     * Loads data from the inputstream into this buffer - at position 0
+     * 
+     * @param is
+     * @return
+     * @throws IOException
+     * @throws URISyntaxException
+     */
+    public int load(InputStream is) throws IOException, URISyntaxException {
+        ReadableByteChannel byteChannel = Channels.newChannel(is);
+        buffer.rewind();
+        int read = 0;
+        int total = 0;
+        while ((read = byteChannel.read(buffer)) > 0) {
+            total += read;
+        }
+        byteChannel.close();
+        return total;
     }
 
     @Override
