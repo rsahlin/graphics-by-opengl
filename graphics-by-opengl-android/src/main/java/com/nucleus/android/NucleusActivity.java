@@ -13,9 +13,11 @@ import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
 import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RendererFactory;
+import com.nucleus.renderer.RendererInfo;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.texture.android.AndroidImageFactory;
@@ -56,6 +58,7 @@ public abstract class NucleusActivity extends Activity
 
     protected CoreApp coreApp;
     protected GLESWrapper gles;
+    protected Renderers minVersion;
     private long androidUptimeDelta;
     /**
      * Set to false to use GLSurfaceView
@@ -218,9 +221,9 @@ public abstract class NucleusActivity extends Activity
      * @param rendermode
      */
     private void setup(Renderers version, int rendermode) {
+        minVersion = version;
         SurfaceConfiguration surfaceConfig = createSurfaceConfig();
         SimpleLogger.d(getClass(), "Using SurfaceConfig:\n" + surfaceConfig.toString());
-        createWrapper(version);
         surfaceView = createSurfaceView(version, surfaceConfig, rendermode);
         surfaceView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -272,7 +275,10 @@ public abstract class NucleusActivity extends Activity
     }
 
     private void createWrapper(Renderers version) {
-        switch (version) {
+        int[] glVersion = RendererInfo.getVersionStr(android.opengl.GLES20.glGetString(GLES20.GL_VERSION));
+        Renderers runtime = Renderers.get(glVersion);
+        SimpleLogger.d(getClass(), "Found GLES runtime version: " + runtime);
+        switch (runtime) {
             case GLES20:
                 gles = new AndroidGLES20Wrapper();
                 break;
@@ -360,6 +366,9 @@ public abstract class NucleusActivity extends Activity
      * @return true if CoreApp was created and splash displayed.
      */
     public boolean onSurfaceCreated(int width, int height) {
+        if (gles == null) {
+            createWrapper(minVersion);
+        }
         NucleusRenderer renderer = RendererFactory.getRenderer(gles);
         if (coreApp == null) {
             coreApp = CoreApp.createCoreApp(width, height, renderer);

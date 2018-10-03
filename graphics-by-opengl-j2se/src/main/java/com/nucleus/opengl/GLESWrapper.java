@@ -78,6 +78,22 @@ public abstract class GLESWrapper {
             this.major = major;
             this.minor = minor;
         };
+
+        /**
+         * Returns the enum from major.minor version
+         * 
+         * @param glVersion
+         * @return
+         */
+        public static Renderers get(int[] glVersion) {
+            for (Renderers r : Renderers.values()) {
+                if (r.major == glVersion[0] && r.minor == glVersion[1]) {
+                    return r;
+                }
+            }
+            return null;
+        }
+
     }
 
     protected GLESWrapper(Platform platform, Renderers renderVersion) {
