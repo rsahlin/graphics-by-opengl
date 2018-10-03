@@ -278,6 +278,9 @@ public abstract class NucleusActivity extends Activity
         int[] glVersion = RendererInfo.getVersionStr(android.opengl.GLES20.glGetString(GLES20.GL_VERSION));
         Renderers runtime = Renderers.get(glVersion);
         SimpleLogger.d(getClass(), "Found GLES runtime version: " + runtime);
+        if (version.major > runtime.major || version.minor > runtime.minor) {
+            throw new IllegalArgumentException("Must support at least GLES version " + version);
+        }
         switch (runtime) {
             case GLES20:
                 gles = new AndroidGLES20Wrapper();

@@ -185,20 +185,17 @@ public class InputProcessor implements PointerListener, KeyListener {
             float angle1 = (float) Math.acos(vector1.dot(center1)) * 57.2957795f;
             float angle2 = (float) Math.acos(vector2.dot(center2)) * 57.2957795f;
             if ((angle1 > 135 && angle2 > 135) || (angle1 < 45 && angle2 < 45)) {
-                SimpleLogger.d(getClass(), "Zoom1");
                 zoom(pointer1, pointer2, vector1, vector2, center1, center2);
             } else // if (vector1.vector[Vector2D.MAGNITUDE] < moveThreshold) {
                    // If one touch is very small then count the other.
                    // TODO Maybe use magnitude as a factor and weigh angles together
             if ((angle2 > 135) || (angle2 < 45)) {
-                SimpleLogger.d(getClass(), "Zoom2");
                 zoom(pointer1, pointer2, vector1, vector2, center1, center2);
                 // }
             } else // if (vector2.vector[Vector2D.MAGNITUDE] < moveThreshold) {
                    // If one touch is very small then count the other.
                    // TODO Maybe use magnitude as a factor and weigh angles together
             if ((angle1 > 135) || (angle1 < 45)) {
-                SimpleLogger.d(getClass(), "Zoom3");
                 zoom(pointer1, pointer2, vector1, vector2, center1, center2);
             }
             // }

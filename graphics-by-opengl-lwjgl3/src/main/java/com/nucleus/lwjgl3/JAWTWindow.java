@@ -163,7 +163,7 @@ public class JAWTWindow extends J2SEWindow
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        mouseWheelMoved(e.getWheelRotation(), e.getWhen());
+        mouseWheelMoved(-e.getWheelRotation(), e.getWhen());
     }
 
 }
