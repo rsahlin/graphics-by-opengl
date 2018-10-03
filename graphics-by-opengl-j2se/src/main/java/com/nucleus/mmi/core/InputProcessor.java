@@ -15,6 +15,7 @@ import com.nucleus.mmi.PointerMotionData;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.profiling.FrameSampler.Sample;
 import com.nucleus.profiling.FrameSampler.Samples;
+import com.nucleus.renderer.Window;
 import com.nucleus.vecmath.Vec2;
 
 /**
@@ -184,17 +185,20 @@ public class InputProcessor implements PointerListener, KeyListener {
             float angle1 = (float) Math.acos(vector1.dot(center1)) * 57.2957795f;
             float angle2 = (float) Math.acos(vector2.dot(center2)) * 57.2957795f;
             if ((angle1 > 135 && angle2 > 135) || (angle1 < 45 && angle2 < 45)) {
+                SimpleLogger.d(getClass(), "Zoom1");
                 zoom(pointer1, pointer2, vector1, vector2, center1, center2);
             } else // if (vector1.vector[Vector2D.MAGNITUDE] < moveThreshold) {
                    // If one touch is very small then count the other.
                    // TODO Maybe use magnitude as a factor and weigh angles together
             if ((angle2 > 135) || (angle2 < 45)) {
+                SimpleLogger.d(getClass(), "Zoom2");
                 zoom(pointer1, pointer2, vector1, vector2, center1, center2);
                 // }
             } else // if (vector2.vector[Vector2D.MAGNITUDE] < moveThreshold) {
                    // If one touch is very small then count the other.
                    // TODO Maybe use magnitude as a factor and weigh angles together
             if ((angle1 > 135) || (angle1 < 45)) {
+                SimpleLogger.d(getClass(), "Zoom3");
                 zoom(pointer1, pointer2, vector1, vector2, center1, center2);
             }
             // }
@@ -224,7 +228,11 @@ public class InputProcessor implements PointerListener, KeyListener {
         if (delta == null || (delta[0] == 0 && delta[1] == 0)) {
             return null;
         }
-        return new Vec2(delta);
+        int height = Window.getInstance().getHeight();
+        // return new Vec2(delta[0] / (transform[0] * height), delta[1] / (transform[1] * height));
+        Vec2 deltaVec = new Vec2(delta);
+        deltaVec.vector[Vec2.MAGNITUDE] = deltaVec.vector[Vec2.MAGNITUDE] / (getPointerScaleY() * height);
+        return deltaVec;
     }
 
     /**
@@ -298,13 +306,13 @@ public class InputProcessor implements PointerListener, KeyListener {
     }
 
     /**
-     * Returns the pointer scale in x and y
+     * Returns the pointer scale in Y - this is the factor between screen coordinates and touch coordinates
+     * returned as absolute value.
      * 
-     * @param scale Array where x and y scale are written
+     * @return Pointer scale in y as a positive value
      */
-    public void getPointerScale(float[] scale) {
-        scale[0] = transform[X];
-        scale[1] = transform[Y];
+    public float getPointerScaleY() {
+        return Math.abs(transform[Y]);
     }
 
     /**
