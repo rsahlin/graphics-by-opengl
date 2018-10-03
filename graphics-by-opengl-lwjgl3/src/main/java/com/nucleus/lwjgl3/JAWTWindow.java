@@ -6,6 +6,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -24,7 +26,8 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.SurfaceConfiguration;
 
-public class JAWTWindow extends J2SEWindow implements RenderContextListener, MouseMotionListener, MouseListener {
+public class JAWTWindow extends J2SEWindow
+        implements RenderContextListener, MouseMotionListener, MouseListener, MouseWheelListener {
 
     LWJGLCanvas canvas;
     JFrame frame;
@@ -51,6 +54,7 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener, Mou
 
         canvas.addMouseListener(this);
         canvas.addMouseMotionListener(this);
+        canvas.addMouseWheelListener(this);
         frame = new JFrame("JAWT Demo");
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
@@ -155,6 +159,11 @@ public class JAWTWindow extends J2SEWindow implements RenderContextListener, Mou
     @Override
     public void setVisible(boolean visible) {
         frame.setVisible(visible);
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        mouseWheelMoved(e.getWheelRotation(), e.getWhen());
     }
 
 }

@@ -8,6 +8,10 @@ import com.nucleus.mmi.core.PointerListener;
 public class PointerData {
 
     public final static float DOWN_PRESSURE = 1f;
+    /**
+     * A zoom on the wheel equals a fraction of screen
+     */
+    public final static float ZOOM_FACTOR = 0.05f;
 
     /**
      * The type of event, ie what the source of the action is

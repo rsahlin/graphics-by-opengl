@@ -27,7 +27,6 @@ import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.KeyEvent.Action;
-import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
 import com.nucleus.mmi.core.InputProcessor;
@@ -44,11 +43,6 @@ import com.nucleus.renderer.SurfaceConfiguration;
  */
 public abstract class JOGLGLWindow extends J2SEWindow
         implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener, KeyListener, WindowListener {
-
-    /**
-     * A zoom on the wheel equals 1 / 5 screen height
-     */
-    private final static float ZOOM_FACTOR = 100f;
 
     private Dimension windowSize;
     private boolean undecorated = false;
@@ -369,11 +363,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void mouseWheelMoved(MouseEvent e) {
-        float factor = ZOOM_FACTOR;
-        InputProcessor.getInstance().pointerEvent(PointerAction.ZOOM, PointerData.Type.MOUSE, e.getWhen(),
-                PointerData.POINTER_1, new float[] {
-                        e.getRotation()[1] * factor, e.getRotation()[1] * factor },
-                0);
+        mouseWheelMoved(e.getRotation()[1], e.getWhen());
     }
 
     @Override

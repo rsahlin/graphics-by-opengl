@@ -161,4 +161,13 @@ public abstract class J2SEWindow implements WindowListener {
      * @param visible
      */
     public abstract void setVisible(boolean visible);
+
+    protected void mouseWheelMoved(float rotation, long when) {
+        float zoom = rotation * PointerData.ZOOM_FACTOR;
+        InputProcessor.getInstance().pointerEvent(PointerAction.ZOOM, PointerData.Type.MOUSE, when,
+                PointerData.POINTER_1, new float[] {
+                        zoom, zoom },
+                0);
+    }
+
 }
