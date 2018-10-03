@@ -33,7 +33,8 @@ public class InputProcessor implements PointerListener, KeyListener {
     PointerMotionData[] pointerMotionData;
 
     /**
-     * Scale and offset value for incoming pointer values, this can be used to normalize pointer values.
+     * Scale and offset value for incoming pointer values, this can be used to normalize pointer or align them with
+     * the size of the viewport.
      * Set to 1/width and 1/height to normalize.
      * Values are: scalex, scaley, translatex, translatey
      */
