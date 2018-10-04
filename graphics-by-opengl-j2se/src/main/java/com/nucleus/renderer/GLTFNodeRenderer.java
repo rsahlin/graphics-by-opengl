@@ -1,6 +1,7 @@
 package com.nucleus.renderer;
 
 import com.nucleus.common.Environment;
+import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
@@ -10,15 +11,21 @@ import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.BufferView;
 import com.nucleus.scene.gltf.GLTF;
+import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Node;
 import com.nucleus.scene.gltf.Primitive;
+import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.RenderableMesh;
 import com.nucleus.scene.gltf.Scene;
 import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.shader.ShaderVariable;
 
 public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
+
+    protected ShaderVariable color0Uniform;
+    protected ShaderVariable light0Uniform;
 
     @Override
     public boolean renderNode(NucleusRenderer renderer, GLTFNode node, Pass currentPass, float[][] matrices)
@@ -31,6 +38,12 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
             program.validateProgram(gles);
         }
+        float[] uniforms = program.getUniformData();
+        if (color0Uniform == null) {
+            color0Uniform = program.getUniformByName(Attributes.COLOR_0.name());
+            light0Uniform = program.getUniformByName(Attributes._LIGHT_0.name());
+        }
+        program.setUniformData(light0Uniform, GlobalLight.getInstance().getLightPosition(), 0);
         program.updateUniforms(gles, matrices);
         GLTF glTF = node.getGLTF();
         int sceneIndex = glTF.getScene();
@@ -75,6 +88,8 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     protected void renderPrimitive(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Primitive primitive)
             throws GLException {
         Accessor indices = glTF.getAccessor(primitive.getIndicesIndex());
+        Material material = primitive.getMaterial();
+        program.setUniformData(color0Uniform, material.getPbrMetallicRoughness().getBaseColorFactor(), 0);
         if (indices != null) {
             // Indexed mode - use glDrawElements
             BufferView indicesView = indices.getBufferView();

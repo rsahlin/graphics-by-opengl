@@ -723,25 +723,15 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets one float value into the uniform data array for this program. The data array needs to be uploaded
-     * to GL before changes take effect.
-     * 
-     * @param variable offset into uniformData where data is put
-     * @param data
-     */
-    public void setUniformData(ShaderVariable variable, float data) {
-        uniforms[variable.getOffset()] = data;
-    }
-
-    /**
      * Sets the float values from data at the offset from variable, use this to set more than one value.
      * 
-     * @param variable
-     * @param data
+     * @param variable The shader variable to set uniform data to
+     * @param data The uniform data to set
+     * @param sourceOffset Offset into data where values are read
      */
-    public void setUniformData(ShaderVariable variable, float[] data) {
+    public void setUniformData(ShaderVariable variable, float[] data, int sourceOffset) {
         int offset = variable.getOffset();
-        System.arraycopy(data, 0, uniforms, offset, data.length);
+        System.arraycopy(data, sourceOffset, uniforms, offset, variable.getSizeInFloats());
     }
 
     /**

@@ -61,7 +61,8 @@ public class Primitive implements RuntimeResolver {
         _FRAME(),
         _ALBEDO(),
         _EMISSIVE(),
-        _BOUNDS();
+        _BOUNDS(),
+        _LIGHT_0();
     }
 
     public enum Mode {
