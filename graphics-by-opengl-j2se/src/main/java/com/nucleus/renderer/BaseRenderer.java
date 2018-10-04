@@ -17,6 +17,7 @@ import com.nucleus.opengl.GLESWrapper.GLES_EXTENSION_TOKENS;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.renderer.RenderState.Cullface;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.scene.Node;
@@ -189,9 +190,9 @@ class BaseRenderer implements NucleusRenderer {
         }
         if ((flags & RenderState.CHANGE_FLAG_CULLFACE) != 0) {
             // Set GL values.
-            if (state.getCullFace() != GLES20.GL_NONE) {
+            if (state.getCullFace() != Cullface.NONE) {
                 gles.glEnable(GLES20.GL_CULL_FACE);
-                gles.glCullFace(state.getCullFace());
+                gles.glCullFace(state.getCullFace().value);
             } else {
                 gles.glDisable(GLES20.GL_CULL_FACE);
             }

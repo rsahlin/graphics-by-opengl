@@ -128,6 +128,11 @@ public class GLTF {
      */
     transient protected RenderableMesh[] renderableMeshes;
 
+    /**
+     * Sets the path of the folder where this gltf asset is
+     * 
+     * @param path
+     */
     public void setPath(String path) {
         this.path = path;
     }

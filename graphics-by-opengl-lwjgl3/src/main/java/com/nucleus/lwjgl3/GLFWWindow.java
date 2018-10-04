@@ -56,7 +56,7 @@ public class GLFWWindow extends J2SEWindow {
         GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3);
         GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_API);
 
-        window = GLFW.glfwCreateWindow(width, height, "GLFW EGL/OpenGL ES Demo", MemoryUtil.NULL, MemoryUtil.NULL);
+        window = GLFW.glfwCreateWindow(width, height, "", MemoryUtil.NULL, MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
@@ -110,6 +110,13 @@ public class GLFWWindow extends J2SEWindow {
             GLFW.glfwHideWindow(window);
         }
 
+    }
+
+    @Override
+    public void setWindowTitle(String title) {
+        if (window != 0) {
+            GLFW.glfwSetWindowTitle(window, title);
+        }
     }
 
 }

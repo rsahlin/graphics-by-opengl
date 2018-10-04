@@ -132,7 +132,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
         if (glTFName != null) {
             int index = getRootNode().getGLTFIndex(glTFName);
             try {
-                glTF = AssetManager.getInstance().loadGLTFAsset(getRootNode().getGLTFPath(), glTFName, index);
+                glTF = AssetManager.getInstance().loadGLTFAsset(getRootNode().getGLTFPath() + glTFName, index);
                 if (gles != null && com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
                     BufferObjectsFactory.getInstance().createVBOs(gles, glTF.getBuffers());
                 }

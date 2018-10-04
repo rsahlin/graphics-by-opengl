@@ -1,5 +1,6 @@
 package com.nucleus.assets;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -341,18 +342,18 @@ public class AssetManager {
     /**
      * Loads and returns one GLTF asset, loads binary data into buffers.
      * 
-     * @param path Path to asset folder
      * @param name
      * @param index Index of the asset
      * @return The loaded GLTF asset
      * @throws IOException If there is an io exception reading the file, or it cannot be found.
      * @throws
      */
-    public GLTF loadGLTFAsset(String path, String name, int index) throws IOException, GLTFException {
-        SimpleLogger.d(Loader.class, "Loading glTF asset:" + path + name);
+    public GLTF loadGLTFAsset(String fileName, int index) throws IOException, GLTFException {
+        SimpleLogger.d(Loader.class, "Loading glTF asset:" + fileName);
+        File f = new File(fileName);
         ClassLoader loader = Loader.class.getClassLoader();
-        InputStream is = loader.getResourceAsStream(path + name);
-        return Loader.loadAsset(path, is);
+        InputStream is = loader.getResourceAsStream(fileName);
+        return Loader.loadAsset(f.getParent(), is);
     }
 
 }

@@ -20,7 +20,7 @@ out vec4 vDiffuseColor;
 void main() {
     vec4 pos = vec4(POSITION, 1.0) * uModelMatrix * uViewMatrix;
     gl_Position = pos * uProjectionMatrix;
-    vec4 normal = normalize(vec4(NORMAL, 1.0) * uModelMatrix);
-    vec3 lightDir = normalize(vec3(pos) - _LIGHT_0);
+    vec4 normal = normalize(vec4(NORMAL, 0.0) * uModelMatrix);
+    vec3 lightDir = normalize(_LIGHT_0 - vec3(pos));
     vDiffuseColor = vec4(max(dot(vec3(normal), lightDir), 0.0) * vec3(COLOR_0), COLOR_0.a);
 }

@@ -27,7 +27,7 @@ public class LoaderTest extends BaseTestCase {
     public void loadglTFAssetBox() throws IOException, URISyntaxException, GLTFException {
 
         // Use known scene to validate that values are not null
-        GLTF asset = AssetManager.getInstance().loadGLTFAsset("Box/glTF/", "Box.gltf", 0);
+        GLTF asset = AssetManager.getInstance().loadGLTFAsset("Box/glTF/Box.gltf", 0);
 
         Assert.assertNotNull(asset);
         checkAsset(asset.getAsset());

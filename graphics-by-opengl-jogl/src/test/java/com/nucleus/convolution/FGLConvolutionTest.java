@@ -39,7 +39,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
      * 
      */
     public enum ClientClasses implements Type<Object> {
-        clientclass(MyClientApplication.class);
+            clientclass(MyClientApplication.class);
 
         private final Class<?> theClass;
 
@@ -75,6 +75,18 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         public void endFrame(float deltaTime) {
             // TODO Auto-generated method stub
 
+        }
+
+        @Override
+        public String getAppName() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public String getVersion() {
+            // TODO Auto-generated method stub
+            return null;
         }
 
     }

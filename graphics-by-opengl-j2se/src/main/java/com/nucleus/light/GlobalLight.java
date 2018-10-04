@@ -11,7 +11,7 @@ public class GlobalLight {
     /**
      * Position of light
      */
-    private float[] lightPosition = new float[] { 0, 1000, -10000 };
+    private float[] lightPosition = new float[] { 0, 5000, -10000 };
 
     private static GlobalLight globalLight = new GlobalLight();
 

@@ -1,5 +1,6 @@
 package com.nucleus.scene.gltf;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -132,7 +133,7 @@ public class Buffer {
             throw new IllegalArgumentException("Buffer storage has not bee created, must call createBuffer()");
         }
         ClassLoader loader = Loader.class.getClassLoader();
-        InputStream is = loader.getResourceAsStream(glTF.getPath() + uri);
+        InputStream is = loader.getResourceAsStream(glTF.getPath() + File.separatorChar + uri);
         SimpleLogger.d(getClass(),
                 "Loading into buffer with size " + buffer.capacity() + " from " + glTF.getPath() + uri);
         int total = load(is);

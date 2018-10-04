@@ -41,7 +41,19 @@ public class RenderState {
         private DepthFunc(int value) {
             this.value = value;
         }
+    }
 
+    public enum Cullface {
+        NONE(GLES20.GL_NONE),
+        FRONT(GLES20.GL_FRONT),
+        BACK(GLES20.GL_BACK),
+        FRONTANDBACK(GLES20.GL_FRONT_AND_BACK);
+
+        public final int value;
+
+        private Cullface(int value) {
+            this.value = value;
+        }
     }
 
     public static final String MULTISAMPLING = "multisampling";
@@ -63,7 +75,7 @@ public class RenderState {
     public final static float DEFAULT_DEPTHRANGE_NEAR = 0.01f;
     public final static float DEFAULT_DEPTHRANGE_FAR = 5f;
     public final static float DEFAULT_CLEARDEPTH = DEFAULT_DEPTHRANGE_FAR;
-    public final static int DEFAULT_CULLFACE = GLES20.GL_NONE;
+    public final static Cullface DEFAULT_CULLFACE = Cullface.NONE;
     public final static int DEFAULT_CLEARFLAG = GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT;
     public final static boolean DEFAULT_MULTISAMPLING = false;
 
@@ -125,7 +137,7 @@ public class RenderState {
      * If culling is enabled, what faces should be culled.
      */
     @SerializedName(CULLFACE)
-    protected int cullFace = DEFAULT_CULLFACE;
+    protected Cullface cullFace = DEFAULT_CULLFACE;
 
     /**
      * This value is read in when setting up a renderpass, used to decide if buffer should be cleared
@@ -251,14 +263,10 @@ public class RenderState {
      * ConstantValues.CULL_FRONT_AND_BACK or ConstantValues.NONE
      * @throws IllegalArgumentException If cullface is illegal value.
      */
-    public void setCullFace(int cullFace) {
-        if (cullFace != GLES20.GL_BACK &&
-                cullFace != GLES20.GL_FRONT &&
-                cullFace != GLES20.GL_FRONT_AND_BACK &&
-                cullFace != GLES20.GL_NONE) {
+    public void setCullFace(Cullface cullFace) {
+        if (cullFace == null) {
             throw new IllegalArgumentException(INVALID_CULLFACE_STR + cullFace);
         }
-
         this.cullFace = cullFace;
         changeFlag |= CHANGE_FLAG_CULLFACE;
     }
@@ -268,7 +276,7 @@ public class RenderState {
      * 
      * @return Either of NONE, FRONT, BACK, FRONT_AND_BACK
      */
-    public int getCullFace() {
+    public Cullface getCullFace() {
         return cullFace;
     }
 

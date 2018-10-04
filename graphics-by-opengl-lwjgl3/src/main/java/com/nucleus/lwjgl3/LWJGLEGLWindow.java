@@ -125,7 +125,7 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
         int WIDTH = 300;
         int HEIGHT = 300;
 
-        window = GLFW.glfwCreateWindow(WIDTH, HEIGHT, "GLFW EGL/OpenGL ES Demo", MemoryUtil.NULL, MemoryUtil.NULL);
+        window = GLFW.glfwCreateWindow(WIDTH, HEIGHT, "", MemoryUtil.NULL, MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
@@ -283,6 +283,13 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
             GLFW.glfwShowWindow(window);
         } else {
             GLFW.glfwHideWindow(window);
+        }
+    }
+
+    @Override
+    public void setWindowTitle(String title) {
+        if (window != 0) {
+            GLFW.glfwSetWindowTitle(window, title);
         }
     }
 

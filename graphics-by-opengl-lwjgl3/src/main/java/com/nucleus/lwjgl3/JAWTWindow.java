@@ -55,7 +55,7 @@ public class JAWTWindow extends J2SEWindow
         canvas.addMouseListener(this);
         canvas.addMouseMotionListener(this);
         canvas.addMouseWheelListener(this);
-        frame = new JFrame("JAWT Demo");
+        frame = new JFrame("");
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -164,6 +164,11 @@ public class JAWTWindow extends J2SEWindow
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         mouseWheelMoved(-e.getWheelRotation(), e.getWhen());
+    }
+
+    @Override
+    public void setWindowTitle(String title) {
+        frame.setTitle(title);
     }
 
 }

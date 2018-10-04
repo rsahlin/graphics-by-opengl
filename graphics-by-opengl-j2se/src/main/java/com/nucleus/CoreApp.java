@@ -22,6 +22,7 @@ import com.nucleus.profiling.FrameSampler.Samples;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
 import com.nucleus.renderer.SurfaceConfiguration;
+import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.AbstractNode.NodeTypes;
 import com.nucleus.scene.BaseRootNode;
@@ -121,6 +122,20 @@ public class CoreApp implements FrameRenderer {
          * @param deltaTime Time, in seconds, that it took to create last frame
          */
         public void endFrame(float deltaTime);
+
+        /**
+         * Returns the name of the application
+         * 
+         * @return
+         */
+        public String getAppName();
+
+        /**
+         * Returns the version
+         * 
+         * @return
+         */
+        public String getVersion();
 
     }
 
@@ -339,6 +354,8 @@ public class CoreApp implements FrameRenderer {
 
     /**
      * Util method to create the coreapp and display splash. Caller must swapp buffer for splash to be visible.
+     * Window and GL context must be created before calling this method.
+     * Will set the name of the window from ClientApplication.
      * 
      * @param width
      * @param height
@@ -351,7 +368,9 @@ public class CoreApp implements FrameRenderer {
         }
         renderer.init(new SurfaceConfiguration(), width, height);
         try {
-            CoreApp coreApp = new CoreApp(renderer, (ClientApplication) clientClass.newInstance());
+            ClientApplication clientApp = (ClientApplication) clientClass.newInstance();
+            Window.getInstance().setTitle(clientApp.getAppName() + " " + clientApp.getVersion());
+            CoreApp coreApp = new CoreApp(renderer, clientApp);
             try {
                 coreApp.displaySplash();
             } catch (GLException | NodeException e) {

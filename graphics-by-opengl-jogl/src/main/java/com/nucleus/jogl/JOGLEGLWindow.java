@@ -260,4 +260,11 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
         nativeWindow.setVisible(visible);
     }
 
+    @Override
+    public void setWindowTitle(String title) {
+        if (nativeWindow != null) {
+            nativeWindow.setTitle(title);
+        }
+    }
+
 }

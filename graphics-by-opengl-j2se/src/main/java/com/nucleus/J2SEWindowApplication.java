@@ -9,6 +9,7 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.RendererFactory;
 import com.nucleus.renderer.SurfaceConfiguration;
+import com.nucleus.renderer.Window;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.J2SEImageFactory;
 
@@ -149,6 +150,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     public void createCoreWindows(Renderers version) {
         j2seWindow = createWindow(version);
         j2seWindow.setWindowListener(this);
+        Window.getInstance().setPlatformWindow(j2seWindow);
     }
 
     @Override

@@ -205,7 +205,8 @@ public abstract class JOGLGLWindow extends J2SEWindow
         frame.setVisible(true);
     }
 
-    public void setTitle(String title) {
+    @Override
+    public void setWindowTitle(String title) {
         if (frame != null) {
             frame.setTitle(title);
         }
