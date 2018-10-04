@@ -22,10 +22,11 @@ import com.nucleus.scene.RootNode;
 public interface NucleusRenderer {
 
     public enum Matrices {
-        MODELVIEW(0, "uMVMatrix"),
-        PROJECTION(1, "uProjectionMatrix"),
-        RENDERPASS_1(2, "uRenderPass1Matrix"),
-        RENDERPASS_2(3, "uRenderPass2Matrix");
+        MODEL(0, "uModelMatrix"),
+        VIEW(1, "uViewMatrix"),
+        PROJECTION(2, "uProjectionMatrix"),
+        RENDERPASS_1(3, "uRenderPass1Matrix"),
+        RENDERPASS_2(4, "uRenderPass2Matrix");
 
         public final int index;
         public final String name;

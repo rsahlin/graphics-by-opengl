@@ -1455,9 +1455,13 @@ public abstract class ShaderProgram {
      * @param matrices Source matrices to set to uniform data array.
      */
     public void setUniformMatrices(float[][] matrices) {
-        // Refresh the uniform matrixes - default is modelview and projection
-        System.arraycopy(matrices[Matrices.MODELVIEW.index], 0, uniforms,
-                getUniformByName(Matrices.MODELVIEW.name).getOffset(),
+        // Refresh the uniform matrixes - default is model - view and projection
+        // TODO - store ShaderVariables and fetch if null
+        System.arraycopy(matrices[Matrices.MODEL.index], 0, uniforms,
+                getUniformByName(Matrices.MODEL.name).getOffset(),
+                Matrix.MATRIX_ELEMENTS);
+        System.arraycopy(matrices[Matrices.VIEW.index], 0, uniforms,
+                getUniformByName(Matrices.VIEW.name).getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(matrices[Matrices.PROJECTION.index], 0, uniforms,
                 getUniformByName(Matrices.PROJECTION.name).getOffset(),

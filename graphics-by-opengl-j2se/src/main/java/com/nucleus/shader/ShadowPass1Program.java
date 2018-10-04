@@ -46,11 +46,15 @@ public class ShadowPass1Program extends ShadowPassProgram {
 
     @Override
     public void setUniformMatrices(float[][] matrices) {
-        System.arraycopy(matrices[Matrices.MODELVIEW.index], 0, uniforms,
-                getUniformByName(Matrices.MODELVIEW.name).getOffset(),
+        // TODO - store ShaderVariables for matrices
+        System.arraycopy(matrices[Matrices.MODEL.index], 0, uniforms,
+                getUniformByName(Matrices.MODEL.name).getOffset(),
+                Matrix.MATRIX_ELEMENTS);
+        System.arraycopy(matrices[Matrices.VIEW.index], 0, uniforms,
+                getUniformByName(Matrices.VIEW.name).getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(matrices[Matrices.RENDERPASS_2.index], 0, uniforms,
-                getUniformByName(Matrices.MODELVIEW.PROJECTION.name).getOffset(),
+                getUniformByName(Matrices.PROJECTION.name).getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
 

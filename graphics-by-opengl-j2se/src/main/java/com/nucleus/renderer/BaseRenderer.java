@@ -61,7 +61,7 @@ class BaseRenderer implements NucleusRenderer {
      */
     protected float[] modelMatrix;
     /**
-     * see Matrices
+     * see {@link Matrices}
      */
     protected float[][] matrices = new float[Matrices.values().length][];
     /**
@@ -107,7 +107,8 @@ class BaseRenderer implements NucleusRenderer {
         }
         gles.createInfo();
         this.gles = gles;
-        matrices[Matrices.MODELVIEW.index] = Matrix.createMatrix();
+        matrices[Matrices.MODEL.index] = Matrix.createMatrix();
+        matrices[Matrices.VIEW.index] = Matrix.createMatrix();
         matrices[Matrices.PROJECTION.index] = Matrix.setIdentity(Matrix.createMatrix(), 0);
         matrices[Matrices.RENDERPASS_1.index] = Matrix.createMatrix();
         matrices[Matrices.RENDERPASS_2.index] = Matrix.createMatrix();
@@ -273,8 +274,10 @@ class BaseRenderer implements NucleusRenderer {
             pushMatrix(this.projection, matrices[Matrices.PROJECTION.index]);
             matrices[Matrices.PROJECTION.index] = projection;
         }
-        Matrix.mul4(nodeMatrix, viewMatrix, matrices[Matrices.MODELVIEW.index]);
-        
+        matrices[Matrices.MODEL.index] = nodeMatrix;
+        matrices[Matrices.VIEW.index] = viewMatrix;
+        // Matrix.mul4(nodeMatrix, viewMatrix, matrices[Matrices.MODELVIEW.index]);
+
         if (node instanceof RenderableNode<?>) {
             NodeRenderer nodeRenderer = ((RenderableNode) node).getNodeRenderer();
             if (nodeRenderer != null) {
