@@ -36,9 +36,8 @@ import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
  * extras any Application-specific data. No
  *
  */
-public class Node implements RuntimeResolver {
+public class Node extends GLTFNamedValue implements RuntimeResolver {
 
-    private static final String NAME = "name";
     private static final String MESH = "mesh";
     private static final String CHILDREN = "children";
     private static final String CAMERA = "camera";
@@ -47,8 +46,6 @@ public class Node implements RuntimeResolver {
     private static final String TRANSLATION = "translation";
     private static final String MATRIX = "matrix";
 
-    @SerializedName(NAME)
-    private String name;
     @SerializedName(MESH)
     private int mesh = -1;
     @SerializedName(CHILDREN)
@@ -66,10 +63,6 @@ public class Node implements RuntimeResolver {
 
     transient protected Node[] childNodes;
     transient protected Mesh nodeMesh;
-
-    public String getName() {
-        return name;
-    }
 
     /**
      * Returns the index of the mesh to render with this node

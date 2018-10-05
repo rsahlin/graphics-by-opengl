@@ -1169,6 +1169,62 @@ public abstract class GLESWrapper {
     }
 
     /**
+     * The gl drawmodes
+     *
+     */
+    public enum Mode {
+        /**
+         * From GL_POINTS
+         */
+        POINTS(GLES20.GL_POINTS),
+        /**
+         * From GL_LINE_STRIP
+         */
+        LINE_STRIP(GLES20.GL_LINE_STRIP),
+        /**
+         * From GL_LINE_LOOP
+         */
+        LINE_LOOP(GLES20.GL_LINE_LOOP),
+        /**
+         * From GL_TRIANGLE_STRIP
+         */
+        TRIANGLE_STRIP(GLES20.GL_TRIANGLE_STRIP),
+        /**
+         * From GL_TRIANGLE_FAN
+         */
+        TRIANGLE_FAN(GLES20.GL_TRIANGLE_FAN),
+        /**
+         * From GL_TRIANGLES
+         */
+        TRIANGLES(GLES20.GL_TRIANGLES),
+        /**
+         * From GL_LINES
+         */
+        LINES(GLES20.GL_LINES);
+
+        public final int mode;
+
+        /**
+         * Fetches the enum from gl mode value
+         * 
+         * @param mode
+         * @return
+         */
+        public static Mode get(int mode) {
+            for (Mode m : Mode.values()) {
+                if (mode == m.mode) {
+                    return m;
+                }
+            }
+            return null;
+        }
+
+        private Mode(int mode) {
+            this.mode = mode;
+        }
+    }
+
+    /**
      * Returns the GLES shader language version for the platform implementation based on the shader source version.
      * If the shader source has a version string it shall be checked by the gles wrapper implementation and if needed
      * substituted for a version that is suitable for the current platform.

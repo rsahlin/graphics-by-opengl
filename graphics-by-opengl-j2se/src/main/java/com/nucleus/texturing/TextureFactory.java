@@ -16,7 +16,7 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
-import com.nucleus.texturing.Image.ImageFormat;
+import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.Texture2D.Type;
 
@@ -215,7 +215,7 @@ public class TextureFactory {
             return;
         }
         TextureFactory.createTextureName(gles, texture);
-        Image[] textureImg = TextureUtils
+        BufferImage[] textureImg = TextureUtils
                 .loadTextureMIPMAP(imageFactory, texture);
         if (textureImg[0].getResolution() != null) {
             texture.setResolution(textureImg[0].getResolution());
@@ -223,7 +223,7 @@ public class TextureFactory {
         try {
             TextureUtils.uploadTextures(gles, texture, textureImg);
             SimpleLogger.d(TextureFactory.class, "Uploaded texture " + texture.toString());
-            Image.destroyImages(textureImg);
+            BufferImage.destroyImages(textureImg);
         } catch (GLException e) {
             throw new IllegalArgumentException(e);
         }

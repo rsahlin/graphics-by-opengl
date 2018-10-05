@@ -5,7 +5,8 @@ import java.nio.ShortBuffer;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.ElementBuffer.Type;
-import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLESWrapper.Mode;
 import com.nucleus.texturing.Texture2D;
 
 /**
@@ -22,7 +23,7 @@ public class LineShapeBuilder extends ElementBuilder {
     private Configuration configuration;
 
     @Override
-    public void build(AttributeBuffer attributes, Texture2D texture, ElementBuffer indices, Mode mode) {
+    public void build(AttributeBuffer attributes, Texture2D texture, ElementBuffer indices, GLESWrapper.Mode mode) {
         if (indices != null) {
             if (indices.type != Type.SHORT) {
                 throw new IllegalArgumentException("Invalid type " + indices.type);
@@ -32,7 +33,7 @@ public class LineShapeBuilder extends ElementBuilder {
     }
 
     @Override
-    public void buildElements(ShortBuffer buffer, Mode mode, int count, int startVertex) {
+    public void buildElements(ShortBuffer buffer, GLESWrapper.Mode mode, int count, int startVertex) {
         // Check if indicebuffer shall be built
         switch (mode) {
             case LINES:

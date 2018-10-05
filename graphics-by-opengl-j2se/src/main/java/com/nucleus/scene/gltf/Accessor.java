@@ -29,7 +29,7 @@ import com.nucleus.scene.gltf.GLTF.GLTFException;
  * 
  */
 
-public class Accessor implements GLTF.RuntimeResolver {
+public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
 
     private static final String BUFFER_VIEW = "bufferView";
     private static final String BYTE_OFFSET = "byteOffset";
@@ -39,8 +39,6 @@ public class Accessor implements GLTF.RuntimeResolver {
     private static final String TYPE = "type";
     private static final String MAX = "max";
     private static final String MIN = "min";
-    private static final String SPARSE = "sparse";
-    private static final String NAME = "name";
 
     public enum ComponentType {
         BYTE(GLESWrapper.GLES20.GL_BYTE),
@@ -137,9 +135,6 @@ public class Accessor implements GLTF.RuntimeResolver {
     private float[] max;
     @SerializedName(MIN)
     private float[] min;
-    // private Object sparse;
-    @SerializedName(NAME)
-    private String name;
 
     transient ComponentType componentType;
     transient BufferView bufferViewRef;
@@ -184,10 +179,6 @@ public class Accessor implements GLTF.RuntimeResolver {
         return min;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public Type getType() {
         return type;
     }
@@ -195,7 +186,7 @@ public class Accessor implements GLTF.RuntimeResolver {
     @Override
     public void resolve(GLTF asset) throws GLTFException {
         if (bufferViewRef != null) {
-            throw new GLTFException("Already resolved Accessor with name " + name);
+            throw new GLTFException("Already resolved Accessor with name " + getName());
         }
         bufferViewRef = asset.getBufferViews()[bufferViewIndex];
         componentType = ComponentType.get(componentTypeValue);
@@ -205,7 +196,7 @@ public class Accessor implements GLTF.RuntimeResolver {
     public String toString() {
         String str = "Bufferviewindex: " + bufferViewIndex + ", count: " + count + ", offset: " + byteOffset
                 + ", component: " + componentType
-                + ", type: " + type + (name != null ? (", name: " + name) : "") + "\n";
+                + ", type: " + type + (getName() != null ? (", name: " + getName()) : "") + "\n";
         bufferViewRef.getBuffer().getBuffer().position(byteOffset);
         switch (componentType) {
             case BYTE:

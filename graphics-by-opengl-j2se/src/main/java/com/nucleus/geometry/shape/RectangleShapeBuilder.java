@@ -10,8 +10,8 @@ import java.nio.ShortBuffer;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.ElementBuffer.Type;
-import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLESWrapper.Mode;
 import com.nucleus.renderer.Window;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureParameter;
@@ -188,7 +188,7 @@ public class RectangleShapeBuilder extends ElementBuilder {
     }
 
     @Override
-    public void build(AttributeBuffer attributes, Texture2D texture, ElementBuffer indices, Mode mode) {
+    public void build(AttributeBuffer attributes, Texture2D texture, ElementBuffer indices, GLESWrapper.Mode mode) {
         // TODO - for this shapebuilder to work the offsets of vertex and uv must be set.
         int stride = attributes.getFloatStride();
         if (quadStoreage == null) {
@@ -222,7 +222,7 @@ public class RectangleShapeBuilder extends ElementBuilder {
      * @param vertexStride Number of values between vertices
      * @destination Values where quad array positions, and optional uv, are written.
      */
-    protected void createQuadArray(Texture2D texture, Mesh.Mode mode, int vertexStride, float[] destination) {
+    protected void createQuadArray(Texture2D texture, GLESWrapper.Mode mode, int vertexStride, float[] destination) {
         float[] values = configuration.rectangle.getValues();
         float[] uvCoordinates = null;
         if (vertexStride > 4 && texture != null && texture.textureType != TextureType.Untextured) {
@@ -244,7 +244,7 @@ public class RectangleShapeBuilder extends ElementBuilder {
      * @param useVertexIndex
      * @param destination Result is written here, must contain 4 * vertexStride values
      */
-    protected void createQuadArray(Mesh.Mode mode, float[] values, int vertexStride, float[] uv, float[] destination) {
+    protected void createQuadArray(GLESWrapper.Mode mode, float[] values, int vertexStride, float[] uv, float[] destination) {
         switch (mode) {
             case TRIANGLES:
             case TRIANGLE_FAN:
@@ -334,7 +334,7 @@ public class RectangleShapeBuilder extends ElementBuilder {
     }
 
     @Override
-    public void buildElements(ShortBuffer buffer, Mode mode, int count, int startVertex) {
+    public void buildElements(ShortBuffer buffer, GLESWrapper.Mode mode, int count, int startVertex) {
         switch (mode) {
             case LINES:
                 buildQuadLineBuffer(buffer, count, startVertex);

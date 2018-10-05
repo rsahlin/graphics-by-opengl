@@ -14,7 +14,7 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
-import com.nucleus.texturing.Image.ImageFormat;
+import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.Texture2D.Type;
 
@@ -37,11 +37,11 @@ public class TextureUtils {
      * @param texture The texture source object
      * @return Array with an image for each mip-map level.
      */
-    public static Image[] loadTextureMIPMAP(ImageFactory imageFactory, Texture2D texture) {
+    public static BufferImage[] loadTextureMIPMAP(ImageFactory imageFactory, Texture2D texture) {
         try {
             long start = System.currentTimeMillis();
             ImageFormat imageFormat = getImageFormat(texture);
-            Image image = loadTextureImage(imageFactory, texture);
+            BufferImage image = loadTextureImage(imageFactory, texture);
             long loaded = System.currentTimeMillis();
             FrameSampler.getInstance()
                     .logTag(FrameSampler.Samples.CREATE_IMAGE, " " + texture.getExternalReference().getSource(), start,
@@ -57,7 +57,7 @@ public class TextureUtils {
             // levels = (int) Math.floor(Math.log((Math.max(width, height))) / Math.log(2)) + 1;
             // }
             levels = 1;
-            Image[] images = new Image[levels];
+            BufferImage[] images = new BufferImage[levels];
             images[0] = image;
             /*
              * if (levels > 1) {
@@ -86,12 +86,12 @@ public class TextureUtils {
      * @return
      * @throws IOException
      */
-    protected static Image loadTextureImage(ImageFactory factory, Texture2D texture) throws IOException {
+    protected static BufferImage loadTextureImage(ImageFactory factory, Texture2D texture) throws IOException {
         SimpleLogger.d(TextureUtils.class, "Loading image " + texture.getExternalReference().getSource());
         float scale = (float) Window.getInstance().getHeight() / texture.resolution.lines;
         if (scale < 0.9) {
             RESOLUTION res = RESOLUTION.getResolution(Window.getInstance().getHeight());
-            Image img = factory.createImage(texture.getExternalReference().getSource(), scale, scale,
+            BufferImage img = factory.createImage(texture.getExternalReference().getSource(), scale, scale,
                     getImageFormat(texture), res);
             SimpleLogger.d(TextureUtils.class,
                     "Image scaled " + scale + " to " + img.getWidth() + ", " + img.getHeight()
@@ -114,7 +114,7 @@ public class TextureUtils {
      * @throws GLException If there is an error uploading the textures
      * @throws IllegalArgumentException If multiple mipmaps provided but texture min filter is not _MIPMAP_
      */
-    public static void uploadTextures(GLES20Wrapper gles, Texture2D texture, Image[] textureImages)
+    public static void uploadTextures(GLES20Wrapper gles, Texture2D texture, BufferImage[] textureImages)
             throws GLException {
         gles.glBindTexture(GLES20.GL_TEXTURE_2D, texture.getName());
         boolean isMipMapParams = texture.getTexParams().isMipMapFilter();
@@ -125,7 +125,7 @@ public class TextureUtils {
         }
         int level = 0;
         texture.setup(textureImages[0].width, textureImages[0].height);
-        for (Image textureImg : textureImages) {
+        for (BufferImage textureImg : textureImages) {
             if (textureImg != null) {
                 if (texture.getFormat() == null || texture.getType() == null) {
                     throw new IllegalArgumentException("Texture format or type is null for id " + texture.getId()

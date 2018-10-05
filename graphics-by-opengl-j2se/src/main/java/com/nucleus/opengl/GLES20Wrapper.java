@@ -25,7 +25,7 @@ import com.nucleus.shader.ShaderSource.ESSLVersion;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
-import com.nucleus.texturing.Image;
+import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.ParameterData;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureParameter;
@@ -823,7 +823,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param image
      * @param level
      */
-    public void texImage(Texture2D texture, Image image, int level) {
+    public void texImage(Texture2D texture, BufferImage image, int level) {
         glTexImage2D(GLES20.GL_TEXTURE_2D, level, TextureUtils.getInternalFormat(texture), texture.getWidth(),
                 texture.getHeight(), 0, texture.getFormat().format,
                 texture.getType().type, image.getBuffer().position(0));

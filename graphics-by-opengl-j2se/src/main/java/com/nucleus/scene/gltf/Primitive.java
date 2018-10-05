@@ -7,6 +7,7 @@ import java.util.Set;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
+import com.nucleus.shader.GLTFShaderProgram;
 
 /**
  * The Primitive as it is loaded using the glTF format.
@@ -65,38 +66,6 @@ public class Primitive implements RuntimeResolver {
         _LIGHT_0();
     }
 
-    public enum Mode {
-        POINTS(0),
-        LINES(1),
-        LINE_LOOP(2),
-        LINE_STRIP(3),
-        TRIANGLES(4),
-        TRIANGLE_STRIP(5),
-        TRIANGLE_FAN(6);
-
-        public final int value;
-
-        private Mode(int mode) {
-            this.value = mode;
-        }
-
-        /**
-         * Returns the mode for the mode value, or null if no matching mode
-         * 
-         * @param mode
-         * @return
-         */
-        public static Mode getMode(int mode) {
-            for (Mode m : values()) {
-                if (m.value == mode) {
-                    return m;
-                }
-            }
-            return null;
-        }
-
-    }
-
     @SerializedName(ATTRIBUTES)
     private HashMap<Attributes, Integer> attributes;
     @SerializedName(INDICES)
@@ -114,13 +83,18 @@ public class Primitive implements RuntimeResolver {
      * 6 TRIANGLE_FAN
      */
     @SerializedName(MODE)
-    private int modeValue = DEFAULT_MODE;
+    private int mode = DEFAULT_MODE;
 
-    transient private Mode mode;
     transient private Accessor[] accessorList;
     transient private Attributes[] attributeList;
     transient private Buffer[] bufferList;
     transient private Material materialRef;
+    /**
+     * Program to use when rendering this primitive
+     */
+    @Deprecated
+    transient private GLTFShaderProgram program;
+    transient public int glMode;
 
     /**
      * Returns the dictionary (HashMap) with Attributes
@@ -189,26 +163,8 @@ public class Primitive implements RuntimeResolver {
         return materialRef;
     }
 
-    public Mode getMode() {
+    public int getMode() {
         return mode;
-    }
-
-    /**
-     * Allowed values:
-     * 0 POINTS
-     * 1 LINES
-     * 2 LINE_LOOP
-     * 3 LINE_STRIP
-     * 4 TRIANGLES
-     * 5 TRIANGLE_STRIP
-     * 6 TRIANGLE_FAN
-     * 
-     * @param mode
-     * @throws IllegalArgumentException If mode is not one of the allowed values
-     */
-    public void setMode(Mode mode) {
-        this.mode = mode;
-        this.modeValue = mode.value;
     }
 
     @Override
@@ -231,8 +187,28 @@ public class Primitive implements RuntimeResolver {
                 bufferList[index++] = b;
             }
         }
-        mode = Mode.getMode(modeValue);
+        glMode = GLTF.GL_DRAWMODE[mode];
         this.materialRef = asset.getMaterials()[material];
+    }
+
+    /**
+     * @deprecated Primitive should not have a reference to ShaderProgram, use index instead and fetch from
+     * AssetManager.
+     * @param program
+     */
+    @Deprecated
+    public void setProgram(GLTFShaderProgram program) {
+        this.program = program;
+    }
+
+    /**
+     * Returns the program to be used to render this primitive
+     * 
+     * @return
+     */
+    @Deprecated
+    public GLTFShaderProgram getProgram() {
+        return program;
     }
 
 }

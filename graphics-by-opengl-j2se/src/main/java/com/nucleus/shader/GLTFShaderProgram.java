@@ -6,7 +6,6 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.AccessorDictionary;
 import com.nucleus.scene.gltf.Material;
-import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -21,11 +20,8 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      */
     protected AccessorDictionary<String> accessorDictionary = new AccessorDictionary<>();
 
-    protected Mesh[] meshes;
-
-    public GLTFShaderProgram(Mesh[] meshes, Pass pass, Shading shading, String category, ProgramType shaders) {
+    public GLTFShaderProgram(Pass pass, Shading shading, String category, ProgramType shaders) {
         super(pass, shading, category, shaders);
-        this.meshes = meshes;
     }
 
     /**

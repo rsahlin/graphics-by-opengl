@@ -25,6 +25,7 @@ import com.google.gson.annotations.SerializedName;
  */
 public class PBRMetallicRoughness {
 
+    private static final String BASE_COLOR_TEXTURE = "baseColorTexture";
     private static final String BASE_COLOR_FACTOR = "baseColorFactor";
     private static final String METALLIC_FACTOR = "metallicFactor";
     private static final String ROUGHNESS_FACTOR = "roughnessFactor";
@@ -36,6 +37,8 @@ public class PBRMetallicRoughness {
     private float metallicFactor = 1;
     @SerializedName(ROUGHNESS_FACTOR)
     private float roughnessFactor = 1f;
+    @SerializedName(BASE_COLOR_TEXTURE)
+    private Texture.TextureInfo baseColorTexture;
 
     public float[] getBaseColorFactor() {
         return baseColorFactor;
@@ -47,6 +50,10 @@ public class PBRMetallicRoughness {
 
     public float getRoughnessFactor() {
         return roughnessFactor;
+    }
+
+    public Texture.TextureInfo getBaseColorTexture() {
+        return baseColorTexture;
     }
 
 }

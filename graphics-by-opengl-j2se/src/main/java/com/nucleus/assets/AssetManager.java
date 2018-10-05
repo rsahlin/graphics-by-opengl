@@ -3,10 +3,15 @@ package com.nucleus.assets;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Hashtable;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.nucleus.SimpleLogger;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
@@ -17,11 +22,16 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderTarget;
 import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
+import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
+import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
+import com.nucleus.scene.gltf.Image;
 import com.nucleus.scene.gltf.Loader;
+import com.nucleus.scene.gltf.Texture;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.texturing.Image.ImageFormat;
+import com.nucleus.texturing.BaseImageFactory;
+import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -55,7 +65,9 @@ public class AssetManager {
 
     private HashMap<String, ShaderProgram> programs = new HashMap<>();
 
-    private ArrayList<GLTF> glTFAssets = new ArrayList<>();
+    private HashMap<String, GLTF> gltfAssets = new HashMap<>();
+
+    private HashMap<String, com.nucleus.texturing.BufferImage> gltfImages = new HashMap<>();
 
     /**
      * Hide the constructor
@@ -329,31 +341,119 @@ public class AssetManager {
     }
 
     /**
-     * Returns the asset with the specified index, or null if not loaded by calling
-     * {@link #loadGLTFAsset(String, String, int)}
-     * 
-     * @param index Index of glTF asset to get
-     * @return The glTF asset at index, or null if not loaded with {@link #loadGLTFAsset(String, String, int)}
-     */
-    public GLTF getGLTFAsset(int index) {
-        return glTFAssets.get(index);
-    }
-
-    /**
-     * Loads and returns one GLTF asset, loads binary data into buffers.
+     * If the Asset already has been loaded it is returned, otherwise AssetManager will load and return the GLTF asset,
+     * loads binary data into buffers, and images.
      * 
      * @param name
-     * @param index Index of the asset
      * @return The loaded GLTF asset
      * @throws IOException If there is an io exception reading the file, or it cannot be found.
      * @throws
      */
-    public GLTF loadGLTFAsset(String fileName, int index) throws IOException, GLTFException {
+    public GLTF getGLTFAsset(String fileName) throws IOException, GLTFException {
+        GLTF gltf = gltfAssets.get(fileName);
+        if (gltf != null) {
+            return gltf;
+        }
         SimpleLogger.d(Loader.class, "Loading glTF asset:" + fileName);
         File f = new File(fileName);
         ClassLoader loader = Loader.class.getClassLoader();
         InputStream is = loader.getResourceAsStream(fileName);
-        return Loader.loadAsset(f.getParent(), is);
+        gltf = loadAsset(f.getParent(), is);
+        gltfAssets.put(fileName, gltf);
+        return gltf;
+    }
+
+    /**
+     * Loads a glTF asset, loading buffers and binary references as needed.
+     * The returned asset is resolved using {@link RuntimeResolver} and is ready to be used.
+     * 
+     * @param gles
+     * @param path
+     * @param is
+     * @return
+     * @throws IOException
+     * @throws GLTFException If there is an error in the glTF or it cannot be resolved
+     */
+    private GLTF loadAsset(String path, InputStream is)
+            throws IOException, GLTFException {
+        try {
+            Reader reader = new InputStreamReader(is, "UTF-8");
+            GsonBuilder builder = new GsonBuilder();
+            Gson gson = builder.create();
+            GLTF glTF = gson.fromJson(reader, GLTF.class);
+            glTF.setPath(path);
+            glTF.resolve();
+            loadBuffers(glTF);
+            loadTextures(glTF);
+            return glTF;
+        } catch (UnsupportedEncodingException e) {
+            SimpleLogger.d(Loader.class, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Loads the gltf buffers with binary data.
+     * TODO - Handle Buffer URIs so that a binary buffer is only loaded once event if it is referenced in several
+     * Nodes/Assets.
+     * 
+     * @param glTF
+     * @throws IOException
+     */
+    protected void loadBuffers(GLTF glTF) throws IOException {
+        Buffer[] buffers = glTF.getBuffers();
+        try {
+            for (Buffer b : buffers) {
+                b.createBuffer();
+                b.load(glTF, b.getUri());
+            }
+        } catch (URISyntaxException e) {
+            throw new IOException(e);
+        }
+    }
+
+    /**
+     * Loads and stores the images needed by the textures in the asset.
+     * 
+     * @param glTF
+     * @throws IOException
+     */
+    protected void loadTextures(GLTF glTF) throws IOException {
+        Texture[] textures = glTF.getTextures();
+        if (textures != null) {
+            for (Texture t : textures) {
+                Image image = t.getImage();
+                if (image != null) {
+                    if (image.getUri() != null) {
+                        image.setTextureImage(getTextureImage(glTF.getPath() + File.separatorChar + image.getUri()));
+                    } else {
+                        throw new IllegalArgumentException("Only support for texture image referenced as URI");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the texture image, if not already loaded the image is loaded and returned.
+     * 
+     * @param uri Full path to Image resource
+     * @return
+     * @throws IOException
+     */
+    protected com.nucleus.texturing.BufferImage getTextureImage(String uri) throws IOException {
+        if (uri != null) {
+            com.nucleus.texturing.BufferImage textureImage = gltfImages.get(uri);
+            if (textureImage != null) {
+                return textureImage;
+            }
+            textureImage = BaseImageFactory.getInstance().createImage(uri, ImageFormat.RGBA);
+            SimpleLogger.d(getClass(), "Loaded gltf texture image " + uri);
+            gltfImages.put(uri, textureImage);
+            return textureImage;
+        } else {
+            throw new IllegalArgumentException("Not implemented");
+        }
     }
 
 }

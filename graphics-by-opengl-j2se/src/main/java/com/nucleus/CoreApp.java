@@ -8,12 +8,13 @@ import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.ObjectInputListener;
 import com.nucleus.mmi.core.InputProcessor;
+import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLESWrapper.Mode;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
@@ -329,7 +330,7 @@ public class CoreApp implements FrameRenderer {
         Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), BaseImageFactory.getInstance(), "texture",
                 new ExternalReference(SPLASH_FILENAME), RESOLUTION.ULTRA_HD, texParam, 1);
         Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer.getGLES());
-        meshBuilder.setElementMode(Mode.TRIANGLES, 4, 0, 6);
+        meshBuilder.setElementMode(GLESWrapper.Mode.TRIANGLES, 4, 0, 6);
         meshBuilder.setTexture(texture);
         Material material = new Material();
         Rectangle rect = texture.calculateRectangle(0);

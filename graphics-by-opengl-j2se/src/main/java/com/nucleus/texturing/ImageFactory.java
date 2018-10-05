@@ -3,7 +3,7 @@ package com.nucleus.texturing;
 import java.io.IOException;
 
 import com.nucleus.resource.ResourceBias.RESOLUTION;
-import com.nucleus.texturing.Image.ImageFormat;
+import com.nucleus.texturing.BufferImage.ImageFormat;
 
 /**
  * Platform abstraction for creating images.
@@ -41,7 +41,7 @@ public interface ImageFactory {
      * @throws IOException If there is an error loading the image.
      * @throws IllegalArgumentException If name or format is null
      */
-    public Image createImage(String name, Image.ImageFormat format) throws IOException;
+    public BufferImage createImage(String name, BufferImage.ImageFormat format) throws IOException;
 
     /**
      * Loads an image and scales by a factor in X and Y. Use this method to scale texture based on resolution bias and
@@ -56,7 +56,7 @@ public interface ImageFactory {
      * @throws IOException If there is an error loading the image.
      * @throws IllegalArgumentException If name or format is null, or scaleX or scaleY is zero or less
      */
-    public Image createImage(String name, float scaleX, float scaleY, Image.ImageFormat format, RESOLUTION resolution)
+    public BufferImage createImage(String name, float scaleX, float scaleY, BufferImage.ImageFormat format, RESOLUTION resolution)
             throws IOException;
 
     /**
@@ -70,7 +70,7 @@ public interface ImageFactory {
      * @return Scaled copy of the source image in the specified format
      * @throws IllegalArgumentException If source or format is null, if width or height <= 0
      */
-    public Image createScaledImage(Image source, int width, int height, ImageFormat format, RESOLUTION resolution);
+    public BufferImage createScaledImage(BufferImage source, int width, int height, ImageFormat format, RESOLUTION resolution);
 
     /**
      * Creates an image with the specified size and format.
@@ -82,6 +82,6 @@ public interface ImageFactory {
      * @return The created and un-initialized (contents is undefined) image.
      * @throws IllegalArgumentException If format is null, if width or height <= 0
      */
-    public Image createImage(int width, int height, ImageFormat format);
+    public BufferImage createImage(int width, int height, ImageFormat format);
 
 }

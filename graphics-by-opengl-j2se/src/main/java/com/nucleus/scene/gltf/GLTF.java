@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /**
  * 
@@ -37,6 +38,33 @@ import com.google.gson.annotations.SerializedName;
  */
 
 public class GLTF {
+
+    private static final String ACCESSORS = "accessors";
+    private static final String ASSET = "asset";
+    private static final String BUFFERS = "buffers";
+    private static final String IMAGES = "images";
+    private static final String MATERIALS = "materials";
+    private static final String SCENES = "scenes";
+    private static final String NODES = "nodes";
+    private static final String MESHES = "meshes";
+    private static final String BUFFER_VIEWS = "bufferViews";
+    private static final String SCENE = "scene";
+    private static final String SAMPLERS = "samplers";
+    private static final String TEXTURES = "textures";
+
+    /**
+     * Conversion from GLTF primitive drawmode to GL values
+     * POINTS(0),
+     * LINES(1),
+     * LINE_LOOP(2),
+     * LINE_STRIP(3),
+     * TRIANGLES(4),
+     * TRIANGLE_STRIP(5),
+     * TRIANGLE_FAN(6);
+     * 
+     */
+    public final static int[] GL_DRAWMODE = new int[] { GLES20.GL_POINTS, GLES20.GL_LINES, GLES20.GL_LINE_LOOP,
+            GLES20.GL_LINE_STRIP, GLES20.GL_TRIANGLES, GLES20.GL_TRIANGLE_STRIP, GLES20.GL_TRIANGLE_FAN };
 
     public static class GLTFException extends Throwable {
         public GLTFException(String reason) {
@@ -88,16 +116,6 @@ public class GLTF {
         return materials;
     }
 
-    private static final String ACCESSORS = "accessors";
-    private static final String ASSET = "asset";
-    private static final String BUFFERS = "buffers";
-    private static final String MATERIALS = "materials";
-    private static final String SCENES = "scenes";
-    private static final String NODES = "nodes";
-    private static final String MESHES = "meshes";
-    private static final String BUFFER_VIEWS = "bufferViews";
-    private static final String SCENE = "scene";
-
     @SerializedName(ACCESSORS)
     private Accessor[] accessors;
     @SerializedName(ASSET)
@@ -106,12 +124,18 @@ public class GLTF {
     private Buffer[] buffers;
     @SerializedName(BUFFER_VIEWS)
     private BufferView[] bufferViews;
+    @SerializedName(IMAGES)
+    private Image[] images;
     @SerializedName(MATERIALS)
     private Material[] materials;
     @SerializedName(MESHES)
     private Mesh[] meshes;
     @SerializedName(NODES)
     private Node[] nodes;
+    @SerializedName(SAMPLERS)
+    private Sampler[] samplers;
+    @SerializedName(TEXTURES)
+    private Texture[] textures;
 
     @SerializedName(SCENE)
     private int scene = -1;
@@ -157,6 +181,33 @@ public class GLTF {
      */
     public Scene[] getScenes() {
         return scenes;
+    }
+
+    /**
+     * Returns the array of defined images, or null if none used
+     * 
+     * @return
+     */
+    public Image[] getImages() {
+        return images;
+    }
+
+    /**
+     * Returns the array of defined samplers, or null if none used
+     * 
+     * @return
+     */
+    public Sampler[] getSamplers() {
+        return samplers;
+    }
+
+    /**
+     * Returns the array of defined textures, or null if none used
+     * 
+     * @return
+     */
+    public Texture[] getTextures() {
+        return textures;
     }
 
     /**
@@ -236,17 +287,6 @@ public class GLTF {
         for (RuntimeResolver rr : resolves) {
             rr.resolve(this);
         }
-        // createRenderableMeshes();
-    }
-
-    private void createRenderableMeshes() {
-        if (meshes != null) {
-            renderableMeshes = new RenderableMesh[meshes.length];
-            for (int index = 0; index < meshes.length; index++) {
-                renderableMeshes[index] = new RenderableMesh(this);
-            }
-        }
-
     }
 
     private List<RuntimeResolver> getResolves() {
@@ -265,6 +305,9 @@ public class GLTF {
         }
         if (meshes != null) {
             result.addAll(Arrays.asList(meshes));
+        }
+        if (textures != null) {
+            result.addAll(Arrays.asList(textures));
         }
         return result;
     }

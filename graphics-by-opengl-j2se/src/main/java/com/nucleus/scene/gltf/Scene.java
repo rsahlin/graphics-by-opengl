@@ -19,15 +19,12 @@ import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
  * extras any Application-specific data. No
  *
  */
-public class Scene implements RuntimeResolver {
+public class Scene extends GLTFNamedValue implements RuntimeResolver {
 
     private static final String NODES = "nodes";
-    private static final String NAME = "name";
 
     @SerializedName(NODES)
     private int[] nodes;
-    @SerializedName(NAME)
-    private String name;
 
     transient Node[] sceneNodes;
 
@@ -36,15 +33,6 @@ public class Scene implements RuntimeResolver {
      */
     public int[] getNodeIndexes() {
         return nodes;
-    }
-
-    /**
-     * Returns the name of this scene or null if not defined.
-     * 
-     * @return
-     */
-    public String getName() {
-        return name;
     }
 
     /**

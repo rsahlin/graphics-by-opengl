@@ -19,6 +19,8 @@ import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
+import com.nucleus.scene.gltf.Mesh;
+import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.RenderableMesh;
 import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderProgram;
@@ -130,18 +132,48 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     @Override
     public void create(RenderableNode<RenderableMesh> parent) throws IOException, GLException {
         if (glTFName != null) {
-            int index = getRootNode().getGLTFIndex(glTFName);
             try {
-                glTF = AssetManager.getInstance().loadGLTFAsset(getRootNode().getGLTFPath() + glTFName, index);
+                glTF = AssetManager.getInstance().getGLTFAsset(getRootNode().getGLTFPath() + glTFName);
                 if (gles != null && com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
                     BufferObjectsFactory.getInstance().createVBOs(gles, glTF.getBuffers());
                 }
                 setPass(Pass.ALL);
                 setState(State.ON);
+                createPrograms(glTF);
+
             } catch (IOException | GLTFException e) {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    /**
+     * Creates, loads and compiles the needed programs for the primitives
+     * 
+     * @param glTF
+     */
+    protected void createPrograms(GLTF glTF) {
+        if (glTF.getMeshes() != null) {
+            for (Mesh m : glTF.getMeshes()) {
+                for (Primitive p : m.getPrimitives()) {
+                    GLTFShaderProgram program = createProgram(p);
+                    p.setProgram((GLTFShaderProgram) AssetManager.getInstance().getProgram(gles, program));
+                }
+            }
+        }
+    }
+
+    /**
+     * Creates an instance, not compiled or linked, of the shader program needed to render this primitive.
+     * 
+     * @param primitive
+     * @return
+     */
+    public GLTFShaderProgram createProgram(Primitive primitive) {
+        if (primitive.getMaterial().getPbrMetallicRoughness().getBaseColorTexture() != null) {
+            return new GLTFShaderProgram(null, Shading.textured, "gltf", ProgramType.VERTEX_FRAGMENT);
+        }
+        return new GLTFShaderProgram(null, Shading.flat, "gltf", ProgramType.VERTEX_FRAGMENT);
     }
 
     @Override
@@ -158,10 +190,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
 
     @Override
     public ShaderProgram createProgram() {
-        GLTFShaderProgram p = new GLTFShaderProgram(glTF.getMeshes(), null, Shading.flat, "gltf",
-                ProgramType.VERTEX_FRAGMENT);
-        ShaderProgram program = AssetManager.getInstance().getProgram(gles, p);
-        return program;
+        return null;
     }
 
 }

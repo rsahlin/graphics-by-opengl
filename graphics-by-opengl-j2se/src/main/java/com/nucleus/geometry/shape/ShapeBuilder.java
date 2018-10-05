@@ -3,7 +3,8 @@ package com.nucleus.geometry.shape;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLESWrapper.Mode;
 import com.nucleus.texturing.Texture2D;
 
 /**
@@ -62,6 +63,6 @@ public abstract class ShapeBuilder {
      * @param indices
      * @param mode
      */
-    public abstract void build(AttributeBuffer attributes, Texture2D texture, ElementBuffer indices, Mode mode);
+    public abstract void build(AttributeBuffer attributes, Texture2D texture, ElementBuffer indices, GLESWrapper.Mode mode);
  
 }

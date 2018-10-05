@@ -2,7 +2,8 @@ package com.nucleus.geometry.shape;
 
 import java.nio.ShortBuffer;
 
-import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLESWrapper.Mode;
 
 /**
  * Utility to create different type of element (index) buffers.
@@ -20,7 +21,7 @@ public abstract class ElementBuilder extends ShapeBuilder {
      * @param count Number of shapes, this could differ from number of vertices
      * @param startVertex First vertex index
      */
-    public abstract void buildElements(ShortBuffer buffer, Mode mode, int count, int startVertex);
+    public abstract void buildElements(ShortBuffer buffer, GLESWrapper.Mode mode, int count, int startVertex);
 
     /**
      * Builds an element buffer for quads, ie 4 separate vertices are used to create one quad (2 triangles)

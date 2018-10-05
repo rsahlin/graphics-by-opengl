@@ -29,7 +29,7 @@ import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
  *
  * This class can be serialized using gson
  */
-public class BufferView implements RuntimeResolver {
+public class BufferView extends GLTFNamedValue implements RuntimeResolver {
 
     public enum Target {
         ARRAY_BUFFER(34962),
@@ -82,8 +82,6 @@ public class BufferView implements RuntimeResolver {
      */
     @SerializedName(TARGET)
     private int targetValue = -1;
-    @SerializedName(NAME)
-    private String name;
 
     transient private Target target;
     transient private Buffer buffer;
@@ -122,10 +120,6 @@ public class BufferView implements RuntimeResolver {
 
     public Target getTarget() {
         return target;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public Buffer getBuffer() {
@@ -177,7 +171,7 @@ public class BufferView implements RuntimeResolver {
     @Override
     public String toString() {
         return "Bufferindex: " + bufferIndex + ", byteoffset: " + byteOffset + ", byteLength: " + byteLength
-                + ", byteStride: " + byteStride + ", name: " + name;
+                + ", byteStride: " + byteStride + ", name: " + getName();
     }
 
 }

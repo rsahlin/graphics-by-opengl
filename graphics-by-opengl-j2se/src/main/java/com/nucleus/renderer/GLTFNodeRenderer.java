@@ -5,7 +5,6 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.scene.GLTFNode;
-import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.BufferView;
@@ -13,25 +12,19 @@ import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Node;
 import com.nucleus.scene.gltf.Primitive;
-import com.nucleus.scene.gltf.RenderableMesh;
 import com.nucleus.scene.gltf.Scene;
 import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderProgram;
 
 public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
 
+    private Pass currentPass;
+
     @Override
     public boolean renderNode(NucleusRenderer renderer, GLTFNode node, Pass currentPass, float[][] matrices)
             throws GLException {
+        this.currentPass = currentPass;
         GLES20Wrapper gles = renderer.getGLES();
-        ShaderProgram program = getProgram(gles, node, currentPass);
-        gles.glUseProgram(program.getProgram());
-        GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
-        // TODO - is this the best place for this check - remember, this should only be done in debug cases.
-        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
-            program.validateProgram(gles);
-        }
-        program.updateUniforms(gles, matrices);
         GLTF glTF = node.getGLTF();
         int sceneIndex = glTF.getScene();
         if (sceneIndex == -1) {
@@ -39,12 +32,8 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         }
         Scene scene = glTF.getScene(sceneIndex);
         // Traverse the nodes and render each.
-        renderNodes(gles, glTF, (GLTFShaderProgram) program, scene.getNodes(), matrices);
+        renderNodes(gles, glTF, scene.getNodes(), matrices);
         return true;
-    }
-
-    protected void updateUniforms() {
-
     }
 
     /**
@@ -53,23 +42,31 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * 
      * @param gles
      * @param glTF
-     * @param program
      * @param node
      * @param matrices
      */
-    protected void renderNode(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Node node, float[][] matrices)
+    protected void renderNode(GLES20Wrapper gles, GLTF glTF, Node node, float[][] matrices)
             throws GLException {
         // Render this node.
-        renderMesh(gles, glTF, program, node.getMesh());
+        renderMesh(gles, glTF, node.getMesh(), matrices);
         // Render children.
-        renderNodes(gles, glTF, program, node.getChildren(), matrices);
+        renderNodes(gles, glTF, node.getChildren(), matrices);
     }
 
-    protected void renderMesh(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Mesh mesh) throws GLException {
+    protected void renderMesh(GLES20Wrapper gles, GLTF glTF, Mesh mesh, float[][] matrices) throws GLException {
         if (mesh != null) {
             Primitive[] primitives = mesh.getPrimitives();
             if (primitives != null) {
                 for (Primitive p : primitives) {
+                    GLTFShaderProgram program = (GLTFShaderProgram) getProgram(gles, p, currentPass);
+                    gles.glUseProgram(program.getProgram());
+                    GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
+                    // TODO - is this the best place for this check - remember, this should only be done in debug cases.
+                    if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
+                        program.validateProgram(gles);
+                    }
+                    program.updateUniforms(gles, matrices);
+
                     renderPrimitive(gles, glTF, program, p);
                 }
             }
@@ -87,10 +84,10 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             gles.glVertexAttribPointer(glTF, program, primitive);
             if (buffer.getBufferName() > 0) {
                 gles.glBindBuffer(indicesView.getTarget().value, buffer.getBufferName());
-                gles.glDrawElements(primitive.getMode().value, indices.getCount(), indices.getComponentType().value,
+                gles.glDrawElements(primitive.glMode, indices.getCount(), indices.getComponentType().value,
                         indices.getByteOffset() + indicesView.getByteOffset());
             } else {
-                gles.glDrawElements(primitive.getMode().value, indices.getCount(), indices.getComponentType().value,
+                gles.glDrawElements(primitive.glMode, indices.getCount(), indices.getComponentType().value,
                         indicesView.getBuffer().getBuffer()
                                 .position(indices.getByteOffset() + indicesView.getByteOffset()));
             }
@@ -108,25 +105,26 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param children
      * @param matrices
      */
-    protected void renderNodes(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Node[] children,
+    protected void renderNodes(GLES20Wrapper gles, GLTF glTF, Node[] children,
             float[][] matrices) throws GLException {
         if (children != null && children.length > 0) {
             for (Node n : children) {
-                renderNode(gles, glTF, program, n, matrices);
+                renderNode(gles, glTF, n, matrices);
             }
         }
     }
 
     /**
      * 
-     * @param node The node being rendered
+     * @param gles
+     * @param primitive
      * @param pass The currently defined pass
      * @return
      */
-    protected ShaderProgram getProgram(GLES20Wrapper gles, RenderableNode<RenderableMesh> node, Pass pass) {
-        ShaderProgram program = node.getProgram();
+    protected ShaderProgram getProgram(GLES20Wrapper gles, Primitive primitive, Pass pass) {
+        ShaderProgram program = primitive.getProgram();
         if (program == null) {
-            throw new IllegalArgumentException("No program for node " + node.getId());
+            throw new IllegalArgumentException("No program for primitive ");
         }
         return program.getProgram(gles, pass, program.getShading());
     }

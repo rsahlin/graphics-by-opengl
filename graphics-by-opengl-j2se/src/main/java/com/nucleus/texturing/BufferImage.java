@@ -1,6 +1,5 @@
 package com.nucleus.texturing;
 
-import java.awt.image.BufferedImage;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -16,7 +15,7 @@ import com.nucleus.resource.ResourceBias.RESOLUTION;
  * @author Richard Sahlin
  *
  */
-public class Image extends BufferObject {
+public class BufferImage extends BufferObject {
 
     /**
      *
@@ -24,54 +23,54 @@ public class Image extends BufferObject {
      */
     public enum ImageFormat {
 
-        /**
-         * From awt BufferedImage
-         */
-        ABGR4(06, 4),
-        /**
-         * Image type RGBA 4 bits per pixel and component, ie 16 bit format.
-         */
-        RGBA4(0x8056, 2),
-        /**
-         * Image type RGB 555 + 1 bit alpha, 16 bit format.
-         */
-        RGB5_A1(0x8057, 2),
-        /**
-         * Image type RGB 565, 16 bit format.
-         */
-        RGB565(0x8D62, 2),
-        /**
-         * Image type RGB 888, 8 bits per component, 24 bit format.
-         */
-        RGB(0x1907, 3),
-        /**
-         * Image type RGBA 8888, 8 bits per component, 32 bit format.
-         */
-        RGBA(0x1908, 4),
-        /**
-         * 8 Bits luminance, 8 bits alpha, 16 bit format.
-         */
-        LUMINANCE_ALPHA(0x1909, 2),
-        /**
-         * 8 Bit luminance, 8 bit format
-         */
-        LUMINANCE(0x190A, 1),
-        /**
-         * 8 bit alpha format
-         */
-        ALPHA(0x1906, 1),
-        /**
-         * Depth texture 16
-         */
-        DEPTH_16(0x1403, 2),
-        /**
-         * Depth texture 24 bits
-         */
-        DEPTH_24(0x1405, 3),
-        /**
-         * Float depth texture
-         */
-        DEPTH_32F(0x1406, 4);
+    /**
+     * From java.awt.image.BufferedImage
+     */
+    ABGR4(06, 4),
+    /**
+     * Image type RGBA 4 bits per pixel and component, ie 16 bit format.
+     */
+    RGBA4(0x8056, 2),
+    /**
+     * Image type RGB 555 + 1 bit alpha, 16 bit format.
+     */
+    RGB5_A1(0x8057, 2),
+    /**
+     * Image type RGB 565, 16 bit format.
+     */
+    RGB565(0x8D62, 2),
+    /**
+     * Image type RGB 888, 8 bits per component, 24 bit format.
+     */
+    RGB(0x1907, 3),
+    /**
+     * Image type RGBA 8888, 8 bits per component, 32 bit format.
+     */
+    RGBA(0x1908, 4),
+    /**
+     * 8 Bits luminance, 8 bits alpha, 16 bit format.
+     */
+    LUMINANCE_ALPHA(0x1909, 2),
+    /**
+     * 8 Bit luminance, 8 bit format
+     */
+    LUMINANCE(0x190A, 1),
+    /**
+     * 8 bit alpha format
+     */
+    ALPHA(0x1906, 1),
+    /**
+     * Depth texture 16
+     */
+    DEPTH_16(0x1403, 2),
+    /**
+     * Depth texture 24 bits
+     */
+    DEPTH_24(0x1405, 3),
+    /**
+     * Float depth texture
+     */
+    DEPTH_32F(0x1406, 4);
 
         public final int type;
         /**
@@ -87,7 +86,7 @@ public class Image extends BufferObject {
         /**
          * Returns the enum for the specified int value, if found
          * 
-         * @param type {@link BufferedImage} image type
+         * @param type image type
          * @return The image format enum, or null if not found.
          */
         public static ImageFormat getImageFormat(int type) {
@@ -119,7 +118,7 @@ public class Image extends BufferObject {
      * @param format
      * @throws NullPointerException If format is null
      */
-    public Image(int width, int height, ImageFormat format, RESOLUTION resolution) {
+    public BufferImage(int width, int height, ImageFormat format, RESOLUTION resolution) {
         super(width * height * format.size);
         create(width, height, format, resolution);
     }
@@ -133,7 +132,7 @@ public class Image extends BufferObject {
      * @param format
      * @throws NullPointerException If format is null
      */
-    public Image(int width, int height, ImageFormat format) {
+    public BufferImage(int width, int height, ImageFormat format) {
         super(width * height * format.size);
         create(width, height, format, null);
     }
@@ -210,8 +209,8 @@ public class Image extends BufferObject {
      * 
      * @param images
      */
-    public static void destroyImages(Image[] images) {
-        for (Image image : images) {
+    public static void destroyImages(BufferImage[] images) {
+        for (BufferImage image : images) {
             image.destroy();
         }
     }

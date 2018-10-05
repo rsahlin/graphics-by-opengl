@@ -25,18 +25,15 @@ import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
  * 
  *
  */
-public class Mesh implements AttributeUpdater, RuntimeResolver {
+public class Mesh extends GLTFNamedValue implements AttributeUpdater, RuntimeResolver {
 
     private static final String PRIMITIVES = "primitives";
     private static final String WEIGHTS = "weights";
-    private static final String NAME = "name";
 
     @SerializedName(PRIMITIVES)
     private Primitive[] primitives;
     @SerializedName(WEIGHTS)
     private int[] weights;
-    @SerializedName(NAME)
-    private String name;
 
     public Primitive[] getPrimitives() {
         return primitives;
@@ -44,10 +41,6 @@ public class Mesh implements AttributeUpdater, RuntimeResolver {
 
     public int[] getWeights() {
         return weights;
-    }
-
-    public String getName() {
-        return name;
     }
 
     @Override

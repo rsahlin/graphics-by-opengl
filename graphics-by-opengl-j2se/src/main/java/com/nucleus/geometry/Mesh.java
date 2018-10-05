@@ -10,6 +10,7 @@ import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.BufferObjectsFactory;
@@ -33,43 +34,6 @@ import com.nucleus.texturing.TiledTexture2D;
  *
  */
 public class Mesh extends BaseReference implements AttributeUpdater {
-
-    public enum Mode {
-        /**
-         * From GL_POINTS
-         */
-        POINTS(GLES20.GL_POINTS),
-        /**
-         * From GL_LINE_STRIP
-         */
-        LINE_STRIP(GLES20.GL_LINE_STRIP),
-        /**
-         * From GL_LINE_LOOP
-         */
-        LINE_LOOP(GLES20.GL_LINE_LOOP),
-        /**
-         * From GL_TRIANGLE_STRIP
-         */
-        TRIANGLE_STRIP(GLES20.GL_TRIANGLE_STRIP),
-        /**
-         * From GL_TRIANGLE_FAN
-         */
-        TRIANGLE_FAN(GLES20.GL_TRIANGLE_FAN),
-        /**
-         * From GL_TRIANGLES
-         */
-        TRIANGLES(GLES20.GL_TRIANGLES),
-        /**
-         * From GL_LINES
-         */
-        LINES(GLES20.GL_LINES);
-
-        public final int mode;
-
-        private Mode(int mode) {
-            this.mode = mode;
-        }
-    }
 
     private final static String NULL_NAMES = "Buffer names is null";
     private final static String NOT_ENOUGH_NAMES = "Not enough buffer names";
@@ -96,7 +60,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          */
         protected int objectCount = 1;
         protected ElementBuffer.Type indiceBufferType = Type.SHORT;
-        protected Mode mode;
+        protected GLESWrapper.Mode mode;
         protected ShapeBuilder shapeBuilder;
 
         /**
@@ -130,7 +94,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * @param mode
          * @return;
          */
-        public Builder<T> setMode(Mode mode) {
+        public Builder<T> setMode(GLESWrapper.Mode mode) {
             this.mode = mode;
             return this;
         }
@@ -226,7 +190,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * number of attributes will be added to the attributes allocated for the mesh (for each vertex)
          * @return
          */
-        public Builder<T> setArrayMode(Mode mode, int vertexCount, int vertexStride) {
+        public Builder<T> setArrayMode(GLESWrapper.Mode mode, int vertexCount, int vertexStride) {
             this.vertexCount = vertexCount;
             this.mode = mode;
             this.vertexStride = vertexStride;
@@ -243,7 +207,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * number of attributes will be added to the attributes allocated for the mesh (for each vertex)
          * @param indiceCount
          */
-        public Builder<T> setElementMode(Mode mode, int vertexCount, int vertexStride, int indiceCount) {
+        public Builder<T> setElementMode(GLESWrapper.Mode mode, int vertexCount, int vertexStride, int indiceCount) {
             this.indiceCount = indiceCount;
             this.vertexCount = vertexCount;
             this.mode = mode;
@@ -322,7 +286,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * @return
      */
     public static Builder<Mesh> createBuilder(GLES20Wrapper gles, int maxVerticeCount, Material material,
-            ShaderProgram program, Texture2D texture, ShapeBuilder shapeBuilder, Mesh.Mode mode) {
+            ShaderProgram program, Texture2D texture, ShapeBuilder shapeBuilder, GLESWrapper.Mode mode) {
         Mesh.Builder<Mesh> builder = new Mesh.Builder<>(gles);
         builder.setTexture(texture);
         builder.setMaterial(material);
@@ -376,7 +340,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     /**
      * Drawmode, if indices is null then glDrawArrays shall be used with this mode
      */
-    transient protected Mode mode;
+    transient protected GLESWrapper.Mode mode;
     /**
      * TODO - material should not be specified both in Node and in Mesh, this instance is copied here from Builder which
      * normally takes it from the Node.
@@ -404,7 +368,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
     public void createMesh(Texture2D texture, int[] attributeSizes, InterfaceBlock[] interfaceBlocks, Material material,
             int vertexCount,
-            int indiceCount, Mode mode) {
+            int indiceCount, GLESWrapper.Mode mode) {
         if (texture == null || material == null || mode == null || attributeSizes == null) {
             throw new IllegalArgumentException(
                     "Null parameter: " + texture + ", " + material + ", " + mode + ", " + attributeSizes);
@@ -589,7 +553,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * @param mode GL drawmode, one of GL_POINTS, GL_LINE_STRIP, GL_LINE_LOOP, GL_LINES, GL_TRIANGLE_STRIP,
      * GL_TRIANGLE_FAN, and GL_TRIANGLES
      */
-    public void setMode(Mode mode) {
+    public void setMode(GLESWrapper.Mode mode) {
         this.mode = mode;
     }
 
@@ -598,7 +562,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * 
      * @return The GL drawmode for drawing this mesh
      */
-    public Mode getMode() {
+    public GLESWrapper.Mode getMode() {
         return mode;
     }
 

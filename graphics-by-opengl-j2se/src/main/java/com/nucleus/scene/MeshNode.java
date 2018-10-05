@@ -7,13 +7,14 @@ import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilderFactory;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLESWrapper.Mode;
 import com.nucleus.renderer.MeshRenderer;
 import com.nucleus.renderer.NucleusMeshRenderer;
 import com.nucleus.texturing.BaseImageFactory;
@@ -66,7 +67,7 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
         if (shapeBuilder == null) {
             LayerNode layer = getRootNode().getLayerNode(null);
             ViewFrustum view = layer.getViewFrustum();
-            builder.setArrayMode(Mode.TRIANGLE_FAN, 4, 0);
+            builder.setArrayMode(GLESWrapper.Mode.TRIANGLE_FAN, 4, 0);
             if (shape == null) {
                 shapeBuilder = new RectangleShapeBuilder(
                         new RectangleConfiguration(view.getWidth(), view.getHeight(), 0f, 1, 0));

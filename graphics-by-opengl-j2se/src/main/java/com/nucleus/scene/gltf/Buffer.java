@@ -31,7 +31,7 @@ import com.nucleus.SimpleLogger;
  * This class can be serialized using gson
  */
 
-public class Buffer {
+public class Buffer extends GLTFNamedValue {
 
     /**
      * Max number of dataelements to print from buffer in toString()
@@ -40,14 +40,11 @@ public class Buffer {
 
     private static final String URI = "uri";
     private static final String BYTE_LENGTH = "byteLength";
-    private static final String NAME = "name";
 
     @SerializedName(URI)
     private String uri;
     @SerializedName(BYTE_LENGTH)
     private int byteLength;
-    @SerializedName(NAME)
-    private String name;
 
     transient ByteBuffer buffer;
     transient int bufferName;
@@ -78,14 +75,6 @@ public class Buffer {
      */
     public ByteBuffer getBuffer() {
         return buffer;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     /**
@@ -169,7 +158,7 @@ public class Buffer {
     }
 
     public String toString(int position, int length) {
-        String str = "URI: " + uri + ", name: " + name + ", byteLength: " + byteLength;
+        String str = "URI: " + uri + ", name: " + getName() + ", byteLength: " + byteLength;
         str += "\n" + getContentAsString(position, length, buffer);
         return str;
     }

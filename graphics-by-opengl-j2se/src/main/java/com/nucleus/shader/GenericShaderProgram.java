@@ -15,7 +15,8 @@ public class GenericShaderProgram extends ShaderProgram {
     /**
      * Creates a shader program that will load shaders from default location
      * 
-     * @param source Source names for shaders, must match number of shader types in Shader. Eg if
+     * @param source Source names for shaders, must match number of shader types in Shader.
+     * @param pass
      * @param shading
      * @param category
      * @param shaders

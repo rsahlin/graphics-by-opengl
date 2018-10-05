@@ -26,12 +26,19 @@ import com.google.gson.annotations.SerializedName;
  * 
  * This class can be serialized using gson
  */
-public class Material {
+public class Material extends GLTFNamedValue {
 
     public final static AlphaMode DEFAULT_ALPHA_MODE = AlphaMode.OPAQUE;
     public final static float DEFAULT_ALPHA_CUTOFF = 0.5f;
     public final static boolean DEFAULT_DOUBLE_SIDED = false;
     public final static float[] DEFAULT_EMISSIVE_FACTOR = new float[] { 0, 0, 0 };
+
+    private static final String NAME = "name";
+    private static final String PBR_METALLIC_ROUGHNESS = "pbrMetallicRoughness";
+    private static final String EMISSIVE_FACTOR = "emissiveFactor";
+    private static final String ALPHA_MODE = "alphaMode";
+    private static final String ALPHA_CUTOFF = "alphaCutoff";
+    private static final String DOUBLE_SIDED = "doubleSided";
 
     public enum AlphaMode {
         OPAQUE(),
@@ -39,21 +46,16 @@ public class Material {
         BLEND();
     }
 
-    private static final String NAME = "name";
-    private static final String PBR_METALLIC_ROUGHNESS = "pbrMetallicRoughness";
-
-    @SerializedName(NAME)
-    private String name;
     @SerializedName(PBR_METALLIC_ROUGHNESS)
     private PBRMetallicRoughness pbrMetallicRoughness;
+    @SerializedName(EMISSIVE_FACTOR)
     private float[] emissiveFactor = DEFAULT_EMISSIVE_FACTOR;
+    @SerializedName(ALPHA_MODE)
     private AlphaMode alphaMode = DEFAULT_ALPHA_MODE;
+    @SerializedName(ALPHA_CUTOFF)
     private float alphaCutoff = DEFAULT_ALPHA_CUTOFF;
+    @SerializedName(DOUBLE_SIDED)
     private boolean doubleSided = DEFAULT_DOUBLE_SIDED;
-
-    public String getName() {
-        return name;
-    }
 
     public PBRMetallicRoughness getPbrMetallicRoughness() {
         return pbrMetallicRoughness;

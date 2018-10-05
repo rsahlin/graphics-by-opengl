@@ -1,6 +1,6 @@
 #version 300 es
 /* 
- * Vertex shader for glTF asset
+ * Vertex shader for untextured glTF asset
  */
  precision highp float;
  

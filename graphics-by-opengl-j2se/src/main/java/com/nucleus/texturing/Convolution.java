@@ -178,8 +178,8 @@ public class Convolution {
      * @param image
      * @param return The processed image.
      */
-    public Image process(Image image) {
-        Image result = new Image(image.getWidth(), image.getHeight(), image.getFormat());
+    public BufferImage process(BufferImage image) {
+        BufferImage result = new BufferImage(image.getWidth(), image.getHeight(), image.getFormat());
         process(image, result);
         return result;
     }
@@ -190,7 +190,7 @@ public class Convolution {
      * @param source
      * @param destination
      */
-    public void process(Image source, Image destination) {
+    public void process(BufferImage source, BufferImage destination) {
         byte[] pixels = new byte[source.getSizeInBytes()];
         byte[] destPixels = new byte[destination.getSizeInBytes()];
         source.getBuffer().rewind();
@@ -201,7 +201,7 @@ public class Convolution {
         ((ByteBuffer) destination.getBuffer()).put(destPixels);
     }
 
-    private void process(Kernel kernel, Image source, Image destination, byte[] pixels, byte[] destPixels) {
+    private void process(Kernel kernel, BufferImage source, BufferImage destination, byte[] pixels, byte[] destPixels) {
         int width = destination.getWidth();
         int height = destination.getHeight();
         int sourceWidth = source.getWidth();

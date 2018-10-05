@@ -11,10 +11,10 @@ import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.renderer.MeshRenderer;
 import com.nucleus.renderer.NucleusMeshRenderer;
 import com.nucleus.renderer.NucleusRenderer;
@@ -72,17 +72,17 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
         Mesh.Builder<Mesh> builder = new Mesh.Builder<>(gles);
         switch (getLineMode()) {
             case LINES:
-                builder.setArrayMode(Mode.LINES, count * 2, 0);
+                builder.setArrayMode(GLESWrapper.Mode.LINES, count * 2, 0);
                 break;
             case LINE_STRIP:
-                builder.setArrayMode(Mode.LINE_STRIP, count * 2, 0);
+                builder.setArrayMode(GLESWrapper.Mode.LINE_STRIP, count * 2, 0);
                 break;
             case POINTS:
-                builder.setArrayMode(Mode.POINTS, count, 0);
+                builder.setArrayMode(GLESWrapper.Mode.POINTS, count, 0);
                 break;
             case RECTANGLE:
                 // Rectangle shares vertices, 4 vertices per rectangle
-                builder.setElementMode(Mode.LINES, count, 0, count * 2);
+                builder.setElementMode(GLESWrapper.Mode.LINES, count, 0, count * 2);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for mode " + getLineMode());

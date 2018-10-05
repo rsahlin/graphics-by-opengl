@@ -6,10 +6,10 @@ import java.nio.ByteBuffer;
 import com.nucleus.ErrorMessage;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.texturing.Convolution.Kernel;
-import com.nucleus.texturing.Image.ImageFormat;
+import com.nucleus.texturing.BufferImage.ImageFormat;
 
 /**
- * Implementation of platform agnostic image methods using the Nucleus {@link Image} class;
+ * Implementation of platform agnostic image methods using the Nucleus {@link BufferImage} class;
  * Some platforms will provide native functions for these methods.
  * 
  * @author Richard Sahlin
@@ -46,7 +46,7 @@ public abstract class BaseImageFactory implements ImageFactory {
     
     
     @Override
-    public Image createScaledImage(Image source, int width, int height, ImageFormat format, RESOLUTION resolution) {
+    public BufferImage createScaledImage(BufferImage source, int width, int height, ImageFormat format, RESOLUTION resolution) {
         if (format == null) {
             throw new IllegalArgumentException(NULL_PARAMETER);
         }
@@ -128,7 +128,7 @@ public abstract class BaseImageFactory implements ImageFactory {
         }
 
         c.normalize(false);
-        Image destination = new Image(width, height, source.getFormat(), resolution);
+        BufferImage destination = new BufferImage(width, height, source.getFormat(), resolution);
         c.process(source, destination);
         // if (scale >= 2) {
         // return sharpen(destination);
@@ -137,7 +137,7 @@ public abstract class BaseImageFactory implements ImageFactory {
     }
 
     @Override
-    public Image createImage(String name, float scaleX, float scaleY, ImageFormat format, RESOLUTION resolution)
+    public BufferImage createImage(String name, float scaleX, float scaleY, ImageFormat format, RESOLUTION resolution)
             throws IOException {
         if (name == null || format == null) {
             throw new IllegalArgumentException(NULL_PARAMETER);
@@ -145,12 +145,12 @@ public abstract class BaseImageFactory implements ImageFactory {
         if (scaleX <= 0 || scaleY <= 0) {
             throw new IllegalArgumentException(INVALID_SCALE);
         }
-        Image image = createImage(name, format);
+        BufferImage image = createImage(name, format);
         return createScaledImage(image, (int) (image.width * scaleX), (int) (image.height * scaleY), format,
                 resolution);
     }
 
-    private Image sharpen(Image source) {
+    private BufferImage sharpen(BufferImage source) {
         Convolution c = new Convolution(Kernel.SIZE_3X3);
         c.set(new float[] { 0.1f, -0.2f, 0.1f, -0.2f, 1.8f, -0.2f, 0.1f, -0.2f, 0.1f }, 0, 0, Kernel.SIZE_3X3.size);
         c.normalize(false);
@@ -158,11 +158,11 @@ public abstract class BaseImageFactory implements ImageFactory {
     }
 
     @Override
-    public Image createImage(int width, int height, ImageFormat format) {
+    public BufferImage createImage(int width, int height, ImageFormat format) {
         if (width <= 0 || height <= 0 || format == null) {
             throw new IllegalArgumentException(ILLEGAL_PARAMETER + width + ", " + height + " : " + format);
         }
-        return new Image(width, height, format);
+        return new BufferImage(width, height, format);
     }
 
     /**
@@ -173,7 +173,7 @@ public abstract class BaseImageFactory implements ImageFactory {
      * @param sourceFormat The source type
      * @param destination
      */
-    protected void copyPixels(byte[] source, ImageFormat sourceFormat, Image destination) {
+    protected void copyPixels(byte[] source, ImageFormat sourceFormat, BufferImage destination) {
 
         ByteBuffer buffer = (ByteBuffer) destination.getBuffer().rewind();
         switch (sourceFormat) {
