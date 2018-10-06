@@ -233,12 +233,7 @@ public class Texture2D extends BaseReference {
         super(id);
         textureType = TextureType.valueOf(getClass().getSimpleName());
         setExternalReference(externalReference);
-        this.resolution = resolution;
-        texParameters = new TextureParameter(params);
-        this.texParameters.setValues(params);
-        this.levels = levels;
-        this.format = format;
-        this.type = type;
+        setup(resolution, params, levels, format, type);
     }
 
     /**
@@ -253,7 +248,7 @@ public class Texture2D extends BaseReference {
      */
     protected void setup(RESOLUTION resolution, TextureParameter params, int levels, Format format, Type type) {
         this.resolution = resolution;
-        this.texParameters = params;
+        texParameters = new TextureParameter(params);
         this.levels = levels;
         this.format = format;
         this.type = type;
@@ -278,7 +273,7 @@ public class Texture2D extends BaseReference {
      * 
      * @param name
      */
-    protected void setup(int name) {
+    public void setTextureName(int name) {
         this.name = name;
     }
 

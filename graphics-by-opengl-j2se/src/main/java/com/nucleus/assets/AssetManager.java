@@ -1,6 +1,7 @@
 package com.nucleus.assets;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,14 +10,17 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nucleus.SimpleLogger;
 import com.nucleus.io.ExternalReference;
+import com.nucleus.io.gson.TextureDeserializer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderTarget;
@@ -31,13 +35,17 @@ import com.nucleus.scene.gltf.Loader;
 import com.nucleus.scene.gltf.Texture;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.BaseImageFactory;
+import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.Texture2D.Format;
+import com.nucleus.texturing.Texture2D.Type;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureParameter.Parameter;
 import com.nucleus.texturing.TextureType;
+import com.nucleus.texturing.TextureUtils;
 
 /**
  * Loading and unloading assets, mainly textures - this is the main entrypoint for loading of textures and programs.
@@ -68,6 +76,10 @@ public class AssetManager {
     private HashMap<String, GLTF> gltfAssets = new HashMap<>();
 
     private HashMap<String, com.nucleus.texturing.BufferImage> gltfImages = new HashMap<>();
+    /**
+     * Keep track of loaded texture objects by id
+     */
+    private static final Map<String, Texture2D> loadedTextures = new HashMap<>();
 
     /**
      * Hide the constructor
@@ -122,8 +134,31 @@ public class AssetManager {
         if (idRef != null) {
             return getTexture(idRef);
         } else {
-            return getTexture(gles, imageFactory, TextureFactory.createTexture(ref));
+            return getTexture(gles, imageFactory, createTexture(ref));
         }
+    }
+
+    /**
+     * Returns the texture, if the texture has not been loaded it will be and stored in the assetmanager
+     * Format will be RGBA and type UNSIGNED_BYTE
+     * The texture will be uploaded to GL using the specified texture object name, if several mip-map levels are
+     * supplied they will be used.
+     * If the device current resolution is lower than the texture target resolution then a lower mip-map level is used.
+     * 
+     * @param gles
+     * @param imageFactory
+     * @param id The id of the texture
+     * @param externalReference
+     * @param resolution
+     * @param parameter
+     * @param mipmap
+     * @return A new texture object containing the texture image.
+     */
+    public Texture2D getTexture(GLES20Wrapper gles, ImageFactory imageFactory, String id,
+            ExternalReference externalReference, RESOLUTION resolution, TextureParameter parameter, int mipmap) {
+        Texture2D source = TextureFactory.getInstance().createTexture(TextureType.Texture2D, id, externalReference,
+                resolution, parameter, mipmap, Format.RGBA, Type.UNSIGNED_BYTE);
+        return createTexture(gles, imageFactory, source);
     }
 
     /**
@@ -145,7 +180,7 @@ public class AssetManager {
             if (reference.getFormat() != null || reference.getType() != null) {
                 throw new IllegalArgumentException("Dynamic texture must not define format/type");
             }
-            TextureFactory.copyTextureInstance(source, reference);
+            TextureFactory.getInstance().copyTextureInstance(source, reference);
         } else {
             throw new IllegalArgumentException("Called getIdReference with null reference, for texture " + reference);
         }
@@ -176,8 +211,8 @@ public class AssetManager {
                     new Parameter[] { Parameter.NEAREST, Parameter.NEAREST, Parameter.CLAMP,
                             Parameter.CLAMP });
             ImageFormat format = attachement.getFormat();
-            texture = TextureFactory.createTexture(renderer.getGLES(), type, resolution, size, format, texParams,
-                    GLES20.GL_TEXTURE_2D);
+            texture = createTexture(renderer.getGLES(), type, renderTarget.getId(), resolution, size, format,
+                    texParams, GLES20.GL_TEXTURE_2D);
             texture.setId(renderTarget.getAttachementId(attachement));
             textures.put(renderTarget.getAttachementId(attachement), texture);
         }
@@ -220,7 +255,7 @@ public class AssetManager {
             if (texture == null) {
                 long start = System.currentTimeMillis();
                 // Texture not loaded
-                texture = TextureFactory.createTexture(gles, imageFactory, source);
+                texture = createTexture(gles, imageFactory, source);
                 textures.put(refSource, texture);
                 setExternalReference(texture.getId(), ref);
                 FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_TEXTURE, " " + texture.getName(), start,
@@ -394,7 +429,7 @@ public class AssetManager {
 
     /**
      * Loads the gltf buffers with binary data.
-     * TODO - Handle Buffer URIs so that a binary buffer is only loaded once event if it is referenced in several
+     * TODO - Handle Buffer URIs so that a binary buffer is only loaded once even if it is referenced in several
      * Nodes/Assets.
      * 
      * @param glTF
@@ -425,7 +460,8 @@ public class AssetManager {
                 Image image = t.getImage();
                 if (image != null) {
                     if (image.getUri() != null) {
-                        image.setTextureImage(getTextureImage(glTF.getPath() + File.separatorChar + image.getUri()));
+                        // Texture2D texture = TextureFactory.createTexture(gles, image, source)
+                        // image.setTextureImage(getTextureImage(glTF.getPath() + File.separatorChar + image.getUri()));
                     } else {
                         throw new IllegalArgumentException("Only support for texture image referenced as URI");
                     }
@@ -454,6 +490,125 @@ public class AssetManager {
         } else {
             throw new IllegalArgumentException("Not implemented");
         }
+    }
+
+    /**
+     * Creates an empty Texture object from the external reference, this is the main entrypoint for creating
+     * Texture object from file (json)
+     * Before calling this make sure the reference is not an id reference.
+     * Avoid calling this method directly - use {@link #getTexture(GLES20Wrapper, ImageFactory, ExternalReference)}
+     * 
+     * @param ref Reference to JSON .tex file
+     * @return
+     * @throws FileNotFoundException
+     */
+    protected Texture2D createTexture(ExternalReference ref) throws FileNotFoundException {
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(Texture2D.class, new TextureDeserializer());
+        Gson gson = builder.create();
+        SimpleLogger.d(TextureFactory.class, "Reading texture data from: " + ref.getSource());
+        InputStreamReader reader;
+        try {
+            // TODO - If Android build version => 19 then java.nio.StandardCharset can be used
+            reader = new InputStreamReader(ref.getAsStream(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        Texture2D texture = gson.fromJson(reader, Texture2D.class);
+        if (texture.getId() == null) {
+            throw new IllegalArgumentException("Texture object id is null for ref: " + ref.getSource());
+        }
+        if (loadedTextures.containsKey(texture.getId())) {
+            throw new IllegalArgumentException("Already loaded texture with id: " + texture.getId());
+        }
+        if (!texture.validateTextureParameters()) {
+            throw new IllegalArgumentException("Texture parameters not valid for:" + ref.getSource());
+        }
+        return texture;
+    }
+
+    /**
+     * Creates a texture for the specified image,
+     * The texture will be uploaded to GL using a created texture object name, if several mip-map levels are
+     * supplied they will be used.
+     * If the device current resolution is lower than the texture target resolution then a lower mip-map level is used.
+     * 
+     * @param gles The gles wrapper
+     * @param imageFactory factor for image creation
+     * @param source The texture source, the new texture will be a copy of this with the texture image loaded into GL.
+     * @return A new texture object containing the texture image.
+     */
+    protected Texture2D createTexture(GLES20Wrapper gles, ImageFactory imageFactory, Texture2D source) {
+        Texture2D texture = TextureFactory.getInstance().createTexture(source);
+        internalCreateTexture(gles, imageFactory, texture);
+        return texture;
+    }
+
+    /**
+     * Internal method to create a texture based on the texture setup source, the texture will be set with data from
+     * texture setup and uploaded to GL.
+     * If the texture source is an external reference the texture image is fetched from {@link AssetManager}
+     * If the texture source is a dynamic id reference it is looked for and setup if found.
+     * Texture parameters are uploaded.
+     * When this method returns the texture is ready to be used.
+     * 
+     * @param gles
+     * @param texture The texture
+     * @param imageFactory The imagefactory to use for image creation
+     */
+    private void internalCreateTexture(GLES20Wrapper gles, ImageFactory imageFactory, Texture2D texture) {
+        if (texture.getTextureType() == TextureType.Untextured) {
+            return;
+        }
+        BufferImage[] textureImg = TextureUtils
+                .loadTextureMIPMAP(imageFactory, texture);
+        internalCreateTexture(gles, textureImg, texture);
+    }
+
+    private void internalCreateTexture(GLES20Wrapper gles, BufferImage[] textureImg, Texture2D texture) {
+        int[] name = createTextureName(gles);
+        texture.setTextureName(name[0]);
+        if (textureImg[0].getResolution() != null) {
+            texture.setResolution(textureImg[0].getResolution());
+        }
+        try {
+            TextureUtils.uploadTextures(gles, texture, textureImg);
+            SimpleLogger.d(TextureFactory.class, "Uploaded texture " + texture.toString());
+            BufferImage.destroyImages(textureImg);
+        } catch (GLException e) {
+            throw new IllegalArgumentException(e);
+        }
+
+    }
+
+    /**
+     * Creates a new texture, allocating a texture for the specified size.
+     * 
+     * @param gles
+     * @param type
+     * @param id
+     * @param resolution
+     * @param size
+     * @param format Image format
+     * @param texParams
+     * @params target Texture target
+     * @return
+     */
+    protected Texture2D createTexture(GLES20Wrapper gles, TextureType type, String id, RESOLUTION resolution,
+            int[] size, ImageFormat format, TextureParameter texParams, int target) throws GLException {
+        int[] textureName = createTextureName(gles);
+        Texture2D result = TextureFactory.getInstance().createTexture(type, id, resolution, texParams, size, format,
+                textureName[0]);
+        gles.glBindTexture(target, result.getName());
+        gles.texImage(result);
+        GLUtils.handleError(gles, "glTexImage2D");
+        return result;
+    }
+
+    public int[] createTextureName(GLES20Wrapper gles) {
+        int[] textures = new int[1];
+        gles.glGenTextures(textures);
+        return textures;
     }
 
 }

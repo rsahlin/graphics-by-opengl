@@ -22,8 +22,8 @@ import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
 import com.nucleus.shader.VariableIndexer.Indexer;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.texturing.TextureFactory;
+import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.texturing.TextureType;
 
 /**
@@ -87,7 +87,7 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
             default:
                 throw new IllegalArgumentException("Not implemented for mode " + getLineMode());
         }
-        Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
+        Texture2D tex = TextureFactory.getInstance().createTexture(TextureType.Untextured);
         builder.setTexture(tex);
         if (getProgram() == null) {
             setProgram(AssetManager.getInstance().getProgram(gles,

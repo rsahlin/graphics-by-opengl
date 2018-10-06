@@ -137,6 +137,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
                 if (gles != null && com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
                     BufferObjectsFactory.getInstance().createVBOs(gles, glTF.getBuffers());
                 }
+                // For now preload all Image buffers to gl.
                 setPass(Pass.ALL);
                 setState(State.ON);
                 createPrograms(glTF);

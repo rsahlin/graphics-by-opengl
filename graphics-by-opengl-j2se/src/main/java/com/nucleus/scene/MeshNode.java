@@ -14,7 +14,6 @@ import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilderFactory;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
-import com.nucleus.opengl.GLESWrapper.Mode;
 import com.nucleus.renderer.MeshRenderer;
 import com.nucleus.renderer.NucleusMeshRenderer;
 import com.nucleus.texturing.BaseImageFactory;
@@ -58,7 +57,7 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
         Mesh.Builder<Mesh> builder = new Mesh.Builder<>(gles);
         Texture2D tex = null;
         if (getTextureRef() == null) {
-            tex = TextureFactory.createTexture(TextureType.Untextured);
+            tex = TextureFactory.getInstance().createTexture(TextureType.Untextured);
 
         } else {
             tex = AssetManager.getInstance().getTexture(gles, BaseImageFactory.getInstance(), getTextureRef());

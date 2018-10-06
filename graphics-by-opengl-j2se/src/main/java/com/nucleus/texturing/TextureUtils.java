@@ -104,7 +104,7 @@ public class TextureUtils {
 
     /**
      * Uploads the image(s) to the texture, checks if mipmaps should be created.
-     * The size of the image will be set in the texture
+     * The size of the image will be set in the texture. Texture object must have texture name allocated.
      * 
      * @param gles GLES20Wrapper for GL calls
      * @param texture The texture object, shall have texture name set
@@ -113,9 +113,13 @@ public class TextureUtils {
      * Level 0 shall be at index 0
      * @throws GLException If there is an error uploading the textures
      * @throws IllegalArgumentException If multiple mipmaps provided but texture min filter is not _MIPMAP_
+     * @throws IllegalArgumentException If texture does not have a GL texture name
      */
     public static void uploadTextures(GLES20Wrapper gles, Texture2D texture, BufferImage[] textureImages)
             throws GLException {
+        if (texture.getName() <= 0) {
+            throw new IllegalArgumentException("No texture name for texture " + texture.getId());
+        }
         gles.glBindTexture(GLES20.GL_TEXTURE_2D, texture.getName());
         boolean isMipMapParams = texture.getTexParams().isMipMapFilter();
         if ((textureImages.length > 1 && !isMipMapParams) || (texture.getLevels() > 1 && !isMipMapParams)) {

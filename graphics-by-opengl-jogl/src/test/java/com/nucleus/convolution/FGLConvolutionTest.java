@@ -15,7 +15,6 @@ import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.opengl.GLESWrapper;
-import com.nucleus.opengl.GLESWrapper.Mode;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
@@ -28,7 +27,6 @@ import com.nucleus.shader.ShaderVariable;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
 
 public class FGLConvolutionTest extends JOGLApplication implements FrameListener,
@@ -136,7 +134,8 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
 
         BaseRootNode.Builder builder = new BaseRootNode.Builder();
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
-        Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), BaseImageFactory.getInstance(), "texture",
+        Texture2D texture = AssetManager.getInstance().getTexture(renderer.getGLES(),
+                BaseImageFactory.getInstance(), "texture",
                 new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, texParam, 1);
         Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer.getGLES());
         meshBuilder.setElementMode(GLESWrapper.Mode.TRIANGLES, 4, 0, 6);

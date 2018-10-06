@@ -1,6 +1,7 @@
 package com.nucleus.scene.gltf;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.texturing.Texture2D;
 
 /**
  * 
@@ -32,23 +33,19 @@ public class Image extends GLTFNamedValue {
     @SerializedName(BUFFER_VIEW)
     private int bufferView;
 
-    transient private com.nucleus.texturing.BufferImage textureImage;
+    transient private Texture2D texture;
 
     /**
-     * Sets the immutable texture image
+     * Sets the immutable texture
      * 
-     * @param textureImage
-     * @throws IllegalArgumentException If a texture image already has been set.
+     * @param texture
      */
-    public void setTextureImage(com.nucleus.texturing.BufferImage textureImage) {
-        if (this.textureImage != null) {
-            throw new IllegalArgumentException("Already set textureImage");
-        }
-        this.textureImage = textureImage;
+    public void setTextureImage(Texture2D texture) {
+        this.texture = texture;
     }
 
-    public com.nucleus.texturing.BufferImage getTextureImage() {
-        return textureImage;
+    public Texture2D getTexture() {
+        return texture;
     }
 
     public String getUri() {
