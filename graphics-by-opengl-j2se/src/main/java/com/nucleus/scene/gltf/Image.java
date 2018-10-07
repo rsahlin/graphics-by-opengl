@@ -1,7 +1,7 @@
 package com.nucleus.scene.gltf;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.BufferImage;
 
 /**
  * 
@@ -33,19 +33,23 @@ public class Image extends GLTFNamedValue {
     @SerializedName(BUFFER_VIEW)
     private int bufferView;
 
-    transient private Texture2D texture;
+    transient private BufferImage bufferImage;
+    transient private int textureName;
 
-    /**
-     * Sets the immutable texture
-     * 
-     * @param texture
-     */
-    public void setTextureImage(Texture2D texture) {
-        this.texture = texture;
+    public void setBufferImage(BufferImage bufferImage) {
+        this.bufferImage = bufferImage;
     }
 
-    public Texture2D getTexture() {
-        return texture;
+    public BufferImage getBufferImage() {
+        return bufferImage;
+    }
+
+    public void setTextureName(int name) {
+        this.textureName = name;
+    }
+
+    public int getTextureName() {
+        return textureName;
     }
 
     public String getUri() {

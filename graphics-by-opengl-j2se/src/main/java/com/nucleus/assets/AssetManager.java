@@ -22,6 +22,7 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.renderer.BufferObjectsFactory;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderTarget;
 import com.nucleus.renderer.RenderTarget.AttachementData;
@@ -158,7 +159,8 @@ public class AssetManager {
             ExternalReference externalReference, RESOLUTION resolution, TextureParameter parameter, int mipmap) {
         Texture2D source = TextureFactory.getInstance().createTexture(TextureType.Texture2D, id, externalReference,
                 resolution, parameter, mipmap, Format.RGBA, Type.UNSIGNED_BYTE);
-        return createTexture(gles, imageFactory, source);
+        internalCreateTexture(gles, imageFactory, source);
+        return source;
     }
 
     /**
@@ -376,11 +378,11 @@ public class AssetManager {
     }
 
     /**
-     * If the Asset already has been loaded it is returned, otherwise AssetManager will load and return the GLTF asset,
-     * loads binary data into buffers, and images.
+     * If the Asset already has been loaded it is returned, otherwise AssetManager will load and return the GLTF asset.
+     * This method will not load binary data (buffers) or images.
      * 
      * @param name
-     * @return The loaded GLTF asset
+     * @return The loaded GLTF asset, without binary buffers and images loaded.
      * @throws IOException If there is an io exception reading the file, or it cannot be found.
      * @throws
      */
@@ -393,23 +395,39 @@ public class AssetManager {
         File f = new File(fileName);
         ClassLoader loader = Loader.class.getClassLoader();
         InputStream is = loader.getResourceAsStream(fileName);
-        gltf = loadAsset(f.getParent(), is);
+        gltf = loadJSONAsset(f.getParent(), is);
         gltfAssets.put(fileName, gltf);
         return gltf;
     }
 
     /**
-     * Loads a glTF asset, loading buffers and binary references as needed.
-     * The returned asset is resolved using {@link RuntimeResolver} and is ready to be used.
+     * Loads the assets needed for the glTF models. This will load binary buffers and texture images.
+     * After this call the glTF is ready to be used
      * 
      * @param gles
+     * @param glTF
+     * @throws IOException If there is an error reading binary buffers or images
+     * @throws GLException If VBO creation fails
+     */
+    public void loadGLTFAssets(GLES20Wrapper gles, GLTF glTF) throws IOException, GLException {
+        loadBuffers(glTF);
+        loadTextures(gles, glTF);
+        if (gles != null && com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
+            BufferObjectsFactory.getInstance().createVBOs(gles, glTF.getBuffers());
+        }
+    }
+
+    /**
+     * Loads a glTF asset, this will not load binary data (buffers) or texture images.
+     * The returned asset is resolved using {@link RuntimeResolver}
+     * 
      * @param path
      * @param is
-     * @return
+     * @return The loaded glTF asset without any buffers or image loaded.
      * @throws IOException
      * @throws GLTFException If there is an error in the glTF or it cannot be resolved
      */
-    private GLTF loadAsset(String path, InputStream is)
+    private GLTF loadJSONAsset(String path, InputStream is)
             throws IOException, GLTFException {
         try {
             Reader reader = new InputStreamReader(is, "UTF-8");
@@ -418,8 +436,6 @@ public class AssetManager {
             GLTF glTF = gson.fromJson(reader, GLTF.class);
             glTF.setPath(path);
             glTF.resolve();
-            loadBuffers(glTF);
-            loadTextures(glTF);
             return glTF;
         } catch (UnsupportedEncodingException e) {
             SimpleLogger.d(Loader.class, e.getMessage());
@@ -453,15 +469,18 @@ public class AssetManager {
      * @param glTF
      * @throws IOException
      */
-    protected void loadTextures(GLTF glTF) throws IOException {
+    protected void loadTextures(GLES20Wrapper gles, GLTF glTF) throws IOException {
         Texture[] textures = glTF.getTextures();
         if (textures != null) {
             for (Texture t : textures) {
                 Image image = t.getImage();
                 if (image != null) {
                     if (image.getUri() != null) {
-                        // Texture2D texture = TextureFactory.createTexture(gles, image, source)
-                        // image.setTextureImage(getTextureImage(glTF.getPath() + File.separatorChar + image.getUri()));
+                        BufferImage bufferImage = getTextureImage(glTF.getPath(image.getUri()));
+                        image.setBufferImage(bufferImage);
+                        internalCreateTexture(gles, image);
+                        // Texture2D texture = TextureFactory.getInstance().createTexture(glTF, t);
+                        // getTexture(gles, BaseImageFactory.getInstance(), texture);
                     } else {
                         throw new IllegalArgumentException("Only support for texture image referenced as URI");
                     }
@@ -471,15 +490,34 @@ public class AssetManager {
     }
 
     /**
+     * Creates and uploads the texture - destroying the buffer image after upload.
+     * 
+     * @param gles
+     * @param image
+     */
+    private void internalCreateTexture(GLES20Wrapper gles, Image image) {
+        try {
+            int[] name = createTextureName(gles);
+            image.setTextureName(name[0]);
+            TextureUtils.uploadTextures(gles, image, true);
+            SimpleLogger.d(TextureFactory.class, "Uploaded texture " + image.getUri());
+            BufferImage.destroyImages(new BufferImage[] { image.getBufferImage() });
+        } catch (GLException e) {
+            throw new IllegalArgumentException(e);
+        }
+
+    }
+
+    /**
      * Returns the texture image, if not already loaded the image is loaded and returned.
      * 
      * @param uri Full path to Image resource
      * @return
      * @throws IOException
      */
-    protected com.nucleus.texturing.BufferImage getTextureImage(String uri) throws IOException {
+    protected BufferImage getTextureImage(String uri) throws IOException {
         if (uri != null) {
-            com.nucleus.texturing.BufferImage textureImage = gltfImages.get(uri);
+            BufferImage textureImage = gltfImages.get(uri);
             if (textureImage != null) {
                 return textureImage;
             }
@@ -566,12 +604,15 @@ public class AssetManager {
     }
 
     private void internalCreateTexture(GLES20Wrapper gles, BufferImage[] textureImg, Texture2D texture) {
-        int[] name = createTextureName(gles);
-        texture.setTextureName(name[0]);
         if (textureImg[0].getResolution() != null) {
+            if (texture.getWidth() > 0 || texture.getHeight() > 0) {
+                throw new IllegalArgumentException("Size is already set in texture " + texture.getId());
+            }
             texture.setResolution(textureImg[0].getResolution());
         }
         try {
+            int[] name = createTextureName(gles);
+            texture.setTextureName(name[0]);
             TextureUtils.uploadTextures(gles, texture, textureImg);
             SimpleLogger.d(TextureFactory.class, "Uploaded texture " + texture.toString());
             BufferImage.destroyImages(textureImg);

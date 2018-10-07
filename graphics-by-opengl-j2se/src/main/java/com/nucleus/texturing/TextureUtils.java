@@ -14,6 +14,8 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
+import com.nucleus.scene.gltf.Image;
+import com.nucleus.scene.gltf.Texture;
 import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.Texture2D.Type;
@@ -156,6 +158,33 @@ public class TextureUtils {
     }
 
     /**
+     * Uploads the image(s) to the texture, checks if mipmaps should be created.
+     * 
+     * @param gles GLES20Wrapper for GL calls
+     * @param image The glTF Image
+     * @param true to generate mipmaps
+     * @throws GLException If there is an error uploading the textures
+     * @throws IllegalArgumentException If multiple mipmaps provided but texture min filter is not _MIPMAP_
+     * @throws IllegalArgumentException If texture does not have a GL texture name
+     */
+    public static void uploadTextures(GLES20Wrapper gles, Image image, boolean generateMipmaps)
+            throws GLException {
+        if (image.getTextureName() <= 0) {
+            throw new IllegalArgumentException("No texture name for texture " + image.getUri());
+        }
+        gles.glBindTexture(GLES20.GL_TEXTURE_2D, image.getTextureName());
+        gles.texImage(image, 0);
+        GLUtils.handleError(gles, "texImage2D");
+        if (generateMipmaps) {
+            long start = System.currentTimeMillis();
+            gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+            SimpleLogger.d(TextureUtils.class, "Generated mipmaps for texture " + image.getUri());
+            FrameSampler.getInstance().logTag(FrameSampler.Samples.GENERATE_MIPMAPS, image.getUri(), start,
+                    System.currentTimeMillis());
+        }
+    }
+
+    /**
      * Activates texturing, binds the texture and sets texture parameters
      * Checks if texture is an id (dynamic) reference and sets the texture name if not present.
      * 
@@ -180,6 +209,24 @@ public class TextureUtils {
                 gles.uploadTexParameters(texture.getTexParams());
                 GLUtils.handleError(gles, "glBindTexture()");
             }
+        }
+    }
+
+    /**
+     * Activates texturing, binds the texture and sets texture parameters
+     * Checks if texture is an id (dynamic) reference and sets the texture name if not present.
+     * 
+     * @paran gles
+     * @param texture
+     * @param unit The texture unit number to use, 0 and up
+     */
+    public static void prepareTexture(GLES20Wrapper gles, Texture texture, int unit) throws GLException {
+        if (texture != null) {
+            gles.glActiveTexture(GLES20.GL_TEXTURE0 + unit);
+            int textureID = texture.getImage().getTextureName();
+            gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
+            gles.uploadTexParameters(texture.getSampler());
+            GLUtils.handleError(gles, "glBindTexture()");
         }
     }
 

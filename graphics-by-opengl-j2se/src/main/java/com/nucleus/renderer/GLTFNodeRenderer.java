@@ -9,12 +9,15 @@ import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.BufferView;
 import com.nucleus.scene.gltf.GLTF;
+import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Node;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Scene;
+import com.nucleus.scene.gltf.Texture;
 import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderProgram;
+import com.nucleus.texturing.TextureUtils;
 
 public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
 
@@ -58,23 +61,37 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             Primitive[] primitives = mesh.getPrimitives();
             if (primitives != null) {
                 for (Primitive p : primitives) {
-                    GLTFShaderProgram program = (GLTFShaderProgram) getProgram(gles, p, currentPass);
-                    gles.glUseProgram(program.getProgram());
-                    GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
-                    // TODO - is this the best place for this check - remember, this should only be done in debug cases.
-                    if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
-                        program.validateProgram(gles);
-                    }
-                    program.updateUniforms(gles, matrices);
-
-                    renderPrimitive(gles, glTF, program, p);
+                    renderPrimitive(gles, glTF, p, matrices);
                 }
             }
         }
     }
 
-    protected void renderPrimitive(GLES20Wrapper gles, GLTF glTF, GLTFShaderProgram program, Primitive primitive)
+    /**
+     * Renders the primitive
+     * 
+     * @param gles
+     * @param glTF
+     * @param program
+     * @param primitive
+     * @param matrices
+     * @throws GLException
+     */
+    protected void renderPrimitive(GLES20Wrapper gles, GLTF glTF, Primitive primitive, float[][] matrices)
             throws GLException {
+        GLTFShaderProgram program = (GLTFShaderProgram) getProgram(gles, primitive, currentPass);
+        gles.glUseProgram(program.getProgram());
+        GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
+        // TODO - is this the best place for this check - remember, this should only be done in debug cases.
+        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
+            program.validateProgram(gles);
+        }
+        program.updateUniforms(gles, matrices);
+        Material material = primitive.getMaterial();
+        Texture texture = glTF.getTexture(material.getPbrMetallicRoughness());
+        if (texture != null) {
+            TextureUtils.prepareTexture(gles, texture, glTF.getTexCoord(material.getPbrMetallicRoughness()));
+        }
         Accessor indices = glTF.getAccessor(primitive.getIndicesIndex());
         program.updatePrimitiveUniforms(gles, primitive);
         if (indices != null) {

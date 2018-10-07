@@ -11,7 +11,6 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
-import com.nucleus.renderer.BufferObjectsFactory;
 import com.nucleus.renderer.GLTFMeshRenderer;
 import com.nucleus.renderer.GLTFNodeRenderer;
 import com.nucleus.renderer.MeshRenderer;
@@ -134,14 +133,10 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
         if (glTFName != null) {
             try {
                 glTF = AssetManager.getInstance().getGLTFAsset(getRootNode().getGLTFPath() + glTFName);
-                if (gles != null && com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
-                    BufferObjectsFactory.getInstance().createVBOs(gles, glTF.getBuffers());
-                }
-                // For now preload all Image buffers to gl.
+                AssetManager.getInstance().loadGLTFAssets(gles, glTF);
                 setPass(Pass.ALL);
                 setState(State.ON);
                 createPrograms(glTF);
-
             } catch (IOException | GLTFException e) {
                 throw new RuntimeException(e);
             }

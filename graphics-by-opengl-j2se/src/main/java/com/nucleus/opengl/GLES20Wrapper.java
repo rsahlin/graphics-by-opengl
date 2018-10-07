@@ -17,8 +17,10 @@ import com.nucleus.scene.gltf.Accessor.ComponentType;
 import com.nucleus.scene.gltf.Accessor.Type;
 import com.nucleus.scene.gltf.BufferView;
 import com.nucleus.scene.gltf.GLTF;
+import com.nucleus.scene.gltf.Image;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
+import com.nucleus.scene.gltf.Sampler;
 import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderSource;
 import com.nucleus.shader.ShaderSource.ESSLVersion;
@@ -26,8 +28,10 @@ import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.BufferImage;
+import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.ParameterData;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureParameter.Parameter;
 import com.nucleus.texturing.TextureUtils;
@@ -782,6 +786,20 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     }
 
     /**
+     * Sets the texture parameter values for the texture parameter to OpenGL, call this to set the correct texture
+     * parameters when rendering.
+     * 
+     * @param sampler
+     */
+    public void uploadTexParameters(Sampler sampler) throws GLException {
+        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, sampler.getMinFilter());
+        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, sampler.getMagFilter());
+        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, sampler.getWrapS());
+        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, sampler.getWrapT());
+        GLUtils.handleError(this, "glTexParameteri ");
+    }
+
+    /**
      * Binds the frambebuffer texture target - this is used to create different behavior depending
      * on the OpenGL ES implementation (2.X vs 3.X)
      * 
@@ -827,6 +845,24 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         glTexImage2D(GLES20.GL_TEXTURE_2D, level, TextureUtils.getInternalFormat(texture), texture.getWidth(),
                 texture.getHeight(), 0, texture.getFormat().format,
                 texture.getType().type, image.getBuffer().position(0));
+    }
+
+    /**
+     * Uploads the texture image - use this method in favor of calling glTexImage directly since this method will
+     * handle format differences between GL versions.
+     * The texture must be bound to the texture name before calling this method
+     * 
+     * @param image
+     * @param level
+     */
+    public void texImage(Image image, int level) {
+        BufferImage bufferImage = image.getBufferImage();
+        ImageFormat imageFormat = bufferImage.getFormat();
+        Format format = TextureUtils.getFormat(imageFormat);
+        com.nucleus.texturing.Texture2D.Type type = TextureUtils.getType(imageFormat);
+        glTexImage2D(GLES20.GL_TEXTURE_2D, level, format.format, bufferImage.getWidth(),
+                bufferImage.getHeight(), 0, format.format, type.type,
+                bufferImage.getBuffer().position(0));
     }
 
     @Override

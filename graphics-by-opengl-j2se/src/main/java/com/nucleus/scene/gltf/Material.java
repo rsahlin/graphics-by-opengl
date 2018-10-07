@@ -1,6 +1,8 @@
 package com.nucleus.scene.gltf;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.scene.gltf.GLTF.GLTFException;
+import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 
 /**
  * The Material as it is loaded using the glTF format.
@@ -26,7 +28,7 @@ import com.google.gson.annotations.SerializedName;
  * 
  * This class can be serialized using gson
  */
-public class Material extends GLTFNamedValue {
+public class Material extends GLTFNamedValue implements RuntimeResolver {
 
     public final static AlphaMode DEFAULT_ALPHA_MODE = AlphaMode.OPAQUE;
     public final static float DEFAULT_ALPHA_CUTOFF = 0.5f;
@@ -57,6 +59,8 @@ public class Material extends GLTFNamedValue {
     @SerializedName(DOUBLE_SIDED)
     private boolean doubleSided = DEFAULT_DOUBLE_SIDED;
 
+    private transient Texture texture;
+
     public PBRMetallicRoughness getPbrMetallicRoughness() {
         return pbrMetallicRoughness;
     }
@@ -75,6 +79,11 @@ public class Material extends GLTFNamedValue {
 
     public boolean isDoubleSided() {
         return doubleSided;
+    }
+
+    @Override
+    public void resolve(GLTF asset) throws GLTFException {
+        texture = asset.getTexture(pbrMetallicRoughness);
     }
 
 }

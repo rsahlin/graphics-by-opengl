@@ -45,6 +45,21 @@ public class TextureParameter {
         }
 
         /**
+         * Returns the Parameter with matching gl value
+         * 
+         * @param value
+         * @return The Parameter with the value or null if no matching.
+         */
+        public static Parameter get(int value) {
+            for (Parameter p : Parameter.values()) {
+                if (p.value == value) {
+                    return p;
+                }
+            }
+            return null;
+        }
+
+        /**
          * Allowed min texture filters, use this to get allowed values for texture minification filter
          */
         public static final Parameter[] MIN_FILTERS = new Parameter[] { NEAREST, LINEAR, NEAREST_MIPMAP_LINEAR,
@@ -224,7 +239,7 @@ public class TextureParameter {
     }
 
     public TextureParameter(Parameter min, Parameter mag, Parameter wrapS, Parameter wrapT) {
-        setValues(values);
+        setValues(min, mag, wrapS, wrapT);
     }
 
     /**
@@ -287,7 +302,7 @@ public class TextureParameter {
      */
     public void setValues(Parameter min, Parameter mag, Parameter wrapS, Parameter wrapT) {
         if (values == null) {
-            values = new Parameter[Name.values().length];
+            values = new Parameter[4];
         }
         values[MIN_FILTER_INDEX] = min;
         values[MAG_FILTER_INDEX] = mag;

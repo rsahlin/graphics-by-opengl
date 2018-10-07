@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import com.nucleus.ErrorMessage;
+import com.nucleus.common.BufferUtils;
 import com.nucleus.geometry.BufferObject;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 
@@ -101,7 +102,7 @@ public class BufferImage extends BufferObject {
     }
 
     ImageFormat format;
-    Buffer buffer;
+    ByteBuffer buffer;
     int width;
     int height;
     /**
@@ -223,6 +224,12 @@ public class BufferImage extends BufferObject {
         buffer = null;
         width = 0;
         height = 0;
+    }
+
+    @Override
+    public String toString() {
+        return "Size " + width + ", " + height + ", " + resolution + ", " + format + "\n"
+                + BufferUtils.getContentAsString(0, 100, buffer);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.nucleus.scene.gltf;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -162,12 +163,14 @@ public class GLTF {
     }
 
     /**
-     * Returns the path where the resources are loaded from.
+     * Returns the full path to the uri, ie
+     * path + File.separatorChar + uri
      * 
-     * @return
+     * @param uri
+     * @return The full path to the uri, with gltf path prepended.
      */
-    public String getPath() {
-        return path;
+    public String getPath(String uri) {
+        return path + File.separatorChar + uri;
     }
 
     public Asset getAsset() {
@@ -260,6 +263,33 @@ public class GLTF {
             return accessors[index];
         }
         return null;
+    }
+
+    /**
+     * If pbr is not null and pbr has base color texture then the Texture is returned, otherwise null.
+     * 
+     * @param pbr
+     * @return Texture for the pbr or null
+     */
+    public Texture getTexture(PBRMetallicRoughness pbr) {
+        if (pbr != null && pbr.getBaseColorTexture() != null) {
+            return textures[pbr.getBaseColorTexture().getIndex()];
+        }
+        return null;
+    }
+
+    /**
+     * Returns the texture unit to use with the pbr, or -1 if not specified.
+     * 
+     * @param pbr
+     * @return
+     */
+    public int getTexCoord(PBRMetallicRoughness pbr) {
+        if (pbr != null && pbr.getBaseColorTexture() != null) {
+            return pbr.getBaseColorTexture().getTexCoord();
+        }
+        return -1;
+
     }
 
     /**
