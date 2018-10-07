@@ -1,18 +1,16 @@
 package com.nucleus.scene.gltf;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.BufferUtils;
 
 /**
  * The Buffer as it is loaded using the glTF format.
@@ -122,9 +120,9 @@ public class Buffer extends GLTFNamedValue {
             throw new IllegalArgumentException("Buffer storage has not bee created, must call createBuffer()");
         }
         ClassLoader loader = Loader.class.getClassLoader();
-        InputStream is = loader.getResourceAsStream(glTF.getPath() + File.separatorChar + uri);
+        InputStream is = loader.getResourceAsStream(glTF.getPath(uri));
         SimpleLogger.d(getClass(),
-                "Loading into buffer with size " + buffer.capacity() + " from " + glTF.getPath() + uri);
+                "Loading into buffer with size " + buffer.capacity() + " from " + glTF.getPath(uri));
         int total = load(is);
         is.close();
         if (total != byteLength) {
@@ -159,71 +157,8 @@ public class Buffer extends GLTFNamedValue {
 
     public String toString(int position, int length) {
         String str = "URI: " + uri + ", name: " + getName() + ", byteLength: " + byteLength;
-        str += "\n" + getContentAsString(position, length, buffer);
+        str += "\n" + BufferUtils.getContentAsString(position, length, buffer);
         return str;
-    }
-
-    /**
-     * Returns the contents of buffer as a String, adjusting length to match position and capacity
-     * 
-     * @param position
-     * @param length
-     * @param buffer
-     * @return
-     */
-    public String getContentAsString(int position, int length, ByteBuffer buffer) {
-        if (buffer != null) {
-            StringBuffer result = new StringBuffer();
-            length = length < buffer.capacity() - position ? length : buffer.capacity() - position;
-            buffer.position(position);
-            for (int i = 0; i < length; i++) {
-                result.append(Integer.toString(buffer.get()) + ", ");
-            }
-            return result.toString();
-        }
-        return "Null buffer";
-    }
-
-    /**
-     * Returns the contents of buffer as a String, adjusting length to match position and capacity
-     * 
-     * @param position
-     * @param length
-     * @param buffer
-     * @return
-     */
-    public String getContentAsString(int position, int length, ShortBuffer buffer) {
-        if (buffer != null) {
-            StringBuffer result = new StringBuffer();
-            length = length < buffer.capacity() - position ? length : buffer.capacity() - position;
-            buffer.position(position);
-            for (int i = 0; i < length; i++) {
-                result.append(Integer.toString(buffer.get()) + ", ");
-            }
-            return result.toString();
-        }
-        return "Null buffer";
-    }
-
-    /**
-     * Returns the contents of buffer as a String, adjusting length to match position and capacity
-     * 
-     * @param position
-     * @param length
-     * @param buffer
-     * @return
-     */
-    public String getContentAsString(int position, int length, FloatBuffer buffer) {
-        if (buffer != null) {
-            StringBuffer result = new StringBuffer();
-            length = length < buffer.capacity() - position ? length : buffer.capacity() - position;
-            buffer.position(position);
-            for (int i = 0; i < length; i++) {
-                result.append(Float.toString(buffer.get()) + ", ");
-            }
-            return result.toString();
-        }
-        return "Null buffer";
     }
 
 }

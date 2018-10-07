@@ -1,7 +1,9 @@
 package com.nucleus.common;
 
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 
 import com.nucleus.SimpleLogger;
 
@@ -35,6 +37,69 @@ public class BufferUtils {
             sb.append(Float.toString(storage[i]) + ", ");
         }
         SimpleLogger.d(BufferUtils.class, "Contents of float buffer:\n" + sb.toString());
+    }
+
+    /**
+     * Returns the contents of buffer as a String, adjusting length to match position and capacity
+     * 
+     * @param position
+     * @param length
+     * @param buffer
+     * @return
+     */
+    public static String getContentAsString(int position, int length, ByteBuffer buffer) {
+        if (buffer != null) {
+            StringBuffer result = new StringBuffer();
+            length = length < buffer.capacity() - position ? length : buffer.capacity() - position;
+            buffer.position(position);
+            for (int i = 0; i < length; i++) {
+                result.append(Integer.toString(buffer.get()) + ", ");
+            }
+            return result.toString();
+        }
+        return "Null buffer";
+    }
+
+    /**
+     * Returns the contents of buffer as a String, adjusting length to match position and capacity
+     * 
+     * @param position
+     * @param length
+     * @param buffer
+     * @return
+     */
+    public static String getContentAsString(int position, int length, ShortBuffer buffer) {
+        if (buffer != null) {
+            StringBuffer result = new StringBuffer();
+            length = length < buffer.capacity() - position ? length : buffer.capacity() - position;
+            buffer.position(position);
+            for (int i = 0; i < length; i++) {
+                result.append(Integer.toString(buffer.get()) + ", ");
+            }
+            return result.toString();
+        }
+        return "Null buffer";
+    }
+
+    /**
+     * Returns the contents of buffer as a String, adjusting length to match position and capacity
+     * 
+     * @param position
+     * @param length
+     * @param buffer
+     * @return
+     */
+    public static String getContentAsString(int position, int length, FloatBuffer buffer) {
+        if (buffer != null) {
+            StringBuffer result = new StringBuffer();
+            length = length < buffer.capacity() - position ? length : buffer.capacity() - position;
+            buffer.position(position);
+            for (int i = 0; i < length; i++) {
+                result.append(Float.toString(buffer.get()) + ", ");
+            }
+            return result.toString();
+        }
+        return "Null buffer";
     }
 
 }

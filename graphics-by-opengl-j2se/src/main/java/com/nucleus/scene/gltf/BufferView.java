@@ -5,6 +5,7 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.common.BufferUtils;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 
@@ -142,7 +143,7 @@ public class BufferView extends GLTFNamedValue implements RuntimeResolver {
      * @return
      */
     public String toString(ByteBuffer byteBuffer) {
-        return toString() + "\n" + buffer.getContentAsString(byteOffset,
+        return toString() + "\n" + BufferUtils.getContentAsString(byteOffset,
                 byteLength < Buffer.MAX_BUFFER_PRINT ? byteLength : Buffer.MAX_BUFFER_PRINT, byteBuffer);
     }
 
@@ -153,7 +154,7 @@ public class BufferView extends GLTFNamedValue implements RuntimeResolver {
      * @return
      */
     public String toString(ShortBuffer shortBuffer) {
-        return toString() + "\n" + buffer.getContentAsString(byteOffset >>> 1,
+        return toString() + "\n" + BufferUtils.getContentAsString(byteOffset >>> 1,
                 byteLength >>> 1 < Buffer.MAX_BUFFER_PRINT ? byteLength >>> 1 : Buffer.MAX_BUFFER_PRINT, shortBuffer);
     }
 
@@ -164,7 +165,7 @@ public class BufferView extends GLTFNamedValue implements RuntimeResolver {
      * @return
      */
     public String toString(FloatBuffer floatBuffer) {
-        return toString() + "\n" + buffer.getContentAsString(byteOffset >>> 2,
+        return toString() + "\n" + BufferUtils.getContentAsString(byteOffset >>> 2,
                 byteLength >>> 2 < Buffer.MAX_BUFFER_PRINT ? byteLength >>> 2 : Buffer.MAX_BUFFER_PRINT, floatBuffer);
     }
 
