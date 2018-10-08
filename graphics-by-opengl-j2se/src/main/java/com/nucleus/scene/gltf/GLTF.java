@@ -227,12 +227,12 @@ public class GLTF {
     }
 
     /**
-     * Returns the value of the default scene, or -1 if not defined.
+     * Returns the value of the default scene, or null if not defined.
      * 
-     * @return
+     * @return The default scene or null
      */
-    public int getScene() {
-        return scene;
+    public Scene getScene() {
+        return scene >= 0 ? scenes[scene] : null;
     }
 
     public Node[] getNodes() {

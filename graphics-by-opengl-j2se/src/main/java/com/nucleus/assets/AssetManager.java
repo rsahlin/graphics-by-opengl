@@ -1,6 +1,7 @@
 package com.nucleus.assets;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -650,6 +652,25 @@ public class AssetManager {
         int[] textures = new int[1];
         gles.glGenTextures(textures);
         return textures;
+    }
+
+    /**
+     * Utility method to return a list with the folder in the specified resource path
+     * 
+     * @param path List of subfolders of this path will be returned
+     * @return
+     */
+    public File[] listResourceFolders(String path) {
+        ClassLoader loader = getClass().getClassLoader();
+        URL url = loader.getResource(path);
+        File[] files = new File(url.getFile()).listFiles(new FileFilter() {
+
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isDirectory();
+            }
+        });
+        return files;
     }
 
 }

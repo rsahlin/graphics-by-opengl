@@ -1,5 +1,7 @@
 package com.nucleus.renderer;
 
+import com.nucleus.texturing.TextureUtils;
+
 /**
  * Renderer configuration, this is the runtime configuration parameters.
  * 
@@ -11,6 +13,7 @@ public class Configuration {
     private final static Configuration configuration = new Configuration();
 
     private boolean useVBO = true;
+    private boolean generateMipMaps = true;
 
     /**
      * Returns the instance of the Configuration, this will always be the same.
@@ -42,6 +45,25 @@ public class Configuration {
      */
     public boolean isUseVBO() {
         return useVBO;
+    }
+
+    /**
+     * Enables or disable force generation of texture mipmaps.
+     * Used by {@link TextureUtils}
+     * 
+     * @param generateMipMaps True to force generation of texture mipmaps
+     */
+    public void setForceMipMaps(boolean generateMipMaps) {
+        this.generateMipMaps = generateMipMaps;
+    }
+
+    /**
+     * Returns true if generation of mipmaps should be forced.
+     * 
+     * @return
+     */
+    public boolean isGenerateMipMaps() {
+        return generateMipMaps;
     }
 
 }

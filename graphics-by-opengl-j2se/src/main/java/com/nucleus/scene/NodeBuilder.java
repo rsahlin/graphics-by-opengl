@@ -164,6 +164,7 @@ public class NodeBuilder<T extends Node> {
         T created = (T) source.createInstance(root);
         created.createTransient();
         try {
+            parent.addChild(created);
             if (source instanceof RenderableNode<?>) {
                 MeshBuilder<?> mBuilder = meshBuilder;
                 RenderableNode rNode = (RenderableNode<?>) created;
@@ -174,7 +175,6 @@ public class NodeBuilder<T extends Node> {
                     createMesh(mBuilder, created, 1);
                 }
             }
-            parent.addChild(created);
             created.onCreated();
             // Recursively create children if there are any
             if (source.getChildren() != null) {

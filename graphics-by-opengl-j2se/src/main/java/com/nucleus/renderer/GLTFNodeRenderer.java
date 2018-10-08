@@ -29,11 +29,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         this.currentPass = currentPass;
         GLES20Wrapper gles = renderer.getGLES();
         GLTF glTF = node.getGLTF();
-        int sceneIndex = glTF.getScene();
-        if (sceneIndex == -1) {
-            sceneIndex = 0;
-        }
-        Scene scene = glTF.getScene(sceneIndex);
+        Scene scene = glTF.getScene();
         // Traverse the nodes and render each.
         renderNodes(gles, glTF, scene.getNodes(), matrices);
         return true;

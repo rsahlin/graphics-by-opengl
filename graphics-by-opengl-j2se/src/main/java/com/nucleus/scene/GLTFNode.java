@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.bounds.Bounds;
+import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
@@ -25,6 +26,7 @@ import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
 import com.nucleus.texturing.Texture2D.Shading;
+import com.nucleus.vecmath.Transform;
 
 /**
  * Node containing a glTF model
@@ -35,9 +37,12 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     transient protected static NodeRenderer<GLTFNode> nodeRenderer = new GLTFNodeRenderer();
 
     private static final String GLTF_NAME = "glTFName";
+    private static final String NORMALIZE_GLTF = "normalizeGLTF";
 
     @SerializedName(GLTF_NAME)
     private String glTFName;
+    @SerializedName(NORMALIZE_GLTF)
+    private boolean normalizeGLTF;
 
     transient private GLTF glTF;
     transient ArrayList<RenderableMesh> meshes = new ArrayList<>();
@@ -70,6 +75,7 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     public void set(GLTFNode source) {
         super.set(source);
         this.glTFName = source.glTFName;
+        this.normalizeGLTF = source.normalizeGLTF;
     }
 
     public String getGLTFName() {
@@ -133,6 +139,12 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
         if (glTFName != null) {
             try {
                 glTF = AssetManager.getInstance().getGLTFAsset(getRootNode().getGLTFPath() + glTFName);
+                if (normalizeGLTF) {
+                    ViewFrustum view = getParentsView();
+                    if (view != null) {
+                        normalizeGLTF(new float[] { 0, 1, 0 });
+                    }
+                }
                 AssetManager.getInstance().loadGLTFAssets(gles, glTF);
                 setPass(Pass.ALL);
                 setState(State.ON);
@@ -187,6 +199,26 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     @Override
     public ShaderProgram createProgram() {
         return null;
+    }
+
+    /**
+     * Adjusts this nodes uniform scale so that the primitive geometry (non transformed max values) is normalized to the
+     * specified value, using Y axis max values.
+     * 
+     * @param normalize Value to normalize against. Set the wanted axis to a value.
+     * The scale will be set to 1 / (max[xyz] * normalizeAxis[xyz]);
+     * Resulting in geometry being limited within the largest values if max / normalizeAxis.
+     * Use this method to scale a gltf model according to for instance view height by normalAxis = [0,viewheight,0];
+     */
+    public void normalizeGLTF(float[] normalizeAxis) {
+        float[] max = new float[3];
+        com.nucleus.scene.gltf.Node.getPositionScale(glTF.getScene().getNodes(), max);
+        float scale = 1.0f / (Float.max(max[0] * normalizeAxis[0],
+                Float.max(max[1] * normalizeAxis[1], max[2] * normalizeAxis[2])));
+        Transform t = getTransform();
+        float[] s = new float[3];
+        t.getScale(s);
+        getTransform().setScale(scale * s[0], scale * s[1], scale * s[2]);
     }
 
 }

@@ -12,6 +12,7 @@ import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.renderer.Configuration;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.gltf.Image;
@@ -144,11 +145,8 @@ public class TextureUtils {
                 break;
             }
         }
-        if (textureImages.length == 1 && texture.getTexParams().isMipMapFilter()) {
-            if (texture.getLevels() < 2) {
-                throw new IllegalArgumentException("Texture " + texture.getId()
-                        + " has mipmap filter params but levels is " + texture.getLevels());
-            }
+        if (textureImages.length == 1 && texture.getTexParams().isMipMapFilter()
+                || Configuration.getInstance().isGenerateMipMaps()) {
             long start = System.currentTimeMillis();
             gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
             SimpleLogger.d(TextureUtils.class, "Generated mipmaps for texture " + texture.getId());
@@ -175,7 +173,7 @@ public class TextureUtils {
         gles.glBindTexture(GLES20.GL_TEXTURE_2D, image.getTextureName());
         gles.texImage(image, 0);
         GLUtils.handleError(gles, "texImage2D");
-        if (generateMipmaps) {
+        if (generateMipmaps || Configuration.getInstance().isGenerateMipMaps()) {
             long start = System.currentTimeMillis();
             gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
             SimpleLogger.d(TextureUtils.class, "Generated mipmaps for texture " + image.getUri());

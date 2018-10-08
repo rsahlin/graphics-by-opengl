@@ -124,10 +124,28 @@ public class Primitive implements RuntimeResolver {
      * @param attribute
      * @return
      */
+    @Deprecated
     public Accessor getAccessor(GLTF glTF, Attributes attribute) {
         Integer index = attributes.get(attribute);
         if (index != null) {
             return glTF.getAccessor(index);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the Accessor for the attribute if defined, otherwise null
+     * 
+     * @param attribute
+     * @return
+     */
+    public Accessor getAccessor(Attributes attribute) {
+        if (attributeList != null) {
+            for (int i = 0; i < attributeList.length; i++) {
+                if (attributeList[i] == attribute) {
+                    return accessorList[i];
+                }
+            }
         }
         return null;
     }

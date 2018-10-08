@@ -3,6 +3,7 @@ package com.nucleus.scene.gltf;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
+import com.nucleus.scene.gltf.Primitive.Attributes;
 
 /**
  * The Node as it is loaded using the glTF format.
@@ -138,6 +139,56 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
             }
         }
 
+    }
+
+    /**
+     * Returns the non transformed POSITION bounding (max - min) values (three component) for the geometry in this node
+     * and children.
+     * This will search through all primitives used by the node and return the non transformed bound (max - min) values.
+     * 
+     * @return
+     */
+    public float[] getPositionBounds() {
+        float[] result = new float[3];
+        getPositionScale(result);
+        return result;
+    }
+
+    /**
+     * Returns the non transformedPOSITION bounding (max - min) (three component) for the geometry in the list of nodes.
+     * This will search through all primitives used by the nodes and return the non transformed bound (max - min)
+     * values.
+     * 
+     * @param nodes List of nodes to include, children will be called as well.
+     * @param compare Current max values that will be updated
+     */
+    public static void getPositionScale(Node[] nodes, float[] result) {
+        if (nodes != null) {
+            for (Node n : nodes) {
+                n.getPositionScale(result);
+            }
+        }
+    }
+
+    /**
+     * Returns the non transformed POSITION bounding (max - min) (three component) for the geometry in this node and
+     * children.
+     * This will search through all primitives used by the node and return the non transformed bound (max - min) values.
+     * 
+     * @param compare Current max values that will be updated
+     */
+    public void getPositionScale(float[] compare) {
+        if (getMesh() != null && getMesh().getPrimitives() != null) {
+            for (Primitive p : getMesh().getPrimitives()) {
+                if (p.getAttributesArray() != null) {
+                    Accessor accessor = p.getAccessor(Attributes.POSITION);
+                    if (accessor != null) {
+                        accessor.getBoundsScale(compare, compare);
+                    }
+                }
+            }
+        }
+        getPositionScale(getChildren(), compare);
     }
 
 }
