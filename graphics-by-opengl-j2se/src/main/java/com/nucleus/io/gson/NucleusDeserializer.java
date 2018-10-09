@@ -9,6 +9,7 @@ import com.nucleus.common.TypeResolver;
 
 /**
  * Base class for GSON nodetree deserializer, use this when deserialization will be recursive.
+ * This shall resolve node classes correctly by registering the correct type adapters.
  * 
  * @author Richard Sahlin
  *
@@ -32,6 +33,16 @@ public abstract class NucleusDeserializer<T> {
      */
     public void setGson(Gson gson) {
         this.gson = gson;
+    }
+
+    /**
+     * Returns the gson instance to be used with this deserializer.
+     * Must be set by calling {@link #setGson(Gson)}
+     * 
+     * @return
+     */
+    public Gson getGson() {
+        return gson;
     }
 
     /**

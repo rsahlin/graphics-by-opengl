@@ -12,12 +12,13 @@ import com.google.gson.JsonParseException;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.io.GSONSceneFactory;
 import com.nucleus.scene.AbstractNode.NodeTypes;
+import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.Node;
 import com.nucleus.vecmath.Shape;
 
 /**
  * Implementation of graphics-by-opengl node deserialization for {@link Node} base scenes.
- * This shall return the correct Node implementations for graphics-by-opengl
+ * This shall return the correct Node implementations for graphics-by-opengl.
  * If subclasses register a different deserializer they must make sure to call super.
  * {@link #deserialize(JsonElement, Type, JsonDeserializationContext)}
  * 
@@ -27,7 +28,7 @@ import com.nucleus.vecmath.Shape;
  * @author Richard Sahlin
  *
  */
-public class NucleusNodeDeserializer extends NucleusDeserializer<Node> implements JsonDeserializer<Node> {
+public class NucleusNodeDeserializer extends NucleusRootDeserializer<Node> implements JsonDeserializer<Node> {
 
     protected BoundsDeserializer boundsDeserializer = new BoundsDeserializer();
     protected ShapeDeserializer shapeDeserializer = new ShapeDeserializer();
@@ -65,5 +66,10 @@ public class NucleusNodeDeserializer extends NucleusDeserializer<Node> implement
         postDeserialize(node);
         return node;
 
+    }
+
+    @Override
+    public Type getRootNodyTypeClass() {
+        return BaseRootNode.class;
     }
 }
