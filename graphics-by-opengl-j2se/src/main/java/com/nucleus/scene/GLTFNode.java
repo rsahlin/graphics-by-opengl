@@ -138,7 +138,8 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     public void create(RenderableNode<RenderableMesh> parent) throws IOException, GLException {
         if (glTFName != null) {
             try {
-                glTF = AssetManager.getInstance().getGLTFAsset(getRootNode().getGLTFPath() + glTFName);
+                glTF = AssetManager.getInstance()
+                        .getGLTFAsset(getRootNode().getProperty(RootNode.GLTF_PATH, "") + glTFName);
                 if (normalizeGLTF) {
                     ViewFrustum view = getParentsView();
                     if (view != null) {

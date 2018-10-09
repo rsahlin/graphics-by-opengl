@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.ManagedList;
 import com.nucleus.mmi.ObjectInputListener;
@@ -23,8 +22,7 @@ import com.nucleus.renderer.NucleusRenderer;
  */
 public abstract class RootNode extends AbstractNode {
 
-    private static final String GLTF_PATH = "glTFPath";
-    private static final String GLTF_URIS = "glTFUris";
+    public static final String GLTF_PATH = "glTFPath";
 
     /**
      * Default id for the root node
@@ -42,11 +40,6 @@ public abstract class RootNode extends AbstractNode {
         game(),
         about(),
     }
-
-    @SerializedName(GLTF_PATH)
-    private String glTFPath;
-    @SerializedName(GLTF_URIS)
-    private String[] glTFUris;
 
     /**
      * When a node is rendered it is added to this list, this is for the current frame - will change as nodes are
@@ -78,8 +71,6 @@ public abstract class RootNode extends AbstractNode {
 
     public void set(RootNode source) {
         super.set(source);
-        glTFPath = source.glTFPath;
-        glTFUris = source.glTFUris;
     }
 
     /**
@@ -197,28 +188,6 @@ public abstract class RootNode extends AbstractNode {
      */
     public void setObjectInputListener(ObjectInputListener objectInputListener) {
         this.objectInputListener = objectInputListener;
-    }
-
-    /**
-     * Returns the index of the glTF uri
-     * 
-     * @param uri
-     * @return The index of the glTF asset or -1 if not found
-     */
-    public int getGLTFIndex(String uri) {
-        if (glTFUris == null) {
-            return -1;
-        }
-        for (int i = 0; i < glTFUris.length; i++) {
-            if (uri.contentEquals(glTFUris[i])) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public String getGLTFPath() {
-        return glTFPath;
     }
 
 }
