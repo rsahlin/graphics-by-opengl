@@ -29,7 +29,7 @@ import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Transform;
 
 /**
- * Point of interest in a scene. 
+ * Point of interest in a scene.
  * This shall be a 'dumb' node in that sense that it shall not contain logic or behavior other than the ability to
  * be traversed and possibly rendered.
  * This class may be serialized using GSON, however since TypeAdapter is used to find implementation class of node
@@ -200,7 +200,7 @@ public abstract class AbstractNode extends BaseReference implements Node {
     public AbstractNode(String id) {
         setId(id);
     }
-    
+
     /**
      * Returns the transform for this node.
      * 
@@ -641,7 +641,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
         return type;
     }
 
-
     @Override
     public void setType(Type<Node> type) {
         this.type = type.getName();
@@ -815,13 +814,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
 
     }
 
-    /**
-     * Multiply the concatenated model matrix with this nodes transform matrix and store in this nodes model matrix
-     * If this node does not have a transform an identity matrix is used.
-     * 
-     * @param concatModel The concatenated model matrix
-     * @return The node matrix - this nodes transform * concatModel
-     */
     @Override
     public float[] concatModelMatrix(float[] concatModel) {
         if (concatModel == null) {

@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.scene.gltf.Primitive.Attributes;
+import com.nucleus.vecmath.Matrix;
 
 /**
  * The Node as it is loaded using the glTF format.
@@ -54,16 +55,23 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
     @SerializedName(CAMERA)
     private int camera;
     @SerializedName(ROTATION)
-    private int[] rotation;
+    private float[] rotation;
     @SerializedName(SCALE)
-    private int[] scale;
+    private float[] scale;
     @SerializedName(TRANSLATION)
-    private int[] translation;
+    private float[] translation;
     @SerializedName(MATRIX)
-    private float[] matrix;
+    private float[] matrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
 
     transient protected Node[] childNodes;
     transient protected Mesh nodeMesh;
+    /**
+     * The node concatenated model matrix at time of render, this is set when the node is rendered and
+     * {@link #concatModelMatrix(float[])} is called
+     * May be used when calculating bounds/collision on the current frame.
+     * DO NOT WRITE TO THIS!
+     */
+    transient float[] modelMatrix = Matrix.createMatrix();
 
     /**
      * Returns the index of the mesh to render with this node
@@ -110,18 +118,51 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
         return camera;
     }
 
-    public int[] getRotation() {
+    public float[] getRotation() {
         return rotation;
     }
 
-    public int[] getScale() {
+    public float[] getScale() {
         return scale;
     }
 
-    public int[] getTranslation() {
+    public float[] getTranslation() {
         return translation;
     }
 
+    /**
+     * If RTS values are defined the matrix is set according to these. Otherwise matrix is left unchanged.
+     */
+    protected float[] updateMatrix() {
+        if (rotation != null || scale != null || translation != null) {
+            Matrix.setIdentity(matrix, 0);
+            Matrix.rotateM(matrix, rotation);
+            Matrix.scaleM(matrix, 0, scale);
+            Matrix.translate(matrix, translation);
+        }
+        return matrix;
+    }
+
+    /**
+     * Multiply the concatenated model matrix with this nodes transform matrix and store in this nodes model matrix
+     * If this node does not have a transform an identity matrix is used.
+     * 
+     * @param concatModel The concatenated model matrix
+     * @return The node matrix - this nodes transform * concatModel
+     */
+    public float[] concatModelMatrix(float[] concatModel) {
+        if (concatModel == null) {
+            return updateMatrix();
+        }
+        Matrix.mul4(concatModel, updateMatrix(), modelMatrix);
+        return modelMatrix;
+    }
+
+    /**
+     * Returns the Matrix as an array of floats - this is the current matrix.
+     * 
+     * @return
+     */
     public float[] getMatrix() {
         return matrix;
     }

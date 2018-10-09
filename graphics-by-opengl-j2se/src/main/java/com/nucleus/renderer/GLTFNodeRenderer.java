@@ -1,9 +1,12 @@
 package com.nucleus.renderer;
 
+import java.util.ArrayDeque;
+
 import com.nucleus.common.Environment;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.scene.GLTFNode;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Buffer;
@@ -22,6 +25,28 @@ import com.nucleus.texturing.TextureUtils;
 public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
 
     private Pass currentPass;
+    protected ArrayDeque<float[]> modelMatrixStack = new ArrayDeque<float[]>(10);
+    protected float[] modelMatrix;
+
+    /**
+     * Internal method to handle matrix stack, push a matrix on the stack
+     * 
+     * @param stack The stack to push onto
+     * @param matrix
+     */
+    protected void pushMatrix(ArrayDeque<float[]> stack, float[] matrix) {
+        stack.push(matrix);
+    }
+
+    /**
+     * Internal method to handle matrix stack - pops the latest matrix off the stack
+     * 
+     * @param stack The stack to pop from
+     * @return The poped matrix
+     */
+    protected float[] popMatrix(ArrayDeque<float[]> stack) {
+        return stack.pop();
+    }
 
     @Override
     public boolean renderNode(NucleusRenderer renderer, GLTFNode node, Pass currentPass, float[][] matrices)
@@ -47,9 +72,13 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     protected void renderNode(GLES20Wrapper gles, GLTF glTF, Node node, float[][] matrices)
             throws GLException {
         // Render this node.
+        pushMatrix(modelMatrixStack, matrices[Matrices.MODEL.index]);
+        float[] nodeMatrix = node.concatModelMatrix(matrices[Matrices.MODEL.index]);
+        matrices[Matrices.MODEL.index] = nodeMatrix;
         renderMesh(gles, glTF, node.getMesh(), matrices);
         // Render children.
         renderNodes(gles, glTF, node.getChildren(), matrices);
+        matrices[Matrices.MODEL.index] = popMatrix(modelMatrixStack);
     }
 
     protected void renderMesh(GLES20Wrapper gles, GLTF glTF, Mesh mesh, float[][] matrices) throws GLException {
