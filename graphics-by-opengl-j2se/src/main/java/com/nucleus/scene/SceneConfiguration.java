@@ -2,6 +2,7 @@ package com.nucleus.scene;
 
 import java.lang.reflect.Type;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -14,7 +15,7 @@ import com.nucleus.io.gson.NucleusDeserializer;
  *
  * @param <T>
  */
-public class SceneConfiguration<T> extends NucleusDeserializer
+public class SceneConfiguration<T> extends NucleusDeserializer<Node>
         implements JsonDeserializer<SceneConfiguration<?>> {
 
     public final static String DATA = "DATA";
@@ -32,6 +33,11 @@ public class SceneConfiguration<T> extends NucleusDeserializer
         SceneConfiguration<?> config = gson.fromJson(json, type);
         postDeserialize(config);
         return config;
+    }
+
+    @Override
+    public void registerTypeAdapter(GsonBuilder builder) {
+        // No need to register any adapter
     }
 
 }

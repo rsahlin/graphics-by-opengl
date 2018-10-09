@@ -2,19 +2,22 @@ package com.nucleus.io.gson;
 
 import java.lang.reflect.Type;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.nucleus.common.TypeResolver;
+import com.nucleus.bounds.Bounds;
 import com.nucleus.io.GSONSceneFactory;
 import com.nucleus.scene.AbstractNode.NodeTypes;
 import com.nucleus.scene.Node;
+import com.nucleus.vecmath.Shape;
 
 /**
- * Implementation of graphics-by-opengl node deserialization, this shall return the correct Node implementations
- * for graphics-by-opengl
+ * Implementation of graphics-by-opengl node deserialization for {@link Node} base scenes.
+ * This shall return the correct Node implementations for graphics-by-opengl
  * If subclasses register a different deserializer they must make sure to call super.
  * {@link #deserialize(JsonElement, Type, JsonDeserializationContext)}
  * 
@@ -24,35 +27,27 @@ import com.nucleus.scene.Node;
  * @author Richard Sahlin
  *
  */
-public class NucleusNodeDeserializer extends NucleusDeserializer implements JsonDeserializer<Node> {
+public class NucleusNodeDeserializer extends NucleusDeserializer<Node> implements JsonDeserializer<Node> {
 
-    // TODO where is a good place to store this constant?
-    public final static String NODETYPE_JSON_KEY = "type";
-
-    private TypeResolver nodeResolver = TypeResolver.getInstance();
+    protected BoundsDeserializer boundsDeserializer = new BoundsDeserializer();
+    protected ShapeDeserializer shapeDeserializer = new ShapeDeserializer();
 
     public NucleusNodeDeserializer() {
         addNodeTypes(NodeTypes.values());
     }
 
-    /**
-     * Adds a list with known type name/classes to the deserializer.
-     * Use this to add custom nodes for import.
-     * 
-     * @param types
-     */
-    public void addNodeTypes(com.nucleus.common.Type<Node>[] types) {
-        nodeResolver.registerTypes(types);
+    @Override
+    public void registerTypeAdapter(GsonBuilder builder) {
+        builder.registerTypeAdapter(Bounds.class, boundsDeserializer);
+        builder.registerTypeAdapter(Node.class, this);
+        builder.registerTypeAdapter(Shape.class, shapeDeserializer);
     }
 
-    /**
-     * Adds a type name/class to the deserializer.
-     * Use this to add custom nodes for import.
-     * 
-     * @param types
-     */
-    public void addNodeType(com.nucleus.common.Type<Node> type) {
-        nodeResolver.registerType(type);
+    @Override
+    public void setGson(Gson gson) {
+        super.setGson(gson);
+        boundsDeserializer.setGson(gson);
+        shapeDeserializer.setGson(gson);
     }
 
     @Override

@@ -4,26 +4,29 @@ package com.nucleus.io.gson;
  * Base implementation of a deserializer
  */
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.nucleus.common.TypeResolver;
 
 /**
- * Base class for nodetree deserializer, use this when deserialization will be recursive.
+ * Base class for GSON nodetree deserializer, use this when deserialization will be recursive.
  * 
  * @author Richard Sahlin
  *
  */
-public class NucleusDeserializer {
+public abstract class NucleusDeserializer<T> {
+
+    public final static String NODETYPE_JSON_KEY = "type";
+
+    protected TypeResolver nodeResolver = TypeResolver.getInstance();
 
     /**
      * The gson instance to use when deserializing
-     * TODO Should this be a static instance that is shared across sublcasses
      */
     protected Gson gson;
 
     /**
-     * Sets the gson instance to be used when deserializing - this is a static instance that only needs to be set once
-     * for all subclasses.
-     * Remember to first set type adapters to the Gson builder, then call GsonBuilder.create() to create
-     * a gson instance using the specified type adapters
+     * Set the gson instance to be used, this is called after {@link #registerTypeAdapter(GsonBuilder)}
+     * Subclasses shall call super{@link #setGson(Gson)}
      * 
      * @param gson
      */
@@ -41,5 +44,32 @@ public class NucleusDeserializer {
             ((PostDeserializable) deserialized).postDeserialize();
         }
     }
+
+    /**
+     * Adds a list with known type name/classes to the deserializer.
+     * Use this to add custom nodes for import.
+     * 
+     * @param types
+     */
+    public void addNodeTypes(com.nucleus.common.Type<T>[] types) {
+        nodeResolver.registerTypes(types);
+    }
+
+    /**
+     * Adds a type name/class to the deserializer.
+     * Use this to add custom nodes for import.
+     * 
+     * @param types
+     */
+    public void addNodeType(com.nucleus.common.Type<T> type) {
+        nodeResolver.registerType(type);
+    }
+
+    /**
+     * Register the type adapter(s) needed when serializing JSON
+     * 
+     * @param builder The gson builder used to serialize JSON content
+     */
+    public abstract void registerTypeAdapter(GsonBuilder builder);
 
 }
