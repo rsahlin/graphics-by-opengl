@@ -228,7 +228,7 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void render(Node node) throws GLException {
+    public void render(RenderableNode<?> node) throws GLException {
         Pass pass = node.getPass();
         if (pass != null && (currentPass.getFlags() & pass.getFlags()) != 0) {
             // Node has defined pass and masked with current pass
@@ -267,7 +267,7 @@ class BaseRenderer implements NucleusRenderer {
      * @param node
      * @throws GLException
      */
-    private void internalRender(Node node) throws GLException {
+    private void internalRender(RenderableNode<?> node) throws GLException {
         float[] nodeMatrix = node.concatModelMatrix(this.modelMatrix);
         // Fetch projection just before render
         float[] projection = node.getProjection(currentPass);
@@ -279,20 +279,18 @@ class BaseRenderer implements NucleusRenderer {
         matrices[Matrices.VIEW.index] = viewMatrix;
         // Matrix.mul4(nodeMatrix, viewMatrix, matrices[Matrices.MODELVIEW.index]);
 
-        if (node instanceof RenderableNode<?>) {
-            NodeRenderer nodeRenderer = ((RenderableNode) node).getNodeRenderer();
-            if (nodeRenderer != null) {
-                if (nodeRenderer.renderNode(this, node, currentPass, matrices)) {
-                    // Add this to rendered nodes before children.
-                    node.getRootNode().addRenderedNode(node);
-                }
+        NodeRenderer<RenderableNode<?>> nodeRenderer = (NodeRenderer<RenderableNode<?>>) node.getNodeRenderer();
+        if (nodeRenderer != null) {
+            if (nodeRenderer.renderNode(this, node, currentPass, matrices)) {
+                // Add this to rendered nodes before children.
+                node.getRootNode().addRenderedNode(node);
             }
         }
 
         this.modelMatrix = nodeMatrix;
         for (Node n : node.getChildren()) {
             pushMatrix(matrixStack, this.modelMatrix);
-            render(n);
+            render((RenderableNode<?>) n);
             this.modelMatrix = popMatrix(matrixStack);
         }
         if (projection != null) {
@@ -604,7 +602,7 @@ class BaseRenderer implements NucleusRenderer {
         List<Node> scene = root.getChildren();
         if (scene != null) {
             for (Node node : scene) {
-                render(node);
+                render((RenderableNode<?>) node);
             }
         }
         timeKeeper.addTag(FrameSampler.Samples.RENDERNODES, start, System.currentTimeMillis());

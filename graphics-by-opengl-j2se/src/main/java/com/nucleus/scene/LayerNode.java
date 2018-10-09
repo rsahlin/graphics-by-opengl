@@ -1,6 +1,12 @@
 package com.nucleus.scene;
 
+import java.io.IOException;
+
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.MeshBuilder;
+import com.nucleus.geometry.shape.ShapeBuilder;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.Window;
 import com.nucleus.vecmath.Matrix;
@@ -18,7 +24,7 @@ import com.nucleus.vecmath.Transform;
  * @author Richard Sahlin
  *
  */
-public class LayerNode extends AbstractNode {
+public class LayerNode extends MeshNode {
 
     /**
      * This can be used to find nodes based on layer, it can also be used to render based on layer.
@@ -116,6 +122,13 @@ public class LayerNode extends AbstractNode {
             transform = new Transform();
         }
         viewController = new ViewController(transform);
+    }
+
+    @Override
+    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
+            throws IOException {
+        // Dont create a meshbuilder for layernode
+        return null;
     }
 
 }

@@ -8,7 +8,7 @@ import com.nucleus.io.gson.PostDeserializable;
  * This will mark the specified Node as {@link State#ON} the other children will be toggled to {@link State#OFF}
  * This node can be serialized using GSON
  */
-public class SwitchNode extends AbstractNode implements PostDeserializable {
+public class SwitchNode extends MeshNode implements PostDeserializable {
 
     private static final int MAX_CHILD_COUNT = 2;
 

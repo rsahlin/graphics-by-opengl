@@ -21,9 +21,6 @@ public class J2SEComponentProcessor implements ComponentProcessor {
     @Override
     public void processRoot(RootNode root, float delta) {
         bounds = root.getBounds();
-        // Todo need to update bounds to view
-        Node rootNode = root.getNodeById(RootNode.ROOTNODE_ID);
-
         for (Node node : root.getChildren()) {
             processNode(node, delta);
         }

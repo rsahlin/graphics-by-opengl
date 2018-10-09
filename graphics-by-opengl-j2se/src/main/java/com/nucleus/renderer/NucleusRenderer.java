@@ -7,6 +7,7 @@ import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
 
 /**
@@ -216,7 +217,7 @@ public interface NucleusRenderer {
      * @param node The node to be rendered
      * @throws GLException If there is an error in GL while drawing this node.
      */
-    public void render(Node node) throws GLException;
+    public void render(RenderableNode<?> node) throws GLException;
 
     /**
      * Returns true if this renderer has been initialized by calling init() when

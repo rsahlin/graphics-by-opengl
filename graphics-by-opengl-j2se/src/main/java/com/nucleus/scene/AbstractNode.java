@@ -2,31 +2,20 @@ package com.nucleus.scene;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.bounds.CircularBounds;
 import com.nucleus.bounds.RectangularBounds;
 import com.nucleus.camera.ViewFrustum;
-import com.nucleus.common.Constants;
 import com.nucleus.common.Type;
 import com.nucleus.event.EventManager;
-import com.nucleus.event.EventManager.EventHandler;
-import com.nucleus.geometry.Material;
 import com.nucleus.io.BaseReference;
-import com.nucleus.io.ExternalReference;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.Pass;
-import com.nucleus.renderer.RenderPass;
-import com.nucleus.shader.ShaderProgram;
-import com.nucleus.shader.VariableIndexer.Indexer;
-import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Rectangle;
-import com.nucleus.vecmath.Transform;
 
 /**
  * Point of interest in a scene.
@@ -43,24 +32,22 @@ import com.nucleus.vecmath.Transform;
  */
 public abstract class AbstractNode extends BaseReference implements Node {
 
-    public final static String NULL_PROGRAM_STRING = "Program is null";
-
     /**
      * Known node types
      */
     public enum NodeTypes implements Type<Node> {
 
-        layernode(LayerNode.class),
-        switchnode(SwitchNode.class),
-        linedrawernode(LineDrawerNode.class),
-        componentnode(ComponentNode.class),
-        meshnode(MeshNode.class),
-        rootnode(BaseRootNode.class),
-        gltfnode(GLTFNode.class);
+    layernode(LayerNode.class),
+    switchnode(SwitchNode.class),
+    linedrawernode(LineDrawerNode.class),
+    componentnode(ComponentNode.class),
+    meshnode(MeshNode.class),
+    rootnode(BaseRootNode.class),
+    gltfnode(GLTFNode.class);
 
-        private final Class<?> theClass;
+        public final Class<? extends Node> theClass;
 
-        private NodeTypes(Class<?> theClass) {
+        private NodeTypes(Class<? extends Node> theClass) {
             this.theClass = theClass;
         }
 
@@ -108,10 +95,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
 
     @SerializedName(TYPE)
     private String type;
-    @SerializedName(Transform.TRANSFORM)
-    protected Transform transform;
-    @SerializedName(ViewFrustum.VIEWFRUSTUM)
-    protected ViewFrustum viewFrustum;
     /**
      * The childnodes shall always be processed/rendered in the order they are defined.
      * This makes it possible to treat the children as a list that is rendered in a set order.
@@ -121,23 +104,10 @@ public abstract class AbstractNode extends BaseReference implements Node {
     protected ArrayList<Node> children = new ArrayList<Node>();
 
     @SerializedName(Bounds.BOUNDS)
-    private Bounds bounds;
-
-    @SerializedName(Material.MATERIAL)
-    protected Material material;
-
-    @SerializedName(RenderPass.RENDERPASS)
-    private ArrayList<RenderPass> renderPass;
+    protected Bounds bounds;
 
     @SerializedName(STATE)
-    private State state = State.ON;
-
-    /**
-     * Reference to texture, used when importing / exporting.
-     * No runtime meaning
-     */
-    @SerializedName(TEXTUREREF)
-    protected ExternalReference textureRef;
+    protected State state = State.ON;
 
     /**
      * Properties for this node
@@ -150,20 +120,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
      */
     @SerializedName(PASS)
     private Pass pass = Pass.ALL;
-
-    /**
-     * Optional projection Matrix for the node, this will affect all child nodes.
-     */
-    transient float[] projection;
-    /**
-     * The node concatenated model matrix at time of render, this is set when the node is rendered and
-     * {@link #concatModelMatrix(float[])} is called
-     * May be used when calculating bounds/collision on the current frame.
-     * DO NOT WRITE TO THIS!
-     */
-    transient float[] modelMatrix = Matrix.createMatrix();
-    transient protected ShaderProgram program;
-    transient protected Indexer indexer;
 
     /**
      * The parent node, this shall be set when node is added as child
@@ -202,115 +158,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
     }
 
     /**
-     * Returns the transform for this node.
-     * 
-     * @return
-     */
-    @Override
-    public Transform getTransform() {
-        return transform;
-    }
-
-    /**
-     * Copies the material from the source to this node. If the material in the source is null, the material in this
-     * node is set to null
-     * 
-     * @param source
-     * @throws NullPointerException If source is null
-     */
-    protected void copyMaterial(AbstractNode source) {
-        if (source.material != null) {
-            copyMaterial(source.material);
-        }
-    }
-
-    public Material getMaterial() {
-        return material;
-    }
-
-    /**
-     * Copies the material into this node
-     * 
-     * @param source
-     */
-    protected void copyMaterial(Material source) {
-        if (material != null) {
-            material.copy(source);
-        } else {
-            material = new Material(source);
-        }
-    }
-
-    /**
-     * Copies the transform from the source to this class.
-     * This will copy all values, creating the transform in this node if needed.
-     * 
-     * @param source The source transform to copy.
-     */
-    public void copyTransform(Transform source) {
-        if (transform == null) {
-            transform = new Transform(source);
-        } else {
-            transform.set(source);
-        }
-    }
-
-    /**
-     * Copies the transform from the source node, if the transform in the source is null then this nodes transform
-     * is set to null as well.
-     * 
-     * @param source The node to copy the transform from.
-     */
-    public void copyTransform(Node source) {
-        if (source.getTransform() != null) {
-            copyTransform(source.getTransform());
-        } else {
-            this.transform = null;
-        }
-
-    }
-
-    /**
-     * Fetches the projection matrix for the specified pass, if set.
-     * 
-     * @param pass
-     * @return Projection matrix for this node and childnodes, or null if not set
-     */
-    @Override
-    public float[] getProjection(Pass pass) {
-        switch (pass) {
-            case SHADOW1:
-                return null;
-            default:
-                return projection;
-
-        }
-    }
-
-    /**
-     * Returns the resulting model matrix for this node.
-     * It is updated with the concatenated model matrix for the node when it is rendered.
-     * This will contain the sum of the model matrices of this nodes parents.
-     * If object space collision shall be done this matrix can be used to transform the bounds.
-     * 
-     * @return The concatenated MVP from last rendered frame, if Node is not rendered the matrix will not be updated.
-     * It will contain the values from the last frame it was processed/rendered
-     */
-    public float[] getModelMatrix() {
-        return modelMatrix;
-    }
-
-    /**
-     * Sets the optional projection for this node and child nodes.
-     * If set this matrix will be used instead of the renderers projection matrix.
-     * 
-     * @param projection Projection matrix or null
-     */
-    public void setProjection(float[] projection) {
-        this.projection = projection;
-    }
-
-    /**
      * Returns the parent of this node, or null if this is the root
      * 
      * @return
@@ -319,17 +166,12 @@ public abstract class AbstractNode extends BaseReference implements Node {
         return parent;
     }
 
-    /**
-     * Returns the first (closest) parent node that has defined ViewFrustum
-     * 
-     * @return Closest parent node that has defined ViewFrustum, or null if not found
-     */
     @Override
-    public Node getParentView() {
+    public RenderableNode<?> getParentView() {
         Node parent = getParent();
-        if (parent != null) {
-            if (parent.getViewFrustum() != null) {
-                return parent;
+        if (parent != null && parent instanceof RenderableNode<?>) {
+            if (((RenderableNode<?>) parent).getViewFrustum() != null) {
+                return (RenderableNode<?>) parent;
             }
             return parent.getParentView();
         }
@@ -445,13 +287,8 @@ public abstract class AbstractNode extends BaseReference implements Node {
     protected void set(AbstractNode source) {
         super.set(source);
         type = source.getType();
-        textureRef = source.textureRef;
         state = source.state;
         this.pass = source.pass;
-        setRenderPass(source.getRenderPass());
-        copyTransform(source);
-        copyViewFrustum(source);
-        copyMaterial(source);
         copyBounds(source);
         setProperties(source);
     }
@@ -513,20 +350,13 @@ public abstract class AbstractNode extends BaseReference implements Node {
         properties.put(key, value);
     }
 
-    /**
-     * Returns node with matching id, searching through this node and recursively searching through children.
-     * Children will be searched by calling {@link #getChildren()} excluding nodes that are switched off.
-     * 
-     * @param id Id of node to return
-     * @return First instance of node with matching id, or null if none found
-     */
     @Override
-    public Node getNodeById(String id) {
+    public <T extends Node> T getNodeById(String id, Class<T> type) {
         if (id.equals(getId())) {
-            return this;
+            return (T) this;
         }
         for (Node child : getChildren()) {
-            Node result = child.getNodeById(id);
+            T result = child.getNodeById(id, type);
             if (result != null) {
                 return result;
             }
@@ -574,39 +404,15 @@ public abstract class AbstractNode extends BaseReference implements Node {
         return null;
     }
 
-    /**
-     * Returns the first node with matching type, or null if none found.
-     * This method will search through the active children.
-     * 
-     * @param type
-     * @return
-     */
     @Override
-    public Node getNodeByType(String type) {
-        if (type.equals(this.type)) {
-            return this;
+    public <T extends Node> T getNodeByType(String name, Class<T> type) {
+        if (name.equals(this.type)) {
+            return (T) this;
         }
         for (Node child : getChildren()) {
-            Node result = child.getNodeByType(type);
+            T result = child.getNodeByType(name, type);
             if (result != null) {
                 return result;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Searches through the scene children and looks for the first node with matching type.
-     * 
-     * @param type
-     * @return
-     */
-    @Override
-    public Node getNodeByType(Type<Node> type) {
-        for (Node node : children) {
-            Node n = node.getNodeByType(type.getName());
-            if (n != null) {
-                return n;
             }
         }
         return null;
@@ -632,8 +438,7 @@ public abstract class AbstractNode extends BaseReference implements Node {
     @Override
     public String toString() {
         return "Node '" + getId() + "', " + children.size() + " children, pass=" + pass
-                + ", state=" + state
-                + (renderPass != null ? ", has renderpass" : "") + (bounds != null ? ", has bounds" : "");
+                + ", state=" + state + (bounds != null ? ", has bounds" : "");
     }
 
     @Override
@@ -664,32 +469,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
         }
     }
 
-    @Override
-    public ViewFrustum getViewFrustum() {
-        return viewFrustum;
-    }
-
-    @Override
-    public void setViewFrustum(ViewFrustum source) {
-        viewFrustum = source;
-        setProjection(source.getMatrix());
-    }
-
-    /**
-     * Copies the viewfrustum from the source node into this class, if the viewfrustum is null in the source
-     * the viewfrustum is set to null
-     * 
-     * @param source The source node
-     * @throws NullPointerException If source is null
-     */
-    protected void copyViewFrustum(Node source) {
-        if (source.getViewFrustum() != null) {
-            copyViewFrustum(source.getViewFrustum());
-        } else {
-            viewFrustum = null;
-        }
-    }
-
     /**
      * Copies the bounds from the source node into this node.
      * If the bounds in the source is null, the bounds in this node is set to null
@@ -714,56 +493,9 @@ public abstract class AbstractNode extends BaseReference implements Node {
         bounds = Bounds.create(source.getType(), source.getBounds());
     }
 
-    /**
-     * Sets the bounds reference
-     * 
-     * @param bounds Reference to bounds, values are not copied.
-     */
     @Override
     public void setBounds(Bounds bounds) {
         this.bounds = bounds;
-    }
-
-    /**
-     * Copies the viewfrustum into this class.
-     * 
-     * @param source The viewfrustum to copy
-     * @throws NullPointerException If source is null
-     */
-    public void copyViewFrustum(ViewFrustum source) {
-        if (viewFrustum != null) {
-            viewFrustum.set(source);
-        } else {
-            viewFrustum = new ViewFrustum(source);
-        }
-    }
-
-    @Override
-    public void onCreated() {
-        // Check if bounds should be created explicitly
-        ViewFrustum vf = getViewFrustum();
-        if (bounds != null && bounds.getBounds() == null) {
-            // Bounds object defined in node but no bound values set.
-            // try to calculate from viewfrustum.
-            if (getProperty(EventHandler.EventType.POINTERINPUT.name(), Constants.FALSE)
-                    .equals(Constants.TRUE)) {
-                // Has pointer input so must have bounds
-                vf = vf != null ? vf : getParentsView();
-                if (vf == null) {
-                    throw new IllegalArgumentException(
-                            "Node " + getId()
-                                    + " defines pointer input but does not have bounds and ViewFrustum not defined in any parent");
-                }
-            }
-            if (vf != null) {
-                float[] values = vf.getValues();
-                initBounds(new Rectangle(values[ViewFrustum.LEFT_INDEX], values[ViewFrustum.TOP_INDEX], vf.getWidth(),
-                        vf.getHeight()));
-            }
-        }
-        if (vf != null) {
-            setProjection(vf.getMatrix());
-        }
     }
 
     /**
@@ -772,19 +504,8 @@ public abstract class AbstractNode extends BaseReference implements Node {
      * @return ViewFrustom from a parent node, or null if not defined.
      */
     protected ViewFrustum getParentsView() {
-        Node viewparent = getParentView();
+        RenderableNode<?> viewparent = getParentView();
         return viewparent != null ? viewparent.getViewFrustum() : null;
-    }
-
-    @Override
-    public boolean isInside(float[] position) {
-        if (bounds != null && (state == State.ON || state == State.ACTOR)
-                && getProperty(EventHandler.EventType.POINTERINPUT.name(), Constants.FALSE)
-                        .equals(Constants.TRUE)) {
-            bounds.transform(modelMatrix, 0);
-            return bounds.isPointInside(position, 0);
-        }
-        return false;
     }
 
     /**
@@ -815,20 +536,7 @@ public abstract class AbstractNode extends BaseReference implements Node {
     }
 
     @Override
-    public float[] concatModelMatrix(float[] concatModel) {
-        if (concatModel == null) {
-            return transform != null ? Matrix.copy(transform.updateMatrix(), 0, modelMatrix, 0)
-                    : Matrix.setIdentity(modelMatrix, 0);
-        }
-        Matrix.mul4(concatModel, transform != null ? transform.updateMatrix() : Matrix.IDENTITY_MATRIX,
-                modelMatrix);
-        return modelMatrix;
-    }
-
-    @Override
     public void destroy(NucleusRenderer renderer) {
-        transform = null;
-        viewFrustum = null;
         children.clear();
         bounds = null;
         properties = null;
@@ -853,23 +561,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
     }
 
     @Override
-    public void setRenderPass(ArrayList<RenderPass> renderPass) {
-        if (renderPass != null) {
-            this.renderPass = new ArrayList<>();
-            Set<String> ids = new HashSet<>();
-            for (RenderPass rp : renderPass) {
-                if (rp.getId() != null && ids.contains(rp.getId())) {
-                    throw new IllegalArgumentException("Already contains renderpass with id: " + rp.getId());
-                }
-                ids.add(rp.getId());
-                this.renderPass.add(rp);
-            }
-        } else {
-            this.renderPass = null;
-        }
-    }
-
-    @Override
     public Pass getPass() {
         return pass;
     }
@@ -880,13 +571,12 @@ public abstract class AbstractNode extends BaseReference implements Node {
     }
 
     @Override
-    public ArrayList<RenderPass> getRenderPass() {
-        return renderPass;
+    public void setParent(Node parent) {
+        this.parent = parent;
     }
 
     @Override
-    public void setParent(Node parent) {
-        this.parent = parent;
+    public void onCreated() {
     }
 
 }

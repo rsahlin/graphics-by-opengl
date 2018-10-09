@@ -14,8 +14,6 @@ import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilderFactory;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
-import com.nucleus.renderer.MeshRenderer;
-import com.nucleus.renderer.NucleusMeshRenderer;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -29,8 +27,6 @@ import com.nucleus.vecmath.Shape;
  */
 public class MeshNode extends AbstractMeshNode<Mesh> {
 
-    transient protected static MeshRenderer<Mesh> meshRenderer;
-
     /**
      * If defined this is the shape of the mesh - if not specified a fullscreen 2D rect will be created.
      */
@@ -42,12 +38,10 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
      */
     protected MeshNode() {
         super();
-        createMeshRenderer();
     }
 
     protected MeshNode(RootNode root, Type<Node> type) {
         super(root, type);
-        createMeshRenderer();
     }
 
     @Override
@@ -103,18 +97,6 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
     @Override
     public void createTransient() {
         // TODO Auto-generated method stub
-    }
-
-    @Override
-    protected void createMeshRenderer() {
-        if (meshRenderer == null) {
-            meshRenderer = new NucleusMeshRenderer();
-        }
-    }
-
-    @Override
-    public MeshRenderer<Mesh> getMeshRenderer() {
-        return meshRenderer;
     }
 
 }

@@ -15,15 +15,13 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
-import com.nucleus.renderer.MeshRenderer;
-import com.nucleus.renderer.NucleusMeshRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
 import com.nucleus.shader.VariableIndexer.Indexer;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.Texture2D.Shading;
+import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
 
 /**
@@ -36,7 +34,6 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
 
     protected final static String VERTEX_SHADER_NAME = "flatline";
     protected final static String FRAGMENT_SHADER_NAME = "flatline";
-    transient protected static MeshRenderer<Mesh> meshRenderer;
 
     public enum LineMode {
         RECTANGLE(),
@@ -309,18 +306,6 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
     public ArrayList<Mesh> getMeshes(ArrayList<Mesh> list) {
         list.addAll(meshes);
         return list;
-    }
-
-    @Override
-    protected void createMeshRenderer() {
-        if (meshRenderer == null) {
-            meshRenderer = new NucleusMeshRenderer();
-        }
-    }
-
-    @Override
-    public MeshRenderer<Mesh> getMeshRenderer() {
-        return meshRenderer;
     }
 
 }

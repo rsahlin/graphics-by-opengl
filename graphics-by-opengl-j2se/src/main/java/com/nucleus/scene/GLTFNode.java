@@ -12,9 +12,7 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
-import com.nucleus.renderer.GLTFMeshRenderer;
 import com.nucleus.renderer.GLTFNodeRenderer;
-import com.nucleus.renderer.MeshRenderer;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.GLTF;
@@ -32,7 +30,7 @@ import com.nucleus.vecmath.Transform;
  * Node containing a glTF model
  *
  */
-public class GLTFNode extends AbstractNode implements RenderableNode<RenderableMesh>, MeshBuilder<RenderableMesh> {
+public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBuilder<RenderableMesh> {
 
     transient protected static NodeRenderer<GLTFNode> nodeRenderer = new GLTFNodeRenderer();
 
@@ -47,7 +45,6 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
     transient private GLTF glTF;
     transient ArrayList<RenderableMesh> meshes = new ArrayList<>();
     transient GLES20Wrapper gles;
-    transient MeshRenderer<RenderableMesh> meshRenderer = new GLTFMeshRenderer();
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -116,11 +113,6 @@ public class GLTFNode extends AbstractNode implements RenderableNode<RenderableM
             throws IOException {
         this.gles = gles;
         return this;
-    }
-
-    @Override
-    public MeshRenderer<RenderableMesh> getMeshRenderer() {
-        return meshRenderer;
     }
 
     @Override

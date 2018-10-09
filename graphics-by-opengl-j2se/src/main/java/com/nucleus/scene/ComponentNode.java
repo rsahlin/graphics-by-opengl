@@ -12,8 +12,6 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.renderer.MeshRenderer;
-import com.nucleus.renderer.NucleusMeshRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.system.ComponentHandler;
 import com.nucleus.system.System;
@@ -27,8 +25,6 @@ import com.nucleus.system.System;
  */
 public class ComponentNode extends AbstractMeshNode<Mesh> implements ComponentController {
 
-    transient protected static MeshRenderer<Mesh> meshRenderer;
-    
     /**
      * Builder for Nodes, use this when nodes are created programmatically
      *
@@ -228,17 +224,4 @@ public class ComponentNode extends AbstractMeshNode<Mesh> implements ComponentCo
         return null;
     }
 
-    @Override
-    protected void createMeshRenderer() {
-        if (meshRenderer == null) {
-            meshRenderer = new NucleusMeshRenderer();
-        }
-    }
-    
-    @Override
-    public MeshRenderer<Mesh> getMeshRenderer() {
-        return meshRenderer;
-    }
-    
-    
 }

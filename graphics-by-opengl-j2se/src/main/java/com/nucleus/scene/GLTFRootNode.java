@@ -17,4 +17,10 @@ public class GLTFRootNode extends RootNode {
     public void createTransient() {
     }
 
+    @Override
+    public boolean isInside(float[] position) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
 }

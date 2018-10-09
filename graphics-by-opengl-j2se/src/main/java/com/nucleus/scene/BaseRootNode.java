@@ -51,13 +51,15 @@ public class BaseRootNode extends RootNode {
             pass.setRenderState(new RenderState());
             pass.setPass(Pass.MAIN);
             Node created = super.create("rootnode");
-            ViewFrustum vf = new ViewFrustum();
-            vf.setOrthoProjection(-0.8889f, 0.8889f, -0.5f, 0.5f, 0, 10);
-            created.setViewFrustum(vf);
-            created.setPass(Pass.ALL);
-            ArrayList<RenderPass> rp = new ArrayList<>();
-            rp.add(pass);
-            created.setRenderPass(rp);
+            if (created instanceof RenderableNode<?>) {
+                ViewFrustum vf = new ViewFrustum();
+                vf.setOrthoProjection(-0.8889f, 0.8889f, -0.5f, 0.5f, 0, 10);
+                ((RenderableNode<?>) created).setViewFrustum(vf);
+                created.setPass(Pass.ALL);
+                ArrayList<RenderPass> rp = new ArrayList<>();
+                rp.add(pass);
+                ((RenderableNode<?>) created).setRenderPass(rp);
+            }
             created.onCreated();
             root.addChild(created);
             return root;
@@ -79,6 +81,12 @@ public class BaseRootNode extends RootNode {
 
     @Override
     public void createTransient() {
+    }
+
+    @Override
+    public boolean isInside(float[] position) {
+        // TODO Auto-generated method stub
+        return false;
     }
 
 }
