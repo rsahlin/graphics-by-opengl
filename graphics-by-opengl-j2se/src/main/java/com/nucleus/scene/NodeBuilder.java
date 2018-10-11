@@ -2,12 +2,15 @@
 package com.nucleus.scene;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.RenderPass;
 import com.nucleus.shader.ShaderProgram;
 
 /**
@@ -22,9 +25,11 @@ public class NodeBuilder<T extends Node> {
     protected int meshCount = 0;
     protected MeshBuilder<?> meshBuilder;
     protected ShaderProgram program;
+    protected ArrayList<RenderPass> renderPass;
+    protected ViewFrustum viewFrustum;
 
     /**
-     * Inits this biulder to create a new instance of the specified Node
+     * Inits this builder to create a new instance of the specified Node
      * 
      * @param source
      * @return
@@ -67,6 +72,28 @@ public class NodeBuilder<T extends Node> {
     }
 
     /**
+     * Sets or clears the renderpasses
+     * 
+     * @param renderPass
+     * @return
+     */
+    public NodeBuilder<T> setRenderPass(ArrayList<RenderPass> renderPass) {
+        this.renderPass = renderPass;
+        return this;
+    }
+
+    /**
+     * Set or clear the viewfrustum
+     * 
+     * @param viewFrustum
+     * @return
+     */
+    public NodeBuilder<T> setViewFrustum(ViewFrustum viewFrustum) {
+        this.viewFrustum = viewFrustum;
+        return this;
+    }
+
+    /**
      * Sets the Mesh builder to be used to create meshes, set number of meshes to build by calling
      * {@link #setMeshCount(int)}
      * 
@@ -87,6 +114,44 @@ public class NodeBuilder<T extends Node> {
     public NodeBuilder<T> setMeshCount(int meshCount) {
         this.meshCount = meshCount;
         return this;
+    }
+
+    /**
+     * Creates Node and adds to root - then creates childnodes in source and returns the root.
+     * 
+     * @param gles
+     * @param source
+     * @return
+     * @throws NodeException
+     */
+    public RootNode createRoot(GLES20Wrapper gles, T source) throws NodeException {
+        if (root == null) {
+            throw new IllegalAccessError("Root is null in builder");
+        }
+        T created = (T) source.createInstance(root);
+        root.addChild(created);
+        create(gles, source, created, null);
+        return root;
+    }
+
+    /**
+     * Creates a new instance of the source Node.
+     * If node is RenderableNode and the meshbuilder is set then it is used to create mesh.
+     * If RenderableNode but meshbuilder not set the
+     * {@link RenderableNode#createMeshBuilder(GLES20Wrapper, com.nucleus.geometry.shape.ShapeBuilder)}
+     * is called to create MeshBuilder.
+     * Node is added to parent.
+     * 
+     * @param gles
+     * @param source
+     * @param parent Parent if this method is called with a parent Node
+     * @param builder
+     * @return
+     * @throws NodeException
+     */
+    protected T create(GLES20Wrapper gles, T source, T parent) throws NodeException {
+        T created = (T) source.createInstance(root);
+        return create(gles, source, created, parent);
     }
 
     /**
@@ -115,6 +180,15 @@ public class NodeBuilder<T extends Node> {
             }
             Node node = createInstance(type, root);
             node.setId(id);
+            if (node instanceof RenderableNode<?>) {
+                RenderableNode<?> rNode = (RenderableNode<?>) node;
+                if (renderPass != null) {
+                    rNode.setRenderPass(renderPass);
+                }
+                if (viewFrustum != null) {
+                    rNode.setViewFrustum(viewFrustum);
+                }
+            }
             node.createTransient();
             createMesh(meshBuilder, node, meshCount);
             node.onCreated();
@@ -122,6 +196,36 @@ public class NodeBuilder<T extends Node> {
         } catch (InstantiationException | IllegalAccessException | GLException | IOException e) {
             throw new NodeException("Could not create node: " + e.getMessage());
         }
+    }
+
+    protected T create(GLES20Wrapper gles, T source, T created, T parent) throws NodeException {
+        created.createTransient();
+        try {
+            if (parent != null) {
+                parent.addChild(created);
+            }
+            if (source instanceof RenderableNode<?>) {
+                MeshBuilder<?> mBuilder = meshBuilder;
+                RenderableNode<?> rNode = (RenderableNode<?>) created;
+                if (mBuilder == null) {
+                    mBuilder = rNode.createMeshBuilder(gles, null);
+                }
+                if (mBuilder != null) {
+                    createMesh(mBuilder, created, 1);
+                }
+            }
+            created.onCreated();
+            // Recursively create children if there are any
+            if (source.getChildren() != null) {
+                for (Node nd : source.getChildren()) {
+                    create(gles, (T) nd, created);
+                }
+            }
+            return created;
+        } catch (IOException | GLException e) {
+            throw new NodeException(e);
+        }
+
     }
 
     /**
@@ -143,50 +247,6 @@ public class NodeBuilder<T extends Node> {
         node.setType(nodeType);
         node.setRootNode(root);
         return node;
-    }
-
-    /**
-     * Creates a new instance of the source Node.
-     * If node is RenderableNode and the meshbuilder is set then it is used to create mesh.
-     * If RenderableNode but meshbuilder not set the
-     * {@link RenderableNode#createMeshBuilder(GLES20Wrapper, com.nucleus.geometry.shape.ShapeBuilder)}
-     * is called to create MeshBuilder.
-     * Node is added to parent.
-     * 
-     * @param gles
-     * @param source
-     * @param parent
-     * @param builder
-     * @return
-     * @throws NodeException
-     */
-    public T create(GLES20Wrapper gles, T source, T parent) throws NodeException {
-        T created = (T) source.createInstance(root);
-        created.createTransient();
-        try {
-            parent.addChild(created);
-            if (source instanceof RenderableNode<?>) {
-                MeshBuilder<?> mBuilder = meshBuilder;
-                RenderableNode rNode = (RenderableNode<?>) created;
-                if (mBuilder == null) {
-                    mBuilder = rNode.createMeshBuilder(gles, null);
-                }
-                if (mBuilder != null) {
-                    createMesh(mBuilder, created, 1);
-                }
-            }
-            created.onCreated();
-            // Recursively create children if there are any
-            if (source.getChildren() != null) {
-                for (Node nd : source.getChildren()) {
-                    create(gles, (T) nd, created);
-                }
-            }
-            return created;
-        } catch (IOException | GLException e) {
-            throw new NodeException(e);
-        }
-
     }
 
     /**

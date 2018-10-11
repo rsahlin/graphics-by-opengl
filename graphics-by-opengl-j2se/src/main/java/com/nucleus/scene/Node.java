@@ -54,7 +54,7 @@ public interface Node extends Reference {
      * @return New copy of this node, transient values and children will not be copied.
      * @throws IllegalArgumentException If root is null
      */
-    public abstract Node createInstance(RootNode root);
+    public Node createInstance(RootNode root);
 
     /**
      * This shall be set if node is created using {@link #createInstance(RootNode)}

@@ -58,7 +58,8 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
         }
         builder.setTexture(tex);
         if (shapeBuilder == null) {
-            LayerNode layer = getRootNode().getLayerNode(null);
+            LayerNode layer = getRootNode().getNodeByType(NodeTypes.layernode.name(), LayerNode.class);
+
             ViewFrustum view = layer.getViewFrustum();
             builder.setArrayMode(GLESWrapper.Mode.TRIANGLE_FAN, 4, 0);
             if (shape == null) {

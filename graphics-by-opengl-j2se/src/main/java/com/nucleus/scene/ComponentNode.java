@@ -79,7 +79,7 @@ public class ComponentNode extends AbstractMeshNode<Mesh> implements ComponentCo
     }
 
     /**
-     * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
+     * Used by GSON and {@link #createInstance(RootNodeImpl)} method - do NOT call directly
      */
     @Deprecated
     protected ComponentNode() {

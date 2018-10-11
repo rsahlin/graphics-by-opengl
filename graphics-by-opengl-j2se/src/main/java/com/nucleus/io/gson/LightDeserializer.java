@@ -17,7 +17,7 @@ import com.nucleus.scene.Node;
  * implementation.
  *
  */
-public class LightDeserializer extends NucleusDeserializer<Node> implements JsonDeserializer<Light> {
+public class LightDeserializer extends NucleusDeserializerImpl<Node> implements JsonDeserializer<Light> {
 
     @Override
     public Light deserialize(JsonElement json, Type type, JsonDeserializationContext context)

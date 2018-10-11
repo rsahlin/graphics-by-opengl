@@ -5,25 +5,17 @@ package com.nucleus.io.gson;
  */
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.nucleus.common.TypeResolver;
 
 /**
- * Base class for GSON nodetree deserializer, use this when deserialization will be recursive.
+ * Interface for GSON nodetree deserializer, use this when deserialization will be recursive.
  * This shall resolve node classes correctly by registering the correct type adapters.
  * 
  * @author Richard Sahlin
  *
  */
-public abstract class NucleusDeserializer<T> {
+public interface NucleusDeserializer<T> {
 
     public final static String NODETYPE_JSON_KEY = "type";
-
-    protected TypeResolver nodeResolver = TypeResolver.getInstance();
-
-    /**
-     * The gson instance to use when deserializing
-     */
-    protected Gson gson;
 
     /**
      * Set the gson instance to be used, this is called after {@link #registerTypeAdapter(GsonBuilder)}
@@ -31,9 +23,7 @@ public abstract class NucleusDeserializer<T> {
      * 
      * @param gson
      */
-    public void setGson(Gson gson) {
-        this.gson = gson;
-    }
+    public void setGson(Gson gson);
 
     /**
      * Returns the gson instance to be used with this deserializer.
@@ -41,20 +31,14 @@ public abstract class NucleusDeserializer<T> {
      * 
      * @return
      */
-    public Gson getGson() {
-        return gson;
-    }
+    public Gson getGson();
 
     /**
      * Checks if implements post deserialize, then call {@linkplain PostDeserializable#postDeserialize()}
      * 
      * @param deserialized The class that has been deserialized
      */
-    protected void postDeserialize(Object deserialized) {
-        if (deserialized instanceof PostDeserializable) {
-            ((PostDeserializable) deserialized).postDeserialize();
-        }
-    }
+    public void postDeserialize(Object deserialized);
 
     /**
      * Adds a list with known type name/classes to the deserializer.
@@ -62,9 +46,7 @@ public abstract class NucleusDeserializer<T> {
      * 
      * @param types
      */
-    public void addNodeTypes(com.nucleus.common.Type<T>[] types) {
-        nodeResolver.registerTypes(types);
-    }
+    public void addNodeTypes(com.nucleus.common.Type<T>[] types);
 
     /**
      * Adds a type name/class to the deserializer.
@@ -72,15 +54,13 @@ public abstract class NucleusDeserializer<T> {
      * 
      * @param types
      */
-    public void addNodeType(com.nucleus.common.Type<T> type) {
-        nodeResolver.registerType(type);
-    }
+    public void addNodeType(com.nucleus.common.Type<T> type);
 
     /**
      * Register the type adapter(s) needed when serializing JSON
      * 
      * @param builder The gson builder used to serialize JSON content
      */
-    public abstract void registerTypeAdapter(GsonBuilder builder);
+    public void registerTypeAdapter(GsonBuilder builder);
 
 }

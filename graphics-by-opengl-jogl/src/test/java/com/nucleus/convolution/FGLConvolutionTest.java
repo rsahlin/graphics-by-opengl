@@ -20,9 +20,11 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
-import com.nucleus.scene.BaseRootNode;
+import com.nucleus.scene.Node;
+import com.nucleus.scene.NodeBuilder;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.RootNode;
+import com.nucleus.scene.RootNodeImpl;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Convolution;
@@ -132,23 +134,26 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         NucleusRenderer renderer = coreApp.getRenderer();
         InputProcessor.getInstance().addMMIListener(this);
 
-        BaseRootNode.Builder builder = new BaseRootNode.Builder();
-        TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
-        Texture2D texture = AssetManager.getInstance().getTexture(renderer.getGLES(),
-                BaseImageFactory.getInstance(), "texture",
-                new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, texParam, 1);
-        Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer.getGLES());
-        meshBuilder.setElementMode(GLESWrapper.Mode.TRIANGLES, 4, 0, 6);
-        meshBuilder.setTexture(texture);
-        program = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
-                new ConvolutionProgram());
-        Material material = new Material();
-        meshBuilder.setMaterial(material).setAttributesPerVertex(program.getAttributeSizes());
-        meshBuilder.setShapeBuilder(
-                new RectangleShapeBuilder(new RectangleShapeBuilder.RectangleConfiguration(1f, 1f, 0f, 1, 0)));
-        builder.setType(com.nucleus.scene.AbstractNode.NodeTypes.layernode).setMeshBuilder(meshBuilder).setMeshCount(1);
         try {
-            RootNode root = builder.create("rootnode");
+            RootNodeImpl.Builder rootBuilder = new RootNodeImpl.Builder();
+            RootNode root = rootBuilder.create("rootnode");
+            NodeBuilder<Node> builder = new NodeBuilder<>();
+            TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
+            Texture2D texture = AssetManager.getInstance().getTexture(renderer.getGLES(),
+                    BaseImageFactory.getInstance(), "texture",
+                    new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, texParam, 1);
+            Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer.getGLES());
+            meshBuilder.setElementMode(GLESWrapper.Mode.TRIANGLES, 4, 0, 6);
+            meshBuilder.setTexture(texture);
+            program = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
+                    new ConvolutionProgram());
+            Material material = new Material();
+            meshBuilder.setMaterial(material).setAttributesPerVertex(program.getAttributeSizes());
+            meshBuilder.setShapeBuilder(
+                    new RectangleShapeBuilder(new RectangleShapeBuilder.RectangleConfiguration(1f, 1f, 0f, 1, 0)));
+            builder.setType(com.nucleus.scene.AbstractNode.NodeTypes.layernode).setMeshBuilder(meshBuilder)
+                    .setMeshCount(1);
+            root.addChild(builder.create("rootnode"));
             uKernel = program.getUniformByName("uKernel");
             renderer.addFrameListener(this);
             coreApp.setRootNode(root);

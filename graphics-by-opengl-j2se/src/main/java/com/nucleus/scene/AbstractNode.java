@@ -42,13 +42,14 @@ public abstract class AbstractNode extends BaseReference implements Node {
     linedrawernode(LineDrawerNode.class),
     componentnode(ComponentNode.class),
     meshnode(MeshNode.class),
-    rootnode(BaseRootNode.class),
+    // rootnode(RootNodeImpl.class),
     gltfnode(GLTFNode.class);
 
         public final Class<? extends Node> theClass;
 
         private NodeTypes(Class<? extends Node> theClass) {
             this.theClass = theClass;
+            RootNodeImpl r = null;
         }
 
         /**

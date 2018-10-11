@@ -31,7 +31,8 @@ public abstract class System<T extends Component> {
     public abstract void process(T component, float deltaTime);
 
     /**
-     * Initializes the system, will be called once before {@link #initComponent(NucleusRenderer, RootNode, Component)}
+     * Initializes the system, will be called once before
+     * {@link #initComponent(NucleusRenderer, RootNode, Component)}
      * is called.
      * Implementors MUST set the {@link #initialized} flag to true
      * 

@@ -8,7 +8,7 @@ import com.nucleus.common.TypeResolver;
 import com.nucleus.io.BaseReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.scene.ComponentNode;
-import com.nucleus.scene.RootNode;
+import com.nucleus.scene.RootNodeImpl;
 
 /**
  * The component part of behavior, this holds the data needed to perform actions.
@@ -34,7 +34,7 @@ public abstract class Component extends BaseReference {
     transient protected ArrayList<ComponentBuffer> buffers = new ArrayList<>();
     /**
      * Keep track if component is initialized, for instance make sure
-     * {@link #initComponent(GLES20Wrapper, RootNode, Component)} not called more than with this component
+     * {@link #initComponent(GLES20Wrapper, RootNodeImpl, Component)} not called more than with this component
      */
     transient protected boolean initialized = false;
 

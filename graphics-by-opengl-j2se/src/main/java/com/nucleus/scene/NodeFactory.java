@@ -17,7 +17,7 @@ public interface NodeFactory {
     /**
      * Creates a new instance of the source node, allocating buffers, programs and fetching textures as needed.
      * If implementations do not recognize the node to be created they must call super
-     * {@link #create(NucleusRenderer, Node, RootNode)}
+     * {@link #create(NucleusRenderer, Node, RootNodeImpl)}
      * Use this method when nodes are loaded from scene
      * 
      * @param gles
@@ -27,7 +27,7 @@ public interface NodeFactory {
      * @throws NodeException If there is an error creating the Node, could be due to problem reading resource or
      * compiling shaders. Will be thrown if the source node was not loaded (type field is not set)
      */
-    public Node create(GLES20Wrapper gles, Node source, RootNode root) throws NodeException;
+    public Node create(GLES20Wrapper gles, Node source, RootNodeImpl root) throws NodeException;
 
     /**
      * Creates the child nodes from the source node, adding the created children to the parent node.

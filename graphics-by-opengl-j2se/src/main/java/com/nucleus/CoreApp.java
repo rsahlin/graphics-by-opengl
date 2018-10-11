@@ -1,6 +1,9 @@
 package com.nucleus;
 
+import java.util.ArrayList;
+
 import com.nucleus.assets.AssetManager;
+import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.component.ComponentProcessorRunnable;
 import com.nucleus.component.J2SEComponentProcessor;
@@ -21,18 +24,24 @@ import com.nucleus.profiling.FrameSampler.Sample;
 import com.nucleus.profiling.FrameSampler.Samples;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
+import com.nucleus.renderer.Pass;
+import com.nucleus.renderer.RenderPass;
+import com.nucleus.renderer.RenderState;
+import com.nucleus.renderer.RenderTarget;
+import com.nucleus.renderer.RenderTarget.Target;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.AbstractNode.NodeTypes;
-import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.J2SENodeInputListener;
 import com.nucleus.scene.NavigationController;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.NodeBuilder;
 import com.nucleus.scene.NodeController;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.NodeInputListener;
 import com.nucleus.scene.RootNode;
+import com.nucleus.scene.RootNodeImpl;
 import com.nucleus.scene.ViewController;
 import com.nucleus.shader.TranslateProgram;
 import com.nucleus.system.ComponentHandler;
@@ -316,11 +325,37 @@ public class CoreApp implements FrameRenderer {
     public void addPointerInput(RootNode root) {
         InputProcessor.getInstance().addMMIListener(new J2SENodeInputListener(root));
     }
+    /*
+     * public RootNode create(String id) throws NodeException {
+     * BaseRootNode root = new BaseRootNode();
+     * setRoot(root);
+     * // TODO the builder should handle creation of renderpass in a more generic way.
+     * Node created = super.create("rootnode");
+     * RenderPass pass = new RenderPass();
+     * pass.setId("RenderPass");
+     * pass.setTarget(new RenderTarget(Target.FRAMEBUFFER, null));
+     * pass.setRenderState(new RenderState());
+     * pass.setPass(Pass.MAIN);
+     * if (created instanceof RenderableNode<?>) {
+     * ViewFrustum vf = new ViewFrustum();
+     * vf.setOrthoProjection(-0.8889f, 0.8889f, -0.5f, 0.5f, 0, 10);
+     * ((RenderableNode<?>) created).setViewFrustum(vf);
+     * created.setPass(Pass.ALL);
+     * ArrayList<RenderPass> rp = new ArrayList<>();
+     * rp.add(pass);
+     * ((RenderableNode<?>) created).setRenderPass(rp);
+     * }
+     * created.onCreated();
+     * root.addChild(created);
+     * return root;
+     * }
+     */
 
     public void displaySplash() throws GLException, NodeException {
         FrameSampler.getInstance().logTag(FrameSampler.Samples.DISPLAY_SPLASH);
 
-        BaseRootNode.Builder builder = new BaseRootNode.Builder();
+        NodeBuilder<Node> builder = new NodeBuilder<>();
+        builder.setRoot(new RootNodeImpl.Builder().create("rootnode"));
         TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
                 new TranslateProgram(Texture2D.Shading.textured));
         builder.setProgram(vt);
@@ -336,7 +371,15 @@ public class CoreApp implements FrameRenderer {
         meshBuilder.setMaterial(material).setAttributesPerVertex(vt.getAttributeSizes())
                 .setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(rect, 1f, 1, 0)));
         builder.setType(NodeTypes.meshnode).setMeshBuilder(meshBuilder).setMeshCount(1);
-        RootNode root = builder.create("rootnode");
+        RenderPass pass = new RenderPass("RenderPass", new RenderTarget(Target.FRAMEBUFFER, null), new RenderState(),
+                Pass.MAIN);
+        ArrayList<RenderPass> passes = new ArrayList<>();
+        passes.add(pass);
+        builder.setRenderPass(passes);
+        ViewFrustum vf = new ViewFrustum();
+        vf.setOrthoProjection(-0.8889f, 0.8889f, -0.5f, 0.5f, 0, 10);
+        builder.setViewFrustum(vf);
+        RootNode root = builder.createRoot(renderer.getGLES(), builder.create("scene"));
         renderer.beginFrame();
         renderer.render(root);
         renderer.endFrame();

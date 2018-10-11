@@ -1,77 +1,24 @@
 package com.nucleus.scene;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 
 import com.nucleus.assets.AssetManager;
-import com.nucleus.common.ManagedList;
 import com.nucleus.mmi.ObjectInputListener;
 import com.nucleus.renderer.NucleusRenderer;
 
-/**
- * Starting point of a nodetree, the root has a collection of nodes the each represent a scene.
- * There shall only be one rootnode at any given time, the root node defines the possible resource that may be
- * needed for the tree.
- * A root node shall be self contained, reference textures and large data sets.
- * This class can be serialized using GSON
- * All childnodes added must have the same RootNode reference
- * 
- * @author Richard Sahlin
- *
- */
-public abstract class RootNode extends AbstractNode {
-
-    public static final String GLTF_PATH = "glTFPath";
+public interface RootNode {
 
     /**
-     * Default id for the root node
-     */
-    public static final String ROOTNODE_ID = "rootnode";
-
-    /**
-     * Pre defined ids that can be used for scenes and make it more convenient find a scene.
+     * Creates a new instance of this root, then copies the data from this node into the copy and returns it.
+     * This is a shallow copy, it does not copy children.
+     * Use this for instance when root is loaded
      * 
+     * @param source Source root to copy
+     * @return New copy of this node, transient values and children will not be copied.
+     * @throws IllegalArgumentException If root is null
      */
-    public enum Scenes {
-        credit(),
-        select(),
-        settings(),
-        game(),
-        about(),
-    }
-
-    /**
-     * When a node is rendered it is added to this list, this is for the current frame - will change as nodes are
-     * rendered
-     */
-    transient private ArrayList<Node> renderNodeList = new ArrayList<>();
-    /**
-     * List of last displayed frame rendered nodes - this is the currently visible nodes.
-     */
-    transient private ManagedList<Node> visibleNodeList = new ManagedList<>();
-    /**
-     * Set this to get callbacks on MMI events for this node, handled by {@link NodeInputListener}
-     */
-    transient protected ObjectInputListener objectInputListener;
-
-    /**
-     * Table with all added childnodes and their id.
-     */
-    transient private Hashtable<String, Node> childNodeTable = new Hashtable<>();
-
-    protected RootNode() {
-        super();
-        setType(NodeTypes.rootnode);
-    }
-
-    public void copyTo(RootNode target) {
-        target.set(this);
-    }
-
-    public void set(RootNode source) {
-        super.set(source);
-    }
+    public RootNode createInstance();
 
     /**
      * Sets the root scene node, this rootnode shall be rootnode of all added children.
@@ -81,23 +28,14 @@ public abstract class RootNode extends AbstractNode {
      * @throws IllegalArgumentException If a node has already been set with a call to this method, or rootnode is not
      * set in scene
      */
-    public void setScene(List<Node> scene) {
-        if (scene == null) {
-            throw new IllegalArgumentException("Scene is null");
-        }
-        for (Node node : scene) {
-            addChild(node);
-        }
-    }
+    public void setScene(List<Node> scene);
 
     /**
      * Adds node to current list of currently rendered nodes
      * 
      * @param node
      */
-    public void addRenderedNode(Node node) {
-        renderNodeList.add(node);
-    }
+    public void addRenderedNode(Node node);
 
     /**
      * Swaps the list of rendernodes - the current nodelist will be the visible nodelist and the current nodelist is
@@ -105,10 +43,7 @@ public abstract class RootNode extends AbstractNode {
      * Call this method when buffers are swapped so that next call to {@link #getVisibleNodeList()} will return list of
      * visible nodes
      */
-    public void swapNodeList() {
-        visibleNodeList.updateList(renderNodeList);
-        renderNodeList.clear();
-    }
+    public void swapNodeList();
 
     /**
      * Returns a copy of visible nodes, this is the list of nodes that have been rendered and is currently visible.
@@ -117,9 +52,7 @@ public abstract class RootNode extends AbstractNode {
      * @id Last id returned by calling this method, use this to avoid copying of contents have not changed.
      * @return Id of returned list
      */
-    public int getVisibleNodeList(ArrayList<Node> visibleList, int id) {
-        return visibleNodeList.getList(visibleList, id);
-    }
+    public int getVisibleNodeList(ArrayList<Node> visibleList, int id);
 
     /**
      * Registers a node as child node (somewhere) on the root node.
@@ -129,13 +62,7 @@ public abstract class RootNode extends AbstractNode {
      * @param child
      * @throws IllegalArgumentException If a node with the same ID is already added to the nodetree
      */
-    @Override
-    protected void registerChild(Node child) {
-        if (childNodeTable.containsKey(child.getId())) {
-            throw new IllegalArgumentException("Already added child with id:" + child.getId());
-        }
-        childNodeTable.put(child.getId(), child);
-    }
+    public void registerChild(Node child);
 
     /**
      * Unregisters the child from list of nodes within the rootnode
@@ -145,12 +72,7 @@ public abstract class RootNode extends AbstractNode {
      * @param parent
      * @throws IllegalArgumentException If the child is not registered with the rootnode
      */
-    @Override
-    protected void unregisterChild(Node child) {
-        if (childNodeTable.remove(child.getId()) == null) {
-            throw new IllegalArgumentException("Node not registered with root:" + child.getId());
-        }
-    }
+    public void unregisterChild(Node child);
 
     /**
      * Release all nodes in the nodetree and destroy the root
@@ -159,15 +81,7 @@ public abstract class RootNode extends AbstractNode {
      * 
      * @param renderer
      */
-    @Override
-    public void destroy(NucleusRenderer renderer) {
-        for (Node node : childNodeTable.values()) {
-            node.destroy(renderer);
-        }
-        renderNodeList = null;
-        visibleNodeList = null;
-        childNodeTable = null;
-    }
+    public void destroy(NucleusRenderer renderer);
 
     /**
      * Returns the {@link ObjectInputListener}, or null if not set.
@@ -175,9 +89,7 @@ public abstract class RootNode extends AbstractNode {
      * 
      * @return The {@link ObjectInputListener} for this node or null if not set
      */
-    protected ObjectInputListener getObjectInputListener() {
-        return objectInputListener;
-    }
+    public ObjectInputListener getObjectInputListener();
 
     /**
      * Sets the {@link ObjectInputListener} for this rootnode, the listener will get callbacks for Nodes that
@@ -186,8 +98,43 @@ public abstract class RootNode extends AbstractNode {
      * 
      * @param objectInputListener Listener to get callback when input interaction is registered on a Node with bounds.
      */
-    public void setObjectInputListener(ObjectInputListener objectInputListener) {
-        this.objectInputListener = objectInputListener;
-    }
+    public void setObjectInputListener(ObjectInputListener objectInputListener);
+
+    /**
+     * Returns node with matching id, searching through children recursively.
+     * 
+     * @param id Id of node to return
+     * @param type
+     * @return First instance of node with matching id, or null if none found
+     */
+    public <T extends Node> T getNodeById(String id, Class<T> type);
+
+    /**
+     * Returns node with matching id, searching through children recursively.
+     * Children will be searched by calling {@link #getChildren()} excluding nodes that are switched off.
+     * 
+     * @param name Name of the type
+     * @param type
+     * @return First instance of node with matching id, or null if none found
+     */
+    public <T extends Node> T getNodeByType(String name, Class<T> type);
+
+    /**
+     * Returns a list with the childnodes in this root
+     * 
+     * @return
+     */
+    public ArrayList<Node> getChildren();
+
+    /**
+     * Returns the property for the key, if the key has no value then defaultValue is returned.
+     * 
+     * @param key
+     * @param defaultValue The value to return if key is not set, may be null.
+     * @return The property value for key, or defaultValue if not set.
+     */
+    public String getProperty(String key, String defaultValue);
+
+    public void addChild(Node child);
 
 }

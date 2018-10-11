@@ -16,7 +16,7 @@ import com.nucleus.vecmath.Shape;
  * TODO Perhaps move this class to vecmath?
  *
  */
-public class ShapeDeserializer extends NucleusDeserializer<Node> implements JsonDeserializer<Shape> {
+public class ShapeDeserializer extends NucleusDeserializerImpl<Node> implements JsonDeserializer<Shape> {
 
     @Override
     public Shape deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)

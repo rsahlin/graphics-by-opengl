@@ -12,8 +12,8 @@ import com.google.gson.JsonParseException;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.io.GSONSceneFactory;
 import com.nucleus.scene.AbstractNode.NodeTypes;
-import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.RootNodeImpl;
 import com.nucleus.vecmath.Shape;
 
 /**
@@ -28,12 +28,13 @@ import com.nucleus.vecmath.Shape;
  * @author Richard Sahlin
  *
  */
-public class NucleusNodeDeserializer extends NucleusRootDeserializer<Node> implements JsonDeserializer<Node> {
+public class NucleusRootDeserializerImpl extends NucleusDeserializerImpl<Node>
+        implements NucleusRootDeserializer<Node>, JsonDeserializer<Node> {
 
     protected BoundsDeserializer boundsDeserializer = new BoundsDeserializer();
     protected ShapeDeserializer shapeDeserializer = new ShapeDeserializer();
 
-    public NucleusNodeDeserializer() {
+    public NucleusRootDeserializerImpl() {
         addNodeTypes(NodeTypes.values());
     }
 
@@ -56,9 +57,9 @@ public class NucleusNodeDeserializer extends NucleusRootDeserializer<Node> imple
             throws JsonParseException {
 
         JsonObject obj = json.getAsJsonObject();
-        JsonElement element = obj.get(NODETYPE_JSON_KEY);
+        JsonElement element = obj.get(NucleusDeserializer.NODETYPE_JSON_KEY);
         if (element == null) {
-            throw new IllegalArgumentException("Node does not contain:" + NODETYPE_JSON_KEY);
+            throw new IllegalArgumentException("Node does not contain:" + NucleusDeserializer.NODETYPE_JSON_KEY);
         }
         Node node = null;
         com.nucleus.common.Type<?> t = nodeResolver.getType(element.getAsString());
@@ -69,7 +70,7 @@ public class NucleusNodeDeserializer extends NucleusRootDeserializer<Node> imple
     }
 
     @Override
-    public Type getRootNodyTypeClass() {
-        return BaseRootNode.class;
+    public Type getRootNodeTypeClass() {
+        return RootNodeImpl.class;
     }
 }

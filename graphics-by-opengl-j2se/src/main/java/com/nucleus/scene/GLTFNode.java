@@ -28,6 +28,9 @@ import com.nucleus.vecmath.Transform;
 
 /**
  * Node containing a glTF model
+ * This is for usecases where the scene is loaded in nucleus scene format and shall contain Nodes that
+ * are gltf assets.
+ * This is NOT for pure gltf scenes where the complete nodetree is from gltf.
  *
  */
 public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBuilder<RenderableMesh> {
@@ -47,7 +50,7 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     transient GLES20Wrapper gles;
 
     /**
-     * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
+     * Used by GSON and {@link #createInstance(RootNodeImpl)} method - do NOT call directly
      */
     @Deprecated
     protected GLTFNode() {
@@ -131,7 +134,7 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
         if (glTFName != null) {
             try {
                 glTF = AssetManager.getInstance()
-                        .getGLTFAsset(getRootNode().getProperty(RootNode.GLTF_PATH, "") + glTFName);
+                        .getGLTFAsset(getRootNode().getProperty(RootNodeImpl.GLTF_PATH, "") + glTFName);
                 if (normalizeGLTF) {
                     ViewFrustum view = getParentsView();
                     if (view != null) {

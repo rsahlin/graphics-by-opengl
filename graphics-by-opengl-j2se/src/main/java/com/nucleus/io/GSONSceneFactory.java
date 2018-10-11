@@ -18,21 +18,21 @@ import com.nucleus.common.Type;
 import com.nucleus.common.TypeResolver;
 import com.nucleus.exporter.NodeExporter;
 import com.nucleus.exporter.NucleusNodeExporter;
-import com.nucleus.io.gson.GLTFNodeDeserializer;
+import com.nucleus.io.gson.GLTFRootDeserializerImpl;
 import com.nucleus.io.gson.NucleusDeserializer;
-import com.nucleus.io.gson.NucleusNodeDeserializer;
 import com.nucleus.io.gson.NucleusRootDeserializer;
+import com.nucleus.io.gson.NucleusRootDeserializerImpl;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.AbstractNode;
 import com.nucleus.scene.AbstractNode.NodeTypes;
-import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.LayerNode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeBuilder;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.RootNode;
+import com.nucleus.scene.RootNodeImpl;
 
 /**
  * GSON Serializer for scenes based on JSON.
@@ -96,13 +96,13 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
             return createNucleusNodeDeserializer();
         }
         if (type.contentEquals(GLTF_SCENE)) {
-            return new GLTFNodeDeserializer();
+            return new GLTFRootDeserializerImpl();
         }
         return null;
     }
 
     protected NucleusRootDeserializer<Node> createNucleusNodeDeserializer() {
-        return new NucleusNodeDeserializer();
+        return new NucleusRootDeserializerImpl();
     }
 
     @Override
@@ -125,8 +125,8 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
         ClassLoader loader = getClass().getClassLoader();
         InputStream is = loader.getResourceAsStream(path + filename);
         try {
-            RootNode scene = importScene(path, is, type);
-            return scene;
+            RootNode root = importScene(path, is, type);
+            return root;
         } finally {
             if (is != null) {
                 try {
@@ -150,14 +150,13 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
             NucleusRootDeserializer<?> deserializer = getRootDeserializer(type);
             long start = System.currentTimeMillis();
             Reader reader = new InputStreamReader(is, "UTF-8");
-            RootNode scene = importFromGSON(reader, deserializer);
+            RootNode root = importFromGSON(reader, deserializer);
             long loaded = System.currentTimeMillis();
             FrameSampler.getInstance().logTag(FrameSampler.Samples.LOAD_SCENE, start, loaded);
-            RootNode root = createRoot();
-            scene.copyTo(root);
-            createScene(root, scene.getChildren());
+            RootNode createdRoot = root.createInstance();
+            createScene(createdRoot, root.getChildren());
             FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SCENE, loaded, System.currentTimeMillis());
-            return root;
+            return createdRoot;
         } catch (IOException e) {
             throw new NodeException(e);
         }
@@ -183,7 +182,7 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
     protected RootNode importFromGSON(Reader reader, NucleusRootDeserializer<?> rootDeserializer)
             throws IOException {
         Gson gson = rootDeserializer.getGson();
-        RootNode root = gson.fromJson(reader, rootDeserializer.getRootNodyTypeClass());
+        RootNodeImpl root = gson.fromJson(reader, rootDeserializer.getRootNodeTypeClass());
         return root;
     }
 
@@ -202,12 +201,12 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
     }
 
     /**
-     * Creates a new {@linkplain RootNode} for the specified scene
+     * Creates a new {@linkplain RootNodeImpl} for the specified scene
      * 
      * @return The root node implementation to use
      */
     protected RootNode createRoot() {
-        return new BaseRootNode();
+        return new RootNodeImpl();
     }
 
     /**
@@ -219,37 +218,28 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
      * @throws IOException
      */
     private void createNodes(RootNode root, List<Node> children) throws NodeException {
-        NodeBuilder<Node> builder = new NodeBuilder<>();
+        NodeBuilder<Node> builder = new NodeBuilder<Node>();
         builder.setRoot(root);
         for (Node node : children) {
-            builder.create(gles, node, root);
+            builder.createRoot(gles, node);
         }
     }
 
     @Override
     public void exportScene(OutputStream out, Object obj) throws IOException {
-        if (!(obj instanceof RootNode)) {
+        if (!(obj instanceof RootNodeImpl)) {
             throw new IllegalArgumentException(WRONG_CLASS_ERROR + obj.getClass().getName());
         }
-        RootNode root = (RootNode) obj;
+        RootNodeImpl root = (RootNodeImpl) obj;
         // First create the rootnode to hold resources and instances.
         // Subclasses may need to override to return correct instance of SceneData
-        RootNode rootNode = createSceneData();
+        // RootNodeImpl rootNode = createSceneData();
 
-        nodeExporter.exportNodes(root, rootNode);
+        // nodeExporter.exportNodes(root, rootNode);
 
-        Gson gson = new GsonBuilder().create();
-        out.write(gson.toJson(rootNode).getBytes());
+        // Gson gson = new GsonBuilder().create();
+        // out.write(gson.toJson(rootNode).getBytes());
 
-    }
-
-    /**
-     * Creates the correct scenedata implementation, subclasses must implement this method as needed
-     * 
-     * @return The SceneData implementation to use for the Serializer
-     */
-    protected RootNode createSceneData() {
-        return new BaseRootNode();
     }
 
     /**

@@ -20,7 +20,7 @@ public class J2SEComponentProcessor implements ComponentProcessor {
 
     @Override
     public void processRoot(RootNode root, float delta) {
-        bounds = root.getBounds();
+        // bounds = root.getBounds();
         for (Node node : root.getChildren()) {
             processNode(node, delta);
         }

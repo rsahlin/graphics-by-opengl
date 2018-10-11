@@ -3,6 +3,7 @@ package com.nucleus.exporter;
 import com.nucleus.common.Type;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
+import com.nucleus.scene.RootNodeImpl;
 
 /**
  * Methods for exporting nodes, this is used by scene factory implementations when exporting a scene.
@@ -42,7 +43,7 @@ public interface NodeExporter {
     /**
      * Take the source node, and all children, converts to nodes that can be exported and adds to the rootnode
      * Any data needed by the node must be put in sceneData or within the source tree
-     * Implementations of this method may call the {@link #exportObject(Object, RootNode)} method to export
+     * Implementations of this method may call the {@link #exportObject(Object, RootNodeImpl)} method to export
      * data within the node.
      * 
      * @param source The source rootnode to export
@@ -67,5 +68,5 @@ public interface NodeExporter {
      * @param object
      * @param rootNode
      */
-    public void exportObject(Object object, RootNode rootNode);
+    public void exportObject(Object object, RootNodeImpl rootNode);
 }
