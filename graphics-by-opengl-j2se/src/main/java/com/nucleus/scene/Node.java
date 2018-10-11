@@ -125,15 +125,6 @@ public interface Node extends Reference {
     public <T extends Node> T getNodeByType(String name, Class<T> type);
 
     /**
-     * Returns the child node with matching id from this node, children are not searched recursively.
-     * TODO Shall this method call getChildren() which will return only on-switched nodes?
-     * 
-     * @param id
-     * @return The child from this node with matching id, or null if not found.
-     */
-    public Node getChildById(String id);
-
-    /**
      * Returns node with matching id, searching through this node and recursively searching through children.
      * Children will be searched by calling {@link #getChildren()} excluding nodes that are switched off.
      * 

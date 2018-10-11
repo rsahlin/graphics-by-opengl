@@ -419,23 +419,6 @@ public abstract class AbstractNode extends BaseReference implements Node {
         return null;
     }
 
-    /**
-     * Returns the child node with matching id from this node, children are not searched recursively.
-     * TODO Shall this method call getChildren() which will return only on-switched nodes?
-     * 
-     * @param id
-     * @return The child from this node with matching id, or null if not found.
-     */
-    @Override
-    public Node getChildById(String id) {
-        for (Node n : children) {
-            if (n.getId().equals(id)) {
-                return n;
-            }
-        }
-        return null;
-    }
-
     @Override
     public String toString() {
         return "Node '" + getId() + "', " + children.size() + " children, pass=" + pass
