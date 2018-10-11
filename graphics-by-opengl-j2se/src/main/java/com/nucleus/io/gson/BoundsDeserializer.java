@@ -11,7 +11,7 @@ import com.google.gson.JsonParseException;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.scene.Node;
 
-public class BoundsDeserializer extends NucleusDeserializerImpl<Node> implements JsonDeserializer<Bounds> {
+public class BoundsDeserializer extends AbstractNucleusDeserializerImpl<Node> implements JsonDeserializer<Bounds> {
 
     @Override
     public Bounds deserialize(JsonElement json, Type type, JsonDeserializationContext context)

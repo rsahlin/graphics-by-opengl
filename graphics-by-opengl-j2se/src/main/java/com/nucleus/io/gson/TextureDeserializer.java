@@ -19,7 +19,7 @@ import com.nucleus.texturing.TextureType;
  * DO NOT USE THIS CLASS DIRECTLY - go through {@link AssetManager} to handle textures
  *
  */
-public class TextureDeserializer extends NucleusDeserializerImpl<Node> implements JsonDeserializer<Texture2D> {
+public class TextureDeserializer extends AbstractNucleusDeserializerImpl<Node> implements JsonDeserializer<Texture2D> {
 
     @Override
     public Texture2D deserialize(JsonElement json, Type type, JsonDeserializationContext context)

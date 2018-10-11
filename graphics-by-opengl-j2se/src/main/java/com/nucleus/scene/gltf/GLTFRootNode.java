@@ -1,6 +1,7 @@
 package com.nucleus.scene.gltf;
 
 import com.nucleus.scene.GLTFNode;
+import com.nucleus.scene.RootNode;
 import com.nucleus.scene.RootNodeImpl;
 
 /**
@@ -10,5 +11,12 @@ import com.nucleus.scene.RootNodeImpl;
  *
  */
 public class GLTFRootNode extends RootNodeImpl {
+
+    @Override
+    public RootNode createInstance() {
+        GLTFRootNode copy = new GLTFRootNode();
+        copy.copy(this);
+        return copy;
+    }
 
 }

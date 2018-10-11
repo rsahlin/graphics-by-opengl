@@ -18,10 +18,9 @@ import com.nucleus.common.Type;
 import com.nucleus.common.TypeResolver;
 import com.nucleus.exporter.NodeExporter;
 import com.nucleus.exporter.NucleusNodeExporter;
-import com.nucleus.io.gson.GLTFRootDeserializerImpl;
+import com.nucleus.io.gson.GLTFDeserializerImpl;
 import com.nucleus.io.gson.NucleusDeserializer;
-import com.nucleus.io.gson.NucleusRootDeserializer;
-import com.nucleus.io.gson.NucleusRootDeserializerImpl;
+import com.nucleus.io.gson.NucleusDeserializerImpl;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
@@ -32,6 +31,7 @@ import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeBuilder;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.RootNode;
+import com.nucleus.scene.RootNodeBuilder;
 import com.nucleus.scene.RootNodeImpl;
 
 /**
@@ -43,11 +43,8 @@ import com.nucleus.scene.RootNodeImpl;
  */
 public class GSONSceneFactory implements SceneSerializer<RootNode> {
 
-    public static final String NUCLEUS_SCENE = "nucleusScene";
-    public static final String GLTF_SCENE = "gltfScene";
-
     protected ArrayDeque<LayerNode> viewStack = new ArrayDeque<LayerNode>(NucleusRenderer.MIN_STACKELEMENTS);
-    protected HashMap<String, NucleusRootDeserializer<?>> deserializers = new HashMap<>();
+    protected HashMap<String, NucleusDeserializer<?>> deserializers = new HashMap<>();
 
     private final static String ERROR_CLOSING_STREAM = "Error closing stream:";
     private final static String NULL_PARAMETER_ERROR = "Parameter is null: ";
@@ -79,10 +76,13 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
     }
 
     /**
-     * Returns the {@link NucleusRootDeserializer} to use with the specified type.
+     * Returns the {@link NucleusDeserializer} to use with the specified type.
+     * Use this to know what deserializer to use for different scene/file types
+     * 
+     * @param type The file/scene type
      */
-    protected NucleusRootDeserializer<?> getRootDeserializer(String type) {
-        NucleusRootDeserializer<?> deserializer = deserializers.get(type);
+    protected NucleusDeserializer<?> getDeserializer(String type) {
+        NucleusDeserializer<?> deserializer = deserializers.get(type);
         if (deserializer == null) {
             deserializer = createNodeDeserializer(type);
             createGSON(deserializer);
@@ -91,18 +91,24 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
         return deserializer;
     }
 
-    protected NucleusRootDeserializer<?> createNodeDeserializer(String type) {
-        if (type.contentEquals(NUCLEUS_SCENE)) {
+    /**
+     * Creates a new instance of the deserializer for the scene/file type
+     * 
+     * @param type
+     * @return
+     */
+    protected NucleusDeserializer<?> createNodeDeserializer(String type) {
+        if (type.contentEquals(RootNodeBuilder.NUCLEUS_SCENE)) {
             return createNucleusNodeDeserializer();
         }
-        if (type.contentEquals(GLTF_SCENE)) {
-            return new GLTFRootDeserializerImpl();
+        if (type.contentEquals(RootNodeBuilder.GLTF_SCENE)) {
+            return new GLTFDeserializerImpl();
         }
         return null;
     }
 
-    protected NucleusRootDeserializer<Node> createNucleusNodeDeserializer() {
-        return new NucleusRootDeserializerImpl();
+    protected NucleusDeserializer<Node> createNucleusNodeDeserializer() {
+        return new NucleusDeserializerImpl();
     }
 
     @Override
@@ -147,10 +153,10 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
             throw new IllegalArgumentException(NULL_PARAMETER_ERROR + "inputstream");
         }
         try {
-            NucleusRootDeserializer<?> deserializer = getRootDeserializer(type);
+            NucleusDeserializer<?> deserializer = getDeserializer(type);
             long start = System.currentTimeMillis();
             Reader reader = new InputStreamReader(is, "UTF-8");
-            RootNode root = importFromGSON(reader, deserializer);
+            RootNode root = importFromGSON(reader, deserializer, RootNodeBuilder.getTypeClass(type));
             long loaded = System.currentTimeMillis();
             FrameSampler.getInstance().logTag(FrameSampler.Samples.LOAD_SCENE, start, loaded);
             RootNode createdRoot = root.createInstance();
@@ -175,14 +181,16 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
      * Imports gson into BaseRootNode
      * 
      * @param reader
-     * @param rootDeserializer
+     * @param deserializer
+     * @param classOffT
      * @return Scene root with data loaded.
      * @throws UnsupportedEncodingException
      */
-    protected RootNode importFromGSON(Reader reader, NucleusRootDeserializer<?> rootDeserializer)
+    protected RootNode importFromGSON(Reader reader, NucleusDeserializer<?> deserializer,
+            java.lang.reflect.Type classOffT)
             throws IOException {
-        Gson gson = rootDeserializer.getGson();
-        RootNodeImpl root = gson.fromJson(reader, rootDeserializer.getRootNodeTypeClass());
+        Gson gson = deserializer.getGson();
+        RootNodeImpl root = gson.fromJson(reader, classOffT);
         return root;
     }
 
@@ -198,15 +206,6 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
     private RootNode createScene(RootNode root, List<Node> scene) throws NodeException {
         createNodes(root, scene);
         return root;
-    }
-
-    /**
-     * Creates a new {@linkplain RootNodeImpl} for the specified scene
-     * 
-     * @return The root node implementation to use
-     */
-    protected RootNode createRoot() {
-        return new RootNodeImpl();
     }
 
     /**

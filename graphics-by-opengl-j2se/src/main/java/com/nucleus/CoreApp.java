@@ -1,22 +1,13 @@
 package com.nucleus;
 
-import java.util.ArrayList;
-
 import com.nucleus.assets.AssetManager;
-import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.component.ComponentProcessorRunnable;
 import com.nucleus.component.J2SEComponentProcessor;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
-import com.nucleus.geometry.Material;
-import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.shape.RectangleShapeBuilder;
-import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
-import com.nucleus.io.ExternalReference;
 import com.nucleus.mmi.ObjectInputListener;
 import com.nucleus.mmi.core.InputProcessor;
-import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
@@ -24,31 +15,19 @@ import com.nucleus.profiling.FrameSampler.Sample;
 import com.nucleus.profiling.FrameSampler.Samples;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
-import com.nucleus.renderer.Pass;
-import com.nucleus.renderer.RenderPass;
-import com.nucleus.renderer.RenderState;
-import com.nucleus.renderer.RenderTarget;
-import com.nucleus.renderer.RenderTarget.Target;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
-import com.nucleus.scene.AbstractNode.NodeTypes;
 import com.nucleus.scene.J2SENodeInputListener;
 import com.nucleus.scene.NavigationController;
 import com.nucleus.scene.Node;
-import com.nucleus.scene.NodeBuilder;
 import com.nucleus.scene.NodeController;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.NodeInputListener;
 import com.nucleus.scene.RootNode;
-import com.nucleus.scene.RootNodeImpl;
+import com.nucleus.scene.RootNodeBuilder;
 import com.nucleus.scene.ViewController;
-import com.nucleus.shader.TranslateProgram;
 import com.nucleus.system.ComponentHandler;
-import com.nucleus.texturing.BaseImageFactory;
-import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.TextureParameter;
-import com.nucleus.vecmath.Rectangle;
 
 /**
  * The platform agnostic application, this is the main app for J2SE platform independent code.
@@ -351,35 +330,11 @@ public class CoreApp implements FrameRenderer {
      * }
      */
 
-    public void displaySplash() throws GLException, NodeException {
+    public void displaySplash(int width, int height) throws GLException, NodeException {
         FrameSampler.getInstance().logTag(FrameSampler.Samples.DISPLAY_SPLASH);
-
-        NodeBuilder<Node> builder = new NodeBuilder<>();
-        builder.setRoot(new RootNodeImpl.Builder().create("rootnode"));
-        TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
-                new TranslateProgram(Texture2D.Shading.textured));
-        builder.setProgram(vt);
-        TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
-        Texture2D texture = AssetManager.getInstance().getTexture(renderer.getGLES(),
-                BaseImageFactory.getInstance(), "texture",
-                new ExternalReference(SPLASH_FILENAME), RESOLUTION.ULTRA_HD, texParam, 1);
-        Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer.getGLES());
-        meshBuilder.setElementMode(GLESWrapper.Mode.TRIANGLES, 4, 0, 6);
-        meshBuilder.setTexture(texture);
-        Material material = new Material();
-        Rectangle rect = texture.calculateRectangle(0);
-        meshBuilder.setMaterial(material).setAttributesPerVertex(vt.getAttributeSizes())
-                .setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(rect, 1f, 1, 0)));
-        builder.setType(NodeTypes.meshnode).setMeshBuilder(meshBuilder).setMeshCount(1);
-        RenderPass pass = new RenderPass("RenderPass", new RenderTarget(Target.FRAMEBUFFER, null), new RenderState(),
-                Pass.MAIN);
-        ArrayList<RenderPass> passes = new ArrayList<>();
-        passes.add(pass);
-        builder.setRenderPass(passes);
-        ViewFrustum vf = new ViewFrustum();
-        vf.setOrthoProjection(-0.8889f, 0.8889f, -0.5f, 0.5f, 0, 10);
-        builder.setViewFrustum(vf);
-        RootNode root = builder.createRoot(renderer.getGLES(), builder.create("scene"));
+        RootNodeBuilder rootBuilder = new RootNodeBuilder();
+        RootNode root = rootBuilder.createSplashRoot(renderer.getGLES(), SPLASH_FILENAME, RESOLUTION.ULTRA_HD, width,
+                height);
         renderer.beginFrame();
         renderer.render(root);
         renderer.endFrame();
@@ -415,7 +370,7 @@ public class CoreApp implements FrameRenderer {
             Window.getInstance().setTitle(clientApp.getAppName() + " " + clientApp.getVersion());
             CoreApp coreApp = new CoreApp(renderer, clientApp);
             try {
-                coreApp.displaySplash();
+                coreApp.displaySplash(width, height);
             } catch (GLException | NodeException e) {
                 throw new RuntimeException(e);
             }

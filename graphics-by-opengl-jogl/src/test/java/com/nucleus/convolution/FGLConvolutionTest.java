@@ -24,7 +24,7 @@ import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeBuilder;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.RootNode;
-import com.nucleus.scene.RootNodeImpl;
+import com.nucleus.scene.RootNodeBuilder;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Convolution;
@@ -135,8 +135,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         InputProcessor.getInstance().addMMIListener(this);
 
         try {
-            RootNodeImpl.Builder rootBuilder = new RootNodeImpl.Builder();
-            RootNode root = rootBuilder.create("rootnode");
+            RootNodeBuilder rootBuilder = new RootNodeBuilder();
             NodeBuilder<Node> builder = new NodeBuilder<>();
             TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
             Texture2D texture = AssetManager.getInstance().getTexture(renderer.getGLES(),
@@ -153,7 +152,8 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
                     new RectangleShapeBuilder(new RectangleShapeBuilder.RectangleConfiguration(1f, 1f, 0f, 1, 0)));
             builder.setType(com.nucleus.scene.AbstractNode.NodeTypes.layernode).setMeshBuilder(meshBuilder)
                     .setMeshCount(1);
-            root.addChild(builder.create("rootnode"));
+            rootBuilder.setNodeBuilder(builder);
+            RootNode root = rootBuilder.create(renderer.getGLES(), "rootnode", RootNodeBuilder.NUCLEUS_SCENE);
             uKernel = program.getUniformByName("uKernel");
             renderer.addFrameListener(this);
             coreApp.setRootNode(root);

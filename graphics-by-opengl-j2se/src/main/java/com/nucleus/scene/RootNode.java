@@ -4,10 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.nucleus.assets.AssetManager;
+import com.nucleus.exporter.Reference;
 import com.nucleus.mmi.ObjectInputListener;
 import com.nucleus.renderer.NucleusRenderer;
 
-public interface RootNode {
+/**
+ * Starting point of a nodetree, the root has a collection of nodes the each represent a scene.
+ * There shall only be one rootnode at any given time, the root node defines the possible resource that may be
+ * needed for the tree.
+ * A root node shall be self contained, reference textures and large data sets.
+ * All childnodes added must have the same RootNode reference
+ * 
+ */
+public interface RootNode extends Reference {
 
     /**
      * Creates a new instance of this root, then copies the data from this node into the copy and returns it.

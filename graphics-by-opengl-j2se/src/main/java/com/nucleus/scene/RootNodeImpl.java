@@ -7,67 +7,21 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.ManagedList;
+import com.nucleus.io.BaseReference;
 import com.nucleus.mmi.ObjectInputListener;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.Pass;
-import com.nucleus.renderer.RenderPass;
-import com.nucleus.renderer.RenderState;
-import com.nucleus.renderer.RenderTarget;
-import com.nucleus.renderer.RenderTarget.Target;
 
 /**
- * Starting point of a nodetree, the root has a collection of nodes the each represent a scene.
- * There shall only be one rootnode at any given time, the root node defines the possible resource that may be
- * needed for the tree.
- * A root node shall be self contained, reference textures and large data sets.
- * This class can be serialized using GSON
- * All childnodes added must have the same RootNode reference
- * 
- * @author Richard Sahlin
+ * Implementation of RootNode - used to get unified support when loading/instantiating scenes
  *
  */
-public class RootNodeImpl implements RootNode {
-
-    public static class Builder {
-
-        ViewFrustum viewFrustum;
-
-        public Builder() {
-        }
-
-        public RootNode create(String id) throws NodeException {
-            RootNodeImpl root = new RootNodeImpl();
-            // setRoot(root);
-            RenderPass pass = new RenderPass("RenderPass", new RenderTarget(Target.FRAMEBUFFER, null),
-                    new RenderState(),
-                    Pass.MAIN);
-            /*
-             * 
-             * Node created = super.create("rootnode");
-             * if (created instanceof RenderableNode<?>) {
-             * ViewFrustum vf = new ViewFrustum();
-             * vf.setOrthoProjection(-0.8889f, 0.8889f, -0.5f, 0.5f, 0, 10);
-             * ((RenderableNode<?>) created).setViewFrustum(vf);
-             * created.setPass(Pass.ALL);
-             * ArrayList<RenderPass> rp = new ArrayList<>();
-             * rp.add(pass);
-             * ((RenderableNode<?>) created).setRenderPass(rp);
-             * }
-             * created.onCreated();
-             * root.addChild(created);
-             * return root;
-             */
-            return root;
-        }
-
-    }
+public class RootNodeImpl extends BaseReference implements RootNode {
 
     public static final String PROPERTIES = "properties";
     public static final String CHILDREN = "children";
-
     public static final String GLTF_PATH = "glTFPath";
+
     /**
      * Default id for the root node
      */
@@ -119,7 +73,7 @@ public class RootNodeImpl implements RootNode {
         super();
     }
 
-    private void copy(RootNodeImpl source) {
+    protected void copy(RootNodeImpl source) {
         setProperties(source);
     }
 

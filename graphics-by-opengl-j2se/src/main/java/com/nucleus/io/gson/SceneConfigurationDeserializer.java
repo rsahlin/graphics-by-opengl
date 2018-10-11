@@ -10,7 +10,7 @@ import com.google.gson.JsonParseException;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.SceneConfiguration;
 
-public class SceneConfigurationDeserializer extends NucleusDeserializerImpl<Node>
+public class SceneConfigurationDeserializer extends AbstractNucleusDeserializerImpl<Node>
         implements JsonDeserializer<SceneConfiguration<?>> {
 
     @Override

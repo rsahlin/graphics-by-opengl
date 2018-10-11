@@ -23,8 +23,10 @@ public interface Reference {
     /**
      * Sets the object id, this shall be context unique but does not have to be globally unique.
      * It is up to the implementations to check if mulitple objects with the same id exists and decide what to do.
+     * It is not allowed to change id of a reference
      * 
      * @param id The id of the object
+     * @throws IllegalArgumentException If id has already been set to a different value.
      */
     public void setId(String id);
 
