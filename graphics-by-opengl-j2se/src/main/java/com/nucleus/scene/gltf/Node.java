@@ -53,7 +53,7 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
     @SerializedName(CHILDREN)
     private int[] children;
     @SerializedName(CAMERA)
-    private int camera;
+    private int camera = -1;
     @SerializedName(ROTATION)
     private float[] rotation;
     @SerializedName(SCALE)
@@ -65,13 +65,21 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
 
     transient protected Node[] childNodes;
     transient protected Mesh nodeMesh;
+    transient protected Camera cameraRef;
     /**
      * The node concatenated model matrix at time of render, this is set when the node is rendered and
-     * {@link #concatModelMatrix(float[])} is called
+     * {@link #concatMatrix(float[])} is called
      * May be used when calculating bounds/collision on the current frame.
      * DO NOT WRITE TO THIS!
      */
     transient float[] modelMatrix = Matrix.createMatrix();
+    /**
+     * The node inverse matrix call {@link #invertMatrix()} to calculate.
+     * May be used when calculating bounds/collision on the current frame.
+     * DO NOT WRITE TO THIS!
+     * 
+     */
+    transient float[] inverseMatrix = Matrix.createMatrix();
 
     /**
      * Returns the index of the mesh to render with this node
@@ -118,6 +126,15 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
         return camera;
     }
 
+    /**
+     * Returns the camera for this node or null if not defined.
+     * 
+     * @return
+     */
+    public Camera getCamera() {
+        return cameraRef;
+    }
+
     public float[] getRotation() {
         return rotation;
     }
@@ -131,7 +148,10 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
     }
 
     /**
-     * If RTS values are defined the matrix is set according to these. Otherwise matrix is left unchanged.
+     * If RTS values are defined the matrix is set according to these.
+     * Otherwise matrix is left unchanged and returned
+     * 
+     * @return This nodes matrix, with updated TRS if used.
      */
     protected float[] updateMatrix() {
         if (rotation != null || scale != null || translation != null) {
@@ -143,18 +163,24 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
         return matrix;
     }
 
+    public float[] invertMatrix() {
+        Matrix.invertM(inverseMatrix, 0, matrix, 0);
+        return inverseMatrix;
+    }
+
     /**
-     * Multiply the concatenated model matrix with this nodes transform matrix and store in this nodes model matrix
+     * Multiply the matrix with this nodes transform/matrix and store in this nodes model matrix.
      * If this node does not have a transform an identity matrix is used.
      * 
-     * @param concatModel The concatenated model matrix
-     * @return The node matrix - this nodes transform * concatModel
+     * @param concatModel The matrix to multiply with this nodes transform/matrix
+     * @return The node model matrix - this nodes transform * matrix - this is a reference to the concatenated
+     * model matrix in this class
      */
-    public float[] concatModelMatrix(float[] concatModel) {
-        if (concatModel == null) {
+    public float[] concatMatrix(float[] matrix) {
+        if (matrix == null) {
             return updateMatrix();
         }
-        Matrix.mul4(concatModel, updateMatrix(), modelMatrix);
+        Matrix.mul4(matrix, updateMatrix(), modelMatrix);
         return modelMatrix;
     }
 
@@ -169,6 +195,10 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
 
     @Override
     public void resolve(GLTF asset) throws GLTFException {
+        if (matrix != null) {
+            float[] transpose = Matrix.createMatrix(matrix);
+            Matrix.transposeM(matrix, 0, transpose, 0);
+        }
         if (mesh >= 0) {
             nodeMesh = asset.getMeshes()[mesh];
         }
@@ -178,6 +208,9 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
             for (int i = 0; i < children.length; i++) {
                 childNodes[i] = sources[children[i]];
             }
+        }
+        if (camera != -1) {
+            cameraRef = asset.getCameras()[camera];
         }
 
     }

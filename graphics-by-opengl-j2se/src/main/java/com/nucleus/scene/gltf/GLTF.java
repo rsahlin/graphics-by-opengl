@@ -49,6 +49,7 @@ public class GLTF {
     private static final String NODES = "nodes";
     private static final String MESHES = "meshes";
     private static final String BUFFER_VIEWS = "bufferViews";
+    private static final String CAMERAS = "cameras";
     private static final String SCENE = "scene";
     private static final String SAMPLERS = "samplers";
     private static final String TEXTURES = "textures";
@@ -113,6 +114,10 @@ public class GLTF {
         return bufferViews;
     }
 
+    public Camera[] getCameras() {
+        return cameras;
+    }
+
     public Material[] getMaterials() {
         return materials;
     }
@@ -125,6 +130,8 @@ public class GLTF {
     private Buffer[] buffers;
     @SerializedName(BUFFER_VIEWS)
     private BufferView[] bufferViews;
+    @SerializedName(CAMERAS)
+    private Camera[] cameras;
     @SerializedName(IMAGES)
     private Image[] images;
     @SerializedName(MATERIALS)
@@ -319,16 +326,33 @@ public class GLTF {
         }
     }
 
+    /**
+     * Searches through the node hiearchy and returns the first found Node that references a camera or null if none
+     * defined.
+     * 
+     * @param node The starting Node
+     * @return Node referencing a Camera or null if none defined in the Node
+     */
+    public Node getCameraNode(Node node) {
+        if (node.getCamera() != null) {
+            return node;
+        }
+        Node[] children = node.getChildren();
+        if (children != null) {
+            for (Node child : children) {
+                Node cameraNode = getCameraNode(child);
+                if (cameraNode != null) {
+                    return cameraNode;
+                }
+            }
+        }
+        return null;
+    }
+
     private List<RuntimeResolver> getResolves() {
         ArrayList<RuntimeResolver> result = new ArrayList<>();
         if (accessors != null) {
             result.addAll(Arrays.asList(accessors));
-        }
-        if (nodes != null) {
-            result.addAll(Arrays.asList(nodes));
-        }
-        if (scenes != null) {
-            result.addAll(Arrays.asList(scenes));
         }
         if (bufferViews != null) {
             result.addAll(Arrays.asList(bufferViews));
@@ -338,6 +362,13 @@ public class GLTF {
         }
         if (textures != null) {
             result.addAll(Arrays.asList(textures));
+        }
+        // Resolve nodes before scenes
+        if (nodes != null) {
+            result.addAll(Arrays.asList(nodes));
+        }
+        if (scenes != null) {
+            result.addAll(Arrays.asList(scenes));
         }
         return result;
     }

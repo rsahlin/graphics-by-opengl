@@ -117,7 +117,7 @@ public interface RenderableNode<T> extends MeshBuilderFactory<T>, Node {
      * If this node does not have a transform an identity matrix is used.
      * 
      * @param concatModel The concatenated model matrix
-     * @return The node matrix - this nodes transform * concatModel
+     * @return The node matrix - this nodes transform * concatModel. This is a reference to the matrix in this node.
      */
     public float[] concatModelMatrix(float[] concatModel);
 

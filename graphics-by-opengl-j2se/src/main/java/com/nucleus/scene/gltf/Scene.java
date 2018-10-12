@@ -1,6 +1,7 @@
 package com.nucleus.scene.gltf;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.SimpleLogger;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 
@@ -26,7 +27,11 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
     @SerializedName(NODES)
     private int[] nodes;
 
+    /**
+     * The nodes that make up this scene.
+     */
     transient Node[] sceneNodes;
+    transient Node[] cameraNodes;
 
     /**
      * returns the nodes, as indexes, that make up this scene
@@ -44,15 +49,38 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         return sceneNodes;
     }
 
+    /**
+     * Returns the nodes in the scene that defines a camera.
+     * The array will match the size of {@link #getNodes()} and will contain a reference to a Node with a camera
+     * if one is defind in that Node tree.
+     * Use this to figure out on what nodes in the Scene to use a camera for.
+     * 
+     * @return
+     */
+    public Node[] getCameraNodes() {
+        return cameraNodes;
+    }
+
     @Override
     public void resolve(GLTF asset) throws GLTFException {
         if (nodes != null && nodes.length > 0) {
             Node[] sources = asset.getNodes();
             sceneNodes = new Node[nodes.length];
             for (int i = 0; i < nodes.length; i++) {
-                sceneNodes[i] = sources[i];
+                sceneNodes[i] = sources[nodes[i]];
+            }
+            // Check for nodes that reference camera
+            cameraNodes = new Node[sceneNodes.length];
+            for (int i = 0; i < cameraNodes.length; i++) {
+                cameraNodes[i] = asset.getCameraNode(sceneNodes[i]);
+                if (cameraNodes[i] != null) {
+                    SimpleLogger.d(getClass(),
+                            "Found camera in scene " + getName() + ", for node index " + i + ", name: "
+                                    + sceneNodes[i].getName());
+                }
             }
         }
+
     }
 
 }

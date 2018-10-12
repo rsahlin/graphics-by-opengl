@@ -6,24 +6,29 @@ import com.nucleus.common.Environment;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.scene.GLTFNode;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.BufferView;
+import com.nucleus.scene.gltf.Camera;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Node;
 import com.nucleus.scene.gltf.Primitive;
+import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Scene;
 import com.nucleus.scene.gltf.Texture;
 import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.TextureUtils;
+import com.nucleus.vecmath.Matrix;
 
 public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
 
+    transient protected FrameSampler timeKeeper = FrameSampler.getInstance();
     private Pass currentPass;
     protected ArrayDeque<float[]> modelMatrixStack = new ArrayDeque<float[]>(10);
     protected float[] modelMatrix;
@@ -55,9 +60,37 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         GLES20Wrapper gles = renderer.getGLES();
         GLTF glTF = node.getGLTF();
         Scene scene = glTF.getScene();
-        // Traverse the nodes and render each.
-        renderNodes(gles, glTF, scene.getNodes(), matrices);
+        // Render the default scene.
+        renderScene(gles, glTF, scene, currentPass, matrices);
         return true;
+    }
+
+    protected void renderScene(GLES20Wrapper gles, GLTF glTF, Scene scene, Pass currentPass, float[][] matrices)
+            throws GLException {
+        // Traverse the nodes and render each.
+        Node[] sceneNodes = scene.getNodes();
+        if (sceneNodes != null) {
+            Node[] cameraNodes = scene.getCameraNodes();
+            for (int i = 0; i < sceneNodes.length; i++) {
+                Node cNode = cameraNodes[i];
+                if (cNode != null) {
+                    setCamera(cNode, matrices);
+                }
+                renderNode(gles, glTF, sceneNodes[i], matrices);
+            }
+        }
+    }
+
+    protected void setCamera(Node cameraNode, float[][] matrices) {
+        Camera camera = cameraNode.getCamera();
+        if (camera != null) {
+            float[] cameraMatrix = camera.concatCameraMatrix(cameraNode, matrices[Matrices.MODEL.index]);
+            // float[] transpose = Matrix.createMatrix();
+            // Matrix.transposeM(transpose, 0, cameraMatrix, 0);
+            // matrices[Matrices.VIEW.index] = cameraMatrix;
+            Matrix.copy(camera.getProjectionMatrix(), 0, matrices[Matrices.PROJECTION.index], 0);
+        }
+
     }
 
     /**
@@ -71,9 +104,12 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      */
     protected void renderNode(GLES20Wrapper gles, GLTF glTF, Node node, float[][] matrices)
             throws GLException {
-        // Render this node.
+        /**
+         * Render this node.
+         * If this node has camera it shall already be calculated so ignore it here
+         */
         pushMatrix(modelMatrixStack, matrices[Matrices.MODEL.index]);
-        float[] nodeMatrix = node.concatModelMatrix(matrices[Matrices.MODEL.index]);
+        float[] nodeMatrix = node.concatMatrix(matrices[Matrices.MODEL.index]);
         matrices[Matrices.MODEL.index] = nodeMatrix;
         renderMesh(gles, glTF, node.getMesh(), matrices);
         // Render children.
@@ -133,8 +169,10 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
                         indicesView.getBuffer().getBuffer()
                                 .position(indices.getByteOffset() + indicesView.getByteOffset()));
             }
+            timeKeeper.addDrawElements(indices.getCount(), primitive.getAccessor(Attributes.POSITION).getCount());
         } else {
             // Non indexed mode - use glDrawArrays
+            throw new IllegalArgumentException("Not implemented yet");
         }
     }
 
