@@ -65,7 +65,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
 
         GLES20Wrapper gles = renderer.getGLES();
         GLTF glTF = node.getGLTF();
-        Scene scene = glTF.getScene();
+        Scene scene = glTF.getDefaultScene();
         if (!scene.isCameraDefined()) {
             // Setup a default projection if none is specified in model - this is to get the right axes and winding.
             Perspective p = new Perspective(1.5f, 0.66f, 10000, 1);
@@ -92,8 +92,6 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     protected void setCamera(Node cameraNode, float[][] matrices) {
         Camera camera = cameraNode.getCamera();
         if (camera != null) {
-            // float[] cameraMatrix = camera.concatCameraMatrix(cameraNode, null);
-            // matrices[Matrices.VIEW.index] = cameraMatrix;
             matrices[Matrices.VIEW.index] = cameraNode.getMatrix();
             Matrix.copy(camera.getProjectionMatrix(), 0, matrices[Matrices.PROJECTION.index], 0);
         }
@@ -154,9 +152,11 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         }
         program.updateUniforms(gles, matrices);
         Material material = primitive.getMaterial();
-        Texture texture = glTF.getTexture(material.getPbrMetallicRoughness());
-        if (texture != null) {
-            TextureUtils.prepareTexture(gles, texture, glTF.getTexCoord(material.getPbrMetallicRoughness()));
+        if (material != null) {
+            Texture texture = glTF.getTexture(material.getPbrMetallicRoughness());
+            if (texture != null) {
+                TextureUtils.prepareTexture(gles, texture, glTF.getTexCoord(material.getPbrMetallicRoughness()));
+            }
         }
         Accessor indices = glTF.getAccessor(primitive.getIndicesIndex());
         program.updatePrimitiveUniforms(gles, primitive);

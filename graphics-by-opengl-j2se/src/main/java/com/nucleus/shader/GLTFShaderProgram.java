@@ -6,6 +6,7 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.AccessorDictionary;
 import com.nucleus.scene.gltf.Material;
+import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -45,7 +46,11 @@ public class GLTFShaderProgram extends GenericShaderProgram {
 
     public void updatePrimitiveUniforms(GLES20Wrapper gles, Primitive primitive) throws GLException {
         Material material = primitive.getMaterial();
-        setUniformData(color0Uniform, material.getPbrMetallicRoughness().getBaseColorFactor(), 0);
+        if (material != null) {
+            setUniformData(color0Uniform, material.getPbrMetallicRoughness().getBaseColorFactor(), 0);
+        } else {
+            setUniformData(color0Uniform, PBRMetallicRoughness.DEFAULT_COLOR_FACTOR, 0);
+        }
         uploadUniforms(gles, uniforms, activeUniforms);
     }
 

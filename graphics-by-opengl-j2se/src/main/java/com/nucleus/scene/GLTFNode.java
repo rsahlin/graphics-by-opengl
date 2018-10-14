@@ -16,6 +16,7 @@ import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
+import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.RenderableMesh;
@@ -162,7 +163,8 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
      * @return
      */
     public GLTFShaderProgram createProgram(Primitive primitive) {
-        if (primitive.getMaterial().getPbrMetallicRoughness().getBaseColorTexture() != null) {
+        Material mat = primitive.getMaterial();
+        if (mat != null && mat.getPbrMetallicRoughness().getBaseColorTexture() != null) {
             return new GLTFShaderProgram(null, Shading.textured, "gltf", ProgramType.VERTEX_FRAGMENT);
         }
         return new GLTFShaderProgram(null, Shading.flat, "gltf", ProgramType.VERTEX_FRAGMENT);

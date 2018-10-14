@@ -71,7 +71,7 @@ public class Primitive implements RuntimeResolver {
     @SerializedName(INDICES)
     private int indices = -1;
     @SerializedName(MATERIAL)
-    private int material;
+    private int material = -1;
     /**
      * Allowed values:
      * 0 POINTS
@@ -206,7 +206,9 @@ public class Primitive implements RuntimeResolver {
             }
         }
         glMode = GLTF.GL_DRAWMODE[mode];
-        this.materialRef = asset.getMaterials()[material];
+        if (material >= 0) {
+            this.materialRef = asset.getMaterials()[material];
+        }
     }
 
     /**

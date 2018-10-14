@@ -30,8 +30,10 @@ public class PBRMetallicRoughness {
     private static final String METALLIC_FACTOR = "metallicFactor";
     private static final String ROUGHNESS_FACTOR = "roughnessFactor";
 
+    public static final float[] DEFAULT_COLOR_FACTOR = new float[] { 1, 1, 1, 1 };
+
     @SerializedName(BASE_COLOR_FACTOR)
-    private float[] baseColorFactor = new float[] { 1, 1, 1, 1 };
+    private float[] baseColorFactor = DEFAULT_COLOR_FACTOR;
 
     @SerializedName(METALLIC_FACTOR)
     private float metallicFactor = 1;
