@@ -98,7 +98,7 @@ public class Camera extends GLTFNamedValue {
             projection[5] = (float) (1 / (Math.tan(0.5f * yfov)));
             projection[10] = -1f;
             projection[11] = -1f;
-            projection[14] = 2 * znear;
+            projection[14] = -2 * znear;
             projection[15] = 0;
             return projection;
         }
@@ -161,6 +161,16 @@ public class Camera extends GLTFNamedValue {
             return znear;
         }
 
+        public float[] calculateMatrix() {
+            float[] projection = Matrix.setIdentity(Matrix.createMatrix(), 0);
+            projection[0] = 1 / xmag;
+            projection[5] = 1 / ymag;
+            projection[10] = 2 / (znear - zfar);
+            projection[14] = (zfar + znear) / (znear - zfar);
+            projection[15] = 1;
+            return projection;
+        }
+
     }
 
     @SerializedName(PERSPECTIVE)
@@ -197,7 +207,8 @@ public class Camera extends GLTFNamedValue {
         }
         switch (type) {
             case orthographic:
-                throw new IllegalArgumentException("Not implemented for type " + type);
+                projectionMatrix = orthographic.calculateMatrix();
+                break;
             case perspective:
                 projectionMatrix = perspective.calculateMatrix();
                 break;
