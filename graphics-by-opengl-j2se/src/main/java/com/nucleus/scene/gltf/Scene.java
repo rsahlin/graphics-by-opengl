@@ -32,6 +32,10 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
      */
     transient Node[] sceneNodes;
     transient Node[] cameraNodes;
+    /**
+     * True if one or moer of the nodes reference a camera
+     */
+    transient boolean cameraDefined = false;
 
     /**
      * returns the nodes, as indexes, that make up this scene
@@ -74,13 +78,22 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
             for (int i = 0; i < cameraNodes.length; i++) {
                 cameraNodes[i] = asset.getCameraNode(sceneNodes[i]);
                 if (cameraNodes[i] != null) {
+                    cameraDefined = true;
                     SimpleLogger.d(getClass(),
                             "Found camera in scene " + getName() + ", for node index " + i + ", name: "
                                     + sceneNodes[i].getName());
                 }
             }
         }
+    }
 
+    /**
+     * Returns true if one or more of the nodes in this scene reference a camera
+     * 
+     * @return true If one or more of the nodes reference a camera
+     */
+    public boolean isCameraDefined() {
+        return cameraDefined;
     }
 
 }

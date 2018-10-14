@@ -42,7 +42,7 @@ public class Camera extends GLTFNamedValue {
      * extras any Application-specific data. No
      *
      */
-    public class Perspective {
+    public static class Perspective {
 
         private static final String ASPECT_RATIO = "aspectRatio";
         private static final String YFOV = "yfov";
@@ -57,6 +57,17 @@ public class Camera extends GLTFNamedValue {
         private float zfar = -1;
         @SerializedName(ZNEAR)
         private float znear;
+
+        public Perspective() {
+
+        }
+
+        public Perspective(float aspectRatio, float yfov, float zfar, float znear) {
+            this.aspectRatio = aspectRatio;
+            this.yfov = yfov;
+            this.zfar = zfar;
+            this.znear = znear;
+        }
 
         public float getAspectRatio() {
             return aspectRatio;
@@ -202,14 +213,19 @@ public class Camera extends GLTFNamedValue {
      * Use this method to get the transform for positioning a camera
      * 
      * @param node
-     * @param matrix
-     * @return
+     * @param matrix Matrix to multiply camera node with.
+     * @return The camera matrix
      */
     public float[] concatCameraMatrix(Node node, float[] matrix) {
         node.updateMatrix();
         float[] inverse = node.invertMatrix();
-        Matrix.mul4(matrix, inverse, this.inverseMatrix);
-        return matrix;
+        if (matrix != null) {
+            Matrix.mul4(matrix, inverse, this.inverseMatrix);
+        } else {
+            Matrix.copy(inverse, 0, inverseMatrix, 0);
+        }
+        Matrix.setIdentity(inverseMatrix, 0);
+        return this.inverseMatrix;
     }
 
 }

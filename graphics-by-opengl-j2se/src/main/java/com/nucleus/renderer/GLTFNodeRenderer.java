@@ -13,6 +13,7 @@ import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.BufferView;
 import com.nucleus.scene.gltf.Camera;
+import com.nucleus.scene.gltf.Camera.Perspective;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
@@ -31,6 +32,8 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     transient protected FrameSampler timeKeeper = FrameSampler.getInstance();
     private Pass currentPass;
     protected ArrayDeque<float[]> modelMatrixStack = new ArrayDeque<float[]>(10);
+    protected ArrayDeque<float[]> viewMatrixStack = new ArrayDeque<float[]>(10);
+    protected ArrayDeque<float[]> projectionMatrixStack = new ArrayDeque<float[]>(10);
     protected float[] modelMatrix;
 
     /**
@@ -57,11 +60,21 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     public boolean renderNode(NucleusRenderer renderer, GLTFNode node, Pass currentPass, float[][] matrices)
             throws GLException {
         this.currentPass = currentPass;
+        // pushMatrix(viewMatrixStack, matrices[Matrices.VIEW.index]);
+        // pushMatrix(projectionMatrixStack, matrices[Matrices.PROJECTION.index]);
+
         GLES20Wrapper gles = renderer.getGLES();
         GLTF glTF = node.getGLTF();
         Scene scene = glTF.getScene();
+        if (!scene.isCameraDefined()) {
+            // Setup a default projection if none is specified in model - this is to get the right axes and winding.
+            Perspective p = new Perspective(1.5f, 0.66f, 10000, 1);
+            matrices[Matrices.PROJECTION.index] = p.calculateMatrix();
+        }
         // Render the default scene.
         renderScene(gles, glTF, scene, currentPass, matrices);
+        // matrices[Matrices.VIEW.index] = popMatrix(viewMatrixStack);
+        // matrices[Matrices.PROJECTION.index] = popMatrix(projectionMatrixStack);
         return true;
     }
 
@@ -70,12 +83,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         // Traverse the nodes and render each.
         Node[] sceneNodes = scene.getNodes();
         if (sceneNodes != null) {
-            Node[] cameraNodes = scene.getCameraNodes();
             for (int i = 0; i < sceneNodes.length; i++) {
-                Node cNode = cameraNodes[i];
-                if (cNode != null) {
-                    setCamera(cNode, matrices);
-                }
                 renderNode(gles, glTF, sceneNodes[i], matrices);
             }
         }
@@ -84,10 +92,9 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     protected void setCamera(Node cameraNode, float[][] matrices) {
         Camera camera = cameraNode.getCamera();
         if (camera != null) {
-            float[] cameraMatrix = camera.concatCameraMatrix(cameraNode, matrices[Matrices.MODEL.index]);
-            // float[] transpose = Matrix.createMatrix();
-            // Matrix.transposeM(transpose, 0, cameraMatrix, 0);
+            // float[] cameraMatrix = camera.concatCameraMatrix(cameraNode, null);
             // matrices[Matrices.VIEW.index] = cameraMatrix;
+            matrices[Matrices.VIEW.index] = cameraNode.getMatrix();
             Matrix.copy(camera.getProjectionMatrix(), 0, matrices[Matrices.PROJECTION.index], 0);
         }
 
@@ -104,10 +111,8 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      */
     protected void renderNode(GLES20Wrapper gles, GLTF glTF, Node node, float[][] matrices)
             throws GLException {
-        /**
-         * Render this node.
-         * If this node has camera it shall already be calculated so ignore it here
-         */
+        // Check for camera
+        setCamera(node, matrices);
         pushMatrix(modelMatrixStack, matrices[Matrices.MODEL.index]);
         float[] nodeMatrix = node.concatMatrix(matrices[Matrices.MODEL.index]);
         matrices[Matrices.MODEL.index] = nodeMatrix;

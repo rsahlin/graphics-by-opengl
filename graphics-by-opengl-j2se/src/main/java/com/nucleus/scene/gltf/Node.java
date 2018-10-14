@@ -156,15 +156,22 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
     protected float[] updateMatrix() {
         if (rotation != null || scale != null || translation != null) {
             Matrix.setIdentity(matrix, 0);
-            Matrix.rotateM(matrix, rotation);
-            Matrix.scaleM(matrix, 0, scale);
+            Matrix.setQuaternaionRotation(rotation, matrix);
             Matrix.translate(matrix, translation);
+            Matrix.scaleM(matrix, 0, scale);
+        }
+        if (cameraRef != null) {
+
         }
         return matrix;
     }
 
     public float[] invertMatrix() {
-        Matrix.invertM(inverseMatrix, 0, matrix, 0);
+        float[] transpose = Matrix.createMatrix();
+        Matrix.transposeM(transpose, 0, matrix, 0);
+        Matrix.invertM(inverseMatrix, 0, transpose, 0);
+        Matrix.transposeM(transpose, 0, inverseMatrix, 0);
+        Matrix.copy(transpose, 0, inverseMatrix, 0);
         return inverseMatrix;
     }
 
@@ -263,6 +270,25 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
             }
         }
         getPositionScale(getChildren(), compare);
+    }
+
+    @Override
+    public String toString() {
+        String str = "";
+        if (getMesh() != null && getMesh().getPrimitives() != null
+                && getMesh().getPrimitives()[0].getMaterial() != null) {
+            PBRMetallicRoughness pbr = getMesh().getPrimitives()[0].getMaterial().getPbrMetallicRoughness();
+            if (pbr != null && pbr.getBaseColorFactor() != null) {
+                float[] color = pbr.getBaseColorFactor();
+                str = "Color: " + color[0] + ", " + color[1] + ", " + color[2] + ", ";
+            }
+        }
+        return str + (name != null ? ("name: " + name + ", ")
+                : "" + children != null ? children.length + " children, "
+                        : "" + rotation != null
+                                ? "rotate: " + rotation[0] + ", " + rotation[1] + ", " + rotation[2] + ", "
+                                        + rotation[3]
+                                : "");
     }
 
 }

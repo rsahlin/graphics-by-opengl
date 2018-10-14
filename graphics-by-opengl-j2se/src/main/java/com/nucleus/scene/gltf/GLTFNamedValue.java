@@ -13,7 +13,7 @@ public class GLTFNamedValue {
     private static final String NAME = "name";
 
     @SerializedName(NAME)
-    private String name;
+    protected String name;
 
     /**
      * Returns the user-defined name of this object or null if not specified.
