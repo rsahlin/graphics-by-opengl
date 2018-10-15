@@ -796,7 +796,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, sampler.getMagFilter());
         glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, sampler.getWrapS());
         glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, sampler.getWrapT());
-        GLUtils.handleError(this, "glTexParameteri ");
+        GLUtils.handleError(this, "glTexParameters ");
     }
 
     /**
