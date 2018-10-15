@@ -33,12 +33,6 @@ public class Asset {
     @SerializedName(MIN_VERSION)
     private String minVersion;
 
-    /**
-     * Not supported yet
-     */
-    // private Object extensions;
-    // private Object extras;
-
     public String getCopyright() {
         return copyright;
     }
