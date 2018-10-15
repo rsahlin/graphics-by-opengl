@@ -32,6 +32,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     private Pass currentPass;
     protected ArrayDeque<float[]> modelMatrixStack = new ArrayDeque<float[]>(10);
     protected float[] modelMatrix;
+    protected int currentProgram = -1;
 
     /**
      * Internal method to handle matrix stack, push a matrix on the stack
@@ -56,6 +57,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     @Override
     public boolean renderNode(NucleusRenderer renderer, GLTFNode node, Pass currentPass, float[][] matrices)
             throws GLException {
+        currentProgram = -1;
         this.currentPass = currentPass;
         GLES20Wrapper gles = renderer.getGLES();
         // Set view matrix from previous render of this gltfNode
@@ -152,12 +154,17 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     protected void renderPrimitive(GLES20Wrapper gles, GLTF glTF, Primitive primitive, float[][] matrices)
             throws GLException {
         GLTFShaderProgram program = (GLTFShaderProgram) getProgram(gles, primitive, currentPass);
-        gles.glUseProgram(program.getProgram());
-        GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
-        // TODO - is this the best place for this check - remember, this should only be done in debug cases.
-        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
-            program.validateProgram(gles);
+        if (currentProgram != program.getProgram()) {
+            currentProgram = program.getProgram();
+            gles.glUseProgram(currentProgram);
+            GLUtils.handleError(gles, "glUseProgram " + currentProgram);
+            // TODO - is this the best place for this check - remember, this should only be done in debug cases.
+            if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
+                program.validateProgram(gles);
+            }
         }
+        // Can be optimized to update uniforms under the following conditions:
+        // The program has changed OR the matrices have changed, ie another parent node.
         program.updateUniforms(gles, matrices);
         Material material = primitive.getMaterial();
         if (material != null) {

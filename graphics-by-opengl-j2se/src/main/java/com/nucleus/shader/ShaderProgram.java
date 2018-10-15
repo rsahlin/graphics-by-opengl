@@ -70,6 +70,10 @@ public abstract class ShaderProgram {
     protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
     protected final static String NO_ACTIVE_UNIFORMS = "No active uniforms, forgot to call createProgram()?";
 
+    protected ShaderVariable modelUniform;
+    protected ShaderVariable viewUniform;
+    protected ShaderVariable projectionUniform;
+
     /**
      * The different type of programs that can be linked from different type of shaders.
      *
@@ -771,7 +775,7 @@ public abstract class ShaderProgram {
                 if (v.getBlockIndex() != Constants.NO_VALUE) {
                     setUniformBlock((GLES30Wrapper) gles, uniformBlockBuffers[v.getBlockIndex()], v);
                 } else {
-                    uploadUniform(gles, uniforms, v);
+                    uploadUniform(gles, uniformData, v);
                 }
             }
         }
@@ -1457,14 +1461,19 @@ public abstract class ShaderProgram {
     public void setUniformMatrices(float[][] matrices) {
         // Refresh the uniform matrixes - default is model - view and projection
         // TODO - store ShaderVariables and fetch if null
+        if (modelUniform == null) {
+            modelUniform = getUniformByName(Matrices.MODEL.name);
+            viewUniform = getUniformByName(Matrices.VIEW.name);
+            projectionUniform = getUniformByName(Matrices.PROJECTION.name);
+        }
         System.arraycopy(matrices[Matrices.MODEL.index], 0, uniforms,
-                getUniformByName(Matrices.MODEL.name).getOffset(),
+                modelUniform.getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(matrices[Matrices.VIEW.index], 0, uniforms,
-                getUniformByName(Matrices.VIEW.name).getOffset(),
+                viewUniform.getOffset(),
                 Matrix.MATRIX_ELEMENTS);
         System.arraycopy(matrices[Matrices.PROJECTION.index], 0, uniforms,
-                getUniformByName(Matrices.PROJECTION.name).getOffset(),
+                projectionUniform.getOffset(),
                 Matrix.MATRIX_ELEMENTS);
     }
 

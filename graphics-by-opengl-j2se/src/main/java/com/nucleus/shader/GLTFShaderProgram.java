@@ -51,7 +51,33 @@ public class GLTFShaderProgram extends GenericShaderProgram {
         } else {
             setUniformData(color0Uniform, PBRMetallicRoughness.DEFAULT_COLOR_FACTOR, 0);
         }
+        uploadUniform(gles, uniforms, color0Uniform);
+    }
+
+    @Override
+    public void updateUniforms(GLES20Wrapper gles, float[][] matrices)
+            throws GLException {
+        // GLTF will likely have multiple primitives for the same program within one node - split update of matrices.
+        setUniformMatrices(matrices);
+        updateUniformData(uniforms);
         uploadUniforms(gles, uniforms, activeUniforms);
+    }
+
+    /**
+     * Upload the uniform matrices to GL
+     * 
+     * @param gles
+     * @param uniformData
+     * @param activeUniforms
+     * @throws GLException
+     */
+    @Override
+    protected void uploadUniforms(GLES20Wrapper gles, float[] uniformData, ShaderVariable[] activeUniforms)
+            throws GLException {
+        uploadUniform(gles, uniformData, modelUniform);
+        uploadUniform(gles, uniformData, viewUniform);
+        uploadUniform(gles, uniformData, projectionUniform);
+        uploadUniform(gles, uniformData, light0Uniform);
     }
 
 }
