@@ -97,8 +97,8 @@ public class Camera extends GLTFNamedValue {
             projection[0] = (float) (1 / (aspectRatio * Math.tan((0.5f * yfov))));
             projection[5] = (float) (1 / (Math.tan(0.5f * yfov)));
             projection[10] = -1f;
-            projection[11] = -1f;
-            projection[14] = -2 * znear;
+            projection[11] = -2 * znear;
+            projection[14] = -1f;
             projection[15] = 0;
             return projection;
         }
@@ -107,8 +107,8 @@ public class Camera extends GLTFNamedValue {
             projection[0] = (float) (1 / (aspectRatio * Math.tan((0.5f * yfov))));
             projection[5] = (float) (1 / (Math.tan(0.5f * yfov)));
             projection[10] = (zfar + znear) / (znear - zfar);
-            projection[11] = -1f;
-            projection[14] = (2 * zfar * znear) / (znear - zfar);
+            projection[11] = (2 * zfar * znear) / (znear - zfar);
+            projection[14] = -1f;
             projection[15] = 0;
             return projection;
         }
@@ -224,19 +224,18 @@ public class Camera extends GLTFNamedValue {
      * Use this method to get the transform for positioning a camera
      * 
      * @param node
-     * @param matrix Matrix to multiply camera node with.
+     * @param matrix Matrix to multiply camera node with, or null
      * @return The camera matrix
      */
     public float[] concatCameraMatrix(Node node, float[] matrix) {
         node.updateMatrix();
         float[] inverse = node.invertMatrix();
         if (matrix != null) {
-            Matrix.mul4(matrix, inverse, this.inverseMatrix);
+            Matrix.mul4(matrix, inverse, inverseMatrix);
         } else {
             Matrix.copy(inverse, 0, inverseMatrix, 0);
         }
-        Matrix.setIdentity(inverseMatrix, 0);
-        return this.inverseMatrix;
+        return inverseMatrix;
     }
 
 }
