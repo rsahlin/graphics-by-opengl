@@ -219,6 +219,7 @@ public class AssetManager {
                     texParams, GLES20.GL_TEXTURE_2D);
             texture.setId(renderTarget.getAttachementId(attachement));
             textures.put(renderTarget.getAttachementId(attachement), texture);
+            SimpleLogger.d(getClass(), "Created texture: " + texture.toString());
         }
         return texture;
     }
@@ -414,8 +415,10 @@ public class AssetManager {
     public void loadGLTFAssets(GLES20Wrapper gles, GLTF glTF) throws IOException, GLException {
         loadBuffers(glTF);
         loadTextures(gles, glTF);
+        SimpleLogger.d(getClass(), "Loaded gltf assets");
         if (gles != null && com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
             BufferObjectsFactory.getInstance().createVBOs(gles, glTF.getBuffers());
+            SimpleLogger.d(getClass(), "Created VBOs for gltf assets");
         }
     }
 
@@ -502,7 +505,7 @@ public class AssetManager {
             int[] name = createTextureName(gles);
             image.setTextureName(name[0]);
             TextureUtils.uploadTextures(gles, image, true);
-            SimpleLogger.d(TextureFactory.class, "Uploaded texture " + image.getUri());
+            SimpleLogger.d(getClass(), "Uploaded texture " + image.getUri());
             BufferImage.destroyImages(new BufferImage[] { image.getBufferImage() });
         } catch (GLException e) {
             throw new IllegalArgumentException(e);
@@ -616,7 +619,7 @@ public class AssetManager {
             int[] name = createTextureName(gles);
             texture.setTextureName(name[0]);
             TextureUtils.uploadTextures(gles, texture, textureImg);
-            SimpleLogger.d(TextureFactory.class, "Uploaded texture " + texture.toString());
+            SimpleLogger.d(getClass(), "Uploaded texture " + texture.toString());
             BufferImage.destroyImages(textureImg);
         } catch (GLException e) {
             throw new IllegalArgumentException(e);
