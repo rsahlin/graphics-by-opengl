@@ -1,5 +1,7 @@
 package com.nucleus.scene.gltf;
 
+import java.util.ArrayList;
+
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
@@ -31,7 +33,7 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
      * The nodes that make up this scene.
      */
     transient Node[] sceneNodes;
-    transient Node[] cameraNodes;
+    transient ArrayList<Node> cameraNodes = new ArrayList<>();
     /**
      * True if one or moer of the nodes reference a camera
      */
@@ -55,13 +57,10 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
 
     /**
      * Returns the nodes in the scene that defines a camera.
-     * The array will match the size of {@link #getNodes()} and will contain a reference to a Node with a camera
-     * if one is defind in that Node tree.
-     * Use this to figure out on what nodes in the Scene to use a camera for.
      * 
      * @return
      */
-    public Node[] getCameraNodes() {
+    public ArrayList<Node> getCameraNodes() {
         return cameraNodes;
     }
 
@@ -73,17 +72,17 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
             for (int i = 0; i < nodes.length; i++) {
                 sceneNodes[i] = sources[nodes[i]];
             }
-            // Check for nodes that reference camera
-            cameraNodes = new Node[sceneNodes.length];
-            for (int i = 0; i < cameraNodes.length; i++) {
-                cameraNodes[i] = asset.getCameraNode(sceneNodes[i]);
-                if (cameraNodes[i] != null) {
+            for (int i = 0; i < sceneNodes.length; i++) {
+                Node cameraNode = asset.getCameraNode(sceneNodes[i]);
+                if (cameraNode != null) {
+                    cameraNodes.add(cameraNode);
                     cameraDefined = true;
                     SimpleLogger.d(getClass(),
                             "Found camera in scene " + getName() + ", for node index " + i + ", name: "
                                     + sceneNodes[i].getName());
                 }
             }
+            SimpleLogger.d(getClass(), "Found " + cameraNodes.size() + " camera nodes in scene.");
         }
     }
 

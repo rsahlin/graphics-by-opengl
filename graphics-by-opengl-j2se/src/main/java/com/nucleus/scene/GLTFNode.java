@@ -24,6 +24,7 @@ import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
 import com.nucleus.texturing.Texture2D.Shading;
+import com.nucleus.vecmath.Matrix;
 
 /**
  * Node containing a glTF model
@@ -44,6 +45,10 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     transient private GLTF glTF;
     transient ArrayList<RenderableMesh> meshes = new ArrayList<>();
     transient GLES20Wrapper gles;
+    /**
+     * Used to save viewmatrix between frames
+     */
+    transient protected float[] saveViewMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
 
     /**
      * Used by GSON and {@link #createInstance(RootNodeImpl)} method - do NOT call directly
@@ -185,6 +190,25 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     @Override
     public ShaderProgram createProgram() {
         return null;
+    }
+
+    /**
+     * Copies the saved viewmatrix to destination matrix
+     * 
+     * @param matrix
+     */
+    public void getSavedViewMatrix(float[] matrix) {
+        Matrix.copy(saveViewMatrix, 0, matrix, 0);
+    }
+
+    /**
+     * Copies the viewMatrix to save view matrix in this class.
+     * It can then be fetched by calling {@link #getSavedViewMatrix(float[])}
+     * 
+     * @param viewMatrix
+     */
+    public void saveViewMatrix(float[] viewMatrix) {
+        Matrix.copy(viewMatrix, 0, saveViewMatrix, 0);
     }
 
 }

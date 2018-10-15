@@ -156,7 +156,7 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
     protected float[] updateMatrix() {
         if (rotation != null || scale != null || translation != null) {
             Matrix.setIdentity(matrix, 0);
-            Matrix.setQuaternaionRotation(rotation, matrix);
+            Matrix.setQuaternionRotation(rotation, matrix);
             Matrix.translate(matrix, translation);
             Matrix.scaleM(matrix, 0, scale);
         }
@@ -167,11 +167,7 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
     }
 
     public float[] invertMatrix() {
-        float[] transpose = Matrix.createMatrix();
-        Matrix.transposeM(transpose, 0, matrix, 0);
-        Matrix.invertM(inverseMatrix, 0, transpose, 0);
-        Matrix.transposeM(transpose, 0, inverseMatrix, 0);
-        Matrix.copy(transpose, 0, inverseMatrix, 0);
+        Matrix.invertM(inverseMatrix, 0, matrix, 0);
         return inverseMatrix;
     }
 
