@@ -149,21 +149,38 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
     }
 
     @Override
-    public void glUniformMatrix4fv(int location, int count, boolean transpose, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniformMatrix4fv(location, transpose,
-                LWJGLUtils.toFloatBuffer(v, count * 16, offset));
+    public void glUniformMatrix4fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniformMatrix4fv(location, transpose, buffer);
     }
 
     @Override
-    public void glUniformMatrix3fv(int location, int count, boolean transpose, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniformMatrix3fv(location, transpose,
-                LWJGLUtils.toFloatBuffer(v, count * 12, offset));
+    public void glUniformMatrix3fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniformMatrix3fv(location, transpose, buffer);
     }
 
     @Override
-    public void glUniformMatrix2fv(int location, int count, boolean transpose, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniformMatrix2fv(location, transpose,
-                LWJGLUtils.toFloatBuffer(v, count * 8, offset));
+    public void glUniformMatrix2fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniformMatrix2fv(location, transpose, buffer);
+    }
+
+    @Override
+    public void glUniform4fv(int location, int count, FloatBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniform4fv(location, buffer);
+    }
+
+    @Override
+    public void glUniform3fv(int location, int count, FloatBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniform3fv(location, buffer);
+    }
+
+    @Override
+    public void glUniform2fv(int location, int count, FloatBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniform2fv(location, buffer);
+    }
+
+    @Override
+    public void glUniform1fv(int location, int count, FloatBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniform1fv(location, buffer);
     }
 
     @Override
@@ -227,28 +244,8 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
     }
 
     @Override
-    public void glUniform4fv(int location, int count, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniform4fv(location, LWJGLUtils.toFloatBuffer(v, 4 * count, offset));
-    }
-
-    @Override
-    public void glUniform3fv(int location, int count, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniform3fv(location, LWJGLUtils.toFloatBuffer(v, 3 * count, offset));
-    }
-
-    @Override
     public void glUniform1iv(int location, int count, int[] v0, int offset) {
         org.lwjgl.opengles.GLES20.glUniform1iv(location, LWJGLUtils.toIntBuffer(v0, count, offset));
-    }
-
-    @Override
-    public void glUniform2fv(int location, int count, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniform2fv(location, LWJGLUtils.toFloatBuffer(v, 2 * count, offset));
-    }
-
-    @Override
-    public void glUniform1fv(int location, int count, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniform1fv(location, LWJGLUtils.toFloatBuffer(v, count, offset));
     }
 
     @Override
@@ -413,10 +410,8 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
     }
 
     @Override
-    public void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, int[] params, int offset) {
-        IntBuffer intBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
-        org.lwjgl.opengles.GLES30.glGetActiveUniformBlockiv(program, uniformBlockIndex, pname, intBuffer);
-        params[offset] = intBuffer.get(0);
+    public void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, IntBuffer buffer) {
+        org.lwjgl.opengles.GLES30.glGetActiveUniformBlockiv(program, uniformBlockIndex, pname, buffer);
     }
 
     @Override
@@ -427,10 +422,12 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int indicesOffset,
             int pname, int[] params, int paramsOffset) {
-        IntBuffer indicesBuffer = ByteBuffer.allocateDirect(uniformCount * 4).asIntBuffer();
+        IntBuffer indicesBuffer = ByteBuffer.allocateDirect(uniformCount * 4).order(ByteOrder.nativeOrder())
+                .asIntBuffer();
         indicesBuffer.put(uniformIndices, indicesOffset, uniformCount);
         indicesBuffer.position(0);
-        IntBuffer paramsBuffer = ByteBuffer.allocateDirect(uniformCount * 4).asIntBuffer();
+        IntBuffer paramsBuffer = ByteBuffer.allocateDirect(uniformCount * 4).order(ByteOrder.nativeOrder())
+                .asIntBuffer();
         org.lwjgl.opengles.GLES30.glGetActiveUniformsiv(program, indicesBuffer, pname, paramsBuffer);
         paramsBuffer.position(0);
         paramsBuffer.get(params, paramsOffset, uniformCount);

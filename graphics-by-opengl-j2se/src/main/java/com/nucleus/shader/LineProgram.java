@@ -1,5 +1,7 @@
 package com.nucleus.shader;
 
+import java.nio.FloatBuffer;
+
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.Renderers;
@@ -32,10 +34,6 @@ public class LineProgram extends ShaderProgram {
 
     public static final String CATEGORY = "line";
 
-    ShaderVariable uPointSize;
-
-    private float pointSize = 1;
-
     public LineProgram(Texture2D.Shading shading) {
         super(null, shading, CATEGORY, ProgramType.VERTEX_FRAGMENT);
         setIndexer(new LineProgramIndexer());
@@ -62,14 +60,11 @@ public class LineProgram extends ShaderProgram {
     }
 
     @Override
-    public void updateUniformData(float[] destinationUniform) {
-        if (uPointSize != null) {
-            destinationUniform[uPointSize.getOffset()] = pointSize;
-        }
+    public void updateUniformData(FloatBuffer destinationUniform) {
     }
 
     @Override
-    public void initUniformData(float[] destinationUniforms) {
+    public void initUniformData(FloatBuffer destinationUniforms) {
     }
 
 }

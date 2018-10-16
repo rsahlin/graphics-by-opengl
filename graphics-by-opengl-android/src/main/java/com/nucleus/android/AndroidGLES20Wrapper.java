@@ -1,6 +1,7 @@
 package com.nucleus.android;
 
 import java.nio.Buffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES20Wrapper;
@@ -106,21 +107,6 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glUniformMatrix4fv(int location, int count, boolean transpose, float[] v, int offset) {
-        android.opengl.GLES20.glUniformMatrix4fv(location, count, transpose, v, offset);
-    }
-
-    @Override
-    public void glUniformMatrix3fv(int location, int count, boolean transpose, float[] v, int offset) {
-        android.opengl.GLES20.glUniformMatrix3fv(location, count, transpose, v, offset);
-    }
-
-    @Override
-    public void glUniformMatrix2fv(int location, int count, boolean transpose, float[] v, int offset) {
-        android.opengl.GLES20.glUniformMatrix2fv(location, count, transpose, v, offset);
-    }
-
-    @Override
     public void glDrawArrays(int mode, int first, int count) {
         android.opengl.GLES20.glDrawArrays(mode, first, count);
     }
@@ -187,8 +173,8 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glUniform3fv(int location, int count, float[] v, int offset) {
-        android.opengl.GLES20.glUniform3fv(location, count, v, offset);
+    public void glUniform3fv(int location, int count, FloatBuffer buffer) {
+        android.opengl.GLES20.glUniform3fv(location, count, buffer);
     }
 
     @Override
@@ -197,18 +183,33 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glUniform2fv(int location, int count, float[] v, int offset) {
-        android.opengl.GLES20.glUniform2fv(location, count, v, offset);
+    public void glUniform2fv(int location, int count, FloatBuffer buffer) {
+        android.opengl.GLES20.glUniform2fv(location, count, buffer);
     }
 
     @Override
-    public void glUniform1fv(int location, int count, float[] v, int offset) {
-        android.opengl.GLES20.glUniform1fv(location, count, v, offset);
+    public void glUniform1fv(int location, int count, FloatBuffer buffer) {
+        android.opengl.GLES20.glUniform1fv(location, count, buffer);
     }
 
     @Override
-    public void glUniform4fv(int location, int count, float[] v, int offset) {
-        android.opengl.GLES20.glUniform4fv(location, count, v, offset);
+    public void glUniform4fv(int location, int count, FloatBuffer buffer) {
+        android.opengl.GLES20.glUniform4fv(location, count, buffer);
+    }
+
+    @Override
+    public void glUniformMatrix4fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        android.opengl.GLES20.glUniformMatrix4fv(location, count, transpose, buffer);
+    }
+
+    @Override
+    public void glUniformMatrix3fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        android.opengl.GLES20.glUniformMatrix3fv(location, count, transpose, buffer);
+    }
+
+    @Override
+    public void glUniformMatrix2fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        android.opengl.GLES20.glUniformMatrix2fv(location, count, transpose, buffer);
     }
 
     @Override

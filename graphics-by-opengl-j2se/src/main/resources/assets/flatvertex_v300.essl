@@ -5,9 +5,7 @@
 precision highp float;
 
 //Put array declaration after name for GLSL compatibility
-uniform mat4 uModelMatrix;
-uniform mat4 uViewMatrix;
-uniform mat4 uProjectionMatrix;
+uniform mat4 uModelMatrix[3];
 
 in vec3 aTranslate; //Position of vertex, offset from matrix
 in vec3 aVertex;
@@ -16,7 +14,7 @@ in vec4 aColor;
 out vec4 color;
 
 void main() {
-    vec4 pos = vec4(aVertex + aTranslate, 1.0) * uModelMatrix * uViewMatrix;
-    gl_Position =  pos * uProjectionMatrix;
+    vec4 pos = vec4(aVertex + aTranslate, 1.0) * uModelMatrix[0] * uModelMatrix[1];
+    gl_Position = pos * uModelMatrix[2];
     color = aColor;
 }

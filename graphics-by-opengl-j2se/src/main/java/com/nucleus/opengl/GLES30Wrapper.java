@@ -1,6 +1,8 @@
 package com.nucleus.opengl;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 
 import com.nucleus.shader.ShaderSource.ESSLVersion;
 import com.nucleus.shader.ShaderVariable;
@@ -44,21 +46,25 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
             return null;
         }
         InterfaceBlock[] uniformBlock = new InterfaceBlock[info.getActiveVariables(VariableType.UNIFORM_BLOCK)];
-        int[] blockInfo = new int[4];
-        int[] indices = null;
+        IntBuffer blockInfo = ByteBuffer.allocateDirect(4 * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
         for (int i = 0; i < uniformBlock.length; i++) {
             // GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS
             int program = info.getProgram();
-            glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, blockInfo, 0);
-            if (blockInfo[0] > 0) {
-                indices = new int[blockInfo[0]];
-                glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices,
-                        0);
-                glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_DATA_SIZE, blockInfo, 1);
+            blockInfo.position(InterfaceBlock.ACTIVE_COUNT_INDEX);
+            glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, blockInfo);
+            if (blockInfo.get(0) > 0) {
+                IntBuffer indices = ByteBuffer.allocateDirect(blockInfo.get(0) * 4).order(ByteOrder.nativeOrder())
+                        .asIntBuffer();
+                glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES,
+                        indices);
+                blockInfo.position(InterfaceBlock.BLOCK_DATA_SIZE_INDEX);
+                glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_DATA_SIZE, blockInfo);
+                blockInfo.position(InterfaceBlock.VERTEX_REFERENCE_INDEX);
                 glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER,
-                        blockInfo, 2);
+                        blockInfo);
+                blockInfo.position(InterfaceBlock.FRAGMENT_REFERENCE_INDEX);
                 glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER,
-                        blockInfo, 3);
+                        blockInfo);
                 // Block name is fetched using blockIndex so we know the blockIndex to be correct.
                 uniformBlock[i] = new InterfaceBlock(info.getProgram(), i,
                         glGetActiveUniformBlockName(info.getProgram(), i), blockInfo, indices);
@@ -190,10 +196,9 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
      * @param program
      * @param uniformBlockIndex
      * @param pname
-     * @param params
+     * @param buffer
      */
-    public abstract void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, int[] params,
-            int offset);
+    public abstract void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, IntBuffer buffer);
 
     /**
      * Abstraction for void glGetActiveUniformBlockName( GLuint program, GLuint uniformBlockIndex, GLsizei bufSize,

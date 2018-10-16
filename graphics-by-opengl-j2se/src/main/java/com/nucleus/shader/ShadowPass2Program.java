@@ -1,5 +1,7 @@
 package com.nucleus.shader;
 
+import java.nio.FloatBuffer;
+
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
 import com.nucleus.io.ExternalReference;
@@ -11,8 +13,8 @@ import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.ParameterData;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.Texture2D.Shading;
+import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureParameter.Name;
 import com.nucleus.texturing.TextureParameter.Param;
@@ -28,6 +30,8 @@ import com.nucleus.vecmath.Matrix;
  *
  */
 public class ShadowPass2Program extends ShadowPassProgram {
+
+    protected ShaderVariable lightUniform;
 
     static class Shadow2Categorizer extends Categorizer {
 
@@ -81,21 +85,16 @@ public class ShadowPass2Program extends ShadowPassProgram {
 
     @Override
     public void setUniformMatrices(float[][] matrices) {
-        // Refresh the uniform matrix using light matrix
-        // TODO - store ShaderVariables for matrices
-        System.arraycopy(matrices[Matrices.MODEL.index], 0, uniforms,
-                getUniformByName(Matrices.MODEL.name).getOffset(),
-                Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(matrices[Matrices.VIEW.index], 0, uniforms,
-                getUniformByName(Matrices.VIEW.name).getOffset(),
-                Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(matrices[Matrices.PROJECTION.index], 0, uniforms,
-                getUniformByName(Matrices.PROJECTION.name).getOffset(),
-                Matrix.MATRIX_ELEMENTS);
-        ShaderVariable lightMatrix = getUniformByName("uLightMatrix");
-        System.arraycopy(matrices[Matrices.RENDERPASS_1.index], 0, uniforms,
-                lightMatrix.getOffset(),
-                Matrix.MATRIX_ELEMENTS);
+        if (modelUniform == null) {
+            modelUniform = getUniformByName(Matrices.MODEL.name);
+            lightUniform = getUniformByName("uLightMatrix");
+        }
+        uniforms.position(modelUniform.getOffset());
+        uniforms.put(matrices[Matrices.MODEL.index], 0, Matrix.MATRIX_ELEMENTS);
+        uniforms.put(matrices[Matrices.VIEW.index], 0, Matrix.MATRIX_ELEMENTS);
+        uniforms.put(matrices[Matrices.PROJECTION.index], 0, Matrix.MATRIX_ELEMENTS);
+        uniforms.position(lightUniform.getOffset());
+        uniforms.put(matrices[Matrices.RENDERPASS_1.index], 0, Matrix.MATRIX_ELEMENTS);
     }
 
     @Override
@@ -122,12 +121,12 @@ public class ShadowPass2Program extends ShadowPassProgram {
     }
 
     @Override
-    public void updateUniformData(float[] destinationUniform) {
+    public void updateUniformData(FloatBuffer destinationUniform) {
         objectProgram.updateUniformData(destinationUniform);
     }
 
     @Override
-    public void initUniformData(float[] destinationUniforms) {
+    public void initUniformData(FloatBuffer destinationUniforms) {
     }
 
 }

@@ -168,21 +168,38 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glUniformMatrix4fv(int location, int count, boolean transpose, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniformMatrix4fv(location, transpose,
-                LWJGLUtils.toFloatBuffer(v, count * 16, offset));
+    public void glUniformMatrix4fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniformMatrix4fv(location, transpose, buffer);
     }
 
     @Override
-    public void glUniformMatrix3fv(int location, int count, boolean transpose, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniformMatrix3fv(location, transpose,
-                LWJGLUtils.toFloatBuffer(v, count * 12, offset));
+    public void glUniformMatrix3fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniformMatrix3fv(location, transpose, buffer);
     }
 
     @Override
-    public void glUniformMatrix2fv(int location, int count, boolean transpose, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniformMatrix2fv(location, transpose,
-                LWJGLUtils.toFloatBuffer(v, count * 8, offset));
+    public void glUniformMatrix2fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniformMatrix2fv(location, transpose, buffer);
+    }
+
+    @Override
+    public void glUniform4fv(int location, int count, FloatBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniform4fv(location, buffer);
+    }
+
+    @Override
+    public void glUniform3fv(int location, int count, FloatBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniform3fv(location, buffer);
+    }
+
+    @Override
+    public void glUniform2fv(int location, int count, FloatBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniform2fv(location, buffer);
+    }
+
+    @Override
+    public void glUniform1fv(int location, int count, FloatBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniform1fv(location, buffer);
     }
 
     @Override
@@ -251,28 +268,8 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glUniform4fv(int location, int count, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniform4fv(location, LWJGLUtils.toFloatBuffer(v, 4 * count, offset));
-    }
-
-    @Override
-    public void glUniform3fv(int location, int count, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniform3fv(location, LWJGLUtils.toFloatBuffer(v, 3 * count, offset));
-    }
-
-    @Override
     public void glUniform1iv(int location, int count, int[] v0, int offset) {
         org.lwjgl.opengles.GLES20.glUniform1iv(location, LWJGLUtils.toIntBuffer(v0, count, offset));
-    }
-
-    @Override
-    public void glUniform2fv(int location, int count, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniform2fv(location, LWJGLUtils.toFloatBuffer(v, 2 * count, offset));
-    }
-
-    @Override
-    public void glUniform1fv(int location, int count, float[] v, int offset) {
-        org.lwjgl.opengles.GLES20.glUniform1fv(location, LWJGLUtils.toFloatBuffer(v, count, offset));
     }
 
     @Override
@@ -400,7 +397,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glGetShaderSource(int shader, int bufsize, int[] length, byte[] source) {
-        ByteBuffer bufferSource = ByteBuffer.allocateDirect(bufsize);
+        ByteBuffer bufferSource = ByteBuffer.allocateDirect(bufsize).order(ByteOrder.nativeOrder());
         org.lwjgl.opengles.GLES20.glGetShaderSource(shader, length, bufferSource);
         bufferSource.position(0);
         bufferSource.get(source, 0, length[0]);

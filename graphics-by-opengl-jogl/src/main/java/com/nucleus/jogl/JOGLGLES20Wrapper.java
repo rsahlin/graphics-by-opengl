@@ -2,6 +2,7 @@ package com.nucleus.jogl;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.jogamp.opengl.GL;
@@ -154,18 +155,39 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glUniformMatrix4fv(int location, int count, boolean transpose, float[] v, int offset) {
-        gles.glUniformMatrix4fv(location, count, transpose, v, offset);
+    public void glUniformMatrix4fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        gles.glUniformMatrix4fv(location, count, transpose, buffer);
     }
 
     @Override
-    public void glUniformMatrix3fv(int location, int count, boolean transpose, float[] v, int offset) {
-        gles.glUniformMatrix3fv(location, count, transpose, v, offset);
+    public void glUniformMatrix3fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        gles.glUniformMatrix3fv(location, count, transpose, buffer);
     }
 
     @Override
-    public void glUniformMatrix2fv(int location, int count, boolean transpose, float[] v, int offset) {
-        gles.glUniformMatrix2fv(location, count, transpose, v, offset);
+    public void glUniformMatrix2fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        gles.glUniformMatrix2fv(location, count, transpose, buffer);
+    }
+
+    @Override
+    public void glUniform4fv(int location, int count, FloatBuffer buffer) {
+        gles.glUniform4fv(location, count, buffer);
+    }
+
+    @Override
+    public void glUniform3fv(int location, int count, FloatBuffer buffer) {
+        gles.glUniform3fv(location, count, buffer);
+    }
+
+    @Override
+    public void glUniform2fv(int location, int count, FloatBuffer buffer) {
+        gles.glUniform2fv(location, count, buffer);
+
+    }
+
+    @Override
+    public void glUniform1fv(int location, int count, FloatBuffer buffer) {
+        gles.glUniform1fv(location, count, buffer);
     }
 
     @Override
@@ -248,31 +270,8 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glUniform4fv(int location, int count, float[] v, int offset) {
-        gles.glUniform4fv(location, count, v, offset);
-
-    }
-
-    @Override
-    public void glUniform3fv(int location, int count, float[] v, int offset) {
-        gles.glUniform3fv(location, count, v, offset);
-
-    }
-
-    @Override
     public void glUniform1iv(int location, int count, int[] v0, int offset) {
         gles.glUniform1iv(location, count, v0, offset);
-    }
-
-    @Override
-    public void glUniform2fv(int location, int count, float[] v, int offset) {
-        gles.glUniform2fv(location, count, v, offset);
-
-    }
-
-    @Override
-    public void glUniform1fv(int location, int count, float[] v, int offset) {
-        gles.glUniform1fv(location, count, v, offset);
     }
 
     @Override

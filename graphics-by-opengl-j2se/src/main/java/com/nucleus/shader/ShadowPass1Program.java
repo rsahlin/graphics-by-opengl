@@ -1,5 +1,7 @@
 package com.nucleus.shader;
 
+import java.nio.FloatBuffer;
+
 import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
@@ -46,16 +48,13 @@ public class ShadowPass1Program extends ShadowPassProgram {
 
     @Override
     public void setUniformMatrices(float[][] matrices) {
-        // TODO - store ShaderVariables for matrices
-        System.arraycopy(matrices[Matrices.MODEL.index], 0, uniforms,
-                getUniformByName(Matrices.MODEL.name).getOffset(),
-                Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(matrices[Matrices.VIEW.index], 0, uniforms,
-                getUniformByName(Matrices.VIEW.name).getOffset(),
-                Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(matrices[Matrices.RENDERPASS_2.index], 0, uniforms,
-                getUniformByName(Matrices.PROJECTION.name).getOffset(),
-                Matrix.MATRIX_ELEMENTS);
+        if (modelUniform == null) {
+            modelUniform = getUniformByName(Matrices.MODEL.name);
+        }
+        uniforms.position(modelUniform.getOffset());
+        uniforms.put(matrices[Matrices.MODEL.index], 0, Matrix.MATRIX_ELEMENTS);
+        uniforms.put(matrices[Matrices.VIEW.index], 0, Matrix.MATRIX_ELEMENTS);
+        uniforms.put(matrices[Matrices.RENDERPASS_2.index], 0, Matrix.MATRIX_ELEMENTS);
     }
 
     /**
@@ -75,11 +74,11 @@ public class ShadowPass1Program extends ShadowPassProgram {
     }
 
     @Override
-    public void updateUniformData(float[] destinationUniform) {
+    public void updateUniformData(FloatBuffer destinationUniform) {
     }
 
     @Override
-    public void initUniformData(float[] destinationUniforms) {
+    public void initUniformData(FloatBuffer destinationUniforms) {
     }
 
 }

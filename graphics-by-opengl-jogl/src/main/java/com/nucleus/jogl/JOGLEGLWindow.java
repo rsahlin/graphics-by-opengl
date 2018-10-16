@@ -1,6 +1,7 @@
 package com.nucleus.jogl;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.List;
 
@@ -68,9 +69,9 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
             nativeWindow.setSize(width, height);
             nativeWindow.setRealized(true);
 
-            IntBuffer major = ByteBuffer.allocateDirect(4).asIntBuffer();
+            IntBuffer major = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
             major.put(1);
-            IntBuffer minor = ByteBuffer.allocateDirect(4).asIntBuffer();
+            IntBuffer minor = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
             minor.put(4);
             if (!EGL.eglInitialize(nativeWindow.getDisplayHandle(), major, minor)) {
                 throw new IllegalArgumentException("Could not initialize EGL");

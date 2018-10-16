@@ -3,6 +3,7 @@ package com.nucleus.scene;
 import java.io.IOException;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
@@ -47,6 +48,7 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
     @Override
     public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
             throws IOException {
+        SimpleLogger.d(getClass(), "Creating MeshBuilder for Node " + getId());
         int count = 1;
         Mesh.Builder<Mesh> builder = new Mesh.Builder<>(gles);
         Texture2D tex = null;

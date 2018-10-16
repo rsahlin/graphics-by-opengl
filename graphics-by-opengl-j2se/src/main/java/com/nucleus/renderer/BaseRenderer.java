@@ -289,9 +289,11 @@ class BaseRenderer implements NucleusRenderer {
 
         this.modelMatrix = nodeMatrix;
         for (Node n : node.getChildren()) {
-            pushMatrix(matrixStack, this.modelMatrix);
-            render((RenderableNode<?>) n);
-            this.modelMatrix = popMatrix(matrixStack);
+            if (n instanceof RenderableNode<?>) {
+                pushMatrix(matrixStack, this.modelMatrix);
+                render((RenderableNode<?>) n);
+                this.modelMatrix = popMatrix(matrixStack);
+            }
         }
         if (projection != null) {
             matrices[Matrices.PROJECTION.index] = popMatrix(this.projection);

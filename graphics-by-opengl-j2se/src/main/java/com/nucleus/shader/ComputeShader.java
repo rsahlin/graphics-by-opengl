@@ -1,5 +1,7 @@
 package com.nucleus.shader;
 
+import java.nio.FloatBuffer;
+
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -18,11 +20,11 @@ public class ComputeShader extends ShaderProgram {
     }
 
     @Override
-    public void updateUniformData(float[] destinationUniform) {
+    public void updateUniformData(FloatBuffer destinationUniform) {
     }
 
     @Override
-    public void initUniformData(float[] destinationUniforms) {
+    public void initUniformData(FloatBuffer destinationUniforms) {
     }
 
 }

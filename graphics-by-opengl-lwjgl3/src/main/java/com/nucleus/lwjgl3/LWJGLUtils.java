@@ -2,7 +2,6 @@ package com.nucleus.lwjgl3;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 public class LWJGLUtils {
@@ -31,13 +30,6 @@ public class LWJGLUtils {
         while (source.hasRemaining()) {
             dest[destOffset++] = source.get();
         }
-    }
-
-    protected static FloatBuffer toFloatBuffer(float[] data, int length, int offset) {
-        FloatBuffer fb = ByteBuffer.allocateDirect(length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        fb.put(data, offset, length);
-        fb.position(0);
-        return fb;
     }
 
     protected static IntBuffer toIntBuffer(int[] data, int length, int offset) {

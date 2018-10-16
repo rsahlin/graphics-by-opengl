@@ -15,7 +15,7 @@ uniform vec3 _LIGHT_0;
 attribute vec3 POSITION;
 attribute vec4 NORMAL;
 
-varying vec4 vColor;
+varying vec4 color;
 
 void main() {
     vec4 pos = vec4(POSITION, 1.0) * uModelMatrix * uViewMatrix;

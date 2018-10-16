@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,8 +72,6 @@ public abstract class ShaderProgram {
     protected final static String NO_ACTIVE_UNIFORMS = "No active uniforms, forgot to call createProgram()?";
 
     protected ShaderVariable modelUniform;
-    protected ShaderVariable viewUniform;
-    protected ShaderVariable projectionUniform;
 
     /**
      * The different type of programs that can be linked from different type of shaders.
@@ -322,7 +321,7 @@ public abstract class ShaderProgram {
      * different number of uniforms depending on the program.
      * 
      */
-    transient protected float[] uniforms;
+    transient protected FloatBuffer uniforms;
 
     /**
      * Unmapped variable types
@@ -676,12 +675,12 @@ public abstract class ShaderProgram {
      * 
      * @return
      */
-    public float[] createUniformArray() {
+    public FloatBuffer createUniformArray() {
         if (activeUniforms == null) {
             throw new IllegalArgumentException(NO_ACTIVE_UNIFORMS);
         }
         int uniformSize = getVariableSize(activeUniforms, VariableType.UNIFORM);
-        return new float[uniformSize];
+        return ByteBuffer.allocateDirect(uniformSize * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
     }
 
     /**
@@ -734,8 +733,8 @@ public abstract class ShaderProgram {
      * @param sourceOffset Offset into data where values are read
      */
     public void setUniformData(ShaderVariable variable, float[] data, int sourceOffset) {
-        int offset = variable.getOffset();
-        System.arraycopy(data, sourceOffset, uniforms, offset, variable.getSizeInFloats());
+        uniforms.position(variable.getOffset());
+        uniforms.put(data, sourceOffset, variable.getSizeInFloats());
     }
 
     /**
@@ -766,7 +765,7 @@ public abstract class ShaderProgram {
      * @param activeUniforms
      * @throws GLException
      */
-    protected void uploadUniforms(GLES20Wrapper gles, float[] uniformData, ShaderVariable[] activeUniforms)
+    protected void uploadUniforms(GLES20Wrapper gles, FloatBuffer uniformData, ShaderVariable[] activeUniforms)
             throws GLException {
 
         for (ShaderVariable v : activeUniforms) {
@@ -894,11 +893,14 @@ public abstract class ShaderProgram {
      */
     private void fetchActiveVariables(GLES20Wrapper gles, VariableType type, ProgramInfo info, InterfaceBlock block)
             throws GLException {
-        int count = info.getActiveVariables(type);
+        // If interface block the count is number of indices in block
+        int count = block == null ? info.getActiveVariables(type) : block.indices.length;
         if (count == 0) {
             return;
         }
-        byte[] nameBuffer = new byte[info.getMaxNameLength(type)];
+        // If type is uniform block then query max length of uniform name
+        VariableType infoType = type != VariableType.UNIFORM_BLOCK ? type : VariableType.UNIFORM;
+        byte[] nameBuffer = new byte[info.getMaxNameLength(infoType)];
         ShaderVariable variable = null;
         for (int i = 0; i < count; i++) {
             variable = null;
@@ -1149,7 +1151,7 @@ public abstract class ShaderProgram {
      * 
      * @return
      */
-    public float[] getUniformData() {
+    public FloatBuffer getUniformData() {
         return uniforms;
     }
 
@@ -1314,30 +1316,32 @@ public abstract class ShaderProgram {
      * @param offset Offset into uniform array where data starts.
      * @throws GLException If there is an error setting a uniform to GL
      */
-    protected final void uploadUniform(GLES20Wrapper gles, float[] uniforms, ShaderVariable variable)
+    protected final void uploadUniform(GLES20Wrapper gles, FloatBuffer uniforms, ShaderVariable variable)
             throws GLException {
         int offset = variable.getOffset();
+        uniforms.position(offset);
+        GLUtils.handleError(gles, "Clear error");
         switch (variable.getDataType()) {
             case GLES20.GL_FLOAT:
-                gles.glUniform1fv(variable.getLocation(), variable.getSize(), uniforms, offset);
+                gles.glUniform1fv(variable.getLocation(), variable.getSize(), uniforms);
                 break;
             case GLES20.GL_FLOAT_VEC2:
-                gles.glUniform2fv(variable.getLocation(), variable.getSize(), uniforms, offset);
+                gles.glUniform2fv(variable.getLocation(), variable.getSize(), uniforms);
                 break;
             case GLES20.GL_FLOAT_VEC3:
-                gles.glUniform3fv(variable.getLocation(), variable.getSize(), uniforms, offset);
+                gles.glUniform3fv(variable.getLocation(), variable.getSize(), uniforms);
                 break;
             case GLES20.GL_FLOAT_VEC4:
-                gles.glUniform4fv(variable.getLocation(), variable.getSize(), uniforms, offset);
+                gles.glUniform4fv(variable.getLocation(), variable.getSize(), uniforms);
                 break;
             case GLES20.GL_FLOAT_MAT2:
-                gles.glUniformMatrix2fv(variable.getLocation(), variable.getSize(), false, uniforms, offset);
+                gles.glUniformMatrix2fv(variable.getLocation(), variable.getSize(), false, uniforms);
                 break;
             case GLES20.GL_FLOAT_MAT3:
-                gles.glUniformMatrix3fv(variable.getLocation(), variable.getSize(), false, uniforms, offset);
+                gles.glUniformMatrix3fv(variable.getLocation(), variable.getSize(), false, uniforms);
                 break;
             case GLES20.GL_FLOAT_MAT4:
-                gles.glUniformMatrix4fv(variable.getLocation(), variable.getSize(), false, uniforms, offset);
+                gles.glUniformMatrix4fv(variable.getLocation(), variable.getSize(), false, uniforms);
                 break;
             case GLES20.GL_SAMPLER_2D:
                 gles.glUniform1iv(variable.getLocation(), variable.getSize(), samplers, offset);
@@ -1460,21 +1464,13 @@ public abstract class ShaderProgram {
      */
     public void setUniformMatrices(float[][] matrices) {
         // Refresh the uniform matrixes - default is model - view and projection
-        // TODO - store ShaderVariables and fetch if null
         if (modelUniform == null) {
             modelUniform = getUniformByName(Matrices.MODEL.name);
-            viewUniform = getUniformByName(Matrices.VIEW.name);
-            projectionUniform = getUniformByName(Matrices.PROJECTION.name);
         }
-        System.arraycopy(matrices[Matrices.MODEL.index], 0, uniforms,
-                modelUniform.getOffset(),
-                Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(matrices[Matrices.VIEW.index], 0, uniforms,
-                viewUniform.getOffset(),
-                Matrix.MATRIX_ELEMENTS);
-        System.arraycopy(matrices[Matrices.PROJECTION.index], 0, uniforms,
-                projectionUniform.getOffset(),
-                Matrix.MATRIX_ELEMENTS);
+        uniforms.position(modelUniform.getOffset());
+        uniforms.put(matrices[Matrices.MODEL.index], 0, Matrix.MATRIX_ELEMENTS);
+        uniforms.put(matrices[Matrices.VIEW.index], 0, Matrix.MATRIX_ELEMENTS);
+        uniforms.put(matrices[Matrices.PROJECTION.index], 0, Matrix.MATRIX_ELEMENTS);
     }
 
     /**
@@ -1483,7 +1479,7 @@ public abstract class ShaderProgram {
      * 
      * @param destinationUniforms
      */
-    public abstract void initUniformData(float[] destinationUniforms);
+    public abstract void initUniformData(FloatBuffer destinationUniforms);
 
     /**
      * Updates the shader program specific uniform data, storing in in the uniformData array or
@@ -1493,7 +1489,7 @@ public abstract class ShaderProgram {
      * 
      * @param destinationUniforms
      */
-    public abstract void updateUniformData(float[] destinationUniform);
+    public abstract void updateUniformData(FloatBuffer destinationUniform);
 
     /**
      * Sets UV fraction for the tiled texture + number of frames in x.
@@ -1504,14 +1500,14 @@ public abstract class ShaderProgram {
      * @param variable The shader variable
      * @param offset Offset into destination where fraction is set
      */
-    protected void setTextureUniforms(TiledTexture2D texture, float[] uniforms, ShaderVariable variable) {
+    protected void setTextureUniforms(TiledTexture2D texture, FloatBuffer uniforms, ShaderVariable variable) {
         if (texture.getWidth() == 0 || texture.getHeight() == 0) {
             SimpleLogger.d(getClass(), "ERROR! Texture size is 0: " + texture.getWidth() + ", " + texture.getHeight());
         }
-        int offset = variable.getOffset();
-        uniforms[offset++] = (((float) texture.getWidth()) / texture.getTileWidth()) / (texture.getWidth());
-        uniforms[offset++] = (((float) texture.getHeight()) / texture.getTileHeight()) / (texture.getHeight());
-        uniforms[offset++] = texture.getTileWidth();
+        uniforms.position(variable.getOffset());
+        uniforms.put((((float) texture.getWidth()) / texture.getTileWidth()) / (texture.getWidth()));
+        uniforms.put((((float) texture.getHeight()) / texture.getTileHeight()) / (texture.getHeight()));
+        uniforms.put(texture.getTileWidth());
     }
 
     /**
@@ -1520,11 +1516,11 @@ public abstract class ShaderProgram {
      * @param uniforms
      * @param uniformScreenSize
      */
-    protected void setScreenSize(float[] uniforms, ShaderVariable uniformScreenSize) {
+    protected void setScreenSize(FloatBuffer uniforms, ShaderVariable uniformScreenSize) {
         if (uniformScreenSize != null) {
-            int screenSizeOffset = uniformScreenSize.getOffset();
-            uniforms[screenSizeOffset++] = Window.getInstance().getWidth();
-            uniforms[screenSizeOffset++] = Window.getInstance().getHeight();
+            uniforms.position(uniformScreenSize.getOffset());
+            uniforms.put(Window.getInstance().getWidth());
+            uniforms.put(Window.getInstance().getHeight());
         }
     }
 
@@ -1535,12 +1531,9 @@ public abstract class ShaderProgram {
      * @param uniformEmissive
      * @param material
      */
-    protected void setEmissive(float[] uniforms, ShaderVariable uniformEmissive, float[] emissive) {
-        int offset = uniformEmissive.getOffset();
-        uniforms[offset++] = emissive[0];
-        uniforms[offset++] = emissive[1];
-        uniforms[offset++] = emissive[2];
-        uniforms[offset++] = emissive[3];
+    protected void setEmissive(FloatBuffer uniforms, ShaderVariable uniformEmissive, float[] emissive) {
+        uniforms.position(uniformEmissive.getOffset());
+        uniforms.put(emissive, 0, 4);
     }
 
     /**

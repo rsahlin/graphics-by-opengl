@@ -2,7 +2,6 @@ package com.nucleus.shader;
 
 import java.nio.Buffer;
 
-import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.BufferObject;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 
@@ -103,9 +102,6 @@ public abstract class BlockBuffer extends BufferObject {
                 // TODO - need to add stride
                 blockBuffers[index] = new FloatBlockBuffer(interfaceBlocks[index],
                         interfaceBlocks[index].blockDataSize >>> 2);
-                if (interfaceBlocks[index].blockDataSize > 0) {
-                    SimpleLogger.d(BlockBuffer.class, "Data for uniform block " + interfaceBlocks[index].blockDataSize);
-                }
             }
         }
         return blockBuffers;

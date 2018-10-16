@@ -1,5 +1,7 @@
 package com.nucleus.shader;
 
+import java.nio.FloatBuffer;
+
 import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
@@ -36,7 +38,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     }
 
     @Override
-    public void updateUniformData(float[] destinationUniform) {
+    public void updateUniformData(FloatBuffer destinationUniform) {
         if (color0Uniform == null) {
             color0Uniform = getUniformByName(Attributes.COLOR_0.name());
             light0Uniform = getUniformByName(Attributes._LIGHT_0.name());
@@ -72,12 +74,12 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * @throws GLException
      */
     @Override
-    protected void uploadUniforms(GLES20Wrapper gles, float[] uniformData, ShaderVariable[] activeUniforms)
+    protected void uploadUniforms(GLES20Wrapper gles, FloatBuffer uniformData, ShaderVariable[] activeUniforms)
             throws GLException {
         uploadUniform(gles, uniformData, modelUniform);
-        uploadUniform(gles, uniformData, viewUniform);
-        uploadUniform(gles, uniformData, projectionUniform);
-        uploadUniform(gles, uniformData, light0Uniform);
+        // uploadUniform(gles, uniformData, viewUniform);
+        // uploadUniform(gles, uniformData, projectionUniform);
+        // uploadUniform(gles, uniformData, light0Uniform);
     }
 
 }

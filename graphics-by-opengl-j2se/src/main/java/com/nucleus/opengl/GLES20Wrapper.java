@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.geometry.AttributeBuffer;
@@ -410,10 +411,9 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param count
      * @param transpose
      * @param transform
-     * @param v
-     * @param offset
+     * @param buffer
      */
-    public abstract void glUniformMatrix4fv(int location, int count, boolean transpose, float[] v, int offset);
+    public abstract void glUniformMatrix4fv(int location, int count, boolean transpose, FloatBuffer buffer);
 
     /**
      * Abstraction for glUniformMatrix3fv()
@@ -422,10 +422,9 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param count
      * @param transpose
      * @param transform
-     * @param v
-     * @param offset
+     * @param buffer
      */
-    public abstract void glUniformMatrix3fv(int location, int count, boolean transpose, float[] v, int offset);
+    public abstract void glUniformMatrix3fv(int location, int count, boolean transpose, FloatBuffer buffer);
 
     /**
      * Abstraction for glUniformMatrix2fv()
@@ -434,10 +433,9 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param count
      * @param transpose
      * @param transform
-     * @param v
-     * @param offset
+     * @param buffer
      */
-    public abstract void glUniformMatrix2fv(int location, int count, boolean transpose, float[] v, int offset);
+    public abstract void glUniformMatrix2fv(int location, int count, boolean transpose, FloatBuffer buffer);
 
     /**
      * Abstraction for glUniform1iv();
@@ -561,13 +559,13 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param v
      * @param offset
      */
-    public abstract void glUniform4fv(int location, int count, float[] v, int offset);
+    public abstract void glUniform4fv(int location, int count, FloatBuffer buffer);
 
-    public abstract void glUniform3fv(int location, int count, float[] v, int offset);
+    public abstract void glUniform3fv(int location, int count, FloatBuffer buffer);
 
-    public abstract void glUniform2fv(int location, int count, float[] v, int offset);
+    public abstract void glUniform2fv(int location, int count, FloatBuffer buffer);
 
-    public abstract void glUniform1fv(int location, int count, float[] v, int offset);
+    public abstract void glUniform1fv(int location, int count, FloatBuffer buffer);
 
     /**
      * Abstraction for glTexParemeterf()

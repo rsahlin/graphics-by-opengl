@@ -1,5 +1,7 @@
 package com.nucleus.convolution;
 
+import java.nio.FloatBuffer;
+
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
@@ -51,11 +53,11 @@ public class ConvolutionProgram extends ShaderProgram {
     }
 
     @Override
-    public void updateUniformData(float[] destinationUniform) {
+    public void updateUniformData(FloatBuffer destinationUniform) {
     }
 
     @Override
-    public void initUniformData(float[] destinationUniforms) {
+    public void initUniformData(FloatBuffer destinationUniforms) {
     }
 
 }
