@@ -160,9 +160,6 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
             Matrix.translate(matrix, translation);
             Matrix.scaleM(matrix, 0, scale);
         }
-        if (cameraRef != null) {
-
-        }
         return matrix;
     }
 
