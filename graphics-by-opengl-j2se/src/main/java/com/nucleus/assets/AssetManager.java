@@ -552,8 +552,12 @@ public class AssetManager {
         SimpleLogger.d(TextureFactory.class, "Reading texture data from: " + ref.getSource());
         InputStreamReader reader;
         try {
+            InputStream is = ref.getAsStream();
+            if (is == null) {
+                throw new FileNotFoundException("Could not find file " + ref.getSource());
+            }
             // TODO - If Android build version => 19 then java.nio.StandardCharset can be used
-            reader = new InputStreamReader(ref.getAsStream(), "UTF-8");
+            reader = new InputStreamReader(is, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
