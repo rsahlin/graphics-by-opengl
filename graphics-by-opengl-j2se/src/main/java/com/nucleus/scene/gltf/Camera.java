@@ -69,6 +69,13 @@ public class Camera extends GLTFNamedValue {
             this.znear = znear;
         }
 
+        public Perspective(Perspective source) {
+            this.aspectRatio = source.aspectRatio;
+            this.yfov = source.yfov;
+            this.zfar = source.zfar;
+            this.znear = source.znear;
+        }
+
         public float getAspectRatio() {
             return aspectRatio;
         }
@@ -145,6 +152,13 @@ public class Camera extends GLTFNamedValue {
         @SerializedName(ZNEAR)
         private float znear;
 
+        public Orthographic(Orthographic source) {
+            xmag = source.xmag;
+            ymag = source.ymag;
+            zfar = source.zfar;
+            znear = source.znear;
+        }
+
         public float getXmag() {
             return xmag;
         }
@@ -180,8 +194,88 @@ public class Camera extends GLTFNamedValue {
     @SerializedName(TYPE)
     private Type type;
 
+    /**
+     * Runtime reference to the node where this camera is
+     */
+    transient Node node;
     transient float[] projectionMatrix;
     transient float[] inverseMatrix = Matrix.createMatrix();
+
+    public Camera() {
+    }
+
+    /**
+     * Creates a runtime instance of a camera with the specified Node
+     * 
+     * @param source
+     * @param node
+     */
+    public Camera(Camera source, Node node) {
+        switch (source.type) {
+            case perspective:
+                create(new Perspective(source.perspective), node);
+                break;
+            case orthographic:
+                create(new Orthographic(source.orthographic), node);
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for type: " + type);
+        }
+    }
+
+    protected void create(Perspective perspective, Node node) {
+        setNode(node);
+        type = Type.perspective;
+        this.perspective = perspective;
+    }
+
+    /**
+     * Internal method
+     * 
+     * @param orthographic
+     * @param node
+     * @throws IllegalArgumentException If node is null
+     */
+    protected void create(Orthographic orthographic, Node node) {
+        setNode(node);
+        type = Type.perspective;
+        this.orthographic = orthographic;
+    }
+
+    /**
+     * Internal method
+     * 
+     * @param node
+     * @throws IllegalArgumentException If node is null
+     */
+    protected void setNode(Node node) {
+        if (node == null) {
+            throw new IllegalArgumentException("Node is null");
+        }
+        this.node = node;
+    }
+
+    /**
+     * Creates a runtime instance of a camera with the specified projection and Node
+     * 
+     * @param perspective
+     * @param node
+     * @throws IllegalArgumentException If node is null
+     */
+    public Camera(Perspective perspective, Node node) {
+        create(perspective, node);
+    }
+
+    /**
+     * Creates a runtime instance of a camera with the specified projection and Node
+     * 
+     * @param perspective
+     * @param node
+     * @throws IllegalArgumentException If node is null
+     */
+    public Camera(Orthographic orthographic, Node node) {
+        create(orthographic, node);
+    }
 
     public Perspective getPerspective() {
         return perspective;
@@ -223,11 +317,13 @@ public class Camera extends GLTFNamedValue {
      * returns.
      * Use this method to get the transform for positioning a camera
      * 
-     * @param node
      * @param matrix Matrix to multiply camera node with, or null
      * @return The camera matrix
      */
-    public float[] concatCameraMatrix(Node node, float[] matrix) {
+    public float[] concatCameraMatrix(float[] matrix) {
+        if (node == null) {
+            throw new IllegalArgumentException("Runtime node is null in Camera - not using instanced camera?");
+        }
         node.updateMatrix();
         float[] inverse = node.invertMatrix();
         if (matrix != null) {
