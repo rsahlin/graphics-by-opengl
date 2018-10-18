@@ -244,7 +244,7 @@ public class AssetManager {
         }
         ExternalReference ref = source.getExternalReference();
         if (ref == null) {
-            throw new IllegalArgumentException("No external reference for texture id: " + source.getId());
+            throw new IllegalArgumentException("External reference is null in texture with id: " + source.getId());
         }
         String refId = ref.getIdReference();
         if (refId != null) {
@@ -569,7 +569,15 @@ public class AssetManager {
             throw new IllegalArgumentException("Already loaded texture with id: " + texture.getId());
         }
         if (!texture.validateTextureParameters()) {
-            throw new IllegalArgumentException("Texture parameters not valid for:" + ref.getSource());
+            throw new IllegalArgumentException(
+                    "Texture parameters not valid for:" + ref.getSource() + " : " + texture.getTexParams());
+        }
+        if (texture.getTextureType() != TextureType.Untextured) {
+            // Make sure the loaded texture has an external reference.
+            if (texture.getExternalReference() == null) {
+                throw new IllegalArgumentException("External reference is null in texture " + ref.getSource());
+            }
+
         }
         return texture;
     }
