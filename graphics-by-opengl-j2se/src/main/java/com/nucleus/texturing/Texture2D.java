@@ -430,6 +430,8 @@ public class Texture2D extends BaseReference {
 
     /**
      * Checks the texture parameters and mipmap levels for consistensy
+     * TODO - Maybe skip checking mipmap params and texture filter, instead if texture filter is mapmap then
+     * have gl create mipmaps if they are not specified.
      * 
      * @return
      */
