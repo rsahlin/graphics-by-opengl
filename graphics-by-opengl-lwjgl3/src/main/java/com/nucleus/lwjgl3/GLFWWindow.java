@@ -68,18 +68,13 @@ public class GLFWWindow extends J2SEWindow {
         Configuration.OPENGLES_EXPLICIT_INIT.set(true);
         GLES.create(GL.getFunctionProvider());
         gles = GLES.createCapabilities();
+        wrapper = LWJGLWrapperFactory.createWrapper(gles, null);
 
         GLFW.glfwSetKeyCallback(window, (windowHnd, key, scancode, action, mods) -> {
             if (action == GLFW.GLFW_RELEASE && key == GLFW.GLFW_KEY_ESCAPE) {
                 GLFW.glfwSetWindowShouldClose(windowHnd, true);
             }
         });
-    }
-
-    @Override
-    public void internalCreateCoreApp(int width, int height) {
-        wrapper = LWJGLWrapperFactory.createWrapper(gles, null);
-        super.internalCreateCoreApp(width, height);
     }
 
     @Override
