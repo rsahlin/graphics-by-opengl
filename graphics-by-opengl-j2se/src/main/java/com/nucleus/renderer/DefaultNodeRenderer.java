@@ -59,7 +59,8 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
                 gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
                 gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
                         mesh.getOffset());
-                GLUtils.handleError(gles, "glDrawElements with ElementBuffer ");
+                GLUtils.handleError(gles, "glDrawElements with ElementBuffer " + mesh.getMode() + ", "
+                        + mesh.getDrawCount() + ", " + indices.getType() + ", " + mesh.getOffset());
             } else {
                 gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
                         indices.getBuffer().position(mesh.getOffset()));

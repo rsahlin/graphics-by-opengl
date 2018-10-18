@@ -23,6 +23,9 @@ public class RendererFactory {
      * @throws IllegalArgumentException If gles is not matching for the renderer version.
      */
     public static NucleusRenderer getRenderer(GLESWrapper gles) {
+        if (gles == null) {
+            throw new IllegalArgumentException("GLESWrapper is null");
+        }
         NucleusRenderer renderer = null;
         if (!(gles instanceof GLES20Wrapper)) {
             throw new IllegalArgumentException(WRONG_GLES + gles.getClass().getName());
