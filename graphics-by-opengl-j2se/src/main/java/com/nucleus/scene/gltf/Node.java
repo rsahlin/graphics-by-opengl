@@ -81,6 +81,20 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
      */
     transient float[] inverseMatrix = Matrix.createMatrix();
 
+    public Node() {
+    }
+
+    /**
+     * Creates a camera node - only use this for default camera
+     * 
+     * @param camera
+     * @param cameraIndex
+     */
+    public Node(Camera camera, int cameraIndex) {
+        cameraRef = camera;
+        this.camera = cameraIndex;
+    }
+
     /**
      * Returns the index of the mesh to render with this node
      * 
@@ -194,54 +208,53 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
     }
 
     @Override
-    public void resolve(GLTF asset) throws GLTFException {
+    public void resolve(GLTF gltf) throws GLTFException {
         if (matrix != null) {
             float[] transpose = Matrix.createMatrix(matrix);
             Matrix.transposeM(matrix, 0, transpose, 0);
         }
         if (mesh >= 0) {
-            nodeMesh = asset.getMeshes()[mesh];
+            nodeMesh = gltf.getMeshes()[mesh];
         }
         if (children != null && children.length > 0) {
-            Node[] sources = asset.getNodes();
+            Node[] sources = gltf.getNodes();
             childNodes = new Node[children.length];
             for (int i = 0; i < children.length; i++) {
                 childNodes[i] = sources[children[i]];
             }
         }
-        if (camera != -1) {
-            cameraRef = asset.getCameras()[camera];
-        }
-
+        setCamera(gltf, camera);
     }
 
     /**
-     * Returns the non transformed POSITION bounding (max - min) values (three component) for the geometry in this node
-     * and children.
-     * This will search through all primitives used by the node and return the non transformed bound (max - min) values.
+     * Attaches or removes a camera from this node, specify -1 to remove camera
      * 
-     * @return
+     * @param gltf
+     * @param camera
      */
-    public float[] getPositionBounds() {
-        float[] result = new float[3];
-        getPositionScale(result);
-        return result;
+    public void setCamera(GLTF gltf, int camera) {
+        this.camera = camera;
+        cameraRef = gltf.getCamera(camera);
     }
 
     /**
-     * Returns the non transformedPOSITION bounding (max - min) (three component) for the geometry in the list of nodes.
+     * Returns the non transformed POSITION bounding (max - min) (three component) for the geometry in the list of
+     * nodes.
      * This will search through all primitives used by the nodes and return the non transformed bound (max - min)
      * values.
      * 
      * @param nodes List of nodes to include, children will be called as well.
      * @param compare Current max values that will be updated
+     * @param scale Starting scale
+     * @return The updated compare MaxMin values
      */
-    public static void getPositionScale(Node[] nodes, float[] result) {
+    public static MaxMin updateMaxMin(Node[] nodes, MaxMin compare, float[] scale) {
         if (nodes != null) {
             for (Node n : nodes) {
-                n.getPositionScale(result);
+                n.updateMaxMin(compare, scale);
             }
         }
+        return compare;
     }
 
     /**
@@ -250,19 +263,20 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
      * This will search through all primitives used by the node and return the non transformed bound (max - min) values.
      * 
      * @param compare Current max values that will be updated
+     * @param scale Current scale
      */
-    public void getPositionScale(float[] compare) {
+    public void updateMaxMin(MaxMin compare, float[] scale) {
         if (getMesh() != null && getMesh().getPrimitives() != null) {
             for (Primitive p : getMesh().getPrimitives()) {
                 if (p.getAttributesArray() != null) {
                     Accessor accessor = p.getAccessor(Attributes.POSITION);
                     if (accessor != null) {
-                        accessor.getBoundsScale(compare, compare);
+                        accessor.updateMaxMin(compare, scale);
                     }
                 }
             }
         }
-        getPositionScale(getChildren(), compare);
+        updateMaxMin(getChildren(), compare, scale);
     }
 
     @Override

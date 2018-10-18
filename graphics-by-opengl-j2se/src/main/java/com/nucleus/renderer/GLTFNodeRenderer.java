@@ -12,7 +12,6 @@ import com.nucleus.scene.GLTFNode;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.BufferView;
-import com.nucleus.scene.gltf.Camera;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
@@ -29,7 +28,9 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
 
     transient protected FrameSampler timeKeeper = FrameSampler.getInstance();
     private Pass currentPass;
-    protected ArrayDeque<float[]> modelMatrixStack = new ArrayDeque<float[]>(10);
+    protected ArrayDeque<float[]> modelMatrixStack = new ArrayDeque<float[]>(100);
+    protected ArrayDeque<float[]> viewMatrixStack = new ArrayDeque<float[]>(5);
+    protected ArrayDeque<float[]> projectionMatrixStack = new ArrayDeque<float[]>(5);
     protected float[] modelMatrix;
     protected int currentProgram = -1;
 
@@ -56,23 +57,29 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     @Override
     public boolean renderNode(NucleusRenderer renderer, GLTFNode node, Pass currentPass, float[][] matrices)
             throws GLException {
+        pushMatrix(viewMatrixStack, matrices[Matrices.VIEW.index]);
+        pushMatrix(projectionMatrixStack, matrices[Matrices.PROJECTION.index]);
+        pushMatrix(modelMatrixStack, matrices[Matrices.MODEL.index]);
+
         currentProgram = -1;
         this.currentPass = currentPass;
         GLES20Wrapper gles = renderer.getGLES();
         // Set view matrix from previous render of this gltfNode
-        node.getSavedViewMatrix(matrices[Matrices.VIEW.index]);
+        // node.getSavedViewMatrix(matrices[Matrices.VIEW.index]);
         GLTF glTF = node.getGLTF();
         Scene scene = glTF.getDefaultScene();
-        scene.setProjection(matrices[Matrices.PROJECTION.index]);
-        scene.setView(matrices[Matrices.VIEW.index], matrices[Matrices.MODEL.index]);
+        scene.setViewProjection(matrices, matrices[Matrices.MODEL.index]);
 
-        pushMatrix(modelMatrixStack, matrices[Matrices.MODEL.index]);
         matrices[Matrices.MODEL.index] = scene.getSceneTransform().concatMatrix(matrices[Matrices.MODEL.index]);
         // Render the default scene.
         renderScene(gles, glTF, scene, currentPass, matrices);
         // Save current viewmatrix to next render of this gltf
-        node.saveViewMatrix(matrices[Matrices.VIEW.index]);
+        // node.saveViewMatrix(matrices[Matrices.VIEW.index]);
+
         matrices[Matrices.MODEL.index] = popMatrix(modelMatrixStack);
+        matrices[Matrices.VIEW.index] = popMatrix(viewMatrixStack);
+        matrices[Matrices.PROJECTION.index] = popMatrix(projectionMatrixStack);
+
         return true;
     }
 
@@ -85,10 +92,6 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
                 renderNode(gles, glTF, sceneNodes[i], matrices);
             }
         }
-    }
-
-    protected void setView(Node node, Camera camera, float[][] matrices) {
-        matrices[Matrices.VIEW.index] = camera.concatCameraMatrix(node, matrices[Matrices.MODEL.index]);
     }
 
     /**

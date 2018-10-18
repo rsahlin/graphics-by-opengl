@@ -218,17 +218,11 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
     }
 
     /**
-     * Takes the (max - min) of this object, and stores the result in destination.
-     * Destination will contain the largest scale (max - min) of this object and compare values.
      * 
-     * @param compare Max scale (max - min) values to compare with this objects, must contain same number of values as
-     * components in this Accessor (3 for POSITION)
-     * @param destination Max scale will be stored here
+     * 
      */
-    public void getBoundsScale(float[] compare, float[] destination) {
-        for (int i = 0; i < max.length; i++) {
-            destination[i] = Float.max(compare[i], max[i] - min[i]);
-        }
+    public void updateMaxMin(MaxMin compare, float[] scale) {
+        compare.update(max, min, scale);
     }
 
 }

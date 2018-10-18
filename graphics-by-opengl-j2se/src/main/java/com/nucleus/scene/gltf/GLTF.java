@@ -96,32 +96,6 @@ public class GLTF {
 
     }
 
-    public Buffer[] getBuffers() {
-        return buffers;
-    }
-
-    /**
-     * Returns the buffer for the specified accessor
-     * 
-     * @param accessor
-     * @return
-     */
-    public Buffer getBuffer(Accessor accessor) {
-        return buffers[bufferViews[accessor.getBufferViewIndex()].getBufferIndex()];
-    }
-
-    public BufferView[] getBufferViews() {
-        return bufferViews;
-    }
-
-    public Camera[] getCameras() {
-        return cameras;
-    }
-
-    public Material[] getMaterials() {
-        return materials;
-    }
-
     @SerializedName(ACCESSORS)
     private Accessor[] accessors;
     @SerializedName(ASSET)
@@ -131,7 +105,7 @@ public class GLTF {
     @SerializedName(BUFFER_VIEWS)
     private BufferView[] bufferViews;
     @SerializedName(CAMERAS)
-    private Camera[] cameras;
+    private ArrayList<Camera> cameras = new ArrayList<>();
     @SerializedName(IMAGES)
     private Image[] images;
     @SerializedName(MATERIALS)
@@ -159,6 +133,75 @@ public class GLTF {
      * Set when {@link #resolve()} method is called.
      */
     transient protected RenderableMesh[] renderableMeshes;
+
+    public Buffer[] getBuffers() {
+        return buffers;
+    }
+
+    /**
+     * Returns the buffer for the specified accessor
+     * 
+     * @param accessor
+     * @return
+     */
+    public Buffer getBuffer(Accessor accessor) {
+        return buffers[bufferViews[accessor.getBufferViewIndex()].getBufferIndex()];
+    }
+
+    public BufferView[] getBufferViews() {
+        return bufferViews;
+    }
+
+    /**
+     * Returns the number of defined cameras in the gltf asset
+     * 
+     * @return
+     */
+    public int getCameraCount() {
+        return cameras != null ? cameras.size() : 0;
+    }
+
+    /**
+     * Returns the camera with the specified index
+     * 
+     * @param index The index of the camera in the gltf asset to return, 0 - {@link #getCameraCount()}
+     * @return The camera or null
+     */
+    public Camera getCamera(int index) {
+        if (cameras != null && index >= 0 && index < cameras.size()) {
+            return cameras.get(index);
+        }
+        return null;
+    }
+
+    /**
+     * Adds a camera to the gltf asset
+     * 
+     * @param camera
+     * @return The index, as used when calling {@link #getCamera(int)}
+     * @throws IllegalArgumentException If camera is null
+     */
+    public int addCamera(Camera camera) {
+        if (camera == null) {
+            throw new IllegalArgumentException("Camera is null");
+        }
+        if (cameras == null) {
+            cameras = new ArrayList<>();
+        }
+        synchronized (cameras) {
+            int index = cameras.size();
+            cameras.add(camera);
+            return index;
+        }
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public Material[] getMaterials() {
+        return materials;
+    }
 
     /**
      * Sets the path of the folder where this gltf asset is
