@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
+import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.scene.gltf.Camera.Perspective;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
@@ -11,6 +12,10 @@ import com.nucleus.vecmath.Matrix;
 
 /**
  * The Scene as it is loaded using the glTF format.
+ * 
+ * Scenes use instances of Camera. The cameras that are referenced in this scene are stored here.
+ * Use {@link #getCameraInstanceCount()} to check number of cameras. When scene is resolved a default camera will be
+ * added, there shall be at least one camera in every scene.
  * 
  * scene
  * The root nodes of a scene.
@@ -35,18 +40,21 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
      * The nodes that make up this scene.
      */
     transient Node[] sceneNodes;
-    transient ArrayList<Node> cameraNodes = new ArrayList<>();
+    /**
+     * The cameras that are referenced in this scene - this can be seen as the instanced cameras.
+     */
+    transient private ArrayList<Camera> instanceCameras = new ArrayList<>();
     /**
      * True if one or more of the nodes reference a camera
      */
-    transient boolean cameraDefined = false;
+    transient boolean cameraInstanced = false;
     /**
      * RTS or Matrix transform for the scene.
      * This can be used to transform just all nodes in the scene - minus camera (view)
      */
-    transient Node transform = new Node();
-    transient float[] viewMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
-    transient int selectedCamera = 0;
+    transient private Node transform = new Node();
+    transient private float[] viewMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
+    transient private int selectedCamera = 0;
 
     /**
      * returns the nodes, as indexes, that make up this scene
@@ -64,15 +72,6 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         return sceneNodes;
     }
 
-    /**
-     * Returns the nodes in the scene that defines a camera.
-     * 
-     * @return
-     */
-    public ArrayList<Node> getCameraNodes() {
-        return cameraNodes;
-    }
-
     @Override
     public void resolve(GLTF asset) throws GLTFException {
         if (nodes != null && nodes.length > 0) {
@@ -84,30 +83,62 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
             for (int i = 0; i < sceneNodes.length; i++) {
                 Node cameraNode = asset.getCameraNode(sceneNodes[i]);
                 if (cameraNode != null) {
-                    cameraNodes.add(cameraNode);
-                    cameraDefined = true;
+                    instanceCameras.add(new Camera(cameraNode.getCamera(), cameraNode));
+                    cameraInstanced = true;
                     SimpleLogger.d(getClass(),
                             "Found camera in scene " + getName() + ", for node index " + i + ", name: "
                                     + sceneNodes[i].getName());
                 }
             }
-            SimpleLogger.d(getClass(), "Found " + cameraNodes.size() + " camera nodes in scene.");
+            SimpleLogger.d(getClass(), "Found " + instanceCameras.size() + " cameras in scene. Adding default camera");
+            addDefaultCamera(asset);
         }
     }
 
     /**
-     * Returns true if one or more of the nodes in this scene reference a camera
+     * Creates a default perspective projection camera, the camera will be added to list of cameras.
+     * Camera will have a Node, camera index in node will be set.
+     * TODO - check bounds of geometry and create perspective accordingly
      * 
-     * @return true If one or more of the nodes reference a camera
      */
-    public boolean isCameraDefined() {
-        return cameraDefined;
+    protected void addDefaultCamera(GLTF gltf) {
+        // Setup a default projection
+        float YASPECT = 1f;
+        Perspective p = new Perspective(16 / 9f, YASPECT, 10000, 0.1f);
+        // This node will only be referenced by the camera
+        // TODO - Should a special CameraNode be created? Maybe better to keep Nodes simple?
+        Node node = new Node();
+        Camera camera = new Camera(p, node);
+        instanceCameras.add(camera);
+        // Add camera to gltf
+        int index = gltf.addCamera(camera);
+        node.setCamera(gltf, index);
+        // Scale
+        MaxMin maxMin = calculateMaxMin();
+        float[] delta = new float[2];
+        maxMin.getMaxDeltaXY(delta);
+
+        // For now just scale according to height.
+        // The inverse of the node matrix will be used - so just set the largest values
+        float scale = delta[1];
+        Matrix.translate(node.getMatrix(), 0, 0, 1f);
+        Matrix.scaleM(node.getMatrix(), 0, scale, scale, scale);
+    }
+
+    /**
+     * Returns true if one or more of the nodes in this scene reference a camera, ie one or more cameras are instanced.
+     * 
+     * @return true If one or more cameras are instanced in this scene
+     */
+    public boolean isCameraInstanced() {
+        return cameraInstanced;
     }
 
     /**
      * Returns the view (camera) matrix, if no camera is referenced this will be identity matrix
+     * This matrix is set when {@link #setView(float[][], float[])} is called.
      * 
-     * @return
+     * @return The view matrix as set by {@link #setView(float[][], float[])}
      */
     public float[] getViewMatrix() {
         return viewMatrix;
@@ -123,50 +154,117 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
     }
 
     /**
-     * Sets the projection matrix if a camera is referenced in this scene - by default the first camera is chosen.
-     * If no camera is referenced the a default projection is created.
+     * Sets the view and projection matrices according to the chosen camera in the scene.
      * 
-     * @param matrix Matrix to set the projection to
+     * @param matrices Matrix to set the view and projection to
+     * @param modelMatrix The current modelMatrix, will be used to multiply view with
+     * 
      */
-    public void setProjection(float[] matrix) {
-        if (!isCameraDefined()) {
-            // Setup a default projection if none is specified in model - this is to get the right axes and winding.
-            Perspective p = new Perspective(1.5f, 0.66f, 10000, 1);
-            Matrix.copy(p.calculateMatrix(), 0, matrix, 0);
-        } else {
-            // For now choose first used camera.
-            Node cameraNode = getCameraNode();
-            Matrix.copy(cameraNode.getCamera().getProjectionMatrix(), 0, matrix, 0);
+    public void setViewProjection(float[][] matrices, float[] modelMatrix) {
+        if (isCameraInstanced()) {
+            Camera camera = getCameraInstance();
+            matrices[Matrices.PROJECTION.index] = camera.getProjectionMatrix();
+            setView(camera, matrices, modelMatrix);
         }
     }
 
     /**
-     * Returns the default or chosen camera node, or null if none is referenced.
+     * Returns the chosen camera instance, ie the currently chosen camera instance in this scene.
      * 
-     * @return Node referencing a camera or null.
+     * @return The chosen camera instance, or null
      */
-    public Node getCameraNode() {
-        if (isCameraDefined()) {
-            return getCameraNodes().get(selectedCamera);
+    public Camera getCameraInstance() {
+        if (isCameraInstanced() && selectedCamera >= 0 && selectedCamera < instanceCameras.size()) {
+            return instanceCameras.get(selectedCamera);
         }
         return null;
     }
 
     /**
-     * Sets the view matrix according to camera (inverted) and modelMatrix if this scene references a camera - by
-     * default
-     * the first camera is chosen.
-     * This will locate the scene according to camera and modelMatrix
+     * Returns the index (of the cameras referenced in this scene) of the selected camera, used in
+     * {@link #selectCameraInstance(int)}
      * 
-     * @param viewMatrix The matrix to set the view transform to, if camera is present. Otherwise nothing is done.
+     * @return Index of the currently selected camera, 0 - {@link #getCameraInstanceCount()}
+     */
+    public int getSelectedCameraIndex() {
+        return selectedCamera;
+    }
+
+    /**
+     * Returns the number of cameras defined in the scene, including default camera
+     * 
+     * @return Number of cameras in scene
+     */
+    public int getCameraInstanceCount() {
+        return instanceCameras.size();
+    }
+
+    /**
+     * Selects a camera to be used in this scene, the index is one of the cameras used in this scene - not same
+     * as the total array of Cameras in the gltf asset.
+     * If index < 0 or >= {@link #getCameraInstanceCount()} then nothing is done.
+     * 
+     * @param index Index of camera, 0 - {@link #getCameraInstanceCount()}
+     */
+    public void selectCameraInstance(int index) {
+        if (index >= 0 && index < instanceCameras.size()) {
+            selectedCamera = index;
+        } else {
+            SimpleLogger.d(getClass(),
+                    "Invalid camera index: " + index + ", number of cameras: " + getCameraInstanceCount());
+        }
+    }
+
+    /**
+     * Selects the next camera, selecting the first camera if last camera is reached.
+     * 
+     * @return The index of the selected camera
+     */
+    public int selectNextCameraInstance() {
+        selectedCamera++;
+        if (selectedCamera >= instanceCameras.size()) {
+            selectedCamera = 0;
+        }
+        return selectedCamera;
+    }
+
+    /**
+     * Sets the view matrix according to camera (inverted) and modelMatrix if this scene references a camera - by
+     * default the first camera is chosen.
+     * This will locate the scene according to camera and modelMatrix.
+     * The result is stored in matrices as well as the local viewMatrix, this can be fetched by calling
+     * Internal method - do not call directly
+     * 
+     * @param camera
+     * @param matrices The matrix to set the view transform to, if camera is present. Otherwise nothing is done.
      * @param modelMatrix The current modelMatrix
      */
-    public void setView(float[] viewMatrix, float[] modelMatrix) {
-        if (isCameraDefined()) {
-            Node cameraNode = getCameraNode();
-            Matrix.copy(cameraNode.getCamera().concatCameraMatrix(cameraNode, modelMatrix), 0, viewMatrix, 0);
-        }
+    protected void setView(Camera camera, float[][] matrices, float[] modelMatrix) {
+        matrices[Matrices.VIEW.index] = camera.concatCameraMatrix(modelMatrix);
+        Matrix.copy(matrices[Matrices.VIEW.index], 0, viewMatrix, 0);
+    }
 
+    /**
+     * Calculates the max/min values for the meshes (Accessors) in this scene
+     * same as calling {@link #calculateMaxMin(float[])} with scale set to 1,1,1
+     * 
+     * @return
+     */
+    public MaxMin calculateMaxMin() {
+        return calculateMaxMin(new float[] { 1, 1, 1 });
+    }
+
+    /**
+     * Calculates the max/min values for the meshes (Accessors) in this scene, scale is used as a first scale-factor.
+     * 
+     * @return
+     */
+    public MaxMin calculateMaxMin(float[] scale) {
+        if (sceneNodes != null) {
+            MaxMin mm = new MaxMin();
+            return Node.updateMaxMin(sceneNodes, mm, scale);
+        }
+        return null;
     }
 
 }
