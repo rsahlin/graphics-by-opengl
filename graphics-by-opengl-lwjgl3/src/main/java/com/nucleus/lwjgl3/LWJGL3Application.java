@@ -11,7 +11,7 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
  */
 public class LWJGL3Application extends J2SEWindowApplication {
 
-    protected static final WindowType DEFAULT_WINDOW_TYPE = WindowType.JAWT;
+    protected static final WindowType DEFAULT_WINDOW_TYPE = WindowType.GLFW;
 
     private boolean running = false;
 
@@ -67,10 +67,6 @@ public class LWJGL3Application extends J2SEWindowApplication {
         if (coreApp != null) {
             coreApp.getRenderer().resizeWindow(x, y, width, height);
         }
-    }
-
-    @Override
-    public void windowClosed() {
     }
 
     /**

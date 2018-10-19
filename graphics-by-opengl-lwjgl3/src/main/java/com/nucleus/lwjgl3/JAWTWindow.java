@@ -26,6 +26,11 @@ import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.SurfaceConfiguration;
 
+/**
+ * The main AWT window - this uses a Swing frame and a different underlying Canvas implementation depending
+ * on target platform. WGL on windows and X11/GLX on Linux.
+ *
+ */
 public class JAWTWindow extends J2SEWindow
         implements RenderContextListener, MouseMotionListener, MouseListener, MouseWheelListener {
 
@@ -35,18 +40,19 @@ public class JAWTWindow extends J2SEWindow
     public JAWTWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, SurfaceConfiguration config, int width,
             int height) {
         super(coreAppStarter, width, height, config);
-        init(version, coreAppStarter, width, height);
+        init(version, coreAppStarter, config, width, height);
     }
 
-    private void init(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
+    private void init(Renderers version, CoreApp.CoreAppStarter coreAppStarter, SurfaceConfiguration config, int width,
+            int height) {
         Platform platform = Platform.get();
         SimpleLogger.d(getClass(), "Init windows for platform " + platform);
         switch (platform) {
             case WINDOWS:
-                canvas = new LWJGLWindowsCanvas(this, width, height);
+                canvas = new LWJGLWindowsCanvas(this, config, width, height);
                 break;
             case LINUX:
-                canvas = new LWJGLLinuxCanvas(this, width, height);
+                canvas = new LWJGLLinuxCanvas(this, config, width, height);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + Platform.get());
@@ -108,12 +114,13 @@ public class JAWTWindow extends J2SEWindow
                 type = Type.MOUSE;
                 break;
             case MouseEvent.BUTTON2:
-                type = Type.ERASER;
+                type = Type.MOUSE;
                 break;
             case MouseEvent.BUTTON3:
-                type = Type.FINGER;
+                type = Type.MOUSE;
                 break;
-
+            default:
+                SimpleLogger.d(getClass(), "No AWT support for button: " + e.getButton());
         }
         handleMouseEvent(action, type, xpos, ypos, 0, e.getWhen());
     }
@@ -169,6 +176,16 @@ public class JAWTWindow extends J2SEWindow
     @Override
     public void setWindowTitle(String title) {
         frame.setTitle(title);
+    }
+
+    @Override
+    protected void setFullscreenMode(boolean fullscreen) {
+        throw new IllegalArgumentException("Not implemented");
+    }
+
+    @Override
+    protected void destroy() {
+        throw new IllegalArgumentException("Not implemented");
     }
 
 }

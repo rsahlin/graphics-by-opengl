@@ -27,6 +27,7 @@ public abstract class J2SEWindow implements WindowListener {
     protected int height;
     protected WindowListener windowListener;
     protected SurfaceConfiguration config;
+    protected boolean fullscreen = false;
 
     public J2SEWindow(CoreApp.CoreAppStarter coreAppStarter, int width, int height, SurfaceConfiguration config) {
         if (coreAppStarter == null) {
@@ -152,7 +153,10 @@ public abstract class J2SEWindow implements WindowListener {
     public void windowClosed() {
         if (windowListener != null) {
             windowListener.windowClosed();
+        } else {
+            SimpleLogger.d(getClass(), "windowClosed(); - windowListener is null");
         }
+
     }
 
     protected void mouseWheelMoved(float rotation, long when) {
@@ -161,6 +165,21 @@ public abstract class J2SEWindow implements WindowListener {
                 PointerData.POINTER_1, new float[] {
                         zoom, zoom },
                 0);
+    }
+
+    protected void backPressed() {
+        SimpleLogger.d(getClass(), "backPressed()");
+        if (fullscreen) {
+            fullscreen = false;
+            setFullscreenMode(false);
+        } else {
+            if (coreApp.onBackPressed()) {
+                coreApp.setDestroyFlag();
+                setVisible(false);
+                destroy();
+                System.exit(0);
+            }
+        }
     }
 
     /**
@@ -176,5 +195,17 @@ public abstract class J2SEWindow implements WindowListener {
      * @param title
      */
     public abstract void setWindowTitle(String title);
+
+    /**
+     * Switch to and from fullscreen mode.
+     * 
+     * @param fullscreen
+     */
+    protected abstract void setFullscreenMode(boolean fullscreen);
+
+    /**
+     * Destroy the window(s) and release window resources
+     */
+    protected abstract void destroy();
 
 }

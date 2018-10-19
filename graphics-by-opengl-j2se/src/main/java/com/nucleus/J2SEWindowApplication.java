@@ -43,6 +43,8 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     public static final String FULLSCREEN_KEY = "FULLSCREEN";
     public static final String SAMPLES = "SAMPLES";
     public static final String ALPHA_BITS = "ALPHA";
+    public static final int DEFAULT_DEPTH_BITS = 32;
+    public static final int DEFAULT_SAMPLES = 4;
 
     protected CoreApp coreApp;
     protected int swapInterval = 1;
@@ -52,11 +54,16 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     protected boolean fullscreen = false;
     protected J2SEWindow j2seWindow;
     protected WindowType windowType;
-    protected int samples = 0;
+
+    protected int depthBits = DEFAULT_DEPTH_BITS;
     /**
-     * Number of bits of alpha in background
+     * Number of samples for surface
      */
-    protected int alpha = 0;
+    protected int samples = DEFAULT_SAMPLES;
+    /**
+     * Number of bits of alpha for surface
+     */
+    protected int alpha = 8;
 
     protected RenderContextListener contextListener;
 
@@ -185,6 +192,8 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     public void windowClosed() {
         if (coreApp != null) {
             coreApp.setDestroyFlag();
+        } else {
+            SimpleLogger.d(getClass(), "windowClosed() coreApp is null");
         }
     }
 
@@ -195,6 +204,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
      */
     protected SurfaceConfiguration getConfiguration() {
         SurfaceConfiguration config = new SurfaceConfiguration();
+        config.setDepthBits(depthBits);
         config.setAlphaBits(alpha);
         config.setSamples(samples);
         return config;

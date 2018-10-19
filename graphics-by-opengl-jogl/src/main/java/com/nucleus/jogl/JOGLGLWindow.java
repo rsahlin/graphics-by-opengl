@@ -47,7 +47,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
     private Dimension windowSize;
     private boolean undecorated = false;
     private boolean alwaysOnTop = false;
-    private boolean fullscreen = false;
     private boolean mouseVisible = true;
     private boolean mouseConfined = false;
     private int swapInterval = 0;
@@ -165,8 +164,8 @@ public abstract class JOGLGLWindow extends J2SEWindow
         GLCapabilities glCapabilities = new GLCapabilities(profile);
         glCapabilities.setSampleBuffers(config.getSamples() > 0);
         glCapabilities.setNumSamples(config.getSamples());
-        glCapabilities.setBackgroundOpaque(config.getAlphaBits() == 0);
-        glCapabilities.setAlphaBits(config.getAlphaBits());
+        glCapabilities.setBackgroundOpaque(true);
+        glCapabilities.setAlphaBits(0);
         glWindow = GLWindow.create(glCapabilities);
         glWindow.setUndecorated(undecorated);
         InsetsImmutable insets = glWindow.getInsets();
@@ -289,12 +288,20 @@ public abstract class JOGLGLWindow extends J2SEWindow
                     type = Type.MOUSE;
                     break;
                 case MouseEvent.BUTTON2:
-                    type = Type.ERASER;
+                    type = Type.MOUSE;
                     break;
                 case MouseEvent.BUTTON3:
-                    type = Type.FINGER;
+                    type = Type.MOUSE;
                     break;
-
+                case MouseEvent.BUTTON4:
+                    type = Type.MOUSE;
+                    break;
+                case MouseEvent.BUTTON5:
+                    type = Type.MOUSE;
+                    break;
+                case MouseEvent.BUTTON6:
+                    type = Type.MOUSE;
+                    break;
             }
             handleMouseEvent(action, type, xpos[i], ypos[i], e.getPointerId(i), e.getWhen());
         }
@@ -382,6 +389,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void windowDestroyed(WindowEvent e) {
+        windowClosed();
     }
 
     @Override
@@ -410,7 +418,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void windowClosed(java.awt.event.WindowEvent e) {
-        windowClosed();
     }
 
     @Override
@@ -451,19 +458,20 @@ public abstract class JOGLGLWindow extends J2SEWindow
         }
     }
 
-    private void backPressed() {
-        SimpleLogger.d(getClass(), "backPressed()");
-        if (fullscreen) {
-            fullscreen = false;
+    @Override
+    protected void setFullscreenMode(boolean fullscreen) {
+        this.fullscreen = fullscreen;
+        glWindow.setFullscreen(fullscreen);
+        if (!fullscreen) {
             glWindow.setFullscreen(false);
             glWindow.setPosition(glWindow.getWidth() / 2, glWindow.getHeight() / 2);
-        } else {
-            if (coreApp.onBackPressed()) {
-                coreApp.setDestroyFlag();
-                glWindow.setVisible(false);
-                animator.stop();
-                System.exit(0);
-            }
+        }
+    }
+
+    @Override
+    protected void destroy() {
+        if (animator != null) {
+            animator.stop();
         }
     }
 

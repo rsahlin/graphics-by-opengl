@@ -268,4 +268,14 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
         }
     }
 
+    @Override
+    protected void setFullscreenMode(boolean fullscreen) {
+        throw new IllegalArgumentException("Not implemented");
+    }
+
+    @Override
+    protected void destroy() {
+        throw new IllegalArgumentException("Not implemented");
+    }
+
 }

@@ -14,14 +14,22 @@ import org.lwjgl.system.linux.X11;
 
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
+import com.nucleus.renderer.SurfaceConfiguration;
 
 @SuppressWarnings("serial")
+/**
+ * 
+ * The canvas used by JAWTWindow on linux platforms - ie when LWJGL shall be used with an AWT window (on linux)
+ * Currently this uses GLX13 setup
+ * Migrate to GLX14 to get support for more advanced features such as samples
+ *
+ */
 public class LWJGLLinuxCanvas extends LWJGLCanvas {
 
     private JAWTX11DrawingSurfaceInfo X11Dsi;
 
-    public LWJGLLinuxCanvas(J2SEWindow window, int width, int height) {
-        super(window, width, height);
+    public LWJGLLinuxCanvas(J2SEWindow window, SurfaceConfiguration config, int width, int height) {
+        super(window, config, width, height);
         SimpleLogger.d(getClass(), "Using Linux Canvas");
     }
 
@@ -35,10 +43,10 @@ public class LWJGLLinuxCanvas extends LWJGLCanvas {
         IntBuffer attrib_list = BufferUtils.createIntBuffer(16 * 2);
         attrib_list.put(GLX13.GLX_DRAWABLE_TYPE).put(GLX13.GLX_WINDOW_BIT);
         attrib_list.put(GLX13.GLX_RENDER_TYPE).put(GLX13.GLX_RGBA_BIT);
-        attrib_list.put(GLX.GLX_RED_SIZE).put(8);
-        attrib_list.put(GLX.GLX_GREEN_SIZE).put(8);
-        attrib_list.put(GLX.GLX_BLUE_SIZE).put(8);
-        attrib_list.put(GLX.GLX_DEPTH_SIZE).put(16);
+        attrib_list.put(GLX.GLX_RED_SIZE).put(config.getRedBits());
+        attrib_list.put(GLX.GLX_GREEN_SIZE).put(config.getGreenBits());
+        attrib_list.put(GLX.GLX_BLUE_SIZE).put(config.getBlueBits());
+        attrib_list.put(GLX.GLX_DEPTH_SIZE).put(config.getDepthBits());
         attrib_list.put(GLX.GLX_DOUBLEBUFFER).put(1);
         attrib_list.put(0);
         attrib_list.flip();
