@@ -57,6 +57,11 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     @Override
     public boolean renderNode(NucleusRenderer renderer, GLTFNode node, Pass currentPass, float[][] matrices)
             throws GLException {
+        GLTF glTF = node.getGLTF();
+        if (glTF == null) {
+            // Do nothing
+            return false;
+        }
         pushMatrix(viewMatrixStack, matrices[Matrices.VIEW.index]);
         pushMatrix(projectionMatrixStack, matrices[Matrices.PROJECTION.index]);
         pushMatrix(modelMatrixStack, matrices[Matrices.MODEL.index]);
@@ -66,7 +71,6 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         GLES20Wrapper gles = renderer.getGLES();
         // Set view matrix from previous render of this gltfNode
         // node.getSavedViewMatrix(matrices[Matrices.VIEW.index]);
-        GLTF glTF = node.getGLTF();
         Scene scene = glTF.getDefaultScene();
         scene.setViewProjection(matrices, matrices[Matrices.MODEL.index]);
 
