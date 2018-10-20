@@ -251,7 +251,12 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
     public static MaxMin updateMaxMin(Node[] nodes, MaxMin compare, float[] scale) {
         if (nodes != null) {
             for (Node n : nodes) {
-                n.updateMaxMin(compare, scale);
+                float[] nodeScale = new float[3];
+                Matrix.getScale(n.updateMatrix(), nodeScale);
+                nodeScale[0] *= scale[0];
+                nodeScale[1] *= scale[1];
+                nodeScale[2] *= scale[2];
+                n.updateMaxMin(compare, nodeScale);
             }
         }
         return compare;
