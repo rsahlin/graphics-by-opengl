@@ -3,6 +3,7 @@ package com.nucleus.assets;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -10,8 +11,8 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 import com.google.gson.Gson;
@@ -34,7 +35,6 @@ import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.scene.gltf.Image;
-import com.nucleus.scene.gltf.Loader;
 import com.nucleus.scene.gltf.Texture;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.BaseImageFactory;
@@ -69,10 +69,6 @@ public class AssetManager {
      * Store textures using the source image name.
      */
     private HashMap<String, Texture2D> textures = new HashMap<>();
-    /**
-     * Use to convert from object id (texture reference) to name of source (file)
-     */
-    private Hashtable<String, ExternalReference> sourceNames = new Hashtable<String, ExternalReference>();
 
     private HashMap<String, ShaderProgram> programs = new HashMap<>();
 
@@ -262,7 +258,6 @@ public class AssetManager {
                 // Texture not loaded
                 texture = createTexture(gles, imageFactory, source);
                 textures.put(refSource, texture);
-                setExternalReference(texture.getId(), ref);
                 FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_TEXTURE, " " + texture.getName(), start,
                         System.currentTimeMillis());
             }
@@ -283,40 +278,6 @@ public class AssetManager {
         }
         return texture;
 
-    }
-
-    /**
-     * Sets the external reference for the object id
-     * 
-     * @param id
-     * @param externalReference
-     * @throws IllegalArgumentException If a reference with the specified Id already has been set
-     */
-    private void setExternalReference(String id, ExternalReference externalReference) {
-        if (sourceNames.containsKey(id)) {
-            throw new IllegalArgumentException("Id already added as external reference:" + id);
-        }
-        sourceNames.put(id, externalReference);
-
-    }
-
-    /**
-     * Returns the source reference for the object with the specified id, this can be used to fetch object
-     * source name from a texture reference/id.
-     * If the source reference cannot be found it is considered an error and an exception is thrown.
-     * 
-     * @param Id
-     * @return The source (file) reference or null if not found.
-     * @throws IllegalArgumentException If a texture source could not be found for the Id.
-     */
-    public ExternalReference getSourceReference(String Id) {
-        ExternalReference ref = sourceNames.get(Id);
-        if (ref == null) {
-            // Horrendous error - cannot export data!
-            // TODO Is there a way to recover?
-            throw new IllegalArgumentException(NO_TEXTURE_SOURCE_ERROR + Id);
-        }
-        return ref;
     }
 
     /**
@@ -357,9 +318,6 @@ public class AssetManager {
         SimpleLogger.d(getClass(), "destroy");
         deletePrograms(renderer.getGLES());
         deleteTextures(renderer.getGLES());
-        programs.clear();
-        sourceNames.clear();
-        textures.clear();
     }
 
     private void deleteTextures(GLES20Wrapper wrapper) {
@@ -372,12 +330,14 @@ public class AssetManager {
             texNames[i++] = texture.getName();
         }
         wrapper.glDeleteTextures(texNames);
+        textures.clear();
     }
 
     private void deletePrograms(GLES20Wrapper wrapper) {
         for (ShaderProgram program : programs.values()) {
             wrapper.glDeleteProgram(program.getProgram());
         }
+        programs.clear();
     }
 
     /**
@@ -394,9 +354,9 @@ public class AssetManager {
         if (gltf != null) {
             return gltf;
         }
-        SimpleLogger.d(Loader.class, "Loading glTF asset:" + fileName);
+        SimpleLogger.d(getClass(), "Loading glTF asset:" + fileName);
         File f = new File(fileName);
-        ClassLoader loader = Loader.class.getClassLoader();
+        ClassLoader loader = getClass().getClassLoader();
         InputStream is = loader.getResourceAsStream(fileName);
         gltf = loadJSONAsset(f.getParent(), is);
         gltfAssets.put(fileName, gltf);
@@ -423,6 +383,54 @@ public class AssetManager {
     }
 
     /**
+     * Deletes loaded gltf assets. This will delete binary buffers and texture images.
+     * Do not call this wile gltf model is in use - must call outside from render.
+     * 
+     * @param gles
+     * @param gltf
+     * @throws GLException
+     */
+    public void deleteGLTFAssets(GLES20Wrapper gles, GLTF gltf) throws GLException {
+        BufferObjectsFactory.getInstance().destroyVBOs(gles, gltf.getBuffers());
+        deleteTextures(gles, gltf.getImages());
+    }
+
+    protected void deleteTextures(GLES20Wrapper gles, Image[] images) {
+        int deleted = 0;
+        if (images != null) {
+            int[] names = new int[1];
+            for (Image image : images) {
+                names[0] = image.getTextureName();
+                if (names[0] > 0) {
+                    gles.glDeleteTextures(names);
+                    image.setTextureName(0);
+                    deleted++;
+                }
+                if (image.getBufferImage() != null) {
+                    destroyBufferImage(image);
+                }
+            }
+        }
+        SimpleLogger.d(getClass(), "Deleted " + deleted + " textures");
+    }
+
+    protected void deleteTextures(GLES20Wrapper gles, Texture2D[] textures) {
+        int deleted = 0;
+        if (textures != null) {
+            int[] names = new int[1];
+            for (Texture2D texture : textures) {
+                names[0] = texture.getName();
+                if (names[0] > 0) {
+                    gles.glDeleteTextures(names);
+                    texture.setTextureName(0);
+                    deleted++;
+                }
+            }
+        }
+        SimpleLogger.d(getClass(), "Deleted " + deleted + " textures");
+    }
+
+    /**
      * Loads a glTF asset, this will not load binary data (buffers) or texture images.
      * The returned asset is resolved using {@link RuntimeResolver}
      * 
@@ -443,7 +451,7 @@ public class AssetManager {
             glTF.resolve();
             return glTF;
         } catch (UnsupportedEncodingException e) {
-            SimpleLogger.d(Loader.class, e.getMessage());
+            SimpleLogger.d(getClass(), e.getMessage());
             return null;
         }
     }
@@ -506,11 +514,15 @@ public class AssetManager {
             image.setTextureName(name[0]);
             TextureUtils.uploadTextures(gles, image, true);
             SimpleLogger.d(getClass(), "Uploaded texture " + image.getUri());
-            BufferImage.destroyImages(new BufferImage[] { image.getBufferImage() });
+            destroyBufferImage(image);
         } catch (GLException e) {
             throw new IllegalArgumentException(e);
         }
+    }
 
+    private void destroyBufferImage(Image image) {
+        BufferImage.destroyImages(new BufferImage[] { image.getBufferImage() });
+        image.setBufferImage(null);
     }
 
     /**
@@ -673,19 +685,54 @@ public class AssetManager {
      * Utility method to return a list with the folder in the specified resource path
      * 
      * @param path List of subfolders of this path will be returned
-     * @return
+     * @return folders in the specified path (excluding the path in the returned folder names)
      */
-    public File[] listResourceFolders(String path) {
+    public String[] listResourceFolders(String path) {
         ClassLoader loader = getClass().getClassLoader();
         URL url = loader.getResource(path);
         File[] files = new File(url.getFile()).listFiles(new FileFilter() {
-
             @Override
             public boolean accept(File pathname) {
                 return pathname.isDirectory();
             }
         });
-        return files;
+        // Truncate name so only include the part after specified path.
+        String[] folders = new String[files.length];
+        int index = 0;
+        path = path.replace('/', File.separatorChar);
+        for (File f : files) {
+            int start = f.toString().indexOf(path);
+            folders[index++] = f.toString().substring(start + path.length());
+        }
+        return folders;
+    }
+
+    /**
+     * 
+     * @param path
+     * @param folders
+     * @param mime
+     * @return List of folder/filname for files that ends with mime
+     */
+    public ArrayList<String> listFiles(String path, String[] folders, final String mime) {
+        ArrayList<String> result = new ArrayList<>();
+        ClassLoader loader = getClass().getClassLoader();
+        String comparePath = path.replace('/', File.separatorChar);
+        for (String folder : folders) {
+            URL url = loader.getResource(path + folder);
+            File[] files = new File(url.getFile()).listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.endsWith(mime);
+                }
+            });
+            // Truncate name so only include the part after specified path.
+            for (File f : files) {
+                int start = f.toString().indexOf(comparePath);
+                result.add(f.toString().substring(start + comparePath.length()));
+            }
+        }
+        return result;
     }
 
 }

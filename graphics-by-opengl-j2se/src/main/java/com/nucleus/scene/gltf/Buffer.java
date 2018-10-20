@@ -119,7 +119,7 @@ public class Buffer extends GLTFNamedValue {
         if (buffer == null) {
             throw new IllegalArgumentException("Buffer storage has not bee created, must call createBuffer()");
         }
-        ClassLoader loader = Loader.class.getClassLoader();
+        ClassLoader loader = getClass().getClassLoader();
         InputStream is = loader.getResourceAsStream(glTF.getPath(uri));
         SimpleLogger.d(getClass(),
                 "Loading into buffer with size " + buffer.capacity() + " from " + glTF.getPath(uri));

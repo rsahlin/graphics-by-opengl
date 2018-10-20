@@ -137,4 +137,25 @@ public class BufferObjectsFactory {
         }
     }
 
+    /**
+     * Destroys the buffers if VBOs have been allocated.
+     * 
+     * @param gles
+     * @param buffers
+     * @throws GLException
+     */
+    public void destroyVBOs(GLES20Wrapper gles, Buffer[] buffers) throws GLException {
+        int[] names = new int[1];
+        int deleted = 0;
+        for (Buffer buffer : buffers) {
+            names[0] = buffer.getBufferName();
+            if (names[0] > 0) {
+                gles.glDeleteBuffers(1, names, 0);
+                deleted++;
+                buffer.setBufferName(0);
+            }
+        }
+        SimpleLogger.d(getClass(), "Deleted " + deleted + " buffers");
+    }
+
 }
