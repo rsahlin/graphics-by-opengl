@@ -112,7 +112,6 @@ public class GLFWWindow extends J2SEWindow {
         GLFW.glfwSetMouseButtonCallback(window, new GLFWMouseButtonCallbackI() {
             @Override
             public void invoke(long window, int button, int action, int mods) {
-                SimpleLogger.d(getClass(), "button " + button + ", action " + action + ", mods " + mods);
                 if (button >= 0 && button < buttonActions.length) {
                     buttonActions[button] = action;
                     switch (action) {
