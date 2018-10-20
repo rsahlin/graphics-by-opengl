@@ -45,10 +45,6 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
      */
     transient private ArrayList<Camera> instanceCameras = new ArrayList<>();
     /**
-     * True if one or more of the nodes reference a camera
-     */
-    transient boolean cameraInstanced = false;
-    /**
      * RTS or Matrix transform for the scene.
      * This can be used to transform just all nodes in the scene - minus camera (view)
      */
@@ -84,7 +80,6 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
                 Node cameraNode = asset.getCameraNode(sceneNodes[i]);
                 if (cameraNode != null) {
                     instanceCameras.add(new Camera(cameraNode.getCamera(), cameraNode));
-                    cameraInstanced = true;
                     SimpleLogger.d(getClass(),
                             "Found camera in scene " + getName() + ", for node index " + i + ", name: "
                                     + sceneNodes[i].getName());
@@ -131,7 +126,7 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
      * @return true If one or more cameras are instanced in this scene
      */
     public boolean isCameraInstanced() {
-        return cameraInstanced;
+        return instanceCameras != null && instanceCameras.size() > 0;
     }
 
     /**
