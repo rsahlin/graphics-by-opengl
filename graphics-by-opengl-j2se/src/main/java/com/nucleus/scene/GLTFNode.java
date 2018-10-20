@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.common.Type;
@@ -37,13 +38,15 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
 
     transient protected static NodeRenderer<GLTFNode> nodeRenderer = new GLTFNodeRenderer();
 
+    /**
+     * If this node shall have a preloaded gltf asset
+     */
     private static final String GLTF_NAME = "glTFName";
 
     @SerializedName(GLTF_NAME)
     private String glTFName;
 
     transient private GLTF glTF;
-    transient ArrayList<RenderableMesh> meshes = new ArrayList<>();
     transient GLES20Wrapper gles;
     /**
      * Used to save viewmatrix between frames
@@ -69,6 +72,59 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     }
 
     /**
+     * Returns the name of the glTF asset
+     * 
+     * @return
+     */
+    public String getGLTFName() {
+        return glTFName;
+    }
+
+    /**
+     * Loads a gltf asset into this node.
+     * 
+     * @param gles
+     * @paramn glTFName name of gltf asset to load (minus GLTF_PATH)
+     * @throws IOException
+     * @throws GLException
+     */
+    public void loadGLTFAsset(GLES20Wrapper gles, String glTFName)
+            throws IOException, GLException {
+        if (glTFName != null) {
+            try {
+                glTF = AssetManager.getInstance()
+                        .getGLTFAsset(getRootNode().getProperty(RootNodeImpl.GLTF_PATH, "") + glTFName);
+                AssetManager.getInstance().loadGLTFAssets(gles, glTF);
+                setPass(Pass.ALL);
+                setState(State.ON);
+                createPrograms(glTF);
+            } catch (IOException | GLTFException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /**
+     * Destroys the gltf asset in this node.
+     * If the gltf asset is loaded, all resource are released - buffers and textures but not programs.
+     * The resources are destroyed immediately, hence it is important not to call while rendering is taking place.
+     * 
+     * @param gles
+     * @param glTFName
+     * @throws GLException
+     */
+    public void deleteAsset(GLES20Wrapper gles) throws GLException {
+        if (glTF != null) {
+            AssetManager.getInstance().deleteGLTFAssets(gles, glTF);
+            glTF = null;
+            glTFName = null;
+        } else {
+            SimpleLogger.d(getClass(), "No gltf asset in node.");
+        }
+
+    }
+
+    /**
      * Copy values into this node from the source, used when new instance is created
      * 
      * @param source
@@ -78,13 +134,8 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
         this.glTFName = source.glTFName;
     }
 
-    public String getGLTFName() {
-        return glTFName;
-    }
-
     @Override
     public ArrayList<RenderableMesh> getMeshes(ArrayList<RenderableMesh> list) {
-        list.addAll(meshes);
         return list;
     }
 
@@ -98,7 +149,6 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
 
     @Override
     public void addMesh(RenderableMesh mesh) {
-        meshes.add(mesh);
     }
 
     @Override
@@ -131,17 +181,9 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
 
     @Override
     public void create(RenderableNode<RenderableMesh> parent) throws IOException, GLException {
+        // Since this node implements MeshBuilder the parent will be this class
         if (glTFName != null) {
-            try {
-                glTF = AssetManager.getInstance()
-                        .getGLTFAsset(getRootNode().getProperty(RootNodeImpl.GLTF_PATH, "") + glTFName);
-                AssetManager.getInstance().loadGLTFAssets(gles, glTF);
-                setPass(Pass.ALL);
-                setState(State.ON);
-                createPrograms(glTF);
-            } catch (IOException | GLTFException e) {
-                throw new RuntimeException(e);
-            }
+            loadGLTFAsset(gles, glTFName);
         }
     }
 
