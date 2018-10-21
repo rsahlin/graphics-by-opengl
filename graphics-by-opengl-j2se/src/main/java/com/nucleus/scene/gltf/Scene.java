@@ -152,14 +152,13 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
      * Sets the view and projection matrices according to the chosen camera in the scene.
      * 
      * @param matrices Matrix to set the view and projection to
-     * @param modelMatrix The current modelMatrix, will be used to multiply view with
      * 
      */
-    public void setViewProjection(float[][] matrices, float[] modelMatrix) {
+    public void setViewProjection(float[][] matrices) {
         if (isCameraInstanced()) {
             Camera camera = getCameraInstance();
             matrices[Matrices.PROJECTION.index] = camera.getProjectionMatrix();
-            setView(camera, matrices, modelMatrix);
+            setView(camera, matrices);
         }
     }
 
@@ -224,18 +223,16 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
     }
 
     /**
-     * Sets the view matrix according to camera (inverted) and modelMatrix if this scene references a camera - by
-     * default the first camera is chosen.
-     * This will locate the scene according to camera and modelMatrix.
-     * The result is stored in matrices as well as the local viewMatrix, this can be fetched by calling
+     * Sets the view matrix according to camera (inverted)
+     * This will locate the scene according to camera.
+     * The result is stored in matrices as well as the local viewMatrix
      * Internal method - do not call directly
      * 
      * @param camera
      * @param matrices The matrix to set the view transform to, if camera is present. Otherwise nothing is done.
-     * @param modelMatrix The current modelMatrix
      */
-    protected void setView(Camera camera, float[][] matrices, float[] modelMatrix) {
-        matrices[Matrices.VIEW.index] = camera.concatCameraMatrix(modelMatrix);
+    protected void setView(Camera camera, float[][] matrices) {
+        matrices[Matrices.VIEW.index] = camera.concatCameraMatrix(null);
         Matrix.copy(matrices[Matrices.VIEW.index], 0, viewMatrix, 0);
     }
 

@@ -200,6 +200,7 @@ public class Camera extends GLTFNamedValue {
     transient Node node;
     transient float[] projectionMatrix;
     transient float[] inverseMatrix = Matrix.createMatrix();
+    transient float[] cameraMatrix = Matrix.createMatrix();
 
     public Camera() {
     }
@@ -324,8 +325,11 @@ public class Camera extends GLTFNamedValue {
         if (node == null) {
             throw new IllegalArgumentException("Runtime node is null in Camera - not using instanced camera?");
         }
-        node.updateMatrix();
-        float[] inverse = node.invertMatrix();
+        float[] parents = node.concatParentsMatrix();
+        Matrix.invertM(node.inverseMatrix, 0, parents, 0);
+        float[] inverse = node.inverseMatrix;
+        // node.updateMatrix();
+        // inverse = node.invertMatrix();
         if (matrix != null) {
             Matrix.mul4(matrix, inverse, inverseMatrix);
         } else {

@@ -72,8 +72,9 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         // Set view matrix from previous render of this gltfNode
         // node.getSavedViewMatrix(matrices[Matrices.VIEW.index]);
         Scene scene = glTF.getDefaultScene();
-        scene.setViewProjection(matrices, matrices[Matrices.MODEL.index]);
-
+        scene.setViewProjection(matrices);
+        // This will rotate the view - ie the camera
+        // matrices[Matrices.VIEW.index] = scene.getSceneTransform().concatMatrix(matrices[Matrices.VIEW.index]);
         matrices[Matrices.MODEL.index] = scene.getSceneTransform().concatMatrix(matrices[Matrices.MODEL.index]);
         // Render the default scene.
         renderScene(gles, glTF, scene, currentPass, matrices);
@@ -110,8 +111,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     protected void renderNode(GLES20Wrapper gles, GLTF glTF, Node node, float[][] matrices)
             throws GLException {
         pushMatrix(modelMatrixStack, matrices[Matrices.MODEL.index]);
-        float[] nodeMatrix = node.concatMatrix(matrices[Matrices.MODEL.index]);
-        matrices[Matrices.MODEL.index] = nodeMatrix;
+        matrices[Matrices.MODEL.index] = node.concatMatrix(matrices[Matrices.MODEL.index]);
         renderMesh(gles, glTF, node.getMesh(), matrices);
         // Render children.
         renderNodes(gles, glTF, node.getChildren(), matrices);
