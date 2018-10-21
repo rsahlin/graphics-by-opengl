@@ -74,7 +74,6 @@ public class AssetManager {
 
     private HashMap<String, GLTF> gltfAssets = new HashMap<>();
 
-    private HashMap<String, com.nucleus.texturing.BufferImage> gltfImages = new HashMap<>();
     /**
      * Keep track of loaded texture objects by id
      */
@@ -352,14 +351,15 @@ public class AssetManager {
     public GLTF getGLTFAsset(String fileName) throws IOException, GLTFException {
         GLTF gltf = gltfAssets.get(fileName);
         if (gltf != null) {
+            SimpleLogger.d(getClass(), "Returning already loaded gltf asset:" + fileName);
             return gltf;
         }
         SimpleLogger.d(getClass(), "Loading glTF asset:" + fileName);
         File f = new File(fileName);
         ClassLoader loader = getClass().getClassLoader();
         InputStream is = loader.getResourceAsStream(fileName);
-        gltf = loadJSONAsset(f.getParent(), is);
-        gltfAssets.put(fileName, gltf);
+        gltf = loadJSONAsset(f.getParent(), f.getName(), is);
+        gltfAssets.put(gltf.getFilename(), gltf);
         return gltf;
     }
 
@@ -383,8 +383,10 @@ public class AssetManager {
     }
 
     /**
-     * Deletes loaded gltf assets. This will delete binary buffers and texture images.
+     * Deletes loaded gltf assets. This will delete binary buffers and texture images and then remove
+     * the gltf asset from AssetManager.
      * Do not call this wile gltf model is in use - must call outside from render.
+     * After this call the gltf asset must be loaded in order to be used again.
      * 
      * @param gles
      * @param gltf
@@ -393,6 +395,8 @@ public class AssetManager {
     public void deleteGLTFAssets(GLES20Wrapper gles, GLTF gltf) throws GLException {
         BufferObjectsFactory.getInstance().destroyVBOs(gles, gltf.getBuffers());
         deleteTextures(gles, gltf.getImages());
+        gltfAssets.remove(gltf.getFilename());
+        gltf.destroy();
     }
 
     protected void deleteTextures(GLES20Wrapper gles, Image[] images) {
@@ -434,13 +438,14 @@ public class AssetManager {
      * Loads a glTF asset, this will not load binary data (buffers) or texture images.
      * The returned asset is resolved using {@link RuntimeResolver}
      * 
-     * @param path
+     * @param path Path where gltf assets such as binary buffers and images are loaded from.
+     * @param name The filename
      * @param is
      * @return The loaded glTF asset without any buffers or image loaded.
      * @throws IOException
      * @throws GLTFException If there is an error in the glTF or it cannot be resolved
      */
-    private GLTF loadJSONAsset(String path, InputStream is)
+    private GLTF loadJSONAsset(String path, String fileName, InputStream is)
             throws IOException, GLTFException {
         try {
             Reader reader = new InputStreamReader(is, "UTF-8");
@@ -448,6 +453,7 @@ public class AssetManager {
             Gson gson = builder.create();
             GLTF glTF = gson.fromJson(reader, GLTF.class);
             glTF.setPath(path);
+            glTF.setFilename(fileName);
             glTF.resolve();
             return glTF;
         } catch (UnsupportedEncodingException e) {
@@ -534,13 +540,8 @@ public class AssetManager {
      */
     protected BufferImage getTextureImage(String uri) throws IOException {
         if (uri != null) {
-            BufferImage textureImage = gltfImages.get(uri);
-            if (textureImage != null) {
-                return textureImage;
-            }
-            textureImage = BaseImageFactory.getInstance().createImage(uri, ImageFormat.RGBA);
+            BufferImage textureImage = BaseImageFactory.getInstance().createImage(uri, ImageFormat.RGBA);
             SimpleLogger.d(getClass(), "Loaded gltf texture image " + uri);
-            gltfImages.put(uri, textureImage);
             return textureImage;
         } else {
             throw new IllegalArgumentException("Not implemented");

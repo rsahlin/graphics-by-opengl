@@ -129,10 +129,9 @@ public class GLTF {
      */
     transient private String path;
     /**
-     * Resolved meshes that can be rendered without ref to glTF asset.
-     * Set when {@link #resolve()} method is called.
+     * The filename, minus path
      */
-    transient protected RenderableMesh[] renderableMeshes;
+    transient private String filename;
 
     public Buffer[] getBuffers() {
         return buffers;
@@ -210,6 +209,24 @@ public class GLTF {
      */
     public void setPath(String path) {
         this.path = path;
+    }
+
+    /**
+     * Sets the filename, minus path - only set this when gltf is loaded
+     * 
+     * @param filename
+     */
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    /**
+     * Returns the full filename including path
+     * 
+     * @return
+     */
+    public String getFilename() {
+        return path + File.separatorChar + filename;
     }
 
     /**
@@ -414,6 +431,57 @@ public class GLTF {
             result.addAll(Arrays.asList(scenes));
         }
         return result;
+    }
+
+    /**
+     * Deletes all gltf arrays such as Nodes,Scenes, Accessors etc - but does NOT release buffers or images.
+     * 
+     */
+    public void destroy() {
+        if (cameras == null) {
+            throw new IllegalArgumentException("Already called destroy on GLTF asset");
+        }
+        accessors = null;
+        asset = null;
+        destroyBuffers();
+        bufferViews = null;
+        cameras.clear();
+        cameras = null;
+        destroyImages();
+        materials = null;
+        meshes = null;
+        nodes = null;
+        samplers = null;
+        textures = null;
+        scenes = null;
+    }
+
+    private void destroyBuffers() {
+        if (buffers != null) {
+            int index = 0;
+            for (Buffer buffer : buffers) {
+                if (buffer.getBufferName() > 0) {
+                    throw new IllegalArgumentException(
+                            "Calling destroy on gltf Buffers but has not deleted assets, call AssetManager to delete before calling GLTF.destroy()");
+                }
+                buffers[index] = null;
+            }
+            buffers = null;
+        }
+    }
+
+    private void destroyImages() {
+        if (images != null) {
+            int index = 0;
+            for (Image image : images) {
+                if (image.getTextureName() > 0) {
+                    throw new IllegalArgumentException(
+                            "Calling destroy on gltf Images but has not deleted assets, call AssetManager to delete before calling GLTF.destroy()");
+                }
+                images[index] = null;
+            }
+            images = null;
+        }
     }
 
 }

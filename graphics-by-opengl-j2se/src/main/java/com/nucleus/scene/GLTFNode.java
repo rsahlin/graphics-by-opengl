@@ -115,6 +115,7 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
      */
     public void deleteAsset(GLES20Wrapper gles) throws GLException {
         if (glTF != null) {
+
             AssetManager.getInstance().deleteGLTFAssets(gles, glTF);
             glTF = null;
             glTFName = null;
