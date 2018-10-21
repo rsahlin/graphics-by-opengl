@@ -17,6 +17,11 @@ import com.nucleus.vecmath.Matrix;
  * transform is the identity. When a node is targeted for animation (referenced by an animation.channel.target), only
  * TRS properties may be present; matrix will not be present.
  * 
+ * For Version 2.0 conformance, the glTF node hierarchy is not a directed acyclic graph (DAG) or scene graph,
+ * but a disjoint union of strict trees.
+ * That is, no node may be a direct descendant of more than one node.
+ * This restriction is meant to simplify implementation and facilitate conformance.
+ * 
  * Properties
  * 
  * Type Description Required
@@ -66,13 +71,14 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
     transient protected Node[] childNodes;
     transient protected Mesh nodeMesh;
     transient protected Camera cameraRef;
+    transient protected Node parent;
     /**
      * The node concatenated model matrix at time of render, this is set when the node is rendered and
      * {@link #concatMatrix(float[])} is called
      * May be used when calculating bounds/collision on the current frame.
      * DO NOT WRITE TO THIS!
      */
-    transient float[] modelMatrix = Matrix.createMatrix();
+    transient float[] modelMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
     /**
      * The node inverse matrix call {@link #invertMatrix()} to calculate.
      * May be used when calculating bounds/collision on the current frame.
@@ -80,6 +86,11 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
      * 
      */
     transient float[] inverseMatrix = Matrix.createMatrix();
+
+    /**
+     * Used if the parents hierarchy transform shall be calculated
+     */
+    transient float[] parentMatrix = Matrix.createMatrix();
 
     public Node() {
     }
@@ -221,6 +232,10 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
             childNodes = new Node[children.length];
             for (int i = 0; i < children.length; i++) {
                 childNodes[i] = sources[children[i]];
+                if (childNodes[i].parent != null) {
+                    throw new IllegalArgumentException("Child already has parent - duplicate reference?");
+                }
+                childNodes[i].parent = this;
             }
         }
         setCamera(gltf, camera);
@@ -235,6 +250,15 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
     public void setCamera(GLTF gltf, int camera) {
         this.camera = camera;
         cameraRef = gltf.getCamera(camera);
+    }
+
+    /**
+     * Returns the parent node or null if this node is root
+     * 
+     * @return
+     */
+    public Node getParent() {
+        return parent;
     }
 
     /**
@@ -301,6 +325,28 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
                                 ? "rotate: " + rotation[0] + ", " + rotation[1] + ", " + rotation[2] + ", "
                                         + rotation[3]
                                 : "");
+    }
+
+    /**
+     * Calculates the current transform, by going through parents transforms.
+     * Used for instance by camera to find the result matrix.
+     * 
+     * @return result The sum of this nodes transform and all direct parents.
+     */
+    public float[] concatParentsMatrix() {
+        if (parent != null) {
+            Matrix.mul4(parent.matrix, matrix, parentMatrix);
+            return parent.concatParentsMatrix(parentMatrix);
+        }
+        return Matrix.copy(matrix, 0, parentMatrix, 0);
+    }
+
+    private float[] concatParentsMatrix(float[] matrix) {
+        if (parent != null) {
+            Matrix.mul4(parent.matrix, matrix, parentMatrix);
+            return concatParentsMatrix(parentMatrix);
+        }
+        return matrix;
     }
 
 }
