@@ -104,6 +104,7 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         // TODO - Should a special CameraNode be created? Maybe better to keep Nodes simple?
         Node node = new Node();
         Camera camera = new Camera(p, node);
+        selectedCamera = instanceCameras.size();
         instanceCameras.add(camera);
         // Add camera to gltf
         int index = gltf.addCamera(camera);
@@ -112,6 +113,13 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         MaxMin maxMin = calculateMaxMin();
         float[] delta = new float[2];
         maxMin.getMaxDeltaXY(delta);
+
+        Node parent = getMeshParent();
+        if (parent != null) {
+            // float[] matrix = parent.concatParentsMatrix();
+            // SimpleLogger.d(getClass(), "Found mesh parent, matrix: " + matrix);
+            // Matrix.invertM(node.getMatrix(), 0, matrix, 0);
+        }
 
         // For now just scale according to height.
         // The inverse of the node matrix will be used - so just set the largest values
@@ -164,6 +172,7 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
 
     /**
      * Returns the chosen camera instance, ie the currently chosen camera instance in this scene.
+     * When a scene is loaded the added camera is default.
      * 
      * @return The chosen camera instance, or null
      */
@@ -257,6 +266,41 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
             return Node.updateMaxMin(sceneNodes, mm, scale);
         }
         return null;
+    }
+
+    /**
+     * Returns the parent node to the first found mesh node. This can be used to locate the origin of the visible
+     * scene.
+     * Returns null if first Node containing a Mesh is at the root.
+     * 
+     * @return Parent to node hierarchy where first Mesh is, or null
+     */
+    public Node getMeshParent() {
+        return getMeshParent(sceneNodes);
+    }
+
+    private Node getMeshParent(Node[] nodes) {
+        if (nodes != null) {
+            for (Node node : nodes) {
+                if (node.nodeMesh != null) {
+                    return node.parent;
+                }
+            }
+            for (Node node : nodes) {
+                Node parent = getMeshParent(node.childNodes);
+                if (parent != null) {
+                    return parent;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Resets the scene Node transform, clearing any transform in the scene transform node.
+     */
+    public void clearSceneTransform() {
+        transform.clearTransform();
     }
 
 }

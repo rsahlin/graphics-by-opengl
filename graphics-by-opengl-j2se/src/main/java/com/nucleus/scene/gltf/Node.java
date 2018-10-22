@@ -173,13 +173,23 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
     }
 
     /**
+     * Returns true if this Node has defined rotation, translation or scale value
+     * If true then Matrix is not used.
+     * 
+     * @return
+     */
+    public final boolean hasRTS() {
+        return (rotation != null || scale != null || translation != null);
+    }
+
+    /**
      * If RTS values are defined the matrix is set according to these.
      * Otherwise matrix is left unchanged and returned
      * 
      * @return This nodes matrix, with updated TRS if used.
      */
     protected float[] updateMatrix() {
-        if (rotation != null || scale != null || translation != null) {
+        if (hasRTS()) {
             Matrix.setIdentity(matrix, 0);
             Matrix.setQuaternionRotation(rotation, matrix);
             Matrix.translate(matrix, translation);
@@ -347,6 +357,56 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
             return concatParentsMatrix(parentMatrix);
         }
         return matrix;
+    }
+
+    /**
+     * If rotation is present it is cleared to 0
+     */
+    private final void clearRotation() {
+        if (rotation != null) {
+            rotation[0] = 0;
+            rotation[1] = 0;
+            rotation[2] = 0;
+            rotation[3] = 0;
+        }
+    }
+
+    /**
+     * If translation is present it is cleared to 0
+     */
+    private final void clearTranslation() {
+        if (translation != null) {
+            translation[0] = 0;
+            translation[1] = 0;
+            translation[2] = 0;
+        }
+    }
+
+    /**
+     * If scale is present it is cleared to 1
+     */
+    private final void clearScale() {
+        if (scale != null) {
+            scale[0] = 1;
+            scale[1] = 1;
+            scale[2] = 1;
+        }
+    }
+
+    /**
+     * Clears all transform values - if Matrix is used it is set to identity.
+     * Any RTS values are cleared and scale set to 1,1,1 if present.
+     */
+    public void clearTransform() {
+        if (hasRTS()) {
+            clearRotation();
+            clearTranslation();
+            clearScale();
+            updateMatrix();
+        } else {
+            Matrix.setIdentity(matrix, 0);
+            Matrix.setIdentity(modelMatrix, 0);
+        }
     }
 
 }
