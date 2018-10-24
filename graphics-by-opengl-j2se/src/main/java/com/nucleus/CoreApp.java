@@ -6,7 +6,7 @@ import com.nucleus.component.ComponentProcessorRunnable;
 import com.nucleus.component.J2SEComponentProcessor;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
-import com.nucleus.mmi.ObjectInputListener;
+import com.nucleus.mmi.NodeInputListener;
 import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
@@ -23,7 +23,6 @@ import com.nucleus.scene.NavigationController;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeController;
 import com.nucleus.scene.NodeException;
-import com.nucleus.scene.NodeInputListener;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.RootNodeBuilder;
 import com.nucleus.scene.ViewController;
@@ -293,11 +292,11 @@ public class CoreApp implements FrameRenderer {
     }
 
     /**
-     * Adds pointer input callback using {@link NodeInputListener} to the scene, after this call the Node tree will get
+     * Adds pointer input callback to the scene, after this call the Node tree will get
      * callbacks on pointer input.
      * Call this if nodes use the {@link EventManager}, eg POINTERINPUT property, or shall use a node with
-     * {@link ObjectInputListener}
-     * Set ObjectInputListener on node by calling {@link Node#setObjectInputListener(ObjectInputListener)}
+     * {@link NodeInputListener}
+     * Set ObjectInputListener on node by calling {@link Node#setObjectInputListener(NodeInputListener)}
      * 
      * @param root The rootnode
      */

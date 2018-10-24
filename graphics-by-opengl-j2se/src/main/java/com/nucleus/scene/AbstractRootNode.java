@@ -8,7 +8,7 @@ import java.util.Map;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.common.ManagedList;
 import com.nucleus.io.BaseReference;
-import com.nucleus.mmi.ObjectInputListener;
+import com.nucleus.mmi.NodeInputListener;
 import com.nucleus.renderer.NucleusRenderer;
 
 /**
@@ -54,9 +54,9 @@ public abstract class AbstractRootNode extends BaseReference implements RootNode
      */
     transient private ManagedList<Node> visibleNodeList = new ManagedList<>();
     /**
-     * Set this to get callbacks on MMI events for this node, handled by {@link NodeInputListener}
+     * Set this to get callbacks on MMI events for this node
      */
-    transient protected ObjectInputListener objectInputListener;
+    transient protected NodeInputListener objectInputListener;
     /**
      * Table with all added childnodes and their id.
      */
@@ -67,12 +67,12 @@ public abstract class AbstractRootNode extends BaseReference implements RootNode
     }
 
     @Override
-    public ObjectInputListener getObjectInputListener() {
+    public NodeInputListener getObjectInputListener() {
         return objectInputListener;
     }
 
     @Override
-    public void setObjectInputListener(ObjectInputListener objectInputListener) {
+    public void setObjectInputListener(NodeInputListener objectInputListener) {
         this.objectInputListener = objectInputListener;
     }
 

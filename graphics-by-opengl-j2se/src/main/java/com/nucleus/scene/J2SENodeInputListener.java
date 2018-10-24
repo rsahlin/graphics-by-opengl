@@ -7,7 +7,7 @@ import com.nucleus.common.Constants;
 import com.nucleus.event.EventManager;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
-import com.nucleus.mmi.ObjectInputListener;
+import com.nucleus.mmi.NodeInputListener;
 import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.properties.Property;
 import com.nucleus.scene.Node.State;
@@ -17,7 +17,12 @@ import com.nucleus.scene.Node.State;
  * Takes {@link MMIEventListener} events and checks the registered node tree for pointer hits.
  * This class must be registred to {@link InputProcessor} for it to get mmi event callbacks.
  */
-public class J2SENodeInputListener implements NodeInputListener, MMIEventListener {
+public class J2SENodeInputListener implements MMIEventListener {
+
+    /**
+     * Set this property to true for nodes that shall check pointer input
+     */
+    public static final String ONCLICK = "onclick";
 
     private final RootNode root;
     private final ArrayList<Node> visibleNodes = new ArrayList<>();
@@ -29,8 +34,15 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
         this.root = root;
     }
 
-    @Override
-    public boolean onInputEvent(ArrayList<Node> nodes, MMIPointerEvent event) {
+    /**
+     * Recursively check nodes for the input event, when a node consumes the event true will be returned.
+     * 
+     * @param nodes List of nodes to check - this must be in draw order, ie first drawn node will be first.
+     * Iterate through this from end to beginning
+     * @param event
+     * @return True if a node has consumed the input event event
+     */
+    protected boolean onInputEvent(ArrayList<Node> nodes, MMIPointerEvent event) {
         int count = nodes.size() - 1;
         Node node = null;
         for (int i = count; i >= 0; i--) {
@@ -69,7 +81,7 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
             if (node instanceof MMIEventListener) {
                 ((MMIEventListener) node).onInputEvent(event);
             }
-            ObjectInputListener listener = root.getObjectInputListener();
+            NodeInputListener listener = root.getObjectInputListener();
             switch (event.getAction()) {
                 case ACTIVE:
                     down[0] = position[0];
