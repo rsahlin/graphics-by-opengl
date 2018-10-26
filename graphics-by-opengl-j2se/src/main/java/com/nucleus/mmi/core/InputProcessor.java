@@ -129,8 +129,12 @@ public class InputProcessor implements PointerListener, KeyListener {
                 }
                 MMIPointerEvent zoom = new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ZOOM, pointer,
                         pointerMotionData[pointer]);
-                zoom.setZoom(position[X] * transform[X], position[Y] * transform[Y]);
-                sendToListeners(zoom);
+                float x = position[X] * transform[X];
+                float y = position[Y] * transform[Y];
+                zoom.setZoom(x, y);
+                addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ZOOM, pointer,
+                        pointerMotionData[pointer]),
+                        pointerMotionData[pointer].create(action, type, timestamp, pointer, x, y, pressure));
                 break;
             default:
                 throw new IllegalArgumentException();

@@ -7,7 +7,7 @@ package com.nucleus.ui;
 public interface Button extends Element {
 
     public interface ButtonListener {
-        public void onButtonPressed();
+        public void onButtonPressed(Button button);
     }
 
 }

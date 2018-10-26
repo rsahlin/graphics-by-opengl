@@ -89,9 +89,9 @@ public class PointerData {
      */
     public final static int POINTER_5 = 4;
     /**
-     * The current pointer position
+     * The current pointer data
      */
-    public final float[] position;
+    public final float[] data;
     /**
      * Pointer index, 0 and up
      */
@@ -121,16 +121,37 @@ public class PointerData {
      * @param type The type that the pointerevent originates from
      * @param timestamp The time of the event, in milliseconds.
      * @param pointer Pointer index, eg the touch finger index.
-     * @param position Array with x and y position.
+     * @param data Array with x and y position.
      * @param pressure Touch pressure
      */
-    public PointerData(PointerAction action, Type type, long timestamp, int pointer, float[] position, float pressure) {
+    protected PointerData(PointerAction action, Type type, long timestamp, int pointer, float[] data, float pressure) {
         this.action = action;
         this.type = type;
         this.timeStamp = timestamp;
         this.pointer = pointer;
         this.pressure = pressure;
-        this.position = new float[] { position[PointerListener.X], position[PointerListener.Y] };
+        this.data = new float[] { data[PointerListener.X], data[PointerListener.Y] };
+    }
+
+    /**
+     * Creates a new pointerdata with pointer index and x,y pos
+     * 
+     * @param action The pointer action, DOWN, MOVE or UP
+     * @param type The type that the pointerevent originates from
+     * @param timestamp The time of the event, in milliseconds.
+     * @param pointer Pointer index, eg the touch finger index.
+     * @param x x value
+     * @param y y value
+     * @param pressure Touch pressure
+     */
+    protected PointerData(PointerAction action, Type type, long timestamp, int pointer, float x, float y,
+            float pressure) {
+        this.action = action;
+        this.type = type;
+        this.timeStamp = timestamp;
+        this.pointer = pointer;
+        this.pressure = pressure;
+        this.data = new float[] { x, y };
     }
 
 }

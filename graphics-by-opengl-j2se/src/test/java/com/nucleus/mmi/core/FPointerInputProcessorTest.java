@@ -104,7 +104,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
 
             }
             Assert.assertEquals(assertAction.timestamp, pointer.timeStamp);
-            Assert.assertArrayEquals(assertAction.position, pointer.position, 0);
+            Assert.assertArrayEquals(assertAction.position, pointer.data, 0);
         }
 
     }
