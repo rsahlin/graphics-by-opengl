@@ -442,9 +442,7 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
 
     @Override
     public boolean isInside(float[] position) {
-        if (bounds != null && (state == State.ON || state == State.ACTOR)
-                && getProperty(EventHandler.EventType.POINTERINPUT.name(), Constants.FALSE)
-                        .equals(Constants.TRUE)) {
+        if (bounds != null && (state == State.ON || state == State.ACTOR)) {
             bounds.transform(modelMatrix, 0);
             return bounds.isPointInside(position, 0);
         }
