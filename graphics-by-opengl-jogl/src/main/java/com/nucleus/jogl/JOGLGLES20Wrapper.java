@@ -135,15 +135,23 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, Buffer ptr) {
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, ByteBuffer ptr) {
+        // This method should not be called on JOGL - future versions of GL will move to named buffer objects.
+        int[] names = JOGLGLESUtils.getName(this);
+        int offset = ptr.position();
+        gles.glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, names[0]);
+        int numBytes = ptr.capacity();
+        gles.glBufferData(GL2ES2.GL_ARRAY_BUFFER, numBytes, ptr, GL.GL_STATIC_DRAW);
+        gles.glVertexAttribPointer(index, size, type, normalized, stride, offset);
+    }
+
+    @Override
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, FloatBuffer ptr) {
         // This method should not be called on JOGL - future versions of GL will move to named buffer objects.
         int[] names = JOGLGLESUtils.getName(this);
         int offset = ptr.position();
         gles.glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, names[0]);
         int numBytes = ptr.capacity() * 4;
-        if (type == GLES20.GL_UNSIGNED_BYTE) {
-
-        }
         gles.glBufferData(GL2ES2.GL_ARRAY_BUFFER, numBytes, ptr, GL.GL_STATIC_DRAW);
         gles.glVertexAttribPointer(index, size, type, normalized, stride, offset);
     }

@@ -168,14 +168,18 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             BufferView indicesView = indices.getBufferView();
             Buffer buffer = indicesView.getBuffer();
             gles.glVertexAttribPointer(glTF, program, primitive);
+            GLUtils.handleError(gles, "glVertexAttribPointer");
             if (buffer.getBufferName() > 0) {
                 gles.glBindBuffer(indicesView.getTarget().value, buffer.getBufferName());
+                GLUtils.handleError(gles, "glBindBuffer");
                 gles.glDrawElements(primitive.glMode, indices.getCount(), indices.getComponentType().value,
                         indices.getByteOffset() + indicesView.getByteOffset());
+                GLUtils.handleError(gles, "glDrawElements VBO " + buffer.getBufferName());
             } else {
                 gles.glDrawElements(primitive.glMode, indices.getCount(), indices.getComponentType().value,
                         indicesView.getBuffer().getBuffer()
                                 .position(indices.getByteOffset() + indicesView.getByteOffset()));
+                GLUtils.handleError(gles, "glDrawElements");
             }
             timeKeeper.addDrawElements(indices.getCount(), primitive.getAccessor(Attributes.POSITION).getCount());
         } else {

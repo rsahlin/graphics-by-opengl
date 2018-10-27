@@ -212,9 +212,11 @@ public class InputProcessor implements PointerListener, KeyListener {
     private void zoom(PointerMotionData pointer1, PointerMotionData pointer2, Vec2 vector1, Vec2 vector2,
             Vec2 center1, Vec2 center2) {
         // Zoom movement
-        sendToListeners(new MMIPointerEvent(pointer1, pointer2, vector1, vector2, vector1.dot(center1),
-                vector2.dot(center2)));
-
+        MMIPointerEvent zoom = new MMIPointerEvent(pointer1, pointer2, vector1, vector2, vector1.dot(center1),
+                vector2.dot(center2));
+        addAndSend(zoom,
+                pointer1.create(PointerAction.ZOOM, PointerData.Type.FINGER, System.currentTimeMillis(),
+                        PointerData.POINTER_1, zoom.getZoom().vector[0], zoom.getZoom().vector[1], 1f));
     }
 
     /**

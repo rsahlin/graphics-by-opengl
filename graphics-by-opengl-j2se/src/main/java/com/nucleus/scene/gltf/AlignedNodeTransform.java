@@ -1,8 +1,11 @@
 package com.nucleus.scene.gltf;
 
+import com.nucleus.SimpleLogger;
+import com.nucleus.common.StringUtils;
 import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Vec2;
+import com.nucleus.vecmath.Vec3;
 
 public class AlignedNodeTransform {
 
@@ -10,10 +13,13 @@ public class AlignedNodeTransform {
     private float[][] axis = new float[][] { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
     private float[][] rotatedAxis = new float[3][3];
     /**
-     * The result of axis rotation from input
+     * The result of axis rotation from input - only store rotation here
      */
-    private float[] rotatedAxisMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
-
+    private float[] rotationMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
+    private float[] resultMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
+    private float[] concatMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
+    private float[] scale = new float[] { 1, 1, 1 };
+    private float[] translate = new float[3];
     private float[] moveScale;
     /**
      * The scale from the scene viewmatrix, needed when translating
@@ -33,43 +39,58 @@ public class AlignedNodeTransform {
 
     public void rotate(float[] move) {
         // Rotate y axis according to concat matrix.
-        Matrix.mulVec3(rotatedAxisMatrix, axis[1], rotatedAxis[1]);
+        Matrix.mulVec3(rotationMatrix, axis[1], rotatedAxis[1]);
         // Y axis rotation - taken from X axis change
-        Matrix.setRotateM(matrix[1], 0, -(move[0] * moveScale[0]) * 3.14f, -rotatedAxis[1][0], rotatedAxis[1][1],
+        SimpleLogger.d(getClass(), "X axis move, Y axis is: " + StringUtils.getString(rotatedAxis[1]));
+        Matrix.setRotateM(matrix[1], 0, -(move[0] * moveScale[0]) * 3.14f, rotatedAxis[1][0], rotatedAxis[1][1],
                 -rotatedAxis[1][2]);
         // Rotate x axis according to concat matrix.
-        Matrix.mulVec3(rotatedAxisMatrix, axis[0], rotatedAxis[0]);
+        Matrix.mulVec3(rotationMatrix, axis[0], rotatedAxis[0]);
         // X axis rotation - taken from Y axis change
+        // SimpleLogger.d(getClass(), "Y axis move, X axis is: " + StringUtils.getString(rotatedAxis[0]));
         Matrix.setRotateM(matrix[0], 0, (move[1] * moveScale[1]) * 3.14f, rotatedAxis[0][0], -rotatedAxis[0][1],
                 -rotatedAxis[0][2]);
+        Matrix.mul4(rotationMatrix, matrix[0], concatMatrix);
+        Matrix.mul4(concatMatrix, matrix[1], rotationMatrix);
 
-        float[] sceneMatrix = target.getSceneTransform().getMatrix();
-        Matrix.mul4(rotatedAxisMatrix, matrix[0], sceneMatrix);
-        Matrix.mul4(sceneMatrix, matrix[1], rotatedAxisMatrix);
-        Matrix.copy(rotatedAxisMatrix, 0, sceneMatrix, 0);
+        composeMatrix(target.getSceneTransform().getMatrix());
     }
 
     public void scale(Vec2 zoom) {
         float z = 1 + (zoom.vector[Vec2.MAGNITUDE] * zoom.vector[Vec2.X])
                 / InputProcessor.getInstance().getPointerScaleY();
-        float[] sceneMatrix = target.getSceneTransform().getMatrix();
-        Matrix.scaleM(sceneMatrix, 0, z, z, z);
-        Matrix.copy(sceneMatrix, 0, rotatedAxisMatrix, 0);
+        scale[0] *= z;
+        scale[1] *= z;
+        scale[2] *= z;
+        composeMatrix(target.getSceneTransform().getMatrix());
+        // float[] sceneMatrix = target.getSceneTransform().getMatrix();
+        // Matrix.scaleM(sceneMatrix, 0, z, z, z);
     }
 
     public void translate(float[] move) {
         float[] sceneMatrix = target.getSceneTransform().getMatrix();
         Matrix.getScale(target.getViewMatrix(), viewScale);
-        Matrix.translate(sceneMatrix, (move[0] * moveScale[0]) / viewScale[0],
-                (move[1] * moveScale[1]) / viewScale[1], 0);
-        Matrix.copy(sceneMatrix, 0, rotatedAxisMatrix, 0);
+        translate[0] += (move[0] * moveScale[0]) / viewScale[0];
+        translate[1] += (move[1] * moveScale[1]) / viewScale[1];
+        composeMatrix(target.getSceneTransform().getMatrix());
+        // Matrix.setTranslate(sceneMatrix, translate);
     }
 
     public void resetRotation() {
         Matrix.setIdentity(matrix[0], 0);
         Matrix.setIdentity(matrix[1], 0);
         Matrix.setIdentity(matrix[2], 0);
-        Matrix.setIdentity(rotatedAxisMatrix, 0);
+        Matrix.setIdentity(rotationMatrix, 0);
+        Vec3.set(scale, 1, 1, 1);
+        Vec3.clear(translate);
+    }
+
+    private float[] composeMatrix(float[] destination) {
+        Matrix.setIdentity(resultMatrix, 0);
+        Matrix.scaleM(resultMatrix, 0, scale);
+        Matrix.translate(resultMatrix, translate);
+        Matrix.mul4(resultMatrix, rotationMatrix, destination);
+        return destination;
     }
 
 }

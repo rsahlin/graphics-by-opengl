@@ -129,7 +129,12 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
     }
 
     @Override
-    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, Buffer ptr) {
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, ByteBuffer ptr) {
+        gles20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
+    }
+
+    @Override
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, FloatBuffer ptr) {
         gles20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
     }
 

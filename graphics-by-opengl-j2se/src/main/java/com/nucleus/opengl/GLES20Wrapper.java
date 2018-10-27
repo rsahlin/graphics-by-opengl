@@ -313,7 +313,20 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param ptr
      */
     public abstract void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride,
-            Buffer ptr);
+            ByteBuffer ptr);
+
+    /**
+     * Abstraction for glVertexAttribPointer()
+     * 
+     * @param index
+     * @param size
+     * @param type
+     * @param normalized
+     * @param stride
+     * @param ptr
+     */
+    public abstract void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride,
+            FloatBuffer ptr);
 
     /**
      * Abstraction for glVertexAttribPointer()
@@ -357,9 +370,11 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         } else {
             for (ShaderVariable a : attribs) {
                 if (a != null) {
+                    FloatBuffer fb = buffer.getBuffer();
+                    fb.position(a.getOffset());
                     glEnableVertexAttribArray(a.getLocation());
                     glVertexAttribPointer(a.getLocation(), a.getComponentCount(), buffer.getDataType(), false,
-                            buffer.getByteStride(), buffer.getBuffer().position(a.getOffset()));
+                            buffer.getByteStride(), fb);
                 }
             }
         }
@@ -387,8 +402,9 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                     glVertexAttribPointer(v.getLocation(), t.size, ct.value, normalized, view.getByteStride(),
                             accessors[i].getByteOffset() + view.getByteOffset());
                 } else {
-                    glVertexAttribPointer(v.getLocation(), t.size, ct.value, normalized, view.getByteStride(),
-                            view.getBuffer().getBuffer().position(accessors[i].getByteOffset() + view.getByteOffset()));
+                    ByteBuffer bb = view.getBuffer().getBuffer();
+                    bb.position(accessors[i].getByteOffset() + view.getByteOffset());
+                    glVertexAttribPointer(v.getLocation(), t.size, ct.value, normalized, view.getByteStride(), bb);
                 }
             } else {
                 // TODO - when fully implemented this should not happen.

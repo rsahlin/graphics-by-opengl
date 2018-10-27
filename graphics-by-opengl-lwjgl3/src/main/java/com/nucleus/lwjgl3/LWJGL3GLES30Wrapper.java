@@ -133,9 +133,13 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
     }
 
     @Override
-    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, Buffer ptr) {
-        org.lwjgl.opengles.GLES20.glVertexAttribPointer(index, size, type, normalized, stride, (FloatBuffer) ptr);
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, FloatBuffer ptr) {
+        org.lwjgl.opengles.GLES20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
+    }
 
+    @Override
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, ByteBuffer ptr) {
+        org.lwjgl.opengles.GLES20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
     }
 
     @Override

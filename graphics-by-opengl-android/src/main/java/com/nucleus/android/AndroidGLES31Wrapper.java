@@ -101,8 +101,13 @@ public class AndroidGLES31Wrapper extends GLES31Wrapper {
     }
 
     @Override
-    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, Buffer ptr) {
-        android.opengl.GLES30.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, ByteBuffer ptr) {
+        android.opengl.GLES20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
+    }
+
+    @Override
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, FloatBuffer ptr) {
+        android.opengl.GLES20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
     }
 
     @Override

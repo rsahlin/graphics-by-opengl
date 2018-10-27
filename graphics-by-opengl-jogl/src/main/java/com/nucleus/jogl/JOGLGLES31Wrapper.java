@@ -16,7 +16,7 @@ public class JOGLGLES31Wrapper extends GLES31Wrapper {
      * Wrapper for gles20/30 methods that can be used if they are not a simple one liner.
      */
     private JOGLGLES30Wrapper gles30;
-
+    private JOGLGLES20Wrapper gles20;
     GL4ES3 gles;
 
     /**
@@ -33,6 +33,7 @@ public class JOGLGLES31Wrapper extends GLES31Wrapper {
         }
         this.gles = gles;
         gles30 = new JOGLGLES30Wrapper(gles, renderVersion);
+        gles20 = new JOGLGLES20Wrapper(gles, renderVersion);
     }
 
     /**
@@ -128,8 +129,13 @@ public class JOGLGLES31Wrapper extends GLES31Wrapper {
     }
 
     @Override
-    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, Buffer ptr) {
-        gles30.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, ByteBuffer ptr) {
+        gles20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
+    }
+
+    @Override
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, FloatBuffer ptr) {
+        gles20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
     }
 
     @Override
