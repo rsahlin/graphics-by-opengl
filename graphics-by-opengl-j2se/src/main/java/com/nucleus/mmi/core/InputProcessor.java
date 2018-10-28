@@ -52,6 +52,7 @@ public class InputProcessor implements PointerListener, KeyListener {
 
     /**
      * Set to false to disable actions from two pointers, ZOOM
+     * When this is enabled normal MOVE events will not be sent when 2 or more pointers are active.
      */
     private boolean processTwoPointers = true;
 
@@ -97,14 +98,20 @@ public class InputProcessor implements PointerListener, KeyListener {
                 if (pointerMotionData[pointer].getCurrent().action == PointerData.PointerAction.UP) {
                     SimpleLogger.d(getClass(), "Move after up");
                 } else {
+                    // More than one pointer is or has been active.
+                    if (processTwoPointers && pointerCount >= 2) {
+                        pointerMotionData[pointer].add(
+                                pointerMotionData[pointer].create(action, type, timestamp, pointer, scaledPosition,
+                                        pressure));
+                        if (pointer == 1) {
+                            processTwoPointers();
+                        }
+                        break;
+                    }
                     addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.MOVE, pointer,
                             pointerMotionData[pointer]),
                             pointerMotionData[pointer].create(action, type, timestamp, pointer, scaledPosition,
                                     pressure));
-                    // More than one pointer is or has been active.
-                    if (processTwoPointers && pointerCount == 2 && pointer == 1) {
-                        processTwoPointers();
-                    }
                 }
                 break;
             case DOWN:
@@ -165,48 +172,47 @@ public class InputProcessor implements PointerListener, KeyListener {
         sendToListeners(event);
     }
 
-    private void processTwoPointers() {
+    private boolean processTwoPointers() {
         PointerMotionData pointer1 = pointerMotionData[PointerData.POINTER_1];
         PointerMotionData pointer2 = pointerMotionData[PointerData.POINTER_2];
         // Find point between the 2 points.
         float[] middle = Vertex2D.middle(pointer1.getFirstPosition(), pointer2.getFirstPosition());
         float[] toMiddle = new float[2];
+        float[] toMiddle2 = new float[2];
         // Fetch touch movement as 2D vectors
         Vec2 vector1 = getDeltaAsVector(pointer1, 1);
         Vec2 vector2 = getDeltaAsVector(pointer2, 1);
         // Check if movement from or towards middle.
         if (vector1 != null && vector2 != null) {
-            // System.out.println("Twopointer delta1: " + vector1.vector[Vector2D.MAGNITUDE] + " pos: "
-            // + pointer1.getCurrentPosition()[0] + ", " + pointer1.getCurrentPosition()[1]);
-            // if (vector1.vector[Vector2D.MAGNITUDE] > moveThreshold ||
-            // vector2.vector[Vector2D.MAGNITUDE] > moveThreshold) {
-
             Vertex2D.getDistance(middle, pointer1.getCurrentPosition(), toMiddle);
             Vec2 center1 = new Vec2(toMiddle);
-            Vertex2D.getDistance(middle, pointer2.getCurrentPosition(), toMiddle);
-            Vec2 center2 = new Vec2(toMiddle);
+            Vertex2D.getDistance(middle, pointer2.getCurrentPosition(), toMiddle2);
+            Vec2 center2 = new Vec2(toMiddle2);
 
             float angle1 = (float) Math.acos(vector1.dot(center1)) * 57.2957795f;
             float angle2 = (float) Math.acos(vector2.dot(center2)) * 57.2957795f;
             if ((angle1 > 135 && angle2 > 135) || (angle1 < 45 && angle2 < 45)) {
                 zoom(pointer1, pointer2, vector1, vector2, center1, center2);
+                return true;
             } else // if (vector1.vector[Vector2D.MAGNITUDE] < moveThreshold) {
                    // If one touch is very small then count the other.
                    // TODO Maybe use magnitude as a factor and weigh angles together
             if ((angle2 > 135) || (angle2 < 45)) {
                 zoom(pointer1, pointer2, vector1, vector2, center1, center2);
+                return true;
                 // }
             } else // if (vector2.vector[Vector2D.MAGNITUDE] < moveThreshold) {
                    // If one touch is very small then count the other.
                    // TODO Maybe use magnitude as a factor and weigh angles together
             if ((angle1 > 135) || (angle1 < 45)) {
                 zoom(pointer1, pointer2, vector1, vector2, center1, center2);
+                return true;
             }
             // }
 
             // }
         }
-
+        return false;
     }
 
     private void zoom(PointerMotionData pointer1, PointerMotionData pointer2, Vec2 vector1, Vec2 vector2,
@@ -214,13 +220,15 @@ public class InputProcessor implements PointerListener, KeyListener {
         // Zoom movement
         MMIPointerEvent zoom = new MMIPointerEvent(pointer1, pointer2, vector1, vector2, vector1.dot(center1),
                 vector2.dot(center2));
+        float[] vector = zoom.getZoom().vector;
         addAndSend(zoom,
                 pointer1.create(PointerAction.ZOOM, PointerData.Type.FINGER, System.currentTimeMillis(),
-                        PointerData.POINTER_1, zoom.getZoom().vector[0], zoom.getZoom().vector[1], 1f));
+                        PointerData.POINTER_1, vector[0] * vector[2], vector[1] * vector[2], 1f));
     }
 
     /**
-     * Internal method to fetch the pointer motion delta as 2D vector
+     * Internal method to fetch the pointer motion delta as 2D vector - magnitude will be scaled to fraction of screen
+     * width/height so that a value of 0.1 means 1/10 of width/height
      * 
      * @param motionData
      * @param count Number of prior pointer values to include in delta.
@@ -232,7 +240,6 @@ public class InputProcessor implements PointerListener, KeyListener {
             return null;
         }
         int height = Window.getInstance().getHeight();
-        // return new Vec2(delta[0] / (transform[0] * height), delta[1] / (transform[1] * height));
         Vec2 deltaVec = new Vec2(delta);
         deltaVec.vector[Vec2.MAGNITUDE] = deltaVec.vector[Vec2.MAGNITUDE] / (getPointerScaleY() * height);
         return deltaVec;
