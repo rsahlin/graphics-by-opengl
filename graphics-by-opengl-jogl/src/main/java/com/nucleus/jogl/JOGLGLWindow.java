@@ -29,7 +29,6 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.KeyEvent.Action;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
-import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 
@@ -314,18 +313,16 @@ public abstract class JOGLGLWindow extends J2SEWindow
         SimpleLogger.d(getClass(), "KeyEvent " + event.getEventType() + " : " + event.getKeyCode());
         switch (event.getEventType()) {
             case KeyEvent.EVENT_KEY_PRESSED:
-                InputProcessor.getInstance()
-                        .onKeyEvent(new com.nucleus.mmi.KeyEvent(Action.PRESSED,
-                                AWTKeycodes.get((int) event.getKeyCode())));
+                super.handleKeyEvent(new com.nucleus.mmi.KeyEvent(Action.PRESSED,
+                        AWTKeycodes.get((int) event.getKeyCode())));
                 switch (event.getKeyCode()) {
                     case KeyEvent.VK_ESCAPE:
                         backPressed();
                 }
                 break;
             case KeyEvent.EVENT_KEY_RELEASED:
-                InputProcessor.getInstance()
-                        .onKeyEvent(new com.nucleus.mmi.KeyEvent(Action.RELEASED,
-                                AWTKeycodes.get((int) event.getKeyCode())));
+                super.handleKeyEvent(new com.nucleus.mmi.KeyEvent(Action.RELEASED,
+                        AWTKeycodes.get((int) event.getKeyCode())));
                 break;
             default:
                 // Do nothing
