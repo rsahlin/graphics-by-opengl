@@ -1,5 +1,7 @@
 package com.nucleus.lwjgl3;
 
+import java.lang.reflect.Field;
+import java.util.Hashtable;
 import java.util.Objects;
 
 import org.lwjgl.glfw.GLFW;
@@ -37,6 +39,7 @@ public class GLFWWindow extends J2SEWindow {
     private GLESCapabilities gles;
     private int[] buttonActions = new int[MAX_MOUSE_BUTTONS];
     private int[] cursorPosition = new int[2];
+    private Hashtable<Integer, Integer> GLFWKeycodes;
 
     /**
      * 
@@ -83,11 +86,16 @@ public class GLFWWindow extends J2SEWindow {
         gles = GLES.createCapabilities();
         wrapper = LWJGLWrapperFactory.createWrapper(gles, null);
 
+        /**
+         * Fetch scancode for fields that start with VK_ and store keycodes in array to convert scancode to AWT values
+         */
+        GLFWKeycodes = getGLFWKeys();
+
         GLFW.glfwSetKeyCallback(window, (windowHnd, key, scancode, action, mods) -> {
             switch (action) {
                 case GLFW.GLFW_RELEASE:
                     super.handleKeyEvent(new com.nucleus.mmi.KeyEvent(Action.RELEASED, key));
-                    if (action == GLFW.GLFW_RELEASE && key == GLFW.GLFW_KEY_ESCAPE) {
+                    if (key == GLFW.GLFW_KEY_ESCAPE) {
                         backPressed();
                     }
                     break;
@@ -143,7 +151,29 @@ public class GLFWWindow extends J2SEWindow {
                 mouseWheelMoved((int) yoffset, System.currentTimeMillis());
             }
         });
+    }
 
+    private Hashtable<Integer, Integer> getGLFWKeys() {
+        Hashtable<Integer, Integer> GLFWFields = new Hashtable<>();
+        for (Field scanField : GLFW.class.getDeclaredFields()) {
+            if (java.lang.reflect.Modifier.isStatic(scanField.getModifiers())) {
+                String fieldName = scanField.getName();
+                if (fieldName.startsWith("GLFW_KEY_")) {
+                    String key = fieldName.substring(9);
+
+                    try {
+                        Field awtField = java.awt.event.KeyEvent.class.getField("VK_" + key);
+                        Field field = GLFW.class.getField(fieldName);
+                        int scanCode = field.getInt(null);
+                        int awtKeyCode = awtField.getInt(null);
+                        GLFWFields.put(scanCode, awtKeyCode);
+                    } catch (NoSuchFieldException | IllegalAccessException e) {
+                        SimpleLogger.d(getClass(), e.toString());
+                    }
+                }
+            }
+        }
+        return GLFWFields;
     }
 
     @Override
