@@ -92,16 +92,21 @@ public class GLFWWindow extends J2SEWindow {
         GLFWKeycodes = getGLFWKeys();
 
         GLFW.glfwSetKeyCallback(window, (windowHnd, key, scancode, action, mods) -> {
-            switch (action) {
-                case GLFW.GLFW_RELEASE:
-                    super.handleKeyEvent(new com.nucleus.mmi.KeyEvent(Action.RELEASED, key));
-                    if (key == GLFW.GLFW_KEY_ESCAPE) {
-                        backPressed();
-                    }
-                    break;
-                case GLFW.GLFW_PRESS:
-                    super.handleKeyEvent(new com.nucleus.mmi.KeyEvent(Action.PRESSED, key));
-                    break;
+            Integer awtKey = GLFWKeycodes.get(key);
+            if (awtKey != null) {
+                switch (action) {
+                    case GLFW.GLFW_RELEASE:
+                        super.handleKeyEvent(new com.nucleus.mmi.KeyEvent(Action.RELEASED, key));
+                        if (key == GLFW.GLFW_KEY_ESCAPE) {
+                            backPressed();
+                        }
+                        break;
+                    case GLFW.GLFW_PRESS:
+                        super.handleKeyEvent(new com.nucleus.mmi.KeyEvent(Action.PRESSED, key));
+                        break;
+                }
+            } else {
+                SimpleLogger.d(getClass(), "No AWT keycode for: " + key);
             }
         });
 

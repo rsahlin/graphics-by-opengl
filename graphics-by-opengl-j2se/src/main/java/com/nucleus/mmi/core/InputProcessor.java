@@ -1,6 +1,7 @@
 package com.nucleus.mmi.core;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 
 import com.nucleus.SimpleLogger;
@@ -55,6 +56,11 @@ public class InputProcessor implements PointerListener, KeyListener {
      * When this is enabled normal MOVE events will not be sent when 2 or more pointers are active.
      */
     private boolean processTwoPointers = true;
+
+    /**
+     * Keeps track of pressed keyvalues - this will be same as the java.awt.KeyEvent values.
+     */
+    private LinkedList<Integer> keyCodes = new LinkedList<>();
 
     private static InputProcessor inputProcessor;
 
@@ -357,9 +363,29 @@ public class InputProcessor implements PointerListener, KeyListener {
 
     @Override
     public void onKeyEvent(KeyEvent event) {
+        switch (event.getAction()) {
+            case PRESSED:
+                keyCodes.add(event.getKeyValue());
+                break;
+            case RELEASED:
+                keyCodes.remove(new Integer(event.getKeyValue()));
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for action " + event.getAction());
+        }
         for (KeyListener kl : keyListeners) {
             kl.onKeyEvent(event);
         }
+    }
+
+    /**
+     * Returns true if a key with the key value is pressed
+     * 
+     * @param keyValue java.awt.KeyEvent value
+     * @return
+     */
+    public boolean isKeyPressed(int keyValue) {
+        return keyCodes.contains(keyValue);
     }
 
 }
