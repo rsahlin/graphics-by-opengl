@@ -31,6 +31,7 @@ public class AlignedNodeTransform {
     public AlignedNodeTransform(Scene target, float[] moveScale) {
         this.moveScale = new float[] { moveScale[0], moveScale[1] };
         this.target = target;
+        resetRotation();
     }
 
     public void setNodeTarget(Scene target) {
@@ -38,21 +39,20 @@ public class AlignedNodeTransform {
     }
 
     public void rotate(float[] move) {
-        // Rotate y axis according to concat matrix.
-        Matrix.mulVec3(rotationMatrix, axis[1], rotatedAxis[1]);
+        // Rotate y axis according to x rotation
+        Matrix.mulVec3(matrix[0], axis[1], rotatedAxis[1]);
         // Y axis rotation - taken from X axis change
-        SimpleLogger.d(getClass(), "X axis move, Y axis is: " + StringUtils.getString(rotatedAxis[1]));
-        Matrix.setRotateM(matrix[1], 0, -(move[0] * moveScale[0]) * 3.14f, rotatedAxis[1][0], rotatedAxis[1][1],
-                -rotatedAxis[1][2]);
-        // Rotate x axis according to concat matrix.
-        Matrix.mulVec3(rotationMatrix, axis[0], rotatedAxis[0]);
+        SimpleLogger.d(getClass(), "X axis move, Y axis is: " + StringUtils.getString(rotatedAxis[1]) + " : " + move[0] * moveScale[0]);
+        Matrix.rotateM(matrix[0], new float[] {rotatedAxis[1][0], rotatedAxis[1][1],
+                -rotatedAxis[1][2], -(move[0] * moveScale[0]) * 3.14f});
+        // Rotate x axis according to y rotation
+        Matrix.mulVec3(matrix[0], axis[0], rotatedAxis[0]);
         // X axis rotation - taken from Y axis change
-        // SimpleLogger.d(getClass(), "Y axis move, X axis is: " + StringUtils.getString(rotatedAxis[0]));
-        Matrix.setRotateM(matrix[0], 0, (move[1] * moveScale[1]) * 3.14f, rotatedAxis[0][0], -rotatedAxis[0][1],
-                -rotatedAxis[0][2]);
-        Matrix.mul4(rotationMatrix, matrix[0], concatMatrix);
-        Matrix.mul4(concatMatrix, matrix[1], rotationMatrix);
-
+        SimpleLogger.d(getClass(), "Y axis move, X axis is: " + StringUtils.getString(rotatedAxis[0]));
+        Matrix.rotateM(matrix[0], new float[] {rotatedAxis[0][0], -rotatedAxis[0][1],
+                -rotatedAxis[0][2], (move[1] * moveScale[1]) * 3.14f});
+//        Matrix.mul4(matrix[1], matrix[0], rotationMatrix);
+        System.arraycopy(matrix[0], 0, rotationMatrix, 0, 16);
         composeMatrix(target.getSceneTransform().getMatrix());
     }
 
