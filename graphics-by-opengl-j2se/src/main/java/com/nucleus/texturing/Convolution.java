@@ -308,7 +308,7 @@ public class Convolution {
                     destPixels[index++] = (byte) (acc[0]);
                     destPixels[index++] = (byte) (acc[1]);
                     destPixels[index++] = (byte) (acc[2]);
-                    destPixels[index++] = (byte) 255;
+                    destPixels[index++] = (byte) (acc[3]);
                 }
             }
             break;

@@ -79,6 +79,8 @@ public abstract class BaseImageFactory implements ImageFactory {
                         1, 1, 1, 1 }, 0, 0, Kernel.SIZE_4X4.size);
                 break;
             case 5:
+            case 6:
+            case 7:
                 c = new Convolution(Kernel.SIZE_5X5);
                 c.set(new float[] { 1, 2, 3, 2, 1,
                         2, 3, 4, 3, 2,
@@ -86,8 +88,6 @@ public abstract class BaseImageFactory implements ImageFactory {
                         2, 3, 4, 3, 2,
                         1, 2, 3, 2, 1 }, 0, 0, Kernel.SIZE_5X5.size);
                 break;
-            case 6:
-            case 7:
             case 8:
                 c = new Convolution(Kernel.SIZE_8X8);
                 c.set(new float[] {
