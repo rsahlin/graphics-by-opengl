@@ -1,23 +1,24 @@
 package com.nucleus.scene.gltf;
 
-import com.nucleus.SimpleLogger;
-import com.nucleus.common.StringUtils;
 import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Vec2;
 import com.nucleus.vecmath.Vec3;
 
+/**
+ * Used to transform a scene target. Rotation will be according to world axis so that this class
+ * can be used in a ui to rotate according to input movement.
+ *
+ */
 public class AlignedNodeTransform {
 
-    private float[][] matrix = new float[3][16];
-    private float[][] axis = new float[][] { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
-    private float[][] rotatedAxis = new float[3][3];
+    private float[][] matrix = new float[2][16];
+    private float[][] axisAngle = new float[][] { { 1, 0, 0, 0 }, { 0, 1, 0, 0 } };
     /**
      * The result of axis rotation from input - only store rotation here
      */
     private float[] rotationMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
     private float[] resultMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
-    private float[] concatMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
     private float[] scale = new float[] { 1, 1, 1 };
     private float[] translate = new float[3];
     private float[] moveScale;
@@ -38,24 +39,28 @@ public class AlignedNodeTransform {
         this.target = target;
     }
 
+    /**
+     * Rotates the scene target according to movement values x and y, multiplied by the moveScale
+     * This will rotate around the world axis, ie previous rotation is first applied then the current rotation is added.
+     * 
+     * 
+     * @param move
+     */
     public void rotate(float[] move) {
-        // Rotate y axis according to x rotation
-        Matrix.mulVec3(matrix[0], axis[1], rotatedAxis[1]);
-        // Y axis rotation - taken from X axis change
-        SimpleLogger.d(getClass(), "X axis move, Y axis is: " + StringUtils.getString(rotatedAxis[1]) + " : " + move[0] * moveScale[0]);
-        Matrix.rotateM(matrix[0], new float[] {rotatedAxis[1][0], rotatedAxis[1][1],
-                -rotatedAxis[1][2], -(move[0] * moveScale[0]) * 3.14f});
-        // Rotate x axis according to y rotation
-        Matrix.mulVec3(matrix[0], axis[0], rotatedAxis[0]);
-        // X axis rotation - taken from Y axis change
-        SimpleLogger.d(getClass(), "Y axis move, X axis is: " + StringUtils.getString(rotatedAxis[0]));
-        Matrix.rotateM(matrix[0], new float[] {rotatedAxis[0][0], -rotatedAxis[0][1],
-                -rotatedAxis[0][2], (move[1] * moveScale[1]) * 3.14f});
-//        Matrix.mul4(matrix[1], matrix[0], rotationMatrix);
-        System.arraycopy(matrix[0], 0, rotationMatrix, 0, 16);
+        axisAngle[1][3] = -(move[0] * moveScale[0]) * 3.14f;
+        axisAngle[0][3] = (move[1] * moveScale[1]) * 3.14f;
+        Matrix.setRotateM(matrix[0], 0, axisAngle[1][3], axisAngle[1][0], axisAngle[1][1], axisAngle[1][2]);
+        Matrix.rotateM(matrix[0], axisAngle[0]);
+        Matrix.mul4(matrix[0], matrix[1], rotationMatrix);
+        System.arraycopy(rotationMatrix, 0, matrix[1], 0, Matrix.MATRIX_ELEMENTS);
         composeMatrix(target.getSceneTransform().getMatrix());
     }
 
+    /**
+     * Scales the scene
+     * 
+     * @param zoom
+     */
     public void scale(Vec2 zoom) {
         float z = 1 + (zoom.vector[Vec2.MAGNITUDE] * zoom.vector[Vec2.X])
                 / InputProcessor.getInstance().getPointerScaleY();
@@ -63,23 +68,26 @@ public class AlignedNodeTransform {
         scale[1] *= z;
         scale[2] *= z;
         composeMatrix(target.getSceneTransform().getMatrix());
-        // float[] sceneMatrix = target.getSceneTransform().getMatrix();
-        // Matrix.scaleM(sceneMatrix, 0, z, z, z);
     }
 
+    /**
+     * Translates the scene using the x and y in move, multiplied by the moveScale
+     * 
+     * @param move
+     */
     public void translate(float[] move) {
-        float[] sceneMatrix = target.getSceneTransform().getMatrix();
         Matrix.getScale(target.getViewMatrix(), viewScale);
         translate[0] += (move[0] * moveScale[0]) / viewScale[0];
         translate[1] += (move[1] * moveScale[1]) / viewScale[1];
         composeMatrix(target.getSceneTransform().getMatrix());
-        // Matrix.setTranslate(sceneMatrix, translate);
     }
 
+    /**
+     * Resets the rotation
+     */
     public void resetRotation() {
         Matrix.setIdentity(matrix[0], 0);
         Matrix.setIdentity(matrix[1], 0);
-        Matrix.setIdentity(matrix[2], 0);
         Matrix.setIdentity(rotationMatrix, 0);
         Vec3.set(scale, 1, 1, 1);
         Vec3.clear(translate);
