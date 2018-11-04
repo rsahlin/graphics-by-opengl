@@ -115,12 +115,13 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         maxMin.getMaxDeltaXY(delta);
 
         Node parent = getMeshParent();
-        if (parent != null) {
-            // float[] matrix = parent.concatParentsMatrix();
-            // SimpleLogger.d(getClass(), "Found mesh parent, matrix: " + matrix);
-            // Matrix.invertM(node.getMatrix(), 0, matrix, 0);
+        // If parent to node with mesh is at root (ie does not have parent) then treat as normal
+        if (parent != null && parent.getParent() != null) {
+            SimpleLogger.d(getClass(), "Found mesh parent, using inverse matrix for default camera");
+            // Go backwards in parent hierarchy to find inverse matrix
+            float[] matrix = parent.concatParentsMatrix();
+            Matrix.invertM(node.getMatrix(), 0, matrix, 0);
         }
-
         // For now just scale according to height.
         // The inverse of the node matrix will be used - so just set the largest values
         float scale = delta[1];
