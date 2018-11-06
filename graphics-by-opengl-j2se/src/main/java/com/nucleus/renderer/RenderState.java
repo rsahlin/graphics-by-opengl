@@ -158,6 +158,24 @@ public class RenderState {
     }
 
     /**
+     * Copies the renderstate
+     * 
+     * @param source renderstate to copy
+     */
+    public void set(RenderState source) {
+        changeFlag = source.changeFlag;
+        enableMultisampling = source.enableMultisampling;
+        depthFunc = source.depthFunc;
+        depthRangeFar = source.depthRangeFar;
+        depthRangeNear = source.depthRangeNear;
+        clearDepth = source.clearDepth;
+        System.arraycopy(source.clearColor, 0, clearColor, 0, source.clearColor.length);
+        clearStencil = source.clearStencil;
+        cullFace = source.cullFace;
+        clearFlags = source.clearFlags;
+    }
+    
+    /**
      * Enables or disables multisampling, to be disabled the surface must also support GLES_EXTENSIONS.MULTISAMPLE_EXT
      * This is checked before multisample is enabled/disable in the renderer.
      * 
