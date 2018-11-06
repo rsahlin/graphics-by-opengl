@@ -4,10 +4,12 @@ import java.util.ArrayDeque;
 
 import com.nucleus.common.Environment;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
+import com.nucleus.renderer.RenderState.Cullface;
 import com.nucleus.scene.GLTFNode;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Buffer;
@@ -33,6 +35,8 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     protected ArrayDeque<float[]> projectionMatrixStack = new ArrayDeque<float[]>(5);
     protected float[] modelMatrix;
     protected int currentProgram = -1;
+    protected RenderState renderState;
+    protected Cullface cullFace;
 
     /**
      * Internal method to handle matrix stack, push a matrix on the stack
@@ -62,6 +66,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             // Do nothing
             return false;
         }
+        renderState = renderer.getRenderState();
         pushMatrix(viewMatrixStack, matrices[Matrices.VIEW.index]);
         pushMatrix(projectionMatrixStack, matrices[Matrices.PROJECTION.index]);
         pushMatrix(modelMatrixStack, matrices[Matrices.MODEL.index]);
@@ -156,6 +161,11 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         program.updateUniforms(gles, matrices);
         Material material = primitive.getMaterial();
         if (material != null) {
+            //Check for doublesided.
+            if (material.isDoubleSided() && renderState.cullFace != Cullface.NONE) {
+                cullFace = renderState.cullFace;
+                gles.glDisable(GLES20.GL_CULL_FACE);
+            }
             Texture texture = glTF.getTexture(material.getPbrMetallicRoughness());
             if (texture != null) {
                 TextureUtils.prepareTexture(gles, texture, glTF.getTexCoord(material.getPbrMetallicRoughness()));
@@ -170,7 +180,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             gles.glVertexAttribPointer(glTF, program, primitive);
             GLUtils.handleError(gles, "glVertexAttribPointer");
             if (buffer.getBufferName() > 0) {
-                gles.glBindBuffer(indicesView.getTarget().value, buffer.getBufferName());
+                gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, buffer.getBufferName());
                 GLUtils.handleError(gles, "glBindBuffer");
                 gles.glDrawElements(primitive.glMode, indices.getCount(), indices.getComponentType().value,
                         indices.getByteOffset() + indicesView.getByteOffset());
@@ -185,6 +195,12 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         } else {
             // Non indexed mode - use glDrawArrays
             throw new IllegalArgumentException("Not implemented yet");
+        }
+        
+        //Restore cullface if changed.
+        if (cullFace != null) {
+            gles.glEnable(GLES20.GL_CULL_FACE);
+            cullFace = null;
         }
     }
 
