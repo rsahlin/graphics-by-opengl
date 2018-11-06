@@ -93,6 +93,10 @@ class BaseRenderer implements NucleusRenderer {
      * lost and re-created.
      */
     protected boolean contextCreated = false;
+    /**
+     * Copy of applied renderstate
+     */
+    protected RenderState renderState = new RenderState();
 
     /**
      * Creates a new renderer using the specified GLES20Wrapper
@@ -183,6 +187,7 @@ class BaseRenderer implements NucleusRenderer {
      * @throws GLException
      */
     private void setRenderState(RenderState state) throws GLException {
+        renderState.set(state);
         int flags = state.getChangeFlag();
         if ((flags & RenderState.CHANGE_FLAG_CLEARCOLOR) != 0) {
             float[] clear = state.getClearColor();
@@ -643,6 +648,11 @@ class BaseRenderer implements NucleusRenderer {
     @Override
     public SurfaceConfiguration getSurfaceConfiguration() {
         return surfaceConfig;
+    }
+
+    @Override
+    public RenderState getRenderState() {
+        return renderState;
     }
 
 }

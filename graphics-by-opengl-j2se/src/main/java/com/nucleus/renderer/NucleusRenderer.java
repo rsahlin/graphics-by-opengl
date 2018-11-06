@@ -307,4 +307,12 @@ public interface NucleusRenderer {
      */
     public void setProjection(float[] matrix, int index);
 
+    /**
+     * Returns the current render state settings, changing this will not update the opengl settings.
+     * Can be used to check current renderstate.
+     * 
+     * @return
+     */
+    public RenderState getRenderState();
+    
 }
