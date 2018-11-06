@@ -17,6 +17,7 @@ import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Accessor.ComponentType;
 import com.nucleus.scene.gltf.Accessor.Type;
 import com.nucleus.scene.gltf.BufferView;
+import com.nucleus.scene.gltf.BufferView.Target;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Image;
 import com.nucleus.scene.gltf.Primitive;
@@ -398,7 +399,8 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                 ComponentType ct = accessors[i].getComponentType();
                 Type t = accessors[i].getType();
                 if (b.getBufferName() > 0) {
-                    glBindBuffer(view.getTarget().value, b.getBufferName());
+                    int target = view.getTarget() != null ? view.getTarget().value : GLES20.GL_ARRAY_BUFFER;
+                    glBindBuffer(target, b.getBufferName());
                     glVertexAttribPointer(v.getLocation(), t.size, ct.value, normalized, view.getByteStride(),
                             accessors[i].getByteOffset() + view.getByteOffset());
                 } else {
