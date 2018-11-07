@@ -23,9 +23,9 @@ void main() {
     vec4 pos = vec4(POSITION, 1.0) * uModelMatrix[0] * uModelMatrix[1];
     gl_Position = pos * uModelMatrix[2];
     vNormal = normalize(NORMAL * mat3(uModelMatrix[0]));
-    vLight = vec3(pos) -_LIGHT_0[0];
+    vLight = normalize(vec3(pos) -_LIGHT_0[0]);
     vTexCoord0 = TEXCOORD_0;
-    vEye = vec3(gl_Position);
+    vEye = normalize(vec3(-gl_Position));
 }
 
 

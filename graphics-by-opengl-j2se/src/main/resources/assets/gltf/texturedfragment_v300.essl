@@ -31,14 +31,20 @@ void main()
     vec3 F0 = vec3(lerp3(dieletricSpecular, _PBRDATA[0].rgb, _PBRDATA[1].x));
     vec3 diffuse = vec3(lerp3(_PBRDATA[0].rgb * (1.0 - 0.04), black, _PBRDATA[1].x) * oneByPI);
     vec3 oneMinusF0 = (1.0 - F0);
-    vec3 h = normalize(vLight + vEye);
-    //F(u) = F + (1 - F) (1 - (dot(Bisector,Outcoming light)
-    vec3 fresnel = F0 + oneMinusF0 * pow(1.0 - dot(vEye,h),5.0);
+//    vec3 h = normalize(vLight + vEye);
+    vec3 lightOut = reflect(vLight, vNormal);
+    vec3 u = lightOut + vLight;
+    //u = (Bisect vector of (outcoming direction of light, Incoming direction of light) 
+    //F(u) = F + (1 - F) (1 - u)
+    vec3 fresnel = F0 + oneMinusF0 * pow(1.0 - dot(vEye,u),5.0);
     float alpha = _PBRDATA[1].y * _PBRDATA[1].y;
     float a2 = alpha * alpha;
-    float distribution = (a2) / (3.14159 * pow( (pow( dot( vNormal, h),2) * (a2 - 1) + 1),2) );
-//    float k = _PBRDATA[1].y * sqrt(twoByPI);
-    vec3 specular = (fresnel + distribution) / (4 * dot(vNormal,vLight) * dot(vNormal, vEye));
+    float distribution = (a2) / (3.14159 * pow( (pow( dot( vNormal, u),2) * (a2 - 1) + 1),2) );
+    float k = _PBRDATA[1].y * sqrt(twoByPI);
+    float vDotH = dot(lightOut, u);
+    float attenuation = vDotH / (vDotH * (1 - k) + k);
+    //specular = (Fresnel * Geometric occlusion * Distribution) / ( 4 * (N dot L) * (N dot V)
+    vec3 specular = (fresnel) / (4 * dot(vNormal,vLight) * dot(vNormal, vEye));
     fragColor = texture(uTexture, vTexCoord0) * vec4((oneMinusF0 * diffuse) + specular, _PBRDATA[0].a);
 }
 
