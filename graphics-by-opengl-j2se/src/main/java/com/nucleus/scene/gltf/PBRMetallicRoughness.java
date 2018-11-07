@@ -42,6 +42,30 @@ public class PBRMetallicRoughness {
     @SerializedName(BASE_COLOR_TEXTURE)
     private Texture.TextureInfo baseColorTexture;
 
+    /**
+     * Store base color [4 values], metallic factor, roughness factor
+     * 
+     * @param pbrData
+     * @param index
+     */
+    public void getPBR(float[] pbrData, int index) {
+        pbrData[index++] = baseColorFactor[0];
+        pbrData[index++] = baseColorFactor[1];
+        pbrData[index++] = baseColorFactor[2];
+        pbrData[index++] = baseColorFactor[3];
+        pbrData[index++] = metallicFactor;
+        pbrData[index] = roughnessFactor;
+    }
+
+    public final static void setDefaultPBR(float[] pbrData, int index) {
+        pbrData[index++] = 1f;
+        pbrData[index++] = 1f;
+        pbrData[index++] = 1f;
+        pbrData[index++] = 1f;
+        pbrData[index++] = 1f;
+        pbrData[index++] = 1f;
+    }
+
     public float[] getBaseColorFactor() {
         return baseColorFactor;
     }

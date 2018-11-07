@@ -37,3 +37,5 @@ mat4 calculateTransformMatrix(vec3 rotate, vec3 scale, vec3 translate){
     
     return modelview * tMatrix;
 }
+
+
