@@ -45,7 +45,6 @@ public class GLTFShaderProgram extends GenericShaderProgram {
             pbrData = new float[pbrDataUniform.getSizeInFloats()];
             light0Uniform = getUniformByName(Attributes._LIGHT_0.name());
         }
-        PBRMetallicRoughness.setDefaultPBR(pbrData, 0);
     }
 
     @Override
@@ -66,6 +65,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
         Material material = primitive.getMaterial();
         if (material != null) {
             PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
+            pbr.calculatePBRData();
             pbr.getPBR(pbrData, 0);
         }
         setUniformData(pbrDataUniform, pbrData, 0);
