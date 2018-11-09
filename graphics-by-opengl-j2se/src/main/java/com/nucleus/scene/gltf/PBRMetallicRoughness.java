@@ -68,12 +68,12 @@ public class PBRMetallicRoughness {
 
     /**
      * Precomputes the pbr data - call this method once at start or when pbr parameters have changed.
-     * F0 as vec4 at 0
-     * 1 - F0 as vec4 
-     * cdiff av vec4
-     * metallic as float
-     * roughness as float
-     * roughness ^2 as float
+     * F0 as vec4 at0
+     * 1 - F0 : vec4
+     * diffuse : vec4 [diffuse = cDiff / pi]
+     * metallic : float
+     * roughness : float
+     * roughness ^2 : float
      * 
      * cdiff = lerp(baseColor.rgb * (1 - dielectricSpecular.r), black, metallic) 
      * F0 = lerp(dielectricSpecular, baseColor.rgb, metallic) 
@@ -90,9 +90,9 @@ public class PBRMetallicRoughness {
         pbrData[ONE_MINUS_F0_INDEX + 3] =  baseColorFactor[3];
 
         float[] diffuse = new float[3];
-        diffuse[0] = baseColorFactor[0] * (1 - DIALECTRIC_SPECULAR);
-        diffuse[1] = baseColorFactor[1] * (1 - DIALECTRIC_SPECULAR);
-        diffuse[2] = baseColorFactor[2] * (1 - DIALECTRIC_SPECULAR);
+        diffuse[0] = (float) (baseColorFactor[0] / Math.PI);
+        diffuse[1] = (float) (baseColorFactor[1] / Math.PI);
+        diffuse[2] = (float) (baseColorFactor[2] / Math.PI);
         
         Lerp.lerpVec3(diffuse, BLACK, metallicFactor, pbrData, DIFFUSE_INDEX);
         
