@@ -63,6 +63,7 @@ public class Primitive implements RuntimeResolver {
         _ALBEDO(),
         _EMISSIVE(),
         _BOUNDS(),
+        _PBRDATA(),
         _LIGHT_0();
     }
 

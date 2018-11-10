@@ -1,5 +1,6 @@
 package com.nucleus.shader;
 
+import java.io.File;
 import java.nio.FloatBuffer;
 
 import com.nucleus.light.GlobalLight;
@@ -15,9 +16,11 @@ import com.nucleus.texturing.Texture2D.Shading;
 
 public class GLTFShaderProgram extends GenericShaderProgram {
 
-    transient protected ShaderVariable color0Uniform;
-    transient protected ShaderVariable light0Uniform;
+    public static final String COMMON_VERTEX_SHADER = "pbrmetallicroughness";
 
+    transient protected ShaderVariable pbrDataUniform;
+    transient protected ShaderVariable light0Uniform;
+    transient protected float[] pbrData;
     /**
      * The dictionary created from linked program
      */
@@ -38,22 +41,43 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     }
 
     @Override
-    public void updateUniformData(FloatBuffer destinationUniform) {
-        if (color0Uniform == null) {
-            color0Uniform = getUniformByName(Attributes.COLOR_0.name());
-            light0Uniform = getUniformByName(Attributes._LIGHT_0.name());
-        }
-        setUniformData(light0Uniform, GlobalLight.getInstance().getLightPosition(), 0);
+    protected String[] getCommonShaderName(ShaderType type) {
+        return new String[] { PROGRAM_DIRECTORY + function.getCategory() + File.separatorChar + COMMON_VERTEX_SHADER };
     }
 
+    @Override
+    public void initUniformData(FloatBuffer destinationUniforms) {
+        // Init may be called several times
+        if (pbrDataUniform == null) {
+            pbrDataUniform = getUniformByName(Attributes._PBRDATA.name());
+            pbrData = new float[pbrDataUniform.getSizeInFloats()];
+            light0Uniform = getUniformByName(Attributes._LIGHT_0.name());
+        }
+    }
+
+    @Override
+    public void updateUniformData(FloatBuffer destinationUniform) {
+        if (light0Uniform != null) {
+            setUniformData(light0Uniform, GlobalLight.getInstance().getLightPosition(), 0);
+        }
+    }
+
+    /**
+     * Read uniforms from material for the primitive and upload.
+     * 
+     * @param gles
+     * @param primitive
+     * @throws GLException
+     */
     public void updatePrimitiveUniforms(GLES20Wrapper gles, Primitive primitive) throws GLException {
         Material material = primitive.getMaterial();
         if (material != null) {
-            setUniformData(color0Uniform, material.getPbrMetallicRoughness().getBaseColorFactor(), 0);
-        } else {
-            setUniformData(color0Uniform, PBRMetallicRoughness.DEFAULT_COLOR_FACTOR, 0);
+            PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
+            pbr.calculatePBRData();
+            pbr.getPBR(pbrData, 0);
         }
-        uploadUniform(gles, uniforms, color0Uniform);
+        setUniformData(pbrDataUniform, pbrData, 0);
+        uploadUniform(gles, uniforms, pbrDataUniform);
     }
 
     @Override

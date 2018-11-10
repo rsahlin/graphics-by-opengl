@@ -13,6 +13,7 @@ import java.util.List;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
+import com.nucleus.common.StringUtils;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
@@ -60,11 +61,10 @@ import com.nucleus.vecmath.Matrix;
 public abstract class ShaderProgram {
 
     public static final String PROGRAM_DIRECTORY = "assets/";
-    public static final String SHADER_SOURCE_SUFFIX = ".essl";
     /**
      * Shader suffix as added after checking for which version to use
      */
-    public static final String COMMON_VERTEX_SHADER = "commonvertex";
+    public static final String SHADER_SOURCE_SUFFIX = ".essl";
     public static final String FRAGMENT_TYPE = "fragment";
     public static final String VERTEX_TYPE = "vertex";
     public static final String GEOMETRY_TYPE = "geometry";
@@ -1607,14 +1607,28 @@ public abstract class ShaderProgram {
      * @throws GLException
      */
     private void createCommonVertexShaders(GLES20Wrapper gles, ShaderSource[] sources) throws GLException, IOException {
-        String[] common = new String[] { PROGRAM_DIRECTORY + COMMON_VERTEX_SHADER };
-        ShaderSource[] commonSources = new ShaderSource[common.length];
-        for (int i = 0; i < commonSources.length; i++) {
-            commonSources[i] = new ShaderSource(common[i], sources[0].getSourceNameVersion(), sources[0].type);
+        String[] common = getCommonShaderName(ShaderType.VERTEX);
+        if (common != null) {
+            ShaderSource[] commonSources = new ShaderSource[common.length];
+            for (int i = 0; i < commonSources.length; i++) {
+                commonSources[i] = new ShaderSource(common[i], sources[0].getSourceNameVersion(), sources[0].type);
+            }
+            loadShaderSources(gles, commonSources);
+            SimpleLogger.d(getClass(), "Adding common sources : " + StringUtils.getString(common));
+            createCommonVertexSources(gles, commonSources);
         }
-        loadShaderSources(gles, commonSources);
-        SimpleLogger.d(getClass(), "Adding common sources.");
-        createCommonVertexSources(gles, commonSources);
+    }
+
+    /**
+     * Returns the common (library) shader name for the specified type.
+     * Override to include needed files.
+     * 
+     * @param type
+     * @return
+     */
+    protected String[] getCommonShaderName(ShaderType type) {
+        // Default is to not use common library
+        return null;
     }
 
     /**
