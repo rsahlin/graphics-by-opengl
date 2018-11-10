@@ -1,5 +1,6 @@
 package com.nucleus.shader;
 
+import java.io.File;
 import java.nio.FloatBuffer;
 
 import com.nucleus.light.GlobalLight;
@@ -14,6 +15,8 @@ import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.texturing.Texture2D.Shading;
 
 public class GLTFShaderProgram extends GenericShaderProgram {
+
+    public static final String COMMON_VERTEX_SHADER = "pbrmetallicroughness";
 
     transient protected ShaderVariable pbrDataUniform;
     transient protected ShaderVariable light0Uniform;
@@ -35,6 +38,11 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      */
     public AccessorDictionary<String> getAccessorDictionary() {
         return accessorDictionary;
+    }
+
+    @Override
+    protected String[] getCommonShaderName(ShaderType type) {
+        return new String[] { PROGRAM_DIRECTORY + function.getCategory() + File.separatorChar + COMMON_VERTEX_SHADER };
     }
 
     @Override

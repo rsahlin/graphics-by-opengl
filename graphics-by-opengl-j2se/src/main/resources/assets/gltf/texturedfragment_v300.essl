@@ -4,7 +4,7 @@
  * Fragment shader for glTF asset
  * @author Richard Sahlin
  */
-precision mediump float;
+precision highp float;
 
 uniform lowp sampler2D uTexture; //The texture sampler
 //F0, 1 - F0, fDiffuse, metallic, roughness, roughness ^2
@@ -33,11 +33,11 @@ void main()
     vec3 fresnel = _PBRDATA[0].rgb + _PBRDATA[1].rgb * pow(1.0 - dot(vEye,vU),5.0);
     float alpha = _PBRDATA[3].z;
     float a2 = alpha * alpha;
-    float distribution = (a2) / (pi * pow( (pow( dot( vNormal, vU),2) * (a2 - 1) + 1),2) );
+    float distribution = (a2) / (pi * pow( (pow( dot( vNormal, H),2) * (a2 - 1) + 1),2) );
     float k = _PBRDATA[3].y * sqrt(twoByPI);
-    float vDotH = dot(vLightOut, vU);
+    float vDotH = dot(vLight, vEye);
     float attenuation = vDotH / (vDotH * (1 - k) + k);
     //specular = (Fresnel * Geometric occlusion * Distribution) / ( 4 * (N dot L) * (N dot V)
-    vec3 specular = max(vec3(0.0,0.0,0.0), (fresnel) / (4 * dot(vNormal,vLight) * dot(vNormal, vEye)));
+    vec3 specular = max(vec3(0.0,0.0,0.0), (fresnel));// / (4 * dot(vNormal,vLight) * dot(vNormal, vEye)));
     fragColor = texture(uTexture, vTexCoord0) * vec4(( _PBRDATA[2].rgb) + specular, _PBRDATA[0].a);
 }

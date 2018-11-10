@@ -20,17 +20,11 @@ out vec3 vLight;
 out vec3 vLightOut;
 out vec3 vU;
 
+void positionLight();
+
 void main() {
-    vec4 pos = vec4(POSITION, 1.0) * uModelMatrix[0] * uModelMatrix[1];
-    gl_Position = pos * uModelMatrix[2];
-    vNormal = normalize(NORMAL * mat3(uModelMatrix[0]));
-    vLight = normalize(_LIGHT_0[0] - vec3(pos));
+    positionLight();
     vTexCoord0 = TEXCOORD_0;
-    vEye = normalize(-vec3(pos));
-    vLightOut = reflect(vLight, vNormal);
-    vU = vLightOut + vLight;
-    
-    
 }
 
 
