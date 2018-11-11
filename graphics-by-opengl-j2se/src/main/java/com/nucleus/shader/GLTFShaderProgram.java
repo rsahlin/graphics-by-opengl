@@ -16,7 +16,8 @@ import com.nucleus.texturing.Texture2D.Shading;
 
 public class GLTFShaderProgram extends GenericShaderProgram {
 
-    public static final String COMMON_VERTEX_SHADER = "pbrmetallicroughness";
+    public static final String COMMON_VERTEX_SHADER = "pbrvertex";
+    public static final String COMMON_FRAGMENT_SHADER = "pbrfragment";
 
     transient protected ShaderVariable pbrDataUniform;
     transient protected ShaderVariable light0Uniform;
@@ -42,7 +43,16 @@ public class GLTFShaderProgram extends GenericShaderProgram {
 
     @Override
     protected String[] getCommonShaderName(ShaderType type) {
-        return new String[] { PROGRAM_DIRECTORY + function.getCategory() + File.separatorChar + COMMON_VERTEX_SHADER };
+        switch (type) {
+            case VERTEX:
+                return new String[] {
+                        PROGRAM_DIRECTORY + function.getCategory() + File.separatorChar + COMMON_VERTEX_SHADER };
+            case FRAGMENT:
+                return new String[] {
+                        PROGRAM_DIRECTORY + function.getCategory() + File.separatorChar + COMMON_FRAGMENT_SHADER };
+            default:
+                return null;
+        }
     }
 
     @Override
