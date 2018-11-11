@@ -7,7 +7,7 @@
 precision highp float;
 
 
-//F0, 1 - F0, Cdiff, metallic, roughness, roughness ^2
+//F0, 1 - F0, diffuse, metallic, roughness, roughness ^2
 uniform vec4 _PBRDATA[4];
 uniform vec3 _LIGHT_0[1];
 const float pi = 3.141592;
