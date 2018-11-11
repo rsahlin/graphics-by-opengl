@@ -1,8 +1,10 @@
 package com.nucleus.shader;
 
+import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import com.nucleus.common.Constants;
+import com.nucleus.shader.ShaderProgram.ShaderType;
 
 /**
  * Holds source and data related to the source for a shader
@@ -103,7 +105,7 @@ public class ShaderSource {
     /**
      * Shader type
      */
-    protected int type;
+    protected ShaderType type;
 
     /**
      * Creates shader source with name of source, including source name version
@@ -112,7 +114,7 @@ public class ShaderSource {
      * @param sourceNameVersion
      * @param type
      */
-    public ShaderSource(String sourceName, String sourceNameVersion, int type) {
+    public ShaderSource(String sourceName, String sourceNameVersion, ShaderType type) {
         this.sourceName = sourceName;
         this.sourceNameVersion = sourceNameVersion;
         this.type = type;
@@ -232,11 +234,17 @@ public class ShaderSource {
      */
     public static String hasVersion(String source) {
         StringTokenizer st = new StringTokenizer(source, System.lineSeparator());
-        String t = st.nextToken();
-        if (t.trim().toLowerCase().startsWith(VERSION)) {
-            return t;
+        try {
+            String t = st.nextToken();
+            if (t.trim().toLowerCase().startsWith(VERSION)) {
+                return t;
+            }
+            return null;
+        } catch (NoSuchElementException e) {
+            // Most likely means that file is empty.
+            throw new IllegalArgumentException(
+                    "Could not find #version in file, is it empty?\n\r" + "Source:" + source + "\n\r");
         }
-        return null;
     }
 
     /**
