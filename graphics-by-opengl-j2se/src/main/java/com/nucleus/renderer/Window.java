@@ -2,6 +2,7 @@ package com.nucleus.renderer;
 
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
+import com.nucleus.resource.ResourceBias.RESOLUTION;
 
 /**
  * The size of the renderable area, this is a singleton class since only one instance of GL is supported.
@@ -22,6 +23,10 @@ public class Window {
      * The display resolution, ie the full resolution of the display
      */
     int[] screenSize;
+    /**
+     * Best fit resolution for the display - use this to figure out image scale bias
+     */
+    RESOLUTION resolution;
 
     /**
      * Hide instantiation from clients.
@@ -63,6 +68,7 @@ public class Window {
     public void setScreenSize(int width, int height) {
         SimpleLogger.d(getClass(), "setScreenSize() " + width + ", " + height);
         this.screenSize = new int[] { width, height };
+        resolution = RESOLUTION.getResolution(height);
     }
 
     /**
@@ -112,4 +118,12 @@ public class Window {
         return screenSize;
     }
 
+    /**
+     * Returns the resolution of display, use this for image scale bias
+     * @return
+     */
+    public RESOLUTION getResolution() {
+        return resolution;
+    }
+    
 }
