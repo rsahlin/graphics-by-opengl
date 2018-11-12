@@ -14,7 +14,7 @@ import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
  * 
  * Type Description Required
  * sampler integer The index of the sampler used by this texture. When undefined, a sampler with repeat wrapping and
- * auto filtering should be used. No
+ *  auto filtering should be used. No
  * source integer The index of the image used by this texture. No
  * name string The user-defined name of this object. No
  * extensions object Dictionary object with extension-specific objects. No
@@ -56,13 +56,10 @@ public class Texture extends GLTFNamedValue implements RuntimeResolver {
     }
 
     private static final String SAMPLER = "sampler";
-    private static final String AUTO = "auto";
     private static final String SOURCE = "source";
 
     @SerializedName(SAMPLER)
     private int sampler = -1;
-    @SerializedName(AUTO)
-    private int auto = -1;
     @SerializedName(SOURCE)
     private int source = -1;
 
@@ -80,10 +77,6 @@ public class Texture extends GLTFNamedValue implements RuntimeResolver {
 
     public int getSamplerIndex() {
         return sampler;
-    }
-
-    public int getAuto() {
-        return auto;
     }
 
     public int getSourceIndex() {
