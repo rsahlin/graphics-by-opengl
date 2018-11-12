@@ -498,8 +498,6 @@ public class AssetManager {
                         BufferImage bufferImage = getTextureImage(glTF.getPath(image.getUri()));
                         image.setBufferImage(bufferImage);
                         internalCreateTexture(gles, image);
-                        // Texture2D texture = TextureFactory.getInstance().createTexture(glTF, t);
-                        // getTexture(gles, BaseImageFactory.getInstance(), texture);
                     } else {
                         throw new IllegalArgumentException("Only support for texture image referenced as URI");
                     }

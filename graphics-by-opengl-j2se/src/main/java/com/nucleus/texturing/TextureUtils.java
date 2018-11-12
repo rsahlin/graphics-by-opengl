@@ -43,38 +43,19 @@ public class TextureUtils {
     public static BufferImage[] loadTextureMIPMAP(ImageFactory imageFactory, Texture2D texture) {
         try {
             long start = System.currentTimeMillis();
-            ImageFormat imageFormat = getImageFormat(texture);
             BufferImage image = loadTextureImage(imageFactory, texture);
             long loaded = System.currentTimeMillis();
             FrameSampler.getInstance()
                     .logTag(FrameSampler.Samples.CREATE_IMAGE, " " + texture.getExternalReference().getSource(), start,
                             loaded);
-            int width = image.getWidth();
-            int height = image.getHeight();
             int levels = texture.getLevels();
             if (levels == 0 || !texture.getTexParams().isMipMapFilter()) {
                 levels = 1;
             }
-            // Do not use this, mipmaps created when textures are uploaded
-            // if (levels > 1) {
-            // levels = (int) Math.floor(Math.log((Math.max(width, height))) / Math.log(2)) + 1;
-            // }
+            // Do not use levels, mipmaps created when textures are uploaded
             levels = 1;
             BufferImage[] images = new BufferImage[levels];
             images[0] = image;
-            /*
-             * if (levels > 1) {
-             * // levels = 1 + (int) Math.floor(Math.log(Math.max(scaledWidth, scaledHeight)));
-             * for (int i = 1; i < levels; i++) {
-             * // max(1, floor(w_t/2^i)) x max(1, floor(h_t/2^i))
-             * int scaledWidth = (int) Math.max(1, Math.floor(width / Math.pow(2, i)));
-             * int scaledHeight = (int) Math.max(1, Math.floor(height / Math.pow(2, i)));
-             * images[i] = imageFactory.createScaledImage(images[0], scaledWidth,
-             * scaledHeight, imageFormat);
-             * }
-             * }
-             * FrameSampler.getInstance().logTag(FrameSampler.GENERATE_MIPMAPS, loaded, System.currentTimeMillis());
-             */
             return images;
         } catch (IOException e) {
             throw new RuntimeException(e);
