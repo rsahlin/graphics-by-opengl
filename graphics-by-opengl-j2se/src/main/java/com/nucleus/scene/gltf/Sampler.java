@@ -28,9 +28,9 @@ public class Sampler extends GLTFNamedValue {
     private static final String WRAP_T = "wrapT";
 
     @SerializedName(MAG_FILTER)
-    private int magFilter = GLES20.GL_NEAREST;
+    private int magFilter = GLES20.GL_LINEAR;
     @SerializedName(MIN_FILTER)
-    private int minFilter = GLES20.GL_NEAREST;
+    private int minFilter = GLES20.GL_LINEAR_MIPMAP_LINEAR;
     @SerializedName(WRAP_S)
     private int wrapS = GLES20.GL_REPEAT;
     @SerializedName(WRAP_T)
