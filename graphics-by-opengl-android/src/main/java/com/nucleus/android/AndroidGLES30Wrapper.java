@@ -116,6 +116,11 @@ public class AndroidGLES30Wrapper extends GLES30Wrapper {
     }
 
     @Override
+    public void glDisableVertexAttribArray(int index) {
+        android.opengl.GLES20.glDisableVertexAttribArray(index);
+    }
+
+    @Override
     public void glDrawArrays(int mode, int first, int count) {
         android.opengl.GLES30.glDrawArrays(mode, first, count);
     }

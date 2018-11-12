@@ -148,6 +148,11 @@ public class LWJGL3GLES32Wrapper extends GLES32Wrapper {
     }
 
     @Override
+    public void glDisableVertexAttribArray(int index) {
+        org.lwjgl.opengles.GLES20.glDisableVertexAttribArray(index);
+    }
+
+    @Override
     public void glDrawArrays(int mode, int first, int count) {
         org.lwjgl.opengles.GLES20.glDrawArrays(mode, first, count);
     }

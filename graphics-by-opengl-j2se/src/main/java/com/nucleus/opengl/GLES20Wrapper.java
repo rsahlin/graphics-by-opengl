@@ -17,7 +17,6 @@ import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Accessor.ComponentType;
 import com.nucleus.scene.gltf.Accessor.Type;
 import com.nucleus.scene.gltf.BufferView;
-import com.nucleus.scene.gltf.BufferView.Target;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Image;
 import com.nucleus.scene.gltf.Primitive;
@@ -421,6 +420,13 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param index
      */
     public abstract void glEnableVertexAttribArray(int index);
+
+    /**
+     * Abstraction for glDisableVertexAttribArray
+     * 
+     * @param index
+     */
+    public abstract void glDisableVertexAttribArray(int index);
 
     /**
      * Abstraction for glUniformMatrix4fv()

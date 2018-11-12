@@ -141,7 +141,11 @@ public class JOGLGLES31Wrapper extends GLES31Wrapper {
     @Override
     public void glEnableVertexAttribArray(int index) {
         gles.glEnableVertexAttribArray(index);
+    }
 
+    @Override
+    public void glDisableVertexAttribArray(int index) {
+        gles.glDisableVertexAttribArray(index);
     }
 
     @Override

@@ -153,6 +153,11 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
     }
 
     @Override
+    public void glDisableVertexAttribArray(int index) {
+        org.lwjgl.opengles.GLES20.glDisableVertexAttribArray(index);
+    }
+
+    @Override
     public void glUniformMatrix4fv(int location, int count, boolean transpose, FloatBuffer buffer) {
         org.lwjgl.opengles.GLES20.glUniformMatrix4fv(location, transpose, buffer);
     }
