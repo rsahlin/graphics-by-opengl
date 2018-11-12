@@ -48,6 +48,8 @@ import com.nucleus.texturing.TextureUtils;
  */
 public abstract class GLES20Wrapper extends GLESWrapper {
 
+    protected boolean[] enabledVertexArrays = new boolean[GLES20.GL_MAX_VERTEX_ATTRIBS];
+
     /**
      * Implementation constructor - DO NOT USE!!!
      * TODO - protect/hide this constructor
@@ -347,12 +349,15 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * If buffer has named object allocated then VBO is used, otherwise glVertexAttribPointer is called
      * with the java.nio.Buffer.
      * 
+     * Call {@link #disableAttribPointers()} after drawArrays/elements is called
+     * 
      * @param buffer
      * @param target
      * @param position Position in buffer where the data for this attribute is.
      * @param attrib Array of attributes to set
      */
     public void glVertexAttribPointer(AttributeBuffer buffer, int target, ShaderVariable[] attribs) {
+        int location = 0;
         if (buffer.getBufferName() > 0) {
             glBindBuffer(target, buffer.getBufferName());
             if (buffer.isDirty()) {
@@ -362,8 +367,12 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             }
             for (ShaderVariable a : attribs) {
                 if (a != null) {
-                    glEnableVertexAttribArray(a.getLocation());
-                    glVertexAttribPointer(a.getLocation(), a.getComponentCount(), buffer.getDataType(), false,
+                    location = a.getLocation();
+                    if (!enabledVertexArrays[location]) {
+                        glEnableVertexAttribArray(location);
+                        enabledVertexArrays[location] = true;
+                    }
+                    glVertexAttribPointer(location, a.getComponentCount(), buffer.getDataType(), false,
                             buffer.getByteStride(), a.getOffset() * 4);
                 }
             }
@@ -372,8 +381,12 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                 if (a != null) {
                     FloatBuffer fb = buffer.getBuffer();
                     fb.position(a.getOffset());
-                    glEnableVertexAttribArray(a.getLocation());
-                    glVertexAttribPointer(a.getLocation(), a.getComponentCount(), buffer.getDataType(), false,
+                    location = a.getLocation();
+                    if (!enabledVertexArrays[location]) {
+                        glEnableVertexAttribArray(location);
+                        enabledVertexArrays[location] = true;
+                    }
+                    glVertexAttribPointer(location, a.getComponentCount(), buffer.getDataType(), false,
                             buffer.getByteStride(), fb);
                 }
             }
@@ -381,7 +394,25 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     }
 
     /**
+     * Disables attrib pointers after
+     * TODO - keep track of needed and already enabled vertex arrays in
+     * {@link #glVertexAttribPointer(AttributeBuffer, int, ShaderVariable[])}
+     * and
+     * {@link #glVertexAttribPointer(GLTF, GLTFShaderProgram, Primitive)}
+     * 
+     */
+    public void disableAttribPointers() {
+        for (int i = 0; i < enabledVertexArrays.length; i++) {
+            if (enabledVertexArrays[i]) {
+                glDisableVertexAttribArray(i);
+                enabledVertexArrays[i] = false;
+            }
+        }
+    }
+
+    /**
      * Sets the vertexAttribPointers for the glTF primitive
+     * Call {@link #disableAttribPointers()} after drawArrays/elements is called
      * 
      * @param glTF
      * @param primitive
@@ -392,6 +423,11 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         for (int i = 0; i < attribs.length; i++) {
             ShaderVariable v = program.getAttributeByName(attribs[i].name());
             if (v != null) {
+                int location = v.getLocation();
+                if (!enabledVertexArrays[location]) {
+                    glEnableVertexAttribArray(location);
+                    enabledVertexArrays[location] = true;
+                }
                 boolean normalized = accessors[i].isNormalized();
                 BufferView view = accessors[i].getBufferView();
                 com.nucleus.scene.gltf.Buffer b = view.getBuffer();
@@ -400,12 +436,12 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                 if (b.getBufferName() > 0) {
                     int target = view.getTarget() != null ? view.getTarget().value : GLES20.GL_ARRAY_BUFFER;
                     glBindBuffer(target, b.getBufferName());
-                    glVertexAttribPointer(v.getLocation(), t.size, ct.value, normalized, view.getByteStride(),
+                    glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(),
                             accessors[i].getByteOffset() + view.getByteOffset());
                 } else {
                     ByteBuffer bb = view.getBuffer().getBuffer();
                     bb.position(accessors[i].getByteOffset() + view.getByteOffset());
-                    glVertexAttribPointer(v.getLocation(), t.size, ct.value, normalized, view.getByteStride(), bb);
+                    glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(), bb);
                 }
             } else {
                 // TODO - when fully implemented this should not happen.

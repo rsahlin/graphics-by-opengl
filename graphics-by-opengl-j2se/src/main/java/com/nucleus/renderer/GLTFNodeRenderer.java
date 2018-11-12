@@ -161,7 +161,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         program.updateUniforms(gles, matrices);
         Material material = primitive.getMaterial();
         if (material != null) {
-            //Check for doublesided.
+            // Check for doublesided.
             if (material.isDoubleSided() && renderState.cullFace != Cullface.NONE) {
                 cullFace = renderState.cullFace;
                 gles.glDisable(GLES20.GL_CULL_FACE);
@@ -196,12 +196,13 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             // Non indexed mode - use glDrawArrays
             throw new IllegalArgumentException("Not implemented yet");
         }
-        
-        //Restore cullface if changed.
+
+        // Restore cullface if changed.
         if (cullFace != null) {
             gles.glEnable(GLES20.GL_CULL_FACE);
             cullFace = null;
         }
+        gles.disableAttribPointers();
     }
 
     /**

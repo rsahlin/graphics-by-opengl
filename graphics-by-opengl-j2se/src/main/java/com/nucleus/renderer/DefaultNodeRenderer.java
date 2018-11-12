@@ -72,7 +72,7 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
             }
             timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
         }
-
+        gles.disableAttribPointers();
     }
 
     public boolean renderMeshes(NucleusRenderer renderer, RenderableNode<Mesh> node, Pass currentPass,
