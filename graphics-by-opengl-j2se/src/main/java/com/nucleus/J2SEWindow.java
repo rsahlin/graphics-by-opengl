@@ -1,5 +1,11 @@
 package com.nucleus;
 
+
+import java.awt.Dimension;
+import java.awt.Toolkit;
+
+import com.nucleus.common.Platform;
+import com.nucleus.common.Platform.OS;
 import com.nucleus.mmi.KeyEvent;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
@@ -10,6 +16,7 @@ import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.renderer.Window;
+import com.nucleus.resource.ResourceBias.RESOLUTION;
 
 /**
  * Window that connects to the underlying GL.
@@ -37,7 +44,13 @@ public abstract class J2SEWindow implements WindowListener {
         this.width = width;
         this.height = height;
         this.config = config;
-        Window.getInstance().setScreenSize(width, height);
+        OS os = Platform.getInstance().getOS();
+        if (os != OS.android) {
+            Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+            Window.getInstance().setScreenSize(d.width, d.height);
+        } else {
+            Window.getInstance().setScreenSize(width, height);
+        }
 
     }
 
