@@ -10,6 +10,7 @@ import java.io.InputStream;
 import javax.imageio.ImageIO;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.profiling.FrameSampler;
 import com.nucleus.texturing.BufferImage.ImageFormat;
 
 /**
@@ -33,6 +34,7 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream stream = null;
         try {
+            long start = System.currentTimeMillis();
             stream = classLoader.getResourceAsStream(name);
             if (stream == null) {
                 throw new FileNotFoundException(name);
@@ -43,6 +45,8 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
             }
             BufferImage image = new BufferImage(img.getWidth(), img.getHeight(), format);
             copyPixels(img, image);
+            FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_IMAGE, " " + name, start,
+                    System.currentTimeMillis());
             return image;
 
         } finally {
