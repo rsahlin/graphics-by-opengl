@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /**
  * 
@@ -53,20 +52,6 @@ public class GLTF {
     private static final String SCENE = "scene";
     private static final String SAMPLERS = "samplers";
     private static final String TEXTURES = "textures";
-
-    /**
-     * Conversion from GLTF primitive drawmode to GL values
-     * POINTS(0),
-     * LINES(1),
-     * LINE_LOOP(2),
-     * LINE_STRIP(3),
-     * TRIANGLES(4),
-     * TRIANGLE_STRIP(5),
-     * TRIANGLE_FAN(6);
-     * 
-     */
-    public final static int[] GL_DRAWMODE = new int[] { GLES20.GL_POINTS, GLES20.GL_LINES, GLES20.GL_LINE_LOOP,
-            GLES20.GL_LINE_STRIP, GLES20.GL_TRIANGLES, GLES20.GL_TRIANGLE_STRIP, GLES20.GL_TRIANGLE_FAN };
 
     public static class GLTFException extends Throwable {
         public GLTFException(String reason) {

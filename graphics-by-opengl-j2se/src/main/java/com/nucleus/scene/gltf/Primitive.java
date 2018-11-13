@@ -7,6 +7,7 @@ import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.common.BufferUtils;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.shader.GLTFShaderProgram;
@@ -68,22 +69,36 @@ public class Primitive implements RuntimeResolver {
         _PBRDATA(),
         _LIGHT_0();
     }
-    
+
     public enum Mode {
-        POINTS(0),
-        LINES(1),
-        LINE_LOOP(2),
-        LINE_STRIP(3),
-        TRIANGLES(4),
-        TRIANGLE_STRIP(5),
-        TRIANGLE_FAN(6);
-        
+        POINTS(0, GLES20.GL_POINTS),
+        LINES(1, GLES20.GL_LINES),
+        LINE_LOOP(2, GLES20.GL_LINE_LOOP),
+        LINE_STRIP(3, GLES20.GL_LINE_STRIP),
+        TRIANGLES(4, GLES20.GL_TRIANGLES),
+        TRIANGLE_STRIP(5, GLES20.GL_TRIANGLE_STRIP),
+        TRIANGLE_FAN(6, GLES20.GL_TRIANGLE_FAN);
+
+        public final int index;
+        /**
+         * The OpenGL value
+         */
         public final int value;
-        
-        private Mode(int value) {
+
+        private Mode(int index, int value) {
+            this.index = index;
             this.value = value;
         }
-        
+
+        public static final Mode getMode(int index) {
+            for (Mode m : values()) {
+                if (m.index == index) {
+                    return m;
+                }
+            }
+            return null;
+        }
+
     }
 
     @SerializedName(ATTRIBUTES)
@@ -103,7 +118,7 @@ public class Primitive implements RuntimeResolver {
      * 6 TRIANGLE_FAN
      */
     @SerializedName(MODE)
-    private int mode = DEFAULT_MODE;
+    private int modeIndex = DEFAULT_MODE;
 
     transient private Accessor[] accessorList;
     transient private Attributes[] attributeList;
@@ -114,12 +129,8 @@ public class Primitive implements RuntimeResolver {
      */
     @Deprecated
     transient private GLTFShaderProgram program;
-    /**
-     * What primitives to draw, lines/line_loop/trangles/triangle_fan etc
-     */
-    transient public int glMode;
     transient private Accessor indices;
-    
+    transient private Mode mode;
 
     /**
      * Returns the dictionary (HashMap) with Attributes
@@ -192,7 +203,7 @@ public class Primitive implements RuntimeResolver {
     public Accessor getIndices() {
         return indices;
     }
-    
+
     /**
      * Sets the index of the accessor that contains the indices
      * 
@@ -215,12 +226,13 @@ public class Primitive implements RuntimeResolver {
         return materialRef;
     }
 
-    public int getMode() {
+    public Mode getMode() {
         return mode;
     }
 
     @Override
     public void resolve(GLTF asset) throws GLTFException {
+        mode = Mode.getMode(modeIndex);
         if (attributes != null && attributes.size() > 0) {
             Set<Buffer> bufferSet = new HashSet<>();
             accessorList = new Accessor[attributes.size()];
@@ -239,7 +251,6 @@ public class Primitive implements RuntimeResolver {
                 bufferList[index++] = b;
             }
         }
-        glMode = GLTF.GL_DRAWMODE[mode];
         if (material >= 0) {
             this.materialRef = asset.getMaterials()[material];
         }
@@ -257,12 +268,11 @@ public class Primitive implements RuntimeResolver {
         int count = indices.getCount();
         int[] indexArray = new int[count];
         BufferView indexView = indices.getBufferView();
-        
+
         FloatBuffer tangentBuffer = BufferUtils.createFloatBuffer(normal.getCount());
         FloatBuffer bitangentBuffer = BufferUtils.createFloatBuffer(normal.getCount());
     }
 
-    
     /**
      * @deprecated Primitive should not have a reference to ShaderProgram, use index instead and fetch from
      * AssetManager.

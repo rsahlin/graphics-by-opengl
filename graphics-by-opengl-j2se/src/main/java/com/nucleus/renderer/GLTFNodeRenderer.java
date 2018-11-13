@@ -182,11 +182,11 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             if (buffer.getBufferName() > 0) {
                 gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, buffer.getBufferName());
                 GLUtils.handleError(gles, "glBindBuffer");
-                gles.glDrawElements(primitive.glMode, indices.getCount(), indices.getComponentType().value,
+                gles.glDrawElements(primitive.getMode().value, indices.getCount(), indices.getComponentType().value,
                         indices.getByteOffset() + indicesView.getByteOffset());
                 GLUtils.handleError(gles, "glDrawElements VBO " + buffer.getBufferName());
             } else {
-                gles.glDrawElements(primitive.glMode, indices.getCount(), indices.getComponentType().value,
+                gles.glDrawElements(primitive.getMode().value, indices.getCount(), indices.getComponentType().value,
                         indicesView.getBuffer().getBuffer()
                                 .position(indices.getByteOffset() + indicesView.getByteOffset()));
                 GLUtils.handleError(gles, "glDrawElements");
