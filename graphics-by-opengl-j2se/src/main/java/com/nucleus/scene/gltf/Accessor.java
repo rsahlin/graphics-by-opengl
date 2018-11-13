@@ -1,5 +1,7 @@
 package com.nucleus.scene.gltf;
 
+import java.nio.ShortBuffer;
+
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
@@ -155,18 +157,38 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
         return bufferViewRef;
     }
 
+    /**
+     * The offset relative to the start of the bufferView in bytes.
+     * 
+     * @return
+     */
     public int getByteOffset() {
         return byteOffset;
     }
 
+    /**
+     * The datatype of components in the attribute
+     * 
+     * @return
+     */
     public ComponentType getComponentType() {
         return componentType;
     }
 
+    /**
+     * Returns true if integer data should be normalized
+     * 
+     * @return
+     */
     public boolean isNormalized() {
         return normalized;
     }
 
+    /**
+     * Returns the number of attributes referenced by this accessor
+     * 
+     * @return
+     */
     public int getCount() {
         return count;
     }
@@ -179,6 +201,11 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
         return min;
     }
 
+    /**
+     * Specifies if the attribute is a scalar, vector, or matrix
+     *
+     * @return
+     */
     public Type getType() {
         return type;
     }
@@ -217,6 +244,23 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
         return str;
     }
 
+    public void copyData(int[] destination) {
+        switch (componentType) {
+            case SHORT:
+            case UNSIGNED_SHORT:
+            case UNSIGNED_INT:
+            break;    
+            default:
+                throw new IllegalArgumentException("Not implemented for " + componentType);
+            
+        }
+    }
+    
+    private void copyData(ShortBuffer source, int[] destination) {
+        source.position(byteOffset / 2);
+    }
+    
+    
     /**
      * 
      * 

@@ -1,10 +1,12 @@
 package com.nucleus.scene.gltf;
 
+import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.common.BufferUtils;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.shader.GLTFShaderProgram;
@@ -66,11 +68,28 @@ public class Primitive implements RuntimeResolver {
         _PBRDATA(),
         _LIGHT_0();
     }
+    
+    public enum Mode {
+        POINTS(0),
+        LINES(1),
+        LINE_LOOP(2),
+        LINE_STRIP(3),
+        TRIANGLES(4),
+        TRIANGLE_STRIP(5),
+        TRIANGLE_FAN(6);
+        
+        public final int value;
+        
+        private Mode(int value) {
+            this.value = value;
+        }
+        
+    }
 
     @SerializedName(ATTRIBUTES)
     private HashMap<Attributes, Integer> attributes;
     @SerializedName(INDICES)
-    private int indices = -1;
+    private int indicesIndex = -1;
     @SerializedName(MATERIAL)
     private int material = -1;
     /**
@@ -95,7 +114,12 @@ public class Primitive implements RuntimeResolver {
      */
     @Deprecated
     transient private GLTFShaderProgram program;
+    /**
+     * What primitives to draw, lines/line_loop/trangles/triangle_fan etc
+     */
     transient public int glMode;
+    transient private Accessor indices;
+    
 
     /**
      * Returns the dictionary (HashMap) with Attributes
@@ -157,16 +181,25 @@ public class Primitive implements RuntimeResolver {
      * @return Index of indices or -1 if no indices.
      */
     public int getIndicesIndex() {
-        return indices;
+        return indicesIndex;
     }
 
+    /**
+     * Returns the accessor containing the indices, if this primitive is not indexed null is returned.
+     * 
+     * @return The indices, or null if drawArrays should be used.
+     */
+    public Accessor getIndices() {
+        return indices;
+    }
+    
     /**
      * Sets the index of the accessor that contains the indices
      * 
      * @param indices
      */
     public void setIndicesIndex(int indices) {
-        this.indices = indices;
+        this.indicesIndex = indices;
     }
 
     /**
@@ -210,8 +243,26 @@ public class Primitive implements RuntimeResolver {
         if (material >= 0) {
             this.materialRef = asset.getMaterials()[material];
         }
+        indices = asset.getAccessor(indicesIndex);
+        calculateTBN();
     }
 
+    public void calculateTBN() {
+        Accessor position = getAccessor(Attributes.POSITION);
+        Accessor normal = getAccessor(Attributes.NORMAL);
+        Accessor uv = getAccessor(Attributes.TEXCOORD_0);
+        if (indices == null) {
+            throw new IllegalArgumentException("Arrayed mode not supported");
+        }
+        int count = indices.getCount();
+        int[] indexArray = new int[count];
+        BufferView indexView = indices.getBufferView();
+        
+        FloatBuffer tangentBuffer = BufferUtils.createFloatBuffer(normal.getCount());
+        FloatBuffer bitangentBuffer = BufferUtils.createFloatBuffer(normal.getCount());
+    }
+
+    
     /**
      * @deprecated Primitive should not have a reference to ShaderProgram, use index instead and fetch from
      * AssetManager.

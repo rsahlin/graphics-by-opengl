@@ -215,7 +215,7 @@ public class FrameSampler {
     /**
      * Adjust to log different sample timings, read/write this in your code
      */
-    public Level sampleDetail = Level.HIGH;
+    public Level sampleDetail = Level.NORMAL;
 
     /**
      * Returns the sampler instance

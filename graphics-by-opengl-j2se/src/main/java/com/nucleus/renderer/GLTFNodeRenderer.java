@@ -171,7 +171,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
                 TextureUtils.prepareTexture(gles, texture, glTF.getTexCoord(material.getPbrMetallicRoughness()));
             }
         }
-        Accessor indices = glTF.getAccessor(primitive.getIndicesIndex());
+        Accessor indices = primitive.getIndices();
         program.updatePrimitiveUniforms(gles, primitive);
         if (indices != null) {
             // Indexed mode - use glDrawElements

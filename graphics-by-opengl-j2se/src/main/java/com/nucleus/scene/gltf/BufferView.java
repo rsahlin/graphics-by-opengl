@@ -103,6 +103,11 @@ public class BufferView extends GLTFNamedValue implements RuntimeResolver {
         this.target = target;
     }
 
+    /**
+     * The index of the Buffer - use {@link #getBuffer()} to fetch the Buffer
+     * 
+     * @return
+     */
     public int getBufferIndex() {
         return bufferIndex;
     }
@@ -119,10 +124,22 @@ public class BufferView extends GLTFNamedValue implements RuntimeResolver {
         return byteStride;
     }
 
+    /**
+     * The target that the GPU buffer should be bound to - this is normally known based on what Accessor
+     * this BufferView is attached to.
+     *   ARRAY_BUFFER(34962),
+     *   ELEMENT_ARRAY_BUFFER(34963);
+     *   
+     * @return
+     */
     public Target getTarget() {
         return target;
     }
 
+    /**
+     * The buffer holding the data
+     * @return
+     */
     public Buffer getBuffer() {
         return buffer;
     }
@@ -174,5 +191,5 @@ public class BufferView extends GLTFNamedValue implements RuntimeResolver {
         return "Bufferindex: " + bufferIndex + ", byteoffset: " + byteOffset + ", byteLength: " + byteLength
                 + ", byteStride: " + byteStride + ", name: " + getName();
     }
-
+    
 }
