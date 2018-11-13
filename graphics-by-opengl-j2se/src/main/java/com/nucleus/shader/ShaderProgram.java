@@ -12,6 +12,7 @@ import java.util.List;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
+import com.nucleus.common.BufferUtils;
 import com.nucleus.common.Constants;
 import com.nucleus.common.StringUtils;
 import com.nucleus.geometry.AttributeBuffer;
@@ -672,7 +673,7 @@ public abstract class ShaderProgram {
             throw new IllegalArgumentException(NO_ACTIVE_UNIFORMS);
         }
         int uniformSize = getVariableSize(activeUniforms, VariableType.UNIFORM);
-        return ByteBuffer.allocateDirect(uniformSize * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        return BufferUtils.createFloatBuffer(uniformSize);
     }
 
     /**
@@ -1084,7 +1085,7 @@ public abstract class ShaderProgram {
      * @throws GLException
      */
     public void checkCompileStatus(GLES20Wrapper gles, ShaderSource source, int shader) throws GLException {
-        IntBuffer compileStatus = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer compileStatus = BufferUtils.createIntBuffer(1);
         gles.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compileStatus);
         if (compileStatus.get(0) != GLES20.GL_TRUE) {
             throw new GLException(

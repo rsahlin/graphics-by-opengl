@@ -8,6 +8,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import com.nucleus.common.BufferUtils;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.opengl.GLException.Error;
@@ -799,7 +800,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @return
      */
     public String glGetShaderSource(int shader) {
-        IntBuffer sourceLength = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer sourceLength = BufferUtils.createIntBuffer(1);
         glGetShaderiv(shader, GLES20.GL_SHADER_SOURCE_LENGTH, sourceLength);
         StringBuffer result = new StringBuffer();
         if (sourceLength.get(0) == 0) {

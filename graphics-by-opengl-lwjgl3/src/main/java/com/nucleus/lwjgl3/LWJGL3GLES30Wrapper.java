@@ -6,6 +6,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import com.nucleus.common.BufferUtils;
 import com.nucleus.opengl.GLES30Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
 
@@ -193,6 +194,12 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
     }
 
     @Override
+    public void glUniform1iv(int location, int count, int[] v0, int offset) {
+        org.lwjgl.opengles.GLES20.glUniform1iv(location, LWJGLUtils.toIntBuffer(v0, count, offset));
+    }
+    
+    
+    @Override
     public void glDrawArrays(int mode, int first, int count) {
         org.lwjgl.opengles.GLES20.glDrawArrays(mode, first, count);
     }
@@ -250,11 +257,6 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glGetIntegerv(int pname, int[] params) {
         gles20.glGetIntegerv(pname, params);
-    }
-
-    @Override
-    public void glUniform1iv(int location, int count, int[] v0, int offset) {
-        org.lwjgl.opengles.GLES20.glUniform1iv(location, LWJGLUtils.toIntBuffer(v0, count, offset));
     }
 
     @Override
@@ -431,12 +433,10 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int indicesOffset,
             int pname, int[] params, int paramsOffset) {
-        IntBuffer indicesBuffer = ByteBuffer.allocateDirect(uniformCount * 4).order(ByteOrder.nativeOrder())
-                .asIntBuffer();
+        IntBuffer indicesBuffer = BufferUtils.createIntBuffer(uniformCount);
         indicesBuffer.put(uniformIndices, indicesOffset, uniformCount);
         indicesBuffer.position(0);
-        IntBuffer paramsBuffer = ByteBuffer.allocateDirect(uniformCount * 4).order(ByteOrder.nativeOrder())
-                .asIntBuffer();
+        IntBuffer paramsBuffer = BufferUtils.createIntBuffer(uniformCount);
         org.lwjgl.opengles.GLES30.glGetActiveUniformsiv(program, indicesBuffer, pname, paramsBuffer);
         paramsBuffer.position(0);
         paramsBuffer.get(params, paramsOffset, uniformCount);

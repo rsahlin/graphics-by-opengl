@@ -104,7 +104,7 @@ public class Buffer extends GLTFNamedValue {
             throw new IllegalArgumentException("Buffer already created");
         }
         SimpleLogger.d(getClass(), "Creating buffer with byte size: " + byteLength);
-        buffer = ByteBuffer.allocateDirect(byteLength).order(ByteOrder.nativeOrder());
+        buffer = BufferUtils.createByteBuffer(byteLength);
     }
 
     /**

@@ -5,6 +5,7 @@ import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 
 import com.nucleus.shader.ShaderSource.ESSLVersion;
+import com.nucleus.common.BufferUtils;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -46,15 +47,14 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
             return null;
         }
         InterfaceBlock[] uniformBlock = new InterfaceBlock[info.getActiveVariables(VariableType.UNIFORM_BLOCK)];
-        IntBuffer blockInfo = ByteBuffer.allocateDirect(4 * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer blockInfo = BufferUtils.createIntBuffer(4);
         for (int i = 0; i < uniformBlock.length; i++) {
             // GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS
             int program = info.getProgram();
             blockInfo.position(InterfaceBlock.ACTIVE_COUNT_INDEX);
             glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, blockInfo);
             if (blockInfo.get(0) > 0) {
-                IntBuffer indices = ByteBuffer.allocateDirect(blockInfo.get(0) * 4).order(ByteOrder.nativeOrder())
-                        .asIntBuffer();
+                IntBuffer indices = BufferUtils.createIntBuffer(blockInfo.get(0));
                 glGetActiveUniformBlockiv(program, i, GLES30.GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES,
                         indices);
                 blockInfo.position(InterfaceBlock.BLOCK_DATA_SIZE_INDEX);

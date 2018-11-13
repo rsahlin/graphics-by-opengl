@@ -6,6 +6,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import com.nucleus.common.BufferUtils;
 import com.nucleus.opengl.GLES20Wrapper;
 
 public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
@@ -56,7 +57,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glGenBuffers(int[] buffers) {
-        IntBuffer ib = ByteBuffer.allocateDirect(buffers.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer ib = BufferUtils.createIntBuffer(buffers.length);
         org.lwjgl.opengles.GLES20.glGenBuffers(ib);
         LWJGLUtils.toArray((IntBuffer) ib.rewind(), buffers, 0);
     }
@@ -96,7 +97,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glGetProgramiv(int program, int pname, int[] params, int offset) {
-        IntBuffer v = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer v = BufferUtils.createIntBuffer(1);
         org.lwjgl.opengles.GLES20.glGetProgramiv(program, pname, v);
         v.position(0);
         params[offset] = v.get();
@@ -105,10 +106,10 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glGetActiveAttrib(int program, int index, int[] length, int lengthOffset, int[] size,
             int sizeOffset, int[] type, int typeOffset, byte[] name) {
-        IntBuffer lengthBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
-        IntBuffer sizeBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
-        IntBuffer typeBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
-        ByteBuffer nameBuffer = ByteBuffer.allocateDirect(name.length).order(ByteOrder.nativeOrder());
+        IntBuffer lengthBuffer = BufferUtils.createIntBuffer(1);
+        IntBuffer sizeBuffer = BufferUtils.createIntBuffer(1);
+        IntBuffer typeBuffer = BufferUtils.createIntBuffer(1);
+        ByteBuffer nameBuffer = BufferUtils.createByteBuffer(name.length);
         org.lwjgl.opengles.GLES20.glGetActiveAttrib(program, index, lengthBuffer, sizeBuffer, typeBuffer, nameBuffer);
         lengthBuffer.position(0);
         sizeBuffer.position(0);
@@ -122,10 +123,10 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glGetActiveUniform(int program, int index, int[] length, int lengthOffset, int[] size,
             int sizeOffset, int[] type, int typeOffset, byte[] name) {
-        IntBuffer lengthBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
-        IntBuffer sizeBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
-        IntBuffer typeBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
-        ByteBuffer nameBuffer = ByteBuffer.allocateDirect(name.length).order(ByteOrder.nativeOrder());
+        IntBuffer lengthBuffer =BufferUtils.createIntBuffer(1);
+        IntBuffer sizeBuffer = BufferUtils.createIntBuffer(1);
+        IntBuffer typeBuffer = BufferUtils.createIntBuffer(1);
+        ByteBuffer nameBuffer = BufferUtils.createByteBuffer(name.length);
         org.lwjgl.opengles.GLES20.glGetActiveUniform(program, index, lengthBuffer, sizeBuffer, typeBuffer, nameBuffer);
         lengthBuffer.position(0);
         sizeBuffer.position(0);
@@ -248,7 +249,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glGenTextures(int[] textures) {
-        IntBuffer ib = ByteBuffer.allocateDirect(textures.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer ib = BufferUtils.createIntBuffer(textures.length);
         org.lwjgl.opengles.GLES20.glGenTextures(ib);
         LWJGLUtils.toArray((IntBuffer) ib.rewind(), textures, 0);
     }
@@ -270,7 +271,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glGetIntegerv(int pname, int[] params) {
-        IntBuffer intBuffer = ByteBuffer.allocateDirect(params.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer intBuffer = BufferUtils.createIntBuffer(params.length);
         org.lwjgl.opengles.GLES20.glGetIntegerv(pname, intBuffer);
         intBuffer.position(0);
         intBuffer.get(params);
@@ -406,7 +407,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glGetShaderSource(int shader, int bufsize, int[] length, byte[] source) {
-        ByteBuffer bufferSource = ByteBuffer.allocateDirect(bufsize).order(ByteOrder.nativeOrder());
+        ByteBuffer bufferSource = BufferUtils.createByteBuffer(bufsize);
         org.lwjgl.opengles.GLES20.glGetShaderSource(shader, length, bufferSource);
         bufferSource.position(0);
         bufferSource.get(source, 0, length[0]);

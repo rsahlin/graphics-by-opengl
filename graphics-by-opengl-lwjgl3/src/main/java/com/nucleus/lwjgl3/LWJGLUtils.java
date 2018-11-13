@@ -4,6 +4,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 
+import com.nucleus.common.BufferUtils;
+
 public class LWJGLUtils {
 
     /**
@@ -33,7 +35,7 @@ public class LWJGLUtils {
     }
 
     protected static IntBuffer toIntBuffer(int[] data, int length, int offset) {
-        IntBuffer ib = ByteBuffer.allocateDirect(length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer ib = BufferUtils.createIntBuffer(length);
         ib.put(data, offset, length);
         ib.position(0);
         return ib;

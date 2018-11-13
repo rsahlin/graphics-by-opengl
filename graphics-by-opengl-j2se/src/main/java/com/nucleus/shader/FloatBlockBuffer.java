@@ -5,6 +5,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.BufferUtils;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 
 /**
@@ -22,7 +23,7 @@ public class FloatBlockBuffer extends BlockBuffer {
      * @param size
      */
     public FloatBlockBuffer(String blockName, int size) {
-        super(ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer(), blockName, size * 4);
+        super(BufferUtils.createFloatBuffer(size), blockName, size * 4);
         buffer = (FloatBuffer) plainBuffer;
     }
 
@@ -35,7 +36,7 @@ public class FloatBlockBuffer extends BlockBuffer {
      */
 
     public FloatBlockBuffer(InterfaceBlock interfaceBlock, int size) {
-        super(ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer(), interfaceBlock.name,
+        super(BufferUtils.createByteBuffer(size), interfaceBlock.name,
                 interfaceBlock);
         buffer = (FloatBuffer) plainBuffer;
         SimpleLogger.d(getClass(),
