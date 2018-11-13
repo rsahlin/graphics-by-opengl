@@ -11,6 +11,6 @@ void positionLight() {
     vLight = normalize(_LIGHT_0[0] - vec3(pos));
     vEye = normalize(-vec3(pos));
     vLightOut = reflect(vLight, vNormal);
-    vU = (vLightOut + vLight) * 0.5;
+    vU = normalize((vLightOut + vLight) * 0.5);
 }
 
