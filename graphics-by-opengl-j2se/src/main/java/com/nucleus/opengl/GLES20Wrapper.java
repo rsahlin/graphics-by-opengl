@@ -499,16 +499,6 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public abstract void glUniformMatrix2fv(int location, int count, boolean transpose, FloatBuffer buffer);
 
     /**
-     * Abstraction for glUniform1iv();
-     * 
-     * @param location
-     * @param count
-     * @param v0
-     * @param offset
-     */
-    public abstract void glUniform1iv(int location, int count, int[] v0, int offset);
-
-    /**
      * Abstraction for glDrawArrays()
      * 
      * @param mode
@@ -627,6 +617,8 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public abstract void glUniform2fv(int location, int count, FloatBuffer buffer);
 
     public abstract void glUniform1fv(int location, int count, FloatBuffer buffer);
+    
+    public abstract void glUniform1iv(int location, int count, IntBuffer buffer);
 
     /**
      * Abstraction for glTexParemeterf()

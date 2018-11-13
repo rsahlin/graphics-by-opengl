@@ -201,6 +201,11 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     public void glUniform1fv(int location, int count, FloatBuffer buffer) {
         gles.glUniform1fv(location, count, buffer);
     }
+    
+    @Override
+    public void glUniform1iv(int location, int count, IntBuffer buffer) {
+        gles.glUniform1iv(location, count, buffer);
+    }
 
     @Override
     public void glDrawArrays(int mode, int first, int count) {
@@ -279,11 +284,6 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     public void glGetIntegerv(int pname, int[] params) {
         gles.glGetIntegerv(pname, params, 0);
 
-    }
-
-    @Override
-    public void glUniform1iv(int location, int count, int[] v0, int offset) {
-        gles.glUniform1iv(location, count, v0, offset);
     }
 
     @Override

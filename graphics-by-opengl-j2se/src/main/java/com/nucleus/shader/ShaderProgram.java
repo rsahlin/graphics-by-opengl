@@ -304,7 +304,7 @@ public abstract class ShaderProgram {
     /**
      * Samplers (texture units)
      */
-    transient protected int[] samplers;
+    transient protected IntBuffer samplers;
 
     /**
      * Uniforms, used when rendering - uniforms array shall belong to program since uniforms are a property of the
@@ -656,7 +656,7 @@ public abstract class ShaderProgram {
         int samplerSize = 0;
         samplerSize = getSamplerSize(activeUniforms);
         if (samplerSize > 0) {
-            setSamplers(new int[samplerSize]);
+            createSamplers(samplerSize);
         } else {
             SimpleLogger.d(getClass(), "No samplers used");
         }
@@ -788,7 +788,7 @@ public abstract class ShaderProgram {
         /**
          * TODO - make texture names into enums
          */
-        int unit = samplers[getUniformByName("uTexture").getOffset()];
+        int unit = samplers.get(getUniformByName("uTexture").getOffset());
         TextureUtils.prepareTexture(gles, texture, unit);
     }
 
@@ -1335,10 +1335,12 @@ public abstract class ShaderProgram {
                 gles.glUniformMatrix4fv(variable.getLocation(), variable.getSize(), false, uniforms);
                 break;
             case GLES20.GL_SAMPLER_2D:
-                gles.glUniform1iv(variable.getLocation(), variable.getSize(), samplers, offset);
+                samplers.position(offset);
+                gles.glUniform1iv(variable.getLocation(), variable.getSize(), samplers);
                 break;
             case GLES30.GL_SAMPLER_2D_SHADOW:
-                gles.glUniform1iv(variable.getLocation(), variable.getSize(), samplers, offset);
+                samplers.position(offset);
+                gles.glUniform1iv(variable.getLocation(), variable.getSize(), samplers);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for dataType: " + variable.getDataType());
@@ -1547,13 +1549,13 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Sets a reference to an array with float values for uniform samplers
+     * Creates the buffer holding samplers to use
      * 
-     * @param samplers Sampler (texture unit) values
+     * @param size number of samplers used
      * 
      */
-    private void setSamplers(int[] samplers) {
-        this.samplers = samplers;
+    private void createSamplers(int size) {
+        this.samplers = BufferUtils.createIntBuffer(size);
     }
 
     /**
@@ -1574,8 +1576,11 @@ public abstract class ShaderProgram {
      */
     protected void setSamplers() {
         ArrayList<ShaderVariable> samplersList = getSamplers(activeUniforms);
-        for (int i = 0; i < samplersList.size(); i++) {
-            samplers[i] = samplersList.get(i).getOffset();
+        if (samplersList.size() > 0) {
+            samplers.rewind();
+            for (int i = 0; i < samplersList.size(); i++) {
+                samplers.put(samplersList.get(i).getOffset());
+            }
         }
     }
 

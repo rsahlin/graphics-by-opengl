@@ -213,6 +213,11 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
+    public void glUniform1iv(int location, int count, IntBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniform1iv(location, buffer);
+    }
+    
+    @Override
     public void glDrawArrays(int mode, int first, int count) {
         org.lwjgl.opengles.GLES20.glDrawArrays(mode, first, count);
     }
@@ -275,11 +280,6 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
         org.lwjgl.opengles.GLES20.glGetIntegerv(pname, intBuffer);
         intBuffer.position(0);
         intBuffer.get(params);
-    }
-
-    @Override
-    public void glUniform1iv(int location, int count, int[] v0, int offset) {
-        org.lwjgl.opengles.GLES20.glUniform1iv(location, LWJGLUtils.toIntBuffer(v0, count, offset));
     }
 
     @Override
