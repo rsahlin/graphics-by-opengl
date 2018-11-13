@@ -35,6 +35,8 @@ import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.scene.gltf.Image;
+import com.nucleus.scene.gltf.Mesh;
+import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Texture;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.BaseImageFactory;
@@ -379,6 +381,19 @@ public class AssetManager {
         if (gles != null && com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
             BufferObjectsFactory.getInstance().createVBOs(gles, glTF.getBuffers());
             SimpleLogger.d(getClass(), "Created VBOs for gltf assets");
+        }
+        // Build TBN
+        for (Mesh m : glTF.getMeshes()) {
+            buildTBN(m.getPrimitives());
+        }
+
+    }
+
+    public void buildTBN(Primitive[] primitives) {
+        if (primitives != null) {
+            for (Primitive p : primitives) {
+                p.calculateTBN();
+            }
         }
     }
 

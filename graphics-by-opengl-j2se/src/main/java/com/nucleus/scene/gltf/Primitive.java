@@ -1,6 +1,7 @@
 package com.nucleus.scene.gltf;
 
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -255,9 +256,12 @@ public class Primitive implements RuntimeResolver {
             this.materialRef = asset.getMaterials()[material];
         }
         indices = asset.getAccessor(indicesIndex);
-        calculateTBN();
     }
 
+    /**
+     * Builds the Tangent/Binormal buffers
+     * Must be called after buffers are loaded
+     */
     public void calculateTBN() {
         Accessor position = getAccessor(Attributes.POSITION);
         Accessor normal = getAccessor(Attributes.NORMAL);
@@ -266,11 +270,35 @@ public class Primitive implements RuntimeResolver {
             throw new IllegalArgumentException("Arrayed mode not supported");
         }
         int count = indices.getCount();
-        int[] indexArray = new int[count];
-        BufferView indexView = indices.getBufferView();
 
         FloatBuffer tangentBuffer = BufferUtils.createFloatBuffer(normal.getCount());
         FloatBuffer bitangentBuffer = BufferUtils.createFloatBuffer(normal.getCount());
+        buildTBNBuffers(mode, indices, position, uv, normal, tangentBuffer, bitangentBuffer);
+    }
+
+    private void buildTBNBuffers(Mode mode, Accessor indices, Accessor position, Accessor uv, Accessor normal,
+            FloatBuffer tangentBuffer, FloatBuffer bitangentBuffer) {
+
+        switch (mode) {
+            case TRIANGLES:
+                buildTBNTriangles(indices, position, uv, normal, tangentBuffer, bitangentBuffer);
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + mode);
+        }
+
+    }
+
+    private void buildTBNTriangles(Accessor indices, Accessor position, Accessor uv, Accessor normal,
+            FloatBuffer tangentBuffer, FloatBuffer bitangentBuffer) {
+
+        BufferView indexView = indices.getBufferView();
+        ShortBuffer sb = indexView.getBuffer().getBuffer().asShortBuffer();
+        sb.position((indexView.getByteOffset() + indices.getByteOffset()) / 2);
+
+        int triangles = indices.getCount();
+        int triangle = 0;
+
     }
 
     /**
