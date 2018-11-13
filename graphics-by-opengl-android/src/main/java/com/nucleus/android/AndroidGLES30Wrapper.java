@@ -365,8 +365,8 @@ public class AndroidGLES30Wrapper extends GLES30Wrapper {
     }
 
     @Override
-    public void glUniform1iv(int location, int count, int[] v0, int offset) {
-        android.opengl.GLES30.glUniform1iv(location, count, v0, offset);
+    public void glUniform1iv(int location, int count, IntBuffer buffer) {
+        android.opengl.GLES20.glUniform1iv(location, count, buffer);
     }
 
     @Override
