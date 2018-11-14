@@ -66,17 +66,20 @@ public class Primitive implements RuntimeResolver {
 
         public float[][] calculateTangentBiTangent(Accessor indices, Accessor position, Accessor uv, Accessor normal) {
             float[][] result = new float[2][verticeArray.length];
-
-            int uvSize = uv.getType().size;
             int verticeSize = position.getType().size;
             float[] deltaPos1 = new float[3];
             float[] deltaPos2 = new float[3];
-            float[] deltaUv1 = new float[2];
-            float[] deltaUv2 = new float[2];
+            float[] deltaUv1 = new float[] { 1, 1 };
+            float[] deltaUv2 = new float[] { 1, 1 };
             float[] temp1 = new float[3];
             float[] temp2 = new float[3];
             float[] tangent = new float[3];
             float[] biTangent = new float[3];
+            int uvSize = 0;
+
+            if (uv != null) {
+                uvSize = uv.getType().size;
+            }
 
             for (int i = 0; i < indexArray.length; i += 3) {
                 int index0 = indexArray[i];
@@ -94,9 +97,12 @@ public class Primitive implements RuntimeResolver {
                 Vec3.toVector(verticeArray, v0Index, verticeArray, v1Index, deltaPos1, 0);
                 Vec3.toVector(verticeArray, v0Index, verticeArray, v2Index, deltaPos2, 0);
 
-                Vec2.toVector(uvArray, uv0Index, uvArray, uv1Index, deltaUv1, 0);
-                Vec2.toVector(uvArray, uv0Index, uvArray, uv2Index, deltaUv2, 0);
-                float reciprocal = 1.0f / (deltaUv1[0] * deltaUv2[1] - deltaUv1[1] * deltaUv2[0]);
+                float reciprocal = 1f;
+                if (uvArray != null) {
+                    Vec2.toVector(uvArray, uv0Index, uvArray, uv1Index, deltaUv1, 0);
+                    Vec2.toVector(uvArray, uv0Index, uvArray, uv2Index, deltaUv2, 0);
+                    reciprocal = 1.0f / (deltaUv1[0] * deltaUv2[1] - deltaUv1[1] * deltaUv2[0]);
+                }
 
                 Vec3.mul(deltaPos1, 0, deltaUv2[1] * reciprocal, temp1, 0);
                 Vec3.mul(deltaPos2, 0, deltaUv1[1] * reciprocal, temp2, 0);
@@ -130,11 +136,11 @@ public class Primitive implements RuntimeResolver {
                 buffer.get(result);
             } else {
                 int size = data.getType().size;
-                int sizePerAttrib = size + bv.getByteStride() / data.getComponentType().size;
+                int stride = bv.getByteStride() / data.getComponentType().size;
                 int pos = buffer.position();
                 for (int i = 0; i < count; i++) {
                     buffer.get(result, i * size, size);
-                    pos += sizePerAttrib;
+                    pos += stride;
                     buffer.position(pos);
                 }
             }
@@ -143,6 +149,9 @@ public class Primitive implements RuntimeResolver {
         }
 
         private float[] copyFloatBuffer(Accessor data) {
+            if (data == null) {
+                return null;
+            }
             BufferView bv = data.getBufferView();
             FloatBuffer buffer = bv.getBuffer().buffer.asFloatBuffer();
             int count = data.getCount();
@@ -155,11 +164,11 @@ public class Primitive implements RuntimeResolver {
                 buffer.get(result);
             } else {
                 int size = data.getType().size;
-                int sizePerAttrib = size + bv.getByteStride() / data.getComponentType().size;
+                int stride = bv.getByteStride() / data.getComponentType().size;
                 int pos = buffer.position();
                 for (int i = 0; i < count; i++) {
                     buffer.get(result, i * size, size);
-                    pos += sizePerAttrib;
+                    pos += stride;
                     buffer.position(pos);
                 }
             }
