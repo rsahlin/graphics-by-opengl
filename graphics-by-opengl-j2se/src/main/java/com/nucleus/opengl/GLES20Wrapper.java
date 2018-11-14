@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 
 import com.nucleus.common.BufferUtils;
 import com.nucleus.geometry.AttributeBuffer;
@@ -419,35 +419,36 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param primitive
      */
     public void glVertexAttribPointer(GLTF glTF, GLTFShaderProgram program, Primitive primitive) throws GLException {
-        Attributes[] attribs = primitive.getAttributesArray();
-        Accessor[] accessors = primitive.getAccessorArray();
-        for (int i = 0; i < attribs.length; i++) {
-            ShaderVariable v = program.getAttributeByName(attribs[i].name());
+        ArrayList<Attributes> attribs = primitive.getAttributesArray();
+        ArrayList<Accessor> accessors = primitive.getAccessorArray();
+        for (int i = 0; i < attribs.size(); i++) {
+            Accessor accessor = accessors.get(i);
+            ShaderVariable v = program.getAttributeByName(attribs.get(i).name());
             if (v != null) {
                 int location = v.getLocation();
                 if (!enabledVertexArrays[location]) {
                     glEnableVertexAttribArray(location);
                     enabledVertexArrays[location] = true;
                 }
-                boolean normalized = accessors[i].isNormalized();
-                BufferView view = accessors[i].getBufferView();
+                boolean normalized = accessor.isNormalized();
+                BufferView view = accessor.getBufferView();
                 com.nucleus.scene.gltf.Buffer b = view.getBuffer();
-                ComponentType ct = accessors[i].getComponentType();
-                Type t = accessors[i].getType();
+                ComponentType ct = accessor.getComponentType();
+                Type t = accessor.getType();
                 if (b.getBufferName() > 0) {
                     int target = view.getTarget() != null ? view.getTarget().value : GLES20.GL_ARRAY_BUFFER;
                     glBindBuffer(target, b.getBufferName());
                     glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(),
-                            accessors[i].getByteOffset() + view.getByteOffset());
+                            accessor.getByteOffset() + view.getByteOffset());
                 } else {
                     ByteBuffer bb = view.getBuffer().getBuffer();
-                    bb.position(accessors[i].getByteOffset() + view.getByteOffset());
+                    bb.position(accessor.getByteOffset() + view.getByteOffset());
                     glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(), bb);
                 }
             } else {
                 // TODO - when fully implemented this should not happen.
             }
-            GLUtils.handleError(this, "VertexAttribPointer for attribute: " + attribs[i].name());
+            GLUtils.handleError(this, "VertexAttribPointer for attribute: " + attribs.get(i).name());
         }
     }
 
@@ -617,7 +618,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public abstract void glUniform2fv(int location, int count, FloatBuffer buffer);
 
     public abstract void glUniform1fv(int location, int count, FloatBuffer buffer);
-    
+
     public abstract void glUniform1iv(int location, int count, IntBuffer buffer);
 
     /**

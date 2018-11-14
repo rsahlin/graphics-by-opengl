@@ -2,12 +2,12 @@ package com.nucleus.scene.gltf;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
@@ -45,29 +45,29 @@ public class Primitive implements RuntimeResolver {
     }
 
     public class FloatBufferToArray extends BufferToArray<FloatBuffer, float[]> {
+        @Override
         public float[] copyBuffer(FloatBuffer buffer) {
             return null;
         }
     }
-    
+
     public class Triangles {
         float[] verticeArray;
         float[] uvArray;
         float[] normalArray;
         short[] indexArray;
-        
+
         public void createBuffers(Accessor indices, Accessor position, Accessor uv, Accessor normal) {
             verticeArray = copyFloatBuffer(position);
             uvArray = copyFloatBuffer(uv);
             normalArray = copyFloatBuffer(normal);
             indexArray = copyShortBuffer(indices);
         }
-        
+
         public float[][] calculateTangentBiTangent(Accessor indices, Accessor position, Accessor uv, Accessor normal) {
             float[][] result = new float[2][verticeArray.length];
-            
+
             int uvSize = uv.getType().size;
-            int normalSize = normal.getType().size;
             int verticeSize = position.getType().size;
             float[] deltaPos1 = new float[3];
             float[] deltaPos2 = new float[3];
@@ -77,16 +77,16 @@ public class Primitive implements RuntimeResolver {
             float[] temp2 = new float[3];
             float[] tangent = new float[3];
             float[] biTangent = new float[3];
-            
+
             for (int i = 0; i < indexArray.length; i += 3) {
                 int index0 = indexArray[i];
                 int index1 = indexArray[i + 1];
                 int index2 = indexArray[i + 2];
-                
+
                 int v0Index = index0 * verticeSize;
                 int v1Index = index1 * verticeSize;
                 int v2Index = index2 * verticeSize;
-                
+
                 int uv0Index = index0 * uvSize;
                 int uv1Index = index1 * uvSize;
                 int uv2Index = index2 * uvSize;
@@ -97,17 +97,23 @@ public class Primitive implements RuntimeResolver {
                 Vec2.toVector(uvArray, uv0Index, uvArray, uv1Index, deltaUv1, 0);
                 Vec2.toVector(uvArray, uv0Index, uvArray, uv2Index, deltaUv2, 0);
                 float reciprocal = 1.0f / (deltaUv1[0] * deltaUv2[1] - deltaUv1[1] * deltaUv2[0]);
-                
-                Vec3.mul(deltaPos1, 0, deltaUv2[1], temp1, 0);
-                Vec3.mul(deltaPos2, 0, deltaUv1[1], temp2, 0);
+
+                Vec3.mul(deltaPos1, 0, deltaUv2[1] * reciprocal, temp1, 0);
+                Vec3.mul(deltaPos2, 0, deltaUv1[1] * reciprocal, temp2, 0);
                 Vec3.subtract(temp1, 0, temp2, 0, tangent, 0);
 
-                Vec3.mul(deltaPos2, 0, deltaUv1[0], temp1, 0);
-                Vec3.mul(deltaPos1, 0, deltaUv2[0], temp2, 0);
+                Vec3.mul(deltaPos2, 0, deltaUv1[0] * reciprocal, temp1, 0);
+                Vec3.mul(deltaPos1, 0, deltaUv2[0] * reciprocal, temp2, 0);
                 Vec3.subtract(temp1, 0, temp2, 0, biTangent, 0);
-                
+
+                Vec3.add(result[0], index0, tangent, 0, result[0], index0);
+                Vec3.add(result[0], index1, tangent, 0, result[0], index1);
+                Vec3.add(result[0], index2, tangent, 0, result[0], index2);
+
+                Vec3.add(result[0], index0, biTangent, 0, result[0], index0);
+                Vec3.add(result[0], index1, biTangent, 0, result[0], index1);
+                Vec3.add(result[0], index2, biTangent, 0, result[0], index2);
             }
-            
             return result;
         }
 
@@ -116,11 +122,11 @@ public class Primitive implements RuntimeResolver {
             ShortBuffer buffer = bv.getBuffer().buffer.asShortBuffer();
             int count = data.getCount();
             short[] result = new short[count * data.getType().size];
-            
+
             int offset = (data.getByteOffset() + bv.getByteOffset()) / data.getComponentType().size;
             buffer.position(offset);
             if (bv.getByteStride() < 4) {
-                //Straight copy of all data
+                // Straight copy of all data
                 buffer.get(result);
             } else {
                 int size = data.getType().size;
@@ -133,20 +139,19 @@ public class Primitive implements RuntimeResolver {
                 }
             }
             return result;
-            
+
         }
-        
-        
+
         private float[] copyFloatBuffer(Accessor data) {
             BufferView bv = data.getBufferView();
             FloatBuffer buffer = bv.getBuffer().buffer.asFloatBuffer();
             int count = data.getCount();
             float[] result = new float[count * data.getType().size];
-            
+
             int offset = (data.getByteOffset() + bv.getByteOffset()) / data.getComponentType().size;
             buffer.position(offset);
             if (bv.getByteStride() < 4) {
-                //Straight copy of all data
+                // Straight copy of all data
                 buffer.get(result);
             } else {
                 int size = data.getType().size;
@@ -161,7 +166,7 @@ public class Primitive implements RuntimeResolver {
             return result;
         }
     }
-    
+
     private static final int DEFAULT_MODE = 4;
 
     private static final String ATTRIBUTES = "attributes";
@@ -246,9 +251,9 @@ public class Primitive implements RuntimeResolver {
     @SerializedName(MODE)
     private int modeIndex = DEFAULT_MODE;
 
-    transient private Accessor[] accessorList;
-    transient private Attributes[] attributeList;
-    transient private Buffer[] bufferList;
+    transient private ArrayList<Accessor> accessorList;
+    transient private ArrayList<Attributes> attributeList;
+    transient private ArrayList<Buffer> bufferList;
     transient private Material materialRef;
     /**
      * Program to use when rendering this primitive
@@ -267,15 +272,15 @@ public class Primitive implements RuntimeResolver {
         return attributes;
     }
 
-    public Accessor[] getAccessorArray() {
+    public ArrayList<Accessor> getAccessorArray() {
         return accessorList;
     }
 
-    public Attributes[] getAttributesArray() {
+    public ArrayList<Attributes> getAttributesArray() {
         return attributeList;
     }
 
-    public Buffer[] getBufferArray() {
+    public ArrayList<Buffer> getBufferArray() {
         return bufferList;
     }
 
@@ -303,9 +308,9 @@ public class Primitive implements RuntimeResolver {
      */
     public Accessor getAccessor(Attributes attribute) {
         if (attributeList != null) {
-            for (int i = 0; i < attributeList.length; i++) {
-                if (attributeList[i] == attribute) {
-                    return accessorList[i];
+            for (int i = 0; i < attributeList.size(); i++) {
+                if (attributeList.get(i) == attribute) {
+                    return accessorList.get(i);
                 }
             }
         }
@@ -359,28 +364,29 @@ public class Primitive implements RuntimeResolver {
     @Override
     public void resolve(GLTF asset) throws GLTFException {
         mode = Mode.getMode(modeIndex);
-        if (attributes != null && attributes.size() > 0) {
-            Set<Buffer> bufferSet = new HashSet<>();
-            accessorList = new Accessor[attributes.size()];
-            attributeList = new Attributes[attributes.size()];
-            int index = 0;
-            for (Attributes a : attributes.keySet()) {
-                attributeList[index] = a;
-                Accessor accessor = asset.getAccessor(attributes.get(a));
-                accessorList[index] = accessor;
-                bufferSet.add(asset.getBuffer(accessor));
-                index++;
-            }
-            bufferList = new Buffer[bufferSet.size()];
-            index = 0;
-            for (Buffer b : bufferSet) {
-                bufferList[index++] = b;
-            }
-        }
+        createAttributeList(asset);
         if (material >= 0) {
             this.materialRef = asset.getMaterials()[material];
         }
         indices = asset.getAccessor(indicesIndex);
+    }
+
+    private void createAttributeList(GLTF asset) {
+        if (attributes != null && attributes.size() > 0) {
+            Set<Buffer> bufferSet = new HashSet<>();
+            accessorList = new ArrayList<>();
+            attributeList = new ArrayList<>();
+            for (Attributes a : attributes.keySet()) {
+                attributeList.add(a);
+                Accessor accessor = asset.getAccessor(attributes.get(a));
+                accessorList.add(accessor);
+                bufferSet.add(asset.getBuffer(accessor));
+            }
+            bufferList = new ArrayList<>();
+            for (Buffer b : bufferSet) {
+                bufferList.add(b);
+            }
+        }
     }
 
     /**
@@ -394,8 +400,6 @@ public class Primitive implements RuntimeResolver {
         if (indices == null) {
             throw new IllegalArgumentException("Arrayed mode not supported");
         }
-        int count = indices.getCount();
-
         FloatBuffer tangentBuffer = BufferUtils.createFloatBuffer(normal.getCount());
         FloatBuffer bitangentBuffer = BufferUtils.createFloatBuffer(normal.getCount());
         buildTBNBuffers(mode, indices, position, uv, normal, tangentBuffer, bitangentBuffer);
@@ -433,8 +437,8 @@ public class Primitive implements RuntimeResolver {
 
         Triangles triangles = new Triangles();
         triangles.createBuffers(indices, position, uv, normal);
-        triangles.calculateTangentBiTangent(indices, position, uv, normal);
-        
+        float[][] TB = triangles.calculateTangentBiTangent(indices, position, uv, normal);
+
     }
 
     /**
