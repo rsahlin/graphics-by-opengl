@@ -7,11 +7,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.shader.GLTFShaderProgram;
+import com.nucleus.vecmath.Vec2;
+import com.nucleus.vecmath.Vec3;
 
 /**
  * The Primitive as it is loaded using the glTF format.
@@ -37,6 +40,128 @@ import com.nucleus.shader.GLTFShaderProgram;
  */
 public class Primitive implements RuntimeResolver {
 
+    public abstract class BufferToArray<T, U> {
+        public abstract U copyBuffer(T buffer);
+    }
+
+    public class FloatBufferToArray extends BufferToArray<FloatBuffer, float[]> {
+        public float[] copyBuffer(FloatBuffer buffer) {
+            return null;
+        }
+    }
+    
+    public class Triangles {
+        float[] verticeArray;
+        float[] uvArray;
+        float[] normalArray;
+        short[] indexArray;
+        
+        public void createBuffers(Accessor indices, Accessor position, Accessor uv, Accessor normal) {
+            verticeArray = copyFloatBuffer(position);
+            uvArray = copyFloatBuffer(uv);
+            normalArray = copyFloatBuffer(normal);
+            indexArray = copyShortBuffer(indices);
+        }
+        
+        public float[][] calculateTangentBiTangent(Accessor indices, Accessor position, Accessor uv, Accessor normal) {
+            float[][] result = new float[2][verticeArray.length];
+            
+            int uvSize = uv.getType().size;
+            int normalSize = normal.getType().size;
+            int verticeSize = position.getType().size;
+            float[] deltaPos1 = new float[3];
+            float[] deltaPos2 = new float[3];
+            float[] deltaUv1 = new float[2];
+            float[] deltaUv2 = new float[2];
+            float[] temp1 = new float[3];
+            float[] temp2 = new float[3];
+            float[] tangent = new float[3];
+            float[] biTangent = new float[3];
+            
+            for (int i = 0; i < indexArray.length; i += 3) {
+                int index0 = indexArray[i];
+                int index1 = indexArray[i + 1];
+                int index2 = indexArray[i + 2];
+                
+                int v0Index = index0 * verticeSize;
+                int v1Index = index1 * verticeSize;
+                int v2Index = index2 * verticeSize;
+                
+                int uv0Index = index0 * uvSize;
+                int uv1Index = index1 * uvSize;
+                int uv2Index = index2 * uvSize;
+
+                Vec3.toVector(verticeArray, v0Index, verticeArray, v1Index, deltaPos1, 0);
+                Vec3.toVector(verticeArray, v0Index, verticeArray, v2Index, deltaPos2, 0);
+
+                Vec2.toVector(uvArray, uv0Index, uvArray, uv1Index, deltaUv1, 0);
+                Vec2.toVector(uvArray, uv0Index, uvArray, uv2Index, deltaUv2, 0);
+                float reciprocal = 1.0f / (deltaUv1[0] * deltaUv2[1] - deltaUv1[1] * deltaUv2[0]);
+                
+                Vec3.mul(deltaPos1, 0, deltaUv2[1], temp1, 0);
+                Vec3.mul(deltaPos2, 0, deltaUv1[1], temp2, 0);
+                Vec3.subtract(temp1, 0, temp2, 0, tangent, 0);
+
+                Vec3.mul(deltaPos2, 0, deltaUv1[0], temp1, 0);
+                Vec3.mul(deltaPos1, 0, deltaUv2[0], temp2, 0);
+                Vec3.subtract(temp1, 0, temp2, 0, biTangent, 0);
+                
+            }
+            
+            return result;
+        }
+
+        private short[] copyShortBuffer(Accessor data) {
+            BufferView bv = data.getBufferView();
+            ShortBuffer buffer = bv.getBuffer().buffer.asShortBuffer();
+            int count = data.getCount();
+            short[] result = new short[count * data.getType().size];
+            
+            int offset = (data.getByteOffset() + bv.getByteOffset()) / data.getComponentType().size;
+            buffer.position(offset);
+            if (bv.getByteStride() < 4) {
+                //Straight copy of all data
+                buffer.get(result);
+            } else {
+                int size = data.getType().size;
+                int sizePerAttrib = size + bv.getByteStride() / data.getComponentType().size;
+                int pos = buffer.position();
+                for (int i = 0; i < count; i++) {
+                    buffer.get(result, i * size, size);
+                    pos += sizePerAttrib;
+                    buffer.position(pos);
+                }
+            }
+            return result;
+            
+        }
+        
+        
+        private float[] copyFloatBuffer(Accessor data) {
+            BufferView bv = data.getBufferView();
+            FloatBuffer buffer = bv.getBuffer().buffer.asFloatBuffer();
+            int count = data.getCount();
+            float[] result = new float[count * data.getType().size];
+            
+            int offset = (data.getByteOffset() + bv.getByteOffset()) / data.getComponentType().size;
+            buffer.position(offset);
+            if (bv.getByteStride() < 4) {
+                //Straight copy of all data
+                buffer.get(result);
+            } else {
+                int size = data.getType().size;
+                int sizePerAttrib = size + bv.getByteStride() / data.getComponentType().size;
+                int pos = buffer.position();
+                for (int i = 0; i < count; i++) {
+                    buffer.get(result, i * size, size);
+                    pos += sizePerAttrib;
+                    buffer.position(pos);
+                }
+            }
+            return result;
+        }
+    }
+    
     private static final int DEFAULT_MODE = 4;
 
     private static final String ATTRIBUTES = "attributes";
@@ -289,6 +414,16 @@ public class Primitive implements RuntimeResolver {
 
     }
 
+    /**
+     * Builds the tangent and binormal buffers for this primitive using TRIANGLES mode.
+     * 
+     * @param indices
+     * @param position
+     * @param uv
+     * @param normal
+     * @param tangentBuffer
+     * @param bitangentBuffer
+     */
     private void buildTBNTriangles(Accessor indices, Accessor position, Accessor uv, Accessor normal,
             FloatBuffer tangentBuffer, FloatBuffer bitangentBuffer) {
 
@@ -296,9 +431,10 @@ public class Primitive implements RuntimeResolver {
         ShortBuffer sb = indexView.getBuffer().getBuffer().asShortBuffer();
         sb.position((indexView.getByteOffset() + indices.getByteOffset()) / 2);
 
-        int triangles = indices.getCount();
-        int triangle = 0;
-
+        Triangles triangles = new Triangles();
+        triangles.createBuffers(indices, position, uv, normal);
+        triangles.calculateTangentBiTangent(indices, position, uv, normal);
+        
     }
 
     /**

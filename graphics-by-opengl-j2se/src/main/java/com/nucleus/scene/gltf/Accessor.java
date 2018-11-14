@@ -43,17 +43,25 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
     private static final String MIN = "min";
 
     public enum ComponentType {
-        BYTE(GLESWrapper.GLES20.GL_BYTE),
-        UNSIGNED_BYTE(GLESWrapper.GLES20.GL_UNSIGNED_BYTE),
-        SHORT(GLESWrapper.GLES20.GL_SHORT),
-        UNSIGNED_SHORT(GLESWrapper.GLES20.GL_UNSIGNED_SHORT),
-        UNSIGNED_INT(GLESWrapper.GLES20.GL_UNSIGNED_INT),
-        FLOAT(GLESWrapper.GLES20.GL_FLOAT);
+        BYTE(GLESWrapper.GLES20.GL_BYTE, 1),
+        UNSIGNED_BYTE(GLESWrapper.GLES20.GL_UNSIGNED_BYTE, 1),
+        SHORT(GLESWrapper.GLES20.GL_SHORT, 2),
+        UNSIGNED_SHORT(GLESWrapper.GLES20.GL_UNSIGNED_SHORT, 2),
+        UNSIGNED_INT(GLESWrapper.GLES20.GL_UNSIGNED_INT, 4),
+        FLOAT(GLESWrapper.GLES20.GL_FLOAT, 4);
 
+        /**
+         * The gl value
+         */
         public final int value;
+        /**
+         * Size in bytes
+         */
+        public final int size;
 
-        private ComponentType(int value) {
+        private ComponentType(int value, int size) {
             this.value = value;
+            this.size = size;
         }
 
         public static ComponentType get(int value) {
