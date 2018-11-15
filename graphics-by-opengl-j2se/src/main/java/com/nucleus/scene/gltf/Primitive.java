@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.scene.gltf.Accessor.ComponentType;
@@ -42,6 +43,11 @@ import com.nucleus.vecmath.Vec3;
  *
  */
 public class Primitive implements RuntimeResolver {
+
+    /**
+     * Name of the tangent/bitantent buffer
+     */
+    public static final String TANGENT_BITANGENT = "TangentBitangent";
 
     public abstract class BufferToArray<T, U> {
         public abstract U copyBuffer(T buffer);
@@ -104,7 +110,7 @@ public class Primitive implements RuntimeResolver {
                 if (uvArray != null) {
                     Vec2.toVector(uvArray, uv0Index, uvArray, uv1Index, deltaUv1, 0);
                     Vec2.toVector(uvArray, uv0Index, uvArray, uv2Index, deltaUv2, 0);
-                    reciprocal = 1.0f / (deltaUv1[0] * deltaUv2[1] - deltaUv1[1] * deltaUv2[0]);
+//                    reciprocal = 1.0f / (deltaUv1[0] * deltaUv2[1] - deltaUv1[1] * deltaUv2[0]);
                 }
 
                 Vec3.mul(deltaPos1, 0, deltaUv2[1] * reciprocal, temp1, 0);
@@ -115,14 +121,20 @@ public class Primitive implements RuntimeResolver {
                 Vec3.mul(deltaPos1, 0, deltaUv2[0] * reciprocal, temp2, 0);
                 Vec3.subtract(temp1, 0, temp2, 0, biTangent, 0);
 
-                Vec3.add(result[0], index0, tangent, 0, result[0], index0);
-                Vec3.add(result[0], index1, tangent, 0, result[0], index1);
-                Vec3.add(result[0], index2, tangent, 0, result[0], index2);
+                Vec3.add(result[0], v0Index, tangent, 0, result[0], v0Index);
+                Vec3.add(result[0], v1Index, tangent, 0, result[0], v1Index);
+                Vec3.add(result[0], v2Index, tangent, 0, result[0], v2Index);
 
-                Vec3.add(result[0], index0, biTangent, 0, result[0], index0);
-                Vec3.add(result[0], index1, biTangent, 0, result[0], index1);
-                Vec3.add(result[0], index2, biTangent, 0, result[0], index2);
+                Vec3.add(result[1], v0Index, biTangent, 0, result[1], v0Index);
+                Vec3.add(result[1], v1Index, biTangent, 0, result[1], v1Index);
+                Vec3.add(result[1], v2Index, biTangent, 0, result[1], v2Index);
             }
+
+            for (int i = 0; i < result[0].length; i += 3) {
+                Vec3.normalize(result[0], i);
+                Vec3.normalize(result[1], i);
+            }
+            SimpleLogger.d(getClass(), "Created TANGENTs for " + result[0].length / 3 + " vertices");
             return result;
         }
 
@@ -132,7 +144,7 @@ public class Primitive implements RuntimeResolver {
             short[] result = new short[count * data.getType().size];
 
             BufferView bv = data.getBufferView();
-            if (bv.getByteStride() < 4) {
+            if (bv.getByteStride() <= 4) {
                 // Straight copy of all data
                 buffer.get(result);
             } else {
@@ -270,6 +282,29 @@ public class Primitive implements RuntimeResolver {
     transient private Accessor indices;
     transient private Mode mode;
 
+    public Primitive() {
+
+    }
+
+    /**
+     * Creates a new instance of a primitive with references to the specified values.
+     * Objects are NOT copied.
+     * 
+     * @param attributeList
+     * @param accessorList
+     * @param indices
+     * @param material
+     * @param mode
+     */
+    public Primitive(ArrayList<Attributes> attributeList, ArrayList<Accessor> accessorList, Accessor indices,
+            Material material, Mode mode) {
+        this.attributeList = attributeList;
+        this.accessorList = accessorList;
+        this.indices = indices;
+        this.materialRef = material;
+        this.mode = mode;
+    }
+
     /**
      * Returns the dictionary (HashMap) with Attributes
      * 
@@ -398,9 +433,11 @@ public class Primitive implements RuntimeResolver {
 
     /**
      * Builds the Tangent/Binormal buffers
-     * Must be called after buffers are loaded
+     * Must be called after buffers are loaded so that the INDICES, POSITION and NORMAL buffers are available.
+     * The result buffer must be released when this primitive is not used anymore.
+     * 
      */
-    public void calculateTBN() {
+    public void calculateTBN(GLTF gltf) {
         Accessor position = getAccessor(Attributes.POSITION);
         Accessor normal = getAccessor(Attributes.NORMAL);
         Accessor uv = getAccessor(Attributes.TEXCOORD_0);
@@ -409,15 +446,16 @@ public class Primitive implements RuntimeResolver {
         }
         FloatBuffer tangentBuffer = BufferUtils.createFloatBuffer(normal.getCount());
         FloatBuffer bitangentBuffer = BufferUtils.createFloatBuffer(normal.getCount());
-        buildTBNBuffers(mode, indices, position, uv, normal, tangentBuffer, bitangentBuffer);
+        buildTBNBuffers(gltf, mode, indices, position, uv, normal, tangentBuffer, bitangentBuffer);
     }
 
-    private void buildTBNBuffers(Mode mode, Accessor indices, Accessor position, Accessor uv, Accessor normal,
+    private void buildTBNBuffers(GLTF gltf, Mode mode, Accessor indices, Accessor position, Accessor uv,
+            Accessor normal,
             FloatBuffer tangentBuffer, FloatBuffer bitangentBuffer) {
 
         switch (mode) {
             case TRIANGLES:
-                buildTBNTriangles(indices, position, uv, normal, tangentBuffer, bitangentBuffer);
+                buildTBNTriangles(gltf, indices, position, uv, normal, tangentBuffer, bitangentBuffer);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + mode);
@@ -428,34 +466,33 @@ public class Primitive implements RuntimeResolver {
     /**
      * Builds the tangent and binormal buffers for this primitive using TRIANGLES mode.
      * 
+     * @param gltf
      * @param indices
      * @param position
-     * @param uv
      * @param normal
      * @param tangentBuffer
      * @param bitangentBuffer
      */
-    private void buildTBNTriangles(Accessor indices, Accessor position, Accessor uv, Accessor normal,
+    private void buildTBNTriangles(GLTF gltf, Accessor indices, Accessor position, Accessor uv, Accessor normal,
             FloatBuffer tangentBuffer, FloatBuffer bitangentBuffer) {
 
         Triangles triangles = new Triangles();
         triangles.createBuffers(indices, position, uv, normal);
         float[][] TBArray = triangles.calculateTangentBiTangent(indices, position, uv, normal);
-        int l = TBArray[0].length; //Length of one buffer in number of floats
-        Buffer buffer = new Buffer(l * 2 * 4);
+        int l = TBArray[0].length; // Length of one buffer in number of floats
+        BufferView Tbv = gltf.createBufferView(TANGENT_BITANGENT, l * 2 * 4, 0, 0, Target.ARRAY_BUFFER);
+        Buffer buffer = Tbv.getBuffer();
         buffer.put(TBArray[0], 0);
         buffer.put(TBArray[1], l);
-        
-        BufferView Tbv = new BufferView(buffer, 0, 0, Target.ARRAY_BUFFER);
-        BufferView Bbv = new BufferView(buffer, 0, 0, Target.ARRAY_BUFFER);
         int count = l / 3;
         Accessor Ta = new Accessor(Tbv, 0, ComponentType.FLOAT, count, Type.VEC3);
-        Accessor Ba = new Accessor(Bbv, l * 4, ComponentType.FLOAT, count, Type.VEC3);
-
+        int tangentIndex = attributeList.indexOf(Attributes.TANGENT);
+        if (tangentIndex >= 0) {
+            attributeList.remove(tangentIndex);
+            accessorList.remove(tangentIndex);
+        }
         accessorList.add(Ta);
         attributeList.add(Attributes.TANGENT);
-        accessorList.add(Ba);
-        attributeList.add(Attributes.BITANGENT);
     }
 
     /**

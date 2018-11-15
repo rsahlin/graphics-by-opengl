@@ -2,7 +2,22 @@
 /**
  * Functions for gltf PBR model
  */
-precision highp float;
+
+uniform mat4 uModelMatrix[3];
+uniform vec3 _LIGHT_0[1];
+
+in vec3 POSITION;
+in vec3 NORMAL;
+in vec2 TEXCOORD_0;
+
+out vec4 vDiffuseColor;
+out vec2 vTexCoord0;
+out vec3 vNormal;
+out vec3 vEye;
+out vec3 vLight;
+out vec3 vLightOut;
+out vec3 vU;
+
 
 void positionLight() {
     vec4 pos = vec4(POSITION, 1.0) * uModelMatrix[0] * uModelMatrix[1];

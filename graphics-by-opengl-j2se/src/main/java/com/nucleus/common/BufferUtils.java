@@ -51,12 +51,14 @@ public class BufferUtils {
      */
     public static String getContentAsString(int position, int length, ByteBuffer buffer) {
         if (buffer != null) {
+            int currentPos = buffer.position();
             StringBuffer result = new StringBuffer();
             length = length < buffer.capacity() - position ? length : buffer.capacity() - position;
             buffer.position(position);
             for (int i = 0; i < length; i++) {
                 result.append(Integer.toString(buffer.get()) + ", ");
             }
+            buffer.position(currentPos);
             return result.toString();
         }
         return "Null buffer";

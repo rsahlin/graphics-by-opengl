@@ -16,8 +16,7 @@ import com.nucleus.texturing.Texture2D.Shading;
 
 public class GLTFShaderProgram extends GenericShaderProgram {
 
-    public static final String COMMON_VERTEX_SHADER = "pbrvertex";
-    public static final String COMMON_FRAGMENT_SHADER = "pbrfragment";
+    transient protected String[] commonSourceNames = new String[] { "pbrvertex", "pbrfragment" };
 
     transient protected ShaderVariable pbrDataUniform;
     transient protected ShaderVariable light0Uniform;
@@ -26,6 +25,22 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * The dictionary created from linked program
      */
     protected AccessorDictionary<String> accessorDictionary = new AccessorDictionary<>();
+
+    /**
+     * 
+     * @param source
+     * @param pass
+     * @param shading
+     * @param category
+     * @param shaders
+     * @param commonSources Common vertex/fragment shader or null
+     */
+    public GLTFShaderProgram(String[] source, Pass pass, Shading shading, String category, ProgramType shaders,
+            String[] commonSources) {
+        super(source, pass, shading, category, shaders);
+        commonSourceNames[0] = commonSources[0];
+        commonSourceNames[1] = commonSources[1];
+    }
 
     public GLTFShaderProgram(Pass pass, Shading shading, String category, ProgramType shaders) {
         super(pass, shading, category, shaders);
@@ -45,14 +60,23 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     protected String[] getCommonShaderName(ShaderType type) {
         switch (type) {
             case VERTEX:
-                return new String[] {
-                        PROGRAM_DIRECTORY + function.getCategory() + File.separatorChar + COMMON_VERTEX_SHADER };
+                if (commonSourceNames[ShaderType.VERTEX.index] != null) {
+                    return new String[] {
+                            PROGRAM_DIRECTORY + function.getCategory() + File.separatorChar
+                                    + commonSourceNames[ShaderType.VERTEX.index] };
+                }
+                break;
             case FRAGMENT:
-                return new String[] {
-                        PROGRAM_DIRECTORY + function.getCategory() + File.separatorChar + COMMON_FRAGMENT_SHADER };
+                if (commonSourceNames[ShaderType.FRAGMENT.index] != null) {
+                    return new String[] {
+                            PROGRAM_DIRECTORY + function.getCategory() + File.separatorChar
+                                    + commonSourceNames[ShaderType.FRAGMENT.index] };
+                }
+                break;
             default:
                 return null;
         }
+        return null;
     }
 
     @Override
@@ -60,7 +84,10 @@ public class GLTFShaderProgram extends GenericShaderProgram {
         // Init may be called several times
         if (pbrDataUniform == null) {
             pbrDataUniform = getUniformByName(Attributes._PBRDATA.name());
-            pbrData = new float[pbrDataUniform.getSizeInFloats()];
+            if (pbrDataUniform != null) {
+                // Will be null in vector debug shader
+                pbrData = new float[pbrDataUniform.getSizeInFloats()];
+            }
             light0Uniform = getUniformByName(Attributes._LIGHT_0.name());
         }
     }
@@ -79,7 +106,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * @param primitive
      * @throws GLException
      */
-    public void updatePrimitiveUniforms(GLES20Wrapper gles, Primitive primitive) throws GLException {
+    public void updatePBRUniforms(GLES20Wrapper gles, Primitive primitive) throws GLException {
         Material material = primitive.getMaterial();
         if (material != null) {
             PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
@@ -88,15 +115,6 @@ public class GLTFShaderProgram extends GenericShaderProgram {
         }
         setUniformData(pbrDataUniform, pbrData, 0);
         uploadUniform(gles, uniforms, pbrDataUniform);
-    }
-
-    @Override
-    public void updateUniforms(GLES20Wrapper gles, float[][] matrices)
-            throws GLException {
-        // GLTF will likely have multiple primitives for the same program within one node - split update of matrices.
-        setUniformMatrices(matrices);
-        updateUniformData(uniforms);
-        uploadUniforms(gles, uniforms, activeUniforms);
     }
 
     /**

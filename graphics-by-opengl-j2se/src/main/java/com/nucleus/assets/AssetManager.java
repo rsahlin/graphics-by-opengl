@@ -380,19 +380,19 @@ public class AssetManager {
         SimpleLogger.d(getClass(), "Loaded gltf assets");
         // Build TBN before creating VBOs
         for (Mesh m : glTF.getMeshes()) {
-            buildTBN(m.getPrimitives());
+            buildTBN(glTF, m.getPrimitives());
         }
         if (gles != null && com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
-            BufferObjectsFactory.getInstance().createVBOs(gles, glTF.getBuffers());
+            BufferObjectsFactory.getInstance().createVBOs(gles, glTF.getBuffers(null));
             SimpleLogger.d(getClass(), "Created VBOs for gltf assets");
         }
 
     }
 
-    public void buildTBN(Primitive[] primitives) {
+    public void buildTBN(GLTF gltf, Primitive[] primitives) {
         if (primitives != null) {
             for (Primitive p : primitives) {
-                p.calculateTBN();
+                p.calculateTBN(gltf);
             }
         }
     }
@@ -408,7 +408,7 @@ public class AssetManager {
      * @throws GLException
      */
     public void deleteGLTFAssets(GLES20Wrapper gles, GLTF gltf) throws GLException {
-        BufferObjectsFactory.getInstance().destroyVBOs(gles, gltf.getBuffers());
+        BufferObjectsFactory.getInstance().destroyVBOs(gles, gltf.getBuffers(null));
         deleteTextures(gles, gltf.getImages());
         gltfAssets.remove(gltf.getFilename());
         gltf.destroy();
@@ -486,9 +486,8 @@ public class AssetManager {
      * @throws IOException
      */
     protected void loadBuffers(GLTF glTF) throws IOException {
-        Buffer[] buffers = glTF.getBuffers();
         try {
-            for (Buffer b : buffers) {
+            for (Buffer b : glTF.getBuffers(null)) {
                 b.createBuffer();
                 b.load(glTF, b.getUri());
             }

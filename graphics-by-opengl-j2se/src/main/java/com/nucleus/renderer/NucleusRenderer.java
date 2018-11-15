@@ -257,13 +257,6 @@ public interface NucleusRenderer {
     public GLES20Wrapper getGLES();
 
     /**
-     * Generate GL named object buffers
-     * 
-     * @param names Destination for buffer names
-     */
-    public void genBuffers(int[] names);
-
-    /**
      * Deletes the named object buffers generated with a call to {@link #genBuffers(int, int[], int)}
      * 
      * @param count Number of buffer names to delete
@@ -314,5 +307,5 @@ public interface NucleusRenderer {
      * @return
      */
     public RenderState getRenderState();
-    
+
 }

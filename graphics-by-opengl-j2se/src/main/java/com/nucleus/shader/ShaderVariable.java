@@ -341,4 +341,10 @@ public class ShaderVariable {
         }
         throw new IllegalArgumentException(ILLEGAL_DATATYPE_ERROR + dataType);
     }
+    
+    public String toString() {
+        return name + " : " + type + ", size " + size + ", offset " + offset + ", activeIndex " + activeIndex + 
+                ", blockIndex " + blockIndex;
+    }
+    
 }

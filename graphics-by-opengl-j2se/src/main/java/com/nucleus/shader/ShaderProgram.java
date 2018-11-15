@@ -2,8 +2,6 @@ package com.nucleus.shader;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -1307,7 +1305,7 @@ public abstract class ShaderProgram {
      * @param offset Offset into uniform array where data starts.
      * @throws GLException If there is an error setting a uniform to GL
      */
-    protected final void uploadUniform(GLES20Wrapper gles, FloatBuffer uniforms, ShaderVariable variable)
+    public final void uploadUniform(GLES20Wrapper gles, FloatBuffer uniforms, ShaderVariable variable)
             throws GLException {
         int offset = variable.getOffset();
         uniforms.position(offset);
@@ -1675,7 +1673,7 @@ public abstract class ShaderProgram {
      */
     private String getCommonSources(ShaderType type) {
         if (commonSources[type.index] == null) {
-            return "";
+            return null;
         }
         String result = new String();
         for (String source : commonSources[type.index]) {

@@ -616,11 +616,6 @@ class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void genBuffers(int[] names) {
-        gles.glGenBuffers(names);
-    }
-
-    @Override
     public void deleteBuffers(int count, int[] names, int offset) {
         gles.glDeleteBuffers(count, names, offset);
     }

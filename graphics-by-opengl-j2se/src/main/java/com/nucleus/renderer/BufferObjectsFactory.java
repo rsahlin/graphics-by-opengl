@@ -144,7 +144,7 @@ public class BufferObjectsFactory {
     public void createVBO(GLES20Wrapper gles, Buffer buffer) throws GLException {
         if (buffer.getBufferName() <= 0) {
             SimpleLogger.d(getClass(),
-                    "Allocating VBO for buffer: " + buffer.getUri() + ", total size: " + buffer.getByteLength());
+                    "Allocating VBO for buffer: " + buffer.getUri() + ", name: " +  buffer.getName() + ", total size: " + buffer.getByteLength());
             int[] names = new int[1];
             gles.glGenBuffers(names);
             buffer.setBufferName(names[0]);
@@ -163,7 +163,7 @@ public class BufferObjectsFactory {
      * @param buffers
      * @throws GLException
      */
-    public void destroyVBOs(GLES20Wrapper gles, Buffer[] buffers) throws GLException {
+    public void destroyVBOs(GLES20Wrapper gles, ArrayList<Buffer> buffers) throws GLException {
         int[] names = new int[1];
         int deleted = 0;
         for (Buffer buffer : buffers) {

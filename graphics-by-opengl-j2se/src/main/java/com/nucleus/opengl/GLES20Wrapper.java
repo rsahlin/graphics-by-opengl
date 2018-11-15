@@ -24,6 +24,7 @@ import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Sampler;
 import com.nucleus.shader.GLTFShaderProgram;
+import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderSource;
 import com.nucleus.shader.ShaderSource.ESSLVersion;
 import com.nucleus.shader.ShaderVariable;
@@ -49,7 +50,7 @@ import com.nucleus.texturing.TextureUtils;
  */
 public abstract class GLES20Wrapper extends GLESWrapper {
 
-    protected boolean[] enabledVertexArrays = new boolean[GLES20.GL_MAX_VERTEX_ATTRIBS];
+    protected boolean[] enabledVertexArrays = new boolean[16];
 
     /**
      * Implementation constructor - DO NOT USE!!!
@@ -415,12 +416,11 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * Sets the vertexAttribPointers for the glTF primitive
      * Call {@link #disableAttribPointers()} after drawArrays/elements is called
      * 
-     * @param glTF
-     * @param primitive
+     * @param attribs
+     * @param accessors
      */
-    public void glVertexAttribPointer(GLTF glTF, GLTFShaderProgram program, Primitive primitive) throws GLException {
-        ArrayList<Attributes> attribs = primitive.getAttributesArray();
-        ArrayList<Accessor> accessors = primitive.getAccessorArray();
+    public void glVertexAttribPointer(ShaderProgram program, ArrayList<Attributes> attribs,
+            ArrayList<Accessor> accessors) throws GLException {
         for (int i = 0; i < attribs.size(); i++) {
             Accessor accessor = accessors.get(i);
             ShaderVariable v = program.getAttributeByName(attribs.get(i).name());

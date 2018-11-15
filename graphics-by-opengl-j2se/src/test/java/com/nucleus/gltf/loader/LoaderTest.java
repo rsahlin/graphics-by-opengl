@@ -34,9 +34,9 @@ public class LoaderTest extends BaseTestCase {
         checkScene(asset.getScenes()[0]);
         checkNode(asset.getNodes()[0]);
         checkMesh(asset.getMeshes()[0]);
-        checkBuffer(asset, asset.getBuffers()[0]);
+        checkBuffer(asset, asset.getBuffer(0));
         checkMaterial(asset.getMaterials()[0]);
-        checkAccessor(asset.getAccessors()[0]);
+        checkAccessor(asset.getAccessor(0));
 
     }
 

@@ -10,12 +10,14 @@ import com.nucleus.scene.gltf.Accessor.Type;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.BufferView;
 import com.nucleus.scene.gltf.BufferView.Target;
+import com.nucleus.scene.gltf.GLTF;
 
 public class AccessorTest extends BaseTestCase {
 
     @Test
     public void testConstructor() {
-        BufferView bv = new BufferView(new Buffer(100), 10, 4, Target.ARRAY_BUFFER);
+        GLTF gltf = new GLTF();
+        BufferView bv = gltf.createBufferView("TEST", 100, 10, 4, Target.ARRAY_BUFFER);
         Accessor a = new Accessor(bv, 4, ComponentType.SHORT, 2, Type.VEC3);
         Assert.assertTrue(a.getBufferView().equals(bv));
         Assert.assertTrue(a.getByteOffset() == 4);

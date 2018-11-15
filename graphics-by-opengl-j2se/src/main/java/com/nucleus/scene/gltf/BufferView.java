@@ -89,14 +89,19 @@ public class BufferView extends GLTFNamedValue implements RuntimeResolver {
 
     /**
      * Creates a BufferView based on the specified Buffer
+     * Do not call this directly - use {@link GLTF#createBufferView(String, int, int, int, Target)}
+     * or {@link GLTF#createBufferView(Buffer, int, int, Target)}
      * 
+     * @param gltf
+     * @param bufferIndex Index of the buffer - this will be resolved so {@link #getBuffer()} can be called.
      * @param buffer
      * @param byteOffset
      * @param byteStride
      * @param target
      */
-    public BufferView(Buffer buffer, int byteOffset, int byteStride, Target target) {
-        this.buffer = buffer;
+    protected BufferView(GLTF gltf, int bufferIndex, int byteOffset, int byteStride, Target target) {
+        this.bufferIndex = bufferIndex;
+        this.buffer = gltf.getBuffer(bufferIndex);
         this.byteOffset = byteOffset;
         this.byteLength = buffer.getByteLength();
         this.byteStride = byteStride;
@@ -127,9 +132,9 @@ public class BufferView extends GLTFNamedValue implements RuntimeResolver {
     /**
      * The target that the GPU buffer should be bound to - this is normally known based on what Accessor
      * this BufferView is attached to.
-     *   ARRAY_BUFFER(34962),
-     *   ELEMENT_ARRAY_BUFFER(34963);
-     *   
+     * ARRAY_BUFFER(34962),
+     * ELEMENT_ARRAY_BUFFER(34963);
+     * 
      * @return
      */
     public Target getTarget() {
@@ -140,6 +145,7 @@ public class BufferView extends GLTFNamedValue implements RuntimeResolver {
      * The buffer holding the data - be careful when using this since offsets are only known
      * from Accessor.
      * Use {@link Accessor#getBuffer()} to get the positioned ByteBuffer.
+     * 
      * @return
      */
     public Buffer getBuffer() {
@@ -148,7 +154,7 @@ public class BufferView extends GLTFNamedValue implements RuntimeResolver {
 
     @Override
     public void resolve(GLTF asset) throws GLTFException {
-        this.buffer = asset.getBuffers()[bufferIndex];
+        this.buffer = asset.getBuffer(bufferIndex);
         if (targetValue >= 0) {
             target = Target.getTarget(targetValue);
 
@@ -193,5 +199,5 @@ public class BufferView extends GLTFNamedValue implements RuntimeResolver {
         return "Bufferindex: " + bufferIndex + ", byteoffset: " + byteOffset + ", byteLength: " + byteLength
                 + ", byteStride: " + byteStride + ", name: " + getName();
     }
-    
+
 }

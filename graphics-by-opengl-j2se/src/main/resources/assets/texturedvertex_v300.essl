@@ -2,7 +2,7 @@
 /* 
  * Vertex shader for normal vertex transform with position for each vertex.
  */
- precision highp float;
+precision highp float;
  
 //Put array declaration after name for GLSL compatibility
 uniform mat4 uModelMatrix[3];
