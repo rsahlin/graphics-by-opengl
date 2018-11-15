@@ -1,5 +1,6 @@
 package com.nucleus.scene.gltf;
 
+import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 
 import com.google.gson.annotations.SerializedName;
@@ -218,6 +219,17 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
         return type;
     }
 
+    /**
+     * Returns the ByteBuffer positioned according to this accessor and bufferview
+     * @return
+     */
+    public ByteBuffer getBuffer() {
+        ByteBuffer buffer = bufferViewRef.getBuffer().buffer;
+        buffer.position(byteOffset + bufferViewRef.getByteOffset());
+        return buffer;
+    }
+    
+    
     @Override
     public void resolve(GLTF asset) throws GLTFException {
         if (bufferViewRef != null) {
@@ -267,7 +279,6 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
     private void copyData(ShortBuffer source, int[] destination) {
         source.position(byteOffset / 2);
     }
-    
     
     /**
      * 

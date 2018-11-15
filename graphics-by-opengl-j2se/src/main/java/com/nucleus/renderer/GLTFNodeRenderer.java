@@ -187,8 +187,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
                 GLUtils.handleError(gles, "glDrawElements VBO " + buffer.getBufferName());
             } else {
                 gles.glDrawElements(primitive.getMode().value, indices.getCount(), indices.getComponentType().value,
-                        indicesView.getBuffer().getBuffer()
-                                .position(indices.getByteOffset() + indicesView.getByteOffset()));
+                        indices.getBuffer());
                 GLUtils.handleError(gles, "glDrawElements");
             }
             timeKeeper.addDrawElements(indices.getCount(), primitive.getAccessor(Attributes.POSITION).getCount());

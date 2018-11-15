@@ -441,8 +441,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                     glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(),
                             accessor.getByteOffset() + view.getByteOffset());
                 } else {
-                    ByteBuffer bb = view.getBuffer().getBuffer();
-                    bb.position(accessor.getByteOffset() + view.getByteOffset());
+                    ByteBuffer bb = accessor.getBuffer();
                     glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(), bb);
                 }
             } else {

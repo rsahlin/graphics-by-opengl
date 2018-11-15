@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
@@ -68,9 +69,10 @@ public class Buffer extends GLTFNamedValue {
 
     /**
      * Returns the underlying ByteBuffer, or null if serialized and not called {@link #createBuffer()}
-     * 
+     * Deprecated use {@link Accessor#getBuffer()} instead
      * @return
      */
+    @Deprecated 
     public ByteBuffer getBuffer() {
         return buffer;
     }
@@ -107,6 +109,19 @@ public class Buffer extends GLTFNamedValue {
         buffer = BufferUtils.createByteBuffer(byteLength);
     }
 
+    /**
+     * Stores the float array at position
+     * 
+     * @param floatData
+     * @param position Position, in floats, where to start storing data
+     */
+    public void put(float[] floatData, int position) {
+        FloatBuffer fb = buffer.asFloatBuffer();
+        fb.position(position);
+        fb.put(floatData);
+    }
+    
+    
     /**
      * Loads data from the uri into this buffer, must call {@link #createBuffer()} to create buffer before
      * loading data into this buffer

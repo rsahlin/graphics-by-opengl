@@ -154,7 +154,6 @@ public class BufferObjectsFactory {
                     GLESWrapper.GLES20.GL_STATIC_DRAW);
             GLUtils.handleError(gles, "BufferData for buffer " + buffer.getUri());
         }
-
     }
 
     /**

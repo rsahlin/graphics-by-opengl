@@ -137,7 +137,9 @@ public class BufferView extends GLTFNamedValue implements RuntimeResolver {
     }
 
     /**
-     * The buffer holding the data
+     * The buffer holding the data - be careful when using this since offsets are only known
+     * from Accessor.
+     * Use {@link Accessor#getBuffer()} to get the positioned ByteBuffer.
      * @return
      */
     public Buffer getBuffer() {
