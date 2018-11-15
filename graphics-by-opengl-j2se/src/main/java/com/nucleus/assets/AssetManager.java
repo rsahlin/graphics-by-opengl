@@ -378,13 +378,13 @@ public class AssetManager {
         loadBuffers(glTF);
         loadTextures(gles, glTF);
         SimpleLogger.d(getClass(), "Loaded gltf assets");
+        // Build TBN before creating VBOs
+        for (Mesh m : glTF.getMeshes()) {
+            buildTBN(m.getPrimitives());
+        }
         if (gles != null && com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
             BufferObjectsFactory.getInstance().createVBOs(gles, glTF.getBuffers());
             SimpleLogger.d(getClass(), "Created VBOs for gltf assets");
-        }
-        // Build TBN
-        for (Mesh m : glTF.getMeshes()) {
-            buildTBN(m.getPrimitives());
         }
 
     }
