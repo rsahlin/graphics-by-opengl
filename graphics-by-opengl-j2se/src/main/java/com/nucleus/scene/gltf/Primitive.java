@@ -10,6 +10,9 @@ import java.util.Set;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.scene.gltf.Accessor.ComponentType;
+import com.nucleus.scene.gltf.Accessor.Type;
+import com.nucleus.scene.gltf.BufferView.Target;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.shader.GLTFShaderProgram;
@@ -124,13 +127,11 @@ public class Primitive implements RuntimeResolver {
         }
 
         private short[] copyShortBuffer(Accessor data) {
-            BufferView bv = data.getBufferView();
-            ShortBuffer buffer = bv.getBuffer().buffer.asShortBuffer();
+            ShortBuffer buffer = data.getBuffer().asShortBuffer();
             int count = data.getCount();
             short[] result = new short[count * data.getType().size];
 
-            int offset = (data.getByteOffset() + bv.getByteOffset()) / data.getComponentType().size;
-            buffer.position(offset);
+            BufferView bv = data.getBufferView();
             if (bv.getByteStride() < 4) {
                 // Straight copy of all data
                 buffer.get(result);
@@ -145,20 +146,16 @@ public class Primitive implements RuntimeResolver {
                 }
             }
             return result;
-
         }
 
         private float[] copyFloatBuffer(Accessor data) {
             if (data == null) {
                 return null;
             }
-            BufferView bv = data.getBufferView();
-            FloatBuffer buffer = bv.getBuffer().buffer.asFloatBuffer();
+            FloatBuffer buffer = data.getBuffer().asFloatBuffer();
             int count = data.getCount();
             float[] result = new float[count * data.getType().size];
-
-            int offset = (data.getByteOffset() + bv.getByteOffset()) / data.getComponentType().size;
-            buffer.position(offset);
+            BufferView bv = data.getBufferView();
             if (bv.getByteStride() < 4) {
                 // Straight copy of all data
                 buffer.get(result);
@@ -188,6 +185,7 @@ public class Primitive implements RuntimeResolver {
         POSITION(),
         NORMAL(),
         TANGENT(),
+        BITANGENT(),
         TEXCOORD_0(),
         TEXCOORD_1(),
         TEXCOORD_2(),
@@ -440,14 +438,24 @@ public class Primitive implements RuntimeResolver {
     private void buildTBNTriangles(Accessor indices, Accessor position, Accessor uv, Accessor normal,
             FloatBuffer tangentBuffer, FloatBuffer bitangentBuffer) {
 
-        BufferView indexView = indices.getBufferView();
-        ShortBuffer sb = indexView.getBuffer().getBuffer().asShortBuffer();
-        sb.position((indexView.getByteOffset() + indices.getByteOffset()) / 2);
-
         Triangles triangles = new Triangles();
         triangles.createBuffers(indices, position, uv, normal);
-        float[][] TB = triangles.calculateTangentBiTangent(indices, position, uv, normal);
+        float[][] TBArray = triangles.calculateTangentBiTangent(indices, position, uv, normal);
+        int l = TBArray[0].length; //Length of one buffer in number of floats
+        Buffer buffer = new Buffer(l * 2 * 4);
+        buffer.put(TBArray[0], 0);
+        buffer.put(TBArray[1], l);
+        
+        BufferView Tbv = new BufferView(buffer, 0, 0, Target.ARRAY_BUFFER);
+        BufferView Bbv = new BufferView(buffer, 0, 0, Target.ARRAY_BUFFER);
+        int count = l / 3;
+        Accessor Ta = new Accessor(Tbv, 0, ComponentType.FLOAT, count, Type.VEC3);
+        Accessor Ba = new Accessor(Bbv, l * 4, ComponentType.FLOAT, count, Type.VEC3);
 
+        accessorList.add(Ta);
+        attributeList.add(Attributes.TANGENT);
+        accessorList.add(Ba);
+        attributeList.add(Attributes.BITANGENT);
     }
 
     /**
