@@ -216,11 +216,6 @@ public class JOGLGLES32Wrapper extends GLES32Wrapper {
     }
 
     @Override
-    public void glUniform1iv(int location, int count, int[] v0, int offset) {
-        gles.glUniform1iv(location, count, v0, offset);
-    }
-
-    @Override
     public void glUniformMatrix4fv(int location, int count, boolean transpose, FloatBuffer buffer) {
         gles.glUniformMatrix4fv(location, count, transpose, buffer);
     }
@@ -256,6 +251,11 @@ public class JOGLGLES32Wrapper extends GLES32Wrapper {
         gles.glUniform1fv(location, count, buffer);
     }
 
+    @Override
+    public void glUniform1iv(int location, int count, IntBuffer buffer) {
+        gles.glUniform1iv(location, count, buffer);
+    }
+    
     @Override
     public void glTexParameterf(int target, int pname, float param) {
         gles.glTexParameterf(target, pname, param);

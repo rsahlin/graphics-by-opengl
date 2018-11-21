@@ -213,11 +213,6 @@ public class LWJGL3GLES32Wrapper extends GLES32Wrapper {
     }
 
     @Override
-    public void glUniform1iv(int location, int count, int[] v0, int offset) {
-        org.lwjgl.opengles.GLES20.glUniform1iv(location, LWJGLUtils.toIntBuffer(v0, count, offset));
-    }
-
-    @Override
     public void glUniformMatrix4fv(int location, int count, boolean transpose, FloatBuffer buffer) {
         org.lwjgl.opengles.GLES20.glUniformMatrix4fv(location, transpose, buffer);
     }
@@ -252,6 +247,10 @@ public class LWJGL3GLES32Wrapper extends GLES32Wrapper {
         org.lwjgl.opengles.GLES20.glUniform1fv(location, buffer);
     }
 
+    @Override
+    public void glUniform1iv(int location, int count, IntBuffer buffer) {
+        org.lwjgl.opengles.GLES20.glUniform1iv(location, buffer);
+    }
     @Override
     public void glTexParameterf(int target, int pname, float param) {
         org.lwjgl.opengles.GLES20.glTexParameterf(target, pname, param);

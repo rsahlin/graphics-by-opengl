@@ -7,6 +7,7 @@ import com.nucleus.BaseTestCase;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.BufferView;
 import com.nucleus.scene.gltf.BufferView.Target;
+import com.nucleus.scene.gltf.GLTF;
 
 public class BufferViewTest extends BaseTestCase {
 
@@ -17,8 +18,8 @@ public class BufferViewTest extends BaseTestCase {
 
     @Test
     public void testConstructor() {
-
-        BufferView bv = new BufferView(new Buffer(BYTE_SIZE), BYTE_OFFSET, BYTE_STRIDE, TARGET);
+        GLTF gltf = new GLTF();
+        BufferView bv = gltf.createBufferView("TEST", BYTE_SIZE, BYTE_OFFSET, BYTE_STRIDE, Target.ARRAY_BUFFER);
         Assert.assertTrue(bv.getByteOffset() == BYTE_OFFSET);
         Assert.assertTrue(bv.getByteLength() == BYTE_SIZE);
         Assert.assertTrue(bv.getByteStride() == BYTE_STRIDE);

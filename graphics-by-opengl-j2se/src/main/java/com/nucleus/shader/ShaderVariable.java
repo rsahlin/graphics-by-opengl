@@ -67,6 +67,9 @@ public class ShaderVariable {
     public static class InterfaceBlock {
 
         public static final int ACTIVE_COUNT_INDEX = 0;
+        /**
+         * GL_UNIFORM_BLOCK_DATA_SIZE is stored at this index - this is the number of bytes needed for interface block.
+         */
         public static final int BLOCK_DATA_SIZE_INDEX = 1;
         public static final int VERTEX_REFERENCE_INDEX = 2;
         public static final int FRAGMENT_REFERENCE_INDEX = 3;
@@ -117,6 +120,9 @@ public class ShaderVariable {
         protected final int[] indices;
         public final int blockIndex;
         public final int program;
+        /**
+         * Number of bytes needed for the block data.
+         */
         protected final int blockDataSize;
         protected final String name;
         protected final Usage usage;
@@ -341,4 +347,11 @@ public class ShaderVariable {
         }
         throw new IllegalArgumentException(ILLEGAL_DATATYPE_ERROR + dataType);
     }
+
+    @Override
+    public String toString() {
+        return name + " : " + type + ", size " + size + ", offset " + offset + ", activeIndex " + activeIndex +
+                ", blockIndex " + blockIndex;
+    }
+
 }

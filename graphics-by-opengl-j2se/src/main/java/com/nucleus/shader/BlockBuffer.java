@@ -1,6 +1,7 @@
 package com.nucleus.shader;
 
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
 
 import com.nucleus.geometry.BufferObject;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
@@ -12,7 +13,7 @@ import com.nucleus.shader.ShaderVariable.InterfaceBlock;
  */
 public abstract class BlockBuffer extends BufferObject {
 
-    protected final Buffer plainBuffer;
+    protected final ByteBuffer plainBuffer;
     /**
      * The block this buffer belongs to or null
      */
@@ -23,8 +24,8 @@ public abstract class BlockBuffer extends BufferObject {
      */
     protected final String blockName;
 
-    public BlockBuffer(Buffer buffer, String blockName, int sizeInBytes) {
-        super(sizeInBytes);
+    public BlockBuffer(ByteBuffer buffer, String blockName) {
+        super(buffer.capacity());
         this.blockName = blockName;
         this.plainBuffer = buffer;
         this.interfaceBlock = null;
@@ -38,7 +39,7 @@ public abstract class BlockBuffer extends BufferObject {
      * @param interfaceBlock The block this buffer belongs to
      * @throws NullPointerException If interfaceBlock is null
      */
-    public BlockBuffer(Buffer buffer, String blockName, InterfaceBlock interfaceBlock) {
+    public BlockBuffer(ByteBuffer buffer, String blockName, InterfaceBlock interfaceBlock) {
         super(interfaceBlock.blockDataSize);
         this.blockName = blockName;
         this.interfaceBlock = interfaceBlock;
@@ -46,9 +47,9 @@ public abstract class BlockBuffer extends BufferObject {
     }
 
     /**
-     * Returns the capacity of the buffer
+     * Returns the capacity of the buffer, in number of bytes
      * 
-     * @return
+     * @return Number of bytes capacity
      */
     public int capacity() {
         return plainBuffer.capacity();

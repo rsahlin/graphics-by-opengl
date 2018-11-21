@@ -7,6 +7,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.jogamp.opengl.GL4ES3;
+import com.nucleus.common.BufferUtils;
 import com.nucleus.opengl.GLES30Wrapper;
 
 public class JOGLGLES30Wrapper extends GLES30Wrapper {
@@ -251,8 +252,8 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
     }
 
     @Override
-    public void glUniform1iv(int location, int count, int[] v0, int offset) {
-        gles.glUniform1iv(location, count, v0, offset);
+    public void glUniform1iv(int location, int count, IntBuffer buffer) {
+        gles.glUniform1iv(location, count, buffer);
     }
 
     @Override
@@ -456,10 +457,10 @@ public class JOGLGLES30Wrapper extends GLES30Wrapper {
 
     @Override
     public String glGetActiveUniformBlockName(int program, int uniformBlockIndex) {
-        IntBuffer nameLength = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer nameLength = BufferUtils.createIntBuffer(1);
         glGetActiveUniformBlockiv(program, uniformBlockIndex, GLES30.GL_UNIFORM_BLOCK_NAME_LENGTH,
                 nameLength);
-        ByteBuffer name = ByteBuffer.allocateDirect(nameLength.get(0));
+        ByteBuffer name = BufferUtils.createByteBuffer(nameLength.get(0));
         nameLength.rewind();
         name.rewind();
         gles.glGetActiveUniformBlockName(program, uniformBlockIndex, name.capacity(), nameLength, name);

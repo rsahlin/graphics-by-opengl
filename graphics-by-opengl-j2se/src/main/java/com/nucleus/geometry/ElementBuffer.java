@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.BufferUtils;
 
 /**
  * Container for geometry element (index) data, this is used when the draw mode needs to index vertices.
@@ -71,7 +72,7 @@ public class ElementBuffer extends BufferObject {
         super(count * type.sizeInBytes);
         this.count = count;
         this.type = type;
-        indices = ByteBuffer.allocateDirect(sizeInBytes).order(ByteOrder.nativeOrder());
+        indices = BufferUtils.createByteBuffer(sizeInBytes);
         SimpleLogger.d(getClass(), "Allocated element buffer with " + sizeInBytes);
     }
 

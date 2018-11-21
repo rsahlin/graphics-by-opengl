@@ -4,6 +4,24 @@
  */
 precision highp float;
 
+uniform lowp sampler2D uTexture; //The texture sampler
+//F0, 1 - F0, diffuse, metallic, roughness, roughness ^2
+uniform vec4 _PBRDATA[4];
+uniform vec3 _LIGHT_0[1];
+const float pi = 3.141592;
+const float oneByPI = 1 / pi;
+const float twoByPI = 2 / pi;
+
+in vec2 vTexCoord0;
+in vec3 vNormal;
+in vec3 vEye;
+in vec3 vLight;
+in vec3 vLightOut;
+in vec3 vU;
+
+out vec4 fragColor;
+
+
 vec4 calculateFresnelDiffuse() {
     vec3 H = normalize((vLight + vEye));
 //    vec3 lightOut = reflect(vLight, vNormal);

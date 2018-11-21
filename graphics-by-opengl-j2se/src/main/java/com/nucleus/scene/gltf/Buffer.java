@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
@@ -51,9 +51,11 @@ public class Buffer extends GLTFNamedValue {
      * Creates a new buffer with the specified byteLength - the buffer will be created by calling
      * {@link #createBuffer()}
      * 
+     * @param name Name of the buffer
      * @param byteLength
      */
-    public Buffer(int byteLength) {
+    public Buffer(String name, int byteLength) {
+        this.name = name;
         this.byteLength = byteLength;
         createBuffer();
     }
@@ -68,9 +70,11 @@ public class Buffer extends GLTFNamedValue {
 
     /**
      * Returns the underlying ByteBuffer, or null if serialized and not called {@link #createBuffer()}
+     * Deprecated use {@link Accessor#getBuffer()} instead
      * 
      * @return
      */
+    @Deprecated
     public ByteBuffer getBuffer() {
         return buffer;
     }
@@ -104,9 +108,52 @@ public class Buffer extends GLTFNamedValue {
             throw new IllegalArgumentException("Buffer already created");
         }
         SimpleLogger.d(getClass(), "Creating buffer with byte size: " + byteLength);
-        buffer = ByteBuffer.allocateDirect(byteLength).order(ByteOrder.nativeOrder());
+        buffer = BufferUtils.createByteBuffer(byteLength);
     }
 
+    /**
+     * Stores the float array at position
+     * 
+     * @param floatData
+     * @param position Position, in floats, where to start storing data
+     */
+    public void put(float[] floatData, int position) {
+        FloatBuffer fb = buffer.asFloatBuffer();
+        fb.position(position);
+        fb.put(floatData);
+    }
+
+    /**
+     * Copies the contents of the bufferview in the source into the current position of this buffer.
+     * Copy will use bytestride of source and copy tighly packed into this buffer.
+     * Use if data should be packed into this buffer.
+     * @param source
+     */
+    public void put(Accessor source) {
+        BufferView view = source.getBufferView();
+        ByteBuffer sourceBuffer = source.getBuffer();
+        int limit = sourceBuffer.limit();
+        if (view.getByteStride() <= source.getComponentType().size * source.getType().size) {
+            sourceBuffer.limit(sourceBuffer.position() + buffer.remaining());
+            buffer.put(sourceBuffer);
+        } else {
+            //Must copy one type at a time
+            int count = source.getCount();
+            int size = source.getType().size * source.getComponentType().size;
+            byte[] d = new byte[size];
+            int pos = sourceBuffer.position();
+            int byteStride = view.getByteStride();
+            for (int i = 0; i < count; i++) {
+                sourceBuffer.get(d);
+                buffer.put(d);
+                pos += byteStride;
+                sourceBuffer.position(pos);
+            }
+            
+        }
+        sourceBuffer.limit(limit);
+    }
+    
     /**
      * Loads data from the uri into this buffer, must call {@link #createBuffer()} to create buffer before
      * loading data into this buffer
@@ -156,7 +203,9 @@ public class Buffer extends GLTFNamedValue {
     }
 
     public String toString(int position, int length) {
-        String str = "URI: " + uri + ", name: " + getName() + ", byteLength: " + byteLength;
+        String str = "URI: " + uri + ", name: " + getName() + ", byteLength: " + byteLength + (bufferName > 0 ? 
+                " VBO " + bufferName : " no VBO");
+        
         str += "\n" + BufferUtils.getContentAsString(position, length, buffer);
         return str;
     }

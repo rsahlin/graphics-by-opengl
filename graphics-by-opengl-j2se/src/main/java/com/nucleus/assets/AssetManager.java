@@ -35,6 +35,8 @@ import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.scene.gltf.Image;
+import com.nucleus.scene.gltf.Mesh;
+import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Texture;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.BaseImageFactory;
@@ -376,9 +378,22 @@ public class AssetManager {
         loadBuffers(glTF);
         loadTextures(gles, glTF);
         SimpleLogger.d(getClass(), "Loaded gltf assets");
+        // Build TBN before creating VBOs
+        for (Mesh m : glTF.getMeshes()) {
+            buildTBN(glTF, m.getPrimitives());
+        }
         if (gles != null && com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
-            BufferObjectsFactory.getInstance().createVBOs(gles, glTF.getBuffers());
+            BufferObjectsFactory.getInstance().createVBOs(gles, glTF.getBuffers(null));
             SimpleLogger.d(getClass(), "Created VBOs for gltf assets");
+        }
+
+    }
+
+    public void buildTBN(GLTF gltf, Primitive[] primitives) {
+        if (primitives != null) {
+            for (Primitive p : primitives) {
+                p.calculateTBN(gltf);
+            }
         }
     }
 
@@ -393,7 +408,7 @@ public class AssetManager {
      * @throws GLException
      */
     public void deleteGLTFAssets(GLES20Wrapper gles, GLTF gltf) throws GLException {
-        BufferObjectsFactory.getInstance().destroyVBOs(gles, gltf.getBuffers());
+        BufferObjectsFactory.getInstance().destroyVBOs(gles, gltf.getBuffers(null));
         deleteTextures(gles, gltf.getImages());
         gltfAssets.remove(gltf.getFilename());
         gltf.destroy();
@@ -471,9 +486,8 @@ public class AssetManager {
      * @throws IOException
      */
     protected void loadBuffers(GLTF glTF) throws IOException {
-        Buffer[] buffers = glTF.getBuffers();
         try {
-            for (Buffer b : buffers) {
+            for (Buffer b : glTF.getBuffers(null)) {
                 b.createBuffer();
                 b.load(glTF, b.getUri());
             }

@@ -68,6 +68,7 @@ public class ShaderSource {
     public static String VERSION = "#version";
     public static String ES = "es";
     public static String SHADING_LANGUAGE_100 = "100";
+    public static String PRECISION = "precision";
 
     /**
      * Use for shader source names that are versioned 300
@@ -216,12 +217,25 @@ public class ShaderSource {
     }
 
     /**
-     * Appends source at the end of this source.
+     * Appends source at the specified line, the default is to append after the precision qualifier.
      * 
      * @param source Unversioned shader source
      */
     public void appendSource(String source) {
-        this.shaderSource += source;
+        if (source != null && source.length() > 0) {
+            int precisionIndex = this.shaderSource.indexOf(PRECISION);
+            if (precisionIndex < 0) {
+                throw new IllegalArgumentException("Shader source must define precision qualifier");
+            }
+            int nextLineIndex = shaderSource.indexOf("\n", precisionIndex + PRECISION.length());
+            if (nextLineIndex != -1) {
+                this.shaderSource = this.shaderSource.substring(0, nextLineIndex) + source +
+                        this.shaderSource.substring(nextLineIndex);
+            } else {
+                throw new IllegalArgumentException("Malformed? Could not find line delimiter after precision qualifier at " +
+                        precisionIndex);
+            }
+        }
     }
 
     /**
@@ -233,7 +247,7 @@ public class ShaderSource {
      * The returned string can be used to calculate offset/length when substituting version.
      */
     public static String hasVersion(String source) {
-        StringTokenizer st = new StringTokenizer(source, System.lineSeparator());
+        StringTokenizer st = new StringTokenizer(source, "\n");
         try {
             String t = st.nextToken();
             if (t.trim().toLowerCase().startsWith(VERSION)) {

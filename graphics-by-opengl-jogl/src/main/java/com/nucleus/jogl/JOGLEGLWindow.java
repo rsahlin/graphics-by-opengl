@@ -19,6 +19,7 @@ import com.jogamp.opengl.egl.EGL;
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.BufferUtils;
 import com.nucleus.common.Constants;
 import com.nucleus.common.Environment;
 import com.nucleus.opengl.GLESWrapper.Renderers;
@@ -69,9 +70,9 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
             nativeWindow.setSize(width, height);
             nativeWindow.setRealized(true);
 
-            IntBuffer major = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+            IntBuffer major = BufferUtils.createIntBuffer(1);
             major.put(1);
-            IntBuffer minor = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+            IntBuffer minor = BufferUtils.createIntBuffer(1);
             minor.put(4);
             if (!EGL.eglInitialize(nativeWindow.getDisplayHandle(), major, minor)) {
                 throw new IllegalArgumentException("Could not initialize EGL");

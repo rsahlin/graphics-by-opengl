@@ -153,7 +153,7 @@ public class BufferImage extends BufferObject {
             case LUMINANCE_ALPHA:
             case LUMINANCE:
             case ALPHA:
-                buffer = ByteBuffer.allocateDirect(sizeInBytes).order(ByteOrder.nativeOrder());
+                buffer =BufferUtils.createByteBuffer(sizeInBytes);
                 break;
             default:
                 throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE + ", " + format);

@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.scene.gltf.BufferView.Target;
 
 /**
  * 
@@ -54,20 +54,6 @@ public class GLTF {
     private static final String SAMPLERS = "samplers";
     private static final String TEXTURES = "textures";
 
-    /**
-     * Conversion from GLTF primitive drawmode to GL values
-     * POINTS(0),
-     * LINES(1),
-     * LINE_LOOP(2),
-     * LINE_STRIP(3),
-     * TRIANGLES(4),
-     * TRIANGLE_STRIP(5),
-     * TRIANGLE_FAN(6);
-     * 
-     */
-    public final static int[] GL_DRAWMODE = new int[] { GLES20.GL_POINTS, GLES20.GL_LINES, GLES20.GL_LINE_LOOP,
-            GLES20.GL_LINE_STRIP, GLES20.GL_TRIANGLES, GLES20.GL_TRIANGLE_STRIP, GLES20.GL_TRIANGLE_FAN };
-
     public static class GLTFException extends Throwable {
         public GLTFException(String reason) {
             super(reason);
@@ -97,11 +83,11 @@ public class GLTF {
     }
 
     @SerializedName(ACCESSORS)
-    private Accessor[] accessors;
+    private ArrayList<Accessor> accessors;
     @SerializedName(ASSET)
     private Asset asset;
     @SerializedName(BUFFERS)
-    private Buffer[] buffers;
+    private ArrayList<Buffer> buffers;
     @SerializedName(BUFFER_VIEWS)
     private BufferView[] bufferViews;
     @SerializedName(CAMERAS)
@@ -132,11 +118,76 @@ public class GLTF {
      * The filename, minus path
      */
     transient private String filename;
+    /**
+     * Set to true to render Tangent, Bitangent and Normal buffers using lines
+     */
+    transient static public boolean debugTBN = true;
 
-    public Buffer[] getBuffers() {
+    /**
+     * Copies the list of Buffers.
+     * 
+     * @param buffers Buffers are copied here, may be null to create new List.
+     * @return buffers
+     * 
+     */
+    public ArrayList<Buffer> getBuffers(ArrayList<Buffer> buffers) {
+        if (buffers == null) {
+            buffers = new ArrayList<>();
+        }
+        buffers.addAll(this.buffers);
         return buffers;
     }
 
+    /**
+     * Returns the buffer at the specified index
+     * 
+     * @param index 0 to buffercount
+     * @return
+     */
+    public Buffer getBuffer(int index) {
+        return buffers.get(index);
+    }
+
+    /**
+     * Adds the Buffer to this asset, the Buffer index is returned - this shall be set to BufferViews referencing this
+     * Buffer.
+     * 
+     * @param buffer
+     * @return
+     */
+    protected int addBuffer(Buffer buffer) {
+        int size = buffers.size();
+        buffers.add(buffer);
+        return size;
+    }
+
+    /**
+     * Creates a new Buffer with specified size and a BufferView for the created buffer
+     * Use this when a BufferView shall be created for a new buffer.
+     * 
+     * @param bufferName
+     * @param bufferSize
+     * @param byteOffset
+     * @param byteStride
+     * @param target
+     * @return
+     */
+    public BufferView createBufferView(String bufferName, int bufferSize, int byteOffset, int byteStride, Target target) {
+            Buffer buffer = new Buffer(bufferName, bufferSize);
+            int index = addBuffer(buffer);
+            BufferView bv = new BufferView(this, index, byteOffset, byteStride, target);
+            return bv;
+    }
+
+    public BufferView createBufferView(Buffer buffer,  int byteOffset, int byteStride, Target target) {
+        int index = buffers.indexOf(buffer);
+        if (index < 0) {
+            throw new IllegalArgumentException("Could not find index for Buffer - not added?");
+        }
+        BufferView bv = new BufferView(this, index, byteOffset, byteStride, target);
+        return bv;
+    }
+    
     /**
      * Returns the buffer for the specified accessor
      * 
@@ -144,7 +195,7 @@ public class GLTF {
      * @return
      */
     public Buffer getBuffer(Accessor accessor) {
-        return buffers[bufferViews[accessor.getBufferViewIndex()].getBufferIndex()];
+        return buffers.get(bufferViews[accessor.getBufferViewIndex()].getBufferIndex());
     }
 
     public BufferView[] getBufferViews() {
@@ -315,7 +366,7 @@ public class GLTF {
      * 
      * @return
      */
-    public Accessor[] getAccessors() {
+    public ArrayList<Accessor> getAccessors() {
         return accessors;
     }
 
@@ -326,8 +377,8 @@ public class GLTF {
      * @return
      */
     public Accessor getAccessor(int index) {
-        if (accessors != null && index >= 0 && index < accessors.length) {
-            return accessors[index];
+        if (accessors != null && index >= 0 && index < accessors.size()) {
+            return accessors.get(index);
         }
         return null;
     }
@@ -412,7 +463,7 @@ public class GLTF {
     private List<RuntimeResolver> getResolves() {
         ArrayList<RuntimeResolver> result = new ArrayList<>();
         if (accessors != null) {
-            result.addAll(Arrays.asList(accessors));
+            result.addAll(accessors);
         }
         if (bufferViews != null) {
             result.addAll(Arrays.asList(bufferViews));
@@ -464,8 +515,8 @@ public class GLTF {
                     throw new IllegalArgumentException(
                             "Calling destroy on gltf Buffers but has not deleted assets, call AssetManager to delete before calling GLTF.destroy()");
                 }
-                buffers[index] = null;
             }
+            buffers.clear();
             buffers = null;
         }
     }

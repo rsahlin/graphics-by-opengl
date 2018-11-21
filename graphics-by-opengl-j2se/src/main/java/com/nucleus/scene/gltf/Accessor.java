@@ -1,5 +1,8 @@
 package com.nucleus.scene.gltf;
 
+import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
+
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
@@ -41,17 +44,25 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
     private static final String MIN = "min";
 
     public enum ComponentType {
-        BYTE(GLESWrapper.GLES20.GL_BYTE),
-        UNSIGNED_BYTE(GLESWrapper.GLES20.GL_UNSIGNED_BYTE),
-        SHORT(GLESWrapper.GLES20.GL_SHORT),
-        UNSIGNED_SHORT(GLESWrapper.GLES20.GL_UNSIGNED_SHORT),
-        UNSIGNED_INT(GLESWrapper.GLES20.GL_UNSIGNED_INT),
-        FLOAT(GLESWrapper.GLES20.GL_FLOAT);
+        BYTE(GLESWrapper.GLES20.GL_BYTE, 1),
+        UNSIGNED_BYTE(GLESWrapper.GLES20.GL_UNSIGNED_BYTE, 1),
+        SHORT(GLESWrapper.GLES20.GL_SHORT, 2),
+        UNSIGNED_SHORT(GLESWrapper.GLES20.GL_UNSIGNED_SHORT, 2),
+        UNSIGNED_INT(GLESWrapper.GLES20.GL_UNSIGNED_INT, 4),
+        FLOAT(GLESWrapper.GLES20.GL_FLOAT, 4);
 
+        /**
+         * The gl value
+         */
         public final int value;
+        /**
+         * Size in bytes
+         */
+        public final int size;
 
-        private ComponentType(int value) {
+        private ComponentType(int value, int size) {
             this.value = value;
+            this.size = size;
         }
 
         public static ComponentType get(int value) {
@@ -155,18 +166,38 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
         return bufferViewRef;
     }
 
+    /**
+     * The offset relative to the start of the bufferView in bytes.
+     * 
+     * @return
+     */
     public int getByteOffset() {
         return byteOffset;
     }
 
+    /**
+     * The datatype of components in the attribute
+     * 
+     * @return
+     */
     public ComponentType getComponentType() {
         return componentType;
     }
 
+    /**
+     * Returns true if integer data should be normalized
+     * 
+     * @return
+     */
     public boolean isNormalized() {
         return normalized;
     }
 
+    /**
+     * Returns the number of attributes referenced by this accessor
+     * 
+     * @return
+     */
     public int getCount() {
         return count;
     }
@@ -179,10 +210,26 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
         return min;
     }
 
+    /**
+     * Specifies if the attribute is a scalar, vector, or matrix
+     *
+     * @return
+     */
     public Type getType() {
         return type;
     }
 
+    /**
+     * Returns the ByteBuffer positioned according to this accessor and bufferview
+     * @return
+     */
+    public ByteBuffer getBuffer() {
+        ByteBuffer buffer = bufferViewRef.getBuffer().buffer;
+        buffer.position(byteOffset + bufferViewRef.getByteOffset());
+        return buffer;
+    }
+    
+    
     @Override
     public void resolve(GLTF asset) throws GLTFException {
         if (bufferViewRef != null) {
@@ -217,6 +264,22 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
         return str;
     }
 
+    public void copyData(int[] destination) {
+        switch (componentType) {
+            case SHORT:
+            case UNSIGNED_SHORT:
+            case UNSIGNED_INT:
+            break;    
+            default:
+                throw new IllegalArgumentException("Not implemented for " + componentType);
+            
+        }
+    }
+    
+    private void copyData(ShortBuffer source, int[] destination) {
+        source.position(byteOffset / 2);
+    }
+    
     /**
      * 
      * 

@@ -2,7 +2,9 @@ package com.nucleus.common;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
 import com.nucleus.SimpleLogger;
@@ -49,12 +51,14 @@ public class BufferUtils {
      */
     public static String getContentAsString(int position, int length, ByteBuffer buffer) {
         if (buffer != null) {
+            int currentPos = buffer.position();
             StringBuffer result = new StringBuffer();
             length = length < buffer.capacity() - position ? length : buffer.capacity() - position;
             buffer.position(position);
             for (int i = 0; i < length; i++) {
                 result.append(Integer.toString(buffer.get()) + ", ");
             }
+            buffer.position(currentPos);
             return result.toString();
         }
         return "Null buffer";
@@ -102,4 +106,44 @@ public class BufferUtils {
         return "Null buffer";
     }
 
+    /**
+     * Allocates a direct byte buffer with the specified number of bytes. 
+     * Ordering will be nativeOrder
+     * Use this method to allocate byte buffers instead of calling java.nio.ByteBuffer direct
+     * 
+     * @param bytes
+     * @return
+     */
+    public static ByteBuffer createByteBuffer(int bytes) {
+        SimpleLogger.d(BufferUtils.class, "Creating byte buffer with byte size: " + bytes);
+        return ByteBuffer.allocateDirect(bytes).order(ByteOrder.nativeOrder());
+    }
+    
+    /**
+     * Allocates a direct float buffer with the specified number of floats. 
+     * Ordering will be nativeOrder.
+     * Use this method to allocate float buffers instead of calling java.nio.ByteBuffer direct
+     * 
+     * @param floats
+     * @return
+     */
+    public static FloatBuffer createFloatBuffer(int floats) {
+        SimpleLogger.d(BufferUtils.class, "Creating float buffer with float size: " + floats);
+        return ByteBuffer.allocateDirect(floats * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+    }
+    
+    /**
+     * Allocates a direct int buffer with the specified number of ints. 
+     * Ordering will be nativeOrder.
+     * Use this method to allocate float buffers instead of calling java.nio.ByteBuffer direct
+     * 
+     * @param ints
+     * @return
+     */
+    public static IntBuffer createIntBuffer(int ints) {
+        SimpleLogger.d(BufferUtils.class, "Creating int buffer with int size: " + ints);
+        return ByteBuffer.allocateDirect(ints * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
+    }
+    
+    
 }

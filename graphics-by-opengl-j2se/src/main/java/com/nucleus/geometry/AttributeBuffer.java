@@ -5,6 +5,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.BufferUtils;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 
@@ -76,7 +77,7 @@ public class AttributeBuffer extends BufferObject {
         }
         this.type = type;
         this.verticeCount = verticeCount;
-        byteBuffer = ByteBuffer.allocateDirect(sizeInBytes).order(ByteOrder.nativeOrder());
+        byteBuffer = BufferUtils.createByteBuffer(sizeInBytes);
         attributes = byteBuffer.asFloatBuffer();
         attribByteStride = sizePerVertex * DATATYPE_SIZE;
         attribFloatStride = sizePerVertex;
