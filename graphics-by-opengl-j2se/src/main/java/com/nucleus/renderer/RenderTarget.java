@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.common.Constants;
 import com.nucleus.io.BaseReference;
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.texturing.Image.ImageFormat;
+import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.Texture2D;
 
 /**

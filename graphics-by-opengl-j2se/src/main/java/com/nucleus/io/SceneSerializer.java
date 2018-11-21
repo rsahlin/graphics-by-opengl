@@ -4,39 +4,34 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import com.nucleus.common.Type;
-import com.nucleus.geometry.MeshFactory;
-import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.scene.Node;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.scene.NodeException;
-import com.nucleus.scene.NodeFactory;
-import com.nucleus.scene.RootNode;
 
 /**
  * Create a scene node without a direct connection to the underlying implementation of how to load and parse
  * scene data.
  * 
+ * 
  * @author Richard Sahlin
  *
+ * @param T The Scene rootnode.
  */
-public interface SceneSerializer {
+public interface SceneSerializer<T> {
 
-    public final static String NULL_RENDERER_ERROR = "Renderer is null.";
-    public final static String NULL_NODEFACTORY_ERROR = "Node factory is null.";
+    public final static String NULL_GLES_ERROR = "GLES is null.";
     public final static String NULL_MESHFACTORY_ERROR = "Mesh factory is null.";
 
-    public final static String INIT_NOT_CALLED_ERROR = "Init not called before import, must call #init(NucleusRenderer, NodeFactory, MeshFactory)";
+    public final static String INIT_NOT_CALLED_ERROR = "Init not called before import, must call #init()";
 
     /**
-     * Sets the renderer and node factory needed when scenes are imported.
+     * Sets the GLES wrapper needed when scenes are imported.
      * This method must be called before importScene is called.
      * 
-     * @param renderer
-     * @param nodeFactory
-     * @param meshFactory
+     * @param gles
      * @param types List of key/value classnames and types that can be serialized, or null
      * @throws IllegalArgumentException If renderer is null
      */
-    public void init(NucleusRenderer renderer, NodeFactory nodeFactory, MeshFactory meshFactory, Type<?>[] types);
+    public void init(GLES20Wrapper gles, Type<?>[] types);
 
     /**
      * Registers a list of types that can be resolved to classes, these are the user defined classes serialized by
@@ -48,29 +43,11 @@ public interface SceneSerializer {
     public void registerTypes(Type<?>[] types);
 
     /**
-     * Returns true if the serializer is initialized by calling {@link #init(NucleusRenderer, NodeFactory, MeshFactory)}
+     * Returns true if the serializer has been initialized by calling {@link #init(GLES20Wrapper, Type[])}
      * 
      * @return
      */
     public boolean isInitialized();
-
-    /**
-     * Adds a node type to list of known node name/classes. Use this to add support for custom node when
-     * importing/exporting.
-     * 
-     * @param type
-     * @throws IllegalArgumentException If type has already been registered
-     */
-    public void addNodeType(Type<Node> type);
-
-    /**
-     * Adds a list of node types to list of known node name/classes. Use this to add support for custom node when
-     * importing/exporting.
-     * 
-     * @param type
-     * @throws IllegalArgumentException If type has already been registered
-     */
-    public void addNodeTypes(Type<Node>[] types);
 
     /**
      * Creates nodetree from a scene, the scene will be loaded using filename and the node returned shall be the root
@@ -80,11 +57,12 @@ public interface SceneSerializer {
      * 
      * @param path Path to asset folder, this is the root folder where assets are located
      * @param filename Name of file containing scene data.
+     * @param type The type of scene, this must be understood by the implementation
      * @return The scene, including all defined children.
      * @throws NodeException If there is an exception loading the data.
      * @throws IllegalStateException If the renderer or nodefactory has not been set before calling this method.
      */
-    public RootNode importScene(String path, String filename) throws NodeException;
+    public T importScene(String path, String filename, String type) throws NodeException;
 
     /**
      * Exports a scene in the same format as this serializer can import.

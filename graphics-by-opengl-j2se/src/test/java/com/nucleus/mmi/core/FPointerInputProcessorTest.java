@@ -16,7 +16,7 @@ import com.nucleus.mmi.MMIPointerEvent.Action;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
-import com.nucleus.vecmath.Vector2D;
+import com.nucleus.vecmath.Vec2;
 
 public class FPointerInputProcessorTest extends BaseTestCase implements MMIEventListener {
 
@@ -63,7 +63,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
     public void testActionDownUpAll() {
 
         // Test that action down and up result in correct event.
-        PointerInputProcessor processor = new PointerInputProcessor();
+        InputProcessor processor = InputProcessor.getInstance();
 
         ArrayList<AssertMMIAction> assertValues = new ArrayList<AssertMMIAction>();
         processor.addMMIListener(this);
@@ -104,7 +104,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
 
             }
             Assert.assertEquals(assertAction.timestamp, pointer.timeStamp);
-            Assert.assertArrayEquals(assertAction.position, pointer.position, 0);
+            Assert.assertArrayEquals(assertAction.position, pointer.data, 0);
         }
 
     }
@@ -117,7 +117,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
      * @param count
      * @param positions
      */
-    private void createAndSend(PointerAction action, PointerInputProcessor processor, int count,
+    private void createAndSend(PointerAction action, InputProcessor processor, int count,
             ArrayList<AssertMMIAction> positions) {
 
         for (int i = 0; i < count; i++) {
@@ -129,7 +129,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
         }
     }
 
-    private AssertMMIAction sendEvent(PointerAction action, PointerInputProcessor processor, int pointer,
+    private AssertMMIAction sendEvent(PointerAction action, InputProcessor processor, int pointer,
             float[] coordinates, int pos) {
 
         float[] coord = new float[] { coordinates[pos++], coordinates[pos++] };
@@ -177,7 +177,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
     @Test
     public void testActionDownMove() {
         // Test that down + one move results in correct action.
-        PointerInputProcessor processor = new PointerInputProcessor();
+        InputProcessor processor = InputProcessor.getInstance();
 
         processor.addMMIListener(this);
         processor.pointerEvent(PointerAction.DOWN, Type.FINGER, System.currentTimeMillis(),
@@ -199,7 +199,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
 
     @Test
     public void testMultipleDownMove() {
-        PointerInputProcessor processor = new PointerInputProcessor();
+        InputProcessor processor = InputProcessor.getInstance();
         processor.addMMIListener(this);
 
         ArrayList<AssertMMIAction> checkList = new ArrayList<>();
@@ -227,7 +227,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
     @Test
     public void testManyActionDownUp() {
         // Test that many action down and up in different order results in correct action
-        PointerInputProcessor processor = new PointerInputProcessor();
+        InputProcessor processor = InputProcessor.getInstance();
         processor.addMMIListener(this);
 
         ArrayList<AssertMMIAction> checkList = new ArrayList<>();
@@ -250,7 +250,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
     @Test
     public void testActionZoom() {
         // Test that move 2 fingers result in zoom
-        PointerInputProcessor processor = new PointerInputProcessor();
+        InputProcessor processor = InputProcessor.getInstance();
 
         processor.addMMIListener(this);
         processor.pointerEvent(PointerAction.DOWN, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_1,
@@ -286,7 +286,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
         int y2 = 100;
         float deltaX1 = -5;
         float deltaX2 = 5;
-        PointerInputProcessor processor = new PointerInputProcessor();
+        InputProcessor processor = InputProcessor.getInstance();
         processor.addMMIListener(this);
 
         processor.pointerEvent(PointerAction.DOWN, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_1,
@@ -308,8 +308,8 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
             MMIPointerEvent event = iterator.next();
             if (event.getAction() == Action.ZOOM) {
                 found++;
-                Vector2D zoom = event.getZoom();
-                Assert.assertEquals(deltaX2 - deltaX1, zoom.vector[Vector2D.MAGNITUDE], 0f);
+                Vec2 zoom = event.getZoom();
+                Assert.assertEquals(deltaX2 - deltaX1, zoom.vector[Vec2.MAGNITUDE], 0f);
                 Assert.assertNotNull(zoom);
             }
         }
@@ -321,7 +321,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
      * 
      * @param values startX1, startY1, start X2, startY2, deltaX1, deltaY1, deltaX2, deltaY2
      */
-    private void createEvents(PointerInputProcessor processor, PointerAction action, float[] values, int count) {
+    private void createEvents(InputProcessor processor, PointerAction action, float[] values, int count) {
 
         for (int i = 1; i < count + 1; i++) {
             float[] pos1 = new float[] { values[0] + values[4] * i, values[1] + values[5] * i };
@@ -335,7 +335,7 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
     @Test
     public void testActionZoomSmallValues() {
         // Test that move 2 fingers result in zoom
-        PointerInputProcessor processor = new PointerInputProcessor();
+        InputProcessor processor = InputProcessor.getInstance();
 
         processor.addMMIListener(this);
         processor.pointerEvent(PointerAction.DOWN, Type.FINGER, System.currentTimeMillis(), PointerData.POINTER_1,
@@ -366,4 +366,5 @@ public class FPointerInputProcessorTest extends BaseTestCase implements MMIEvent
         pointerEvents.add(event);
 
     }
+
 }

@@ -45,11 +45,11 @@ public class NodeController implements EventHandler<Node> {
         Actions action = Actions.valueOf(key);
         Property p = Property.create(value);
         switch (action) {
-        case SWITCH:
-            NavigationController.getInstance().setActiveSwitch(root, p.getKey(), p.getValue());
-            break;
-        default:
-            SimpleLogger.d(getClass(), "Not handled event action: " + action + " with value: " + value);
+            case SWITCH:
+                NavigationController.getInstance().setActiveSwitch(root, p.getKey(), p.getValue());
+                break;
+            default:
+                SimpleLogger.d(getClass(), "Not handled event action: " + action + " with value: " + value);
         }
     }
 

@@ -16,7 +16,7 @@ public class JOGLGLES31Wrapper extends GLES31Wrapper {
      * Wrapper for gles20/30 methods that can be used if they are not a simple one liner.
      */
     private JOGLGLES30Wrapper gles30;
-
+    private JOGLGLES20Wrapper gles20;
     GL4ES3 gles;
 
     /**
@@ -33,6 +33,7 @@ public class JOGLGLES31Wrapper extends GLES31Wrapper {
         }
         this.gles = gles;
         gles30 = new JOGLGLES30Wrapper(gles, renderVersion);
+        gles20 = new JOGLGLES20Wrapper(gles, renderVersion);
     }
 
     /**
@@ -128,29 +129,23 @@ public class JOGLGLES31Wrapper extends GLES31Wrapper {
     }
 
     @Override
-    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, Buffer ptr) {
-        gles30.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, ByteBuffer ptr) {
+        gles20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
+    }
+
+    @Override
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, FloatBuffer ptr) {
+        gles20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
     }
 
     @Override
     public void glEnableVertexAttribArray(int index) {
         gles.glEnableVertexAttribArray(index);
-
     }
 
     @Override
-    public void glUniformMatrix4fv(int location, int count, boolean transpose, float[] v, int offset) {
-        gles.glUniformMatrix4fv(location, count, transpose, v, offset);
-    }
-
-    @Override
-    public void glUniformMatrix3fv(int location, int count, boolean transpose, float[] v, int offset) {
-        gles.glUniformMatrix3fv(location, count, transpose, v, offset);
-    }
-
-    @Override
-    public void glUniformMatrix2fv(int location, int count, boolean transpose, float[] v, int offset) {
-        gles.glUniformMatrix2fv(location, count, transpose, v, offset);
+    public void glDisableVertexAttribArray(int index) {
+        gles.glDisableVertexAttribArray(index);
     }
 
     @Override
@@ -220,42 +215,54 @@ public class JOGLGLES31Wrapper extends GLES31Wrapper {
     }
 
     @Override
-    public void glUniform4fv(int location, int count, float[] v, int offset) {
-        gles.glUniform4fv(location, count, v, offset);
+    public void glUniformMatrix4fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        gles.glUniformMatrix4fv(location, count, transpose, buffer);
+    }
+
+    @Override
+    public void glUniformMatrix3fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        gles.glUniformMatrix3fv(location, count, transpose, buffer);
+    }
+
+    @Override
+    public void glUniformMatrix2fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        gles.glUniformMatrix2fv(location, count, transpose, buffer);
+    }
+
+    @Override
+    public void glUniform4fv(int location, int count, FloatBuffer buffer) {
+        gles.glUniform4fv(location, count, buffer);
+    }
+
+    @Override
+    public void glUniform3fv(int location, int count, FloatBuffer buffer) {
+        gles.glUniform3fv(location, count, buffer);
+    }
+
+    @Override
+    public void glUniform2fv(int location, int count, FloatBuffer buffer) {
+        gles.glUniform2fv(location, count, buffer);
 
     }
 
     @Override
-    public void glUniform3fv(int location, int count, float[] v, int offset) {
-        gles.glUniform3fv(location, count, v, offset);
-
+    public void glUniform1fv(int location, int count, FloatBuffer buffer) {
+        gles.glUniform1fv(location, count, buffer);
     }
 
     @Override
-    public void glUniform1iv(int location, int count, int[] v0, int offset) {
-        gles.glUniform1iv(location, count, v0, offset);
-    }
-
-    @Override
-    public void glUniform2fv(int location, int count, float[] v, int offset) {
-        gles.glUniform2fv(location, count, v, offset);
-    }
-
-    @Override
-    public void glUniform1fv(int location, int count, float[] v, int offset) {
-        gles.glUniform1fv(location, count, v, offset);
+    public void glUniform1iv(int location, int count, IntBuffer buffer) {
+        gles.glUniform1iv(location, count, buffer);
     }
 
     @Override
     public void glTexParameterf(int target, int pname, float param) {
         gles.glTexParameterf(target, pname, param);
-
     }
 
     @Override
     public void glTexParameteri(int target, int pname, int param) {
         gles.glTexParameteri(target, pname, param);
-
     }
 
     @Override
@@ -441,18 +448,13 @@ public class JOGLGLES31Wrapper extends GLES31Wrapper {
     }
 
     @Override
-    public void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, int[] params, int offset) {
-        gles.glGetActiveUniformBlockiv(program, uniformBlockIndex, pname, params, offset);
+    public void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, IntBuffer params) {
+        gles.glGetActiveUniformBlockiv(program, uniformBlockIndex, pname, params);
     }
 
     @Override
     public String glGetActiveUniformBlockName(int program, int uniformBlockIndex) {
-        int[] nameLength = new int[1];
-        glGetActiveUniformBlockiv(program, uniformBlockIndex, GLES30.GL_UNIFORM_BLOCK_NAME_LENGTH,
-                nameLength, 0);
-        byte[] name = new byte[nameLength[0]];
-        gles.glGetActiveUniformBlockName(program, uniformBlockIndex, nameLength[0], nameLength, 0, name, 0);
-        return new String(name).trim();
+        return gles30.glGetActiveUniformBlockName(program, uniformBlockIndex);
     }
 
     @Override

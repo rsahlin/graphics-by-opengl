@@ -2,11 +2,13 @@ package com.nucleus.io.gson;
 
 import java.lang.reflect.Type;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.nucleus.scene.Node;
 import com.nucleus.vecmath.Shape;
 
 /**
@@ -14,7 +16,7 @@ import com.nucleus.vecmath.Shape;
  * TODO Perhaps move this class to vecmath?
  *
  */
-public class ShapeDeserializer extends NucleusDeserializer implements JsonDeserializer<Shape> {
+public class ShapeDeserializer extends AbstractNucleusDeserializerImpl<Node> implements JsonDeserializer<Shape> {
 
     @Override
     public Shape deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
@@ -30,6 +32,11 @@ public class ShapeDeserializer extends NucleusDeserializer implements JsonDeseri
         Shape shape = (Shape) gson.fromJson(json, s.typeClass);
         postDeserialize(shape);
         return shape;
+    }
+
+    @Override
+    public void registerTypeAdapter(GsonBuilder builder) {
+        // No need to register any adapter
     }
 
 }

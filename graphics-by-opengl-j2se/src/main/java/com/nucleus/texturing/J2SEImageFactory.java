@@ -6,12 +6,12 @@ import java.awt.image.DataBufferByte;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.IntBuffer;
 
 import javax.imageio.ImageIO;
 
 import com.nucleus.SimpleLogger;
-import com.nucleus.texturing.Image.ImageFormat;
+import com.nucleus.profiling.FrameSampler;
+import com.nucleus.texturing.BufferImage.ImageFormat;
 
 /**
  * Implementation of image factory using J2SE, in this implementation java.awt will be used.
@@ -27,13 +27,14 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
     }
 
     @Override
-    public Image createImage(String name, Image.ImageFormat format) throws IOException {
+    public BufferImage createImage(String name, BufferImage.ImageFormat format) throws IOException {
         if (name == null || format == null) {
             throw new IllegalArgumentException(NULL_PARAMETER);
         }
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream stream = null;
         try {
+            long start = System.currentTimeMillis();
             stream = classLoader.getResourceAsStream(name);
             if (stream == null) {
                 throw new FileNotFoundException(name);
@@ -42,8 +43,10 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
             if (img.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
                 img = createImage(img, BufferedImage.TYPE_4BYTE_ABGR);
             }
-            Image image = new Image(img.getWidth(), img.getHeight(), format);
+            BufferImage image = new BufferImage(img.getWidth(), img.getHeight(), format);
             copyPixels(img, image);
+            FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_IMAGE, " " + name, start,
+                    System.currentTimeMillis());
             return image;
 
         } finally {
@@ -75,7 +78,7 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
      * @param source
      * @param destination
      */
-    public void copyPixels(BufferedImage source, Image destination) {
+    public void copyPixels(BufferedImage source, BufferImage destination) {
         ImageFormat sourceFormat = ImageFormat.getImageFormat(source.getType());
         copyPixels(source.getData().getDataBuffer(), sourceFormat, destination);
     }
@@ -88,7 +91,7 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
      * @param sourceFormat The source type
      * @param destination The destination image
      */
-    private void copyPixels(DataBuffer source, ImageFormat sourceFormat, Image destination) {
+    private void copyPixels(DataBuffer source, ImageFormat sourceFormat, BufferImage destination) {
         if (source instanceof DataBufferByte) {
             copyPixels(((DataBufferByte) source).getData(), sourceFormat, destination);
         } else {

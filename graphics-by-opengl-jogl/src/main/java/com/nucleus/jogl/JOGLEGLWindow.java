@@ -1,6 +1,7 @@
 package com.nucleus.jogl;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import com.jogamp.opengl.egl.EGL;
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.BufferUtils;
 import com.nucleus.common.Constants;
 import com.nucleus.common.Environment;
 import com.nucleus.opengl.GLESWrapper.Renderers;
@@ -43,6 +45,7 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
     protected boolean waitForClient = false;
     protected int sleep = 0;
     protected GLContext glContext;
+    protected GLWindow nativeWindow;
 
     public JOGLEGLWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, SurfaceConfiguration config,
             int width, int height) {
@@ -63,14 +66,13 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
             // AbstractGraphicsDevice agd = NativeWindowFactory.createDevice(
             // NativeWindowFactory.getDefaultDisplayConnection(),
             // true);
-            GLWindow nativeWindow = GLWindow.create(new GLCapabilities(GLProfile.get(GLProfile.GL4ES3)));
+            nativeWindow = GLWindow.create(new GLCapabilities(GLProfile.get(GLProfile.GL4ES3)));
             nativeWindow.setSize(width, height);
-            nativeWindow.setVisible(true);
             nativeWindow.setRealized(true);
 
-            IntBuffer major = ByteBuffer.allocateDirect(4).asIntBuffer();
+            IntBuffer major = BufferUtils.createIntBuffer(1);
             major.put(1);
-            IntBuffer minor = ByteBuffer.allocateDirect(4).asIntBuffer();
+            IntBuffer minor = BufferUtils.createIntBuffer(1);
             minor.put(4);
             if (!EGL.eglInitialize(nativeWindow.getDisplayHandle(), major, minor)) {
                 throw new IllegalArgumentException("Could not initialize EGL");
@@ -253,6 +255,28 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
     public int chooseCapabilities(CapabilitiesImmutable desired, List<? extends CapabilitiesImmutable> available,
             int windowSystemRecommendedChoice) {
         return 0;
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        nativeWindow.setVisible(visible);
+    }
+
+    @Override
+    public void setWindowTitle(String title) {
+        if (nativeWindow != null) {
+            nativeWindow.setTitle(title);
+        }
+    }
+
+    @Override
+    protected void setFullscreenMode(boolean fullscreen) {
+        throw new IllegalArgumentException("Not implemented");
+    }
+
+    @Override
+    protected void destroy() {
+        throw new IllegalArgumentException("Not implemented");
     }
 
 }

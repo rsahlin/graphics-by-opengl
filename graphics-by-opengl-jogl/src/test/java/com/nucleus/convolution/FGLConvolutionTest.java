@@ -8,26 +8,27 @@ import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.Mode;
 import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.jogl.JOGLApplication;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
+import com.nucleus.mmi.core.InputProcessor;
+import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
-import com.nucleus.scene.BaseRootNode;
-import com.nucleus.scene.Node.MeshIndex;
-import com.nucleus.scene.Node.NodeTypes;
+import com.nucleus.scene.Node;
+import com.nucleus.scene.NodeBuilder;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.RootNode;
+import com.nucleus.scene.RootNodeBuilder;
 import com.nucleus.shader.ShaderVariable;
+import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
 
 public class FGLConvolutionTest extends JOGLApplication implements FrameListener,
@@ -39,7 +40,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
      * 
      */
     public enum ClientClasses implements Type<Object> {
-        clientclass(MyClientApplication.class);
+            clientclass(MyClientApplication.class);
 
         private final Class<?> theClass;
 
@@ -77,6 +78,18 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
 
         }
 
+        @Override
+        public String getAppName() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public String getVersion() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
     }
 
     private final static float[] kernel1 = new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 };
@@ -89,7 +102,6 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
 
     private float factor = 1f;
     private int kernelIndex = 2;
-    Mesh mesh;
     int counter = 0;
     long start = 0;
     private ShaderVariable uKernel;
@@ -120,25 +132,28 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
     public void createCoreApp(int width, int height) {
         super.createCoreApp(width, height);
         NucleusRenderer renderer = coreApp.getRenderer();
-        coreApp.getInputProcessor().addMMIListener(this);
+        InputProcessor.getInstance().addMMIListener(this);
 
-        BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
-        TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
-        Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), "texture",
-                new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, texParam, 1);
-        Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
-        meshBuilder.setElementMode(Mode.TRIANGLES, 4, 0, 6);
-        meshBuilder.setTexture(texture);
-        program = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
-                new ConvolutionProgram());
-        Material material = new Material();
-        meshBuilder.setMaterial(material).setAttributesPerVertex(program.getAttributeSizes());
-        meshBuilder.setShapeBuilder(
-                new RectangleShapeBuilder(new RectangleShapeBuilder.RectangleConfiguration(1f, 1f, 0f, 1, 0)));
-        builder.setType(NodeTypes.layernode).setMeshBuilder(meshBuilder).setMeshCount(1);
         try {
-            RootNode root = builder.create();
-            mesh = root.getNodeByType(NodeTypes.layernode).getMesh(MeshIndex.MAIN);
+            RootNodeBuilder rootBuilder = new RootNodeBuilder();
+            NodeBuilder<Node> builder = new NodeBuilder<>();
+            TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
+            Texture2D texture = AssetManager.getInstance().getTexture(renderer.getGLES(),
+                    BaseImageFactory.getInstance(), "texture",
+                    new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, texParam, 1);
+            Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer.getGLES());
+            meshBuilder.setElementMode(GLESWrapper.Mode.TRIANGLES, 4, 0, 6);
+            meshBuilder.setTexture(texture);
+            program = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
+                    new ConvolutionProgram());
+            Material material = new Material();
+            meshBuilder.setMaterial(material).setAttributesPerVertex(program.getAttributeSizes());
+            meshBuilder.setShapeBuilder(
+                    new RectangleShapeBuilder(new RectangleShapeBuilder.RectangleConfiguration(1f, 1f, 0f, 1, 0)));
+            builder.setType(com.nucleus.scene.AbstractNode.NodeTypes.layernode).setMeshBuilder(meshBuilder)
+                    .setMeshCount(1);
+            rootBuilder.setNodeBuilder(builder);
+            RootNode root = rootBuilder.create(renderer.getGLES(), "rootnode", RootNodeBuilder.NUCLEUS_SCENE);
             uKernel = program.getUniformByName("uKernel");
             renderer.addFrameListener(this);
             coreApp.setRootNode(root);
@@ -194,4 +209,5 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         }
 
     }
+
 }

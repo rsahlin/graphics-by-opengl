@@ -6,14 +6,8 @@ import com.nucleus.component.ComponentProcessorRunnable;
 import com.nucleus.component.J2SEComponentProcessor;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
-import com.nucleus.geometry.Material;
-import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.Mode;
-import com.nucleus.geometry.shape.RectangleShapeBuilder;
-import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
-import com.nucleus.io.ExternalReference;
-import com.nucleus.mmi.ObjectInputListener;
-import com.nucleus.mmi.core.PointerInputProcessor;
+import com.nucleus.mmi.NodeInputListener;
+import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
@@ -22,23 +16,17 @@ import com.nucleus.profiling.FrameSampler.Samples;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
 import com.nucleus.renderer.SurfaceConfiguration;
+import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
-import com.nucleus.scene.BaseRootNode;
 import com.nucleus.scene.J2SENodeInputListener;
 import com.nucleus.scene.NavigationController;
 import com.nucleus.scene.Node;
-import com.nucleus.scene.Node.NodeTypes;
 import com.nucleus.scene.NodeController;
 import com.nucleus.scene.NodeException;
-import com.nucleus.scene.NodeInputListener;
 import com.nucleus.scene.RootNode;
+import com.nucleus.scene.RootNodeBuilder;
 import com.nucleus.scene.ViewController;
-import com.nucleus.shader.TranslateProgram;
 import com.nucleus.system.ComponentHandler;
-import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.TextureFactory;
-import com.nucleus.texturing.TextureParameter;
-import com.nucleus.vecmath.Rectangle;
 
 /**
  * The platform agnostic application, this is the main app for J2SE platform independent code.
@@ -121,6 +109,20 @@ public class CoreApp implements FrameRenderer {
          */
         public void endFrame(float deltaTime);
 
+        /**
+         * Returns the name of the application
+         * 
+         * @return
+         */
+        public String getAppName();
+
+        /**
+         * Returns the version
+         * 
+         * @return
+         */
+        public String getVersion();
+
     }
 
     /**
@@ -139,11 +141,6 @@ public class CoreApp implements FrameRenderer {
      * The scene rootnode
      */
     protected RootNode rootNode;
-
-    /**
-     * Touch and pointer input
-     */
-    protected PointerInputProcessor inputProcessor = new PointerInputProcessor();
 
     ComponentProcessorRunnable componentRunnable;
 
@@ -189,17 +186,6 @@ public class CoreApp implements FrameRenderer {
      */
     public NucleusRenderer getRenderer() {
         return renderer;
-    }
-
-    /**
-     * Returns the pointer input processor, this can be used to listen to low level MMI (pointer input) events.
-     * Applications can use this to listen to low level input events - or use the NodeTree and attach pointerinput to
-     * nodes via NodeInputListener see {@link #addPointerInput(RootNode)}
-     * 
-     * @return
-     */
-    public PointerInputProcessor getInputProcessor() {
-        return inputProcessor;
     }
 
     @Override
@@ -306,37 +292,48 @@ public class CoreApp implements FrameRenderer {
     }
 
     /**
-     * Adds pointer input callback using {@link NodeInputListener} to the scene, after this call the Node tree will get
+     * Adds pointer input callback to the scene, after this call the Node tree will get
      * callbacks on pointer input.
      * Call this if nodes use the {@link EventManager}, eg POINTERINPUT property, or shall use a node with
-     * {@link ObjectInputListener}
-     * Set ObjectInputListener on node by calling {@link Node#setObjectInputListener(ObjectInputListener)}
+     * {@link NodeInputListener}
+     * Set ObjectInputListener on node by calling {@link Node#setObjectInputListener(NodeInputListener)}
      * 
      * @param root The rootnode
      */
     public void addPointerInput(RootNode root) {
-        inputProcessor.addMMIListener(new J2SENodeInputListener(root));
+        InputProcessor.getInstance().addMMIListener(new J2SENodeInputListener(root));
     }
+    /*
+     * public RootNode create(String id) throws NodeException {
+     * BaseRootNode root = new BaseRootNode();
+     * setRoot(root);
+     * // TODO the builder should handle creation of renderpass in a more generic way.
+     * Node created = super.create("rootnode");
+     * RenderPass pass = new RenderPass();
+     * pass.setId("RenderPass");
+     * pass.setTarget(new RenderTarget(Target.FRAMEBUFFER, null));
+     * pass.setRenderState(new RenderState());
+     * pass.setPass(Pass.MAIN);
+     * if (created instanceof RenderableNode<?>) {
+     * ViewFrustum vf = new ViewFrustum();
+     * vf.setOrthoProjection(-0.8889f, 0.8889f, -0.5f, 0.5f, 0, 10);
+     * ((RenderableNode<?>) created).setViewFrustum(vf);
+     * created.setPass(Pass.ALL);
+     * ArrayList<RenderPass> rp = new ArrayList<>();
+     * rp.add(pass);
+     * ((RenderableNode<?>) created).setRenderPass(rp);
+     * }
+     * created.onCreated();
+     * root.addChild(created);
+     * return root;
+     * }
+     */
 
-    public void displaySplash() throws GLException, NodeException {
+    public void displaySplash(int width, int height) throws GLException, NodeException {
         FrameSampler.getInstance().logTag(FrameSampler.Samples.DISPLAY_SPLASH);
-
-        BaseRootNode.Builder builder = new BaseRootNode.Builder(renderer);
-        TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
-                new TranslateProgram(Texture2D.Shading.textured));
-        builder.setProgram(vt);
-        TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
-        Texture2D texture = TextureFactory.createTexture(renderer.getGLES(), renderer.getImageFactory(), "texture",
-                new ExternalReference(SPLASH_FILENAME), RESOLUTION.ULTRA_HD, texParam, 1);
-        Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
-        meshBuilder.setElementMode(Mode.TRIANGLES, 4, 0, 6);
-        meshBuilder.setTexture(texture);
-        Material material = new Material();
-        Rectangle rect = texture.calculateRectangle(0);
-        meshBuilder.setMaterial(material).setAttributesPerVertex(vt.getAttributeSizes())
-                .setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(rect, 1f, 1, 0)));
-        builder.setType(NodeTypes.layernode).setMeshBuilder(meshBuilder).setMeshCount(1);
-        RootNode root = builder.create();
+        RootNodeBuilder rootBuilder = new RootNodeBuilder();
+        RootNode root = rootBuilder.createSplashRoot(renderer.getGLES(), SPLASH_FILENAME, RESOLUTION.ULTRA_HD, width,
+                height);
         renderer.beginFrame();
         renderer.render(root);
         renderer.endFrame();
@@ -354,6 +351,8 @@ public class CoreApp implements FrameRenderer {
 
     /**
      * Util method to create the coreapp and display splash. Caller must swapp buffer for splash to be visible.
+     * Window and GL context must be created before calling this method.
+     * Will set the name of the window from ClientApplication.
      * 
      * @param width
      * @param height
@@ -366,9 +365,11 @@ public class CoreApp implements FrameRenderer {
         }
         renderer.init(new SurfaceConfiguration(), width, height);
         try {
-            CoreApp coreApp = new CoreApp(renderer, (ClientApplication) clientClass.newInstance());
+            ClientApplication clientApp = (ClientApplication) clientClass.newInstance();
+            Window.getInstance().setTitle(clientApp.getAppName() + " " + clientApp.getVersion());
+            CoreApp coreApp = new CoreApp(renderer, clientApp);
             try {
-                coreApp.displaySplash();
+                coreApp.displaySplash(width, height);
             } catch (GLException | NodeException e) {
                 throw new RuntimeException(e);
             }

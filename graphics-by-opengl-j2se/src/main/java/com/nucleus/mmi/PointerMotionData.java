@@ -82,8 +82,8 @@ public class PointerMotionData {
             count = size - 1;
         }
         PointerData first = pointerMovement.get((size - 1) - count);
-        delta[0] = last.position[0] - first.position[0];
-        delta[1] = last.position[1] - first.position[1];
+        delta[0] = last.data[0] - first.data[0];
+        delta[1] = last.data[1] - first.data[1];
         return delta;
     }
 
@@ -94,7 +94,7 @@ public class PointerMotionData {
      * @return The first position in the touch action, ie the first active position.
      */
     public float[] getFirstPosition() {
-        return pointerMovement.get(0).position;
+        return pointerMovement.get(0).data;
     }
 
     /**
@@ -107,7 +107,7 @@ public class PointerMotionData {
         if (pointerMovement.size() == 0) {
             return null;
         }
-        return pointerMovement.get(pointerMovement.size() - 1).position;
+        return pointerMovement.get(pointerMovement.size() - 1).data;
     }
 
     /**
@@ -150,13 +150,30 @@ public class PointerMotionData {
      * @param type The type that the event originates from
      * @param timestamp Time of original low level event
      * @param pointer Pointer number, 0 and up
-     * @param position Position of pointer
+     * @param data Position of pointer
      * @param pressure
      * @return
      */
-    public PointerData create(PointerAction action, Type type, long timestamp, int pointer, float[] position,
+    public PointerData create(PointerAction action, Type type, long timestamp, int pointer, float[] data,
             float pressure) {
-        return new PointerData(action, type, timestamp, pointer, position, pressure);
+        return new PointerData(action, type, timestamp, pointer, data, pressure);
+    }
+
+    /**
+     * Creates pointer data for the specified parameter
+     * 
+     * @param action Pointer event action, eg DOWN, UP
+     * @param type The type that the event originates from
+     * @param timestamp Time of original low level event
+     * @param pointer Pointer number, 0 and up
+     * @param x x value
+     * @param y y value
+     * @param pressure
+     * @return
+     */
+    public PointerData create(PointerAction action, Type type, long timestamp, int pointer, float x, float y,
+            float pressure) {
+        return new PointerData(action, type, timestamp, pointer, x, y, pressure);
     }
 
     /**

@@ -1,13 +1,22 @@
 package com.nucleus;
 
+
+import java.awt.Dimension;
+import java.awt.Toolkit;
+
+import com.nucleus.common.Platform;
+import com.nucleus.common.Platform.OS;
+import com.nucleus.mmi.KeyEvent;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
+import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.renderer.Window;
+import com.nucleus.resource.ResourceBias.RESOLUTION;
 
 /**
  * Window that connects to the underlying GL.
@@ -25,6 +34,7 @@ public abstract class J2SEWindow implements WindowListener {
     protected int height;
     protected WindowListener windowListener;
     protected SurfaceConfiguration config;
+    protected boolean fullscreen = false;
 
     public J2SEWindow(CoreApp.CoreAppStarter coreAppStarter, int width, int height, SurfaceConfiguration config) {
         if (coreAppStarter == null) {
@@ -34,7 +44,13 @@ public abstract class J2SEWindow implements WindowListener {
         this.width = width;
         this.height = height;
         this.config = config;
-        Window.getInstance().setScreenSize(width, height);
+        OS os = Platform.getInstance().getOS();
+        if (os != OS.android) {
+            Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+            Window.getInstance().setScreenSize(d.width, d.height);
+        } else {
+            Window.getInstance().setScreenSize(width, height);
+        }
 
     }
 
@@ -115,19 +131,28 @@ public abstract class J2SEWindow implements WindowListener {
     protected void handleMouseEvent(PointerAction action, Type type, int xpos, int ypos, int pointer, long timestamp) {
         switch (action) {
             case DOWN:
-                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN, type,
+                InputProcessor.getInstance().pointerEvent(PointerAction.DOWN, type,
                         timestamp, pointer,
                         new float[] { xpos, ypos }, PointerData.DOWN_PRESSURE);
                 break;
             case UP:
-                coreApp.getInputProcessor().pointerEvent(PointerAction.UP, type, timestamp, pointer, new float[] {
+                InputProcessor.getInstance().pointerEvent(PointerAction.UP, type, timestamp, pointer, new float[] {
                         xpos, ypos }, PointerData.DOWN_PRESSURE);
                 break;
             case MOVE:
-                coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, type, timestamp, pointer, new float[] {
+                InputProcessor.getInstance().pointerEvent(PointerAction.MOVE, type, timestamp, pointer, new float[] {
                         xpos, ypos }, PointerData.DOWN_PRESSURE);
             default:
         }
+    }
+
+    /**
+     * Passes the keyevent on to the {@link CoreApp} which will send to registered listeners
+     * 
+     * @param event
+     */
+    protected void handleKeyEvent(KeyEvent event) {
+        InputProcessor.getInstance().onKeyEvent(event);
     }
 
     @Override
@@ -141,7 +166,59 @@ public abstract class J2SEWindow implements WindowListener {
     public void windowClosed() {
         if (windowListener != null) {
             windowListener.windowClosed();
+        } else {
+            SimpleLogger.d(getClass(), "windowClosed(); - windowListener is null");
+        }
+
+    }
+
+    protected void mouseWheelMoved(float rotation, long when) {
+        float zoom = rotation * PointerData.ZOOM_FACTOR;
+        InputProcessor.getInstance().pointerEvent(PointerAction.ZOOM, PointerData.Type.MOUSE, when,
+                PointerData.POINTER_1, new float[] {
+                        zoom, zoom },
+                0);
+    }
+
+    protected void backPressed() {
+        SimpleLogger.d(getClass(), "backPressed()");
+        if (fullscreen) {
+            fullscreen = false;
+            setFullscreenMode(false);
+        } else {
+            if (coreApp.onBackPressed()) {
+                coreApp.setDestroyFlag();
+                setVisible(false);
+                destroy();
+                System.exit(0);
+            }
         }
     }
+
+    /**
+     * Shows or hides this window
+     * 
+     * @param visible
+     */
+    public abstract void setVisible(boolean visible);
+
+    /**
+     * Sets the title of the window
+     * 
+     * @param title
+     */
+    public abstract void setWindowTitle(String title);
+
+    /**
+     * Switch to and from fullscreen mode.
+     * 
+     * @param fullscreen
+     */
+    protected abstract void setFullscreenMode(boolean fullscreen);
+
+    /**
+     * Destroy the window(s) and release window resources
+     */
+    protected abstract void destroy();
 
 }

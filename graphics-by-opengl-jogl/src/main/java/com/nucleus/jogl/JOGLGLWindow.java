@@ -2,10 +2,13 @@ package com.nucleus.jogl;
 
 import java.awt.Frame;
 import java.awt.event.WindowListener;
+import java.lang.reflect.Field;
+import java.util.Hashtable;
 
 import com.jogamp.common.os.Platform;
 import com.jogamp.nativewindow.util.Dimension;
 import com.jogamp.nativewindow.util.InsetsImmutable;
+import com.jogamp.newt.event.InputEvent;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseEvent;
@@ -23,7 +26,7 @@ import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
-import com.nucleus.mmi.PointerData;
+import com.nucleus.mmi.KeyEvent.Action;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
 import com.nucleus.opengl.GLESWrapper.Renderers;
@@ -40,15 +43,9 @@ import com.nucleus.renderer.SurfaceConfiguration;
 public abstract class JOGLGLWindow extends J2SEWindow
         implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener, KeyListener, WindowListener {
 
-    /**
-     * A zoom on the wheel equals 1 / 5 screen height
-     */
-    private final static float ZOOM_FACTOR = 100f;
-
     private Dimension windowSize;
     private boolean undecorated = false;
     private boolean alwaysOnTop = false;
-    private boolean fullscreen = false;
     private boolean mouseVisible = true;
     private boolean mouseConfined = false;
     private int swapInterval = 0;
@@ -59,6 +56,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
     protected GLWindow glWindow;
     protected Renderers version;
     Animator animator;
+    private Hashtable<Integer, Integer> AWTKeycodes;
 
     /**
      * Creates a new JOGL window with the specified {@link CoreAppStarter} and swapinterval
@@ -93,6 +91,31 @@ public abstract class JOGLGLWindow extends J2SEWindow
         GLProfile profile = getProfile(version);
         // createAWTWindow(width, height, profile);
         createNEWTWindow(width, height, profile);
+
+        /**
+         * Fetch jogamp.newt fields that start with VK_ and store keycodes in array to convert to AWT values.
+         */
+        AWTKeycodes = getAWTFields();
+    }
+
+    private Hashtable<Integer, Integer> getAWTFields() {
+        Hashtable<Integer, Integer> awtFields = new Hashtable<>();
+        for (Field newtField : com.jogamp.newt.event.KeyEvent.class.getDeclaredFields()) {
+            if (java.lang.reflect.Modifier.isStatic(newtField.getModifiers())) {
+                String fieldName = newtField.getName();
+                if (fieldName.startsWith("VK_")) {
+                    try {
+                        Field awtField = java.awt.event.KeyEvent.class.getField(fieldName);
+                        int newtKeyCode = newtField.getShort(null) & 0xffff;
+                        int awtKeyCode = awtField.getInt(null);
+                        awtFields.put(newtKeyCode, awtKeyCode);
+                    } catch (NoSuchFieldException | IllegalAccessException e) {
+                        SimpleLogger.d(getClass(), e.toString());
+                    }
+                }
+            }
+        }
+        return awtFields;
     }
 
     protected GLProfile getProfile(Renderers version) {
@@ -140,8 +163,8 @@ public abstract class JOGLGLWindow extends J2SEWindow
         GLCapabilities glCapabilities = new GLCapabilities(profile);
         glCapabilities.setSampleBuffers(config.getSamples() > 0);
         glCapabilities.setNumSamples(config.getSamples());
-        glCapabilities.setBackgroundOpaque(config.getAlphaBits() == 0);
-        glCapabilities.setAlphaBits(config.getAlphaBits());
+        glCapabilities.setBackgroundOpaque(true);
+        glCapabilities.setAlphaBits(0);
         glWindow = GLWindow.create(glCapabilities);
         glWindow.setUndecorated(undecorated);
         InsetsImmutable insets = glWindow.getInsets();
@@ -160,7 +183,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
         animator = new Animator();
         animator.add(glWindow);
         animator.start();
-        glWindow.setVisible(true);
         glWindow.setAutoSwapBufferMode(autoSwapBuffer);
     }
 
@@ -181,7 +203,8 @@ public abstract class JOGLGLWindow extends J2SEWindow
         frame.setVisible(true);
     }
 
-    public void setTitle(String title) {
+    @Override
+    public void setWindowTitle(String title) {
         if (frame != null) {
             frame.setTitle(title);
         }
@@ -199,6 +222,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
         }
     }
 
+    @Override
     public void setVisible(boolean visible) {
         if (glWindow != null) {
             glWindow.setVisible(visible);
@@ -263,26 +287,45 @@ public abstract class JOGLGLWindow extends J2SEWindow
                     type = Type.MOUSE;
                     break;
                 case MouseEvent.BUTTON2:
-                    type = Type.ERASER;
+                    type = Type.MOUSE;
                     break;
                 case MouseEvent.BUTTON3:
-                    type = Type.FINGER;
+                    type = Type.MOUSE;
                     break;
-
+                case MouseEvent.BUTTON4:
+                    type = Type.MOUSE;
+                    break;
+                case MouseEvent.BUTTON5:
+                    type = Type.MOUSE;
+                    break;
+                case MouseEvent.BUTTON6:
+                    type = Type.MOUSE;
+                    break;
             }
             handleMouseEvent(action, type, xpos[i], ypos[i], e.getPointerId(i), e.getWhen());
         }
     }
 
     protected void handleKeyEvent(KeyEvent event) {
+        /**
+         * com.jogamp.newt.event.KeyEvent keycodes are the same as the AWT KeyEvent keycodes.
+         */
+        SimpleLogger.d(getClass(), "KeyEvent " + event.getEventType() + " : " + event.getKeyCode());
         switch (event.getEventType()) {
             case KeyEvent.EVENT_KEY_PRESSED:
+                super.handleKeyEvent(new com.nucleus.mmi.KeyEvent(Action.PRESSED,
+                        AWTKeycodes.get((int) event.getKeyCode())));
                 switch (event.getKeyCode()) {
                     case KeyEvent.VK_ESCAPE:
                         backPressed();
                 }
                 break;
             case KeyEvent.EVENT_KEY_RELEASED:
+                super.handleKeyEvent(new com.nucleus.mmi.KeyEvent(Action.RELEASED,
+                        AWTKeycodes.get((int) event.getKeyCode())));
+                break;
+            default:
+                // Do nothing
         }
     }
 
@@ -325,11 +368,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void mouseWheelMoved(MouseEvent e) {
-        float factor = ZOOM_FACTOR;
-        coreApp.getInputProcessor().pointerEvent(PointerAction.ZOOM, PointerData.Type.MOUSE, e.getWhen(),
-                PointerData.POINTER_1, new float[] {
-                        e.getRotation()[1] * factor, e.getRotation()[1] * factor },
-                0);
+        mouseWheelMoved(e.getRotation()[1], e.getWhen());
     }
 
     @Override
@@ -347,6 +386,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void windowDestroyed(WindowEvent e) {
+        windowClosed();
     }
 
     @Override
@@ -375,7 +415,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void windowClosed(java.awt.event.WindowEvent e) {
-        windowClosed();
     }
 
     @Override
@@ -404,27 +443,32 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void keyPressed(KeyEvent e) {
-        handleKeyEvent(e);
+        if ((e.getModifiers() & InputEvent.AUTOREPEAT_MASK) == 0) {
+            handleKeyEvent(e);
+        }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        handleKeyEvent(e);
+        if ((e.getModifiers() & InputEvent.AUTOREPEAT_MASK) == 0) {
+            handleKeyEvent(e);
+        }
     }
 
-    private void backPressed() {
-        SimpleLogger.d(getClass(), "backPressed()");
-        if (fullscreen) {
-            fullscreen = false;
+    @Override
+    protected void setFullscreenMode(boolean fullscreen) {
+        this.fullscreen = fullscreen;
+        glWindow.setFullscreen(fullscreen);
+        if (!fullscreen) {
             glWindow.setFullscreen(false);
             glWindow.setPosition(glWindow.getWidth() / 2, glWindow.getHeight() / 2);
-        } else {
-            if (coreApp.onBackPressed()) {
-                coreApp.setDestroyFlag();
-                glWindow.setVisible(false);
-                animator.stop();
-                System.exit(0);
-            }
+        }
+    }
+
+    @Override
+    protected void destroy() {
+        if (animator != null) {
+            animator.stop();
         }
     }
 

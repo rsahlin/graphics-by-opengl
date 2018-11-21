@@ -1,6 +1,12 @@
 package com.nucleus.scene;
 
+import java.io.IOException;
+
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.MeshBuilder;
+import com.nucleus.geometry.shape.ShapeBuilder;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.Window;
 import com.nucleus.vecmath.Matrix;
@@ -18,7 +24,7 @@ import com.nucleus.vecmath.Transform;
  * @author Richard Sahlin
  *
  */
-public class LayerNode extends Node {
+public class LayerNode extends MeshNode {
 
     /**
      * This can be used to find nodes based on layer, it can also be used to render based on layer.
@@ -52,7 +58,7 @@ public class LayerNode extends Node {
     }
 
     @Override
-    public void set(Node source) {
+    public void set(AbstractNode source) {
         set((LayerNode) source);
     }
 
@@ -78,12 +84,6 @@ public class LayerNode extends Node {
             float height = w.getHeight() / 2;
             viewFrustum.setBottomTop(-height, height);
         }
-    }
-
-    @Override
-    public void onCreated() {
-        super.onCreated();
-        viewController = new ViewController(transform);
     }
 
     /**
@@ -112,16 +112,23 @@ public class LayerNode extends Node {
     public float[] concatModelMatrix(float[] concatModel) {
         // This is a layer node with viewfrustum - do not concatenate - return this nodes transform.
         // The result shall be that the view transform is reset to this transform.
-        return transform != null ? Matrix.copy(transform.getMatrix(), 0, modelMatrix, 0)
+        return transform != null ? Matrix.copy(transform.updateMatrix(), 0, modelMatrix, 0)
                 : Matrix.setIdentity(modelMatrix, 0);
     }
 
     @Override
-    public void create() {
-        super.create();
+    public void createTransient() {
         if (transform == null) {
             transform = new Transform();
         }
+        viewController = new ViewController(transform);
+    }
+
+    @Override
+    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
+            throws IOException {
+        // Dont create a meshbuilder for layernode
+        return null;
     }
 
 }

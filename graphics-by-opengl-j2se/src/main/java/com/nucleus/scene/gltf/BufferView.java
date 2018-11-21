@@ -1,6 +1,11 @@
 package com.nucleus.scene.gltf;
 
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
+
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.common.BufferUtils;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 
@@ -25,7 +30,7 @@ import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
  *
  * This class can be serialized using gson
  */
-public class BufferView implements RuntimeResolver {
+public class BufferView extends GLTFNamedValue implements RuntimeResolver {
 
     public enum Target {
         ARRAY_BUFFER(34962),
@@ -78,28 +83,36 @@ public class BufferView implements RuntimeResolver {
      */
     @SerializedName(TARGET)
     private int targetValue = -1;
-    @SerializedName(NAME)
-    private String name;
 
     transient private Target target;
     transient private Buffer buffer;
 
     /**
      * Creates a BufferView based on the specified Buffer
+     * Do not call this directly - use {@link GLTF#createBufferView(String, int, int, int, Target)}
+     * or {@link GLTF#createBufferView(Buffer, int, int, Target)}
      * 
+     * @param gltf
+     * @param bufferIndex Index of the buffer - this will be resolved so {@link #getBuffer()} can be called.
      * @param buffer
      * @param byteOffset
      * @param byteStride
      * @param target
      */
-    public BufferView(Buffer buffer, int byteOffset, int byteStride, Target target) {
-        this.buffer = buffer;
+    protected BufferView(GLTF gltf, int bufferIndex, int byteOffset, int byteStride, Target target) {
+        this.bufferIndex = bufferIndex;
+        this.buffer = gltf.getBuffer(bufferIndex);
         this.byteOffset = byteOffset;
         this.byteLength = buffer.getByteLength();
         this.byteStride = byteStride;
         this.target = target;
     }
 
+    /**
+     * The index of the Buffer - use {@link #getBuffer()} to fetch the Buffer
+     * 
+     * @return
+     */
     public int getBufferIndex() {
         return bufferIndex;
     }
@@ -116,24 +129,75 @@ public class BufferView implements RuntimeResolver {
         return byteStride;
     }
 
+    /**
+     * The target that the GPU buffer should be bound to - this is normally known based on what Accessor
+     * this BufferView is attached to.
+     * ARRAY_BUFFER(34962),
+     * ELEMENT_ARRAY_BUFFER(34963);
+     * 
+     * @return
+     */
     public Target getTarget() {
-        if (target == null) {
-            target = Target.getTarget(targetValue);
-        }
         return target;
     }
 
-    public String getName() {
-        return name;
-    }
-
+    /**
+     * The buffer holding the data - be careful when using this since offsets are only known
+     * from Accessor.
+     * Use {@link Accessor#getBuffer()} to get the positioned ByteBuffer.
+     * 
+     * @return
+     */
     public Buffer getBuffer() {
         return buffer;
     }
 
     @Override
     public void resolve(GLTF asset) throws GLTFException {
+        this.buffer = asset.getBuffer(bufferIndex);
+        if (targetValue >= 0) {
+            target = Target.getTarget(targetValue);
 
+        }
+    }
+
+    /**
+     * Returns the contents of toString() + the contents of byteBuffer limited to {@link Buffer#MAX_BUFFER_PRINT}
+     * 
+     * @param byteBuffer
+     * @return
+     */
+    public String toString(ByteBuffer byteBuffer) {
+        return toString() + "\n" + BufferUtils.getContentAsString(byteOffset,
+                byteLength < Buffer.MAX_BUFFER_PRINT ? byteLength : Buffer.MAX_BUFFER_PRINT, byteBuffer);
+    }
+
+    /**
+     * Returns the contents of toString() + the contents of shortBuffer limited to {@link Buffer#MAX_BUFFER_PRINT}
+     * 
+     * @param shortBuffer
+     * @return
+     */
+    public String toString(ShortBuffer shortBuffer) {
+        return toString() + "\n" + BufferUtils.getContentAsString(byteOffset >>> 1,
+                byteLength >>> 1 < Buffer.MAX_BUFFER_PRINT ? byteLength >>> 1 : Buffer.MAX_BUFFER_PRINT, shortBuffer);
+    }
+
+    /**
+     * Returns the contents of toString() + the contents of shortBuffer limited to {@link Buffer#MAX_BUFFER_PRINT}
+     * 
+     * @param floatBuffer
+     * @return
+     */
+    public String toString(FloatBuffer floatBuffer) {
+        return toString() + "\n" + BufferUtils.getContentAsString(byteOffset >>> 2,
+                byteLength >>> 2 < Buffer.MAX_BUFFER_PRINT ? byteLength >>> 2 : Buffer.MAX_BUFFER_PRINT, floatBuffer);
+    }
+
+    @Override
+    public String toString() {
+        return "Bufferindex: " + bufferIndex + ", byteoffset: " + byteOffset + ", byteLength: " + byteLength
+                + ", byteStride: " + byteStride + ", name: " + getName();
     }
 
 }

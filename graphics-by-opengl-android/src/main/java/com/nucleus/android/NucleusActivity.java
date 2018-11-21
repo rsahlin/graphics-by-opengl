@@ -8,17 +8,20 @@ import com.nucleus.CoreApp;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
 import com.nucleus.common.Environment;
-import com.nucleus.matrix.j2se.J2SEMatrixEngine;
 import com.nucleus.mmi.PointerData;
 import com.nucleus.mmi.PointerData.PointerAction;
 import com.nucleus.mmi.PointerData.Type;
+import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RendererFactory;
+import com.nucleus.renderer.RendererInfo;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.texture.android.AndroidImageFactory;
+import com.nucleus.texturing.BaseImageFactory;
 import com.super2k.nucleus.android.R;
 
 import android.annotation.TargetApi;
@@ -55,6 +58,7 @@ public abstract class NucleusActivity extends Activity
 
     protected CoreApp coreApp;
     protected GLESWrapper gles;
+    protected Renderers minVersion;
     private long androidUptimeDelta;
     /**
      * Set to false to use GLSurfaceView
@@ -100,6 +104,7 @@ public abstract class NucleusActivity extends Activity
     public void onCreate(Bundle savedInstanceState) {
         SimpleLogger.setLogger(new AndroidLogger());
         SimpleLogger.d(getClass(), "onCreate()");
+        BaseImageFactory.setFactory(new AndroidImageFactory());
         activity = this;
         checkProperties();
         setup(getRenderVersion(), GLSurfaceView.RENDERMODE_CONTINUOUSLY);
@@ -216,9 +221,9 @@ public abstract class NucleusActivity extends Activity
      * @param rendermode
      */
     private void setup(Renderers version, int rendermode) {
+        minVersion = version;
         SurfaceConfiguration surfaceConfig = createSurfaceConfig();
         SimpleLogger.d(getClass(), "Using SurfaceConfig:\n" + surfaceConfig.toString());
-        createWrapper(version);
         surfaceView = createSurfaceView(version, surfaceConfig, rendermode);
         surfaceView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -270,7 +275,13 @@ public abstract class NucleusActivity extends Activity
     }
 
     private void createWrapper(Renderers version) {
-        switch (version) {
+        int[] glVersion = RendererInfo.getVersionStr(android.opengl.GLES20.glGetString(GLES20.GL_VERSION));
+        Renderers runtime = Renderers.get(glVersion);
+        SimpleLogger.d(getClass(), "Found GLES runtime version: " + runtime);
+        if (version.major > runtime.major || version.minor > runtime.minor) {
+            throw new IllegalArgumentException("Must support at least GLES version " + version);
+        }
+        switch (runtime) {
             case GLES20:
                 gles = new AndroidGLES20Wrapper();
                 break;
@@ -358,8 +369,10 @@ public abstract class NucleusActivity extends Activity
      * @return true if CoreApp was created and splash displayed.
      */
     public boolean onSurfaceCreated(int width, int height) {
-        NucleusRenderer renderer = RendererFactory.getRenderer(gles, new AndroidImageFactory(),
-                new J2SEMatrixEngine());
+        if (gles == null) {
+            createWrapper(minVersion);
+        }
+        NucleusRenderer renderer = RendererFactory.getRenderer(gles);
         if (coreApp == null) {
             coreApp = CoreApp.createCoreApp(width, height, renderer);
             return true;
@@ -413,7 +426,7 @@ public abstract class NucleusActivity extends Activity
             case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_DOWN:
                 // This is the first pointer, or multitouch pointer going down.
-                coreApp.getInputProcessor().pointerEvent(PointerAction.DOWN, type,
+                InputProcessor.getInstance().pointerEvent(PointerAction.DOWN, type,
                         event.getEventTime() + androidUptimeDelta, finger,
                         new float[] { event.getX(index), event.getY(index) }, event.getPressure());
                 break;
@@ -421,7 +434,7 @@ public abstract class NucleusActivity extends Activity
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 // This is multitouch or the last pointer going up
-                coreApp.getInputProcessor().pointerEvent(PointerAction.UP, type,
+                InputProcessor.getInstance().pointerEvent(PointerAction.UP, type,
                         event.getEventTime() + androidUptimeDelta,
                         finger, new float[] { event.getX(index), event.getY(index) }, event.getPressure());
                 break;
@@ -431,12 +444,12 @@ public abstract class NucleusActivity extends Activity
                 for (int i = 0; i < count; i++) {
                     finger = event.getPointerId(i);
                     for (int h = 0; h < historySize; h++) {
-                        coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, type,
+                        InputProcessor.getInstance().pointerEvent(PointerAction.MOVE, type,
                                 event.getHistoricalEventTime(h) + androidUptimeDelta, finger,
                                 new float[] { event.getHistoricalX(i, h), event.getHistoricalY(i, h) },
                                 event.getHistoricalPressure(index, h));
                     }
-                    coreApp.getInputProcessor().pointerEvent(PointerAction.MOVE, type,
+                    InputProcessor.getInstance().pointerEvent(PointerAction.MOVE, type,
                             event.getEventTime() + androidUptimeDelta, finger,
                             new float[] { event.getX(i), event.getY(i) }, event.getPressure());
                 }

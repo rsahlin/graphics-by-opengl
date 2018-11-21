@@ -2,8 +2,8 @@ package com.nucleus.shader;
 
 import java.util.ArrayList;
 
-import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.BufferIndex;
+import com.nucleus.geometry.AttributeUpdater;
+import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.shader.ShaderVariable.VariableType;
 
 /**
@@ -50,13 +50,13 @@ public class VariableIndexer {
     }
 
     /**
-     * Returns the buffer index in the mesh.
-     * This value can be used to call {@link Mesh#getAttributeBuffer(BufferIndex)}
+     * Returns the buffer index in the attribute updater.
+     * This value can be used to call {@link AttributeUpdater#getAttributeBuffer(BufferIndex)}
      * 
-     * @param BufferIndex Index to buffer holding variables
+     * @param BufferIndex Index to buffer holding variables, or null if index is not valid
      */
     public BufferIndex getBufferIndex(int index) {
-        return bufferIndexes[index];
+        return index >= 0 && index < bufferIndexes.length ? bufferIndexes[index] : null;
     }
 
     /**
@@ -88,7 +88,8 @@ public class VariableIndexer {
     public ShaderVariable[] sortByBuffer(ShaderVariable[] activeVariables, int index) {
         ArrayList<ShaderVariable> result = new ArrayList<>();
         for (ShaderVariable v : activeVariables) {
-            if (getBufferIndex(getIndexByName(v.getName())).index == index) {
+            BufferIndex bi = getBufferIndex(getIndexByName(v.getName()));
+            if (bi != null && bi.index == index) {
                 result.add(v);
             }
         }

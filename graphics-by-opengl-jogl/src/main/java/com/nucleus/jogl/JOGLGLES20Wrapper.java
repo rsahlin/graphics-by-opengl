@@ -2,6 +2,7 @@ package com.nucleus.jogl;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.jogamp.opengl.GL;
@@ -134,35 +135,76 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, Buffer ptr) {
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, ByteBuffer ptr) {
         // This method should not be called on JOGL - future versions of GL will move to named buffer objects.
         int[] names = JOGLGLESUtils.getName(this);
-        // int offset = ptr.position();
+        int offset = ptr.position();
+        gles.glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, names[0]);
+        int numBytes = ptr.capacity();
+        gles.glBufferData(GL2ES2.GL_ARRAY_BUFFER, numBytes, ptr, GL.GL_STATIC_DRAW);
+        gles.glVertexAttribPointer(index, size, type, normalized, stride, offset);
+    }
+
+    @Override
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, FloatBuffer ptr) {
+        // This method should not be called on JOGL - future versions of GL will move to named buffer objects.
+        int[] names = JOGLGLESUtils.getName(this);
+        int offset = ptr.position();
         gles.glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, names[0]);
         int numBytes = ptr.capacity() * 4;
         gles.glBufferData(GL2ES2.GL_ARRAY_BUFFER, numBytes, ptr, GL.GL_STATIC_DRAW);
-        gles.glVertexAttribPointer(index, size, type, normalized, stride, 0);
+        gles.glVertexAttribPointer(index, size, type, normalized, stride, offset);
     }
 
     @Override
     public void glEnableVertexAttribArray(int index) {
         gles.glEnableVertexAttribArray(index);
+    }
+
+    @Override
+    public void glDisableVertexAttribArray(int index) {
+        gles.glDisableVertexAttribArray(index);
+    }
+
+    @Override
+    public void glUniformMatrix4fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        gles.glUniformMatrix4fv(location, count, transpose, buffer);
+    }
+
+    @Override
+    public void glUniformMatrix3fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        gles.glUniformMatrix3fv(location, count, transpose, buffer);
+    }
+
+    @Override
+    public void glUniformMatrix2fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        gles.glUniformMatrix2fv(location, count, transpose, buffer);
+    }
+
+    @Override
+    public void glUniform4fv(int location, int count, FloatBuffer buffer) {
+        gles.glUniform4fv(location, count, buffer);
+    }
+
+    @Override
+    public void glUniform3fv(int location, int count, FloatBuffer buffer) {
+        gles.glUniform3fv(location, count, buffer);
+    }
+
+    @Override
+    public void glUniform2fv(int location, int count, FloatBuffer buffer) {
+        gles.glUniform2fv(location, count, buffer);
 
     }
 
     @Override
-    public void glUniformMatrix4fv(int location, int count, boolean transpose, float[] v, int offset) {
-        gles.glUniformMatrix4fv(location, count, transpose, v, offset);
+    public void glUniform1fv(int location, int count, FloatBuffer buffer) {
+        gles.glUniform1fv(location, count, buffer);
     }
-
+    
     @Override
-    public void glUniformMatrix3fv(int location, int count, boolean transpose, float[] v, int offset) {
-        gles.glUniformMatrix3fv(location, count, transpose, v, offset);
-    }
-
-    @Override
-    public void glUniformMatrix2fv(int location, int count, boolean transpose, float[] v, int offset) {
-        gles.glUniformMatrix2fv(location, count, transpose, v, offset);
+    public void glUniform1iv(int location, int count, IntBuffer buffer) {
+        gles.glUniform1iv(location, count, buffer);
     }
 
     @Override
@@ -178,8 +220,10 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
         int[] names = JOGLGLESUtils.getName(this);
         gles.glBindBuffer(GL2ES2.GL_ELEMENT_ARRAY_BUFFER, names[0]);
         int numBytes = count;
-        if (type == GLES20.GL_UNSIGNED_SHORT) {
+        if (type == GLES20.GL_UNSIGNED_SHORT || type == GLES20.GL_SHORT) {
             numBytes = count * 2;
+        } else if (type == GLES20.GL_UNSIGNED_INT || type == GLES20.GL_INT) {
+            numBytes = count * 4;
         }
         gles.glBufferData(GL2ES2.GL_ELEMENT_ARRAY_BUFFER, numBytes, indices, GL.GL_STATIC_DRAW);
         gles.glDrawElements(mode, count, type, offset);
@@ -240,34 +284,6 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     public void glGetIntegerv(int pname, int[] params) {
         gles.glGetIntegerv(pname, params, 0);
 
-    }
-
-    @Override
-    public void glUniform4fv(int location, int count, float[] v, int offset) {
-        gles.glUniform4fv(location, count, v, offset);
-
-    }
-
-    @Override
-    public void glUniform3fv(int location, int count, float[] v, int offset) {
-        gles.glUniform3fv(location, count, v, offset);
-
-    }
-
-    @Override
-    public void glUniform1iv(int location, int count, int[] v0, int offset) {
-        gles.glUniform1iv(location, count, v0, offset);
-    }
-
-    @Override
-    public void glUniform2fv(int location, int count, float[] v, int offset) {
-        gles.glUniform2fv(location, count, v, offset);
-
-    }
-
-    @Override
-    public void glUniform1fv(int location, int count, float[] v, int offset) {
-        gles.glUniform1fv(location, count, v, offset);
     }
 
     @Override

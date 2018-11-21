@@ -26,6 +26,36 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
  */
 public class RenderState {
 
+    public enum DepthFunc {
+        NONE(GLES20.GL_NONE),
+        NEVER(GLES20.GL_NEVER),
+        LESS(GLES20.GL_LESS),
+        EQUAL(GLES20.GL_EQUAL),
+        LEQUAL(GLES20.GL_LEQUAL),
+        GREATER(GLES20.GL_GREATER),
+        GEQUAL(GLES20.GL_GEQUAL),
+        ALWAYS(GLES20.GL_ALWAYS);
+
+        public final int value;
+
+        private DepthFunc(int value) {
+            this.value = value;
+        }
+    }
+
+    public enum Cullface {
+        NONE(GLES20.GL_NONE),
+        FRONT(GLES20.GL_FRONT),
+        BACK(GLES20.GL_BACK),
+        FRONTANDBACK(GLES20.GL_FRONT_AND_BACK);
+
+        public final int value;
+
+        private Cullface(int value) {
+            this.value = value;
+        }
+    }
+
     public static final String MULTISAMPLING = "multisampling";
     public static final String DEPTHFUNC = "depthFunc";
     public static final String DEPTHRANGE_NEAR = "depthRangeNear";
@@ -41,11 +71,11 @@ public class RenderState {
     protected final static String INVALID_DEPTHFUNC_STR = "Invalid depthFunc:";
     protected final static String INVALID_CLEARCOLOR_STR = "Invalid clear color array.";
 
-    public final static int DEFAULT_DEPTHFUNC = GLES20.GL_NONE;
+    public final static DepthFunc DEFAULT_DEPTHFUNC = DepthFunc.NONE;
     public final static float DEFAULT_DEPTHRANGE_NEAR = 0.01f;
     public final static float DEFAULT_DEPTHRANGE_FAR = 5f;
     public final static float DEFAULT_CLEARDEPTH = DEFAULT_DEPTHRANGE_FAR;
-    public final static int DEFAULT_CULLFACE = GLES20.GL_NONE;
+    public final static Cullface DEFAULT_CULLFACE = Cullface.NONE;
     public final static int DEFAULT_CLEARFLAG = GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT;
     public final static boolean DEFAULT_MULTISAMPLING = false;
 
@@ -71,7 +101,7 @@ public class RenderState {
      * Depth func used if depth test is enabled, default is NONE
      */
     @SerializedName(DEPTHFUNC)
-    protected int depthFunc = DEFAULT_DEPTHFUNC;
+    protected DepthFunc depthFunc = DEFAULT_DEPTHFUNC;
 
     /**
      * Near value for depthrange
@@ -107,7 +137,7 @@ public class RenderState {
      * If culling is enabled, what faces should be culled.
      */
     @SerializedName(CULLFACE)
-    protected int cullFace = DEFAULT_CULLFACE;
+    protected Cullface cullFace = DEFAULT_CULLFACE;
 
     /**
      * This value is read in when setting up a renderpass, used to decide if buffer should be cleared
@@ -128,33 +158,23 @@ public class RenderState {
     }
 
     /**
-     * Creates a new RenderStates class with the specified values, other values will default.
+     * Copies the renderstate
      * 
-     * @param clearFlags Set to what buffers to clear between frames, values are ored together
-     * ConstantValues.DEPTH_BUFFER_BIT | ConstantValues.STENCIL_BUFFER_BIT |
-     * ConstantValues.COLOR_BUFFER_BIT
-     * Set to ConstantValues.NONE to disable clearing.
-     * @param cullFace What faces to cull, set to ConstantValues.NONE to disable culling.
-     * One of:
-     * ConstantValues.CULL_BACK, ConstantValues.CULL_FRONT,
-     * ConstantValues.CULL_FRONT_AND_BACK or ConstantValues.NONE
-     * @param depthTest Set to true to enable depth test.
-     * If true depth test is set to LEQUAL, if other depth test function is requred use another constuctor.
-     * @param multisampling Set to true to enable multisampling, must also be configured in EGL.
-     * @throws IllegalArgumentException If clearFlags or cullFace is not valid.
+     * @param source renderstate to copy
      */
-    public RenderState(int clearFlags, int cullFace, boolean depthTest, boolean multisampling) {
-        setClearFunction(clearFlags);
-        setCullFace(cullFace);
-        this.enableMultisampling = multisampling;
-        if (depthTest) {
-            depthFunc = GLES20.GL_LEQUAL;
-        } else {
-            depthFunc = GLES20.GL_NONE;
-        }
-
+    public void set(RenderState source) {
+        changeFlag = source.changeFlag;
+        enableMultisampling = source.enableMultisampling;
+        depthFunc = source.depthFunc;
+        depthRangeFar = source.depthRangeFar;
+        depthRangeNear = source.depthRangeNear;
+        clearDepth = source.clearDepth;
+        System.arraycopy(source.clearColor, 0, clearColor, 0, source.clearColor.length);
+        clearStencil = source.clearStencil;
+        cullFace = source.cullFace;
+        clearFlags = source.clearFlags;
     }
-
+    
     /**
      * Enables or disables multisampling, to be disabled the surface must also support GLES_EXTENSIONS.MULTISAMPLE_EXT
      * This is checked before multisample is enabled/disable in the renderer.
@@ -203,20 +223,7 @@ public class RenderState {
      * NONE, NEVER, LESS, EQUAL, LEQUAL, GREATER, GEQUAL, ALWAYS
      * @throws IllegalArgumentException If depthFunc is not valid
      */
-    public void setDepthFunc(int depthFunc) {
-        switch (depthFunc) {
-            case GLES20.GL_NONE:
-            case GLES20.GL_NEVER:
-            case GLES20.GL_LESS:
-            case GLES20.GL_EQUAL:
-            case GLES20.GL_LEQUAL:
-            case GLES20.GL_GREATER:
-            case GLES20.GL_GEQUAL:
-            case GLES20.GL_ALWAYS:
-                break;
-            default:
-                throw new IllegalArgumentException(INVALID_DEPTHFUNC_STR);
-        }
+    public void setDepthFunc(DepthFunc depthFunc) {
         changeFlag |= CHANGE_FLAG_DEPTH;
         this.depthFunc = depthFunc;
     }
@@ -229,7 +236,7 @@ public class RenderState {
      * @return Depth function.
      */
     public int getDepthFunc() {
-        return depthFunc;
+        return depthFunc.value;
     }
 
     /**
@@ -274,14 +281,10 @@ public class RenderState {
      * ConstantValues.CULL_FRONT_AND_BACK or ConstantValues.NONE
      * @throws IllegalArgumentException If cullface is illegal value.
      */
-    public void setCullFace(int cullFace) {
-        if (cullFace != GLES20.GL_BACK &&
-                cullFace != GLES20.GL_FRONT &&
-                cullFace != GLES20.GL_FRONT_AND_BACK &&
-                cullFace != GLES20.GL_NONE) {
+    public void setCullFace(Cullface cullFace) {
+        if (cullFace == null) {
             throw new IllegalArgumentException(INVALID_CULLFACE_STR + cullFace);
         }
-
         this.cullFace = cullFace;
         changeFlag |= CHANGE_FLAG_CULLFACE;
     }
@@ -291,7 +294,7 @@ public class RenderState {
      * 
      * @return Either of NONE, FRONT, BACK, FRONT_AND_BACK
      */
-    public int getCullFace() {
+    public Cullface getCullFace() {
         return cullFace;
     }
 

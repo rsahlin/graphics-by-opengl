@@ -89,7 +89,7 @@ public class Material {
             BlendFunc.GL_ZERO, BlendFunc.GL_ZERO };
 
     @SerializedName(EMISSIVE)
-    private float[] emissive = new float[] { 1, 1, 1, 1 };
+    private float[] emissive;
     @SerializedName(DIFFUSE)
     private float[] diffuse;
 

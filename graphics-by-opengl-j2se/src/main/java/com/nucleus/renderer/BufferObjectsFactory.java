@@ -1,5 +1,8 @@
 package com.nucleus.renderer;
 
+import java.util.ArrayList;
+
+import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Mesh;
@@ -10,6 +13,8 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.scene.gltf.Buffer;
+import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 
@@ -36,37 +41,37 @@ public class BufferObjectsFactory {
     }
 
     /**
-     * Creates the vbos for the specified mesh, the buffer objects will be stored in the contained buffers in the mesh.
+     * Creates the vbos and uploads data for the specified mesh, the buffer objects will be stored in the contained
+     * buffers in the mesh.
      * After this call the mesh can be rendered using the specified buffer objects (VBO)
      * 
-     * @param renderer
+     * @param gles
      * @param mesh
      * @throws GLException If there is an error setting buffer data
      */
-    public void createVBOs(NucleusRenderer renderer, Mesh mesh) throws GLException {
+    public void createVBOs(GLES20Wrapper gles, Mesh mesh) throws GLException {
         int vboCount = mesh.getBufferNameCount();
         // TODO Need a way to tie the allocated buffer names to the element/vertex buffers
         int[] names = new int[vboCount];
-        renderer.genBuffers(names);
+        gles.glGenBuffers(names);
         mesh.setBufferNames(0, names, 0);
         ElementBuffer indices = mesh.getElementBuffer();
-        GLUtils.handleError(renderer.getGLES(), "before create vbos");
+        GLUtils.handleError(gles, "before create vbos");
         for (AttributeBuffer attribs : mesh.getAttributeBuffers()) {
             if (attribs != null) {
-                renderer.bindBuffer(GLES20.GL_ARRAY_BUFFER, attribs.getBufferName());
-                renderer.bufferData(GLES20.GL_ARRAY_BUFFER, attribs.getSizeInBytes(),
+                gles.glBindBuffer(GLES20.GL_ARRAY_BUFFER, attribs.getBufferName());
+                gles.glBufferData(GLES20.GL_ARRAY_BUFFER, attribs.getSizeInBytes(),
                         attribs.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
                 attribs.setDirty(false);
-                GLUtils.handleError(renderer.getGLES(), "createVBOs GL_ARRAY_BUFFER name " + attribs.getBufferName());
+                GLUtils.handleError(gles, "createVBOs GL_ARRAY_BUFFER name " + attribs.getBufferName());
             }
         }
         if (indices != null) {
-            renderer.bindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
-            renderer.bufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getSizeInBytes(),
+            gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
+            gles.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getSizeInBytes(),
                     indices.getBuffer().position(0), GLESWrapper.GLES20.GL_STATIC_DRAW);
             indices.setDirty(false);
-            GLUtils.handleError(renderer.getGLES(),
-                    "createVBOs  GL_ELEMENT_ARRAY_BUFFER name " + indices.getBufferName());
+            GLUtils.handleError(gles, "createVBOs  GL_ELEMENT_ARRAY_BUFFER name " + indices.getBufferName());
         }
     }
 
@@ -97,6 +102,80 @@ public class BufferObjectsFactory {
             GLUtils.handleError(gles, "Create UBOs for " + bb.getBlockName());
             index++;
         }
+    }
+
+    /**
+     * Creates VBO's and uploads data for the buffer(s) that are used by the primitive.
+     * 
+     * @param gles
+     * @param primitive
+     * @throws GLException
+     */
+    public void createVBOs(GLES20Wrapper gles, Primitive primitive) throws GLException {
+        createVBOs(gles, primitive.getBufferArray());
+    }
+
+    /**
+     * Creates VBO's and uploads data for the buffer(s)
+     * 
+     * @param gles
+     * @param buffers
+     * @throws GLException
+     */
+    public void createVBOs(GLES20Wrapper gles, ArrayList<Buffer> buffers) throws GLException {
+        for (Buffer buffer : buffers) {
+            createVBO(gles, buffer);
+        }
+    }
+
+    /**
+     * Creates VBO's and uploads data for the buffer(s)
+     * 
+     * @param gles
+     * @param buffers
+     * @throws GLException
+     */
+    public void createVBOs(GLES20Wrapper gles, Buffer[] buffers) throws GLException {
+        for (Buffer buffer : buffers) {
+            createVBO(gles, buffer);
+        }
+    }
+
+    public void createVBO(GLES20Wrapper gles, Buffer buffer) throws GLException {
+        if (buffer.getBufferName() <= 0) {
+            SimpleLogger.d(getClass(),
+                    "Allocating VBO for buffer: " + buffer.getUri() + ", name: " + buffer.getName() + ", total size: "
+                            + buffer.getByteLength());
+            int[] names = new int[1];
+            gles.glGenBuffers(names);
+            buffer.setBufferName(names[0]);
+            GLUtils.handleError(gles, "Create VBO for buffer " + buffer.getUri());
+            gles.glBindBuffer(GLES20.GL_ARRAY_BUFFER, buffer.getBufferName());
+            gles.glBufferData(GLES20.GL_ARRAY_BUFFER, buffer.getByteLength(), buffer.getBuffer().position(0),
+                    GLESWrapper.GLES20.GL_STATIC_DRAW);
+            GLUtils.handleError(gles, "BufferData for buffer " + buffer.getUri());
+        }
+    }
+
+    /**
+     * Destroys the buffers if VBOs have been allocated.
+     * 
+     * @param gles
+     * @param buffers
+     * @throws GLException
+     */
+    public void destroyVBOs(GLES20Wrapper gles, ArrayList<Buffer> buffers) throws GLException {
+        int[] names = new int[1];
+        int deleted = 0;
+        for (Buffer buffer : buffers) {
+            names[0] = buffer.getBufferName();
+            if (names[0] > 0) {
+                gles.glDeleteBuffers(1, names, 0);
+                deleted++;
+                buffer.setBufferName(0);
+            }
+        }
+        SimpleLogger.d(getClass(), "Deleted " + deleted + " buffers");
     }
 
 }

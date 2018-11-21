@@ -18,13 +18,21 @@ import org.lwjgl.system.windows.WinBase;
 
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
-import com.nucleus.opengl.GLESWrapper.Renderers;
+import com.nucleus.renderer.SurfaceConfiguration;
 
+/**
+ * 
+ * The canvas used by JAWTWindow on windows platforms - ie when LWJGL shall be used with an AWT window (on windows)
+ * Currently this only supports wgl setup, ie not the arb extensions to set attributes when
+ * creating the window.
+ * This means no controll over more advanced options such as samples.
+ *
+ */
 @SuppressWarnings("serial")
 public class LWJGLWindowsCanvas extends LWJGLCanvas {
 
-    public LWJGLWindowsCanvas(Renderers version, J2SEWindow window, int width, int height) {
-        super(version, window, width, height);
+    public LWJGLWindowsCanvas(J2SEWindow window, SurfaceConfiguration config, int width, int height) {
+        super(window, config, width, height);
         SimpleLogger.d(getClass(), "Using Windows Canvas");
     }
 
@@ -39,9 +47,8 @@ public class LWJGLWindowsCanvas extends LWJGLCanvas {
                         .nVersion((short) 1)
                         .dwFlags(GDI32.PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER)
                         .iPixelType(PFD_TYPE_RGBA)
-                        .cColorBits((byte) 32)
-                        .cAlphaBits((byte) 8)
-                        .cDepthBits((byte) 24)
+                        .cAlphaBits((byte) config.getAlphaBits())
+                        .cDepthBits((byte) config.getDepthBits())
                         .iLayerType(PFD_MAIN_PLANE)) {
             int pixelFormat = GetPixelFormat(hdc);
             if (pixelFormat != 0) {

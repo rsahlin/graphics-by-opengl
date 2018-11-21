@@ -1,9 +1,9 @@
 package com.nucleus.shader;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import com.nucleus.SimpleLogger;
+import com.nucleus.common.BufferUtils;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 
 /**
@@ -21,8 +21,8 @@ public class FloatBlockBuffer extends BlockBuffer {
      * @param size
      */
     public FloatBlockBuffer(String blockName, int size) {
-        super(ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer(), blockName, size * 4);
-        buffer = (FloatBuffer) plainBuffer;
+        super(BufferUtils.createByteBuffer(size * 4), blockName);
+        buffer = plainBuffer.asFloatBuffer();
     }
 
     /**
@@ -32,16 +32,22 @@ public class FloatBlockBuffer extends BlockBuffer {
      * @param size Number of floats to allocate
      * @param interfaceBlock The variable block this buffer belongs to - or null if not used in a variable block.
      */
-
     public FloatBlockBuffer(InterfaceBlock interfaceBlock, int size) {
-        super(ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer(), interfaceBlock.name,
+        super(BufferUtils.createByteBuffer(size * 4), interfaceBlock.name,
                 interfaceBlock);
-        buffer = (FloatBuffer) plainBuffer;
+        buffer = plainBuffer.asFloatBuffer();
+        SimpleLogger.d(getClass(),
+                "Created FloatBlockBuffer for block: " + interfaceBlock.name + ", capacity: " + buffer.capacity());
     }
 
     @Override
     public void position(int newPosition) {
         buffer.position(newPosition);
+    }
+
+    @Override
+    public int capacity() {
+        return buffer.capacity();
     }
 
     /**

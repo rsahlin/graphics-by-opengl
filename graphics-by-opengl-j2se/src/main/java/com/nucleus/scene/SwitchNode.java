@@ -8,7 +8,7 @@ import com.nucleus.io.gson.PostDeserializable;
  * This will mark the specified Node as {@link State#ON} the other children will be toggled to {@link State#OFF}
  * This node can be serialized using GSON
  */
-public class SwitchNode extends Node implements PostDeserializable {
+public class SwitchNode extends AbstractNode implements PostDeserializable {
 
     private static final int MAX_CHILD_COUNT = 2;
 
@@ -44,7 +44,7 @@ public class SwitchNode extends Node implements PostDeserializable {
      * @throws ClassCastException If source is not {@link #SwitchNode()}
      */
     @Override
-    public void set(Node source) {
+    public void set(AbstractNode source) {
         set((SwitchNode) source);
     }
 
@@ -87,5 +87,16 @@ public class SwitchNode extends Node implements PostDeserializable {
         if (active != null) {
             setActive(active);
         }
+    }
+
+    @Override
+    public void createTransient() {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public boolean isInside(float[] position) {
+        // TODO Auto-generated method stub
+        return false;
     }
 }

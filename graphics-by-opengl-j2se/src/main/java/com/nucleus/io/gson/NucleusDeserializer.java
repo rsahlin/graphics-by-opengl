@@ -4,42 +4,63 @@ package com.nucleus.io.gson;
  * Base implementation of a deserializer
  */
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
- * Base class for nodetree deserializer, use this when deserialization will be recursive.
+ * Interface for GSON nodetree deserializer, use this when deserialization will be recursive.
+ * This shall resolve node classes correctly by registering the correct type adapters.
  * 
  * @author Richard Sahlin
  *
  */
-public class NucleusDeserializer {
+public interface NucleusDeserializer<T> {
+
+    public final static String NODETYPE_JSON_KEY = "type";
 
     /**
-     * The gson instance to use when deserializing
-     * TODO Should this be a static instance that is shared across sublcasses
-     */
-    protected Gson gson;
-
-    /**
-     * Sets the gson instance to be used when deserializing - this is a static instance that only needs to be set once
-     * for all subclasses.
-     * Remember to first set type adapters to the Gson builder, then call GsonBuilder.create() to create
-     * a gson instance using the specified type adapters
+     * Set the gson instance to be used, this is called after {@link #registerTypeAdapter(GsonBuilder)}
+     * Subclasses shall call super{@link #setGson(Gson)}
      * 
      * @param gson
      */
-    public void setGson(Gson gson) {
-        this.gson = gson;
-    }
+    public void setGson(Gson gson);
+
+    /**
+     * Returns the gson instance to be used with this deserializer.
+     * Must be set by calling {@link #setGson(Gson)}
+     * 
+     * @return
+     */
+    public Gson getGson();
 
     /**
      * Checks if implements post deserialize, then call {@linkplain PostDeserializable#postDeserialize()}
      * 
      * @param deserialized The class that has been deserialized
      */
-    protected void postDeserialize(Object deserialized) {
-        if (deserialized instanceof PostDeserializable) {
-            ((PostDeserializable) deserialized).postDeserialize();
-        }
-    }
+    public void postDeserialize(Object deserialized);
+
+    /**
+     * Adds a list with known type name/classes to the deserializer.
+     * Use this to add custom nodes for import.
+     * 
+     * @param types
+     */
+    public void addNodeTypes(com.nucleus.common.Type<T>[] types);
+
+    /**
+     * Adds a type name/class to the deserializer.
+     * Use this to add custom nodes for import.
+     * 
+     * @param types
+     */
+    public void addNodeType(com.nucleus.common.Type<T> type);
+
+    /**
+     * Register the type adapter(s) needed when serializing JSON
+     * 
+     * @param builder The gson builder used to serialize JSON content
+     */
+    public void registerTypeAdapter(GsonBuilder builder);
 
 }

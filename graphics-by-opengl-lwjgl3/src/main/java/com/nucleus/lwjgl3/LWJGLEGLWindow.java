@@ -36,6 +36,8 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
     protected Renderers version;
     protected SurfaceConfiguration surfaceConfig;
     protected RenderContextListener renderListener;
+    protected long window;
+    protected GLESCapabilities gles;
     Environment env;
     /**
      * Special surface attribs that may be specified when creating the surface - see
@@ -123,7 +125,7 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
         int WIDTH = 300;
         int HEIGHT = 300;
 
-        long window = GLFW.glfwCreateWindow(WIDTH, HEIGHT, "GLFW EGL/OpenGL ES Demo", MemoryUtil.NULL, MemoryUtil.NULL);
+        window = GLFW.glfwCreateWindow(WIDTH, HEIGHT, "", MemoryUtil.NULL, MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
@@ -132,19 +134,16 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
 
         GLFWVidMode vidmode = Objects.requireNonNull(GLFW.glfwGetVideoMode(monitor));
         GLFW.glfwMakeContextCurrent(window);
-        GLFW.glfwShowWindow(window);
 
         Configuration.OPENGLES_EXPLICIT_INIT.set(true);
         GLES.create(GL.getFunctionProvider());
-        GLESCapabilities gles = GLES.createCapabilities();
+        gles = GLES.createCapabilities();
 
         GLFW.glfwSetKeyCallback(window, (windowHnd, key, scancode, action, mods) -> {
             if (action == GLFW.GLFW_RELEASE && key == GLFW.GLFW_KEY_ESCAPE) {
                 GLFW.glfwSetWindowShouldClose(windowHnd, true);
             }
         });
-
-        wrapper = LWJGLWrapperFactory.createWrapper(gles, version);
 
         GLFW.glfwSetKeyCallback(window, (windowHnd, key, scancode, action, mods) -> {
             if (action == GLFW.GLFW_RELEASE && key == GLFW.GLFW_KEY_ESCAPE) {
@@ -270,6 +269,38 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
         FrameSampler.getInstance().addTag(FrameSampler.Samples.EGLSWAPBUFFERS.name() + "-WAITGL=" + eglWaitGL,
                 start,
                 System.currentTimeMillis(), FrameSampler.Samples.EGLSWAPBUFFERS.detail);
+    }
+
+    @Override
+    public void internalCreateCoreApp(int width, int height) {
+        wrapper = LWJGLWrapperFactory.createWrapper(gles, version);
+        super.internalCreateCoreApp(width, height);
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        if (visible) {
+            GLFW.glfwShowWindow(window);
+        } else {
+            GLFW.glfwHideWindow(window);
+        }
+    }
+
+    @Override
+    public void setWindowTitle(String title) {
+        if (window != 0) {
+            GLFW.glfwSetWindowTitle(window, title);
+        }
+    }
+
+    @Override
+    protected void setFullscreenMode(boolean fullscreen) {
+        throw new IllegalArgumentException("Not implemented");
+    }
+
+    @Override
+    protected void destroy() {
+        throw new IllegalArgumentException("Not implemented");
     }
 
 }

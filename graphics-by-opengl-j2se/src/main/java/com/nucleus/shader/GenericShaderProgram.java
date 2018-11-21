@@ -1,9 +1,8 @@
 package com.nucleus.shader;
 
-import com.nucleus.geometry.Mesh;
-import com.nucleus.opengl.GLES20Wrapper;
+import java.nio.FloatBuffer;
+
 import com.nucleus.renderer.Pass;
-import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
 
 /**
@@ -18,32 +17,42 @@ public class GenericShaderProgram extends ShaderProgram {
     /**
      * Creates a shader program that will load shaders from default location
      * 
-     * @param source Use as category for the shader types, must shader types in Shader. Eg if
+     * @param source Source names for shaders, must match number of shader types in Shader.
+     * @param pass
+     * @param shading
+     * @param category
+     * @param shaders
      * {@link ProgramType#VERTEX_FRAGMENT} then this must contain 2 values.
      * @param shaders
      */
-    public GenericShaderProgram(String[] source, ProgramType shaders) {
-        super((Pass) null, (Texture2D.Shading) null, (String) null, shaders);
+    public GenericShaderProgram(String[] source, Pass pass, Shading shading, String category, ProgramType shaders) {
+        super(pass, shading, category, shaders);
         this.source = source;
     }
 
+    public GenericShaderProgram(Pass pass, Shading shading, String category, ProgramType shaders) {
+        super(pass, shading, category, shaders);
+    }
+
+    public GenericShaderProgram(Categorizer function, ProgramType shaders) {
+        super(function, shaders);
+    }
+
     @Override
-    protected String getShaderSource(int shaderType) {
+    protected String getShaderSourceName(int shaderType) {
+        if (source == null) {
+            return super.getShaderSourceName(shaderType);
+        }
         ShaderType t = ShaderType.getFromType(shaderType);
-        return source[t.index];
+        return function.getPath(shaderType) + source[t.index];
     }
 
     @Override
-    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, Shading shading) {
-        return this;
+    public void updateUniformData(FloatBuffer destinationUniform) {
     }
 
     @Override
-    public void updateUniformData(float[] destinationUniform, Mesh mesh) {
-    }
-
-    @Override
-    public void initBuffers(Mesh mesh) {
+    public void initUniformData(FloatBuffer destinationUniforms) {
     }
 
 }

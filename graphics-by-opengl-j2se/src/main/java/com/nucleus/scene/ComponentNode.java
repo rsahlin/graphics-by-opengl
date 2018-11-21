@@ -9,7 +9,9 @@ import com.nucleus.component.Component;
 import com.nucleus.component.ComponentController;
 import com.nucleus.component.ComponentException;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.system.ComponentHandler;
 import com.nucleus.system.System;
@@ -21,14 +23,14 @@ import com.nucleus.system.System;
  * @author Richard Sahlin
  *
  */
-public class ComponentNode extends Node implements ComponentController {
+public class ComponentNode extends AbstractMeshNode<Mesh> implements ComponentController {
 
     /**
      * Builder for Nodes, use this when nodes are created programmatically
      *
      * @param <T>
      */
-    public static class Builder extends Node.Builder<ComponentNode> {
+    public static class Builder extends NodeBuilder<ComponentNode> {
 
         private String component;
         private String system;
@@ -71,15 +73,13 @@ public class ComponentNode extends Node implements ComponentController {
      * @param nodeBuilder
      * @return
      */
-    public static Builder createBuilder(NucleusRenderer renderer, RootNode root, String component, String system) {
+    public NodeBuilder<ComponentNode> createBuilder(NucleusRenderer renderer, ComponentNode source) {
         Builder nodeBuilder = new Builder();
-        nodeBuilder.setComponent(component).setSystem(system);
-        nodeBuilder.setRoot(root).setType(NodeTypes.componentnode);
         return nodeBuilder;
     }
 
     /**
-     * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
+     * Used by GSON and {@link #createInstance(RootNodeImpl)} method - do NOT call directly
      */
     @Deprecated
     protected ComponentNode() {
@@ -104,7 +104,7 @@ public class ComponentNode extends Node implements ComponentController {
     }
 
     @Override
-    public void set(Node source) {
+    public void set(AbstractNode source) {
         set((ComponentNode) source);
     }
 
@@ -117,17 +117,17 @@ public class ComponentNode extends Node implements ComponentController {
      * Create the components, the {@link System} needed by the component will be created and registered with the
      * {@link ComponentHandler}
      * 
-     * @param renderer
+     * @param gles
      * @throws ComponentException
      * If one or more of the components could not be created
      */
-    public void createComponents(NucleusRenderer renderer) throws ComponentException {
+    public void createComponents(GLES20Wrapper gles) throws ComponentException {
         ComponentHandler handler = ComponentHandler.getInstance();
         try {
             for (Component c : components) {
                 handler.createSystem(c);
                 handler.registerComponent(c);
-                c.create(renderer, this);
+                c.create(gles, this);
             }
         } catch (InstantiationException | IllegalAccessException e) {
             throw new ComponentException(e);
@@ -208,12 +208,19 @@ public class ComponentNode extends Node implements ComponentController {
     }
 
     @Override
-    public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, Node parent, int count,
-            ShapeBuilder shapeBuilder)
+    public void createTransient() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
             throws IOException {
-        /**
-         * Mesh created using component as parent when #createComponents() is called
-         */
+        try {
+            createComponents(gles);
+        } catch (ComponentException e) {
+            throw new RuntimeException(e);
+        }
         return null;
     }
 

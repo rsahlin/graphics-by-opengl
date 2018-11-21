@@ -1,7 +1,8 @@
 package com.nucleus.shader;
 
-import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.BufferIndex;
+import java.nio.FloatBuffer;
+
+import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.Pass;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -56,11 +57,11 @@ public class TranslateProgram extends ShaderProgram {
     }
 
     @Override
-    public void updateUniformData(float[] destinationUniform, Mesh mesh) {
+    public void updateUniformData(FloatBuffer destinationUniform) {
     }
 
     @Override
-    public void initBuffers(Mesh mesh) {
+    public void initUniformData(FloatBuffer destinationUniforms) {
     }
 
 }

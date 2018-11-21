@@ -3,16 +3,19 @@ package com.nucleus.scene;
 import java.io.IOException;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilderFactory;
-import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
@@ -23,7 +26,7 @@ import com.nucleus.vecmath.Shape;
  * implementation of MeshFactory when node is serialized.
  *
  */
-public class MeshNode extends Node {
+public class MeshNode extends AbstractMeshNode<Mesh> {
 
     /**
      * If defined this is the shape of the mesh - if not specified a fullscreen 2D rect will be created.
@@ -38,35 +41,29 @@ public class MeshNode extends Node {
         super();
     }
 
-    private MeshNode(RootNode root, Type<Node> type) {
+    protected MeshNode(RootNode root, Type<Node> type) {
         super(root, type);
     }
 
-    /**
-     * Creates a Mesh builder for this node.
-     * if shapebuilder is null then Mode is set to TRIANGLE_FAN with 4 vertices and a rectangle shapebuilder is created.
-     * 
-     * @param renderer
-     * @param parent
-     * @return
-     * @throws IOException
-     */
     @Override
-    public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, Node parent, int count,
-            ShapeBuilder shapeBuilder) throws IOException {
-        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
+    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
+            throws IOException {
+        SimpleLogger.d(getClass(), "Creating MeshBuilder for Node " + getId());
+        int count = 1;
+        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(gles);
         Texture2D tex = null;
-        if (parent.getTextureRef() == null) {
-            tex = TextureFactory.createTexture(TextureType.Untextured);
+        if (getTextureRef() == null) {
+            tex = TextureFactory.getInstance().createTexture(TextureType.Untextured);
 
         } else {
-            tex = AssetManager.getInstance().getTexture(renderer, parent.getTextureRef());
+            tex = AssetManager.getInstance().getTexture(gles, BaseImageFactory.getInstance(), getTextureRef());
         }
         builder.setTexture(tex);
         if (shapeBuilder == null) {
-            LayerNode layer = parent.getRootNode().getLayerNode(null);
+            LayerNode layer = getRootNode().getNodeByType(NodeTypes.layernode.name(), LayerNode.class);
+
             ViewFrustum view = layer.getViewFrustum();
-            builder.setArrayMode(Mode.TRIANGLE_FAN, 4, 0);
+            builder.setArrayMode(GLESWrapper.Mode.TRIANGLE_FAN, 4, 0);
             if (shape == null) {
                 shapeBuilder = new RectangleShapeBuilder(
                         new RectangleConfiguration(view.getWidth(), view.getHeight(), 0f, 1, 0));
@@ -75,7 +72,7 @@ public class MeshNode extends Node {
             }
         }
         // If program is not present in parent then the meshbuilder is called to create program.
-        return initMeshBuilder(renderer, parent, count, shapeBuilder, builder);
+        return initMeshBuilder(gles, count, shapeBuilder, builder);
 
     }
 
@@ -98,6 +95,11 @@ public class MeshNode extends Node {
 
     public Shape getShape() {
         return shape;
+    }
+
+    @Override
+    public void createTransient() {
+        // TODO Auto-generated method stub
     }
 
 }

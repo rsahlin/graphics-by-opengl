@@ -78,6 +78,22 @@ public abstract class GLESWrapper {
             this.major = major;
             this.minor = minor;
         };
+
+        /**
+         * Returns the enum from major.minor version
+         * 
+         * @param glVersion
+         * @return
+         */
+        public static Renderers get(int[] glVersion) {
+            for (Renderers r : Renderers.values()) {
+                if (r.major == glVersion[0] && r.minor == glVersion[1]) {
+                    return r;
+                }
+            }
+            return null;
+        }
+
     }
 
     protected GLESWrapper(Platform platform, Renderers renderVersion) {
@@ -1149,6 +1165,62 @@ public abstract class GLESWrapper {
 
         private GLES_EXTENSION_TOKENS(int value) {
             this.value = value;
+        }
+    }
+
+    /**
+     * The gl drawmodes
+     *
+     */
+    public enum Mode {
+        /**
+         * From GL_POINTS
+         */
+        POINTS(GLES20.GL_POINTS),
+        /**
+         * From GL_LINE_STRIP
+         */
+        LINE_STRIP(GLES20.GL_LINE_STRIP),
+        /**
+         * From GL_LINE_LOOP
+         */
+        LINE_LOOP(GLES20.GL_LINE_LOOP),
+        /**
+         * From GL_TRIANGLE_STRIP
+         */
+        TRIANGLE_STRIP(GLES20.GL_TRIANGLE_STRIP),
+        /**
+         * From GL_TRIANGLE_FAN
+         */
+        TRIANGLE_FAN(GLES20.GL_TRIANGLE_FAN),
+        /**
+         * From GL_TRIANGLES
+         */
+        TRIANGLES(GLES20.GL_TRIANGLES),
+        /**
+         * From GL_LINES
+         */
+        LINES(GLES20.GL_LINES);
+
+        public final int mode;
+
+        /**
+         * Fetches the enum from gl mode value
+         * 
+         * @param mode
+         * @return
+         */
+        public static Mode get(int mode) {
+            for (Mode m : Mode.values()) {
+                if (mode == m.mode) {
+                    return m;
+                }
+            }
+            return null;
+        }
+
+        private Mode(int mode) {
+            this.mode = mode;
         }
     }
 

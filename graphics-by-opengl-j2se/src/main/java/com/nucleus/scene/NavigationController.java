@@ -3,8 +3,6 @@ package com.nucleus.scene;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import com.nucleus.scene.Node.NodeTypes;
-
 /**
  * Singleton implementation of navigation controller, handles navigation within scene
  */
@@ -58,7 +56,7 @@ public class NavigationController {
      * @param active
      */
     public void setActiveSwitch(RootNode root, String nodeId, String active) {
-        SwitchNode target = (SwitchNode) root.getNodeById(nodeId);
+        SwitchNode target = root.getNodeById(nodeId, SwitchNode.class);
         if (target != null) {
             stack.push(new BackStackEntry(target));
             target.setActive(active);

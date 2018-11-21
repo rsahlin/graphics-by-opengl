@@ -11,7 +11,7 @@ public class GlobalLight {
     /**
      * Position of light
      */
-    private float[] lightPosition = new float[3];
+    private float[] lightPosition = new float[] { 0, 5000, 10000 };
 
     private static GlobalLight globalLight = new GlobalLight();
 
@@ -25,12 +25,35 @@ public class GlobalLight {
     }
 
     /**
+     * Deprecated - this is not a property of a global light, but rather a node property.
      * Returns the global ambient light
      * 
      * @return
      */
+    @Deprecated
     public float[] getAmbient() {
         return ambient;
+    }
+
+    /**
+     * Reads the global light position and stores in dest array at offset
+     * 
+     * @param dest
+     * @param offset
+     */
+    public void getLightPosition(float[] dest, int offset) {
+        dest[offset++] = lightPosition[0];
+        dest[offset++] = lightPosition[1];
+        dest[offset++] = lightPosition[2];
+    }
+
+    /**
+     * Returns a reference to the light position
+     * 
+     * @return
+     */
+    public float[] getLightPosition() {
+        return lightPosition;
     }
 
     public void getLightMatrix(float[] matrix) {

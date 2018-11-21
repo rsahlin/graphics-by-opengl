@@ -4,12 +4,13 @@ import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.common.Environment;
 import com.nucleus.common.Type;
-import com.nucleus.matrix.j2se.J2SEMatrixEngine;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.RendererFactory;
 import com.nucleus.renderer.SurfaceConfiguration;
+import com.nucleus.renderer.Window;
+import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.J2SEImageFactory;
 
 /**
@@ -42,6 +43,8 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     public static final String FULLSCREEN_KEY = "FULLSCREEN";
     public static final String SAMPLES = "SAMPLES";
     public static final String ALPHA_BITS = "ALPHA";
+    public static final int DEFAULT_DEPTH_BITS = 32;
+    public static final int DEFAULT_SAMPLES = 4;
 
     protected CoreApp coreApp;
     protected int swapInterval = 1;
@@ -51,11 +54,16 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     protected boolean fullscreen = false;
     protected J2SEWindow j2seWindow;
     protected WindowType windowType;
-    protected int samples = 0;
+
+    protected int depthBits = DEFAULT_DEPTH_BITS;
     /**
-     * Number of bits of alpha in background
+     * Number of samples for surface
      */
-    protected int alpha = 0;
+    protected int samples = DEFAULT_SAMPLES;
+    /**
+     * Number of bits of alpha for surface
+     */
+    protected int alpha = 8;
 
     protected RenderContextListener contextListener;
 
@@ -72,6 +80,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
      */
     public J2SEWindowApplication(String[] args, Renderers version, Type<Object> clientClass) {
         SimpleLogger.setLogger(new J2SELogger());
+        BaseImageFactory.setFactory(new J2SEImageFactory());
         CoreApp.setClientClass(clientClass);
         setProperties(args);
         createCoreWindows(version);
@@ -148,12 +157,12 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     public void createCoreWindows(Renderers version) {
         j2seWindow = createWindow(version);
         j2seWindow.setWindowListener(this);
+        Window.getInstance().setPlatformWindow(j2seWindow);
     }
 
     @Override
     public void createCoreApp(int width, int height) {
-        NucleusRenderer renderer = RendererFactory.getRenderer(j2seWindow.getGLESWrapper(), new J2SEImageFactory(),
-                new J2SEMatrixEngine());
+        NucleusRenderer renderer = RendererFactory.getRenderer(j2seWindow.getGLESWrapper());
         coreApp = CoreApp.createCoreApp(width, height, renderer);
         j2seWindow.setCoreApp(coreApp);
     }
@@ -183,6 +192,8 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     public void windowClosed() {
         if (coreApp != null) {
             coreApp.setDestroyFlag();
+        } else {
+            SimpleLogger.d(getClass(), "windowClosed() coreApp is null");
         }
     }
 
@@ -193,6 +204,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
      */
     protected SurfaceConfiguration getConfiguration() {
         SurfaceConfiguration config = new SurfaceConfiguration();
+        config.setDepthBits(depthBits);
         config.setAlphaBits(alpha);
         config.setSamples(samples);
         return config;

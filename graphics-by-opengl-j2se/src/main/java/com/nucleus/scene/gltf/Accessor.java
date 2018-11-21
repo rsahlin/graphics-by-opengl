@@ -1,12 +1,15 @@
 package com.nucleus.scene.gltf;
 
+import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
+
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 
 /**
  * The Accessor as it is loaded using the glTF format.
- * To use a runtime version of the Accessor create AccessorInstance
  * 
  * accessor
  * A typed view into a bufferView. A bufferView contains raw binary data. An accessor provides a typed view into a
@@ -29,7 +32,7 @@ import com.nucleus.scene.gltf.GLTF.GLTFException;
  * 
  */
 
-public class Accessor implements GLTF.RuntimeResolver {
+public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
 
     private static final String BUFFER_VIEW = "bufferView";
     private static final String BYTE_OFFSET = "byteOffset";
@@ -39,21 +42,27 @@ public class Accessor implements GLTF.RuntimeResolver {
     private static final String TYPE = "type";
     private static final String MAX = "max";
     private static final String MIN = "min";
-    private static final String SPARSE = "sparse";
-    private static final String NAME = "name";
 
     public enum ComponentType {
-        BYTE(GLESWrapper.GLES20.GL_BYTE),
-        UNSIGNED_BYTE(GLESWrapper.GLES20.GL_UNSIGNED_BYTE),
-        SHORT(GLESWrapper.GLES20.GL_SHORT),
-        UNSIGNED_SHORT(GLESWrapper.GLES20.GL_UNSIGNED_SHORT),
-        UNSIGNED_INT(GLESWrapper.GLES20.GL_UNSIGNED_INT),
-        FLOAT(GLESWrapper.GLES20.GL_FLOAT);
+        BYTE(GLESWrapper.GLES20.GL_BYTE, 1),
+        UNSIGNED_BYTE(GLESWrapper.GLES20.GL_UNSIGNED_BYTE, 1),
+        SHORT(GLESWrapper.GLES20.GL_SHORT, 2),
+        UNSIGNED_SHORT(GLESWrapper.GLES20.GL_UNSIGNED_SHORT, 2),
+        UNSIGNED_INT(GLESWrapper.GLES20.GL_UNSIGNED_INT, 4),
+        FLOAT(GLESWrapper.GLES20.GL_FLOAT, 4);
 
+        /**
+         * The gl value
+         */
         public final int value;
+        /**
+         * Size in bytes
+         */
+        public final int size;
 
-        private ComponentType(int value) {
+        private ComponentType(int value, int size) {
             this.value = value;
+            this.size = size;
         }
 
         public static ComponentType get(int value) {
@@ -68,13 +77,41 @@ public class Accessor implements GLTF.RuntimeResolver {
     }
 
     public enum Type {
-        SCALAR(),
-        VEC2(),
-        VEC3(),
-        VEC4(),
-        MAT2(),
-        MAT3(),
-        MAT4();
+        SCALAR(1),
+        VEC2(2),
+        VEC3(3),
+        VEC4(4),
+        MAT2(2),
+        MAT3(3),
+        MAT4(4);
+
+        public final int size;
+
+        private Type(int size) {
+            this.size = size;
+        }
+
+        public static Type getFromDataType(int dataType) {
+            switch (dataType) {
+                case GLES20.GL_FLOAT:
+                    return SCALAR;
+                case GLES20.GL_FLOAT_MAT2:
+                    return MAT2;
+                case GLES20.GL_FLOAT_MAT3:
+                    return MAT3;
+                case GLES20.GL_FLOAT_MAT4:
+                    return MAT4;
+                case GLES20.GL_FLOAT_VEC2:
+                    return VEC2;
+                case GLES20.GL_FLOAT_VEC3:
+                    return VEC3;
+                case GLES20.GL_FLOAT_VEC4:
+                    return VEC4;
+                default:
+                    throw new IllegalArgumentException("Not implemented for " + dataType);
+            }
+        }
+
     }
 
     public static final int DEFAULT_BYTE_OFFSET = 0;
@@ -98,7 +135,7 @@ public class Accessor implements GLTF.RuntimeResolver {
      * 5126 FLOAT
      */
     @SerializedName(COMPONENT_TYPE)
-    private int componentTypeValue = -1;
+    private int componentTypeValue;
     @SerializedName(NORMALIZED)
     private boolean normalized = DEFAULT_NORMALIZED;
     @SerializedName(COUNT)
@@ -109,9 +146,6 @@ public class Accessor implements GLTF.RuntimeResolver {
     private float[] max;
     @SerializedName(MIN)
     private float[] min;
-    // private Object sparse;
-    @SerializedName(NAME)
-    private String name;
 
     transient ComponentType componentType;
     transient BufferView bufferViewRef;
@@ -132,21 +166,38 @@ public class Accessor implements GLTF.RuntimeResolver {
         return bufferViewRef;
     }
 
+    /**
+     * The offset relative to the start of the bufferView in bytes.
+     * 
+     * @return
+     */
     public int getByteOffset() {
         return byteOffset;
     }
 
+    /**
+     * The datatype of components in the attribute
+     * 
+     * @return
+     */
     public ComponentType getComponentType() {
-        if (componentType == null) {
-            componentType = ComponentType.get(componentTypeValue);
-        }
         return componentType;
     }
 
+    /**
+     * Returns true if integer data should be normalized
+     * 
+     * @return
+     */
     public boolean isNormalized() {
         return normalized;
     }
 
+    /**
+     * Returns the number of attributes referenced by this accessor
+     * 
+     * @return
+     */
     public int getCount() {
         return count;
     }
@@ -159,20 +210,82 @@ public class Accessor implements GLTF.RuntimeResolver {
         return min;
     }
 
-    public String getName() {
-        return name;
-    }
-
+    /**
+     * Specifies if the attribute is a scalar, vector, or matrix
+     *
+     * @return
+     */
     public Type getType() {
         return type;
     }
 
+    /**
+     * Returns the ByteBuffer positioned according to this accessor and bufferview
+     * @return
+     */
+    public ByteBuffer getBuffer() {
+        ByteBuffer buffer = bufferViewRef.getBuffer().buffer;
+        buffer.position(byteOffset + bufferViewRef.getByteOffset());
+        return buffer;
+    }
+    
+    
     @Override
     public void resolve(GLTF asset) throws GLTFException {
         if (bufferViewRef != null) {
-            throw new GLTFException("Already resolved Accessor with name " + name);
+            throw new GLTFException("Already resolved Accessor with name " + getName());
         }
         bufferViewRef = asset.getBufferViews()[bufferViewIndex];
+        componentType = ComponentType.get(componentTypeValue);
+    }
+
+    @Override
+    public String toString() {
+        String str = "Bufferviewindex: " + bufferViewIndex + ", count: " + count + ", offset: " + byteOffset
+                + ", component: " + componentType
+                + ", type: " + type + (getName() != null ? (", name: " + getName()) : "") + "\n";
+        bufferViewRef.getBuffer().getBuffer().position(byteOffset);
+        switch (componentType) {
+            case BYTE:
+            case UNSIGNED_BYTE:
+                str += bufferViewRef.toString(bufferViewRef.getBuffer().getBuffer());
+                break;
+            case SHORT:
+            case UNSIGNED_SHORT:
+                str += bufferViewRef.toString(bufferViewRef.getBuffer().getBuffer().asShortBuffer());
+                break;
+            case FLOAT:
+                str += bufferViewRef.toString(bufferViewRef.getBuffer().getBuffer().asFloatBuffer());
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented");
+        }
+
+        return str;
+    }
+
+    public void copyData(int[] destination) {
+        switch (componentType) {
+            case SHORT:
+            case UNSIGNED_SHORT:
+            case UNSIGNED_INT:
+            break;    
+            default:
+                throw new IllegalArgumentException("Not implemented for " + componentType);
+            
+        }
+    }
+    
+    private void copyData(ShortBuffer source, int[] destination) {
+        source.position(byteOffset / 2);
+    }
+    
+    /**
+     * 
+     * 
+     */
+    public void updateMaxMin(MaxMin compare, float[] scale) {
+        compare.update(max, min, scale);
     }
 
 }

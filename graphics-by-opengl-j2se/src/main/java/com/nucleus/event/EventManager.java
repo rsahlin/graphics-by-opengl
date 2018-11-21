@@ -20,7 +20,7 @@ public class EventManager {
 
     private static EventManager eventManager = new EventManager();
 
-    private HashMap<String, EventHandler<Node>> handlers = new HashMap<>();
+    private HashMap<String, EventHandler<Node>> nodeHandlers = new HashMap<>();
 
     /**
      * Interface for handling of a specific event category
@@ -84,7 +84,7 @@ public class EventManager {
         if (category == null) {
             category = handler.getHandlerCategory();
         }
-        handlers.put(category, handler);
+        nodeHandlers.put(category, handler);
     }
 
     public void register(Object subscriber) {
@@ -107,7 +107,7 @@ public class EventManager {
      * @param value
      */
     public void post(Node node, String category, String value) {
-        EventHandler<Node> handler = handlers.get(category);
+        EventHandler<Node> handler = nodeHandlers.get(category);
         if (handler != null) {
             Property p = Property.create(value);
             handler.handleEvent(node, p.getKey(), p.getValue());

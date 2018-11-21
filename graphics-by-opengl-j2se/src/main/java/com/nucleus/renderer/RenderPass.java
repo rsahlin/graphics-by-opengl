@@ -38,6 +38,13 @@ public class RenderPass extends BaseReference {
     @SerializedName(PASS)
     private Pass pass;
 
+    public RenderPass(String id, RenderTarget renderTarget, RenderState renderState, Pass pass) {
+        setId(id);
+        setTarget(renderTarget);
+        setRenderState(renderState);
+        setPass(pass);
+    }
+
     /**
      * Returns the render target
      * 

@@ -12,9 +12,12 @@ import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.renderer.Configuration;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
-import com.nucleus.texturing.Image.ImageFormat;
+import com.nucleus.scene.gltf.Image;
+import com.nucleus.scene.gltf.Texture;
+import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.Texture2D.Type;
 
@@ -37,41 +40,22 @@ public class TextureUtils {
      * @param texture The texture source object
      * @return Array with an image for each mip-map level.
      */
-    public static Image[] loadTextureMIPMAP(ImageFactory imageFactory, Texture2D texture) {
+    public static BufferImage[] loadTextureMIPMAP(ImageFactory imageFactory, Texture2D texture) {
         try {
             long start = System.currentTimeMillis();
-            ImageFormat imageFormat = getImageFormat(texture);
-            Image image = loadTextureImage(imageFactory, texture);
+            BufferImage image = loadTextureImage(imageFactory, texture);
             long loaded = System.currentTimeMillis();
             FrameSampler.getInstance()
                     .logTag(FrameSampler.Samples.CREATE_IMAGE, " " + texture.getExternalReference().getSource(), start,
                             loaded);
-            int width = image.getWidth();
-            int height = image.getHeight();
             int levels = texture.getLevels();
             if (levels == 0 || !texture.getTexParams().isMipMapFilter()) {
                 levels = 1;
             }
-            // Do not use this, mipmaps created when textures are uploaded
-            // if (levels > 1) {
-            // levels = (int) Math.floor(Math.log((Math.max(width, height))) / Math.log(2)) + 1;
-            // }
+            // Do not use levels, mipmaps created when textures are uploaded
             levels = 1;
-            Image[] images = new Image[levels];
+            BufferImage[] images = new BufferImage[levels];
             images[0] = image;
-            /*
-             * if (levels > 1) {
-             * // levels = 1 + (int) Math.floor(Math.log(Math.max(scaledWidth, scaledHeight)));
-             * for (int i = 1; i < levels; i++) {
-             * // max(1, floor(w_t/2^i)) x max(1, floor(h_t/2^i))
-             * int scaledWidth = (int) Math.max(1, Math.floor(width / Math.pow(2, i)));
-             * int scaledHeight = (int) Math.max(1, Math.floor(height / Math.pow(2, i)));
-             * images[i] = imageFactory.createScaledImage(images[0], scaledWidth,
-             * scaledHeight, imageFormat);
-             * }
-             * }
-             * FrameSampler.getInstance().logTag(FrameSampler.GENERATE_MIPMAPS, loaded, System.currentTimeMillis());
-             */
             return images;
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -86,12 +70,12 @@ public class TextureUtils {
      * @return
      * @throws IOException
      */
-    protected static Image loadTextureImage(ImageFactory factory, Texture2D texture) throws IOException {
+    protected static BufferImage loadTextureImage(ImageFactory factory, Texture2D texture) throws IOException {
         SimpleLogger.d(TextureUtils.class, "Loading image " + texture.getExternalReference().getSource());
         float scale = (float) Window.getInstance().getHeight() / texture.resolution.lines;
         if (scale < 0.9) {
             RESOLUTION res = RESOLUTION.getResolution(Window.getInstance().getHeight());
-            Image img = factory.createImage(texture.getExternalReference().getSource(), scale, scale,
+            BufferImage img = factory.createImage(texture.getExternalReference().getSource(), scale, scale,
                     getImageFormat(texture), res);
             SimpleLogger.d(TextureUtils.class,
                     "Image scaled " + scale + " to " + img.getWidth() + ", " + img.getHeight()
@@ -104,7 +88,7 @@ public class TextureUtils {
 
     /**
      * Uploads the image(s) to the texture, checks if mipmaps should be created.
-     * The size of the image will be set in the texture
+     * The size of the image will be set in the texture. Texture object must have texture name allocated.
      * 
      * @param gles GLES20Wrapper for GL calls
      * @param texture The texture object, shall have texture name set
@@ -113,9 +97,13 @@ public class TextureUtils {
      * Level 0 shall be at index 0
      * @throws GLException If there is an error uploading the textures
      * @throws IllegalArgumentException If multiple mipmaps provided but texture min filter is not _MIPMAP_
+     * @throws IllegalArgumentException If texture does not have a GL texture name
      */
-    public static void uploadTextures(GLES20Wrapper gles, Texture2D texture, Image[] textureImages)
+    public static void uploadTextures(GLES20Wrapper gles, Texture2D texture, BufferImage[] textureImages)
             throws GLException {
+        if (texture.getName() <= 0) {
+            throw new IllegalArgumentException("No texture name for texture " + texture.getId());
+        }
         gles.glBindTexture(GLES20.GL_TEXTURE_2D, texture.getName());
         boolean isMipMapParams = texture.getTexParams().isMipMapFilter();
         if ((textureImages.length > 1 && !isMipMapParams) || (texture.getLevels() > 1 && !isMipMapParams)) {
@@ -125,7 +113,7 @@ public class TextureUtils {
         }
         int level = 0;
         texture.setup(textureImages[0].width, textureImages[0].height);
-        for (Image textureImg : textureImages) {
+        for (BufferImage textureImg : textureImages) {
             if (textureImg != null) {
                 if (texture.getFormat() == null || texture.getType() == null) {
                     throw new IllegalArgumentException("Texture format or type is null for id " + texture.getId()
@@ -138,15 +126,39 @@ public class TextureUtils {
                 break;
             }
         }
-        if (textureImages.length == 1 && texture.getTexParams().isMipMapFilter()) {
-            if (texture.getLevels() < 2) {
-                throw new IllegalArgumentException("Texture " + texture.getId()
-                        + " has mipmap filter params but levels is " + texture.getLevels());
-            }
+        if (textureImages.length == 1 && texture.getTexParams().isMipMapFilter()
+                || Configuration.getInstance().isGenerateMipMaps()) {
             long start = System.currentTimeMillis();
             gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
             SimpleLogger.d(TextureUtils.class, "Generated mipmaps for texture " + texture.getId());
             FrameSampler.getInstance().logTag(FrameSampler.Samples.GENERATE_MIPMAPS, texture.getId(), start,
+                    System.currentTimeMillis());
+        }
+    }
+
+    /**
+     * Uploads the image(s) to the texture, checks if mipmaps should be created.
+     * 
+     * @param gles GLES20Wrapper for GL calls
+     * @param image The glTF Image
+     * @param true to generate mipmaps
+     * @throws GLException If there is an error uploading the textures
+     * @throws IllegalArgumentException If multiple mipmaps provided but texture min filter is not _MIPMAP_
+     * @throws IllegalArgumentException If texture does not have a GL texture name
+     */
+    public static void uploadTextures(GLES20Wrapper gles, Image image, boolean generateMipmaps)
+            throws GLException {
+        if (image.getTextureName() <= 0) {
+            throw new IllegalArgumentException("No texture name for texture " + image.getUri());
+        }
+        gles.glBindTexture(GLES20.GL_TEXTURE_2D, image.getTextureName());
+        gles.texImage(image, 0);
+        GLUtils.handleError(gles, "texImage2D");
+        if (generateMipmaps || Configuration.getInstance().isGenerateMipMaps()) {
+            long start = System.currentTimeMillis();
+            gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+            SimpleLogger.d(TextureUtils.class, "Generated mipmaps for texture " + image.getUri());
+            FrameSampler.getInstance().logTag(FrameSampler.Samples.GENERATE_MIPMAPS, image.getUri(), start,
                     System.currentTimeMillis());
         }
     }
@@ -176,6 +188,24 @@ public class TextureUtils {
                 gles.uploadTexParameters(texture.getTexParams());
                 GLUtils.handleError(gles, "glBindTexture()");
             }
+        }
+    }
+
+    /**
+     * Activates texturing, binds the texture and sets texture parameters
+     * Checks if texture is an id (dynamic) reference and sets the texture name if not present.
+     * 
+     * @paran gles
+     * @param texture
+     * @param unit The texture unit number to use, 0 and up
+     */
+    public static void prepareTexture(GLES20Wrapper gles, Texture texture, int unit) throws GLException {
+        if (texture != null) {
+            gles.glActiveTexture(GLES20.GL_TEXTURE0 + unit);
+            int textureID = texture.getImage().getTextureName();
+            gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
+            gles.uploadTexParameters(texture.getSampler());
+            GLUtils.handleError(gles, "glBindTexture()");
         }
     }
 

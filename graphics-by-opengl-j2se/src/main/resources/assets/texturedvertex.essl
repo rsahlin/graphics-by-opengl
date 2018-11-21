@@ -1,26 +1,20 @@
 #version 100
-/* Copyright 2017 Richard Sahlin
+/* 
  * Vertex shader for normal vertex transform with position for each vertex.
  * Can be used for instance for line drawing
- * @author Richard Sahlin
  */
 //Put array declaration after name for GLSL compatibility
-uniform mat4 uMVMatrix;
-uniform mat4 uProjectionMatrix;
-uniform vec4 uAmbientLight;
-uniform vec4 uDiffuseLight;
+uniform mat4 uModelMatrix[3];
 
 attribute vec3 aTranslate; //Position of vertex, offset from matrix
 attribute vec3 aVertex;
 attribute vec2 aTexCoord;
-varying vec2 vTexCoord;
-attribute vec4 aColor;
 
-varying vec4 color;
+varying vec2 vTexCoord;
 
 void main() {
-    vec4 pos = vec4(aVertex + aTranslate, 1.0) * uMVMatrix;
-    gl_Position = pos * uProjectionMatrix;
-    color = aColor;
+    vec4 pos = vec4(aVertex + aTranslate, 1.0) * uModelMatrix[0] * uModelMatrix[1];
+    gl_Position = pos * uModelMatrix[2];
     vTexCoord = aTexCoord;
+    
 }

@@ -14,8 +14,8 @@ import com.nucleus.exporter.Reference;
 public class BaseReference implements Reference {
 
     public static final String ID = "id";
-    public static final String EXTERNAL_REFERENCE = "externalReference"; 
-    
+    public static final String EXTERNAL_REFERENCE = "externalReference";
+
     @SerializedName(ID)
     private String id;
 
@@ -43,6 +43,10 @@ public class BaseReference implements Reference {
      * @param id
      */
     public BaseReference(String id) {
+        if (this.id != null && this.id.contentEquals(id)) {
+            throw new IllegalArgumentException(
+                    "Not allowed to change id, already set to: " + this.id + ", new id: " + id);
+        }
         this.id = id;
     }
 

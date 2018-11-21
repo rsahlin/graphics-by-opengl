@@ -56,4 +56,9 @@ public class JOGLGLESWindow extends JOGLGLWindow {
         super.init(drawable);
     }
 
+    @Override
+    public void setVisible(boolean visible) {
+        glWindow.setVisible(visible);
+    }
+
 }

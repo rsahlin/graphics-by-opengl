@@ -10,14 +10,17 @@ import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.BufferObjectsFactory;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.scene.RenderableNode;
 import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.TranslateProgram;
+import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;
 
@@ -32,90 +35,17 @@ import com.nucleus.texturing.TiledTexture2D;
  */
 public class Mesh extends BaseReference implements AttributeUpdater {
 
-    public enum Mode {
-        /**
-         * From GL_POINTS
-         */
-        POINTS(GLES20.GL_POINTS),
-        /**
-         * From GL_LINE_STRIP
-         */
-        LINE_STRIP(GLES20.GL_LINE_STRIP),
-        /**
-         * From GL_LINE_LOOP
-         */
-        LINE_LOOP(GLES20.GL_LINE_LOOP),
-        /**
-         * From GL_TRIANGLE_STRIP
-         */
-        TRIANGLE_STRIP(GLES20.GL_TRIANGLE_STRIP),
-        /**
-         * From GL_TRIANGLE_FAN
-         */
-        TRIANGLE_FAN(GLES20.GL_TRIANGLE_FAN),
-        /**
-         * From GL_TRIANGLES
-         */
-        TRIANGLES(GLES20.GL_TRIANGLES),
-        /**
-         * From GL_LINES
-         */
-        LINES(GLES20.GL_LINES);
-
-        public final int mode;
-
-        private Mode(int mode) {
-            this.mode = mode;
-        }
-    }
-
     private final static String NULL_NAMES = "Buffer names is null";
     private final static String NOT_ENOUGH_NAMES = "Not enough buffer names";
-
-    /**
-     * For the different Vertice/Attribute buffers
-     */
-    public enum BufferIndex {
-        /**
-         * Attribute buffer storage, this is usually dynamic
-         */
-        ATTRIBUTES(0),
-        /**
-         * Static attribute vertex storage, use this for static attributes
-         */
-        ATTRIBUTES_STATIC(1);
-
-        public final int index;
-
-        private BufferIndex(int index) {
-            this.index = index;
-        }
-
-        /**
-         * Returns the BufferIndex for the specified index, or null it no match.
-         * 
-         * @param index
-         * @return
-         */
-        public static BufferIndex getFromIndex(int index) {
-            for (BufferIndex bi : values()) {
-                if (bi.index == index) {
-                    return bi;
-                }
-            }
-            return null;
-        }
-
-    }
 
     /**
      * Builder for meshes
      *
      * @param <T>
      */
-    public static class Builder<T extends Mesh> extends MeshBuilder<Mesh> {
+    public static class Builder<T extends Mesh> implements MeshBuilder<Mesh> {
 
-        protected NucleusRenderer renderer;
+        protected GLES20Wrapper gles;
         protected Texture2D texture;
         protected Material material;
         protected int[] attributesPerVertex;
@@ -130,20 +60,20 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          */
         protected int objectCount = 1;
         protected ElementBuffer.Type indiceBufferType = Type.SHORT;
-        protected Mode mode;
+        protected GLESWrapper.Mode mode;
         protected ShapeBuilder shapeBuilder;
 
         /**
          * Creates a new builder
          * 
-         * @param renderer
-         * @throws IllegalArgumentException If renderer is null
+         * @param gles
+         * @throws IllegalArgumentException If gles is null
          */
-        public Builder(NucleusRenderer renderer) {
-            if (renderer == null) {
-                throw new IllegalArgumentException("Renderer may not be null");
+        public Builder(GLES20Wrapper gles) {
+            if (gles == null) {
+                throw new IllegalArgumentException("GLES may not be null");
             }
-            this.renderer = renderer;
+            this.gles = gles;
         }
 
         /**
@@ -164,7 +94,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * @param mode
          * @return;
          */
-        public Builder<T> setMode(Mode mode) {
+        public Builder<T> setMode(GLESWrapper.Mode mode) {
             this.mode = mode;
             return this;
         }
@@ -202,43 +132,40 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             return this;
         }
 
-        /**
-         * Creates the mesh for the arguments supplied to this builder - vertexcount, texture, material and drawmode.
-         * If a shapebuilder is specified it is called to build (populate) the mesh.
-         * Creates UBOs and VBOs as configured.
-         * 
-         * @return The mesh
-         * @throws IllegalArgumentException If the needed arguments has not been set
-         * @throws IOException If there is an error loading data, for instance texture
-         * @throws GLException If there is a problem calling GL, for instance when setting VBO data
-         */
-        public Mesh create() throws IOException, GLException {
+        @Override
+        public void create(RenderableNode<Mesh> parent) throws IOException, GLException {
+            if (parent == null) {
+                throw new IllegalArgumentException("Parent node may not be null when creating mesh");
+            }
+            parent.addMesh(create());
+        }
+
+        @Override
+        public T create() throws IOException, GLException {
             validate();
-            Mesh mesh = createMesh();
+            T mesh = (T) createInstance();
             mesh.createMesh(texture, attributesPerVertex, null, material, vertexCount, indiceCount, mode);
             if (shapeBuilder != null) {
-                shapeBuilder.build(mesh);
+                AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
+                if (attributes == null) {
+                    attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES);
+                }
+                shapeBuilder.build(attributes, mesh.getTexture(Texture2D.TEXTURE_0), mesh.getElementBuffer(),
+                        mesh.getMode());
             }
             if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
-                BufferObjectsFactory.getInstance().createVBOs(renderer, mesh);
+                BufferObjectsFactory.getInstance().createVBOs(gles, mesh);
             }
             return mesh;
         }
 
-        /**
-         * Returns the shader program that can be used to draw the mesh. This is normally only used when program to use
-         * is not known.
-         * For instance when loading nodes, or other scenarios where mesh type is known (but not program)
-         * 
-         * @param gles
-         * @return Shader program to use for drawing mesh.
-         */
-        public ShaderProgram createProgram(GLES20Wrapper gles) {
+        @Override
+        public ShaderProgram createProgram() {
             return AssetManager.getInstance().getProgram(gles, new TranslateProgram(texture));
         }
 
         @Override
-        protected Mesh createMesh() {
+        public Mesh createInstance() {
             return new Mesh();
         }
 
@@ -249,7 +176,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * @throws IOException If the texture could not be loaded
          */
         public Builder<T> setTexture(ExternalReference textureRef) throws IOException {
-            this.texture = AssetManager.getInstance().getTexture(renderer, textureRef);
+            this.texture = AssetManager.getInstance().getTexture(gles, BaseImageFactory.getInstance(), textureRef);
             return this;
         }
 
@@ -263,7 +190,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * number of attributes will be added to the attributes allocated for the mesh (for each vertex)
          * @return
          */
-        public Builder<T> setArrayMode(Mode mode, int vertexCount, int vertexStride) {
+        public Builder<T> setArrayMode(GLESWrapper.Mode mode, int vertexCount, int vertexStride) {
             this.vertexCount = vertexCount;
             this.mode = mode;
             this.vertexStride = vertexStride;
@@ -280,7 +207,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * number of attributes will be added to the attributes allocated for the mesh (for each vertex)
          * @param indiceCount
          */
-        public Builder<T> setElementMode(Mode mode, int vertexCount, int vertexStride, int indiceCount) {
+        public Builder<T> setElementMode(GLESWrapper.Mode mode, int vertexCount, int vertexStride, int indiceCount) {
             this.indiceCount = indiceCount;
             this.vertexCount = vertexCount;
             this.mode = mode;
@@ -327,6 +254,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * 
          * @return
          */
+        @Override
         public Bounds createBounds() {
             return null;
         }
@@ -348,7 +276,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     /**
      * Creates a Builder to create a mesh that can be rendered in a Node
      * 
-     * @param renderer
+     * @gles
      * @param maxVerticeCount
      * @param material
      * @param program
@@ -357,9 +285,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * @param mode
      * @return
      */
-    public static Builder<Mesh> createBuilder(NucleusRenderer renderer, int maxVerticeCount, Material material,
-            ShaderProgram program, Texture2D texture, ShapeBuilder shapeBuilder, Mesh.Mode mode) {
-        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
+    public static Builder<Mesh> createBuilder(GLES20Wrapper gles, int maxVerticeCount, Material material,
+            ShaderProgram program, Texture2D texture, ShapeBuilder shapeBuilder, GLESWrapper.Mode mode) {
+        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(gles);
         builder.setTexture(texture);
         builder.setMaterial(material);
         builder.setArrayMode(mode, maxVerticeCount, 0);
@@ -412,7 +340,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     /**
      * Drawmode, if indices is null then glDrawArrays shall be used with this mode
      */
-    transient protected Mode mode;
+    transient protected GLESWrapper.Mode mode;
     /**
      * TODO - material should not be specified both in Node and in Mesh, this instance is copied here from Builder which
      * normally takes it from the Node.
@@ -440,7 +368,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
     public void createMesh(Texture2D texture, int[] attributeSizes, InterfaceBlock[] interfaceBlocks, Material material,
             int vertexCount,
-            int indiceCount, Mode mode) {
+            int indiceCount, GLESWrapper.Mode mode) {
         if (texture == null || material == null || mode == null || attributeSizes == null) {
             throw new IllegalArgumentException(
                     "Null parameter: " + texture + ", " + material + ", " + mode + ", " + attributeSizes);
@@ -495,23 +423,12 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         return textureRef;
     }
 
-    /**
-     * Returns the buffer, at the specified index, containing vertices and attribute data
-     * If the mesh only has one buffer - it is returned regardless of index.
-     * 
-     * @param buffer Index into the vertex/attribute buffer to return
-     * @return The vertexbuffer
-     */
+    @Override
     public AttributeBuffer getAttributeBuffer(BufferIndex buffer) {
         return attributes[buffer.index];
     }
 
-    /**
-     * Returns the buffer, at the specified index, containing vertice/attribute data
-     * 
-     * @param buffer Index into the vertex/attribute buffer to return
-     * @return Buffer holding attribute data.
-     */
+    @Override
     public AttributeBuffer getAttributeBuffer(int index) {
         return attributes[index];
     }
@@ -574,23 +491,12 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         return texture;
     }
 
-    /**
-     * Sets the attribute updater for this mesh, use this for meshes where the attribute data must be updated each
-     * frame.
-     * This method shall copy data, as needed, into the VertexBuffer arrays that are used when the mesh is rendered.
-     * What data to copy is implementation specific.
-     * 
-     * @param attributeConsumer Callback to set data into the generic vertex arrays, or null to remove.
-     */
+    @Override
     public void setAttributeUpdater(Consumer attributeConsumer) {
         this.attributeConsumer = attributeConsumer;
     }
 
-    /**
-     * Returns the attribute updater.
-     * 
-     * @return The attribute updater or null if none is set.
-     */
+    @Override
     public Consumer getAttributeConsumer() {
         return attributeConsumer;
     }
@@ -647,7 +553,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * @param mode GL drawmode, one of GL_POINTS, GL_LINE_STRIP, GL_LINE_LOOP, GL_LINES, GL_TRIANGLE_STRIP,
      * GL_TRIANGLE_FAN, and GL_TRIANGLES
      */
-    public void setMode(Mode mode) {
+    public void setMode(GLESWrapper.Mode mode) {
         this.mode = mode;
     }
 
@@ -656,7 +562,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * 
      * @return The GL drawmode for drawing this mesh
      */
-    public Mode getMode() {
+    public GLESWrapper.Mode getMode() {
         return mode;
     }
 

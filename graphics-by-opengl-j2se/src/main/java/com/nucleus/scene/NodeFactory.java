@@ -1,6 +1,6 @@
 package com.nucleus.scene;
 
-import com.nucleus.geometry.MeshFactory;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
 
 /**
@@ -17,33 +17,31 @@ public interface NodeFactory {
     /**
      * Creates a new instance of the source node, allocating buffers, programs and fetching textures as needed.
      * If implementations do not recognize the node to be created they must call super
-     * {@link #create(NucleusRenderer, Node, RootNode)}
+     * {@link #create(NucleusRenderer, Node, RootNodeImpl)}
      * Use this method when nodes are loaded from scene
      * 
-     * @param renderer
-     * @param meshFactory The mesh factory to use when creating mesh
+     * @param gles
      * @param source The loaded source node, the returned node shall be the same type
      * @param root The rootnode of the created node
      * @return A new instance of the source node, ready to be rendered/processed
      * @throws NodeException If there is an error creating the Node, could be due to problem reading resource or
      * compiling shaders. Will be thrown if the source node was not loaded (type field is not set)
      */
-    public Node create(NucleusRenderer renderer, MeshFactory meshFactory, Node source,
-            RootNode root) throws NodeException;
+    public Node create(GLES20Wrapper gles, Node source, RootNodeImpl root) throws NodeException;
 
     /**
      * Creates the child nodes from the source node, adding the created children to the parent node.
      * The rootnode of the parent must be copied.
      * Use this method when nodes are loaded
      * 
+     * @param gles
      * @param source The source node containing the children to create
      * @param parent The destination where the created child nodes will be added.
-     * @param root The rootnode of the created node
      * @throws NodeException If there is an error creating the Node, could be due to problem reading resource or
      * compiling
      * shaders
      */
-    public void createChildNodes(NucleusRenderer renderer, MeshFactory meshFactory, Node source, Node parent)
+    public void createChildNodes(GLES20Wrapper gles, Node source, Node parent)
             throws NodeException;
 
 }

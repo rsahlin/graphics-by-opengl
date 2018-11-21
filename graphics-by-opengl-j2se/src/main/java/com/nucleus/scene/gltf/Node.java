@@ -1,6 +1,10 @@
 package com.nucleus.scene.gltf;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.scene.gltf.GLTF.GLTFException;
+import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
+import com.nucleus.scene.gltf.Primitive.Attributes;
+import com.nucleus.vecmath.Matrix;
 
 /**
  * The Node as it is loaded using the glTF format.
@@ -12,6 +16,11 @@ import com.google.gson.annotations.SerializedName;
  * first the scale is applied to the vertices, then the rotation, and then the translation. If none are provided, the
  * transform is the identity. When a node is targeted for animation (referenced by an animation.channel.target), only
  * TRS properties may be present; matrix will not be present.
+ * 
+ * For Version 2.0 conformance, the glTF node hierarchy is not a directed acyclic graph (DAG) or scene graph,
+ * but a disjoint union of strict trees.
+ * That is, no node may be a direct descendant of more than one node.
+ * This restriction is meant to simplify implementation and facilitate conformance.
  * 
  * Properties
  * 
@@ -34,9 +43,8 @@ import com.google.gson.annotations.SerializedName;
  * extras any Application-specific data. No
  *
  */
-public class Node {
+public class Node extends GLTFNamedValue implements RuntimeResolver {
 
-    private static final String NAME = "name";
     private static final String MESH = "mesh";
     private static final String CHILDREN = "children";
     private static final String CAMERA = "camera";
@@ -45,53 +53,360 @@ public class Node {
     private static final String TRANSLATION = "translation";
     private static final String MATRIX = "matrix";
 
-    @SerializedName(NAME)
-    private String name;
     @SerializedName(MESH)
-    private int mesh;
+    private int mesh = -1;
     @SerializedName(CHILDREN)
     private int[] children;
     @SerializedName(CAMERA)
-    private int camera;
+    private int camera = -1;
     @SerializedName(ROTATION)
-    private int[] rotation;
+    private float[] rotation;
     @SerializedName(SCALE)
-    private int[] scale;
+    private float[] scale;
     @SerializedName(TRANSLATION)
-    private int[] translation;
+    private float[] translation;
     @SerializedName(MATRIX)
-    private float[] matrix;
+    private float[] matrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
 
-    public String getName() {
-        return name;
+    transient protected Node[] childNodes;
+    transient protected Mesh nodeMesh;
+    transient protected Camera cameraRef;
+    transient protected Node parent;
+    /**
+     * The node concatenated model matrix at time of render, this is set when the node is rendered and
+     * {@link #concatMatrix(float[])} is called
+     * May be used when calculating bounds/collision on the current frame.
+     * DO NOT WRITE TO THIS!
+     */
+    transient float[] modelMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
+    /**
+     * The node inverse matrix call {@link #invertMatrix()} to calculate.
+     * May be used when calculating bounds/collision on the current frame.
+     * DO NOT WRITE TO THIS!
+     * 
+     */
+    transient float[] inverseMatrix = Matrix.createMatrix();
+
+    /**
+     * Used if the parents hierarchy transform shall be calculated
+     */
+    transient float[] parentMatrix = Matrix.createMatrix();
+
+    public Node() {
     }
 
-    public int getMesh() {
+    /**
+     * Creates a camera node - only use this for default camera
+     * 
+     * @param camera
+     * @param cameraIndex
+     */
+    public Node(Camera camera, int cameraIndex) {
+        cameraRef = camera;
+        this.camera = cameraIndex;
+    }
+
+    /**
+     * Returns the index of the mesh to render with this node
+     * 
+     * @return
+     */
+    public int getMeshIndex() {
         return mesh;
     }
 
-    public int[] getChildren() {
+    /**
+     * Returns the mesh to render with this node - or null if not defined.
+     * 
+     * @return
+     */
+    public Mesh getMesh() {
+        return nodeMesh;
+    }
+
+    /**
+     * Returns the array of indexes that are the childnodes of this node
+     * 
+     * @return
+     */
+    public int[] getChildIndexes() {
         return children;
     }
 
-    public int getCamera() {
+    /**
+     * Returns the childnodes
+     * 
+     * @return
+     */
+    public Node[] getChildren() {
+        return childNodes;
+    }
+
+    /**
+     * Returns the camera index
+     * 
+     * @return
+     */
+    public int getCameraIndex() {
         return camera;
     }
 
-    public int[] getRotation() {
+    /**
+     * Returns the camera for this node or null if not defined.
+     * 
+     * @return
+     */
+    public Camera getCamera() {
+        return cameraRef;
+    }
+
+    public float[] getRotation() {
         return rotation;
     }
 
-    public int[] getScale() {
+    public float[] getScale() {
         return scale;
     }
 
-    public int[] getTranslation() {
+    public float[] getTranslation() {
         return translation;
     }
 
+    /**
+     * Returns true if this Node has defined rotation, translation or scale value
+     * If true then Matrix is not used.
+     * 
+     * @return
+     */
+    public final boolean hasRTS() {
+        return (rotation != null || scale != null || translation != null);
+    }
+
+    /**
+     * If RTS values are defined the matrix is set according to these.
+     * Otherwise matrix is left unchanged and returned
+     * 
+     * @return This nodes matrix, with updated TRS if used.
+     */
+    protected float[] updateMatrix() {
+        if (hasRTS()) {
+            Matrix.setIdentity(matrix, 0);
+            Matrix.setQuaternionRotation(rotation, matrix);
+            Matrix.translate(matrix, translation);
+            Matrix.scaleM(matrix, 0, scale);
+        }
+        return matrix;
+    }
+
+    public float[] invertMatrix() {
+        Matrix.invertM(inverseMatrix, 0, matrix, 0);
+        return inverseMatrix;
+    }
+
+    /**
+     * Multiply the matrix with this nodes transform/matrix and store in this nodes model matrix.
+     * If this node does not have a transform an identity matrix is used.
+     * 
+     * @param concatModel The matrix to multiply with this nodes transform/matrix
+     * @return The node model matrix - this nodes transform * matrix - this is a reference to the concatenated
+     * model matrix in this class
+     */
+    public float[] concatMatrix(float[] matrix) {
+        if (matrix == null) {
+            return updateMatrix();
+        }
+        Matrix.mul4(matrix, updateMatrix(), modelMatrix);
+        return modelMatrix;
+    }
+
+    /**
+     * Returns the Matrix as an array of floats - this is the current matrix.
+     * 
+     * @return
+     */
     public float[] getMatrix() {
         return matrix;
+    }
+
+    @Override
+    public void resolve(GLTF gltf) throws GLTFException {
+        if (matrix != null) {
+            float[] transpose = Matrix.createMatrix(matrix);
+            Matrix.transposeM(matrix, 0, transpose, 0);
+        }
+        if (mesh >= 0) {
+            nodeMesh = gltf.getMeshes()[mesh];
+        }
+        if (children != null && children.length > 0) {
+            Node[] sources = gltf.getNodes();
+            childNodes = new Node[children.length];
+            for (int i = 0; i < children.length; i++) {
+                childNodes[i] = sources[children[i]];
+                if (childNodes[i].parent != null) {
+                    throw new IllegalArgumentException("Child already has parent - duplicate reference?");
+                }
+                childNodes[i].parent = this;
+            }
+        }
+        setCamera(gltf, camera);
+    }
+
+    /**
+     * Attaches or removes a camera from this node, specify -1 to remove camera
+     * 
+     * @param gltf
+     * @param camera
+     */
+    public void setCamera(GLTF gltf, int camera) {
+        this.camera = camera;
+        cameraRef = gltf.getCamera(camera);
+    }
+
+    /**
+     * Returns the parent node or null if this node is root
+     * 
+     * @return
+     */
+    public Node getParent() {
+        return parent;
+    }
+
+    /**
+     * Returns the non transformed POSITION bounding (max - min) (three component) for the geometry in the list of
+     * nodes.
+     * This will search through all primitives used by the nodes and return the non transformed bound (max - min)
+     * values.
+     * 
+     * @param nodes List of nodes to include, children will be called as well.
+     * @param compare Current max values that will be updated
+     * @param scale Starting scale
+     * @return The updated compare MaxMin values
+     */
+    public static MaxMin updateMaxMin(Node[] nodes, MaxMin compare, float[] scale) {
+        if (nodes != null) {
+            for (Node n : nodes) {
+                float[] nodeScale = new float[3];
+                Matrix.getScale(n.updateMatrix(), nodeScale);
+                nodeScale[0] *= scale[0];
+                nodeScale[1] *= scale[1];
+                nodeScale[2] *= scale[2];
+                n.updateMaxMin(compare, nodeScale);
+            }
+        }
+        return compare;
+    }
+
+    /**
+     * Returns the non transformed POSITION bounding (max - min) (three component) for the geometry in this node and
+     * children.
+     * This will search through all primitives used by the node and return the non transformed bound (max - min) values.
+     * 
+     * @param compare Current max values that will be updated
+     * @param scale Current scale
+     */
+    public void updateMaxMin(MaxMin compare, float[] scale) {
+        if (getMesh() != null && getMesh().getPrimitives() != null) {
+            for (Primitive p : getMesh().getPrimitives()) {
+                if (p.getAttributesArray() != null) {
+                    Accessor accessor = p.getAccessor(Attributes.POSITION);
+                    if (accessor != null) {
+                        accessor.updateMaxMin(compare, scale);
+                    }
+                }
+            }
+        }
+        updateMaxMin(getChildren(), compare, scale);
+    }
+
+    @Override
+    public String toString() {
+        String str = "";
+        if (getMesh() != null && getMesh().getPrimitives() != null
+                && getMesh().getPrimitives()[0].getMaterial() != null) {
+            PBRMetallicRoughness pbr = getMesh().getPrimitives()[0].getMaterial().getPbrMetallicRoughness();
+            if (pbr != null && pbr.getBaseColorFactor() != null) {
+                float[] color = pbr.getBaseColorFactor();
+                str = "Color: " + color[0] + ", " + color[1] + ", " + color[2] + ", ";
+            }
+        }
+        return str + (name != null ? ("name: " + name + ", ")
+                : "" + children != null ? children.length + " children, "
+                        : "" + rotation != null
+                                ? "rotate: " + rotation[0] + ", " + rotation[1] + ", " + rotation[2] + ", "
+                                        + rotation[3]
+                                : "");
+    }
+
+    /**
+     * Calculates the current transform, by going through parents transforms.
+     * Used for instance by camera to find the result matrix.
+     * 
+     * @return result The sum of this nodes transform and all direct parents.
+     */
+    public float[] concatParentsMatrix() {
+        if (parent != null) {
+            Matrix.mul4(parent.matrix, matrix, parentMatrix);
+            return parent.concatParentsMatrix(parentMatrix);
+        }
+        return Matrix.copy(matrix, 0, parentMatrix, 0);
+    }
+
+    private float[] concatParentsMatrix(float[] matrix) {
+        if (parent != null) {
+            Matrix.mul4(parent.matrix, matrix, parentMatrix);
+            return concatParentsMatrix(parentMatrix);
+        }
+        return matrix;
+    }
+
+    /**
+     * If rotation is present it is cleared to 0
+     */
+    private final void clearRotation() {
+        if (rotation != null) {
+            rotation[0] = 0;
+            rotation[1] = 0;
+            rotation[2] = 0;
+            rotation[3] = 0;
+        }
+    }
+
+    /**
+     * If translation is present it is cleared to 0
+     */
+    private final void clearTranslation() {
+        if (translation != null) {
+            translation[0] = 0;
+            translation[1] = 0;
+            translation[2] = 0;
+        }
+    }
+
+    /**
+     * If scale is present it is cleared to 1
+     */
+    private final void clearScale() {
+        if (scale != null) {
+            scale[0] = 1;
+            scale[1] = 1;
+            scale[2] = 1;
+        }
+    }
+
+    /**
+     * Clears all transform values - if Matrix is used it is set to identity.
+     * Any RTS values are cleared and scale set to 1,1,1 if present.
+     */
+    public void clearTransform() {
+        if (hasRTS()) {
+            clearRotation();
+            clearTranslation();
+            clearScale();
+            updateMatrix();
+        } else {
+            Matrix.setIdentity(matrix, 0);
+            Matrix.setIdentity(modelMatrix, 0);
+        }
     }
 
 }

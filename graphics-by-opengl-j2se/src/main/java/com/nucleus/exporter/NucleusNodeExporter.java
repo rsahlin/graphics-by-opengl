@@ -6,6 +6,7 @@ import java.util.List;
 import com.nucleus.common.Type;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RootNode;
+import com.nucleus.scene.RootNodeImpl;
 
 public class NucleusNodeExporter implements NodeExporter {
 
@@ -46,7 +47,7 @@ public class NucleusNodeExporter implements NodeExporter {
     }
 
     @Override
-    public void exportObject(Object object, RootNode rootNode) {
+    public void exportObject(Object object, RootNodeImpl rootNode) {
         // TODO Auto-generated method stub
 
     }

@@ -1,24 +1,23 @@
 package com.nucleus.scene;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
+import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
-import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.BufferIndex;
-import com.nucleus.geometry.Mesh.Mode;
+import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
-import com.nucleus.renderer.LineNodeRenderer;
+import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.NucleusRenderer.NodeRenderer;
 import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
-import com.nucleus.shader.TranslateProgram;
 import com.nucleus.shader.VariableIndexer.Indexer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Shading;
@@ -31,7 +30,10 @@ import com.nucleus.texturing.TextureType;
  * Default is to draw rectangles
  * This is not performance optimal for many lines, use only if a few lines are drawn in the UI.
  */
-public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
+public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeUpdater.Consumer {
+
+    protected final static String VERTEX_SHADER_NAME = "flatline";
+    protected final static String FRAGMENT_SHADER_NAME = "flatline";
 
     public enum LineMode {
         RECTANGLE(),
@@ -60,62 +62,37 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     transient int drawCount = Constants.NO_VALUE;
     transient int drawOffset = Constants.NO_VALUE;
 
-    /**
-     * Creates a nodebuilder that can be used to create LineDrawerNodes with mesh(es), that can be used to draw points
-     * or lines.
-     * Use for instance when node is created programatically.
-     * 
-     * @param renderer
-     * @param nodeBuilder
-     * @param vertices Number of vertices in mesh
-     * @param meshCount Number of meshes to create
-     * @param mode Mesh drawmode
-     * @return
-     */
-    public static Node.Builder<Node> createBuilder(NucleusRenderer renderer, Node.Builder<Node> nodeBuilder,
-            int vertices, int meshCount, Mode mode) {
-        nodeBuilder.setType(NodeTypes.linedrawernode);
-        TranslateProgram program = (TranslateProgram) AssetManager.getInstance()
-                .getProgram(renderer.getGLES(), new TranslateProgram(Shading.flat));
-        nodeBuilder.setProgram(program);
-        com.nucleus.geometry.Mesh.Builder<Mesh> pointMeshBuilder = Mesh.createBuilder(renderer, vertices,
-                new Material(),
-                program, TextureFactory.createTexture(TextureType.Untextured), null, mode);
-        nodeBuilder.setMeshBuilder(pointMeshBuilder).setMeshCount(meshCount);
-        return nodeBuilder;
-    }
-
     @Override
-    public Mesh.Builder<Mesh> createMeshBuilder(NucleusRenderer renderer, Node parent, int count,
-            ShapeBuilder shapeBuilder) throws IOException {
-        LineDrawerNode lineParent = (LineDrawerNode) parent;
-        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
-        switch (lineParent.getLineMode()) {
+    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
+            throws IOException {
+        int count = getLineCount();
+        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(gles);
+        switch (getLineMode()) {
             case LINES:
-                builder.setArrayMode(Mode.LINES, count * 2, 0);
+                builder.setArrayMode(GLESWrapper.Mode.LINES, count * 2, 0);
                 break;
             case LINE_STRIP:
-                builder.setArrayMode(Mode.LINE_STRIP, count * 2, 0);
+                builder.setArrayMode(GLESWrapper.Mode.LINE_STRIP, count * 2, 0);
                 break;
             case POINTS:
-                builder.setArrayMode(Mode.POINTS, count, 0);
+                builder.setArrayMode(GLESWrapper.Mode.POINTS, count, 0);
                 break;
             case RECTANGLE:
                 // Rectangle shares vertices, 4 vertices per rectangle
-                builder.setElementMode(Mode.LINES, count, 0, count * 2);
+                builder.setElementMode(GLESWrapper.Mode.LINES, count, 0, count * 2);
                 break;
             default:
-                throw new IllegalArgumentException("Not implemented for mode " + lineParent.getLineMode());
+                throw new IllegalArgumentException("Not implemented for mode " + getLineMode());
         }
-        Texture2D tex = TextureFactory.createTexture(TextureType.Untextured);
+        Texture2D tex = TextureFactory.getInstance().createTexture(TextureType.Untextured);
         builder.setTexture(tex);
-        if (parent.getProgram() == null) {
-            parent.setProgram(
-                    AssetManager.getInstance().getProgram(renderer.getGLES(),
-                            new GenericShaderProgram(new String[] { "flatline", "flatline" },
-                                    ProgramType.VERTEX_FRAGMENT)));
+        if (getProgram() == null) {
+            setProgram(AssetManager.getInstance().getProgram(gles,
+                    new GenericShaderProgram(new String[] { VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME }, null,
+                            Shading.flat, null,
+                            ProgramType.VERTEX_FRAGMENT)));
         }
-        return initMeshBuilder(renderer, parent, count, lineParent.getShapeBuilder(), builder);
+        return initMeshBuilder(gles, count, getShapeBuilder(), builder);
     }
 
     /**
@@ -180,7 +157,11 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     }
 
     @Override
-    public void create() {
+    public void createTransient() {
+    }
+
+    @Override
+    public void onCreated() {
         Mesh mesh = getMesh(MeshIndex.MAIN);
         mesh.setAttributeUpdater(this);
         bindAttributeBuffer(mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES));
@@ -322,8 +303,9 @@ public class LineDrawerNode extends Node implements AttributeUpdater.Consumer {
     }
 
     @Override
-    protected NodeRenderer createNodeRenderer() {
-        return new LineNodeRenderer(this);
+    public ArrayList<Mesh> getMeshes(ArrayList<Mesh> list) {
+        list.addAll(meshes);
+        return list;
     }
 
 }

@@ -1,8 +1,12 @@
 package com.nucleus.mmi;
 
+import com.nucleus.vecmath.Vec2;
 import com.nucleus.vecmath.VecMath;
-import com.nucleus.vecmath.Vector2D;
 
+/**
+ * Holds data for a MMI touch or mouse based input events.
+ *
+ */
 public class MMIPointerEvent {
 
     public enum Action {
@@ -33,7 +37,7 @@ public class MMIPointerEvent {
 
     private Action action;
     private PointerMotionData pointerData;
-    private Vector2D zoom;
+    private Vec2 zoom;
     private int finger;
 
     public MMIPointerEvent(Action action, int finger, PointerMotionData pointerData) {
@@ -52,21 +56,21 @@ public class MMIPointerEvent {
      * @param dot1
      * @param dot2
      */
-    public MMIPointerEvent(PointerMotionData pointer1, PointerMotionData pointer2, Vector2D delta1, Vector2D delta2,
+    public MMIPointerEvent(PointerMotionData pointer1, PointerMotionData pointer2, Vec2 delta1, Vec2 delta2,
             float dot1, float dot2) {
         action = Action.ZOOM;
         pointerData = pointer1;
-        zoom = new Vector2D();
+        zoom = new Vec2();
         float value = (dot1 + dot2) / 2;
         zoom.vector[VecMath.X] = value;
         zoom.vector[VecMath.Y] = value;
-        zoom.vector[Vector2D.MAGNITUDE] = (delta1.vector[Vector2D.MAGNITUDE] + delta2.vector[Vector2D.MAGNITUDE]);
+        zoom.vector[Vec2.MAGNITUDE] = (delta1.vector[Vec2.MAGNITUDE] + delta2.vector[Vec2.MAGNITUDE]);
     }
 
     public void setZoom(float x, float y) {
-        zoom = new Vector2D();
+        zoom = new Vec2();
         float magnitude = (float) Math.sqrt(x * x + y * y);
-        zoom.vector[Vector2D.MAGNITUDE] = magnitude;
+        zoom.vector[Vec2.MAGNITUDE] = magnitude;
         zoom.vector[VecMath.X] = x / magnitude;
         zoom.vector[VecMath.Y] = y / magnitude;
     }
@@ -76,7 +80,7 @@ public class MMIPointerEvent {
      * 
      * @return Zoom value, or null if action is not ZOOM
      */
-    public Vector2D getZoom() {
+    public Vec2 getZoom() {
         return zoom;
     }
 

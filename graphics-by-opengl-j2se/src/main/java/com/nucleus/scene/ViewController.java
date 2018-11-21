@@ -74,7 +74,7 @@ public class ViewController implements EventHandler<Node> {
         float[] values = StringUtils.getFloatArray(data);
         switch (action) {
             case MOVE:
-                target.getTransform().addTranslation(values);
+                target.getTransform().translate(values);
                 break;
             case MOVETO:
                 target.getTransform().setTranslate(values);

@@ -5,19 +5,26 @@ import java.util.ArrayList;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
 import com.nucleus.event.EventManager;
+import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
-import com.nucleus.mmi.ObjectInputListener;
-import com.nucleus.mmi.core.PointerInputProcessor;
+import com.nucleus.mmi.MMIPointerEvent.Action;
+import com.nucleus.mmi.NodeInputListener;
+import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.properties.Property;
 import com.nucleus.scene.Node.State;
 
 /**
  * Handles pointer input checking on nodes
  * Takes {@link MMIEventListener} events and checks the registered node tree for pointer hits.
- * This class must be registred to {@link PointerInputProcessor} for it to get mmi event callbacks.
+ * This class must be registred to {@link InputProcessor} for it to get mmi event callbacks.
  */
-public class J2SENodeInputListener implements NodeInputListener, MMIEventListener {
+public class J2SENodeInputListener implements MMIEventListener {
+
+    /**
+     * Set this property to true for nodes that shall check pointer input
+     */
+    public static final String ONCLICK = "onclick";
 
     private final RootNode root;
     private final ArrayList<Node> visibleNodes = new ArrayList<>();
@@ -29,8 +36,15 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
         this.root = root;
     }
 
-    @Override
-    public boolean onInputEvent(ArrayList<Node> nodes, MMIPointerEvent event) {
+    /**
+     * Recursively check nodes for the input event, when a node consumes the event true will be returned.
+     * 
+     * @param nodes List of nodes to check - this must be in draw order, ie first drawn node will be first.
+     * Iterate through this from end to beginning
+     * @param event
+     * @return True if a node has consumed the input event event
+     */
+    protected boolean onInputEvent(ArrayList<Node> nodes, MMIPointerEvent event) {
         int count = nodes.size() - 1;
         Node node = null;
         for (int i = count; i >= 0; i--) {
@@ -38,7 +52,7 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
             switch (node.getState()) {
                 case ON:
                 case ACTOR:
-                    if (onPointerEvent(node, event)) {
+                    if (checkChildren(node, event)) {
                         return true;
                     }
                     break;
@@ -62,48 +76,61 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
      */
     protected boolean onPointerEvent(Node node, MMIPointerEvent event) {
         float[] position = event.getPointerData().getCurrentPosition();
-        if (position == null) {
+        if (position == null && event.getAction() != Action.ZOOM) {
             return false;
         }
-        if (node.isInside(position)) {
-            if (node instanceof MMIEventListener) {
-                ((MMIEventListener) node).onInputEvent(event);
-            }
-            ObjectInputListener listener = root.getObjectInputListener();
-            switch (event.getAction()) {
-                case ACTIVE:
-                    down[0] = position[0];
-                    down[1] = position[1];
-                    SimpleLogger.d(getClass(), "HIT: " + node);
-                    String onclick = node.getProperty(ONCLICK);
-                    if (onclick != null) {
-                        Property p = Property.create(onclick);
-                        if (p != null) {
-                            EventManager.getInstance().post(node, p.getKey(), p.getValue());
-                        } else {
-                            SimpleLogger.d(getClass(), "Invalid property for node " + node.getId() + " : " + onclick);
-                        }
-                    }
-                    if (listener != null) {
-                        listener.onInputEvent(node, event.getPointerData().getCurrent());
-                    }
-                    return true;
-                case INACTIVE:
-                    if (listener != null) {
-                        listener.onInputEvent(node, event.getPointerData().getCurrent());
-                    }
-                    return true;
-                case MOVE:
-                    if (listener != null) {
-                        listener.onDrag(node, event.getPointerData());
-                    }
-                    return true;
-                case ZOOM:
-                    break;
-                default:
-                    break;
-            }
+        if (node.getProperty(EventHandler.EventType.POINTERINPUT.name(), Constants.FALSE)
+                .equals(Constants.FALSE)) {
+            return false;
         }
+        NodeInputListener listener = root.getObjectInputListener();
+        // Zoom is a special case that does not have position
+        if (event.getAction() == Action.ZOOM) {
+            if (listener != null) {
+                return listener.onInputEvent(node, event.getPointerData().getCurrent());
+            }
+        } else {
+            if (node.isInside(position)) {
+                if (node instanceof MMIEventListener) {
+                    ((MMIEventListener) node).onInputEvent(event);
+                }
+                switch (event.getAction()) {
+                    case ACTIVE:
+                        down[0] = position[0];
+                        down[1] = position[1];
+                        SimpleLogger.d(getClass(), "HIT: " + node);
+                        String onclick = node.getProperty(ONCLICK, null);
+                        if (onclick != null) {
+                            Property p = Property.create(onclick);
+                            if (p != null) {
+                                EventManager.getInstance().post(node, p.getKey(), p.getValue());
+                            } else {
+                                SimpleLogger.d(getClass(),
+                                        "Invalid property for node " + node.getId() + " : " + onclick);
+                            }
+                        }
+                        if (listener != null) {
+                            listener.onInputEvent(node, event.getPointerData().getCurrent());
+                        }
+                        return true;
+                    case INACTIVE:
+                        if (listener != null) {
+                            listener.onInputEvent(node, event.getPointerData().getCurrent());
+                        }
+                        return true;
+                    case MOVE:
+                        if (listener != null) {
+                            listener.onDrag(node, event.getPointerData());
+                        }
+                        return true;
+                    // Zoom should not be handle inside since it is an action that does not have any real position
+                    default:
+                        break;
+                }
+            }
+
+        }
+
         return false;
     }
 
@@ -117,6 +144,9 @@ public class J2SENodeInputListener implements NodeInputListener, MMIEventListene
     protected boolean checkChildren(Node node, MMIPointerEvent event) {
         State state = node.getState();
         if (state == State.ON || state == State.ACTOR) {
+            if (onPointerEvent(node, event)) {
+                return true;
+            }
             for (Node n : node.getChildren()) {
                 if (onPointerEvent(n, event)) {
                     return true;

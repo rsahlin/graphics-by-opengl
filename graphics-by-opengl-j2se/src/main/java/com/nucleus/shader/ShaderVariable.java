@@ -1,5 +1,7 @@
 package com.nucleus.shader;
 
+import java.nio.IntBuffer;
+
 import com.nucleus.common.Constants;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
@@ -64,6 +66,14 @@ public class ShaderVariable {
      */
     public static class InterfaceBlock {
 
+        public static final int ACTIVE_COUNT_INDEX = 0;
+        /**
+         * GL_UNIFORM_BLOCK_DATA_SIZE is stored at this index - this is the number of bytes needed for interface block.
+         */
+        public static final int BLOCK_DATA_SIZE_INDEX = 1;
+        public static final int VERTEX_REFERENCE_INDEX = 2;
+        public static final int FRAGMENT_REFERENCE_INDEX = 3;
+
         /**
          * Where the block variables are used
          */
@@ -92,15 +102,16 @@ public class ShaderVariable {
          * @param blockInfo active variable count, block data size is read here
          * @param indices
          */
-        public InterfaceBlock(int program, int blockIndex, String blockName, int[] blockInfo, int[] indices) {
+        public InterfaceBlock(int program, int blockIndex, String blockName, IntBuffer blockInfo, IntBuffer indices) {
             this.program = program;
             this.blockIndex = blockIndex;
-            this.activeCount = blockInfo[0];
-            this.indices = new int[indices.length];
+            this.activeCount = blockInfo.get(ACTIVE_COUNT_INDEX);
+            this.indices = new int[indices.capacity()];
             this.name = blockName;
-            this.blockDataSize = blockInfo[1];
-            System.arraycopy(indices, 0, this.indices, 0, indices.length);
-            int value = blockInfo[2] + (blockInfo[3] << 1);
+            this.blockDataSize = blockInfo.get(BLOCK_DATA_SIZE_INDEX);
+            indices.rewind();
+            indices.get(this.indices);
+            int value = blockInfo.get(VERTEX_REFERENCE_INDEX) + (blockInfo.get(FRAGMENT_REFERENCE_INDEX) << 1);
             usage = value == 3 ? Usage.VERTEX_FRAGMENT_SHADER
                     : value == 1 ? Usage.VERTEX_SHADER : Usage.FRAGMENT_SHADER;
         }
@@ -109,6 +120,9 @@ public class ShaderVariable {
         protected final int[] indices;
         public final int blockIndex;
         public final int program;
+        /**
+         * Number of bytes needed for the block data.
+         */
         protected final int blockDataSize;
         protected final String name;
         protected final Usage usage;
@@ -333,4 +347,11 @@ public class ShaderVariable {
         }
         throw new IllegalArgumentException(ILLEGAL_DATATYPE_ERROR + dataType);
     }
+
+    @Override
+    public String toString() {
+        return name + " : " + type + ", size " + size + ", offset " + offset + ", activeIndex " + activeIndex +
+                ", blockIndex " + blockIndex;
+    }
+
 }

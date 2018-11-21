@@ -9,13 +9,13 @@ import java.util.HashMap;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.nucleus.assets.AssetManager;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Asset;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.BufferView;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
-import com.nucleus.scene.gltf.Loader;
 import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Node;
@@ -27,16 +27,16 @@ public class LoaderTest extends BaseTestCase {
     public void loadglTFAssetBox() throws IOException, URISyntaxException, GLTFException {
 
         // Use known scene to validate that values are not null
-        GLTF asset = Loader.loadAsset("Box/glTF/", "Box.gltf");
+        GLTF asset = AssetManager.getInstance().getGLTFAsset("Box/glTF/Box.gltf");
 
         Assert.assertNotNull(asset);
         checkAsset(asset.getAsset());
         checkScene(asset.getScenes()[0]);
         checkNode(asset.getNodes()[0]);
         checkMesh(asset.getMeshes()[0]);
-        checkBuffer(asset, asset.getBuffers()[0]);
+        checkBuffer(asset, asset.getBuffer(0));
         checkMaterial(asset.getMaterials()[0]);
-        checkAccessor(asset.getAccessors()[0]);
+        checkAccessor(asset.getAccessor(0));
 
     }
 
@@ -82,6 +82,11 @@ public class LoaderTest extends BaseTestCase {
 
     protected void checkMaterial(Material material) {
         Assert.assertNotNull(material.getPbrMetallicRoughness());
+        // Check default values.
+        Assert.assertTrue(material.getAlphaCutoff() == Material.DEFAULT_ALPHA_CUTOFF);
+        Assert.assertTrue(material.getAlphaMode() == Material.DEFAULT_ALPHA_MODE);
+        Assert.assertTrue(material.getEmissiveFactor() == Material.DEFAULT_EMISSIVE_FACTOR);
+        Assert.assertTrue(material.isDoubleSided() == Material.DEFAULT_DOUBLE_SIDED);
     }
 
 }

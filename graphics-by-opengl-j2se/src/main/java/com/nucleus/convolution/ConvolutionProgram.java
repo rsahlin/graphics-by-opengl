@@ -1,8 +1,10 @@
 package com.nucleus.convolution;
 
+import java.nio.FloatBuffer;
+
 import com.nucleus.geometry.AttributeBuffer;
-import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.BufferIndex;
+import com.nucleus.geometry.AttributeUpdater;
+import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
@@ -22,7 +24,7 @@ public class ConvolutionProgram extends ShaderProgram {
     }
 
     @Override
-    public void updateAttributes(GLES20Wrapper gles, Mesh mesh) throws GLException {
+    public void updateAttributes(GLES20Wrapper gles, AttributeUpdater mesh) throws GLException {
         AttributeBuffer buffer = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
         gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER,
                 attributeVariables[BufferIndex.ATTRIBUTES_STATIC.index]);
@@ -31,7 +33,7 @@ public class ConvolutionProgram extends ShaderProgram {
     }
 
     @Override
-    public void updateUniforms(GLES20Wrapper gles, float[][] matrices, Mesh mesh)
+    public void updateUniforms(GLES20Wrapper gles, float[][] matrices)
             throws GLException {
         Matrix.mul4(matrices[0], matrices[1], matrix);
         System.arraycopy(matrix, 0, uniforms, 0, Matrix.MATRIX_ELEMENTS);
@@ -51,13 +53,11 @@ public class ConvolutionProgram extends ShaderProgram {
     }
 
     @Override
-    public void updateUniformData(float[] destinationUniform, Mesh mesh) {
+    public void updateUniformData(FloatBuffer destinationUniform) {
     }
 
     @Override
-    public void initBuffers(Mesh mesh) {
-        // TODO Auto-generated method stub
-
+    public void initUniformData(FloatBuffer destinationUniforms) {
     }
 
 }

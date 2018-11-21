@@ -97,8 +97,13 @@ public class AndroidGLES32Wrapper extends GLES32Wrapper {
     }
 
     @Override
-    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, Buffer ptr) {
-        android.opengl.GLES32.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, ByteBuffer ptr) {
+        android.opengl.GLES20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
+    }
+
+    @Override
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, FloatBuffer ptr) {
+        android.opengl.GLES20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
     }
 
     @Override
@@ -107,18 +112,8 @@ public class AndroidGLES32Wrapper extends GLES32Wrapper {
     }
 
     @Override
-    public void glUniformMatrix4fv(int location, int count, boolean transpose, float[] v, int offset) {
-        android.opengl.GLES32.glUniformMatrix4fv(location, count, transpose, v, offset);
-    }
-
-    @Override
-    public void glUniformMatrix3fv(int location, int count, boolean transpose, float[] v, int offset) {
-        android.opengl.GLES32.glUniformMatrix3fv(location, count, transpose, v, offset);
-    }
-
-    @Override
-    public void glUniformMatrix2fv(int location, int count, boolean transpose, float[] v, int offset) {
-        android.opengl.GLES32.glUniformMatrix2fv(location, count, transpose, v, offset);
+    public void glDisableVertexAttribArray(int index) {
+        android.opengl.GLES20.glDisableVertexAttribArray(index);
     }
 
     @Override
@@ -188,23 +183,38 @@ public class AndroidGLES32Wrapper extends GLES32Wrapper {
     }
 
     @Override
-    public void glUniform3fv(int location, int count, float[] v, int offset) {
-        android.opengl.GLES32.glUniform3fv(location, count, v, offset);
+    public void glUniform3fv(int location, int count, FloatBuffer buffer) {
+        android.opengl.GLES20.glUniform3fv(location, count, buffer);
     }
 
     @Override
-    public void glUniform2fv(int location, int count, float[] v, int offset) {
-        android.opengl.GLES32.glUniform2fv(location, count, v, offset);
+    public void glUniform2fv(int location, int count, FloatBuffer buffer) {
+        android.opengl.GLES20.glUniform2fv(location, count, buffer);
     }
 
     @Override
-    public void glUniform1fv(int location, int count, float[] v, int offset) {
-        android.opengl.GLES20.glUniform1fv(location, count, v, offset);
+    public void glUniform1fv(int location, int count, FloatBuffer buffer) {
+        android.opengl.GLES20.glUniform1fv(location, count, buffer);
     }
 
     @Override
-    public void glUniform4fv(int location, int count, float[] v, int offset) {
-        android.opengl.GLES32.glUniform4fv(location, count, v, offset);
+    public void glUniform4fv(int location, int count, FloatBuffer buffer) {
+        android.opengl.GLES20.glUniform4fv(location, count, buffer);
+    }
+
+    @Override
+    public void glUniformMatrix4fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        android.opengl.GLES20.glUniformMatrix4fv(location, count, transpose, buffer);
+    }
+
+    @Override
+    public void glUniformMatrix3fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        android.opengl.GLES20.glUniformMatrix3fv(location, count, transpose, buffer);
+    }
+
+    @Override
+    public void glUniformMatrix2fv(int location, int count, boolean transpose, FloatBuffer buffer) {
+        android.opengl.GLES20.glUniformMatrix2fv(location, count, transpose, buffer);
     }
 
     @Override
@@ -365,8 +375,8 @@ public class AndroidGLES32Wrapper extends GLES32Wrapper {
     }
 
     @Override
-    public void glUniform1iv(int location, int count, int[] v0, int offset) {
-        android.opengl.GLES32.glUniform1iv(location, count, v0, offset);
+    public void glUniform1iv(int location, int count, IntBuffer buffer) {
+        android.opengl.GLES20.glUniform1iv(location, count, buffer);
     }
 
     @Override
@@ -406,8 +416,8 @@ public class AndroidGLES32Wrapper extends GLES32Wrapper {
     }
 
     @Override
-    public void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, int[] params, int offset) {
-        android.opengl.GLES32.glGetActiveUniformBlockiv(program, uniformBlockIndex, pname, params, offset);
+    public void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, IntBuffer params) {
+        android.opengl.GLES32.glGetActiveUniformBlockiv(program, uniformBlockIndex, pname, params);
     }
 
     @Override

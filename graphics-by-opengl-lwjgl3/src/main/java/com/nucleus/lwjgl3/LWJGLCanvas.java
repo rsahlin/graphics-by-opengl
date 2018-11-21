@@ -30,10 +30,11 @@ import org.lwjgl.system.jawt.JAWTDrawingSurfaceInfo;
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
-import com.nucleus.opengl.GLESWrapper.Renderers;
+import com.nucleus.renderer.SurfaceConfiguration;
 
 /**
  * A Canvas component that uses OpenGL for rendering.
+ * This is used when an AWT window is the target
  */
 @SuppressWarnings("serial")
 public abstract class LWJGLCanvas extends Canvas {
@@ -44,10 +45,12 @@ public abstract class LWJGLCanvas extends Canvas {
     protected GLESCapabilities caps;
     J2SEWindow window;
     CoreApp coreApp;
+    SurfaceConfiguration config;
     int width;
     int height;
 
-    public LWJGLCanvas(Renderers version, J2SEWindow window, int width, int height) {
+    public LWJGLCanvas(J2SEWindow window, SurfaceConfiguration config, int width, int height) {
+        this.config = config;
         awt = JAWT.calloc();
         awt.version(JAWT_VERSION_1_4);
         if (!JAWT_GetAWT(awt)) {

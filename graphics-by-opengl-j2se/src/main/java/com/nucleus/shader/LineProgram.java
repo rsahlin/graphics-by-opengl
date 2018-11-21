@@ -1,7 +1,8 @@
 package com.nucleus.shader;
 
-import com.nucleus.geometry.Mesh;
-import com.nucleus.geometry.Mesh.BufferIndex;
+import java.nio.FloatBuffer;
+
+import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.Pass;
@@ -19,8 +20,10 @@ public class LineProgram extends ShaderProgram {
 
         protected final static String[] NAMES = new String[] { "aVertex", "aColor" };
         protected final static int[] OFFSETS = new int[] { 0, 3 };
-        protected final static VariableType[] TYPES = new VariableType[] { VariableType.ATTRIBUTE };
-        protected final static BufferIndex[] BUFFERINDEXES = new BufferIndex[] { BufferIndex.ATTRIBUTES };
+        protected final static VariableType[] TYPES = new VariableType[] { VariableType.ATTRIBUTE,
+                VariableType.ATTRIBUTE };
+        protected final static BufferIndex[] BUFFERINDEXES = new BufferIndex[] { BufferIndex.ATTRIBUTES,
+                BufferIndex.ATTRIBUTES };
         protected final static int[] SIZEPERVERTEX = new int[] { 7 };
 
         public LineProgramIndexer() {
@@ -30,10 +33,6 @@ public class LineProgram extends ShaderProgram {
     }
 
     public static final String CATEGORY = "line";
-
-    ShaderVariable uPointSize;
-
-    private float pointSize = 1;
 
     public LineProgram(Texture2D.Shading shading) {
         super(null, shading, CATEGORY, ProgramType.VERTEX_FRAGMENT);
@@ -61,16 +60,11 @@ public class LineProgram extends ShaderProgram {
     }
 
     @Override
-    public void updateUniformData(float[] destinationUniform, Mesh mesh) {
-        if (uPointSize != null) {
-            destinationUniform[uPointSize.getOffset()] = pointSize;
-        }
+    public void updateUniformData(FloatBuffer destinationUniform) {
     }
 
     @Override
-    public void initBuffers(Mesh mesh) {
-        // TODO Auto-generated method stub
-
+    public void initUniformData(FloatBuffer destinationUniforms) {
     }
 
 }

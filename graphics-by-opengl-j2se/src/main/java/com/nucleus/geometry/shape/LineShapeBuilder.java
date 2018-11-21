@@ -1,7 +1,13 @@
 package com.nucleus.geometry.shape;
 
+import java.nio.ShortBuffer;
+
+import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.ElementBuffer;
-import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.ElementBuffer.Type;
+import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLESWrapper.Mode;
+import com.nucleus.texturing.Texture2D;
 
 /**
  * Builder for line shapes - this builder will not set vertice data since lines are primitives.
@@ -17,29 +23,24 @@ public class LineShapeBuilder extends ElementBuilder {
     private Configuration configuration;
 
     @Override
-    public void build(Mesh mesh) {
-        buildElements(mesh, configuration.vertexCount >>> 1, configuration.startVertex);
+    public void build(AttributeBuffer attributes, Texture2D texture, ElementBuffer indices, GLESWrapper.Mode mode) {
+        if (indices != null) {
+            if (indices.type != Type.SHORT) {
+                throw new IllegalArgumentException("Invalid type " + indices.type);
+            }
+            buildElements(indices.indices.asShortBuffer(), mode, configuration.vertexCount >>> 1, configuration.startVertex);
+        }
     }
 
-    /**
-     * Builds the element buffer if present in the mesh
-     * 
-     * @param mesh
-     * @param count Number of lines to build element indices for
-     * @param startVertex First vertex to index
-     */
     @Override
-    public void buildElements(Mesh mesh, int count, int startVertex) {
+    public void buildElements(ShortBuffer buffer, GLESWrapper.Mode mode, int count, int startVertex) {
         // Check if indicebuffer shall be built
-        ElementBuffer indices = mesh.getElementBuffer();
-        if (indices != null) {
-            switch (mesh.getMode()) {
-                case LINES:
-                    buildLinesBuffer(indices, count, startVertex);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Not implemented for " + mesh.getMode());
-            }
+        switch (mode) {
+            case LINES:
+                buildLinesBuffer(buffer, count, startVertex);
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + mode);
         }
     }
 

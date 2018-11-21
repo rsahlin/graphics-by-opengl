@@ -1,19 +1,14 @@
 package com.nucleus.renderer;
 
 import java.nio.Buffer;
-import java.util.ArrayList;
 
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.ClientApplication;
-import com.nucleus.camera.ViewFrustum;
-import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.scene.Node;
+import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
-import com.nucleus.shader.ShaderProgram;
-import com.nucleus.texturing.ImageFactory;
-import com.nucleus.texturing.Texture2D;
 
 /**
  * An interface for rendering scenes. This is done by supporting a Node base hierarchy.
@@ -27,29 +22,19 @@ import com.nucleus.texturing.Texture2D;
  */
 public interface NucleusRenderer {
 
-    /**
-     * Simple callback interface for render of node
-     *
-     * @param <T>
-     */
-    public abstract class NodeRenderer<T extends Node> {
-        public abstract void renderNode(NucleusRenderer renderer, Pass currentPass, float[][] matrices)
-                throws GLException;
-
-        public abstract T getNode();
-
-    }
-
     public enum Matrices {
-        MODELVIEW(0),
-        PROJECTION(1),
-        RENDERPASS_1(2),
-        RENDERPASS_2(3);
+        MODEL(0, "uModelMatrix"),
+        VIEW(1, "uViewMatrix"),
+        PROJECTION(2, "uProjectionMatrix"),
+        RENDERPASS_1(3, "uRenderPass1Matrix"),
+        RENDERPASS_2(4, "uRenderPass2Matrix");
 
         public final int index;
+        public final String name;
 
-        private Matrices(int index) {
+        private Matrices(int index, String name) {
             this.index = index;
+            this.name = name;
         }
 
     }
@@ -156,24 +141,6 @@ public interface NucleusRenderer {
     }
 
     /**
-     * Matrix functions that may be accelerated on target platform.
-     * 
-     * @author Richard Sahlin
-     *
-     */
-    public interface MatrixEngine {
-
-        /**
-         * Sets the projection matrix to be used by the renderer based on the setting in the viewFrustum
-         * 
-         * @param viewFrustum
-         * 
-         */
-        public abstract void setProjectionMatrix(ViewFrustum viewFrustum);
-
-    }
-
-    /**
      * Called when the context is created for a render surface, EGL/GL is now active and can be used to create
      * objects,
      * textures and buffers.
@@ -250,19 +217,7 @@ public interface NucleusRenderer {
      * @param node The node to be rendered
      * @throws GLException If there is an error in GL while drawing this node.
      */
-    public void render(Node node) throws GLException;
-
-    /**
-     * 
-     * @param matrix modelview matrix for the object, will use current projection matrix
-     * @param meshes List of meshes to draw
-     * @param texture The target texture
-     * @param renderpass
-     * @throws GLException If there is an error in GL while drawing this node.
-     */
-    public void renderToTexture(float[] matrix, ShaderProgram program, ArrayList<Mesh> meshes, Texture2D texture,
-            RenderPass renderpass)
-            throws GLException;
+    public void render(RenderableNode<?> node) throws GLException;
 
     /**
      * Returns true if this renderer has been initialized by calling init() when
@@ -300,28 +255,6 @@ public interface NucleusRenderer {
      */
     @Deprecated
     public GLES20Wrapper getGLES();
-
-    /**
-     * Returns the ImageFactory to be used with this renderer when loading image resources.
-     * 
-     * @return
-     * @throws IllegalStateException If renderer is not initialized.
-     */
-    public ImageFactory getImageFactory();
-
-    /**
-     * Sets the image factory to use when loading image resources.
-     * 
-     * @param imageFactory Used when images are loaded.
-     */
-    public void setImageFactory(ImageFactory imageFactory);
-
-    /**
-     * Generate GL named object buffers
-     * 
-     * @param names Destination for buffer names
-     */
-    public void genBuffers(int[] names);
 
     /**
      * Deletes the named object buffers generated with a call to {@link #genBuffers(int, int[], int)}
@@ -366,5 +299,13 @@ public interface NucleusRenderer {
      * @throws IndexOutOfBoundsException If there is not enough storage in the source matrix at index
      */
     public void setProjection(float[] matrix, int index);
+
+    /**
+     * Returns the current render state settings, changing this will not update the opengl settings.
+     * Can be used to check current renderstate.
+     * 
+     * @return
+     */
+    public RenderState getRenderState();
 
 }
