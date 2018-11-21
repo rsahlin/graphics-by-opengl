@@ -42,5 +42,6 @@ void main() {
     EmitVertex();
     gl_Position = pos + vBitangent[0];
     EmitVertex();
+    EndPrimitive();
     
 }
