@@ -144,13 +144,14 @@ public class BufferObjectsFactory {
     public void createVBO(GLES20Wrapper gles, Buffer buffer) throws GLException {
         if (buffer.getBufferName() <= 0) {
             SimpleLogger.d(getClass(),
-                    "Allocating VBO for buffer: " + buffer.getUri() + ", name: " +  buffer.getName() + ", total size: " + buffer.getByteLength());
+                    "Allocating VBO for buffer: " + buffer.getUri() + ", name: " + buffer.getName() + ", total size: "
+                            + buffer.getByteLength());
             int[] names = new int[1];
             gles.glGenBuffers(names);
             buffer.setBufferName(names[0]);
             GLUtils.handleError(gles, "Create VBO for buffer " + buffer.getUri());
             gles.glBindBuffer(GLES20.GL_ARRAY_BUFFER, buffer.getBufferName());
-            gles.glBufferData(GLES20.GL_ARRAY_BUFFER, buffer.getBufferName(), buffer.getBuffer().position(0),
+            gles.glBufferData(GLES20.GL_ARRAY_BUFFER, buffer.getByteLength(), buffer.getBuffer().position(0),
                     GLESWrapper.GLES20.GL_STATIC_DRAW);
             GLUtils.handleError(gles, "BufferData for buffer " + buffer.getUri());
         }
