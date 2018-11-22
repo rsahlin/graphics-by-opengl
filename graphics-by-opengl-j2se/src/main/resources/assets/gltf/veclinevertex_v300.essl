@@ -9,7 +9,8 @@ uniform mat4 uModelMatrix[3];
 
 in vec3 POSITION;
 in vec3 NORMAL; //Normals
-in vec3 TANGENT[2]; //Input array with vectors
+in vec3 TANGENT; //Input array with vectors
+in vec3 BITANGENT;
 
 out vec4 vNormal;
 out vec4 vTangent;
@@ -25,7 +26,7 @@ void main() {
     gl_Position = pos * uModelMatrix[2];
     
     vNormal = vec4(NORMAL * mat3(uModelMatrix[0]) * mat3(uModelMatrix[1]) * mat3(uModelMatrix[2]), 0.0);
-    vTangent = vec4(TANGENT[0] * mat3(uModelMatrix[0]) * mat3(uModelMatrix[1]) * mat3(uModelMatrix[2]), 0.0);
-    vBitangent = vec4(TANGENT[1] * mat3(uModelMatrix[0]) * mat3(uModelMatrix[1]) * mat3(uModelMatrix[2]), 0.0);
+    vTangent = vec4(TANGENT * mat3(uModelMatrix[0]) * mat3(uModelMatrix[1]) * mat3(uModelMatrix[2]), 0.0);
+    vBitangent = vec4(BITANGENT * mat3(uModelMatrix[0]) * mat3(uModelMatrix[1]) * mat3(uModelMatrix[2]), 0.0);
 }
 

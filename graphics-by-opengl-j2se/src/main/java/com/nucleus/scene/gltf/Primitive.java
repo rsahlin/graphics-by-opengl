@@ -74,16 +74,18 @@ public class Primitive implements RuntimeResolver {
         }
 
         public float[][] calculateTangentBiTangent(Accessor indices, Accessor position, Accessor uv, Accessor normal) {
-            float[][] result = new float[2][verticeArray.length];
+            float[][] tangents = new float[2][verticeArray.length];
+            float[][] output = new float[2][(verticeArray.length / 3) * 4];
             int verticeSize = position.getType().size;
-            float[] deltaPos1 = new float[3];
-            float[] deltaPos2 = new float[3];
-            float[] deltaUv1 = new float[] { 1, 1 };
-            float[] deltaUv2 = new float[] { 1, 1 };
-            float[] temp1 = new float[3];
-            float[] temp2 = new float[3];
-            float[] tangent = new float[3];
-            float[] biTangent = new float[3];
+            float[] vec1 = new float[3];
+            float[] vec2 = new float[3];
+            float[] st1 = new float[] { 1, 1 };
+            float[] st2 = new float[] { 1, 1 };
+            float[] sdir = new float[3];
+            float[] tdir = new float[3];
+            float[] n = new float[3];
+            float[] cross = new float[3];
+            float[] t = new float[4];
             int uvSize = 0;
 
             if (uv != null) {
@@ -103,39 +105,58 @@ public class Primitive implements RuntimeResolver {
                 int uv1Index = index1 * uvSize;
                 int uv2Index = index2 * uvSize;
 
-                Vec3.toVector(verticeArray, v0Index, verticeArray, v1Index, deltaPos1, 0);
-                Vec3.toVector(verticeArray, v0Index, verticeArray, v2Index, deltaPos2, 0);
+                Vec3.toVector(verticeArray, v0Index, verticeArray, v1Index, vec1, 0);
+                Vec3.toVector(verticeArray, v0Index, verticeArray, v2Index, vec2, 0);
 
                 float reciprocal = 1f;
                 if (uvArray != null) {
-                    Vec2.toVector(uvArray, uv0Index, uvArray, uv1Index, deltaUv1, 0);
-                    Vec2.toVector(uvArray, uv0Index, uvArray, uv2Index, deltaUv2, 0);
-//                    reciprocal = 1.0f / (deltaUv1[0] * deltaUv2[1] - deltaUv1[1] * deltaUv2[0]);
+                    Vec2.toVector(uvArray, uv0Index, uvArray, uv1Index, st1, 0);
+                    Vec2.toVector(uvArray, uv0Index, uvArray, uv2Index, st2, 0);
+                    reciprocal = 1.0f / (st1[0] * st2[1] - st1[1] * st2[0]);
                 }
 
-                Vec3.mul(deltaPos1, 0, deltaUv2[1] * reciprocal, temp1, 0);
-                Vec3.mul(deltaPos2, 0, deltaUv1[1] * reciprocal, temp2, 0);
-                Vec3.subtract(temp1, 0, temp2, 0, tangent, 0);
+                sdir[0] = (st2[1] * vec1[0] - st1[1] * vec2[0]) * reciprocal;
+                sdir[1] = (st2[1] * vec1[1] - st1[1] * vec2[1]) * reciprocal;
+                sdir[2] = (st2[1] * vec1[2] - st1[1] * vec2[2]) * reciprocal;
 
-                Vec3.mul(deltaPos2, 0, deltaUv1[0] * reciprocal, temp1, 0);
-                Vec3.mul(deltaPos1, 0, deltaUv2[0] * reciprocal, temp2, 0);
-                Vec3.subtract(temp1, 0, temp2, 0, biTangent, 0);
+                tdir[0] = (st1[0] * vec2[0] - st2[0] * vec1[0]) * reciprocal;
+                tdir[1] = (st1[0] * vec2[1] - st2[0] * vec1[1]) * reciprocal;
+                tdir[2] = (st1[0] * vec2[2] - st2[0] * vec1[2]) * reciprocal;
 
-                Vec3.add(result[0], v0Index, tangent, 0, result[0], v0Index);
-                Vec3.add(result[0], v1Index, tangent, 0, result[0], v1Index);
-                Vec3.add(result[0], v2Index, tangent, 0, result[0], v2Index);
+                Vec3.add(tangents[0], v0Index, sdir, 0, tangents[0], v0Index);
+                Vec3.add(tangents[0], v1Index, sdir, 0, tangents[0], v1Index);
+                Vec3.add(tangents[0], v2Index, sdir, 0, tangents[0], v2Index);
 
-                Vec3.add(result[1], v0Index, biTangent, 0, result[1], v0Index);
-                Vec3.add(result[1], v1Index, biTangent, 0, result[1], v1Index);
-                Vec3.add(result[1], v2Index, biTangent, 0, result[1], v2Index);
+                Vec3.add(tangents[1], v0Index, tdir, 0, tangents[1], v0Index);
+                Vec3.add(tangents[1], v1Index, tdir, 0, tangents[1], v1Index);
+                Vec3.add(tangents[1], v2Index, tdir, 0, tangents[1], v2Index);
             }
 
-            for (int i = 0; i < result[0].length; i += 3) {
-                Vec3.normalize(result[0], i);
-                Vec3.normalize(result[1], i);
+            int outputIndex = 0;
+            for (int i = 0; i < tangents[0].length; i += 3) {
+                // const Vector3D& n = normal[a];
+                // const Vector3D& t = tan1[a];
+                // Gram-Schmidt orthogonalize
+                // result[0]
+                // tangent[a] = (t - n * Dot(n, t)).Normalize();
+                Vec3.mul(normalArray, i, Vec3.dot(normalArray, i, tangents[0], i), t, 0);
+                Vec3.subtract(tangents[0], i, t, 0, t, 0);
+                Vec3.normalize(t, 0);
+                Vec3.set(t, 0, output[0], outputIndex);
+                // Calculate handedness
+                // tangent[a].w = (Dot(Cross(n, t), tan2[a]) < 0.0F) ? -1.0F : 1.0F;
+                Vec3.cross(normalArray, i, tangents[0], i, t, 0);
+                float tw = Vec3.dot(t, 0, tangents[1], i) < 0f ? -1 : 1;
+                // Calculate bitangent
+                // bitangent vector B is then given by B = (N x T) * Tw.
+                Vec3.cross(normalArray, i, output[0], i, cross, 0);
+                Vec3.mul(cross, 0, tw, output[1], outputIndex);
+                output[0][outputIndex + 3] = tw;
+                output[1][outputIndex + 3] = tw;
+                outputIndex += 4;
             }
-            SimpleLogger.d(getClass(), "Created TANGENTs for " + result[0].length / 3 + " vertices");
-            return result;
+            SimpleLogger.d(getClass(), "Created TANGENTs for " + tangents[0].length / 3 + " vertices");
+            return output;
         }
 
         private short[] copyShortBuffer(Accessor data) {
@@ -479,13 +500,15 @@ public class Primitive implements RuntimeResolver {
         Triangles triangles = new Triangles();
         triangles.createBuffers(indices, position, uv, normal);
         float[][] TBArray = triangles.calculateTangentBiTangent(indices, position, uv, normal);
-        int l = TBArray[0].length; // Length of one buffer in number of floats
-        BufferView Tbv = gltf.createBufferView(TANGENT_BITANGENT, l * 2 * 4, 0, 0, Target.ARRAY_BUFFER);
+        int l = TBArray[0].length; // Length of one buffer in number of floats - type is VEC4
+        BufferView Tbv = gltf.createBufferView(TANGENT_BITANGENT, l * 4 * 2, 0, 16, Target.ARRAY_BUFFER);
         Buffer buffer = Tbv.getBuffer();
+        BufferView Bbv = gltf.createBufferView(buffer, l * 4, 16, Target.ARRAY_BUFFER);
         buffer.put(TBArray[0], 0);
         buffer.put(TBArray[1], l);
-        int count = l / 3;
-        Accessor Ta = new Accessor(Tbv, 0, ComponentType.FLOAT, count, Type.VEC3);
+        int count = l / 4;
+        Accessor Ta = new Accessor(Tbv, 0, ComponentType.FLOAT, count, Type.VEC4);
+        Accessor Ba = new Accessor(Bbv, 0, ComponentType.FLOAT, count, Type.VEC4);
         int tangentIndex = attributeList.indexOf(Attributes.TANGENT);
         if (tangentIndex >= 0) {
             attributeList.remove(tangentIndex);
@@ -493,6 +516,8 @@ public class Primitive implements RuntimeResolver {
         }
         accessorList.add(Ta);
         attributeList.add(Attributes.TANGENT);
+        accessorList.add(Ba);
+        attributeList.add(Attributes.BITANGENT);
     }
 
     /**

@@ -7,6 +7,7 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
@@ -1068,7 +1069,13 @@ public abstract class ShaderProgram {
             checkCompileStatus(gles, source, shader);
         } catch (GLException e) {
             SimpleLogger.d(getClass(), e.getMessage() + " from source:" + System.lineSeparator());
-            SimpleLogger.d(getClass(), source.getVersionedShaderSource());
+            StringTokenizer st = new StringTokenizer(source.getVersionedShaderSource(), System.lineSeparator());
+            StringBuffer sb = new StringBuffer();
+            int index = 1;
+            while (st.hasMoreTokens()) {
+                sb.append(index++ + " " + st.nextToken() + "\n\r");
+            }
+            SimpleLogger.d(getClass(), sb.toString());
             throw e;
         }
     }
