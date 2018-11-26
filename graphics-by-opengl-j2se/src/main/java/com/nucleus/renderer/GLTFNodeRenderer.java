@@ -255,6 +255,8 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             attribList.add(Attributes.NORMAL);
             accessorList.add(primitive.getAccessor(Attributes.TANGENT));
             attribList.add(Attributes.TANGENT);
+            accessorList.add(primitive.getAccessor(Attributes.BITANGENT));
+            attribList.add(Attributes.BITANGENT);
 
             // Create the primitive used to draw vector lines
             vecLinePrimitive = new Primitive(attribList, accessorList, primitive.getIndices(), new Material(),
