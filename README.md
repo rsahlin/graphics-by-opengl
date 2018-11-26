@@ -1,8 +1,10 @@
 ﻿#graphics-by-opengl
 A Java based API for graphics using OpenGLES.
 
-Support for glTF is being added, currently not working yet.
-The goal is to integrate glTF asset format with renderer so that nodes/meshes are rendered without conversion.
+Support for glTF is being added, currently basic model import is working with texture.
+Basic lighting is in place with some BRDF support on vertex level - normal mapping is WIP.
+
+see #gltf-viewer for an app that displays gltf models.
 
 As this is a multi platform project I use Eclipse and import as Maven project.
 

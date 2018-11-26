@@ -9,8 +9,8 @@ uniform lowp sampler2D uTexture; //The texture sampler
 uniform vec4 _PBRDATA[4];
 uniform vec3 _LIGHT_0[1];
 const float pi = 3.141592;
-const float oneByPI = 1 / pi;
-const float twoByPI = 2 / pi;
+const float oneByPI = 1.0 / pi;
+const float twoByPI = 2.0 / pi;
 
 in vec2 vTexCoord0;
 in vec3 vNormal;
@@ -32,12 +32,12 @@ vec4 calculateFresnelDiffuse() {
     vec3 diffuse = (1.0 - fresnel) * _PBRDATA[2].rgb;
     float alpha = _PBRDATA[3].z;
     float a2 = alpha * alpha;
-    float distribution = (a2) / (pi * pow( (pow( dot( vNormal, H),2) * (a2 - 1) + 1),2) );
+    float distribution = (a2) / (pi * pow((pow(dot(vNormal, H),2) * (a2 - 1.0) + 1.0),2.0));
     float k = _PBRDATA[3].y * sqrt(twoByPI);
     float vDotH = dot(vLight, vEye);
-    float attenuation = vDotH / (vDotH * (1 - k) + k);
-    //specular = (Fresnel * Geometric occlusion * Distribution) / ( 4 * (N dot L) * (N dot V)
-//    vec3 specular = max(vec3(0.0,0.0,0.0), (fresnel * distribution));// / (4 * dot(vNormal,vLight) * dot(vNormal, vEye)));
+    float attenuation = vDotH / (vDotH * (1.0 - k) + k);
+    //specular = (Fresnel * Geometric occlusion * Distribution) / ( 4.0 * (N dot L) * (N dot V)
+//    vec3 specular = max(vec3(0.0,0.0,0.0), (fresnel * distribution));// / (4.0 * dot(vNormal,vLight) * dot(vNormal, vEye)));
     vec3 specular = (max(vec3(0.0,0.0,0.0), fresnel) * distribution);
     return vec4(specular + diffuse, _PBRDATA[0].a);
 }
