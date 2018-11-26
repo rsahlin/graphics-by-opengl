@@ -156,6 +156,9 @@ public class GLTF {
      * @return
      */
     protected int addBuffer(Buffer buffer) {
+        if (buffers == null) {
+            buffers = new ArrayList<>();
+        }
         int size = buffers.size();
         buffers.add(buffer);
         return size;
@@ -172,14 +175,15 @@ public class GLTF {
      * @param target
      * @return
      */
-    public BufferView createBufferView(String bufferName, int bufferSize, int byteOffset, int byteStride, Target target) {
-            Buffer buffer = new Buffer(bufferName, bufferSize);
-            int index = addBuffer(buffer);
-            BufferView bv = new BufferView(this, index, byteOffset, byteStride, target);
-            return bv;
+    public BufferView createBufferView(String bufferName, int bufferSize, int byteOffset, int byteStride,
+            Target target) {
+        Buffer buffer = new Buffer(bufferName, bufferSize);
+        int index = addBuffer(buffer);
+        BufferView bv = new BufferView(this, index, byteOffset, byteStride, target);
+        return bv;
     }
 
-    public BufferView createBufferView(Buffer buffer,  int byteOffset, int byteStride, Target target) {
+    public BufferView createBufferView(Buffer buffer, int byteOffset, int byteStride, Target target) {
         int index = buffers.indexOf(buffer);
         if (index < 0) {
             throw new IllegalArgumentException("Could not find index for Buffer - not added?");
@@ -187,7 +191,7 @@ public class GLTF {
         BufferView bv = new BufferView(this, index, byteOffset, byteStride, target);
         return bv;
     }
-    
+
     /**
      * Returns the buffer for the specified accessor
      * 

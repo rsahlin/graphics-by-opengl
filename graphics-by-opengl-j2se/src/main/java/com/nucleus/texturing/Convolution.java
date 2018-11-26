@@ -214,122 +214,122 @@ public class Convolution {
         int index;
         int sourceIndex;
         switch (kernel) {
-        case SIZE_2X2:
-            for (int y = 0; y < height; y++) {
-                index = (y * width) * sizeInBytes;
-                for (int x = 0; x < width; x++) {
-                    clearAcc(acc);
-                    sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * sizeInBytes));
-                    fetchPixelRow2(pixels, sourceIndex, 0, acc);
-                    fetchPixelRow2(pixels, sourceIndex + widthInBytes, 2, acc);
-                    destPixels[index++] = (byte) (acc[0]);
-                    destPixels[index++] = (byte) (acc[1]);
-                    destPixels[index++] = (byte) (acc[2]);
-                    destPixels[index++] = (byte) (acc[3]);
+            case SIZE_2X2:
+                for (int y = 0; y < height; y++) {
+                    index = (y * width) * sizeInBytes;
+                    for (int x = 0; x < width; x++) {
+                        clearAcc(acc);
+                        sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * sizeInBytes));
+                        fetchPixelRow2(pixels, sourceIndex, 0, acc);
+                        fetchPixelRow2(pixels, sourceIndex + widthInBytes, 2, acc);
+                        destPixels[index++] = (byte) (acc[0]);
+                        destPixels[index++] = (byte) (acc[1]);
+                        destPixels[index++] = (byte) (acc[2]);
+                        destPixels[index++] = (byte) (acc[3]);
+                    }
                 }
-            }
-            break;
-        case SIZE_3X3:
-            for (int y = 1; y < height - 1; y++) {
-                index = (y * width) * sizeInBytes;
-                for (int x = 1; x < width - 1; x++) {
-                    clearAcc(acc);
-                    sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * sizeInBytes));
-                    fetchPixelRow3(pixels, sourceIndex - widthInBytes - sizeInBytes, 0, acc);
-                    fetchPixelRow3(pixels, sourceIndex - sizeInBytes, 3, acc);
-                    fetchPixelRow3(pixels, sourceIndex + widthInBytes - sizeInBytes, 6, acc);
-                    if (acc[0] < 0) {
-                        acc[0] = 0;
+                break;
+            case SIZE_3X3:
+                for (int y = 1; y < height - 1; y++) {
+                    index = (y * width) * sizeInBytes;
+                    for (int x = 1; x < width - 1; x++) {
+                        clearAcc(acc);
+                        sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * sizeInBytes));
+                        fetchPixelRow3(pixels, sourceIndex - widthInBytes - sizeInBytes, 0, acc);
+                        fetchPixelRow3(pixels, sourceIndex - sizeInBytes, 3, acc);
+                        fetchPixelRow3(pixels, sourceIndex + widthInBytes - sizeInBytes, 6, acc);
+                        if (acc[0] < 0) {
+                            acc[0] = 0;
+                        }
+                        if (acc[1] < 0) {
+                            acc[1] = 0;
+                        }
+                        if (acc[2] < 0) {
+                            acc[2] = 0;
+                        }
+                        if (acc[3] < 0) {
+                            acc[3] = 0;
+                        }
+                        if (acc[0] > 255) {
+                            acc[0] = 255;
+                        }
+                        if (acc[1] > 255) {
+                            acc[1] = 255;
+                        }
+                        if (acc[2] > 255) {
+                            acc[2] = 255;
+                        }
+                        if (acc[3] > 255) {
+                            acc[3] = 255;
+                        }
+                        destPixels[index++] = (byte) (acc[0]);
+                        destPixels[index++] = (byte) (acc[1]);
+                        destPixels[index++] = (byte) (acc[2]);
+                        destPixels[index++] = (byte) (acc[3]);
                     }
-                    if (acc[1] < 0) {
-                        acc[1] = 0;
-                    }
-                    if (acc[2] < 0) {
-                        acc[2] = 0;
-                    }
-                    if (acc[3] < 0) {
-                        acc[3] = 0;
-                    }
-                    if (acc[0] > 255) {
-                        acc[0] = 255;
-                    }
-                    if (acc[1] > 255) {
-                        acc[1] = 255;
-                    }
-                    if (acc[2] > 255) {
-                        acc[2] = 255;
-                    }
-                    if (acc[3] > 255) {
-                        acc[3] = 255;
-                    }
-                    destPixels[index++] = (byte) (acc[0]);
-                    destPixels[index++] = (byte) (acc[1]);
-                    destPixels[index++] = (byte) (acc[2]);
-                    destPixels[index++] = (byte) (acc[3]);
                 }
-            }
-            break;
-        case SIZE_4X4:
-            for (int y = 0; y < height; y++) {
-                index = (y * width) * sizeInBytes;
-                for (int x = 0; x < width; x++) {
-                    clearAcc(acc);
-                    sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * sizeInBytes));
-                    if (sourceIndex < pixels.length) {
-                        fetchPixelRow4(pixels, sourceIndex, 0, acc);
+                break;
+            case SIZE_4X4:
+                for (int y = 0; y < height; y++) {
+                    index = (y * width) * sizeInBytes;
+                    for (int x = 0; x < width; x++) {
+                        clearAcc(acc);
+                        sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * sizeInBytes));
+                        if (sourceIndex < pixels.length) {
+                            fetchPixelRow4(pixels, sourceIndex, 0, acc);
+                        }
+                        if (sourceIndex < pixels.length) {
+                            fetchPixelRow4(pixels, sourceIndex + widthInBytes, 4, acc);
+                        }
+                        if (sourceIndex < pixels.length) {
+                            fetchPixelRow4(pixels, sourceIndex + widthInBytes * 2, 8, acc);
+                        }
+                        if (sourceIndex < pixels.length) {
+                            fetchPixelRow4(pixels, sourceIndex + widthInBytes * 3, 12, acc);
+                        }
+                        destPixels[index++] = (byte) (acc[0]);
+                        destPixels[index++] = (byte) (acc[1]);
+                        destPixels[index++] = (byte) (acc[2]);
+                        destPixels[index++] = (byte) (acc[3]);
                     }
-                    if (sourceIndex < pixels.length) {
-                        fetchPixelRow4(pixels, sourceIndex + widthInBytes, 4, acc);
-                    }
-                    if (sourceIndex < pixels.length) {
-                        fetchPixelRow4(pixels, sourceIndex + widthInBytes * 2, 8, acc);
-                    }
-                    if (sourceIndex < pixels.length) {
-                        fetchPixelRow4(pixels, sourceIndex + widthInBytes * 3, 12, acc);
-                    }
-                    destPixels[index++] = (byte) (acc[0]);
-                    destPixels[index++] = (byte) (acc[1]);
-                    destPixels[index++] = (byte) (acc[2]);
-                    destPixels[index++] = (byte) (acc[3]);
                 }
-            }
-            break;
-        case SIZE_5X5:
-            for (int y = 2; y < height - 2; y++) {
-                index = (y * width) * sizeInBytes;
-                for (int x = 2; x < width - 2; x++) {
-                    clearAcc(acc);
-                    sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * sizeInBytes));
-                    fetchPixelRow5(pixels, sourceIndex - widthInBytes * 2 - sizeInBytes * 2, 0, acc);
-                    fetchPixelRow5(pixels, sourceIndex - widthInBytes - sizeInBytes * 2, 5, acc);
-                    fetchPixelRow5(pixels, sourceIndex - sizeInBytes * 2, 10, acc);
-                    fetchPixelRow5(pixels, sourceIndex + widthInBytes - sizeInBytes * 2, 15, acc);
-                    fetchPixelRow5(pixels, sourceIndex + widthInBytes * 2 - sizeInBytes * 2, 20, acc);
-                    destPixels[index++] = (byte) (acc[0]);
-                    destPixels[index++] = (byte) (acc[1]);
-                    destPixels[index++] = (byte) (acc[2]);
-                    destPixels[index++] = (byte) (acc[3]);
-                }
-            }
-            break;
-        case SIZE_8X8:
-        case SIZE_16X16:
-            for (int y = 0; y < height - 0; y++) {
-                index = (y * width) * sizeInBytes;
-                for (int x = 0; x < width - 0; x++) {
-                    clearAcc(acc);
-                    sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * sizeInBytes));
-                    for (int column = 0; column < kernel.width; column++) {
-                        fetchPixelRow(kernel.width, pixels, sourceIndex, column * kernel.width, acc);
-                        sourceIndex += widthInBytes;
+                break;
+            case SIZE_5X5:
+                for (int y = 2; y < height - 2; y++) {
+                    index = (y * width) * sizeInBytes;
+                    for (int x = 2; x < width - 2; x++) {
+                        clearAcc(acc);
+                        sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * sizeInBytes));
+                        fetchPixelRow5(pixels, sourceIndex - widthInBytes * 2 - sizeInBytes * 2, 0, acc);
+                        fetchPixelRow5(pixels, sourceIndex - widthInBytes - sizeInBytes * 2, 5, acc);
+                        fetchPixelRow5(pixels, sourceIndex - sizeInBytes * 2, 10, acc);
+                        fetchPixelRow5(pixels, sourceIndex + widthInBytes - sizeInBytes * 2, 15, acc);
+                        fetchPixelRow5(pixels, sourceIndex + widthInBytes * 2 - sizeInBytes * 2, 20, acc);
+                        destPixels[index++] = (byte) (acc[0]);
+                        destPixels[index++] = (byte) (acc[1]);
+                        destPixels[index++] = (byte) (acc[2]);
+                        destPixels[index++] = (byte) (acc[3]);
                     }
-                    destPixels[index++] = (byte) (acc[0]);
-                    destPixels[index++] = (byte) (acc[1]);
-                    destPixels[index++] = (byte) (acc[2]);
-                    destPixels[index++] = (byte) (acc[3]);
                 }
-            }
-            break;
+                break;
+            case SIZE_8X8:
+            case SIZE_16X16:
+                for (int y = 0; y < height - 0; y++) {
+                    index = (y * width) * sizeInBytes;
+                    for (int x = 0; x < width - 0; x++) {
+                        clearAcc(acc);
+                        sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * sizeInBytes));
+                        for (int column = 0; column < kernel.width; column++) {
+                            fetchPixelRow(kernel.width, pixels, sourceIndex, column * kernel.width, acc);
+                            sourceIndex += widthInBytes;
+                        }
+                        destPixels[index++] = (byte) (acc[0]);
+                        destPixels[index++] = (byte) (acc[1]);
+                        destPixels[index++] = (byte) (acc[2]);
+                        destPixels[index++] = (byte) (acc[3]);
+                    }
+                }
+                break;
         }
     }
 
@@ -356,13 +356,14 @@ public class Convolution {
     private final void fetchPixelRow2(byte[] pixels, int offset, int index, float[] acc) {
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
+        offset++; // skip alpha
 
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
+        offset++; // skip alpha
+
     }
 
     /**
