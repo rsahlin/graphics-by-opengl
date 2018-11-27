@@ -6,6 +6,7 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
+import com.nucleus.mmi.InputListener.EventConfiguration;
 import com.nucleus.mmi.MMIEventListener;
 import com.nucleus.mmi.MMIPointerEvent;
 import com.nucleus.mmi.MMIPointerEvent.Action;
@@ -13,6 +14,7 @@ import com.nucleus.mmi.NodeInputListener;
 import com.nucleus.mmi.core.InputProcessor;
 import com.nucleus.properties.Property;
 import com.nucleus.scene.Node.State;
+import com.nucleus.ui.Toggle;
 
 /**
  * Handles pointer input checking on nodes
@@ -20,6 +22,15 @@ import com.nucleus.scene.Node.State;
  * This class must be registred to {@link InputProcessor} for it to get mmi event callbacks.
  */
 public class J2SENodeInputListener implements MMIEventListener {
+
+    /**
+     * Data saved when a pointer becomes active, ie is pressed - this is saved for each pointer until release event.
+     *
+     */
+    public class ActiveEvent {
+        private MMIPointerEvent event;
+        private Node activeNode;
+    }
 
     /**
      * Set this property to true for nodes that shall check pointer input
@@ -30,7 +41,7 @@ public class J2SENodeInputListener implements MMIEventListener {
     private final ArrayList<Node> visibleNodes = new ArrayList<>();
     private int nodeId = Constants.NO_VALUE;
 
-    private float[] down = new float[2];
+    private ActiveEvent[] activeEvents = new ActiveEvent[InputProcessor.getInstance().maxPointers];
 
     public J2SENodeInputListener(RootNode root) {
         this.root = root;
@@ -75,6 +86,7 @@ public class J2SENodeInputListener implements MMIEventListener {
      * @return True if the input event was consumed, false otherwise.
      */
     protected boolean onPointerEvent(Node node, MMIPointerEvent event) {
+        int finger = event.getFinger();
         float[] position = event.getPointerData().getCurrentPosition();
         if (position == null && event.getAction() != Action.ZOOM) {
             return false;
@@ -91,16 +103,20 @@ public class J2SENodeInputListener implements MMIEventListener {
             }
         } else {
             if (node.isInside(position)) {
+                handleActivePointers(node, listener, event);
+                // Check if node shall receive raw MMI events
                 if (node instanceof MMIEventListener) {
                     ((MMIEventListener) node).onInputEvent(event);
                 }
                 switch (event.getAction()) {
                     case ACTIVE:
-                        down[0] = position[0];
-                        down[1] = position[1];
-                        SimpleLogger.d(getClass(), "HIT: " + node);
+                        if (listener != null) {
+                            listener.onInputEvent(node, event.getPointerData().getCurrent());
+                        }
+                        // Check for onclick event
                         String onclick = node.getProperty(ONCLICK, null);
                         if (onclick != null) {
+                            SimpleLogger.d(getClass(), "HIT: " + node);
                             Property p = Property.create(onclick);
                             if (p != null) {
                                 EventManager.getInstance().post(node, p.getKey(), p.getValue());
@@ -108,9 +124,6 @@ public class J2SENodeInputListener implements MMIEventListener {
                                 SimpleLogger.d(getClass(),
                                         "Invalid property for node " + node.getId() + " : " + onclick);
                             }
-                        }
-                        if (listener != null) {
-                            listener.onInputEvent(node, event.getPointerData().getCurrent());
                         }
                         return true;
                     case INACTIVE:
@@ -130,8 +143,53 @@ public class J2SENodeInputListener implements MMIEventListener {
             }
 
         }
-
         return false;
+    }
+
+    protected void handleActivePointers(Node node, NodeInputListener listener, MMIPointerEvent event) {
+        int finger = event.getFinger();
+        switch (event.getAction()) {
+            case ACTIVE:
+                if (activeEvents[finger] == null) {
+                    activeEvents[finger] = new ActiveEvent();
+                }
+                activeEvents[finger].event = event;
+                activeEvents[finger].activeNode = node;
+                break;
+            case INACTIVE:
+                MMIPointerEvent firstEvent = activeEvents[finger].event;
+                if (activeEvents[finger].activeNode.getId().equals(node.getId())) {
+                    EventConfiguration config = listener.getConfiguration();
+                    int delta = (int) (event.getPointerData().getCurrent().timeStamp
+                            - firstEvent.getPointerData().getFirst().timeStamp);
+                    if (delta <= (config.clickThreshold * 1000)) {
+                        float[] deltaXY = event.getPointerData().getDelta(event.getPointerData().getCount());
+                        if (Math.abs(deltaXY[0]) <= config.clickDeltaThreshold
+                                && Math.abs(deltaXY[1]) <= config.clickDeltaThreshold) {
+                            handleOnClick(node, listener, event);
+                        } else {
+                            SimpleLogger.d(getClass(), "Delta movement larger than threshold for pointer " + finger
+                                    + " : " + deltaXY[0] + ", " + deltaXY[1]);
+                        }
+                    } else {
+                        SimpleLogger.d(getClass(), "Delta click threshold (" + delta + ") for pointer " + finger);
+                    }
+                } else {
+                    SimpleLogger.d(getClass(), "Pointer released on different Node: "
+                            + activeEvents[finger].activeNode.getId() + " -> " + node.getId());
+                }
+                break;
+            default:
+                // Do nothing
+        }
+    }
+
+    protected void handleOnClick(Node node, NodeInputListener listener, MMIPointerEvent event) {
+        if (node instanceof Toggle) {
+            ((Toggle) node).toggle();
+        }
+        // Dispatch onClick()
+        listener.onClick(node, event.getPointerData().getCurrent());
     }
 
     /**

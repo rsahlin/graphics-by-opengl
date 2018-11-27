@@ -44,6 +44,9 @@ public class GenericShaderProgram extends ShaderProgram {
             return super.getShaderSourceName(shaderType);
         }
         ShaderType t = ShaderType.getFromType(shaderType);
+        if (t.index >= source.length) {
+            return "";
+        }
         return function.getPath(shaderType) + source[t.index];
     }
 
@@ -53,6 +56,13 @@ public class GenericShaderProgram extends ShaderProgram {
 
     @Override
     public void initUniformData(FloatBuffer destinationUniforms) {
+    }
+
+    @Override
+    public String getKey() {
+        return getClass().getSimpleName() + getShaderSourceName(ShaderType.VERTEX.value)
+                + getShaderSourceName(ShaderType.GEOMETRY.value) +
+                getShaderSourceName(ShaderType.FRAGMENT.value) + getShaderSourceName(ShaderType.COMPUTE.value);
     }
 
 }
