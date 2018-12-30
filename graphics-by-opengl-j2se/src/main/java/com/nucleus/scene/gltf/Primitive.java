@@ -1,7 +1,6 @@
 package com.nucleus.scene.gltf;
 
 import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,7 +8,6 @@ import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
-import com.nucleus.common.BufferUtils;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.scene.gltf.Accessor.ComponentType;
 import com.nucleus.scene.gltf.Accessor.Type;
@@ -64,6 +62,7 @@ public class Primitive implements RuntimeResolver {
         float[] verticeArray;
         float[] uvArray;
         float[] normalArray;
+        float[] tangentArray;
         short[] indexArray;
 
         public void createBuffers(Accessor indices, Accessor position, Accessor uv, Accessor normal) {
@@ -73,24 +72,33 @@ public class Primitive implements RuntimeResolver {
             indexArray = copyShortBuffer(indices);
         }
 
-        public float[][] calculateTangentBiTangent(Accessor indices, Accessor position, Accessor uv, Accessor normal) {
+        public void createBuffers(Accessor indices, Accessor position, Accessor uv, Accessor normal, Accessor tangent) {
+            verticeArray = copyFloatBuffer(position);
+            uvArray = copyFloatBuffer(uv);
+            normalArray = copyFloatBuffer(normal);
+            indexArray = copyShortBuffer(indices);
+            tangentArray = copyFloatBuffer(tangent);
+        }
+
+        public float[] calculateBitangent() {
+            float[] output = new float[tangentArray.length];
+
+            return output;
+        }
+
+        public float[][] calculateTangentBiTangent() {
             float[][] tangents = new float[2][verticeArray.length];
             float[][] output = new float[2][(verticeArray.length / 3) * 4];
-            int verticeSize = position.getType().size;
+            int verticeSize = 3;
             float[] vec1 = new float[3];
             float[] vec2 = new float[3];
             float[] st1 = new float[] { 1, 1 };
             float[] st2 = new float[] { 1, 1 };
             float[] sdir = new float[3];
             float[] tdir = new float[3];
-            float[] n = new float[3];
             float[] cross = new float[3];
             float[] t = new float[4];
-            int uvSize = 0;
-
-            if (uv != null) {
-                uvSize = uv.getType().size;
-            }
+            int uvSize = 2;
 
             for (int i = 0; i < indexArray.length; i += 3) {
                 int index0 = indexArray[i];
@@ -159,25 +167,32 @@ public class Primitive implements RuntimeResolver {
             return output;
         }
 
-        private short[] copyShortBuffer(Accessor data) {
-            ShortBuffer buffer = data.getBuffer().asShortBuffer();
-            int count = data.getCount();
-            short[] result = new short[count * data.getType().size];
-
-            BufferView bv = data.getBufferView();
-            if (bv.getByteStride() <= 4) {
-                // Straight copy of all data
-                buffer.get(result);
-            } else {
-                int size = data.getType().size;
-                int stride = bv.getByteStride() / data.getComponentType().size;
-                int pos = buffer.position();
-                for (int i = 0; i < count; i++) {
-                    buffer.get(result, i * size, size);
-                    pos += stride;
-                    buffer.position(pos);
-                }
+        public float[] createBiTangent() {
+            float[] cross = new float[3];
+            float[] t = new float[4];
+            float[] output = new float[(verticeArray.length / 3) * 4];
+            int outputIndex = 0;
+            for (int i = 0; i < tangentArray.length; i += 3) {
+                // Calculate handedness
+                // tangent[a].w = (Dot(Cross(n, t), tan2[a]) < 0.0F) ? -1.0F : 1.0F;
+                Vec3.cross(normalArray, i, tangentArray, i, t, 0);
+                float tw = Vec3.dot(t, 0, tangentArray, i) < 0f ? -1 : 1;
+                // Calculate bitangent
+                // bitangent vector B is then given by B = (N x T) * Tw.
+                Vec3.cross(normalArray, i, output, i, cross, 0);
+                Vec3.mul(cross, 0, tw, output, outputIndex);
+                output[outputIndex + 3] = tw;
+                output[outputIndex + 3] = tw;
+                outputIndex += 4;
             }
+            SimpleLogger.d(getClass(), "Created BITANGENTs for " + tangentArray.length / 3 + " vertices");
+            return output;
+
+        }
+
+        private short[] copyShortBuffer(Accessor data) {
+            short[] result = new short[data.getCount() * data.getType().size];
+            data.copy(result, 0);
             return result;
         }
 
@@ -465,22 +480,73 @@ public class Primitive implements RuntimeResolver {
         if (indices == null) {
             throw new IllegalArgumentException("Arrayed mode not supported");
         }
-        FloatBuffer tangentBuffer = BufferUtils.createFloatBuffer(normal.getCount());
-        FloatBuffer bitangentBuffer = BufferUtils.createFloatBuffer(normal.getCount());
-        buildTBNBuffers(gltf, mode, indices, position, uv, normal, tangentBuffer, bitangentBuffer);
+        Accessor tangent = getAccessor(Attributes.TANGENT);
+        if (tangent != null) {
+            buildBitangentBuffer(gltf, mode, indices, position, uv, normal, tangent);
+        } else {
+            buildTBNBuffers(gltf, mode, indices, position, uv, normal);
+        }
     }
 
-    private void buildTBNBuffers(GLTF gltf, Mode mode, Accessor indices, Accessor position, Accessor uv,
-            Accessor normal,
-            FloatBuffer tangentBuffer, FloatBuffer bitangentBuffer) {
-
+    /**
+     * Have normal and tangent buffer - build biTangent buffer
+     * 
+     * @param gltf
+     * @param mode
+     * @param indices
+     * @param position
+     * @param uv
+     * @param normal
+     * @param tangent
+     */
+    private void buildBitangentBuffer(GLTF gltf, Mode mode, Accessor indices, Accessor position, Accessor uv,
+            Accessor normal, Accessor tangent) {
         switch (mode) {
             case TRIANGLES:
-                buildTBNTriangles(gltf, indices, position, uv, normal, tangentBuffer, bitangentBuffer);
+                buildTangentTriangles(gltf, indices, position, uv, normal, tangent);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + mode);
         }
+    }
+
+    private void buildTBNBuffers(GLTF gltf, Mode mode, Accessor indices, Accessor position, Accessor uv,
+            Accessor normal) {
+
+        switch (mode) {
+            case TRIANGLES:
+                buildTBNTriangles(gltf, indices, position, uv, normal);
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + mode);
+        }
+
+    }
+
+    /**
+     * Builds the tangent buffer for this primitive using TRIANGLES mode.
+     * 
+     * @param gltf
+     * @param indices
+     * @param position
+     * @param uv
+     * @param normal
+     * @param tangent
+     */
+    private void buildTangentTriangles(GLTF gltf, Accessor indices, Accessor position, Accessor uv, Accessor normal,
+            Accessor tangent) {
+        Triangles triangles = new Triangles();
+        triangles.createBuffers(indices, position, uv, normal, tangent);
+        float[] TangentArray = triangles.calculateBitangent();
+        int l = TangentArray.length; // Length of one buffer in number of floats - type is VEC4
+        BufferView Tbv = gltf.createBufferView(TANGENT_BITANGENT, l * 4, 0, 16, Target.ARRAY_BUFFER);
+        Buffer buffer = Tbv.getBuffer();
+        BufferView Bbv = gltf.createBufferView(buffer, l * 4, 16, Target.ARRAY_BUFFER);
+        buffer.put(TangentArray, 0);
+        int count = l / 4;
+        Accessor Ba = new Accessor(Bbv, 0, ComponentType.FLOAT, count, Type.VEC4);
+        accessorList.add(Ba);
+        attributeList.add(Attributes.BITANGENT);
 
     }
 
@@ -491,15 +557,11 @@ public class Primitive implements RuntimeResolver {
      * @param indices
      * @param position
      * @param normal
-     * @param tangentBuffer
-     * @param bitangentBuffer
      */
-    private void buildTBNTriangles(GLTF gltf, Accessor indices, Accessor position, Accessor uv, Accessor normal,
-            FloatBuffer tangentBuffer, FloatBuffer bitangentBuffer) {
-
+    private void buildTBNTriangles(GLTF gltf, Accessor indices, Accessor position, Accessor uv, Accessor normal) {
         Triangles triangles = new Triangles();
         triangles.createBuffers(indices, position, uv, normal);
-        float[][] TBArray = triangles.calculateTangentBiTangent(indices, position, uv, normal);
+        float[][] TBArray = triangles.calculateTangentBiTangent();
         int l = TBArray[0].length; // Length of one buffer in number of floats - type is VEC4
         BufferView Tbv = gltf.createBufferView(TANGENT_BITANGENT, l * 4 * 2, 0, 16, Target.ARRAY_BUFFER);
         Buffer buffer = Tbv.getBuffer();
@@ -511,8 +573,7 @@ public class Primitive implements RuntimeResolver {
         Accessor Ba = new Accessor(Bbv, 0, ComponentType.FLOAT, count, Type.VEC4);
         int tangentIndex = attributeList.indexOf(Attributes.TANGENT);
         if (tangentIndex >= 0) {
-            attributeList.remove(tangentIndex);
-            accessorList.remove(tangentIndex);
+            throw new IllegalArgumentException("Tangents already present");
         }
         accessorList.add(Ta);
         attributeList.add(Attributes.TANGENT);

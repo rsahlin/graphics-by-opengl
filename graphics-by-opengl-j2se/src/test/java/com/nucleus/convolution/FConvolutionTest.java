@@ -16,13 +16,14 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.nucleus.texturing.Convolution;
-import com.nucleus.texturing.Convolution.Kernel;
+import com.nucleus.BaseTestCase;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.BufferImage.ImageFormat;
+import com.nucleus.texturing.Convolution;
+import com.nucleus.texturing.Convolution.Kernel;
 import com.nucleus.texturing.J2SEImageFactory;
 
-public class FConvolutionTest implements WindowListener {
+public class FConvolutionTest extends BaseTestCase implements WindowListener {
 
     private static volatile boolean wait = false;
     J2SEImageFactory imageFactory = new J2SEImageFactory();
@@ -51,7 +52,7 @@ public class FConvolutionTest implements WindowListener {
 
     @AfterClass
     public static void waitForUser() {
-        wait = true;
+        wait = false;
         while (wait) {
             try {
                 Thread.sleep(100);
@@ -104,36 +105,43 @@ public class FConvolutionTest implements WindowListener {
     @Test
     public void testProcessScaleHalf() throws IOException {
         BufferImage source = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA);
-        BufferImage destination = new BufferImage(source.getWidth() >>> 1, source.getHeight() >>> 1, source.getFormat());
+        BufferImage destination = new BufferImage(source.getWidth() >>> 1, source.getHeight() >>> 1,
+                source.getFormat());
         executeTest(source, destination, "Scale 1/2 2X2", Kernel.SIZE_2X2, new float[] { 1, 1, 1, 1 }, 1);
 
-        BufferImage destination2 = new BufferImage(source.getWidth() >>> 1, source.getHeight() >>> 1, source.getFormat());
+        BufferImage destination2 = new BufferImage(source.getWidth() >>> 1, source.getHeight() >>> 1,
+                source.getFormat());
         executeTest(source, destination2, "Scale 1/2 3X3", Kernel.SIZE_3X3, new float[] { 1, 4, 1, 4, 4, 4, 1, 4, 1 },
                 1);
 
     }
 
-    @Test
-    public void testProcessScaleHalfRGB() throws IOException {
-        BufferImage source = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGB);
-        BufferImage destination = new BufferImage(source.getWidth() >>> 1, source.getHeight() >>> 1, source.getFormat());
-        executeTest(source, destination, "Scale 1/2 RGB 2X2", Kernel.SIZE_2X2, new float[] { 1, 1, 1, 1 }, 1);
-
-        BufferImage destination2 = new BufferImage(source.getWidth() >>> 1, source.getHeight() >>> 1, source.getFormat());
-        executeTest(source, destination2, "Scale 1/2 RGB 3X3", Kernel.SIZE_3X3,
-                new float[] { 1, 4, 1, 4, 4, 4, 1, 4, 1 },
-                1);
-
-    }
-
+    /**
+     * @Test
+     * public void testProcessScaleHalfRGB() throws IOException {
+     * BufferImage source = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGB);
+     * BufferImage destination = new BufferImage(source.getWidth() >>> 1, source.getHeight() >>> 1,
+     * source.getFormat());
+     * executeTest(source, destination, "Scale 1/2 RGB 2X2", Kernel.SIZE_2X2, new float[] { 1, 1, 1, 1 }, 1);
+     * 
+     * BufferImage destination2 = new BufferImage(source.getWidth() >>> 1, source.getHeight() >>> 1,
+     * source.getFormat());
+     * executeTest(source, destination2, "Scale 1/2 RGB 3X3", Kernel.SIZE_3X3,
+     * new float[] { 1, 4, 1, 4, 4, 4, 1, 4, 1 },
+     * 1);
+     * 
+     * }
+     **/
     @Test
     public void testProcessScaleQuarter() throws IOException {
         BufferImage source = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA);
-        BufferImage destination = new BufferImage(source.getWidth() >>> 2, source.getHeight() >>> 2, source.getFormat());
+        BufferImage destination = new BufferImage(source.getWidth() >>> 2, source.getHeight() >>> 2,
+                source.getFormat());
         executeTest(source, destination, "Scale 1/4 4X4", Kernel.SIZE_4X4, new float[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1 }, 1);
 
-        BufferImage destination2 = new BufferImage(source.getWidth() >>> 2, source.getHeight() >>> 2, source.getFormat());
+        BufferImage destination2 = new BufferImage(source.getWidth() >>> 2, source.getHeight() >>> 2,
+                source.getFormat());
         executeTest(source, destination2, "Scale 1/4 5X5", Kernel.SIZE_5X5, new float[] { 1, 2, 3, 2, 1,
                 2, 3, 4, 3, 2,
                 3, 4, 5, 4, 3,
@@ -146,12 +154,14 @@ public class FConvolutionTest implements WindowListener {
     @Test
     public void testProcessScaleEight() throws IOException {
         BufferImage source = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA);
-        BufferImage destination = new BufferImage(source.getWidth() >>> 3, source.getHeight() >>> 3, source.getFormat());
+        BufferImage destination = new BufferImage(source.getWidth() >>> 3, source.getHeight() >>> 3,
+                source.getFormat());
         executeTest(source, destination, "Scale 1/8 8X8", Kernel.SIZE_8X8, new float[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, 1);
 
-        BufferImage destination2 = new BufferImage(source.getWidth() >>> 3, source.getHeight() >>> 3, source.getFormat());
+        BufferImage destination2 = new BufferImage(source.getWidth() >>> 3, source.getHeight() >>> 3,
+                source.getFormat());
         executeTest(source, destination2, "Scale 1/8 8X8 center", Kernel.SIZE_8X8, new float[] {
                 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 2, 2, 1, 1, 1,
@@ -182,7 +192,8 @@ public class FConvolutionTest implements WindowListener {
         executeTest(source, destination, title, kernel, data, loop);
     }
 
-    private void executeTest(BufferImage source, BufferImage destination, String title, Kernel kernel, float[] data, int loop) {
+    private void executeTest(BufferImage source, BufferImage destination, String title, Kernel kernel, float[] data,
+            int loop) {
         long start = System.currentTimeMillis();
         for (int i = 0; i < loop; i++) {
             processImage(kernel, data, source, destination);

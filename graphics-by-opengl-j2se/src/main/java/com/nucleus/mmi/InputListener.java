@@ -10,7 +10,6 @@ public interface InputListener<T> {
     public class EventConfiguration {
 
         public EventConfiguration() {
-
         }
 
         public EventConfiguration(float clickThreshold, float clickDeltaThreshold) {
@@ -21,13 +20,13 @@ public interface InputListener<T> {
         /**
          * event press and release must be within this threshold (in seconds) for a click to be registered.
          */
-        private float clickThreshold = 0.3f;
+        public float clickThreshold = 0.3f;
 
         /**
          * event press and release may not move more than this threshold (in viewport units) for a click to be
          * registered.
          */
-        private float clickDeltaThreshold = 0.01f;
+        public float clickDeltaThreshold = 0.01f;
 
         /**
          * Returns the time, in seconds, that event release must be registered after event press for a click to be

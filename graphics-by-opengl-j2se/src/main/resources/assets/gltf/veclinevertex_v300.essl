@@ -25,8 +25,8 @@ void main() {
     vec4 pos = vec4(POSITION, 1.0) * uModelMatrix[0] * uModelMatrix[1];
     gl_Position = pos * uModelMatrix[2];
     
-    vNormal = vec4(NORMAL * mat3(uModelMatrix[0]) * mat3(uModelMatrix[1]) * mat3(uModelMatrix[2]), 0.0);
-    vTangent = vec4(TANGENT * mat3(uModelMatrix[0]) * mat3(uModelMatrix[1]) * mat3(uModelMatrix[2]), 0.0);
-    vBitangent = vec4(BITANGENT * mat3(uModelMatrix[0]) * mat3(uModelMatrix[1]) * mat3(uModelMatrix[2]), 0.0);
+    vNormal = vec4(vec4(NORMAL, 0.0) * uModelMatrix[0] * uModelMatrix[1] * uModelMatrix[2]);
+    vTangent = vec4(vec4(TANGENT, 0.0) * uModelMatrix[0] * uModelMatrix[1] * uModelMatrix[2]);
+    vBitangent = vec4(vec4(BITANGENT, 0.0) * uModelMatrix[0] * uModelMatrix[1] * uModelMatrix[2]);
 }
 

@@ -49,6 +49,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      */
     protected ShaderProgram vecLineDrawer;
     protected Primitive vecLinePrimitive;
+    protected Mode forceMode = null;
 
     /**
      * Internal method to handle matrix stack, push a matrix on the stack
@@ -68,6 +69,11 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      */
     protected float[] popMatrix(ArrayDeque<float[]> stack) {
         return stack.pop();
+    }
+
+    @Override
+    public void forceRenderMode(com.nucleus.opengl.GLESWrapper.Mode mode) {
+        forceMode = mode != null ? Mode.getMode(mode.mode) : null;
     }
 
     @Override
@@ -187,7 +193,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         Accessor position = primitive.getAccessor(Attributes.POSITION);
         program.updatePBRUniforms(gles, primitive);
         drawVertices(gles, program, indices, position.getCount(), primitive.getAttributesArray(),
-                primitive.getAccessorArray(), primitive.getMode());
+                primitive.getAccessorArray(), forceMode == null ? primitive.getMode() : forceMode);
         // Restore cullface if changed.
         if (cullFace != null) {
             gles.glEnable(GLES20.GL_CULL_FACE);

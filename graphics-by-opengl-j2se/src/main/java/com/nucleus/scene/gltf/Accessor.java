@@ -1,9 +1,11 @@
 package com.nucleus.scene.gltf;
 
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.SimpleLogger;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
@@ -221,6 +223,7 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
 
     /**
      * Returns the ByteBuffer positioned according to this accessor and bufferview
+     * 
      * @return
      */
     public ByteBuffer getBuffer() {
@@ -228,8 +231,7 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
         buffer.position(byteOffset + bufferViewRef.getByteOffset());
         return buffer;
     }
-    
-    
+
     @Override
     public void resolve(GLTF asset) throws GLTFException {
         if (bufferViewRef != null) {
@@ -264,28 +266,48 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
         return str;
     }
 
-    public void copyData(int[] destination) {
-        switch (componentType) {
-            case SHORT:
-            case UNSIGNED_SHORT:
-            case UNSIGNED_INT:
-            break;    
-            default:
-                throw new IllegalArgumentException("Not implemented for " + componentType);
-            
-        }
-    }
-    
-    private void copyData(ShortBuffer source, int[] destination) {
-        source.position(byteOffset / 2);
-    }
-    
     /**
      * 
      * 
      */
     public void updateMaxMin(MaxMin compare, float[] scale) {
         compare.update(max, min, scale);
+    }
+
+    /**
+     * Copies all data in this accessor to short buffer
+     * If componentType in accessor is float then nothing is done.
+     * If componentType is int then values are truncated to short.
+     * No conversion is made.
+     * 
+     * @param dest
+     * @param index
+     */
+    public void copy(short[] dest, int index) {
+        int size;
+        switch (componentType) {
+            case BYTE:
+            case UNSIGNED_BYTE:
+                ByteBuffer byteBuffer = getBuffer();
+                for (int i = 0; i < count; i++) {
+                    dest[index++] = byteBuffer.get();
+                }
+                break;
+            case UNSIGNED_INT:
+                IntBuffer intBuffer = getBuffer().asIntBuffer();
+                for (int i = 0; i < count; i++) {
+                    dest[index++] = (short) intBuffer.get();
+                }
+                break;
+
+            case SHORT:
+            case UNSIGNED_SHORT:
+                ShortBuffer shortBuffer = getBuffer().asShortBuffer();
+                shortBuffer.get(dest, index, shortBuffer.remaining());
+            default:
+                SimpleLogger.d(getClass(), "Wrong component type, cannot copy " + componentType + " to dest buffer");
+        }
+
     }
 
 }

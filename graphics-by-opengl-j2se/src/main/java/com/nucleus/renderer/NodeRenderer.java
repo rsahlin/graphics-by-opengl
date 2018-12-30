@@ -1,9 +1,10 @@
 package com.nucleus.renderer;
 
+import com.nucleus.opengl.GLESWrapper.Mode;
 import com.nucleus.opengl.GLException;
 
 public interface NodeRenderer<T> {
-    
+
     /**
      * Renders the node and children.
      * 
@@ -17,6 +18,13 @@ public interface NodeRenderer<T> {
      */
     public boolean renderNode(NucleusRenderer renderer, T node, Pass currentPass, float[][] matrices)
             throws GLException;
-    
+
+    /**
+     * Force render mode of objects/meshes
+     * Set to null to render meshes normally
+     * 
+     * @param The GL mode The mode to render meshes with
+     */
+    public void forceRenderMode(Mode mode);
 
 }

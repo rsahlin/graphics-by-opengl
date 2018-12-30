@@ -11,6 +11,7 @@ import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.Mode;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
@@ -22,6 +23,12 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
 
     transient protected FrameSampler timeKeeper = FrameSampler.getInstance();
     transient protected ArrayList<Mesh> nodeMeshes = new ArrayList<>();
+    transient protected Mode forceMode = null;
+
+    @Override
+    public void forceRenderMode(Mode mode) {
+        this.forceMode = mode;
+    }
 
     @Override
     public boolean renderNode(NucleusRenderer renderer, RenderableNode<Mesh> node, Pass currentPass, float[][] matrices)
