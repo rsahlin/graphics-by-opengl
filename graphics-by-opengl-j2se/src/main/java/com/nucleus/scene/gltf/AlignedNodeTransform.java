@@ -30,7 +30,7 @@ public class AlignedNodeTransform {
     private Scene target;
 
     public AlignedNodeTransform(Scene target, float[] moveScale) {
-        this.moveScale = new float[] { moveScale[0], moveScale[1] };
+        this.moveScale = new float[] { moveScale[0], moveScale[1], moveScale[2] };
         this.target = target;
         resetRotation();
     }
@@ -71,7 +71,8 @@ public class AlignedNodeTransform {
     }
 
     /**
-     * Translates the scene using the x and y in move, multiplied by the moveScale
+     * Translates the scene using the x,y and z, multiplied by {@link #moveScale} and divided by the scale in the
+     * target matrix.
      * 
      * @param move
      */
@@ -79,6 +80,7 @@ public class AlignedNodeTransform {
         Matrix.getScale(target.getViewMatrix(), viewScale);
         translate[0] += (move[0] * moveScale[0]) / viewScale[0];
         translate[1] += (move[1] * moveScale[1]) / viewScale[1];
+        translate[2] += (move[2] * moveScale[2]) / viewScale[2];
         composeMatrix(target.getSceneTransform().getMatrix());
     }
 
