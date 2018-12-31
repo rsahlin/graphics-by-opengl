@@ -303,7 +303,7 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
             case SHORT:
             case UNSIGNED_SHORT:
                 ShortBuffer shortBuffer = getBuffer().asShortBuffer();
-                shortBuffer.get(dest, index, shortBuffer.remaining());
+                shortBuffer.get(dest, index, count);
             default:
                 SimpleLogger.d(getClass(), "Wrong component type, cannot copy " + componentType + " to dest buffer");
         }
