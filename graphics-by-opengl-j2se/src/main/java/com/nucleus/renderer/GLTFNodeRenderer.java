@@ -246,7 +246,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             FloatBuffer uniformData = vecLineDrawer.getUniformData();
             if (var != null && uniformData != null) {
                 uniformData.position(var.getOffset());
-                float[] debugColors = new float[] { 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1 };
+                float[] debugColors = new float[] { 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1 };
                 uniformData.put(debugColors);
             }
             vecLineDrawer.uploadUniform(gles, vecLineDrawer.getUniformData(),
