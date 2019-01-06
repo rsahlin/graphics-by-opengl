@@ -1,6 +1,7 @@
 package com.nucleus.scene.gltf;
 
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
@@ -284,7 +285,6 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
      * @param index
      */
     public void copy(short[] dest, int index) {
-        int size;
         switch (componentType) {
             case BYTE:
             case UNSIGNED_BYTE:
@@ -304,10 +304,50 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
             case UNSIGNED_SHORT:
                 ShortBuffer shortBuffer = getBuffer().asShortBuffer();
                 shortBuffer.get(dest, index, count);
+                break;
             default:
                 SimpleLogger.d(getClass(), "Wrong component type, cannot copy " + componentType + " to dest buffer");
         }
+    }
 
+    /**
+     * Copies all data in this accessor to float buffer, component type must be FLOAT otherwise nothing is done.
+     * 
+     * @param dest
+     * @param index
+     */
+    public void copy(float[] dest, int index) {
+        switch (componentType) {
+            case FLOAT:
+                copy(dest, index, getBuffer().asFloatBuffer());
+                break;
+            default:
+                SimpleLogger.d(getClass(), "Wrong component type, cannot copy " + componentType + " to float buffer");
+        }
+    }
+
+    /**
+     * 
+     * @param dest
+     * @param index
+     * @param buffer The source data
+     */
+    private void copy(float[] dest, int index, FloatBuffer buffer) {
+        float[] result = new float[count * getType().size];
+        BufferView bv = getBufferView();
+        if (bv.getByteStride() < 4) {
+            // Straight copy of all data
+            buffer.get(result);
+        } else {
+            final int size = getType().size;
+            int stride = bv.getByteStride() / getComponentType().size;
+            int pos = buffer.position();
+            for (int i = 0; i < count; i++) {
+                buffer.get(result, i * size, size);
+                pos += stride;
+                buffer.position(pos);
+            }
+        }
     }
 
 }
