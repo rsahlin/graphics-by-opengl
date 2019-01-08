@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.scene.gltf.BufferView.Target;
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.Loader;
 
 /**
  * 
@@ -165,10 +166,10 @@ public class GLTF {
     }
 
     /**
-     * Creates a new Buffer with specified size and a BufferView for the created buffer
+     * Creates a new BufferView with specified size and a BufferView for the created buffer
      * Use this when a BufferView shall be created for a new buffer.
      * 
-     * @param bufferName
+     * @param bufferName Name of buffer and bufferview
      * @param bufferSize
      * @param byteOffset
      * @param byteStride
@@ -180,15 +181,27 @@ public class GLTF {
         Buffer buffer = new Buffer(bufferName, bufferSize);
         int index = addBuffer(buffer);
         BufferView bv = new BufferView(this, index, byteOffset, byteStride, target);
+        bv.name = bufferName;
         return bv;
     }
 
+    /**
+     * Creates a new BufferView using the specified buffer
+     * Name of BufferView will be taken from buffer
+     * 
+     * @param buffer
+     * @param byteOffset
+     * @param byteStride
+     * @param target
+     * @return
+     */
     public BufferView createBufferView(Buffer buffer, int byteOffset, int byteStride, Target target) {
         int index = buffers.indexOf(buffer);
         if (index < 0) {
             throw new IllegalArgumentException("Could not find index for Buffer - not added?");
         }
         BufferView bv = new BufferView(this, index, byteOffset, byteStride, target);
+        bv.name = buffer.getName();
         return bv;
     }
 

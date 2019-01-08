@@ -43,9 +43,10 @@ import com.nucleus.vecmath.Vec3;
 public class Primitive implements RuntimeResolver {
 
     /**
-     * Name of the tangent/bitantent buffer
+     * Name of the tangent/bitangent buffer
      */
     public static final String TANGENT_BITANGENT = "TangentBitangent";
+    public static final String BITANGENT = "Bitangent";
 
     public abstract class BufferToArray<T, U> {
         public abstract U copyBuffer(T buffer);
@@ -493,7 +494,7 @@ public class Primitive implements RuntimeResolver {
     private void buildBitangentBuffer(GLTF gltf) {
         switch (mode) {
             case TRIANGLES:
-                buildTangentTriangles(gltf);
+                buildBiTangentTriangles(gltf);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + mode);
@@ -517,18 +518,16 @@ public class Primitive implements RuntimeResolver {
      * 
      * @param gltf
      */
-    private void buildTangentTriangles(GLTF gltf) {
+    private void buildBiTangentTriangles(GLTF gltf) {
         Triangles triangles = new Triangles();
         triangles.createBuffers();
         float[] tangentArray = triangles.createBiTangent();
         int count = tangentArray.length >>> 2; // Tangents are in Vec4 format
-        BufferView Tbv = gltf.createBufferView(TANGENT_BITANGENT, (count << 2) * ComponentType.FLOAT.size, 0,
+        BufferView Bitangentbv = gltf.createBufferView(BITANGENT, (count << 2) * ComponentType.FLOAT.size, 0,
                 Type.VEC4.size * ComponentType.FLOAT.size, Target.ARRAY_BUFFER);
-        Buffer buffer = Tbv.getBuffer();
-        BufferView Bbv = gltf.createBufferView(buffer, (count << 2) * ComponentType.FLOAT.size,
-                Type.VEC4.size * ComponentType.FLOAT.size, Target.ARRAY_BUFFER);
+        Buffer buffer = Bitangentbv.getBuffer();
         buffer.put(tangentArray, 0);
-        Accessor Ba = new Accessor(Bbv, 0, ComponentType.FLOAT, count, Type.VEC4);
+        Accessor Ba = new Accessor(Bitangentbv, 0, ComponentType.FLOAT, count, Type.VEC4);
         accessorList.add(Ba);
         attributeList.add(Attributes.BITANGENT);
     }
