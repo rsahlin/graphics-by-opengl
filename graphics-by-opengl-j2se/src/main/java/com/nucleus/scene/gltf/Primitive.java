@@ -67,12 +67,31 @@ public class Primitive implements RuntimeResolver {
         float[] tangentArray;
         short[] indexArray;
 
+        /**
+         * Creates the array buffers needed to calculate normals/tangents/bitanges
+         */
         public void createBuffers() {
             verticeArray = createFloatArray(Attributes.POSITION);
             uvArray = createFloatArray(Attributes.TEXCOORD_0);
-            normalArray = createFloatArray(Attributes.NORMAL);
             tangentArray = createFloatArray(Attributes.TANGENT);
             indexArray = createIndexArray();
+            normalArray = createFloatArray(Attributes.NORMAL);
+            if (normalArray == null) {
+                normalArray = createNormals();
+            }
+        }
+
+        private float[] createNormals() {
+            float[] normals = new float[verticeArray.length];
+            // Iterate each triangle
+            float[] vertex = new float[3];
+            int index = 0;
+            while (index < indexArray.length) {
+                vertex[0] = verticeArray[indexArray[index++]];
+                vertex[1] = verticeArray[indexArray[index++]];
+                vertex[2] = verticeArray[indexArray[index++]];
+            }
+            return normals;
         }
 
         private float[] createFloatArray(Attributes attribute) {
@@ -460,8 +479,9 @@ public class Primitive implements RuntimeResolver {
     }
 
     /**
-     * Builds the Tangent/Binormal buffers
-     * Must be called after buffers are loaded so that the INDICES, POSITION and NORMAL buffers are available.
+     * Builds the Normal/Tangent/Binormal buffers as needed
+     * Must be called after buffers are loaded so that the INDICES, POSITION and NORMAL (optional) buffers are
+     * available.
      * The result buffer must be released when this primitive is not used anymore.
      * 
      */
@@ -469,11 +489,13 @@ public class Primitive implements RuntimeResolver {
         if (indices == null) {
             throw new IllegalArgumentException("Arrayed mode not supported");
         }
+        Triangles triangles = new Triangles();
+        triangles.createBuffers();
         Accessor tangent = getAccessor(Attributes.TANGENT);
         if (tangent != null) {
-            buildBitangentBuffer(gltf);
+            buildBitangentBuffer(gltf, triangles);
         } else {
-            buildTBNBuffers(gltf);
+            buildTBNBuffers(gltf, triangles);
         }
     }
 
@@ -481,28 +503,23 @@ public class Primitive implements RuntimeResolver {
      * Have normal and tangent buffer - build biTangent buffer
      * 
      * @param gltf
-     * @param mode
-     * @param indices
-     * @param position
-     * @param uv
-     * @param normal
-     * @param tangent
+     * @param triangles
      */
-    private void buildBitangentBuffer(GLTF gltf) {
+    private void buildBitangentBuffer(GLTF gltf, Triangles triangles) {
         switch (mode) {
             case TRIANGLES:
-                buildBiTangentTriangles(gltf);
+                buildBiTangentTriangles(gltf, triangles);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + mode);
         }
     }
 
-    private void buildTBNBuffers(GLTF gltf) {
+    private void buildTBNBuffers(GLTF gltf, Triangles triangles) {
 
         switch (mode) {
             case TRIANGLES:
-                buildTBNTriangles(gltf);
+                buildTBNTriangles(gltf, triangles);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + mode);
@@ -514,10 +531,9 @@ public class Primitive implements RuntimeResolver {
      * Builds the tangent buffer for this primitive using TRIANGLES mode.
      * 
      * @param gltf
+     * @param triangles
      */
-    private void buildBiTangentTriangles(GLTF gltf) {
-        Triangles triangles = new Triangles();
-        triangles.createBuffers();
+    private void buildBiTangentTriangles(GLTF gltf, Triangles triangles) {
         float[] tangentArray = triangles.createBiTangent();
         int count = tangentArray.length >>> 2; // Tangents are in Vec4 format
         BufferView Bitangentbv = gltf.createBufferView(BITANGENT, (count << 2) * ComponentType.FLOAT.size, 0,
@@ -533,10 +549,9 @@ public class Primitive implements RuntimeResolver {
      * Builds the tangent and binormal buffers for this primitive using TRIANGLES mode.
      * 
      * @param gltf
+     * @param triangles
      */
-    private void buildTBNTriangles(GLTF gltf) {
-        Triangles triangles = new Triangles();
-        triangles.createBuffers();
+    private void buildTBNTriangles(GLTF gltf, Triangles triangles) {
         float[][] TBArray = triangles.calculateTangentBiTangent();
         int l = TBArray[0].length; // Length of one buffer in number of floats - type is VEC4
         BufferView Tbv = gltf.createBufferView(TANGENT_BITANGENT, l * 4 * 2, 0, 16, Target.ARRAY_BUFFER);

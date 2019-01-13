@@ -379,6 +379,7 @@ public class AssetManager {
         loadTextures(gles, glTF);
         SimpleLogger.d(getClass(), "Loaded gltf assets");
         // Build TBN before creating VBOs
+        // This can mean that a number of buffers needs to be created, for instance normal, tangent and bitangent.
         for (Mesh m : glTF.getMeshes()) {
             buildTBN(glTF, m.getPrimitives());
         }
