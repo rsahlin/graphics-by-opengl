@@ -6,29 +6,30 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
-import com.nucleus.mmi.InputListener.EventConfiguration;
-import com.nucleus.mmi.MMIEventListener;
-import com.nucleus.mmi.MMIPointerEvent;
-import com.nucleus.mmi.MMIPointerEvent.Action;
-import com.nucleus.mmi.NodeInputListener;
-import com.nucleus.mmi.core.InputProcessor;
+import com.nucleus.mmi.MMIPointer;
+import com.nucleus.mmi.MMIPointer.Action;
+import com.nucleus.mmi.MMIPointerInput;
+import com.nucleus.mmi.UIElementInput;
+import com.nucleus.mmi.UIInput.EventConfiguration;
+import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.properties.Property;
 import com.nucleus.scene.Node.State;
+import com.nucleus.ui.Button;
 import com.nucleus.ui.Toggle;
 
 /**
  * Handles pointer input checking on nodes
- * Takes {@link MMIEventListener} events and checks the registered node tree for pointer hits.
- * This class must be registred to {@link InputProcessor} for it to get mmi event callbacks.
+ * Takes {@link MMIPointerInput} events and checks the registered node tree for pointer hits.
+ * This class must be registred to {@link CoreInput} for it to get mmi event callbacks.
  */
-public class J2SENodeInputListener implements MMIEventListener {
+public class J2SENodeInputListener implements MMIPointerInput {
 
     /**
      * Data saved when a pointer becomes active, ie is pressed - this is saved for each pointer until release event.
      *
      */
     public class ActiveEvent {
-        private MMIPointerEvent event;
+        private MMIPointer event;
         private Node activeNode;
     }
 
@@ -41,7 +42,7 @@ public class J2SENodeInputListener implements MMIEventListener {
     private final ArrayList<Node> visibleNodes = new ArrayList<>();
     private int nodeId = Constants.NO_VALUE;
 
-    private ActiveEvent[] activeEvents = new ActiveEvent[InputProcessor.getInstance().maxPointers];
+    private ActiveEvent[] activeEvents = new ActiveEvent[CoreInput.getInstance().maxPointers];
 
     public J2SENodeInputListener(RootNode root) {
         this.root = root;
@@ -55,7 +56,7 @@ public class J2SENodeInputListener implements MMIEventListener {
      * @param event
      * @return True if a node has consumed the input event event
      */
-    protected boolean onInputEvent(ArrayList<Node> nodes, MMIPointerEvent event) {
+    protected boolean onInputEvent(ArrayList<Node> nodes, MMIPointer event) {
         int count = nodes.size() - 1;
         Node node = null;
         for (int i = count; i >= 0; i--) {
@@ -85,7 +86,7 @@ public class J2SENodeInputListener implements MMIEventListener {
      * @param event
      * @return True if the input event was consumed, false otherwise.
      */
-    protected boolean onPointerEvent(Node node, MMIPointerEvent event) {
+    protected boolean onPointerEvent(Node node, MMIPointer event) {
         int finger = event.getFinger();
         float[] position = event.getPointerData().getCurrentPosition();
         if (position == null && event.getAction() != Action.ZOOM) {
@@ -95,7 +96,7 @@ public class J2SENodeInputListener implements MMIEventListener {
                 .equals(Constants.FALSE)) {
             return false;
         }
-        NodeInputListener listener = root.getObjectInputListener();
+        UIElementInput listener = root.getObjectInputListener();
         // Zoom is a special case that does not have position
         if (event.getAction() == Action.ZOOM) {
             if (listener != null) {
@@ -105,8 +106,8 @@ public class J2SENodeInputListener implements MMIEventListener {
             if (node.isInside(position)) {
                 handleActivePointers(node, listener, event);
                 // Check if node shall receive raw MMI events
-                if (node instanceof MMIEventListener) {
-                    ((MMIEventListener) node).onInputEvent(event);
+                if (node instanceof MMIPointerInput) {
+                    ((MMIPointerInput) node).onInput(event);
                 }
                 switch (event.getAction()) {
                     case ACTIVE:
@@ -146,7 +147,7 @@ public class J2SENodeInputListener implements MMIEventListener {
         return false;
     }
 
-    protected void handleActivePointers(Node node, NodeInputListener listener, MMIPointerEvent event) {
+    protected void handleActivePointers(Node node, UIElementInput listener, MMIPointer event) {
         int finger = event.getFinger();
         switch (event.getAction()) {
             case ACTIVE:
@@ -157,7 +158,7 @@ public class J2SENodeInputListener implements MMIEventListener {
                 activeEvents[finger].activeNode = node;
                 break;
             case INACTIVE:
-                MMIPointerEvent firstEvent = activeEvents[finger].event;
+                MMIPointer firstEvent = activeEvents[finger].event;
                 if (activeEvents[finger].activeNode.getId().equals(node.getId())) {
                     EventConfiguration config = listener.getConfiguration();
                     int delta = (int) (event.getPointerData().getCurrent().timeStamp
@@ -184,22 +185,33 @@ public class J2SENodeInputListener implements MMIEventListener {
         }
     }
 
-    protected void handleOnClick(Node node, NodeInputListener listener, MMIPointerEvent event) {
+    protected void handleOnClick(Node node, UIElementInput listener, MMIPointer event) {
         if (node instanceof Toggle) {
-            ((Toggle) node).toggle();
+            Toggle t = (Toggle) node;
+            t.toggle();
+            if (listener != null) {
+                listener.onStateChange(t);
+            }
+        }
+        if (node instanceof Button) {
+            Button b = (Button) node;
+            b.pressed();
+            if (listener != null) {
+                listener.onPressed(b);
+            }
         }
         // Dispatch onClick()
         listener.onClick(node, event.getPointerData().getCurrent());
     }
 
     /**
-     * Checks children for pointer event, calling {@link #onPointerEvent(MMIPointerEvent)} recursively and stopping when
+     * Checks children for pointer event, calling {@link #onPointerEvent(MMIPointer)} recursively and stopping when
      * a child returns true.
      * 
      * @param event
      * @return true if one of the children has a match for the pointer event, false otherwise
      */
-    protected boolean checkChildren(Node node, MMIPointerEvent event) {
+    protected boolean checkChildren(Node node, MMIPointer event) {
         State state = node.getState();
         if (state == State.ON || state == State.ACTOR) {
             if (onPointerEvent(node, event)) {
@@ -215,7 +227,7 @@ public class J2SENodeInputListener implements MMIEventListener {
     }
 
     @Override
-    public void onInputEvent(MMIPointerEvent event) {
+    public void onInput(MMIPointer event) {
         nodeId = root.getVisibleNodeList(visibleNodes, nodeId);
         onInputEvent(visibleNodes, event);
     }

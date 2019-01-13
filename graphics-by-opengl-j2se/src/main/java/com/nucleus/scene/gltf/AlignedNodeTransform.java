@@ -1,6 +1,6 @@
 package com.nucleus.scene.gltf;
 
-import com.nucleus.mmi.core.InputProcessor;
+import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Vec2;
 import com.nucleus.vecmath.Vec3;
@@ -63,7 +63,7 @@ public class AlignedNodeTransform {
      */
     public void scale(Vec2 zoom) {
         float z = 1 + (zoom.vector[Vec2.MAGNITUDE] * zoom.vector[Vec2.X])
-                / InputProcessor.getInstance().getPointerScaleY();
+                / CoreInput.getInstance().getPointerScaleY();
         scale[0] *= z;
         scale[1] *= z;
         scale[2] *= z;

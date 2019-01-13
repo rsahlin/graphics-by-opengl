@@ -466,9 +466,6 @@ public class Primitive implements RuntimeResolver {
      * 
      */
     public void calculateTBN(GLTF gltf) {
-        Accessor position = getAccessor(Attributes.POSITION);
-        Accessor normal = getAccessor(Attributes.NORMAL);
-        Accessor uv = getAccessor(Attributes.TEXCOORD_0);
         if (indices == null) {
             throw new IllegalArgumentException("Arrayed mode not supported");
         }

@@ -6,11 +6,11 @@ import java.awt.Toolkit;
 
 import com.nucleus.common.Platform;
 import com.nucleus.common.Platform.OS;
-import com.nucleus.mmi.KeyEvent;
-import com.nucleus.mmi.PointerData;
-import com.nucleus.mmi.PointerData.PointerAction;
-import com.nucleus.mmi.PointerData.Type;
-import com.nucleus.mmi.core.InputProcessor;
+import com.nucleus.mmi.Key;
+import com.nucleus.mmi.Pointer;
+import com.nucleus.mmi.Pointer.PointerAction;
+import com.nucleus.mmi.Pointer.Type;
+import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
@@ -131,17 +131,17 @@ public abstract class J2SEWindow implements WindowListener {
     protected void handleMouseEvent(PointerAction action, Type type, int xpos, int ypos, int pointer, long timestamp) {
         switch (action) {
             case DOWN:
-                InputProcessor.getInstance().pointerEvent(PointerAction.DOWN, type,
+                CoreInput.getInstance().pointerEvent(PointerAction.DOWN, type,
                         timestamp, pointer,
-                        new float[] { xpos, ypos }, PointerData.DOWN_PRESSURE);
+                        new float[] { xpos, ypos }, Pointer.DOWN_PRESSURE);
                 break;
             case UP:
-                InputProcessor.getInstance().pointerEvent(PointerAction.UP, type, timestamp, pointer, new float[] {
-                        xpos, ypos }, PointerData.DOWN_PRESSURE);
+                CoreInput.getInstance().pointerEvent(PointerAction.UP, type, timestamp, pointer, new float[] {
+                        xpos, ypos }, Pointer.DOWN_PRESSURE);
                 break;
             case MOVE:
-                InputProcessor.getInstance().pointerEvent(PointerAction.MOVE, type, timestamp, pointer, new float[] {
-                        xpos, ypos }, PointerData.DOWN_PRESSURE);
+                CoreInput.getInstance().pointerEvent(PointerAction.MOVE, type, timestamp, pointer, new float[] {
+                        xpos, ypos }, Pointer.DOWN_PRESSURE);
             default:
         }
     }
@@ -151,8 +151,8 @@ public abstract class J2SEWindow implements WindowListener {
      * 
      * @param event
      */
-    protected void handleKeyEvent(KeyEvent event) {
-        InputProcessor.getInstance().onKeyEvent(event);
+    protected void handleKeyEvent(Key event) {
+        CoreInput.getInstance().onKeyEvent(event);
     }
 
     @Override
@@ -173,9 +173,9 @@ public abstract class J2SEWindow implements WindowListener {
     }
 
     protected void mouseWheelMoved(float rotation, long when) {
-        float zoom = rotation * PointerData.ZOOM_FACTOR;
-        InputProcessor.getInstance().pointerEvent(PointerAction.ZOOM, PointerData.Type.MOUSE, when,
-                PointerData.POINTER_1, new float[] {
+        float zoom = rotation * Pointer.ZOOM_FACTOR;
+        CoreInput.getInstance().pointerEvent(PointerAction.ZOOM, Pointer.Type.MOUSE, when,
+                Pointer.POINTER_1, new float[] {
                         zoom, zoom },
                 0);
     }

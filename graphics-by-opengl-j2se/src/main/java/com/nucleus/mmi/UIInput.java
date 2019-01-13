@@ -1,11 +1,12 @@
 package com.nucleus.mmi;
 
 /**
- * Interface for generic inputlistener
+ * Interface for generic UI inputs, this is to handle UI inputs that are detected by means of touch, mouse or similar.
+ * This abstraction defines events at a level so they can be used to detect action on objects, such as nodes.
  *
  * @param <T> The object that input was recorded on, for instance Node or UI Element
  */
-public interface InputListener<T> {
+public interface UIInput<T> {
 
     public class EventConfiguration {
 
@@ -56,7 +57,7 @@ public interface InputListener<T> {
      * @param event The pointer data for the event
      * @return True if the object consumes the pointer event
      */
-    public boolean onInputEvent(T obj, PointerData event);
+    public boolean onInputEvent(T obj, Pointer event);
 
     /**
      * Called when a pointer down has been recorded and pointer has been dragged.
@@ -66,7 +67,7 @@ public interface InputListener<T> {
      * @param drag The pointer events making up the drag motion
      * @return True if the object consumes the action
      */
-    public boolean onDrag(T obj, PointerMotionData drag);
+    public boolean onDrag(T obj, PointerMotion drag);
 
     /**
      * Called when a click (down followed by up within time and distance limit)
@@ -75,7 +76,7 @@ public interface InputListener<T> {
      * @param event pointer data for touch up event that triggered the onClick action.
      * @return True if object consumes the action.
      */
-    public boolean onClick(T obj, PointerData event);
+    public boolean onClick(T obj, Pointer event);
 
     /**
      * Return the inputlistener configuration

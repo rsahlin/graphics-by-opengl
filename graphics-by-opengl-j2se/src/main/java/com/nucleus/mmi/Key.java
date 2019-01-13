@@ -1,10 +1,10 @@
 package com.nucleus.mmi;
 
 /**
- * Holds data for a key input event, this could be from keyboard or gamepad/joystick
+ * Data for a low level key input, this could be from keyboard or gamepad/joystick
  * 
  */
-public class KeyEvent {
+public class Key {
 
     /**
      * The key events
@@ -12,8 +12,8 @@ public class KeyEvent {
      */
     public enum Action {
 
-        PRESSED(0),
-        RELEASED(1);
+    PRESSED(0),
+    RELEASED(1);
 
         private int action;
 
@@ -113,7 +113,7 @@ public class KeyEvent {
      * @param action
      * @param keyCode
      */
-    public KeyEvent(Action action, KeyCode keyCode) {
+    public Key(Action action, KeyCode keyCode) {
         this.action = action;
         this.keyCode = keyCode;
         switch (action) {
@@ -136,7 +136,7 @@ public class KeyEvent {
      * @param keyCode
      * @param pressure The keycode pressure
      */
-    public KeyEvent(Action action, KeyCode keyCode, float pressure) {
+    public Key(Action action, KeyCode keyCode, float pressure) {
         this.action = action;
         this.keyCode = keyCode;
         this.pressure = pressure;
@@ -149,7 +149,7 @@ public class KeyEvent {
      * @param action
      * @param keyValue The keyboard key value.
      */
-    public KeyEvent(Action action, int keyValue) {
+    public Key(Action action, int keyValue) {
         this.action = action;
         this.keyCode = KeyCode.KEYBOARD;
         this.keyValue = keyValue;

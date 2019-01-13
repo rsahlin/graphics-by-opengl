@@ -7,13 +7,13 @@ package com.nucleus.mmi;
  * @author Richard Sahlin
  *
  */
-public interface MMIEventListener {
+public interface MMIPointerInput {
 
     /**
      * Callback for MMI based touch/mouse input event.
      * 
      * @param event
      */
-    public void onInputEvent(MMIPointerEvent event);
+    public void onInput(MMIPointer event);
 
 }

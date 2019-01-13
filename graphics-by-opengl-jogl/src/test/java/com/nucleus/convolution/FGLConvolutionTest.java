@@ -11,9 +11,9 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.jogl.JOGLApplication;
-import com.nucleus.mmi.MMIEventListener;
-import com.nucleus.mmi.MMIPointerEvent;
-import com.nucleus.mmi.core.InputProcessor;
+import com.nucleus.mmi.MMIPointerInput;
+import com.nucleus.mmi.MMIPointer;
+import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
@@ -32,7 +32,7 @@ import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureParameter;
 
 public class FGLConvolutionTest extends JOGLApplication implements FrameListener,
-        MMIEventListener {
+        MMIPointerInput {
 
     /**
      * The types that can be used to represent classes when importing/exporting
@@ -132,7 +132,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
     public void createCoreApp(int width, int height) {
         super.createCoreApp(width, height);
         NucleusRenderer renderer = coreApp.getRenderer();
-        InputProcessor.getInstance().addMMIListener(this);
+        CoreInput.getInstance().addMMIListener(this);
 
         try {
             RootNodeBuilder rootBuilder = new RootNodeBuilder();
@@ -194,7 +194,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
     }
 
     @Override
-    public void onInputEvent(MMIPointerEvent event) {
+    public void onInput(MMIPointer event) {
 
         switch (event.getAction()) {
             case ACTIVE:

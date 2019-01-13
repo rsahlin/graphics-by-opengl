@@ -6,8 +6,8 @@ import com.nucleus.component.ComponentProcessorRunnable;
 import com.nucleus.component.J2SEComponentProcessor;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
-import com.nucleus.mmi.NodeInputListener;
-import com.nucleus.mmi.core.InputProcessor;
+import com.nucleus.mmi.UIElementInput;
+import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
@@ -295,13 +295,13 @@ public class CoreApp implements FrameRenderer {
      * Adds pointer input callback to the scene, after this call the Node tree will get
      * callbacks on pointer input.
      * Call this if nodes use the {@link EventManager}, eg POINTERINPUT property, or shall use a node with
-     * {@link NodeInputListener}
-     * Set ObjectInputListener on node by calling {@link Node#setObjectInputListener(NodeInputListener)}
+     * {@link UIElementInput}
+     * Set ObjectInputListener on node by calling {@link Node#setObjectInputListener(UIElementInput)}
      * 
      * @param root The rootnode
      */
     public void addPointerInput(RootNode root) {
-        InputProcessor.getInstance().addMMIListener(new J2SENodeInputListener(root));
+        CoreInput.getInstance().addMMIListener(new J2SENodeInputListener(root));
     }
     /*
      * public RootNode create(String id) throws NodeException {

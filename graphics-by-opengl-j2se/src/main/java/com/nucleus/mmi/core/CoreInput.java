@@ -6,13 +6,13 @@ import java.util.Set;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.Vertex2D;
-import com.nucleus.mmi.KeyEvent;
-import com.nucleus.mmi.MMIEventListener;
-import com.nucleus.mmi.MMIPointerEvent;
-import com.nucleus.mmi.PointerData;
-import com.nucleus.mmi.PointerData.PointerAction;
-import com.nucleus.mmi.PointerData.Type;
-import com.nucleus.mmi.PointerMotionData;
+import com.nucleus.mmi.Key;
+import com.nucleus.mmi.MMIPointerInput;
+import com.nucleus.mmi.MMIPointer;
+import com.nucleus.mmi.Pointer;
+import com.nucleus.mmi.Pointer.PointerAction;
+import com.nucleus.mmi.Pointer.Type;
+import com.nucleus.mmi.PointerMotion;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.profiling.FrameSampler.Sample;
 import com.nucleus.profiling.FrameSampler.Samples;
@@ -20,18 +20,23 @@ import com.nucleus.renderer.Window;
 import com.nucleus.vecmath.Vec2;
 
 /**
- * Process incoming pointer based events (for instance touch or mouse) and turn into easier to handle MMI actions.
- * Handles key events by passing them on to registered keylisteners
+ * Process raw incoming pointer based events (for instance touch or mouse) and turn into easier to handle MMI actions.
+ * Handles raw key events by passing them on to registered keylisteners
+ * Is used by platform implementations to turn platform input events, such as mouse or touch, into {@link MMIPointer}
+ * input data.
+ * This is a singleton class that shall be fetched by calling {@link #getInstance()}
+ * To listen to fullscreen pointer input events regardless of bounds checks, call
+ * {@link #addMMIListener(MMIPointerInput)}
  * 
  */
-public class InputProcessor implements PointerListener, KeyListener {
+public class CoreInput implements RawPointerInput, KeyInput {
 
     public int maxPointers = 5;
 
     /**
      * Pointer motion data, one for each supported pointer.
      */
-    PointerMotionData[] pointerMotionData;
+    PointerMotion[] pointerMotionData;
 
     /**
      * Scale and offset value for incoming pointer values, this can be used to normalize pointer or align them with
@@ -42,8 +47,8 @@ public class InputProcessor implements PointerListener, KeyListener {
     private final float[] transform = new float[] { 1, 1, 0, 0 };
     private final float[] scaledPosition = new float[2];
 
-    Set<MMIEventListener> mmiListeners = new HashSet<>();
-    Set<KeyListener> keyListeners = new HashSet<>();
+    Set<MMIPointerInput> mmiListeners = new HashSet<>();
+    Set<KeyInput> keyListeners = new HashSet<>();
 
     private int pointerCount = 0;
     /**
@@ -62,22 +67,22 @@ public class InputProcessor implements PointerListener, KeyListener {
      */
     private LinkedList<Integer> keyCodes = new LinkedList<>();
 
-    private static InputProcessor inputProcessor;
+    private static CoreInput inputProcessor;
 
     /**
      * Returns the singleton instance of the input processor.
      * 
      * @return
      */
-    public static InputProcessor getInstance() {
+    public static CoreInput getInstance() {
         if (inputProcessor == null) {
-            inputProcessor = new InputProcessor();
+            inputProcessor = new CoreInput();
         }
         return inputProcessor;
     }
 
-    private InputProcessor() {
-        pointerMotionData = new PointerMotionData[maxPointers];
+    private CoreInput() {
+        pointerMotionData = new PointerMotion[maxPointers];
     }
 
     /**
@@ -101,7 +106,7 @@ public class InputProcessor implements PointerListener, KeyListener {
         scaledPosition[Y] = position[Y] * transform[Y] + transform[3];
         switch (action) {
             case MOVE:
-                if (pointerMotionData[pointer].getCurrent().action == PointerData.PointerAction.UP) {
+                if (pointerMotionData[pointer].getCurrent().action == Pointer.PointerAction.UP) {
                     SimpleLogger.d(getClass(), "Move after up");
                 } else {
                     // More than one pointer is or has been active.
@@ -114,15 +119,15 @@ public class InputProcessor implements PointerListener, KeyListener {
                         }
                         break;
                     }
-                    addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.MOVE, pointer,
+                    addAndSend(new MMIPointer(com.nucleus.mmi.MMIPointer.Action.MOVE, pointer,
                             pointerMotionData[pointer]),
                             pointerMotionData[pointer].create(action, type, timestamp, pointer, scaledPosition,
                                     pressure));
                 }
                 break;
             case DOWN:
-                pointerMotionData[pointer] = new PointerMotionData();
-                addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ACTIVE, pointer,
+                pointerMotionData[pointer] = new PointerMotion();
+                addAndSend(new MMIPointer(com.nucleus.mmi.MMIPointer.Action.ACTIVE, pointer,
                         pointerMotionData[pointer]),
                         pointerMotionData[pointer].create(action, type, timestamp, pointer, scaledPosition, pressure));
                 pointerCount = getActivePointerCount();
@@ -131,16 +136,16 @@ public class InputProcessor implements PointerListener, KeyListener {
                 if (pointerCount < 0) {
                     SimpleLogger.d(getClass(), "PointerInputProcessor: ERROR: pointerCount= " + pointerCount);
                 }
-                addAndSend(new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.INACTIVE, pointer,
+                addAndSend(new MMIPointer(com.nucleus.mmi.MMIPointer.Action.INACTIVE, pointer,
                         pointerMotionData[pointer]),
                         pointerMotionData[pointer].create(action, type, timestamp, pointer, scaledPosition, pressure));
                 pointerCount--;
                 break;
             case ZOOM:
                 if (pointerMotionData[pointer] == null) {
-                    pointerMotionData[pointer] = new PointerMotionData();
+                    pointerMotionData[pointer] = new PointerMotion();
                 }
-                MMIPointerEvent zoom = new MMIPointerEvent(com.nucleus.mmi.MMIPointerEvent.Action.ZOOM, pointer,
+                MMIPointer zoom = new MMIPointer(com.nucleus.mmi.MMIPointer.Action.ZOOM, pointer,
                         pointerMotionData[pointer]);
                 float x = position[X] * transform[X];
                 float y = position[Y] * transform[Y];
@@ -173,14 +178,14 @@ public class InputProcessor implements PointerListener, KeyListener {
         return sample;
     }
 
-    private void addAndSend(MMIPointerEvent event, PointerData pointerData) {
+    private void addAndSend(MMIPointer event, Pointer pointerData) {
         pointerMotionData[pointerData.pointer].add(pointerData);
         sendToListeners(event);
     }
 
     private boolean processTwoPointers() {
-        PointerMotionData pointer1 = pointerMotionData[PointerData.POINTER_1];
-        PointerMotionData pointer2 = pointerMotionData[PointerData.POINTER_2];
+        PointerMotion pointer1 = pointerMotionData[Pointer.POINTER_1];
+        PointerMotion pointer2 = pointerMotionData[Pointer.POINTER_2];
         // Find point between the 2 points.
         float[] middle = Vertex2D.middle(pointer1.getFirstPosition(), pointer2.getFirstPosition());
         float[] toMiddle = new float[2];
@@ -221,15 +226,15 @@ public class InputProcessor implements PointerListener, KeyListener {
         return false;
     }
 
-    private void zoom(PointerMotionData pointer1, PointerMotionData pointer2, Vec2 vector1, Vec2 vector2,
+    private void zoom(PointerMotion pointer1, PointerMotion pointer2, Vec2 vector1, Vec2 vector2,
             Vec2 center1, Vec2 center2) {
         // Zoom movement
-        MMIPointerEvent zoom = new MMIPointerEvent(pointer1, pointer2, vector1, vector2, vector1.dot(center1),
+        MMIPointer zoom = new MMIPointer(pointer1, pointer2, vector1, vector2, vector1.dot(center1),
                 vector2.dot(center2));
         float[] vector = zoom.getZoom().vector;
         addAndSend(zoom,
-                pointer1.create(PointerAction.ZOOM, PointerData.Type.FINGER, System.currentTimeMillis(),
-                        PointerData.POINTER_1, vector[0] * vector[2], vector[1] * vector[2], 1f));
+                pointer1.create(PointerAction.ZOOM, Pointer.Type.FINGER, System.currentTimeMillis(),
+                        Pointer.POINTER_1, vector[0] * vector[2], vector[1] * vector[2], 1f));
     }
 
     /**
@@ -240,7 +245,7 @@ public class InputProcessor implements PointerListener, KeyListener {
      * @param count Number of prior pointer values to include in delta.
      * @return Pointer delta values as Vector2D, or null if only 1 pointer data.
      */
-    private Vec2 getDeltaAsVector(PointerMotionData motionData, int count) {
+    private Vec2 getDeltaAsVector(PointerMotion motionData, int count) {
         float[] delta = motionData.getDelta(count);
         if (delta == null || (delta[0] == 0 && delta[1] == 0)) {
             return null;
@@ -252,11 +257,12 @@ public class InputProcessor implements PointerListener, KeyListener {
     }
 
     /**
-     * Adds the listener, it will now get MMIEvents
+     * Adds the listener, it will now get MMIEvents from the whole window regardless of element bound checks.
+     * Use this to capture incoming pointers in a fullscreen scenario.
      * 
      * @param listener
      */
-    public void addMMIListener(MMIEventListener listener) {
+    public void addMMIListener(MMIPointerInput listener) {
         mmiListeners.add(listener);
         SimpleLogger.d(getClass(), "Added MMI listener, new total: " + mmiListeners.size());
     }
@@ -266,17 +272,17 @@ public class InputProcessor implements PointerListener, KeyListener {
      * 
      * @param listener
      */
-    public void addKeyListener(KeyListener listener) {
+    public void addKeyListener(KeyInput listener) {
         keyListeners.add(listener);
         SimpleLogger.d(getClass(), "Added key listener, new total: " + keyListeners.size());
     }
 
     /**
-     * Removes the {@linkplain MMIEventListener}, the listener will no longer get mmi callbacks
+     * Removes the {@linkplain MMIPointerInput}, the listener will no longer get mmi callbacks
      * 
      * @param listener
      */
-    public void removeMMIListener(MMIEventListener listener) {
+    public void removeMMIListener(MMIPointerInput listener) {
         mmiListeners.remove(listener);
         SimpleLogger.d(getClass(), "Removed MMI listener, new total: " + mmiListeners.size());
     }
@@ -286,7 +292,7 @@ public class InputProcessor implements PointerListener, KeyListener {
      * 
      * @param listener
      */
-    public void removeKeyListener(KeyListener listener) {
+    public void removeKeyListener(KeyInput listener) {
         keyListeners.remove(listener);
         SimpleLogger.d(getClass(), "Removed key listener, new total: " + keyListeners.size());
     }
@@ -296,12 +302,12 @@ public class InputProcessor implements PointerListener, KeyListener {
      * 
      * @param event
      */
-    private void sendToListeners(MMIPointerEvent event) {
+    private void sendToListeners(MMIPointer event) {
         if (event == null) {
             return;
         }
-        for (MMIEventListener listener : mmiListeners) {
-            listener.onInputEvent(event);
+        for (MMIPointerInput listener : mmiListeners) {
+            listener.onInput(event);
         }
     }
 
@@ -347,7 +353,7 @@ public class InputProcessor implements PointerListener, KeyListener {
      */
     public void setMaxPointers(int maxPointers) {
         this.maxPointers = maxPointers;
-        pointerMotionData = new PointerMotionData[maxPointers];
+        pointerMotionData = new PointerMotion[maxPointers];
     }
 
     /**
@@ -362,7 +368,7 @@ public class InputProcessor implements PointerListener, KeyListener {
     }
 
     @Override
-    public void onKeyEvent(KeyEvent event) {
+    public void onKeyEvent(Key event) {
         switch (event.getAction()) {
             case PRESSED:
                 keyCodes.add(event.getKeyValue());
@@ -373,7 +379,7 @@ public class InputProcessor implements PointerListener, KeyListener {
             default:
                 throw new IllegalArgumentException("Not implemented for action " + event.getAction());
         }
-        for (KeyListener kl : keyListeners) {
+        for (KeyInput kl : keyListeners) {
             kl.onKeyEvent(event);
         }
     }

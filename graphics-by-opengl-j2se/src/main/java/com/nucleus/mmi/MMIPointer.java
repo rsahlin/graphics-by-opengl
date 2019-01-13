@@ -5,9 +5,11 @@ import com.nucleus.vecmath.VecMath;
 
 /**
  * Holds data for a MMI touch or mouse based input events.
+ * This is the low level pointer events that are detected and assembled into a generalisation that is more suited
+ * to MMI events.
  *
  */
-public class MMIPointerEvent {
+public class MMIPointer {
 
     public enum Action {
         /**
@@ -36,11 +38,11 @@ public class MMIPointerEvent {
     }
 
     private Action action;
-    private PointerMotionData pointerData;
+    private PointerMotion pointerData;
     private Vec2 zoom;
     private int finger;
 
-    public MMIPointerEvent(Action action, int finger, PointerMotionData pointerData) {
+    public MMIPointer(Action action, int finger, PointerMotion pointerData) {
         this.action = action;
         this.pointerData = pointerData;
         this.finger = finger;
@@ -56,7 +58,7 @@ public class MMIPointerEvent {
      * @param dot1
      * @param dot2
      */
-    public MMIPointerEvent(PointerMotionData pointer1, PointerMotionData pointer2, Vec2 delta1, Vec2 delta2,
+    public MMIPointer(PointerMotion pointer1, PointerMotion pointer2, Vec2 delta1, Vec2 delta2,
             float dot1, float dot2) {
         action = Action.ZOOM;
         pointerData = pointer1;
@@ -89,7 +91,7 @@ public class MMIPointerEvent {
      * 
      * @return
      */
-    public PointerMotionData getPointerData() {
+    public PointerMotion getPointerData() {
         return pointerData;
     }
 

@@ -20,9 +20,9 @@ import org.lwjgl.system.MemoryUtil;
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
-import com.nucleus.mmi.KeyEvent.Action;
-import com.nucleus.mmi.PointerData.PointerAction;
-import com.nucleus.mmi.PointerData.Type;
+import com.nucleus.mmi.Key.Action;
+import com.nucleus.mmi.Pointer.PointerAction;
+import com.nucleus.mmi.Pointer.Type;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 
@@ -96,13 +96,13 @@ public class GLFWWindow extends J2SEWindow {
             if (awtKey != null) {
                 switch (action) {
                     case GLFW.GLFW_RELEASE:
-                        super.handleKeyEvent(new com.nucleus.mmi.KeyEvent(Action.RELEASED, key));
+                        super.handleKeyEvent(new com.nucleus.mmi.Key(Action.RELEASED, key));
                         if (key == GLFW.GLFW_KEY_ESCAPE) {
                             backPressed();
                         }
                         break;
                     case GLFW.GLFW_PRESS:
-                        super.handleKeyEvent(new com.nucleus.mmi.KeyEvent(Action.PRESSED, key));
+                        super.handleKeyEvent(new com.nucleus.mmi.Key(Action.PRESSED, key));
                         break;
                 }
             } else {
