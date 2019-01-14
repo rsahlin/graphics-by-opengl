@@ -7,7 +7,6 @@ import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.scene.gltf.BufferView.Target;
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.Loader;
 
 /**
  * 
