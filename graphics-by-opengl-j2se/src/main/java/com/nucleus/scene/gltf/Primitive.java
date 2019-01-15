@@ -70,7 +70,7 @@ public class Primitive implements RuntimeResolver {
         /**
          * Creates the array buffers needed to calculate normals/tangents/bitanges
          */
-        public void createBuffers() {
+        public void createBuffers(GLTF gltf) {
             verticeArray = createFloatArray(Attributes.POSITION);
             uvArray = createFloatArray(Attributes.TEXCOORD_0);
             tangentArray = createFloatArray(Attributes.TANGENT);
@@ -78,18 +78,39 @@ public class Primitive implements RuntimeResolver {
             normalArray = createFloatArray(Attributes.NORMAL);
             if (normalArray == null) {
                 normalArray = createNormals();
+                BufferView normals = gltf.createBufferView(BITANGENT,
+                        (normalArray.length << 2) * ComponentType.FLOAT.size, 0,
+                        Type.VEC3.size * ComponentType.FLOAT.size, Target.ARRAY_BUFFER);
+                Buffer buffer = normals.getBuffer();
+                buffer.put(normalArray, 0);
+                Accessor normalAccessor = new Accessor(normals, 0, ComponentType.FLOAT, normalArray.length, Type.VEC3);
+                accessorList.add(normalAccessor);
+                attributeList.add(Attributes.NORMAL);
+
             }
         }
 
         private float[] createNormals() {
             float[] normals = new float[verticeArray.length];
             // Iterate each triangle
-            float[] vertex = new float[3];
+            float[] normal = new float[3];
             int index = 0;
+            int v1 = 0;
+            int v2 = 0;
+            int v3 = 0;
             while (index < indexArray.length) {
-                vertex[0] = verticeArray[indexArray[index++]];
-                vertex[1] = verticeArray[indexArray[index++]];
-                vertex[2] = verticeArray[indexArray[index++]];
+                v1 = indexArray[index++] * 3;
+                v2 = indexArray[index++] * 3;
+                v3 = indexArray[index++] * 3;
+                Vec3.cross3(verticeArray, v1, v2, normal, 0);
+                Vec3.normalize(normal, 0);
+                System.arraycopy(normals, 0, normals, v1, 3);
+                Vec3.cross3(verticeArray, v2, v3, normal, 0);
+                Vec3.normalize(normal, 0);
+                System.arraycopy(normals, 0, normals, v2, 3);
+                Vec3.cross3(verticeArray, v3, v1, normal, 0);
+                Vec3.normalize(normal, 0);
+                System.arraycopy(normals, 0, normals, v3, 3);
             }
             return normals;
         }
@@ -490,7 +511,7 @@ public class Primitive implements RuntimeResolver {
             throw new IllegalArgumentException("Arrayed mode not supported");
         }
         Triangles triangles = new Triangles();
-        triangles.createBuffers();
+        triangles.createBuffers(gltf);
         Accessor tangent = getAccessor(Attributes.TANGENT);
         if (tangent != null) {
             buildBitangentBuffer(gltf, triangles);
