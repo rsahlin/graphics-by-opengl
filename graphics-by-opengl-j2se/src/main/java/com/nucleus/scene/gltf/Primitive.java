@@ -94,23 +94,27 @@ public class Primitive implements RuntimeResolver {
             float[] normals = new float[verticeArray.length];
             // Iterate each triangle
             float[] normal = new float[3];
+            float[] vec = new float[9];
             int index = 0;
-            int v1 = 0;
-            int v2 = 0;
-            int v3 = 0;
+            int v1Index = 0;
+            int v2Index = 0;
+            int v3Index = 0;
             while (index < indexArray.length) {
-                v1 = indexArray[index++] * 3;
-                v2 = indexArray[index++] * 3;
-                v3 = indexArray[index++] * 3;
-                Vec3.cross3(verticeArray, v1, v2, normal, 0);
-                Vec3.normalize(normal, 0);
-                System.arraycopy(normals, 0, normals, v1, 3);
-                Vec3.cross3(verticeArray, v2, v3, normal, 0);
-                Vec3.normalize(normal, 0);
-                System.arraycopy(normals, 0, normals, v2, 3);
-                Vec3.cross3(verticeArray, v3, v1, normal, 0);
-                Vec3.normalize(normal, 0);
-                System.arraycopy(normals, 0, normals, v3, 3);
+                v1Index = indexArray[index++] * 3;
+                v2Index = indexArray[index++] * 3;
+                v3Index = indexArray[index++] * 3;
+                Vec3.toVector(verticeArray, v1Index, verticeArray, v2Index, vec, 0);
+                Vec3.toVector(verticeArray, v2Index, verticeArray, v3Index, vec, 3);
+                Vec3.toVector(verticeArray, v3Index, verticeArray, v1Index, vec, 6);
+                Vec3.normalize(Vec3.cross3(vec, 6, 0, normal, 0), 0);
+                Vec3.normalize(Vec3.add(normal, 0, normals, v1Index, normals, v1Index), v1Index);
+
+                Vec3.normalize(Vec3.cross3(vec, 0, 3, normal, 0), 0);
+                Vec3.normalize(Vec3.add(normal, 0, normals, v2Index, normals, v2Index), v2Index);
+
+                Vec3.normalize(Vec3.cross3(vec, 3, 6, normal, 0), 0);
+                Vec3.normalize(Vec3.add(normal, 0, normals, v3Index, normals, v3Index), v3Index);
+
             }
             return normals;
         }

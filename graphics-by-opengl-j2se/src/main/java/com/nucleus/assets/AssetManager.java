@@ -475,6 +475,8 @@ public class AssetManager {
         } catch (UnsupportedEncodingException e) {
             SimpleLogger.d(getClass(), e.getMessage());
             return null;
+        } catch (NullPointerException e) {
+            throw new IllegalArgumentException("Could not find gltf asset with name " + fileName);
         }
     }
 
