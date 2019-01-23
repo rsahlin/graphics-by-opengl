@@ -706,6 +706,9 @@ public class AssetManager {
     public String[] listResourceFolders(String path) {
         ClassLoader loader = getClass().getClassLoader();
         URL url = loader.getResource(path);
+        if (url == null) {
+            return new String[0];
+        }
         File[] files = new File(url.getFile()).listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
