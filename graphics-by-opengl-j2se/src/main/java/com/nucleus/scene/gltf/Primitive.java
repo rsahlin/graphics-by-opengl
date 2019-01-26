@@ -289,7 +289,8 @@ public class Primitive implements RuntimeResolver {
         _EMISSIVE(),
         _BOUNDS(),
         _PBRDATA(),
-        _LIGHT_0();
+        _LIGHT_0(),
+        _TEXCOORDNORMAL();
     }
 
     public enum Mode {

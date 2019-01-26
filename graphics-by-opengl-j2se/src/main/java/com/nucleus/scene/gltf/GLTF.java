@@ -413,10 +413,10 @@ public class GLTF {
     }
 
     /**
-     * Returns the texture unit to use with the pbr, or -1 if not specified.
+     * Returns the texture unit to use with the pbr, or -1 if pbr is null or does not contain basecolortexture
      * 
      * @param pbr
-     * @return
+     * @return Texture index for base color texture, or -1 if basecolor not used
      */
     public int getTexCoord(PBRMetallicRoughness pbr) {
         if (pbr != null && pbr.getBaseColorTexture() != null) {

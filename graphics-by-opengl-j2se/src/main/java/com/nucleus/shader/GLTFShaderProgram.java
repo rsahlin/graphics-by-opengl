@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.FloatBuffer;
 
 import com.nucleus.light.GlobalLight;
+import com.nucleus.light.Light;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.Pass;
@@ -95,7 +96,8 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     @Override
     public void updateUniformData(FloatBuffer destinationUniform) {
         if (light0Uniform != null) {
-            setUniformData(light0Uniform, GlobalLight.getInstance().getLightPosition(), 0);
+            Light l = GlobalLight.getInstance().getLight();
+            setUniformData(light0Uniform, l.getPosition(), 0);
         }
     }
 

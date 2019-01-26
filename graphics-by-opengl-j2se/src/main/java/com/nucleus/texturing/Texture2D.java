@@ -39,6 +39,8 @@ public class Texture2D extends BaseReference {
         flat(),
         parametric(),
         textured(),
+        // Textured with normal map
+        textured_normal(),
         colorize(),
         shadow1(),
         shadow2(),

@@ -7,8 +7,6 @@
 //Put array declaration after name for GLSL compatibility
 
 void main() {
-    positionLight();
+    positionLightTexNormal();
+    
 }
-
-
-
