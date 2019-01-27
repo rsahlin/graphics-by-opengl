@@ -425,29 +425,40 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             Accessor accessor = accessors.get(i);
             ShaderVariable v = program.getAttributeByName(attribs.get(i).name());
             if (v != null) {
-                int location = v.getLocation();
-                if (!enabledVertexArrays[location]) {
-                    glEnableVertexAttribArray(location);
-                    enabledVertexArrays[location] = true;
-                }
-                boolean normalized = accessor.isNormalized();
-                BufferView view = accessor.getBufferView();
-                com.nucleus.scene.gltf.Buffer b = view.getBuffer();
-                ComponentType ct = accessor.getComponentType();
-                Type t = accessor.getType();
-                if (b.getBufferName() > 0) {
-                    int target = view.getTarget() != null ? view.getTarget().value : GLES20.GL_ARRAY_BUFFER;
-                    glBindBuffer(target, b.getBufferName());
-                    glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(),
-                            accessor.getByteOffset() + view.getByteOffset());
-                } else {
-                    ByteBuffer bb = accessor.getBuffer();
-                    glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(), bb);
-                }
+                glVertexAttribPointer(program, accessor, v);
             } else {
                 // TODO - when fully implemented this should not happen.
             }
             GLUtils.handleError(this, "VertexAttribPointer for attribute: " + attribs.get(i).name());
+        }
+    }
+
+    /**
+     * Binds an accessor to a shader variable
+     * 
+     * @param program
+     * @param accessor
+     * @param attribute
+     */
+    public void glVertexAttribPointer(ShaderProgram program, Accessor accessor, ShaderVariable attribute) {
+        int location = attribute.getLocation();
+        if (!enabledVertexArrays[location]) {
+            glEnableVertexAttribArray(location);
+            enabledVertexArrays[location] = true;
+        }
+        boolean normalized = accessor.isNormalized();
+        BufferView view = accessor.getBufferView();
+        com.nucleus.scene.gltf.Buffer b = view.getBuffer();
+        ComponentType ct = accessor.getComponentType();
+        Type t = accessor.getType();
+        if (b.getBufferName() > 0) {
+            int target = view.getTarget() != null ? view.getTarget().value : GLES20.GL_ARRAY_BUFFER;
+            glBindBuffer(target, b.getBufferName());
+            glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(),
+                    accessor.getByteOffset() + view.getByteOffset());
+        } else {
+            ByteBuffer bb = accessor.getBuffer();
+            glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(), bb);
         }
     }
 

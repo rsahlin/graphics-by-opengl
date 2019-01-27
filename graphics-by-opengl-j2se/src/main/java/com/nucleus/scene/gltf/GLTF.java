@@ -400,30 +400,16 @@ public class GLTF {
     }
 
     /**
-     * If pbr is not null and pbr has base color texture then the Texture is returned, otherwise null.
+     * Returns the texture for the texture info - or null if not found or texInfo is null
      * 
-     * @param pbr
-     * @return Texture for the pbr or null
+     * @param texInfo
+     * @return
      */
-    public Texture getTexture(PBRMetallicRoughness pbr) {
-        if (pbr != null && pbr.getBaseColorTexture() != null) {
-            return textures[pbr.getBaseColorTexture().getIndex()];
+    public Texture getTexture(Texture.TextureInfo texInfo) {
+        if (texInfo != null) {
+            return textures[texInfo.getIndex()];
         }
         return null;
-    }
-
-    /**
-     * Returns the texture unit to use with the pbr, or -1 if pbr is null or does not contain basecolortexture
-     * 
-     * @param pbr
-     * @return Texture index for base color texture, or -1 if basecolor not used
-     */
-    public int getTexCoord(PBRMetallicRoughness pbr) {
-        if (pbr != null && pbr.getBaseColorTexture() != null) {
-            return pbr.getBaseColorTexture().getTexCoord();
-        }
-        return -1;
-
     }
 
     /**

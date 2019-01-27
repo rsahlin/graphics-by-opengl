@@ -46,9 +46,9 @@ public class Texture extends GLTFNamedValue implements RuntimeResolver {
         private int texCoord = 0;
 
         /**
-         * Returns the index of the texture.
+         * Returns the index of the texture (in the gltf texture array)
          * 
-         * @return The index of the texture.
+         * @return The gltf index of the texture
          */
         public int getIndex() {
             return index;

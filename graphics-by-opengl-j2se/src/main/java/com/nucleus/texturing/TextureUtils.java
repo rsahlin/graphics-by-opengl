@@ -196,7 +196,7 @@ public class TextureUtils {
      * Checks if texture is an id (dynamic) reference and sets the texture name if not present.
      * 
      * @paran gles
-     * @param texture
+     * @param texture Texture to prepare or null
      * @param unit The texture unit number to use, 0 and up
      */
     public static void prepareTexture(GLES20Wrapper gles, Texture texture, int unit) throws GLException {

@@ -21,17 +21,16 @@ import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Node;
+import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Primitive.Mode;
 import com.nucleus.scene.gltf.Scene;
-import com.nucleus.scene.gltf.Texture;
 import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.texturing.Texture2D.Shading;
-import com.nucleus.texturing.TextureUtils;
 
 public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
 
@@ -179,15 +178,14 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         program.updateUniforms(gles, matrices);
         Material material = primitive.getMaterial();
         if (material != null) {
+            PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
             // Check for doublesided.
             if (material.isDoubleSided() && renderState.cullFace != Cullface.NONE) {
                 cullFace = renderState.cullFace;
                 gles.glDisable(GLES20.GL_CULL_FACE);
             }
-            Texture texture = glTF.getTexture(material.getPbrMetallicRoughness());
-            if (texture != null) {
-                TextureUtils.prepareTexture(gles, texture, glTF.getTexCoord(material.getPbrMetallicRoughness()));
-            }
+            program.prepareTextures(gles, glTF, primitive, material);
+
         }
         Accessor indices = primitive.getIndices();
         Accessor position = primitive.getAccessor(Attributes.POSITION);

@@ -37,8 +37,8 @@ public class PBRMetallicRoughness {
     public static final int ONE_MINUS_F0_INDEX = 8;
     public static final int DIFFUSE_INDEX = 12;
     public static final int METALLIC_INDEX = 16;
-    public static final int ROUGHNESS_INDEX = 17;
-    public static final int ROUGHNESS_SQUARED_INDEX = 18;
+    public static final int K_INDEX = 17;
+    public static final int ALPHA_SQUARED_INDEX = 18;
     public static final int PBR_DATASIZE = 20;
 
     private static final String BASE_COLOR_TEXTURE = "baseColorTexture";
@@ -101,13 +101,11 @@ public class PBRMetallicRoughness {
         diffuse[2] = (baseColorFactor[2] * (1 - DIALECTRIC_SPECULAR));
 
         Lerp.lerpVec3(diffuse, BLACK, metallicFactor, pbrData, DIFFUSE_INDEX);
-        // pbrData[DIFFUSE_INDEX] = pbrData[DIFFUSE_INDEX] / Constants.PI;
-        // pbrData[DIFFUSE_INDEX + 1] = pbrData[DIFFUSE_INDEX + 1] / Constants.PI;
-        // pbrData[DIFFUSE_INDEX + 2] = pbrData[DIFFUSE_INDEX + 2] / Constants.PI;
 
         pbrData[METALLIC_INDEX] = metallicFactor;
-        pbrData[ROUGHNESS_INDEX] = roughnessFactor;
-        pbrData[ROUGHNESS_SQUARED_INDEX] = roughnessFactor * roughnessFactor;
+        float rSquared = roughnessFactor * roughnessFactor;
+        pbrData[K_INDEX] = (float) (roughnessFactor * Math.sqrt(2 / Math.PI));
+        pbrData[ALPHA_SQUARED_INDEX] = rSquared * rSquared;
     }
 
     public float[] getBaseColorFactor() {
