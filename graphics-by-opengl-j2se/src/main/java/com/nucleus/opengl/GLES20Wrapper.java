@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.StreamUtils;
-import com.nucleus.opengl.GLException.Error;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RendererInfo;
 import com.nucleus.scene.gltf.Accessor;
@@ -429,7 +428,6 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             } else {
                 // TODO - when fully implemented this should not happen.
             }
-            GLUtils.handleError(this, "VertexAttribPointer for attribute: " + attribs.get(i).name());
         }
     }
 
@@ -439,8 +437,10 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param program
      * @param accessor
      * @param attribute
+     * @throws GLException
      */
-    public void glVertexAttribPointer(ShaderProgram program, Accessor accessor, ShaderVariable attribute) {
+    public void glVertexAttribPointer(ShaderProgram program, Accessor accessor, ShaderVariable attribute)
+            throws GLException {
         int location = attribute.getLocation();
         if (!enabledVertexArrays[location]) {
             glEnableVertexAttribArray(location);
@@ -460,6 +460,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             ByteBuffer bb = accessor.getBuffer();
             glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(), bb);
         }
+        GLUtils.handleError(this, "VertexAttribPointer for attribute: " + attribute.getName());
     }
 
     /**

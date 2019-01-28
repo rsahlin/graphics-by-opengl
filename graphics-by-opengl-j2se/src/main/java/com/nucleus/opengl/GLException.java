@@ -3,6 +3,8 @@ package com.nucleus.opengl;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.nucleus.opengl.GLESWrapper.Error;
+
 /**
  * An exception for GL / GLES error codes, since GL and GLES are based on C APIs there is no support for Exceptions
  * in the API.
@@ -12,40 +14,6 @@ import java.util.List;
  *
  */
 public class GLException extends Throwable {
-
-    public enum Error {
-        INVALID_ENUM(0x0500),
-        INVALID_VALUE(0x0501),
-        INVALID_OPERATION(0x0502),
-        OUT_OF_MEMORY(0x0505),
-        FRAMEBUFFER_UNDEFINED(0x8219),
-        FRAMEBUFFER_INCOMPLETE_ATTACHMENT(0x8CD6),
-        FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT(0x8CD7),
-        FRAMEBUFFER_UNSUPPORTED(0x8CDD),
-        FRAMEBUFFER_INCOMPLETE_MULTISAMPLE(0x8D56);
-
-        public final int value;
-
-        private Error(int value) {
-            this.value = value;
-        }
-
-        /**
-         * Finds the Error enum for the error value
-         * 
-         * @param value The error value to look up
-         * @return The error, or null if not found
-         */
-        public static Error getError(int value) {
-            for (Error e : Error.values()) {
-                if (e.value == value) {
-                    return e;
-                }
-            }
-            return null;
-        }
-
-    }
 
     /**
      * One or more error codes from OpenGL/ES

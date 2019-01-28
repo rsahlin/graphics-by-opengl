@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.opengl.GLESWrapper.Error;
 
 /**
  * Platform agnostic GL utility methods, uses the GLES20Wrapper for GLES functions.
@@ -30,7 +31,8 @@ public class GLUtils {
                 throw new GLException(tag, errors);
             } else {
                 for (Integer i : errors) {
-                    SimpleLogger.d(tag, "GLError: " + i);
+                    SimpleLogger.d(tag,
+                            "GLError: " + Error.getError(i) + " : value " + i);
                 }
             }
         }

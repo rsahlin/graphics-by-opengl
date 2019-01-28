@@ -14,6 +14,40 @@ import com.nucleus.shader.ShaderVariable.VariableType;
 
 public abstract class GLESWrapper {
 
+    public enum Error {
+        INVALID_ENUM(GLES20.GL_INVALID_ENUM),
+        INVALID_VALUE(GLES20.GL_INVALID_VALUE),
+        INVALID_OPERATION(GLES20.GL_INVALID_OPERATION),
+        OUT_OF_MEMORY(GLES20.GL_OUT_OF_MEMORY),
+        FRAMEBUFFER_UNDEFINED(GLES30.GL_FRAMEBUFFER_UNDEFINED),
+        FRAMEBUFFER_INCOMPLETE_ATTACHMENT(GLES20.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
+        FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT(GLES20.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT),
+        FRAMEBUFFER_UNSUPPORTED(GLES20.GL_FRAMEBUFFER_UNSUPPORTED),
+        FRAMEBUFFER_INCOMPLETE_MULTISAMPLE(GLES30.GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE);
+
+        public final int value;
+
+        private Error(int value) {
+            this.value = value;
+        }
+
+        /**
+         * Finds the Error enum for the error value
+         * 
+         * @param value The error value to look up
+         * @return The error, or null if not found
+         */
+        public static Error getError(int value) {
+            for (Error e : Error.values()) {
+                if (e.value == value) {
+                    return e;
+                }
+            }
+            return null;
+        }
+
+    }
+
     public class ProgramInfo {
         private int program;
         private int[] activeVariables;
