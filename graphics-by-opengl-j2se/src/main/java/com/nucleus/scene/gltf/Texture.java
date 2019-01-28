@@ -14,7 +14,7 @@ import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
  * 
  * Type Description Required
  * sampler integer The index of the sampler used by this texture. When undefined, a sampler with repeat wrapping and
- *  auto filtering should be used. No
+ * auto filtering should be used. No
  * source integer The index of the image used by this texture. No
  * name string The user-defined name of this object. No
  * extensions object Dictionary object with extension-specific objects. No
@@ -45,14 +45,54 @@ public class Texture extends GLTFNamedValue implements RuntimeResolver {
         @SerializedName(TEX_COORD)
         private int texCoord = 0;
 
+        /**
+         * Returns the index of the texture (in the gltf texture array)
+         * 
+         * @return The gltf index of the texture
+         */
         public int getIndex() {
             return index;
         }
 
+        /**
+         * This integer value is used to construct a string in the format TEXCOORD_<set index> which is a reference to a
+         * key in mesh.primitives.attributes (e.g. A value of 0 corresponds to TEXCOORD_0). Mesh must have corresponding
+         * texture coordinate attributes for the material to be applicable to it.
+         * 
+         * @return The index of the attribute (TEXCOORD_XX) that define the texture coordinates for this object
+         */
         public int getTexCoord() {
             return texCoord;
         }
 
+    }
+
+    /**
+     * normalTextureInfo
+     * Reference to a texture.
+     * Properties
+     * Type Description Required
+     * index integer The index of the texture. ✅ Yes
+     * texCoord integer The set index of texture's TEXCOORD attribute used for texture coordinate mapping. No, default:
+     * 0
+     * scale number The scalar multiplier applied to each normal vector of the normal texture. No, default: 1
+     * extensions object Dictionary object with extension-specific objects. No
+     * extras any Application-specific data. No *
+     */
+    public static class NormalTextureInfo extends TextureInfo {
+        private static final String SCALE = "scale";
+
+        @SerializedName(SCALE)
+        private float scale = 1;
+
+        /**
+         * Returns the scalar multiplier applied to each normal vector of the normal texture.
+         * 
+         * @return Scalar multiplier
+         */
+        public float getScale() {
+            return scale;
+        }
     }
 
     private static final String SAMPLER = "sampler";

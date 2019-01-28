@@ -10,6 +10,8 @@ public abstract class Light {
 
     public static final String COLOR = "color";
     public static final String TYPE = "type";
+    public static final String INTENSITY = "intensity";
+    public static final String POSITION = "position";
 
     /**
      * The different light types, this specifies how light is distributed
@@ -47,20 +49,44 @@ public abstract class Light {
         if (type == null) {
             throw new IllegalArgumentException("Light type is null");
         }
+        this.type = type;
+    }
+
+    Light(Type type, float[] position, float[] color, float intensity) {
+        if (type == null || position == null || color == null) {
+            throw new IllegalArgumentException("Null parameter");
+        }
+        this.type = type;
+        this.position = position;
+        this.color = color;
+        this.intensity = intensity;
     }
 
     @SerializedName(COLOR)
-    private float[] color = new float[4];
+    private float[] color = new float[] { 1, 1, 1 };
     @SerializedName(TYPE)
     private Type type;
+    @SerializedName(INTENSITY)
+    private float intensity = 1;
+    @SerializedName(POSITION)
+    private float[] position;
 
     /**
      * Returns a reference to light color, any changes done will be reflected here
      * 
-     * @return Reference to light color values.
+     * @return Reference to light color values, 3 values (RGB)
      */
     public float[] getColor() {
         return color;
+    }
+
+    /**
+     * Returns a reference to light position
+     * 
+     * @return Light position, 3 values (XYZ)
+     */
+    public float[] getPosition() {
+        return position;
     }
 
 }

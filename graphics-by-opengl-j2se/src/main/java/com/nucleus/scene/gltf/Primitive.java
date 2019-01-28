@@ -274,6 +274,8 @@ public class Primitive implements RuntimeResolver {
         TEXCOORD_1(),
         TEXCOORD_2(),
         TEXCOORD_3(),
+        TEXCOORD_4(),
+        TEXCOORD_5(),
         COLOR_0(),
         COLOR_1(),
         WEIGHTS_0(),
@@ -289,7 +291,22 @@ public class Primitive implements RuntimeResolver {
         _EMISSIVE(),
         _BOUNDS(),
         _PBRDATA(),
-        _LIGHT_0();
+        _LIGHT_0(),
+        _TEXCOORDNORMAL();
+
+        private final static Attributes[] TEXCOORDS = new Attributes[] { TEXCOORD_0, TEXCOORD_1, TEXCOORD_2, TEXCOORD_3,
+                TEXCOORD_4, TEXCOORD_5 };
+
+        /**
+         * Returns the texture coord attribute for the specified texture coord, ie 0 will return TEXCOORD_0
+         * 
+         * @param texCoord
+         * @return
+         */
+        public final static Attributes getTextureCoord(int texCoord) {
+            return TEXCOORDS[texCoord];
+        }
+
     }
 
     public enum Mode {
@@ -390,10 +407,20 @@ public class Primitive implements RuntimeResolver {
         return accessorList;
     }
 
+    /**
+     * Returns the array containing the Attributes that are defined in this primitive
+     * 
+     * @return
+     */
     public ArrayList<Attributes> getAttributesArray() {
         return attributeList;
     }
 
+    /**
+     * Returns the array containing the {@link Buffer} objects in this primmitive
+     * 
+     * @return
+     */
     public ArrayList<Buffer> getBufferArray() {
         return bufferList;
     }

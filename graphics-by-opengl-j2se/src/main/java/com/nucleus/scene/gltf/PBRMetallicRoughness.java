@@ -32,12 +32,14 @@ public class PBRMetallicRoughness {
             DIALECTRIC_SPECULAR };
     public static final float[] BLACK = new float[] { 0f, 0f, 0f };
 
-    public static final int F0_INDEX = 0;
-    public static final int ONE_MINUS_F0_INDEX = 4;
-    public static final int DIFFUSE_INDEX = 8;
-    public static final int METALLIC_INDEX = 12;
-    public static final int ROUGHNESS_INDEX = 13;
-    public static final int ROUGHNESS_SQUARED_INDEX = 14;
+    public static final int PROPERTIES_INDEX = 0;
+    public static final int F0_INDEX = 4;
+    public static final int ONE_MINUS_F0_INDEX = 8;
+    public static final int DIFFUSE_INDEX = 12;
+    public static final int METALLIC_INDEX = 16;
+    public static final int K_INDEX = 17;
+    public static final int ALPHA_SQUARED_INDEX = 18;
+    public static final int PBR_DATASIZE = 20;
 
     private static final String BASE_COLOR_TEXTURE = "baseColorTexture";
     private static final String BASE_COLOR_FACTOR = "baseColorFactor";
@@ -56,7 +58,7 @@ public class PBRMetallicRoughness {
     @SerializedName(BASE_COLOR_TEXTURE)
     private Texture.TextureInfo baseColorTexture;
 
-    transient private float[] pbrData = new float[15];
+    transient private float[] pbrData = new float[PBR_DATASIZE];
 
     /**
      * Copies precomputed bpr data into array - call {@link #calculatePBRData()} before calling this method.
@@ -94,15 +96,16 @@ public class PBRMetallicRoughness {
         pbrData[ONE_MINUS_F0_INDEX + 3] = baseColorFactor[3];
 
         float[] diffuse = new float[3];
-        diffuse[0] = (float) (baseColorFactor[0] / Math.PI);
-        diffuse[1] = (float) (baseColorFactor[1] / Math.PI);
-        diffuse[2] = (float) (baseColorFactor[2] / Math.PI);
+        diffuse[0] = (baseColorFactor[0] * (1 - DIALECTRIC_SPECULAR));
+        diffuse[1] = (baseColorFactor[1] * (1 - DIALECTRIC_SPECULAR));
+        diffuse[2] = (baseColorFactor[2] * (1 - DIALECTRIC_SPECULAR));
 
         Lerp.lerpVec3(diffuse, BLACK, metallicFactor, pbrData, DIFFUSE_INDEX);
 
         pbrData[METALLIC_INDEX] = metallicFactor;
-        pbrData[ROUGHNESS_INDEX] = roughnessFactor;
-        pbrData[ROUGHNESS_SQUARED_INDEX] = roughnessFactor * roughnessFactor;
+        float rSquared = roughnessFactor * roughnessFactor;
+        pbrData[K_INDEX] = (float) (roughnessFactor * Math.sqrt(2 / Math.PI));
+        pbrData[ALPHA_SQUARED_INDEX] = rSquared * rSquared;
     }
 
     public float[] getBaseColorFactor() {

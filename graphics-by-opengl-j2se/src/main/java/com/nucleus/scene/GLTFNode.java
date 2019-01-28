@@ -19,6 +19,7 @@ import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
+import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.RenderableMesh;
 import com.nucleus.shader.GLTFShaderProgram;
@@ -206,14 +207,22 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
 
     /**
      * Creates an instance, not compiled or linked, of the shader program needed to render this primitive.
+     * If no basecolor texture is used the shading will be flat
      * 
      * @param primitive
      * @return
      */
     public GLTFShaderProgram createProgram(Primitive primitive) {
         Material mat = primitive.getMaterial();
-        if (mat != null && mat.getPbrMetallicRoughness().getBaseColorTexture() != null) {
-            return new GLTFShaderProgram(null, Shading.textured, "gltf", ProgramType.VERTEX_FRAGMENT);
+        if (mat != null) {
+            PBRMetallicRoughness pbr = mat.getPbrMetallicRoughness();
+            if (pbr.getBaseColorTexture() != null) {
+                // Textured
+                if (mat.getNormalTexture() != null) {
+                    return new GLTFShaderProgram(null, Shading.textured_normal, "gltf", ProgramType.VERTEX_FRAGMENT);
+                }
+                return new GLTFShaderProgram(null, Shading.textured, "gltf", ProgramType.VERTEX_FRAGMENT);
+            }
         }
         return new GLTFShaderProgram(null, Shading.flat, "gltf", ProgramType.VERTEX_FRAGMENT);
     }

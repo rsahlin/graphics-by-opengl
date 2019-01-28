@@ -301,7 +301,8 @@ public abstract class ShaderProgram {
     protected InterfaceBlock[] uniformInterfaceBlocks;
     protected BlockBuffer[] uniformBlockBuffers;
     /**
-     * Samplers (texture units)
+     * Samplers (texture units) - the texture unit to use for a shadervariable is stored at the intbuffer
+     * position. To fetch texture unit to use for a shadervariable do: samplers.position(shadervariable.position())
      */
     transient protected IntBuffer samplers;
 
@@ -775,11 +776,13 @@ public abstract class ShaderProgram {
     /**
      * Prepares a texture used before rendering starts.
      * This shall set texture parameters to used textures, ie activate texture, bind texture then set parameters.
+     * TODO - This should be moved to a class that handles nucleus texture/mesh
      * 
      * @param gles
      * @param texture
      * @throws GLException
      */
+    @Deprecated
     public void prepareTexture(GLES20Wrapper gles, Texture2D texture) throws GLException {
         if (texture == null || texture.getTextureType() == TextureType.Untextured) {
             return;
@@ -1578,13 +1581,17 @@ public abstract class ShaderProgram {
     /**
      * Sets the texture units to use for each sampler, default behavior is to start at unit 0 and increase for each
      * sampler.
+     * The {@link #samplers} array will contain the texture unit to use for each offset.
+     * To use, position the samplers array using samplers.position(shadervariable.getOffset()) - the index
+     * will contain the texture unit to use
      */
     protected void setSamplers() {
         ArrayList<ShaderVariable> samplersList = getSamplers(activeUniforms);
         if (samplersList.size() > 0) {
-            samplers.rewind();
             for (int i = 0; i < samplersList.size(); i++) {
-                samplers.put(samplersList.get(i).getOffset());
+                ShaderVariable sampler = samplersList.get(i);
+                samplers.position(sampler.getOffset());
+                samplers.put(i);
             }
         }
     }
