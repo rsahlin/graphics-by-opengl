@@ -30,6 +30,8 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     transient protected ShaderVariable pbrDataUniform;
     transient protected ShaderVariable light0Uniform;
     transient protected float[] pbrData;
+    transient protected IntBuffer samplerUniformBuffer = BufferUtils.createIntBuffer(1);
+
     /**
      * The dictionary created from linked program
      */
@@ -171,10 +173,9 @@ public class GLTFShaderProgram extends GenericShaderProgram {
         TextureUtils.prepareTexture(gles, gltf.getTexture(texInfo), texInfo.getIndex());
         Accessor accessor = primitive.getAccessor(Attributes.getTextureCoord(texInfo.getTexCoord()));
         gles.glVertexAttribPointer(this, accessor, attribute);
-        IntBuffer ib = BufferUtils.createIntBuffer(1);
-        ib.put(texInfo.getIndex());
-        ib.rewind();
-        gles.glUniform1iv(texUniform.getOffset(), texUniform.getSize(), ib);
+        samplerUniformBuffer.put(texInfo.getIndex());
+        samplerUniformBuffer.rewind();
+        gles.glUniform1iv(texUniform.getLocation(), texUniform.getSize(), samplerUniformBuffer);
         GLUtils.handleError(gles, "glUniform1iv - " + attribute.getName());
 
     }

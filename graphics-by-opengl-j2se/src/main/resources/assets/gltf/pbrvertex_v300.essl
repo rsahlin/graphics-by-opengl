@@ -40,8 +40,6 @@ void positionLight() {
  */
 void positionLightTexNormal() {
     mTangentLight = transpose(mat3(TANGENT,BITANGENT,NORMAL)) * mat3(uModelMatrix[0]);
-//    vNormal = normalize((vec3(0.0,0.0,1.0) * tangentLight) * mat3(uModelMatrix[0]));
-//    vNormal = normalize(NORMAL * mat3(uModelMatrix[0]));
     vec4 pos = vec4(POSITION, 1.0) * uModelMatrix[0] * uModelMatrix[1];
     gl_Position = pos * uModelMatrix[2];
     vLight = normalize(_LIGHT_0[0] - vec3(pos));
