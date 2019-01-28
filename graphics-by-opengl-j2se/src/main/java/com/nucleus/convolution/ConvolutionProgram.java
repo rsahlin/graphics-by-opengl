@@ -10,17 +10,21 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.Pass;
+import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.vecmath.Matrix;
 
-public class ConvolutionProgram extends ShaderProgram {
+public class ConvolutionProgram extends GenericShaderProgram {
 
     protected final static int DEFAULT_COMPONENTS = 3;
     protected final float[] matrix = Matrix.createMatrix();
+    private static final String VERTEX_SHADER_NAME = "convolution";
+    private static final String FRAGMENT_SHADER_NAME = "convolution";
 
     public ConvolutionProgram() {
-        super(null, null, null, ProgramType.VERTEX_FRAGMENT);
+        super(new String[] { VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME }, null, Shading.textured, null,
+                ProgramType.VERTEX_FRAGMENT);
     }
 
     @Override

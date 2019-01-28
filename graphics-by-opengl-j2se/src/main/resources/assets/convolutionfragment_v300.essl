@@ -1,4 +1,4 @@
-#version 100
+#version 300
  /**
  * Fragment shader for 3 X 3 convolution kernel
  * @author Richard Sahlin
@@ -6,9 +6,9 @@
 
 precision mediump float;
 uniform sampler2D uTexture;      //The texture sampler
-//Put array declaration after name for GLSL compatibility
 uniform mat3 uKernel[3];    //0=kernel, 1=uoffset, 2=voffset
-varying vec2 vTexCoord;
+in vec2 vTexCoord;
+out vec4 fragColor;
 
 void main()
 {
@@ -21,5 +21,5 @@ void main()
         texture2D(uTexture, vTexCoord + vec2(uKernel[1][2][0],uKernel[2][2][0])) * uKernel[0][2][0] + 
         texture2D(uTexture, vTexCoord + vec2(uKernel[1][2][1],uKernel[2][2][1])) * uKernel[0][2][1] + 
         texture2D(uTexture, vTexCoord + vec2(uKernel[1][2][2],uKernel[2][2][2])) * uKernel[0][2][2]);
-    gl_FragColor = vec4(pixel, 1.0);
+    fragColor = vec4(pixel, 1.0);
 }

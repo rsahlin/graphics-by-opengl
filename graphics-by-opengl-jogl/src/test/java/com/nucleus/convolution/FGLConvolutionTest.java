@@ -1,5 +1,7 @@
 package com.nucleus.convolution;
 
+import java.nio.FloatBuffer;
+
 import org.junit.Test;
 
 import com.nucleus.CoreApp;
@@ -11,8 +13,8 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.jogl.JOGLApplication;
-import com.nucleus.mmi.MMIPointerInput;
 import com.nucleus.mmi.MMIPointer;
+import com.nucleus.mmi.MMIPointerInput;
 import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.Renderers;
@@ -40,7 +42,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
      * 
      */
     public enum ClientClasses implements Type<Object> {
-            clientclass(MyClientApplication.class);
+        clientclass(MyClientApplication.class);
 
         private final Class<?> theClass;
 
@@ -188,8 +190,9 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
             counter = 0;
         }
         Convolution.normalize(kernel[kernelIndex], normalizedKernel, absNormalize[kernelIndex], factor);
-        System.arraycopy(normalizedKernel, 0, program.getUniformData(), uKernel.getOffset(),
-                normalizedKernel.length);
+        FloatBuffer fb = program.getUniformData();
+        fb.position(uKernel.getOffset());
+        program.getUniformData().put(normalizedKernel, 0, normalizedKernel.length);
 
     }
 
