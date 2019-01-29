@@ -354,7 +354,7 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
     private float[] concatParentsMatrix(float[] matrix) {
         if (parent != null) {
             Matrix.mul4(parent.matrix, matrix, parentMatrix);
-            return concatParentsMatrix(parentMatrix);
+            return parent.concatParentsMatrix(parentMatrix);
         }
         return matrix;
     }
