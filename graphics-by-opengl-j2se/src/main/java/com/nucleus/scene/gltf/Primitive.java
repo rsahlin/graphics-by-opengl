@@ -180,15 +180,23 @@ public class Primitive implements RuntimeResolver {
                     Vec2.toVector(uvArray, uv0Index, uvArray, uv1Index, st1, 0);
                     Vec2.toVector(uvArray, uv0Index, uvArray, uv2Index, st2, 0);
                     reciprocal = 1.0f / (st1[0] * st2[1] - st1[1] * st2[0]);
+                    sdir[0] = (st2[1] * vec1[0] - st1[1] * vec2[0]) * reciprocal;
+                    sdir[1] = (st2[1] * vec1[1] - st1[1] * vec2[1]) * reciprocal;
+                    sdir[2] = (st2[1] * vec1[2] - st1[1] * vec2[2]) * reciprocal;
+
+                    tdir[0] = (st1[0] * vec2[0] - st2[0] * vec1[0]) * reciprocal;
+                    tdir[1] = (st1[0] * vec2[1] - st2[0] * vec1[1]) * reciprocal;
+                    tdir[2] = (st1[0] * vec2[2] - st2[0] * vec1[2]) * reciprocal;
+                } else {
+                    sdir[0] = (st2[1] * vec1[0] - st1[1] * vec2[0]);
+                    sdir[1] = (st2[1] * vec1[1] - st1[1] * vec2[1]);
+                    sdir[2] = (st2[1] * vec1[2] - st1[1] * vec2[2]);
+
+                    tdir[0] = (st1[0] * vec2[0] - st2[0] * vec1[0]);
+                    tdir[1] = (st1[0] * vec2[1] - st2[0] * vec1[1]);
+                    tdir[2] = (st1[0] * vec2[2] - st2[0] * vec1[2]);
+
                 }
-
-                sdir[0] = (st2[1] * vec1[0] - st1[1] * vec2[0]) * reciprocal;
-                sdir[1] = (st2[1] * vec1[1] - st1[1] * vec2[1]) * reciprocal;
-                sdir[2] = (st2[1] * vec1[2] - st1[1] * vec2[2]) * reciprocal;
-
-                tdir[0] = (st1[0] * vec2[0] - st2[0] * vec1[0]) * reciprocal;
-                tdir[1] = (st1[0] * vec2[1] - st2[0] * vec1[1]) * reciprocal;
-                tdir[2] = (st1[0] * vec2[2] - st2[0] * vec1[2]) * reciprocal;
 
                 Vec3.add(tangents[0], v0Index, sdir, 0, tangents[0], v0Index);
                 Vec3.add(tangents[0], v1Index, sdir, 0, tangents[0], v1Index);
