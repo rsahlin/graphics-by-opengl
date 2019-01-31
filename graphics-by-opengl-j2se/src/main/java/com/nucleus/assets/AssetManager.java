@@ -463,21 +463,22 @@ public class AssetManager {
      */
     private GLTF loadJSONAsset(String path, String fileName, InputStream is)
             throws IOException, GLTFException {
+        GLTF glTF = null;
         try {
             Reader reader = new InputStreamReader(is, "UTF-8");
             GsonBuilder builder = new GsonBuilder();
             Gson gson = builder.create();
-            GLTF glTF = gson.fromJson(reader, GLTF.class);
-            glTF.setPath(path);
-            glTF.setFilename(fileName);
-            glTF.resolve();
-            return glTF;
+            glTF = gson.fromJson(reader, GLTF.class);
         } catch (UnsupportedEncodingException e) {
             SimpleLogger.d(getClass(), e.getMessage());
             return null;
         } catch (NullPointerException e) {
             throw new IllegalArgumentException("Could not find gltf asset with name " + fileName);
         }
+        glTF.setPath(path);
+        glTF.setFilename(fileName);
+        glTF.resolve();
+        return glTF;
     }
 
     /**

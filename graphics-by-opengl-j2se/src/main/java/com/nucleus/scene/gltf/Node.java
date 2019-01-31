@@ -143,6 +143,28 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
     }
 
     /**
+     * If this node has a mesh, then this node is returned, otherwise children are searched (depth first) for
+     * the first node containing a mesh
+     * 
+     * @return Node containing mesh, or null
+     */
+    public Node getFirstNodeWithMesh() {
+        if (getMesh() != null) {
+            return this;
+        }
+        if (childNodes == null) {
+            return null;
+        }
+        for (Node child : childNodes) {
+            Node meshNode = child.getFirstNodeWithMesh();
+            if (meshNode != null) {
+                return meshNode;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the camera index
      * 
      * @return
@@ -272,51 +294,36 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
     }
 
     /**
-     * Returns the non transformed POSITION bounding (max - min) (three component) for the geometry in the list of
-     * nodes.
-     * This will search through all primitives used by the nodes and return the non transformed bound (max - min)
-     * values.
-     * 
-     * @param nodes List of nodes to include, children will be called as well.
-     * @param compare Current max values that will be updated
-     * @param scale Starting scale
-     * @return The updated compare MaxMin values
-     */
-    public static MaxMin updateMaxMin(Node[] nodes, MaxMin compare, float[] scale) {
-        if (nodes != null) {
-            for (Node n : nodes) {
-                float[] nodeScale = new float[3];
-                Matrix.getScale(n.updateMatrix(), nodeScale);
-                nodeScale[0] *= scale[0];
-                nodeScale[1] *= scale[1];
-                nodeScale[2] *= scale[2];
-                n.updateMaxMin(compare, nodeScale);
-            }
-        }
-        return compare;
-    }
-
-    /**
-     * Returns the non transformed POSITION bounding (max - min) (three component) for the geometry in this node and
+     * Returns the transformed POSITION bounding (max - min) (three component) for the geometry in this node and
      * children.
-     * This will search through all primitives used by the node and return the non transformed bound (max - min) values.
+     * This will search through all primitives used by the node and return the transformed bound (max - min) values.
+     * Use this to get the bounds volume for enclosed (transformed) geometry in nodes.
      * 
      * @param bounds Current bounds values that will be updated
      * @param matrix Transform
      * @return The updated bounds
      */
     public MaxMin calculateBounds(MaxMin bounds, float[] matrix) {
+        float[] concatMatrix = Matrix.createMatrix();
+        Matrix.mul4(matrix, updateMatrix(), concatMatrix);
+        System.arraycopy(concatMatrix, 0, matrix, 0, Matrix.MATRIX_ELEMENTS);
         if (getMesh() != null && getMesh().getPrimitives() != null) {
             for (Primitive p : getMesh().getPrimitives()) {
                 if (p.getAttributesArray() != null) {
                     Accessor accessor = p.getAccessor(Attributes.POSITION);
                     if (accessor != null) {
-                        bounds.updateMaxMin(bounds, matrix);
+                        MaxMin maxMin = new MaxMin(accessor.getMax(), accessor.getMin());
+                        bounds.update(maxMin, matrix);
                     }
                 }
             }
         }
-        updateMaxMin(getChildren(), bounds, scale);
+        if (childNodes == null) {
+            return bounds;
+        }
+        for (Node child : childNodes) {
+            child.calculateBounds(bounds, matrix);
+        }
         return bounds;
     }
 

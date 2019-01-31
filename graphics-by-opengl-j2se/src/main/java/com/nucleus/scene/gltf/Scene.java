@@ -68,6 +68,22 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         return sceneNodes;
     }
 
+    /**
+     * Returns the first found node that has a mesh - will search recursively into each node in this scene
+     * (depth first) - or null if no mesh found
+     * 
+     * @return First found node with Mesh, or null
+     */
+    public Node getFirstNodeWithMesh() {
+        for (Node node : sceneNodes) {
+            Node meshNode = node.getFirstNodeWithMesh();
+            if (meshNode != null) {
+                return node;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void resolve(GLTF asset) throws GLTFException {
         if (nodes != null && nodes.length > 0) {
@@ -99,7 +115,7 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
     protected void addDefaultCamera(GLTF gltf) {
         // Setup a default projection
         // Scale
-        MaxMin maxMin = calculateMaxMin();
+        MaxMin maxMin = calculateBounds();
         float[] delta = new float[2];
         maxMin.getMaxDeltaXY(delta);
 
@@ -248,24 +264,22 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
     }
 
     /**
-     * Calculates the max/min values for the meshes (Accessors) in this scene
-     * same as calling {@link #calculateMaxMin(float[])} with scale set to 1,1,1
+     * Calculates the bounds values for the meshes (Accessors) in this scene, this will expand a boundingbox
+     * with each transform node.
      * 
      * @return
      */
-    public MaxMin calculateMaxMin() {
-        return calculateMaxMin(new float[] { 1, 1, 1 });
-    }
-
-    /**
-     * Calculates the max/min values for the meshes (Accessors) in this scene, scale is used as a first scale-factor.
-     * 
-     * @return
-     */
-    public MaxMin calculateMaxMin(float[] scale) {
+    public MaxMin calculateBounds() {
         if (sceneNodes != null) {
             MaxMin mm = new MaxMin();
-            return Node.updateMaxMin(sceneNodes, mm, scale);
+            float[] matrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
+            for (Node node : sceneNodes) {
+                Node meshNode = node.getFirstNodeWithMesh();
+                if (meshNode != null) {
+                    meshNode.calculateBounds(mm, matrix);
+                }
+            }
+            return mm;
         }
         return null;
     }
