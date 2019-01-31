@@ -301,21 +301,23 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
      * children.
      * This will search through all primitives used by the node and return the non transformed bound (max - min) values.
      * 
-     * @param compare Current max values that will be updated
-     * @param scale Current scale
+     * @param bounds Current bounds values that will be updated
+     * @param matrix Transform
+     * @return The updated bounds
      */
-    public void updateMaxMin(MaxMin compare, float[] scale) {
+    public MaxMin calculateBounds(MaxMin bounds, float[] matrix) {
         if (getMesh() != null && getMesh().getPrimitives() != null) {
             for (Primitive p : getMesh().getPrimitives()) {
                 if (p.getAttributesArray() != null) {
                     Accessor accessor = p.getAccessor(Attributes.POSITION);
                     if (accessor != null) {
-                        accessor.updateMaxMin(compare, scale);
+                        bounds.updateMaxMin(bounds, matrix);
                     }
                 }
             }
         }
-        updateMaxMin(getChildren(), compare, scale);
+        updateMaxMin(getChildren(), bounds, scale);
+        return bounds;
     }
 
     @Override

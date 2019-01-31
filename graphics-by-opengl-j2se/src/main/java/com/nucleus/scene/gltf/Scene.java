@@ -98,6 +98,11 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
      */
     protected void addDefaultCamera(GLTF gltf) {
         // Setup a default projection
+        // Scale
+        MaxMin maxMin = calculateMaxMin();
+        float[] delta = new float[2];
+        maxMin.getMaxDeltaXY(delta);
+
         float YASPECT = 1f;
         Perspective p = new Perspective(16 / 9f, YASPECT, 10000, 0.1f);
         // This node will only be referenced by the camera
@@ -109,10 +114,6 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         // Add camera to gltf
         int index = gltf.addCamera(camera);
         node.setCamera(gltf, index);
-        // Scale
-        MaxMin maxMin = calculateMaxMin();
-        float[] delta = new float[2];
-        maxMin.getMaxDeltaXY(delta);
 
         Node parent = getMeshParent();
         // If parent to node with mesh is at root (ie does not have parent) then treat as normal

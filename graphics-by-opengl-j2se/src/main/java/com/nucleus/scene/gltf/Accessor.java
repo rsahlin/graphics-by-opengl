@@ -268,14 +268,6 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
     }
 
     /**
-     * 
-     * 
-     */
-    public void updateMaxMin(MaxMin compare, float[] scale) {
-        compare.update(max, min, scale);
-    }
-
-    /**
      * Copies all data in this accessor to short buffer
      * If componentType in accessor is float then nothing is done.
      * If componentType is int then values are truncated to short.

@@ -19,14 +19,16 @@ public class MaxMin {
     }
 
     /**
-     * Updates the max/min values in this object compared to the specified values, incoming max/min will be scaled using
-     * the specified scale-factor
+     * Updates the max/min values in this object compared to the specified values, incoming max/min will be transformed
+     * using matrix
      * 
      * @param max
      * @param min
-     * @param scale max and min will be scaled according to this before comparison.
+     * @param Transform matrix
      */
-    public void update(float[] max, float[] min, float[] scale) {
+    public void update(float[] max, float[] min, float[] Matrix) {
+        float[] 
+        Matrix.transformVec3(matrix, 0, max, , count);
         this.max[0] = Float.max(max[0] * scale[0], this.max[0]);
         this.max[1] = Float.max(max[1] * scale[1], this.max[1]);
         this.max[2] = Float.max(max[2] * scale[2], this.max[2]);
