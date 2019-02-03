@@ -288,6 +288,8 @@ public class Primitive implements RuntimeResolver {
         COLOR_1(),
         WEIGHTS_0(),
         WEIGHTS_1(),
+        JOINTS_0(),
+        JOINTS_1(),
         /**
          * Custom Attributes
          */
