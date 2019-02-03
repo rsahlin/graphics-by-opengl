@@ -44,13 +44,13 @@ public class MaxMin {
         float[] vec = new float[COMPONENTS * 2];
         Matrix.transformVec3(matrix, 0, maxmin, vec, 2);
 
-        this.maxmin[0] = Float.max(vec[0], this.maxmin[0]);
-        this.maxmin[1] = Float.max(vec[1], this.maxmin[1]);
-        this.maxmin[2] = Float.max(vec[2], this.maxmin[2]);
+        this.maxmin[0] = Float.max(Float.max(vec[0], vec[3]), this.maxmin[0]);
+        this.maxmin[1] = Float.max(Float.max(vec[1], vec[4]), this.maxmin[1]);
+        this.maxmin[2] = Float.max(Float.max(vec[2], vec[5]), this.maxmin[2]);
 
-        this.maxmin[3] = Float.min(vec[3], this.maxmin[3]);
-        this.maxmin[4] = Float.min(vec[4], this.maxmin[4]);
-        this.maxmin[5] = Float.min(vec[5], this.maxmin[5]);
+        this.maxmin[3] = Float.min(Float.min(vec[0], vec[3]), this.maxmin[3]);
+        this.maxmin[4] = Float.min(Float.min(vec[1], vec[4]), this.maxmin[4]);
+        this.maxmin[5] = Float.min(Float.min(vec[2], vec[5]), this.maxmin[5]);
     }
 
     /**
@@ -100,15 +100,16 @@ public class MaxMin {
     }
 
     /**
-     * Returns how much this maxmin shall be translated to be centered
+     * Returns how much this maxmin shall be translated to be centered, ie adding the result to the transaltion
+     * values will result in a centered bound (maxmin)
      * 
      * @param result
      * @return
      */
     public float[] getTranslateToCenter(float[] result) {
-        result[0] = (maxmin[0] + maxmin[3]) / 2;
-        result[1] = (maxmin[1] + maxmin[4]) / 2;
-        result[2] = (maxmin[2] + maxmin[5]) / 2;
+        result[0] = -(maxmin[0] + maxmin[3]) / 2;
+        result[1] = -(maxmin[1] + maxmin[4]) / 2;
+        result[2] = -(maxmin[2] + maxmin[5]) / 2;
 
         return result;
     }

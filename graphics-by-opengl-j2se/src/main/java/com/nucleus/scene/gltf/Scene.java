@@ -120,6 +120,13 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         MaxMin maxMin = calculateBounds();
         float[] result = new float[3];
         float scale = maxMin.getMaxDelta(result)[1];
+        if (scale == 0) {
+            // Y is totally flat - use x
+            scale = result[0] * (16f / 9);
+        }
+        if (scale == 0) {
+            scale = 1.0f;
+        }
         float YASPECT = 1f;
         Perspective p = new Perspective(16 / 9f, YASPECT, 10000, 0.1f);
         // This node will only be referenced by the camera
@@ -138,12 +145,11 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
             SimpleLogger.d(getClass(), "Found mesh parent, using inverse matrix for default camera");
             // Go backwards in parent hierarchy to find inverse matrix
             float[] matrix = parent.concatParentsMatrix();
-            Matrix.invertM(node.getMatrix(), 0, matrix, 0);
+            // Matrix.invertM(node.getMatrix(), 0, matrix, 0);
         }
-        // For now just scale according to height.
-        // The inverse of the node matrix will be used - so just set the largest values
+        // Translation is applied to camera - so negate values, moving camera up will move scene down
         maxMin.getTranslateToCenter(result);
-        Matrix.translate(node.getMatrix(), result[0] / scale, result[1] / scale, 1);
+        Matrix.translate(node.getMatrix(), -result[0] / scale, -result[1] / scale, (-maxMin.maxmin[5] / scale) + 1);
         Matrix.scaleM(node.getMatrix(), 0, scale, scale, scale);
     }
 
