@@ -230,7 +230,7 @@ public class Primitive implements RuntimeResolver {
                 output[1][outputIndex + 3] = tw;
                 outputIndex += 4;
             }
-            SimpleLogger.d(getClass(), "Created TANGENTs for " + tangents[0].length / 3 + " vertices");
+            SimpleLogger.d(getClass(), "Created TANGENTS and BITANGENTs for " + tangents[0].length / 3 + " vertices");
             return output;
         }
 

@@ -72,13 +72,45 @@ public class MaxMin {
     }
 
     /**
-     * Returns the max delta value for x and y
+     * Returns the min, x, y and z value
+     * 
+     * @param result, result array. If null a new result array is created with size 3
+     * @return
+     */
+    public float[] getMinValue(float[] result) {
+        if (result == null) {
+            result = new float[3];
+        }
+        result[0] = maxmin[3];
+        result[1] = maxmin[4];
+        result[2] = maxmin[5];
+        return result;
+    }
+
+    /**
+     * Returns the max delta value for x, y and z
      * 
      * @param result
      */
-    public void getMaxDeltaXY(float[] result) {
+    public float[] getMaxDelta(float[] result) {
         result[0] = maxmin[0] - maxmin[3];
         result[1] = maxmin[1] - maxmin[4];
+        result[2] = maxmin[2] - maxmin[5];
+        return result;
+    }
+
+    /**
+     * Returns how much this maxmin shall be translated to be centered
+     * 
+     * @param result
+     * @return
+     */
+    public float[] getTranslateToCenter(float[] result) {
+        result[0] = (maxmin[0] + maxmin[3]) / 2;
+        result[1] = (maxmin[1] + maxmin[4]) / 2;
+        result[2] = (maxmin[2] + maxmin[5]) / 2;
+
+        return result;
     }
 
 }

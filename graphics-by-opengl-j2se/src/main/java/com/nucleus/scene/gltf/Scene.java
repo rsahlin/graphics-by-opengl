@@ -103,6 +103,8 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
             }
             SimpleLogger.d(getClass(), "Found " + instanceCameras.size() + " cameras in scene. Adding default camera");
             addDefaultCamera(asset);
+            // Default to selecting the default camera
+            selectCameraInstance(getCameraInstanceCount() - 1);
         }
     }
 
@@ -116,9 +118,8 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         // Setup a default projection
         // Scale
         MaxMin maxMin = calculateBounds();
-        float[] delta = new float[2];
-        maxMin.getMaxDeltaXY(delta);
-
+        float[] result = new float[3];
+        float scale = maxMin.getMaxDelta(result)[1];
         float YASPECT = 1f;
         Perspective p = new Perspective(16 / 9f, YASPECT, 10000, 0.1f);
         // This node will only be referenced by the camera
@@ -141,8 +142,8 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         }
         // For now just scale according to height.
         // The inverse of the node matrix will be used - so just set the largest values
-        float scale = delta[1];
-        Matrix.translate(node.getMatrix(), 0, 0, 1f);
+        maxMin.getTranslateToCenter(result);
+        Matrix.translate(node.getMatrix(), result[0] / scale, result[1] / scale, 1);
         Matrix.scaleM(node.getMatrix(), 0, scale, scale, scale);
     }
 
@@ -274,9 +275,9 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
             MaxMin mm = new MaxMin();
             float[] matrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
             for (Node node : sceneNodes) {
-                Node meshNode = node.getFirstNodeWithMesh();
-                if (meshNode != null) {
-                    meshNode.calculateBounds(mm, matrix);
+                // Node meshNode = node.getFirstNodeWithMesh();
+                if (node != null) {
+                    node.calculateBounds(mm, matrix);
                 }
             }
             return mm;
