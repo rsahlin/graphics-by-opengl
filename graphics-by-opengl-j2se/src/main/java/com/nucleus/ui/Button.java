@@ -6,18 +6,30 @@ package com.nucleus.ui;
  */
 public interface Button extends Element {
 
+    public enum Action {
+        NONE(),
+        /**
+         * When there is a down - but now up, action on the button.
+         */
+        PRESSED(),
+        /**
+         * When down + up is recorded and the clicked behavior is invoked
+         */
+        CLICKED();
+    }
+
     /**
-     * Button has been pressed
+     * Button has been clicked
      * 
      * @return true if the event was consumed
      */
     public interface ButtonListener {
-        public boolean onPressed(Button button);
+        public boolean onClicked(Button button);
     }
 
     /**
-     * The button was pressed, update button on screen and dispatch {@link ButtonListener} if attached.
+     * The button was clicked, update button on screen and dispatch {@link ButtonListener} if attached.
      */
-    public void pressed();
+    public void clicked();
 
 }

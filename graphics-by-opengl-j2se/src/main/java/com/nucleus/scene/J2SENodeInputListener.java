@@ -195,7 +195,7 @@ public class J2SENodeInputListener implements MMIPointerInput {
         }
         if (node instanceof Button) {
             Button b = (Button) node;
-            b.pressed();
+            b.clicked();
             if (listener != null) {
                 listener.onPressed(b);
             }
