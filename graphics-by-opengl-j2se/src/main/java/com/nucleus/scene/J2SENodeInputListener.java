@@ -14,8 +14,7 @@ import com.nucleus.mmi.UIInput.EventConfiguration;
 import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.properties.Property;
 import com.nucleus.scene.Node.State;
-import com.nucleus.ui.Button;
-import com.nucleus.ui.Toggle;
+import com.nucleus.ui.Element;
 
 /**
  * Handles pointer input checking on nodes
@@ -185,20 +184,14 @@ public class J2SENodeInputListener implements MMIPointerInput {
         }
     }
 
+    protected void handleOnActive(Node node, UIElementInput listener, MMIPointer event) {
+
+    }
+
     protected void handleOnClick(Node node, UIElementInput listener, MMIPointer event) {
-        if (node instanceof Toggle) {
-            Toggle t = (Toggle) node;
-            t.toggle();
-            if (listener != null) {
-                listener.onStateChange(t);
-            }
-        }
-        if (node instanceof Button) {
-            Button b = (Button) node;
-            b.clicked();
-            if (listener != null) {
-                listener.onPressed(b);
-            }
+        if (node instanceof Element) {
+            Element e = (Element) node;
+            e.onClick(event.getPointerData().getCurrent(), listener);
         }
         // Dispatch onClick()
         listener.onClick(node, event.getPointerData().getCurrent());

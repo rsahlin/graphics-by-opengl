@@ -16,11 +16,6 @@ public interface Toggle extends Element {
     }
 
     /**
-     * Selects the next item
-     */
-    public void toggle();
-
-    /**
      * Sets the selected item
      * 
      * @param selected
