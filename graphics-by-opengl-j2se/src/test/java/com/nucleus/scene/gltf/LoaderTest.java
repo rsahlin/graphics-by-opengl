@@ -1,4 +1,4 @@
-package com.nucleus.gltf.loader;
+package com.nucleus.scene.gltf;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -31,7 +31,6 @@ public class LoaderTest extends BaseTestCase {
 
         Assert.assertNotNull(asset);
         checkAsset(asset.getAsset());
-        checkScene(asset.getScenes()[0]);
         checkNode(asset.getNodes()[0]);
         checkMesh(asset.getMeshes()[0]);
         checkBuffer(asset, asset.getBuffer(0));

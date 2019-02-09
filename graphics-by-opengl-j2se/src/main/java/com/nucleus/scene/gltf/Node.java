@@ -300,13 +300,18 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
      * Use this to get the bounds volume for enclosed (transformed) geometry in nodes.
      * 
      * @param bounds Current bounds values that will be updated
-     * @param matrix Transform
+     * @param matrix The current transform
      * @return The updated bounds
      */
     public MaxMin calculateBounds(MaxMin bounds, float[] matrix) {
-        float[] concatMatrix = Matrix.createMatrix();
-        Matrix.mul4(matrix, updateMatrix(), concatMatrix);
-        System.arraycopy(concatMatrix, 0, matrix, 0, Matrix.MATRIX_ELEMENTS);
+        if (matrix != null) {
+            float[] concatMatrix = Matrix.createMatrix();
+            Matrix.mul4(matrix, updateMatrix(), concatMatrix);
+            System.arraycopy(concatMatrix, 0, matrix, 0, Matrix.MATRIX_ELEMENTS);
+        } else {
+            matrix = Matrix.createMatrix();
+            System.arraycopy(updateMatrix(), 0, matrix, 0, Matrix.MATRIX_ELEMENTS);
+        }
         if (getMesh() != null && getMesh().getPrimitives() != null) {
             for (Primitive p : getMesh().getPrimitives()) {
                 if (p.getAttributesArray() != null) {
@@ -325,6 +330,15 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
             child.calculateBounds(bounds, matrix);
         }
         return bounds;
+    }
+
+    /**
+     * Calculate the bounds, starting from this node
+     * 
+     * @return
+     */
+    public MaxMin calculateBounds() {
+        return calculateBounds(new MaxMin(), null);
     }
 
     @Override
@@ -354,7 +368,7 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
      */
     public float[] concatParentsMatrix() {
         if (parent != null) {
-            Matrix.mul4(parent.matrix, matrix, parentMatrix);
+            Matrix.mul4(parent.updateMatrix(), updateMatrix(), parentMatrix);
             return parent.concatParentsMatrix(parentMatrix);
         }
         return Matrix.copy(matrix, 0, parentMatrix, 0);

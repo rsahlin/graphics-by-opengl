@@ -108,7 +108,7 @@ public class GLTF {
     @SerializedName(SCENE)
     private int scene = -1;
     @SerializedName(SCENES)
-    private Scene[] scenes;
+    private ArrayList<Scene> scenes;
 
     /**
      * From where the main file was loaded - this is needed for loading assets
@@ -312,15 +312,6 @@ public class GLTF {
     }
 
     /**
-     * Returns the array holding the scenes
-     * 
-     * @return
-     */
-    public Scene[] getScenes() {
-        return scenes;
-    }
-
-    /**
      * Returns the array of defined images, or null if none used
      * 
      * @return
@@ -354,10 +345,19 @@ public class GLTF {
      * @return The scene for the index or null
      */
     public Scene getScene(int index) {
-        if (scenes != null && index >= 0 && index < scenes.length) {
-            return scenes[index];
+        if (scenes != null && index >= 0 && index < scenes.size()) {
+            return scenes.get(index);
         }
         return null;
+    }
+
+    /**
+     * Returns the defined scene index, or -1 if not specified
+     * 
+     * @return
+     */
+    public int getSceneIndex() {
+        return scene;
     }
 
     /**
@@ -366,13 +366,64 @@ public class GLTF {
      * @return The default scene or the first scene in the defined scenes list, or null if no scenes are defined.
      */
     public Scene getDefaultScene() {
-        return scene >= 0 ? scenes[scene] : scenes != null ? scenes[0] : null;
+        return scene >= 0 ? scenes.get(scene) : scenes != null ? scenes.get(0) : null;
     }
 
-    public Node[] getNodes() {
+    /**
+     * Sets the default scene, if scene >= number of scenes then nothing is done.
+     * 
+     * @param scene
+     */
+    public void setDefaultScene(int scene) {
+        if (scene < scenes.size()) {
+            this.scene = scene;
+        }
+    }
+
+    /**
+     * Adds a scene to list of scenes
+     * 
+     * @param scene
+     * @return The index of the added scene, call getScene(index) to fetch the scene.
+     */
+    public int addScene(Scene scene) {
+        scenes.add(scene);
+        return scenes.size() - 1;
+    }
+
+    /**
+     * Returns the array of defined nodes
+     * 
+     * @return
+     */
+    protected Node[] getNodes() {
         return nodes;
     }
 
+    /**
+     * Returns the gltf index of the node - or -1 if not found or no nodes defined.
+     * 
+     * @param node
+     * @return
+     */
+    public int getNodeIndex(Node node) {
+        if (nodes == null) {
+            return -1;
+        }
+        for (int i = 0; i < nodes.length; i++) {
+            if (node == nodes[i]) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the array of defined meshes.
+     * TODO - should this method be visible?
+     * 
+     * @return
+     */
     public Mesh[] getMeshes() {
         return meshes;
     }
@@ -481,7 +532,7 @@ public class GLTF {
             result.addAll(Arrays.asList(nodes));
         }
         if (scenes != null) {
-            result.addAll(Arrays.asList(scenes));
+            result.addAll(scenes);
         }
         return result;
     }

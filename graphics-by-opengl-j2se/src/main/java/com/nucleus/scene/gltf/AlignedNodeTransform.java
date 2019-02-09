@@ -31,10 +31,15 @@ public class AlignedNodeTransform {
 
     public AlignedNodeTransform(Scene target, float[] moveScale) {
         this.moveScale = new float[] { moveScale[0], moveScale[1], moveScale[2] };
-        this.target = target;
+        setNodeTarget(target);
         resetRotation();
     }
 
+    /**
+     * Replaces the scene target
+     * 
+     * @param target
+     */
     public void setNodeTarget(Scene target) {
         this.target = target;
     }

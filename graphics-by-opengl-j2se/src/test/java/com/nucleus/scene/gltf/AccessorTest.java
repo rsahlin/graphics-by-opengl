@@ -1,4 +1,4 @@
-package com.nucleus.gltf;
+package com.nucleus.scene.gltf;
 
 import org.junit.Assert;
 import org.junit.Test;

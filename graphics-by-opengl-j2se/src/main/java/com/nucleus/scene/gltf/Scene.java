@@ -6,12 +6,15 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.scene.gltf.Camera.Perspective;
-import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.vecmath.Matrix;
 
 /**
- * The Scene as it is loaded using the glTF format.
+ * The glTF asset contains zero or more scenes, the set of visual objects to render. Scenes are defined in a scenes
+ * array. An additional property, scene (note singular), identifies which of the scenes in the array is to be displayed
+ * at load time.
+ * All nodes listed in scene.nodes array must be root nodes (see the next section for details).
+ * When scene is undefined, runtime is not required to render anything at load time.
  * 
  * Scenes use instances of Camera. The cameras that are referenced in this scene are stored here.
  * Use {@link #getCameraInstanceCount()} to check number of cameras. When scene is resolved a default camera will be
@@ -52,11 +55,16 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
     transient private float[] viewMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
     transient private int selectedCamera = 0;
 
-    /**
-     * returns the nodes, as indexes, that make up this scene
-     */
-    public int[] getNodeIndexes() {
-        return nodes;
+    public Scene() {
+
+    }
+
+    public Scene(GLTF asset, int[] nodes) {
+        if (nodes != null) {
+            this.nodes = new int[nodes.length];
+            System.arraycopy(nodes, 0, this.nodes, 0, nodes.length);
+            resolve(asset);
+        }
     }
 
     /**
@@ -78,14 +86,14 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         for (Node node : sceneNodes) {
             Node meshNode = node.getFirstNodeWithMesh();
             if (meshNode != null) {
-                return node;
+                return meshNode;
             }
         }
         return null;
     }
 
     @Override
-    public void resolve(GLTF asset) throws GLTFException {
+    public void resolve(GLTF asset) {
         if (nodes != null && nodes.length > 0) {
             Node[] sources = asset.getNodes();
             sceneNodes = new Node[nodes.length];
@@ -103,7 +111,7 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
             }
             SimpleLogger.d(getClass(), "Found " + instanceCameras.size() + " cameras in scene. Adding default camera");
             addDefaultCamera(asset);
-            // Default to selecting the default camera
+            // Default to selecting the first camera
             selectCameraInstance(getCameraInstanceCount() - 1);
         }
     }
@@ -111,12 +119,13 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
     /**
      * Creates a default perspective projection camera, the camera will be added to list of cameras.
      * Camera will have a Node, camera index in node will be set.
-     * TODO - check bounds of geometry and create perspective accordingly
      * 
      */
     protected void addDefaultCamera(GLTF gltf) {
         // Setup a default projection
         // Scale
+        // Node meshNode = getFirstNodeWithMesh();
+        // MaxMin maxMin = meshNode.calculateBounds();
         MaxMin maxMin = calculateBounds();
         float[] result = new float[3];
         float scale = maxMin.getMaxDelta(result)[1];
@@ -142,9 +151,9 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         Node parent = getMeshParent();
         // If parent to node with mesh is at root (ie does not have parent) then treat as normal
         if (parent != null && parent.getParent() != null) {
-            SimpleLogger.d(getClass(), "Found mesh parent, using inverse matrix for default camera");
+            // SimpleLogger.d(getClass(), "Found mesh parent, using inverse matrix for default camera");
             // Go backwards in parent hierarchy to find inverse matrix
-            float[] matrix = parent.concatParentsMatrix();
+            // float[] matrix = parent.concatParentsMatrix();
             // Matrix.invertM(node.getMatrix(), 0, matrix, 0);
         }
         // Translation is applied to camera - so negate values, moving camera up will move scene down
@@ -281,7 +290,6 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
             MaxMin mm = new MaxMin();
             float[] matrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
             for (Node node : sceneNodes) {
-                // Node meshNode = node.getFirstNodeWithMesh();
                 if (node != null) {
                     node.calculateBounds(mm, matrix);
                 }
