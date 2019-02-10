@@ -1,6 +1,7 @@
 package com.nucleus.geometry.shape;
 
 import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
+import com.nucleus.vecmath.Grid;
 import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Shape;
 
@@ -22,6 +23,8 @@ public class ShapeBuilderFactory {
         switch (shape.getType()) {
             case rect:
                 return createBuilder((Rectangle) shape, count, startVertex);
+            case grid:
+                return createBuilder((Grid) shape, count, startVertex);
             default:
                 throw new IllegalArgumentException("Not implemented for: " + shape.getType());
 
@@ -32,6 +35,10 @@ public class ShapeBuilderFactory {
         RectangleConfiguration config = new RectangleShapeBuilder.RectangleConfiguration(shape,
                 RectangleShapeBuilder.DEFAULT_Z, count, 0);
         return new RectangleShapeBuilder(config);
+    }
+
+    public static ShapeBuilder createBuilder(Grid shape, int count, int startVertex) {
+        return new LineShapeBuilder(count * shape.getXSegments() * shape.getYSegments(), startVertex);
     }
 
 }

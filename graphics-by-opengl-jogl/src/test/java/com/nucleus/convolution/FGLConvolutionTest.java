@@ -42,7 +42,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
      * 
      */
     public enum ClientClasses implements Type<Object> {
-        clientclass(MyClientApplication.class);
+            clientclass(MyClientApplication.class);
 
         private final Class<?> theClass;
 

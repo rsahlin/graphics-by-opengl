@@ -8,10 +8,11 @@ import static com.nucleus.vecmath.Rectangle.INDEX_Y;
 import java.nio.ShortBuffer;
 
 import com.nucleus.geometry.AttributeBuffer;
+import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.ElementBuffer.Type;
+import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLESWrapper;
-import com.nucleus.opengl.GLESWrapper.Mode;
 import com.nucleus.renderer.Window;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureParameter;
@@ -27,7 +28,7 @@ import com.nucleus.vecmath.Rectangle;
  * 
  *
  */
-public class RectangleShapeBuilder extends ElementBuilder {
+public class RectangleShapeBuilder extends ElementBuilder<Mesh> {
 
     public static final float DEFAULT_Z = 0;
     /**
@@ -188,14 +189,19 @@ public class RectangleShapeBuilder extends ElementBuilder {
     }
 
     @Override
-    public void build(AttributeBuffer attributes, Texture2D texture, ElementBuffer indices, GLESWrapper.Mode mode) {
+    public void build(Mesh mesh) {
         // TODO - for this shapebuilder to work the offsets of vertex and uv must be set.
+        ElementBuffer indices = mesh.getElementBuffer();
+        AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
+        if (attributes == null) {
+            attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES);
+        }
         int stride = attributes.getFloatStride();
         if (quadStoreage == null) {
             quadStoreage = new float[stride * QUAD_VERTICES];
         }
         if (configuration.rectangle != null) {
-            createQuadArray(texture, mode, stride, quadStoreage);
+            createQuadArray(mesh.getTexture(Texture2D.TEXTURE_0), mesh.getMode(), stride, quadStoreage);
         }
         int startIndex = configuration.startVertex * stride;
         int count = configuration.getRectangleCount();
@@ -209,7 +215,7 @@ public class RectangleShapeBuilder extends ElementBuilder {
             if (indices.type != Type.SHORT) {
                 throw new IllegalArgumentException("Invalid type " + indices.type);
             }
-            buildElements(indices.indices.asShortBuffer(), mode, count, configuration.startVertex);
+            buildElements(indices.indices.asShortBuffer(), mesh.getMode(), count, configuration.startVertex);
         }
     }
 
@@ -244,7 +250,8 @@ public class RectangleShapeBuilder extends ElementBuilder {
      * @param useVertexIndex
      * @param destination Result is written here, must contain 4 * vertexStride values
      */
-    protected void createQuadArray(GLESWrapper.Mode mode, float[] values, int vertexStride, float[] uv, float[] destination) {
+    protected void createQuadArray(GLESWrapper.Mode mode, float[] values, int vertexStride, float[] uv,
+            float[] destination) {
         switch (mode) {
             case TRIANGLES:
             case TRIANGLE_FAN:

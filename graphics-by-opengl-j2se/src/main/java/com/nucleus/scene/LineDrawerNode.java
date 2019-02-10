@@ -1,7 +1,6 @@
 package com.nucleus.scene;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.assets.AssetManager;
@@ -15,6 +14,7 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.opengl.GLESWrapper.Mode;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
@@ -25,33 +25,23 @@ import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
 
 /**
- * Contains a mesh that draws lines or points
- * The intended usage is to put this node in a layer and access it programatically.
- * Default is to draw rectangles
- * This is not performance optimal for many lines, use only if a few lines are drawn in the UI.
+ * Contains a mesh that draws lines or points, lines or points can be made into shapes by
+ * using a shapebuilder.
+ * The intended usage is to put this node in a layer and access it programatically or to specify
+ * one of the predefined shapes.
  */
 public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeUpdater.Consumer {
 
     protected final static String VERTEX_SHADER_NAME = "flatline";
     protected final static String FRAGMENT_SHADER_NAME = "flatline";
 
-    public enum LineMode {
-        RECTANGLE(),
-        LINES(),
-        LINE_STRIP(),
-        POINTS();
-    }
-
     public static final String LINE_COUNT = "lineCount";
     public static final String LINE_MODE = "lineMode";
-    public static final String POINT_SIZE = "pointSize";
 
     @SerializedName(LINE_COUNT)
     private int lineCount;
     @SerializedName(LINE_MODE)
-    private LineMode lineMode = LineMode.RECTANGLE;
-    @SerializedName(POINT_SIZE)
-    private float pointSize = 1;
+    private GLESWrapper.Mode lineMode;
 
     transient private float[] attributes;
     transient private boolean attributesDirty = false;
@@ -67,22 +57,22 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
             throws IOException {
         int count = getLineCount();
         Mesh.Builder<Mesh> builder = new Mesh.Builder<>(gles);
+        builder.setShapeBuilder(shapeBuilder);
         switch (getLineMode()) {
             case LINES:
                 builder.setArrayMode(GLESWrapper.Mode.LINES, count * 2, 0);
                 break;
             case LINE_STRIP:
-                builder.setArrayMode(GLESWrapper.Mode.LINE_STRIP, count * 2, 0);
+                builder.setArrayMode(GLESWrapper.Mode.LINE_STRIP, count + 1, 0);
                 break;
             case POINTS:
                 builder.setArrayMode(GLESWrapper.Mode.POINTS, count, 0);
                 break;
-            case RECTANGLE:
-                // Rectangle shares vertices, 4 vertices per rectangle
-                builder.setElementMode(GLESWrapper.Mode.LINES, count, 0, count * 2);
-                break;
             default:
                 throw new IllegalArgumentException("Not implemented for mode " + getLineMode());
+        }
+        if (builder.getShapeBuilder() == null) {
+            builder.setShapeBuilder(createShapeBuilder(builder));
         }
         Texture2D tex = TextureFactory.getInstance().createTexture(TextureType.Untextured);
         builder.setTexture(tex);
@@ -92,7 +82,7 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
                             Shading.flat, null,
                             ProgramType.VERTEX_FRAGMENT)));
         }
-        return initMeshBuilder(gles, count, getShapeBuilder(), builder);
+        return initMeshBuilder(gles, count, builder.getShapeBuilder(), builder);
     }
 
     /**
@@ -127,26 +117,8 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
      * 
      * @return
      */
-    public LineMode getLineMode() {
+    public Mode getLineMode() {
         return lineMode;
-    }
-
-    /**
-     * Returns size to use for points and lines
-     * 
-     * @return
-     */
-    public float getPointSize() {
-        return pointSize;
-    }
-
-    /**
-     * Sets size used for points and lines
-     * 
-     * @param pointSize
-     */
-    public void setPointSize(float pointSize) {
-        this.pointSize = pointSize;
     }
 
     @Override
@@ -172,10 +144,9 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
         super.set(source);
         lineCount = source.lineCount;
         lineMode = source.lineMode;
-        pointSize = source.pointSize;
     }
 
-    public ShapeBuilder getShapeBuilder() {
+    private ShapeBuilder createShapeBuilder(Mesh.Builder<Mesh> meshBuilder) {
         switch (lineMode) {
             case LINES:
             case LINE_STRIP:
@@ -300,12 +271,6 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
     public void setDrawCount(int count, int offset) {
         drawCount = count;
         drawOffset = offset;
-    }
-
-    @Override
-    public ArrayList<Mesh> getMeshes(ArrayList<Mesh> list) {
-        list.addAll(meshes);
-        return list;
     }
 
 }
