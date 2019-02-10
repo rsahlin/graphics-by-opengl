@@ -242,6 +242,28 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Categorizer for programs that share fragment shaders - source for fragment shader is normally in
+     * assets folder (not using category folder)
+     *
+     */
+    public static class SharedfragmentCategorizer extends Categorizer {
+
+        public SharedfragmentCategorizer(Pass pass, Shading shading, String category) {
+            super(pass, shading, category);
+        }
+
+        @Override
+        public String getShaderSourceName(int shaderType) {
+            switch (shaderType) {
+                case GLES20.GL_FRAGMENT_SHADER:
+                    // Fragment shaders are shared - skip category path
+                    return getPassString() + getShadingString();
+            }
+            return super.getShaderSourceName(shaderType);
+        }
+    }
+
+    /**
      * The basic function
      */
     protected Categorizer function;

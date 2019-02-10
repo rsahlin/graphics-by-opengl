@@ -33,14 +33,14 @@ public class TranslateProgram extends ShaderProgram {
     }
 
     public TranslateProgram(Texture2D texture) {
-        super(null,
+        super(new SharedfragmentCategorizer(null,
                 (texture == null || texture.textureType == TextureType.Untextured) ? Shading.flat : Shading.textured,
-                null, ProgramType.VERTEX_FRAGMENT);
+                "translate"), ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
     }
 
     public TranslateProgram(Texture2D.Shading shading) {
-        super(null, shading, null, ProgramType.VERTEX_FRAGMENT);
+        super(new SharedfragmentCategorizer(null, shading, "translate"), ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
     }
 
