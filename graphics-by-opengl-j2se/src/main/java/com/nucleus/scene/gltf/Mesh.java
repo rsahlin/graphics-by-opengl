@@ -54,7 +54,7 @@ public class Mesh extends GLTFNamedValue implements AttributeUpdater, RuntimeRes
      */
     transient static private ShaderProgram debugTBNProgram = new GLTFShaderProgram(
             new String[] { "vecline", "vecline", "vecline" }, null, Shading.flat,
-            "gltf", ProgramType.VERTEX_GEOMETRY_FRAGMENT, new String[] { null, null });
+            "ui", ProgramType.VERTEX_GEOMETRY_FRAGMENT, new String[] { null, null });
 
     /**
      * Returns the array of primitives for this Mesh
