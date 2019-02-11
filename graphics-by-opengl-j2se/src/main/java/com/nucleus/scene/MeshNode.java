@@ -46,7 +46,7 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
     }
 
     @Override
-    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
+    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder<Mesh> shapeBuilder)
             throws IOException {
         SimpleLogger.d(getClass(), "Creating MeshBuilder for Node " + getId());
         int count = 1;
@@ -68,7 +68,7 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
                 shapeBuilder = new RectangleShapeBuilder(
                         new RectangleConfiguration(view.getWidth(), view.getHeight(), 0f, 1, 0));
             } else {
-                shapeBuilder = ShapeBuilderFactory.createBuilder(shape, count, 0);
+                shapeBuilder = ShapeBuilderFactory.getInstance().createBuilder(shape, count, 0);
             }
         }
         // If program is not present in parent then the meshbuilder is called to create program.

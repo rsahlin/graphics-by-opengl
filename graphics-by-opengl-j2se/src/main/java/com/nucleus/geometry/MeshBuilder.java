@@ -34,7 +34,7 @@ public interface MeshBuilder<T> {
          * @return MeshBuilder that can be used to create Meshes
          * @throws ComponentException
          */
-        public MeshBuilder<T> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
+        public MeshBuilder<T> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder<T> shapeBuilder)
                 throws IOException;
 
     }

@@ -217,7 +217,7 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
     }
 
     @Override
-    public MeshBuilder<T> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
+    public MeshBuilder<T> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder<T> shapeBuilder)
             throws IOException {
 
         Mesh.Builder<Mesh> builder = new Mesh.Builder<>(gles);
@@ -238,7 +238,7 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
      * @param builder
      * @throws IOException
      */
-    protected MeshBuilder<T> initMeshBuilder(GLES20Wrapper gles, int count, ShapeBuilder shapeBuilder,
+    protected MeshBuilder<T> initMeshBuilder(GLES20Wrapper gles, int count, ShapeBuilder<T> shapeBuilder,
             Mesh.Builder<Mesh> builder)
             throws IOException {
         if (builder.getTexture() == null) {

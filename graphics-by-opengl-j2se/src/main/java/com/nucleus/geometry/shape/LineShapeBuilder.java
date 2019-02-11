@@ -17,6 +17,7 @@ public class LineShapeBuilder extends ShapeBuilder<Mesh> {
 
     @Override
     public void build(Mesh mesh) {
+
     }
 
 }
