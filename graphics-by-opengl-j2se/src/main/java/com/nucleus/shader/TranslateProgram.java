@@ -18,7 +18,9 @@ import com.nucleus.texturing.TextureType;
 public class TranslateProgram extends ShaderProgram {
 
     public static class TranslateProgramIndexer extends VariableIndexer {
-        protected final static String[] NAMES = new String[] { "aVertex", "aTexCoord", "aTranslate", "aColor" };
+        protected final static String[] NAMES = new String[] { VariableIndexer.Property.VERTEX.name,
+                VariableIndexer.Property.UV.name, VariableIndexer.Property.TRANSLATE.name,
+                VariableIndexer.Property.ALBEDO.name };
         protected final static int[] OFFSETS = new int[] { 0, 3, 0, 6 };
         protected final static VariableType[] TYPES = new VariableType[] { VariableType.ATTRIBUTE,
                 VariableType.ATTRIBUTE, VariableType.ATTRIBUTE, VariableType.ATTRIBUTE };
