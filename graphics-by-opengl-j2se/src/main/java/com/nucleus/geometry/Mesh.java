@@ -156,6 +156,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
         @Override
         public ShaderProgram createProgram() {
+            // Default is to create a translate program, this will use an indexer so that creating 2D objects is
+            // possible.
+            // this is used mainly for ui elements
             return AssetManager.getInstance().getProgram(gles, new TranslateProgram(texture));
         }
 

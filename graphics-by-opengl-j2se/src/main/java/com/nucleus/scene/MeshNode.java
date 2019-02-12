@@ -15,6 +15,7 @@ import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilderFactory;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.shader.VariableIndexer;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -60,14 +61,19 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
         }
         builder.setTexture(tex);
         if (shapeBuilder == null) {
-            LayerNode layer = getRootNode().getNodeByType(NodeTypes.layernode.name(), LayerNode.class);
-
-            ViewFrustum view = layer.getViewFrustum();
+            // We may need program when creating shapeBuilder
+            setProgram(builder.createProgram());
             builder.setArrayMode(GLESWrapper.Mode.TRIANGLE_FAN, 4, 0);
             if (shape == null) {
+                LayerNode layer = getRootNode().getNodeByType(NodeTypes.layernode.name(), LayerNode.class);
+                ViewFrustum view = layer.getViewFrustum();
                 shapeBuilder = new RectangleShapeBuilder(
                         new RectangleConfiguration(view.getWidth(), view.getHeight(), 0f, 1, 0));
             } else {
+                VariableIndexer indexer = program.getIndexer();
+                if (indexer == null) {
+                    indexer = program.createIndexer();
+                }
                 shapeBuilder = ShapeBuilderFactory.getInstance().createBuilder(shape, count, 0);
             }
         }

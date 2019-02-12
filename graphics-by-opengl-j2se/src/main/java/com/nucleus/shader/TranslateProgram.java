@@ -31,7 +31,6 @@ public class TranslateProgram extends ShaderProgram {
         public TranslateProgramIndexer() {
             super(NAMES, OFFSETS, TYPES, BUFFERINDEXES, SIZEPERVERTEX);
         }
-
     }
 
     public TranslateProgram(Texture2D texture) {

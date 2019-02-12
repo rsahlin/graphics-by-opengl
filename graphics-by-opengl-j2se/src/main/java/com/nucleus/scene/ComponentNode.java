@@ -214,7 +214,7 @@ public class ComponentNode extends AbstractMeshNode<Mesh> implements ComponentCo
     }
 
     @Override
-    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
+    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder<Mesh> shapeBuilder)
             throws IOException {
         try {
             createComponents(gles);

@@ -377,10 +377,13 @@ public abstract class ShaderProgram {
     /**
      * Returns the offset within an attribute buffer where the data is or -1 if shader variable is not defined.
      * 
+     * Use {@link Property} to fetch shader variable instead.
+     * 
      * @param name Name of the shader variable to query
      * @return Offset into attribute (buffer) where the storage for the specified variable is, or -1 if the variable is
      * not found.
      */
+    @Deprecated
     public int getAttributeOffset(String name) {
         ShaderVariable v = getAttributeByName(name);
         if (v != null) {
@@ -1003,11 +1006,23 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Returns the attribute if defined in shader program.
+     * 
+     * @param attribute
+     * @return Shader variable for attribute, or null if not defined in shader
+     */
+    public ShaderVariable getAttribute(VariableIndexer.Property attribute) {
+        return getAttributeByName(attribute.name);
+    }
+
+    /**
      * Returns the active shader attribute by name, or null if not found
+     * Avoid using this in favour of {@link #getAttribute(com.nucleus.shader.VariableIndexer.Property)}
      * 
      * @param attrib Name of attribute to return
      * @return
      */
+    @Deprecated
     public ShaderVariable getAttributeByName(String attrib) {
         return getVariableByName(attrib, activeAttributes);
     }
