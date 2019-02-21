@@ -22,9 +22,10 @@ public class GLUtils {
      * When this method returns there will be zero reported errors from GL.
      * 
      * @param ga The tag to display with errors
+     * @return true if GL error but exception not thrown
      * @throws GLException If there is one or more errors in GL.
      */
-    public static void handleError(GLES20Wrapper gles, String tag) throws GLException {
+    public static boolean handleError(GLES20Wrapper gles, String tag) throws GLException {
         List<Integer> errors = getErrors(gles);
         if (errors != null) {
             if (throwErrors) {
@@ -35,7 +36,9 @@ public class GLUtils {
                             "GLError: " + Error.getError(i) + " : value " + i);
                 }
             }
+            return true;
         }
+        return false;
     }
 
     /**
