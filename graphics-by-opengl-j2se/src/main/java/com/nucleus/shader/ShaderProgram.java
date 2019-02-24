@@ -1390,7 +1390,15 @@ public abstract class ShaderProgram {
             default:
                 throw new IllegalArgumentException("Not implemented for dataType: " + variable.getDataType());
         }
-        GLUtils.handleError(gles, "setUniform(), dataType: " + variable.getDataType());
+        if (GLUtils.handleError(gles, "setUniform: " + variable.getName() + ", dataType: " + variable.getDataType() +
+                ", size " + variable.getSize())) {
+            // Log shader sourcenames
+            StringBuffer strBuffer = new StringBuffer();
+            for (ShaderSource s : shaderSources) {
+                strBuffer.append(s.getFullSourceName() + " : ");
+            }
+            SimpleLogger.d(getClass(), strBuffer.toString());
+        }
 
     }
 
