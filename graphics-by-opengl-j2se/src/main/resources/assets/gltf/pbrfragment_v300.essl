@@ -16,6 +16,8 @@ uniform vec3 _LIGHT_0[1];
 const float pi = 3.141592;
 const float oneByPI = 1.0 / pi;
 const float twoByPI = 2.0 / pi;
+const float gamma = 2.2;
+const float oneByGamma = 1.0 / gamma;
 
 in vec2 vTexCoord0;
 in vec2 vTexNormal;
@@ -43,7 +45,7 @@ vec4 calculateFresnelDiffuse() {
     float NDotH = dot(vNormal, H);
     float GN = NDotH /(NDotH * (1.0 - k) + k);
     vec3 specular = max(vec3(0.0,0.0,0.0), (fresnel * (GL * GN) * distribution));// / max(1.0,(4.0 * (dot(vNormal, vLight) * (dot(vNormal, vEye))))));
-    return vec4(diffuse + specular, _PBRDATA[1].a);
+    return vec4(pow(diffuse + specular, vec3(oneByGamma)), _PBRDATA[1].a);
 }
 
 vec4 calculateFresnelDiffuseTexNormal() {
@@ -62,7 +64,7 @@ vec4 calculateFresnelDiffuseTexNormal() {
     float NDotH = dot(normal, H);
     float GN = NDotH /(NDotH * (1.0 - k) + k);
     vec3 specular = max(vec3(0.0,0.0,0.0), (fresnel * (GL * GN) * distribution));// / max(1.0,(4.0 * (dot(normal, vLight) * (dot(normal, vEye))))));
-    return vec4(diffuse + specular, _PBRDATA[1].a);
+    return vec4(pow(diffuse + specular, vec3(oneByGamma)), _PBRDATA[1].a);
 }
 
 
