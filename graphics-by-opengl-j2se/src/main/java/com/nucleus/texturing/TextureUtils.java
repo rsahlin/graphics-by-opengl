@@ -218,7 +218,6 @@ public class TextureUtils {
     public static Texture2D.Type getType(ImageFormat format) {
 
         switch (format) {
-            case ABGR4:
             case RGBA:
             case RGB:
                 return Type.UNSIGNED_BYTE;
@@ -252,7 +251,6 @@ public class TextureUtils {
      */
     public static Texture2D.Format getFormat(ImageFormat format) {
         switch (format) {
-            case ABGR4:
             case RGBA4:
             case RGBA:
             case RGB5_A1:

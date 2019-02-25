@@ -556,8 +556,7 @@ public class AssetManager {
      */
     protected BufferImage getTextureImage(String uri) throws IOException {
         if (uri != null) {
-            BufferImage textureImage = BaseImageFactory.getInstance().createImage(uri, ImageFormat.RGBA);
-            SimpleLogger.d(getClass(), "Loaded gltf texture image " + uri);
+            BufferImage textureImage = BaseImageFactory.getInstance().createImage(uri, null);
             return textureImage;
         } else {
             throw new IllegalArgumentException("Not implemented");

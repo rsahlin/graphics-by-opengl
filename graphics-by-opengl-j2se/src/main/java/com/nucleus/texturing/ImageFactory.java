@@ -22,10 +22,10 @@ public interface ImageFactory {
      */
     public enum PixelFormat {
 
-        BYTE_BGR(),
-        BYTE_ABGR(),
-        BYTE_RGB(),
-        BYTE_ARGB();
+    BYTE_BGR(),
+    BYTE_ABGR(),
+    BYTE_RGB(),
+    BYTE_ARGB();
 
         private PixelFormat() {
         };
@@ -36,7 +36,7 @@ public interface ImageFactory {
      * Loads an image, the image must be in a format that is understood by the platform.
      * 
      * @param name The filename to load
-     * @param format The image format of the created image (buffer)
+     * @param format The image format of the created image (buffer), or null to create in same as loaded imageformat
      * @return The loaded image.
      * @throws IOException If there is an error loading the image.
      * @throws IllegalArgumentException If name or format is null
@@ -56,7 +56,8 @@ public interface ImageFactory {
      * @throws IOException If there is an error loading the image.
      * @throws IllegalArgumentException If name or format is null, or scaleX or scaleY is zero or less
      */
-    public BufferImage createImage(String name, float scaleX, float scaleY, BufferImage.ImageFormat format, RESOLUTION resolution)
+    public BufferImage createImage(String name, float scaleX, float scaleY, BufferImage.ImageFormat format,
+            RESOLUTION resolution)
             throws IOException;
 
     /**
@@ -70,7 +71,8 @@ public interface ImageFactory {
      * @return Scaled copy of the source image in the specified format
      * @throws IllegalArgumentException If source or format is null, if width or height <= 0
      */
-    public BufferImage createScaledImage(BufferImage source, int width, int height, ImageFormat format, RESOLUTION resolution);
+    public BufferImage createScaledImage(BufferImage source, int width, int height, ImageFormat format,
+            RESOLUTION resolution);
 
     /**
      * Creates an image with the specified size and format.

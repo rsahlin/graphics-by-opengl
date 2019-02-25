@@ -5,8 +5,9 @@ import java.nio.ByteBuffer;
 
 import com.nucleus.ErrorMessage;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
-import com.nucleus.texturing.Convolution.Kernel;
 import com.nucleus.texturing.BufferImage.ImageFormat;
+import com.nucleus.texturing.BufferImage.SourceFormat;
+import com.nucleus.texturing.Convolution.Kernel;
 
 /**
  * Implementation of platform agnostic image methods using the Nucleus {@link BufferImage} class;
@@ -23,17 +24,19 @@ public abstract class BaseImageFactory implements ImageFactory {
     protected final static String NO_FACTORY = "No ImageFactory instance set - call ";
 
     protected static ImageFactory factory;
-    
+
     /**
      * Sets the ImageFactory instance, must be called before calling {@link #getInstance()}
+     * 
      * @param factory
      */
     public static void setFactory(ImageFactory factory) {
         BaseImageFactory.factory = factory;
     }
-    
+
     /**
      * Returns the ImageFactory - an image factory instance must be set before calling this method.
+     * 
      * @return
      * @throws IllegalArgumentException If no factory instance has been set.
      */
@@ -43,10 +46,10 @@ public abstract class BaseImageFactory implements ImageFactory {
         }
         return factory;
     }
-    
-    
+
     @Override
-    public BufferImage createScaledImage(BufferImage source, int width, int height, ImageFormat format, RESOLUTION resolution) {
+    public BufferImage createScaledImage(BufferImage source, int width, int height, ImageFormat format,
+            RESOLUTION resolution) {
         if (format == null) {
             throw new IllegalArgumentException(NULL_PARAMETER);
         }
@@ -180,11 +183,11 @@ public abstract class BaseImageFactory implements ImageFactory {
      * @param sourceFormat The source type
      * @param destination
      */
-    protected void copyPixels(byte[] source, ImageFormat sourceFormat, BufferImage destination) {
+    protected void copyPixels(byte[] source, SourceFormat sourceFormat, BufferImage destination) {
 
         ByteBuffer buffer = (ByteBuffer) destination.getBuffer().rewind();
         switch (sourceFormat) {
-            case ABGR4:
+            case TYPE_4BYTE_ABGR:
                 switch (destination.getFormat()) {
                     case RGBA:
                         copyPixels_4BYTE_ABGR_TO_RGBA(source, buffer);
@@ -206,7 +209,7 @@ public abstract class BaseImageFactory implements ImageFactory {
                                 ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
                 }
                 break;
-            case RGBA:
+            case TYPE_INT_ARGB:
                 switch (destination.getFormat()) {
                     case RGBA:
                         copyPixels_4BYTE_RGBA_TO_RGBA(source, buffer);
@@ -227,6 +230,16 @@ public abstract class BaseImageFactory implements ImageFactory {
                         throw new IllegalArgumentException(
                                 ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
                 }
+            case TYPE_3BYTE_BGR:
+                switch (destination.getFormat()) {
+                    case RGB:
+                        copyPixels_3BYTE_BGR_TO_RGB(source, buffer);
+                        break;
+                    default:
+                        throw new IllegalArgumentException(
+                                ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
+                }
+
                 break;
             default:
                 throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + sourceFormat);
@@ -354,6 +367,23 @@ public abstract class BaseImageFactory implements ImageFactory {
         int length = source.length;
         for (int index = 0; index < length;) {
             index++;
+            rgb[2] = source[index++];
+            rgb[1] = source[index++];
+            rgb[0] = source[index++];
+            destination.put(rgb, 0, rgb.length);
+        }
+    }
+
+    /**
+     * Straight copy from source to destination - just swap BGR to RGB
+     * 
+     * @param source
+     * @param destination
+     */
+    protected void copyPixels_3BYTE_BGR_TO_RGB(byte[] source, ByteBuffer destination) {
+        byte[] rgb = new byte[3];
+        int length = source.length;
+        for (int index = 0; index < length;) {
             rgb[2] = source[index++];
             rgb[1] = source[index++];
             rgb[0] = source[index++];

@@ -2,7 +2,6 @@ package com.nucleus.texturing;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 import com.nucleus.ErrorMessage;
 import com.nucleus.common.BufferUtils;
@@ -24,10 +23,6 @@ public class BufferImage extends BufferObject {
      */
     public enum ImageFormat {
 
-    /**
-     * From java.awt.image.BufferedImage
-     */
-    ABGR4(06, 4),
     /**
      * Image type RGBA 4 bits per pixel and component, ie 16 bit format.
      */
@@ -84,16 +79,47 @@ public class BufferImage extends BufferObject {
             this.size = size;
         }
 
+    }
+
+    /**
+     * Loaded image formats
+     *
+     */
+    public enum SourceFormat {
         /**
-         * Returns the enum for the specified int value, if found
+         * From java.awt.image.BufferedImage
+         */
+        TYPE_4BYTE_ABGR(06, 4, ImageFormat.RGBA),
+        TYPE_3BYTE_BGR(05, 3, ImageFormat.RGB),
+        TYPE_INT_ARGB(02, 4, ImageFormat.RGBA);
+
+        public final int type;
+        /**
+         * The size in bytes of each pixel
+         */
+        public final int size;
+
+        /**
+         * The most closely matching imageformat that can be used when loading
+         */
+        public final ImageFormat imageFormat;
+
+        SourceFormat(int type, int size, ImageFormat imageFormat) {
+            this.type = type;
+            this.size = size;
+            this.imageFormat = imageFormat;
+        }
+
+        /**
+         * Returns the enum for the specified awt buffered image int value, if found
          * 
          * @param type image type
          * @return The image format enum, or null if not found.
          */
-        public static ImageFormat getImageFormat(int type) {
-            for (ImageFormat imgFormat : ImageFormat.values()) {
-                if (imgFormat.type == type) {
-                    return imgFormat;
+        public static SourceFormat getFromAwtFormat(int type) {
+            for (SourceFormat format : SourceFormat.values()) {
+                if (format.type == type) {
+                    return format;
                 }
             }
             return null;
@@ -153,7 +179,7 @@ public class BufferImage extends BufferObject {
             case LUMINANCE_ALPHA:
             case LUMINANCE:
             case ALPHA:
-                buffer =BufferUtils.createByteBuffer(sizeInBytes);
+                buffer = BufferUtils.createByteBuffer(sizeInBytes);
                 break;
             default:
                 throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE + ", " + format);
