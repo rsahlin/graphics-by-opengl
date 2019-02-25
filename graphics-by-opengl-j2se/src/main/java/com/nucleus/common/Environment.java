@@ -49,7 +49,16 @@ public class Environment {
         /**
          * If false then use of vbo is disabled
          */
-        USEVBO("com.nucleus.vbo");
+        USEVBO("com.nucleus.vbo"),
+        /**
+         * If true then recalculate tangents on loaded geometry - this is for debugging etc.
+         */
+        RECALCULATE_TANGENTS("com.nucleus.geometry.recalculate_tangents"),
+        /**
+         * If geometry has normalmap then use it as a texture (color) source
+         * Used to debug normal maps
+         */
+        RENDER_NORMALMAP("com.nucleus.shader.render_normalmap");
 
         public final String key;
 

@@ -76,6 +76,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             // Do nothing
             return false;
         }
+        forceMode = Configuration.getInstance().getGLTFMode();
         renderState = renderer.getRenderState();
         pushMatrix(viewMatrixStack, matrices[Matrices.VIEW.index]);
         pushMatrix(projectionMatrixStack, matrices[Matrices.PROJECTION.index]);

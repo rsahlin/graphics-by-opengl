@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.Environment;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.scene.gltf.Accessor.ComponentType;
 import com.nucleus.scene.gltf.Accessor.Type;
@@ -554,7 +555,8 @@ public class Primitive implements RuntimeResolver {
         Triangles triangles = new Triangles();
         triangles.createBuffers(gltf);
         Accessor tangent = getAccessor(Attributes.TANGENT);
-        if (tangent != null) {
+        if (tangent != null && !Environment.getInstance()
+                .isProperty(com.nucleus.common.Environment.Property.RECALCULATE_TANGENTS, false)) {
             buildBitangentBuffer(gltf, triangles);
         } else {
             buildTBNBuffers(gltf, triangles);
@@ -626,7 +628,8 @@ public class Primitive implements RuntimeResolver {
         Accessor Ba = new Accessor(Bbv, 0, ComponentType.FLOAT, count, Type.VEC4);
         int tangentIndex = attributeList.indexOf(Attributes.TANGENT);
         if (tangentIndex >= 0) {
-            throw new IllegalArgumentException("Tangents already present");
+            SimpleLogger.d(getClass(), "Tangents present - removing in favour of calculated");
+            attributeList.remove(tangentIndex);
         }
         accessorList.add(Ta);
         attributeList.add(Attributes.TANGENT);
