@@ -2,6 +2,7 @@ package com.nucleus.texturing;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.awt.image.IndexColorModel;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,17 +81,44 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
      */
     public void copyPixels(BufferedImage source, SourceFormat sourceFormat, BufferImage destination) {
         if (source.getData().getDataBuffer() instanceof DataBufferByte) {
+            byte[] data = ((DataBufferByte) source.getData().getDataBuffer()).getData();
             switch (sourceFormat) {
                 case TYPE_BYTE_INDEXED:
                     // Make sure no alpha in source - not supported
                     if ((source.getColorModel().hasAlpha())) {
                         throw new IllegalArgumentException("Alpha not supported in " + sourceFormat);
                     }
+                    data = byteIndexedToBGR((IndexColorModel) source.getColorModel(), data);
+                    sourceFormat = SourceFormat.TYPE_3BYTE_BGR;
+                    break;
+                default:
+                    break;
             }
-            copyPixels(((DataBufferByte) source.getData().getDataBuffer()).getData(), sourceFormat, destination);
+            copyPixels(data, sourceFormat, destination);
         } else {
             throw new IllegalArgumentException("Not implemented");
         }
+    }
+
+    private byte[] byteIndexedToBGR(IndexColorModel icm, byte[] data) {
+        int length = data.length;
+        byte[] result = new byte[length * 3];
+        int mapSize = icm.getMapSize();
+        byte[] r = new byte[mapSize];
+        byte[] g = new byte[mapSize];
+        byte[] b = new byte[mapSize];
+        icm.getReds(r);
+        icm.getGreens(g);
+        icm.getBlues(b);
+        int index = 0;
+        int value = 0;
+        for (int i = 0; i < length; i++) {
+            value = (data[i] & 0x0ff);
+            result[index++] = b[value];
+            result[index++] = g[value];
+            result[index++] = r[value];
+        }
+        return result;
     }
 
 }
