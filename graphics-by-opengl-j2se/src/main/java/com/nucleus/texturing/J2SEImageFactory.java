@@ -1,7 +1,6 @@
 package com.nucleus.texturing;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -44,7 +43,7 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
             SimpleLogger.d(getClass(), "Loaded image " + name + ", in format: " + sourceFormat);
             BufferImage image = new BufferImage(img.getWidth(), img.getHeight(),
                     format != null ? format : sourceFormat.imageFormat);
-            copyPixels(img, image);
+            copyPixels(img, sourceFormat, image);
             FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_IMAGE, " " + name, start,
                     System.currentTimeMillis());
             return image;
@@ -76,24 +75,19 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
      * This will copy all of the data (image)
      * 
      * @param source
+     * @oaram sourceFormat
      * @param destination
      */
-    public void copyPixels(BufferedImage source, BufferImage destination) {
-        SourceFormat sourceFormat = SourceFormat.getFromAwtFormat(source.getType());
-        copyPixels(source.getData().getDataBuffer(), sourceFormat, destination);
-    }
-
-    /**
-     * Internal method, copies pixels from the DataBuffer source to the destination.
-     * Pixels are of the specified type.
-     * 
-     * @param source Source pixels
-     * @param sourceFormat The source type
-     * @param destination The destination image
-     */
-    private void copyPixels(DataBuffer source, SourceFormat sourceFormat, BufferImage destination) {
-        if (source instanceof DataBufferByte) {
-            copyPixels(((DataBufferByte) source).getData(), sourceFormat, destination);
+    public void copyPixels(BufferedImage source, SourceFormat sourceFormat, BufferImage destination) {
+        if (source.getData().getDataBuffer() instanceof DataBufferByte) {
+            switch (sourceFormat) {
+                case TYPE_BYTE_INDEXED:
+                    // Make sure no alpha in source - not supported
+                    if ((source.getColorModel().hasAlpha())) {
+                        throw new IllegalArgumentException("Alpha not supported in " + sourceFormat);
+                    }
+            }
+            copyPixels(((DataBufferByte) source.getData().getDataBuffer()).getData(), sourceFormat, destination);
         } else {
             throw new IllegalArgumentException("Not implemented");
         }

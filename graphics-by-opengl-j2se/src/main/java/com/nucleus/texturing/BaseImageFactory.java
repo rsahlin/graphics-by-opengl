@@ -230,16 +230,15 @@ public abstract class BaseImageFactory implements ImageFactory {
                         throw new IllegalArgumentException(
                                 ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
                 }
-            case TYPE_3BYTE_BGR:
+            case TYPE_BYTE_INDEXED:
                 switch (destination.getFormat()) {
                     case RGB:
-                        copyPixels_3BYTE_BGR_TO_RGB(source, buffer);
+                        copyPixels_1BYTE_INDEXED_TO_RGB(source, buffer);
                         break;
                     default:
                         throw new IllegalArgumentException(
                                 ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
                 }
-
                 break;
             default:
                 throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + sourceFormat);
@@ -387,6 +386,25 @@ public abstract class BaseImageFactory implements ImageFactory {
             rgb[2] = source[index++];
             rgb[1] = source[index++];
             rgb[0] = source[index++];
+            destination.put(rgb, 0, rgb.length);
+        }
+    }
+
+    /**
+     * Copy byte indexed source image to 24 bit rgb
+     * 
+     * @param source
+     * @param destination
+     */
+    protected void copyPixels_1BYTE_INDEXED_TO_RGB(byte[] source, ByteBuffer destination) {
+        byte[] rgb = new byte[3];
+        int length = source.length;
+        int readIndex = 0;
+        for (int index = 0; index < length;) {
+            int rgbInt = source[readIndex++];
+            rgb[0] = source[index++];
+            rgb[1] = source[index++];
+            rgb[2] = source[index++];
             destination.put(rgb, 0, rgb.length);
         }
     }

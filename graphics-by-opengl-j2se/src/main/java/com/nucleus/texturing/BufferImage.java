@@ -23,50 +23,50 @@ public class BufferImage extends BufferObject {
      */
     public enum ImageFormat {
 
-    /**
-     * Image type RGBA 4 bits per pixel and component, ie 16 bit format.
-     */
-    RGBA4(0x8056, 2),
-    /**
-     * Image type RGB 555 + 1 bit alpha, 16 bit format.
-     */
-    RGB5_A1(0x8057, 2),
-    /**
-     * Image type RGB 565, 16 bit format.
-     */
-    RGB565(0x8D62, 2),
-    /**
-     * Image type RGB 888, 8 bits per component, 24 bit format.
-     */
-    RGB(0x1907, 3),
-    /**
-     * Image type RGBA 8888, 8 bits per component, 32 bit format.
-     */
-    RGBA(0x1908, 4),
-    /**
-     * 8 Bits luminance, 8 bits alpha, 16 bit format.
-     */
-    LUMINANCE_ALPHA(0x1909, 2),
-    /**
-     * 8 Bit luminance, 8 bit format
-     */
-    LUMINANCE(0x190A, 1),
-    /**
-     * 8 bit alpha format
-     */
-    ALPHA(0x1906, 1),
-    /**
-     * Depth texture 16
-     */
-    DEPTH_16(0x1403, 2),
-    /**
-     * Depth texture 24 bits
-     */
-    DEPTH_24(0x1405, 3),
-    /**
-     * Float depth texture
-     */
-    DEPTH_32F(0x1406, 4);
+        /**
+         * Image type RGBA 4 bits per pixel and component, ie 16 bit format.
+         */
+        RGBA4(0x8056, 2),
+        /**
+         * Image type RGB 555 + 1 bit alpha, 16 bit format.
+         */
+        RGB5_A1(0x8057, 2),
+        /**
+         * Image type RGB 565, 16 bit format.
+         */
+        RGB565(0x8D62, 2),
+        /**
+         * Image type RGB 888, 8 bits per component, 24 bit format.
+         */
+        RGB(0x1907, 3),
+        /**
+         * Image type RGBA 8888, 8 bits per component, 32 bit format.
+         */
+        RGBA(0x1908, 4),
+        /**
+         * 8 Bits luminance, 8 bits alpha, 16 bit format.
+         */
+        LUMINANCE_ALPHA(0x1909, 2),
+        /**
+         * 8 Bit luminance, 8 bit format
+         */
+        LUMINANCE(0x190A, 1),
+        /**
+         * 8 bit alpha format
+         */
+        ALPHA(0x1906, 1),
+        /**
+         * Depth texture 16
+         */
+        DEPTH_16(0x1403, 2),
+        /**
+         * Depth texture 24 bits
+         */
+        DEPTH_24(0x1405, 3),
+        /**
+         * Float depth texture
+         */
+        DEPTH_32F(0x1406, 4);
 
         public final int type;
         /**
@@ -91,7 +91,9 @@ public class BufferImage extends BufferObject {
          */
         TYPE_4BYTE_ABGR(06, 4, ImageFormat.RGBA),
         TYPE_3BYTE_BGR(05, 3, ImageFormat.RGB),
-        TYPE_INT_ARGB(02, 4, ImageFormat.RGBA);
+        TYPE_INT_ARGB(02, 4, ImageFormat.RGBA),
+        // TODO - use ImageFormat.RGB565 instead?
+        TYPE_BYTE_INDEXED(13, 1, ImageFormat.RGB);
 
         public final int type;
         /**
