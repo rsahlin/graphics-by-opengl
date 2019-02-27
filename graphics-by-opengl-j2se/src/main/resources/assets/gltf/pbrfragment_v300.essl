@@ -35,7 +35,7 @@ vec4 calculateFresnelDiffuse() {
     //u = (Bisect vector of (outcoming direction of light, Incoming direction of light) 
     //F(u) = F + (1 - F) (1 - u) ^ 5
     vec3 fresnel = _PBRDATA[1].rgb + _PBRDATA[2].rgb * pow(1.0 - dot(vEye,H),5.0);
-    vec3 diffuse = ((1.0 - fresnel) * _PBRDATA[3].rgb) * dot(vNormal,vLight);
+    vec3 diffuse = max(vec3(0.0,0.0,0.0), ((1.0 - fresnel) * _PBRDATA[3].rgb) * dot(vNormal,vLight));
     float a2 = _PBRDATA[4].z;
     float distPow = pow(dot(vNormal, H),2.0);
     float distribution = (a2) / (pi * pow((distPow * (a2 - 1.0) + 1.0),2.0));
@@ -54,7 +54,7 @@ vec4 calculateFresnelDiffuseTexNormal() {
     //F(u) = F + (1 - F) (1 - u) ^ 5
     vec3 fresnel = _PBRDATA[1].rgb + _PBRDATA[2].rgb * pow(1.0 - dot(vEye,H),5.0);
     vec3 normal = normalize((vec3(texture(uTextureNormal, vTexNormal)) * mTangentLight));
-    vec3 diffuse = ((1.0 - fresnel) * _PBRDATA[3].rgb) * dot(normal,vLight);
+    vec3 diffuse = max(vec3(0.0,0.0,0.0), ((1.0 - fresnel) * _PBRDATA[3].rgb) * dot(normal,vLight));
     float a2 = _PBRDATA[4].z;
     float distPow = pow(dot(normal, H),2.0);
     float distribution = (a2) / (pi * pow((distPow * (a2 - 1.0) + 1.0),2.0));
