@@ -214,17 +214,21 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
      */
     public GLTFShaderProgram createProgram(Primitive primitive) {
         Material mat = primitive.getMaterial();
+        Shading shading = Shading.flat;
         if (mat != null) {
             PBRMetallicRoughness pbr = mat.getPbrMetallicRoughness();
             if (pbr.getBaseColorTexture() != null) {
                 // Textured
                 if (mat.getNormalTexture() != null) {
-                    return new GLTFShaderProgram(null, Shading.textured_normal, "gltf", ProgramType.VERTEX_FRAGMENT);
+                    shading = Shading.textured_normal;
+                } else {
+                    shading = Shading.textured;
                 }
-                return new GLTFShaderProgram(null, Shading.textured, "gltf", ProgramType.VERTEX_FRAGMENT);
+            } else if (mat.getNormalTexture() != null) {
+                shading = Shading.flat_normal;
             }
         }
-        return new GLTFShaderProgram(null, Shading.flat, "gltf", ProgramType.VERTEX_FRAGMENT);
+        return new GLTFShaderProgram(null, shading, "gltf", ProgramType.VERTEX_FRAGMENT);
     }
 
     @Override

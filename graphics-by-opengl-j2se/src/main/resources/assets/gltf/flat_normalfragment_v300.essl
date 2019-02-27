@@ -1,0 +1,11 @@
+#version 300 es
+/* 
+ *
+ * Fragment shader for glTF asset
+ * @author Richard Sahlin
+ */
+precision highp float;
+
+void main() {
+    fragColor = calculateFresnelDiffuseTexNormal();
+}

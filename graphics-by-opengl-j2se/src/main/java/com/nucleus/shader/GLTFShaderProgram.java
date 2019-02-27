@@ -199,8 +199,9 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      */
     public void prepareTextures(GLES20Wrapper gles, GLTF gltf, Primitive primitive, Material material)
             throws GLException {
-        if (renderNormalMap && material.getNormalTexture() != null) {
-            prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes.TEXCOORD_0.name()),
+        if (renderNormalMap && material.getNormalTexture() != null
+                && material.getPbrMetallicRoughness().getBaseColorTexture() != null) {
+            prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes._TEXCOORDNORMAL.name()),
                     getUniformByName("uTexture0"),
                     material.getNormalTexture());
         } else {
