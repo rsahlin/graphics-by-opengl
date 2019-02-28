@@ -35,6 +35,7 @@ import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.scene.gltf.Image;
+import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Texture;
@@ -71,6 +72,11 @@ public class AssetManager {
      * Store textures using the source image name.
      */
     private HashMap<String, Texture2D> textures = new HashMap<>();
+
+    /**
+     * Loaded images that are used to create textures - clear when textures are created
+     */
+    private HashMap<String, BufferImage> images = new HashMap<>();
 
     private HashMap<String, ShaderProgram> programs = new HashMap<>();
 
@@ -525,6 +531,18 @@ public class AssetManager {
     }
 
     /**
+     * Loads all textures for the specified material
+     * @param gles
+     * @param materials
+     * @throws IOException
+     */
+    protected void loadTextures(GLES20Wrapper gles, Material[] materials) throws IOException) {
+        for (Material material : materials) {
+            
+        }
+    }
+
+    /**
      * Creates and uploads the texture - destroying the buffer image after upload.
      * 
      * @param gles
@@ -556,7 +574,11 @@ public class AssetManager {
      */
     protected BufferImage getTextureImage(String uri) throws IOException {
         if (uri != null) {
-            BufferImage textureImage = BaseImageFactory.getInstance().createImage(uri, null);
+            BufferImage textureImage = images.get(uri);
+            if (textureImage == null) {
+                textureImage = BaseImageFactory.getInstance().createImage(uri, null);
+                images.put(uri, textureImage);
+            }
             return textureImage;
         } else {
             throw new IllegalArgumentException("Not implemented");
