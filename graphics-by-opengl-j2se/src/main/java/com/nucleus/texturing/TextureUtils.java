@@ -17,6 +17,7 @@ import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.gltf.Image;
 import com.nucleus.scene.gltf.Texture;
+import com.nucleus.texturing.BufferImage.ColorModel;
 import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.Texture2D.Type;
@@ -152,8 +153,10 @@ public class TextureUtils {
             throw new IllegalArgumentException("No texture name for texture " + image.getUri());
         }
         gles.glBindTexture(GLES20.GL_TEXTURE_2D, image.getTextureName());
-        gles.texImage(image, 0);
+        Format internalFormat = gles.texImage(image, 0);
         GLUtils.handleError(gles, "texImage2D");
+        SimpleLogger.d(TextureUtils.class,
+                "Uploaded texture " + image.getUri() + " with internalformat " + internalFormat);
         if (generateMipmaps || Configuration.getInstance().isGenerateMipMaps()) {
             long start = System.currentTimeMillis();
             gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
@@ -244,7 +247,7 @@ public class TextureUtils {
     }
 
     /**
-     * Return the GL internal format for the specified format.
+     * Return the GL format for the specified imageformat.
      * 
      * @param format Image pixel format.
      * @return GL internal format for the specified format, eg GL_ALPHA, GL_RGB, GL_RGBA
@@ -270,6 +273,31 @@ public class TextureUtils {
                 return Format.DEPTH_COMPONENT;
             default:
                 throw new IllegalArgumentException("Not implemented for: " + format);
+        }
+    }
+
+    /**
+     * Return the GL internal format for the specified format.
+     * 
+     * @param format Image pixel format.
+     * @param colorModel
+     * @return GL internal format for the specified format, eg GL_ALPHA, GL_RGB, GL_RGBA, GL_SRGB
+     */
+    public static Texture2D.Format getInternalFormat(ImageFormat format, ColorModel colorModel) {
+        switch (colorModel) {
+            case LINEAR:
+                return getFormat(format);
+            case SRGB:
+                switch (format) {
+                    case RGBA:
+                        return Format.SRGBA;
+                    case RGB:
+                        return Format.SRGB;
+                    default:
+                        throw new IllegalArgumentException("Not valid for SRGB colormodel and " + format);
+                }
+            default:
+                throw new IllegalArgumentException("Not implemented for " + colorModel);
         }
     }
 

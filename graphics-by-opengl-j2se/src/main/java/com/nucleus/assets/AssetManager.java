@@ -37,11 +37,14 @@ import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.scene.gltf.Image;
 import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
+import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Texture;
+import com.nucleus.scene.gltf.Texture.TextureInfo;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.BufferImage;
+import com.nucleus.texturing.BufferImage.ColorModel;
 import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
@@ -382,7 +385,7 @@ public class AssetManager {
      */
     public void loadGLTFAssets(GLES20Wrapper gles, GLTF glTF) throws IOException, GLException {
         loadBuffers(glTF);
-        loadTextures(gles, glTF);
+        loadTextures(gles, glTF, glTF.getMaterials());
         SimpleLogger.d(getClass(), "Loaded gltf assets");
         // Build TBN before creating VBOs
         // This can mean that a number of buffers needs to be created, for instance normal, tangent and bitangent.
@@ -507,38 +510,54 @@ public class AssetManager {
     }
 
     /**
-     * Loads and stores the images needed by the textures in the asset.
+     * Loads all textures for the specified material
      * 
-     * @param glTF
+     * @param gles
+     * @param gltf
+     * @param materials
      * @throws IOException
      */
-    protected void loadTextures(GLES20Wrapper gles, GLTF glTF) throws IOException {
-        Texture[] textures = glTF.getTextures();
-        if (textures != null) {
-            for (Texture t : textures) {
-                Image image = t.getImage();
-                if (image != null) {
-                    if (image.getUri() != null) {
-                        BufferImage bufferImage = getTextureImage(glTF.getPath(image.getUri()));
-                        image.setBufferImage(bufferImage);
-                        internalCreateTexture(gles, image);
-                    } else {
-                        throw new IllegalArgumentException("Only support for texture image referenced as URI");
-                    }
-                }
-            }
+    protected void loadTextures(GLES20Wrapper gles, GLTF gltf, Material[] materials) throws IOException {
+        for (Material material : materials) {
+            PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
+            loadTextures(gles, gltf, pbr);
+            loadTexture(gles, gltf, material.getNormalTexture(), ColorModel.LINEAR);
         }
     }
 
     /**
-     * Loads all textures for the specified material
+     * Loads the textures needed for the PBR material property, if texture bufferimage already loaded
+     * for a texture then it is skipped.
+     * 
      * @param gles
-     * @param materials
+     * @param gltf
+     * @param pbr
      * @throws IOException
      */
-    protected void loadTextures(GLES20Wrapper gles, Material[] materials) throws IOException) {
-        for (Material material : materials) {
-            
+    protected void loadTextures(GLES20Wrapper gles, GLTF gltf, PBRMetallicRoughness pbr) throws IOException {
+        loadTexture(gles, gltf, pbr.getBaseColorTexture(), ColorModel.SRGB);
+    }
+
+    /**
+     * Loads the texture - if bufferimage is already present for the texture then nothing is done.
+     * If texInfo is null then nothing is done
+     * 
+     * @param gles
+     * @param gltf
+     * @param texInfo
+     * @param colorMode If model is linear or srgb
+     * @throws IOException
+     */
+    protected void loadTexture(GLES20Wrapper gles, GLTF gltf, TextureInfo texInfo, BufferImage.ColorModel colorModel)
+            throws IOException {
+        if (texInfo != null && gltf.getTexture(texInfo).getImage().getBufferImage() == null) {
+            // Have not loaded bufferimage for this texture
+            Texture texture = gltf.getTexture(texInfo);
+            Image img = texture.getImage();
+            BufferImage bufferImage = getTextureImage(gltf.getPath(img.getUri()));
+            bufferImage.setColorModel(colorModel);
+            img.setBufferImage(bufferImage);
+            internalCreateTexture(gles, img);
         }
     }
 
@@ -553,7 +572,6 @@ public class AssetManager {
             int[] name = createTextureName(gles);
             image.setTextureName(name[0]);
             TextureUtils.uploadTextures(gles, image, true);
-            SimpleLogger.d(getClass(), "Uploaded texture " + image.getUri());
             destroyBufferImage(image);
         } catch (GLException e) {
             throw new IllegalArgumentException(e);

@@ -17,6 +17,11 @@ import com.nucleus.resource.ResourceBias.RESOLUTION;
  */
 public class BufferImage extends BufferObject {
 
+    public enum ColorModel {
+        LINEAR(),
+        SRGB();
+    }
+
     /**
      *
      * Image pixel formats
@@ -130,6 +135,7 @@ public class BufferImage extends BufferObject {
     }
 
     ImageFormat format;
+    ColorModel colorModel = ColorModel.LINEAR;
     ByteBuffer buffer;
     int width;
     int height;
@@ -164,6 +170,24 @@ public class BufferImage extends BufferObject {
     public BufferImage(int width, int height, ImageFormat format) {
         super(width * height * format.size);
         create(width, height, format, null);
+    }
+
+    /**
+     * Sets the colormodel, default is LINEAR
+     * 
+     * @param colorModel
+     */
+    public void setColorModel(ColorModel colorModel) {
+        this.colorModel = colorModel;
+    }
+
+    /**
+     * Returns the colormodel for the pixels in the bufferimage
+     * 
+     * @return
+     */
+    public ColorModel getColorModel() {
+        return colorModel;
     }
 
     protected void create(int width, int height, ImageFormat format, RESOLUTION resolution) {

@@ -35,6 +35,7 @@ public class Image extends GLTFNamedValue {
 
     transient private BufferImage bufferImage;
     transient private int textureName;
+    transient private BufferImage.SourceFormat sourceFormat;
 
     public void setBufferImage(BufferImage bufferImage) {
         this.bufferImage = bufferImage;
