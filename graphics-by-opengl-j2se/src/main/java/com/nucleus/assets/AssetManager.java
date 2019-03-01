@@ -419,12 +419,12 @@ public class AssetManager {
      */
     public void deleteGLTFAssets(GLES20Wrapper gles, GLTF gltf) throws GLException {
         BufferObjectsFactory.getInstance().destroyVBOs(gles, gltf.getBuffers(null));
-        deleteTextures(gles, gltf.getImages());
+        deleteTextures(gles, gltf, gltf.getImages());
         gltfAssets.remove(gltf.getFilename());
         gltf.destroy();
     }
 
-    protected void deleteTextures(GLES20Wrapper gles, Image[] images) {
+    protected void deleteTextures(GLES20Wrapper gles, GLTF gltf, Image[] images) {
         int deleted = 0;
         if (images != null) {
             int[] names = new int[1];
@@ -436,7 +436,7 @@ public class AssetManager {
                     deleted++;
                 }
                 if (image.getBufferImage() != null) {
-                    destroyBufferImage(image);
+                    destroyBufferImage(gltf, image);
                 }
             }
         }
@@ -518,10 +518,12 @@ public class AssetManager {
      * @throws IOException
      */
     protected void loadTextures(GLES20Wrapper gles, GLTF gltf, Material[] materials) throws IOException {
-        for (Material material : materials) {
-            PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
-            loadTextures(gles, gltf, pbr);
-            loadTexture(gles, gltf, material.getNormalTexture(), ColorModel.LINEAR);
+        if (materials != null) {
+            for (Material material : materials) {
+                PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
+                loadTextures(gles, gltf, pbr);
+                loadTexture(gles, gltf, material.getNormalTexture(), ColorModel.LINEAR);
+            }
         }
     }
 
@@ -562,7 +564,7 @@ public class AssetManager {
     }
 
     /**
-     * Creates and uploads the texture - destroying the buffer image after upload.
+     * Creates and uploads the texture
      * 
      * @param gles
      * @param image
@@ -572,15 +574,15 @@ public class AssetManager {
             int[] name = createTextureName(gles);
             image.setTextureName(name[0]);
             TextureUtils.uploadTextures(gles, image, true);
-            destroyBufferImage(image);
         } catch (GLException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    private void destroyBufferImage(Image image) {
+    private void destroyBufferImage(GLTF gltf, Image image) {
         BufferImage.destroyImages(new BufferImage[] { image.getBufferImage() });
         image.setBufferImage(null);
+        images.remove(gltf.getPath(image.getUri()));
     }
 
     /**
