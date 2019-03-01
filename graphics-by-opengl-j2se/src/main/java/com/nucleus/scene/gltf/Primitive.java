@@ -303,7 +303,8 @@ public class Primitive implements RuntimeResolver {
         _BOUNDS(),
         _PBRDATA(),
         _LIGHT_0(),
-        _TEXCOORDNORMAL();
+        _TEXCOORDNORMAL(),
+        _TEXCOORDMR();
 
         private final static Attributes[] TEXCOORDS = new Attributes[] { TEXCOORD_0, TEXCOORD_1, TEXCOORD_2, TEXCOORD_3,
                 TEXCOORD_4, TEXCOORD_5 };

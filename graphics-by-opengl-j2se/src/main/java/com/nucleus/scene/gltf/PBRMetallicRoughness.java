@@ -45,6 +45,7 @@ public class PBRMetallicRoughness {
     private static final String BASE_COLOR_FACTOR = "baseColorFactor";
     private static final String METALLIC_FACTOR = "metallicFactor";
     private static final String ROUGHNESS_FACTOR = "roughnessFactor";
+    private static final String METALLIC_ROUGHNESS_TEXTURE = "metallicRoughnessTexture";
 
     public static final float[] DEFAULT_COLOR_FACTOR = new float[] { 1, 1, 1, 1 };
 
@@ -57,6 +58,8 @@ public class PBRMetallicRoughness {
     private float roughnessFactor = 1f;
     @SerializedName(BASE_COLOR_TEXTURE)
     private Texture.TextureInfo baseColorTexture;
+    @SerializedName(METALLIC_ROUGHNESS_TEXTURE)
+    private Texture.TextureInfo metallicRoughnessTexture;
 
     transient private float[] pbrData = new float[PBR_DATASIZE];
 
@@ -122,6 +125,10 @@ public class PBRMetallicRoughness {
 
     public Texture.TextureInfo getBaseColorTexture() {
         return baseColorTexture;
+    }
+
+    public Texture.TextureInfo getMetallicRoughnessTexture() {
+        return metallicRoughnessTexture;
     }
 
 }

@@ -211,6 +211,8 @@ public class GLTFShaderProgram extends GenericShaderProgram {
         }
         prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes._TEXCOORDNORMAL.name()),
                 getUniformByName("uTextureNormal"), material.getNormalTexture());
+        prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes._TEXCOORDMR.name()),
+                getUniformByName("uTextureMR"), material.getPbrMetallicRoughness().getMetallicRoughnessTexture());
     }
 
 }
