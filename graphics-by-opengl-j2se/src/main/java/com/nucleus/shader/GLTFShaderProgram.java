@@ -150,9 +150,9 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     protected void uploadUniforms(GLES20Wrapper gles, FloatBuffer uniformData, ShaderVariable[] activeUniforms)
             throws GLException {
         uploadUniform(gles, uniformData, modelUniform);
+        uploadUniform(gles, uniformData, light0Uniform);
         // uploadUniform(gles, uniformData, viewUniform);
         // uploadUniform(gles, uniformData, projectionUniform);
-        // uploadUniform(gles, uniformData, light0Uniform);
     }
 
     @Override

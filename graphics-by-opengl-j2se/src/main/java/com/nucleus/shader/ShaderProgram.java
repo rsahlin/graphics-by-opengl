@@ -1348,12 +1348,15 @@ public abstract class ShaderProgram {
      * 
      * @param gles
      * @param uniforms The uniform data
-     * @param variable Shader variable to set uniform data for, datatype and size is read.
+     * @param variable Shader variable to set uniform data for, datatype and size is read. If null then nothing is done
      * @param offset Offset into uniform array where data starts.
      * @throws GLException If there is an error setting a uniform to GL
      */
     public final void uploadUniform(GLES20Wrapper gles, FloatBuffer uniforms, ShaderVariable variable)
             throws GLException {
+        if (variable == null) {
+            return;
+        }
         int offset = variable.getOffset();
         uniforms.position(offset);
         GLUtils.handleError(gles, "Clear error");
