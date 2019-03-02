@@ -32,13 +32,14 @@ public class PBRMetallicRoughness {
             DIALECTRIC_SPECULAR };
     public static final float[] BLACK = new float[] { 0f, 0f, 0f };
 
-    public static final int PROPERTIES_INDEX = 0;
+    public static final int METALLIC_INDEX = 0;
+    public static final int ROUGHNESS_INDEX = 1;
+
     public static final int F0_INDEX = 4;
     public static final int ONE_MINUS_F0_INDEX = 8;
     public static final int DIFFUSE_INDEX = 12;
-    public static final int METALLIC_INDEX = 16;
-    public static final int K_INDEX = 17;
-    public static final int ALPHA_SQUARED_INDEX = 18;
+    public static final int K_INDEX = 16;
+    public static final int ALPHA_SQUARED_INDEX = 17;
     public static final int PBR_DATASIZE = 20;
 
     private static final String BASE_COLOR_TEXTURE = "baseColorTexture";
@@ -91,12 +92,10 @@ public class PBRMetallicRoughness {
         roughnessFactor = Math.max(MIN_ROUGHNESS, roughnessFactor);
 
         Lerp.lerpVec3(DIALECTRIC_SPECULAR_COLOR, baseColorFactor, metallicFactor, pbrData, F0_INDEX);
-        pbrData[F0_INDEX + 3] = baseColorFactor[3];
 
         pbrData[ONE_MINUS_F0_INDEX] = 1 - pbrData[F0_INDEX];
         pbrData[ONE_MINUS_F0_INDEX + 1] = 1 - pbrData[F0_INDEX + 1];
         pbrData[ONE_MINUS_F0_INDEX + 2] = 1 - pbrData[F0_INDEX + 2];
-        pbrData[ONE_MINUS_F0_INDEX + 3] = baseColorFactor[3];
 
         float[] diffuse = new float[3];
         diffuse[0] = (baseColorFactor[0] * (1 - DIALECTRIC_SPECULAR));
@@ -104,8 +103,10 @@ public class PBRMetallicRoughness {
         diffuse[2] = (baseColorFactor[2] * (1 - DIALECTRIC_SPECULAR));
 
         Lerp.lerpVec3(diffuse, BLACK, metallicFactor, pbrData, DIFFUSE_INDEX);
+        pbrData[DIFFUSE_INDEX + 3] = baseColorFactor[3];
 
         pbrData[METALLIC_INDEX] = metallicFactor;
+        pbrData[ROUGHNESS_INDEX] = roughnessFactor;
         float rSquared = roughnessFactor * roughnessFactor;
         pbrData[K_INDEX] = (float) (roughnessFactor * Math.sqrt(2 / Math.PI));
         pbrData[ALPHA_SQUARED_INDEX] = rSquared * rSquared;
