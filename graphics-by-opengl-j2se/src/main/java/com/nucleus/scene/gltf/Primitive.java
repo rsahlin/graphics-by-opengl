@@ -242,20 +242,20 @@ public class Primitive implements RuntimeResolver {
          * by taking the cross product of the normal and tangent xyz vectors and multiplying against the w component
          * of the tangent: bitangent = cross(normal, tangent.xyz) * tangent.w
          * 
-         * @return Bitangents in Vec4 format
+         * @return Bitangents in Vec3 format
          */
         public float[] createBiTangent() {
-            float[] t = new float[4];
+            float[] t = new float[3];
             Accessor position = getAccessor(Attributes.POSITION);
             final int count = position.getCount();
-            float[] output = new float[count * 4];
+            float[] output = new float[count * 3];
             int outputIndex = 0;
             int nIndex = 0;
             int tIndex = 0;
             for (int i = 0; i < count; i++) {
                 Vec3.cross(normalArray, nIndex, tangentArray, tIndex, t, 0);
                 Vec3.mul(t, 0, tangentArray[tIndex + 3], output, outputIndex);
-                outputIndex += 4;
+                outputIndex += 3;
                 nIndex += 3;
                 tIndex += 4;
             }
@@ -600,12 +600,12 @@ public class Primitive implements RuntimeResolver {
      */
     private void buildBiTangentTriangles(GLTF gltf, Triangles triangles) {
         float[] tangentArray = triangles.createBiTangent();
-        int count = tangentArray.length >>> 2; // Tangents are in Vec4 format
-        BufferView Bitangentbv = gltf.createBufferView(BITANGENT, (count << 2) * ComponentType.FLOAT.size, 0,
-                Type.VEC4.size * ComponentType.FLOAT.size, Target.ARRAY_BUFFER);
+        int count = tangentArray.length / 3; // Tangents are in Vec3 format
+        BufferView Bitangentbv = gltf.createBufferView(BITANGENT, (count * 3) * ComponentType.FLOAT.size, 0,
+                Type.VEC3.size * ComponentType.FLOAT.size, Target.ARRAY_BUFFER);
         Buffer buffer = Bitangentbv.getBuffer();
         buffer.put(tangentArray, 0);
-        Accessor Ba = new Accessor(Bitangentbv, 0, ComponentType.FLOAT, count, Type.VEC4);
+        Accessor Ba = new Accessor(Bitangentbv, 0, ComponentType.FLOAT, count, Type.VEC3);
         accessorList.add(Ba);
         attributeList.add(Attributes.BITANGENT);
     }
@@ -619,7 +619,8 @@ public class Primitive implements RuntimeResolver {
     private void buildTBNTriangles(GLTF gltf, Triangles triangles) {
         float[][] TBArray = triangles.calculateTangentBiTangent();
         int l = TBArray[0].length; // Length of one buffer in number of floats - type is VEC4
-        BufferView Tbv = gltf.createBufferView(TANGENT_BITANGENT, l * 4 * 2, 0, 16, Target.ARRAY_BUFFER);
+        BufferView Tbv = gltf.createBufferView(TANGENT_BITANGENT, l * 4 * 2, 0,
+                Type.VEC4.size * ComponentType.FLOAT.size, Target.ARRAY_BUFFER);
         Buffer buffer = Tbv.getBuffer();
         BufferView Bbv = gltf.createBufferView(buffer, l * 4, 16, Target.ARRAY_BUFFER);
         buffer.put(TBArray[0], 0);
