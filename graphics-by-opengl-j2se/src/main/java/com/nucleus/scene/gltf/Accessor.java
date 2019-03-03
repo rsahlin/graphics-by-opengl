@@ -89,9 +89,12 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
         MAT4(4);
 
         public final int size;
+        public final int sizeInBytes;
 
         private Type(int size) {
             this.size = size;
+            sizeInBytes = size * 4;
+
         }
 
         public static Type getFromDataType(int dataType) {
