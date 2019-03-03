@@ -7,5 +7,5 @@
 precision highp float;
 
 void main() {
-    fragColor = calculateFresnelDiffuse(normalize((vec3(texture(uTextureNormal, vTexNormal)) * mTangentLight)));
+    fragColor = calculateFresnelDiffuse((vec3(texture(uTextureNormal, vTexNormal) * 2 -1) * mTangentLight));
 }
