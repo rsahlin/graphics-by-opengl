@@ -14,7 +14,7 @@ uniform mediump sampler2D uTextureMR; //Metallic roughness texture sampler
 //diffuse    [4]
 //k, alpha ^ 2
 uniform vec4 _PBRDATA[5];
-uniform vec3 _LIGHT_0[1];
+
 const float pi = 3.141592;
 const float oneByPI = 1.0 / pi;
 const float twoByPI = 2.0 / pi;
@@ -47,7 +47,7 @@ vec4 calculateFresnelDiffuse(vec3 normal) {
     float NDotH = dot(normal, H);
     float GN = NDotH /(NDotH * (1.0 - k) + k);
     vec3 specular = max(vec3(0.0,0.0,0.0), (fresnel * (GL * GN) * distribution));// / max(1.0,(4.0 * (dot(normal, vLight) * (dot(normal, vEye))))));
-    return vec4(pow(diffuse, vec3(oneByGamma)), _PBRDATA[3].a);
+    return vec4(pow(diffuse + specular, vec3(oneByGamma)), _PBRDATA[3].a);
 //    return vec4(pow(normal, vec3(oneByGamma)), _PBRDATA[3].a);
 }
 

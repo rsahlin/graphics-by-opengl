@@ -116,7 +116,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     public void updateUniformData(FloatBuffer destinationUniform) {
         if (light0Uniform != null) {
             Light l = GlobalLight.getInstance().getLight();
-            setUniformData(light0Uniform, l.getPosition(), 0);
+            setUniformData(light0Uniform, l.getLight(), 0);
         }
     }
 

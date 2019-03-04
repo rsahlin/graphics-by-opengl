@@ -7,6 +7,8 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.bounds.Bounds;
+import com.nucleus.common.Environment;
+import com.nucleus.common.Environment.Property;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
@@ -215,9 +217,10 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     public GLTFShaderProgram createProgram(Primitive primitive) {
         Material mat = primitive.getMaterial();
         Shading shading = Shading.flat;
+        boolean forceUntextured = Environment.getInstance().isProperty(Property.FORCE_UNTEXTURED, false);
         if (mat != null) {
             PBRMetallicRoughness pbr = mat.getPbrMetallicRoughness();
-            if (pbr.getBaseColorTexture() != null) {
+            if (pbr.getBaseColorTexture() != null && !forceUntextured) {
                 // Textured
                 if (mat.getNormalTexture() != null) {
                     shading = Shading.textured_normal;

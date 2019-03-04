@@ -53,12 +53,16 @@ public class Environment {
         /**
          * If true then recalculate tangents on loaded geometry - this is for debugging etc.
          */
-        RECALCULATE_TANGENTS("com.nucleus.geometry.recalculate_tangents"),
+        RECALCULATE_TANGENTS("com.nucleus.gltf.recalculate_tangents"),
         /**
          * If geometry has normalmap then use it as a texture (color) source
          * Used to debug normal maps
          */
-        RENDER_NORMALMAP("com.nucleus.shader.render_normalmap");
+        RENDER_NORMALMAP("com.nucleus.gltf.render_normalmap"),
+        /**
+         * If true then models are forced to untextured, basecolor texture is ignored.
+         */
+        FORCE_UNTEXTURED("com.nucleus.gltf.force_untextured");
 
         public final String key;
 

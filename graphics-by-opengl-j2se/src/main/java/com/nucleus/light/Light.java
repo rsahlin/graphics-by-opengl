@@ -8,10 +8,17 @@ import com.google.gson.annotations.SerializedName;
  */
 public abstract class Light {
 
-    public static final String COLOR = "color";
+    public static final int COLOR_INDEX = 0;
+    public static final int INTENSITY_INDEX = 3;
+    public static final int POSITION_INDEX = 4;
+    // Must be multiple of 4
+    public static final int DATASIZE = 8;
+
+    /**
+     * Light color, intensity and position, 7 values
+     */
+    public static final String LIGHT = "light";
     public static final String TYPE = "type";
-    public static final String INTENSITY = "intensity";
-    public static final String POSITION = "position";
 
     /**
      * The different light types, this specifies how light is distributed
@@ -52,41 +59,35 @@ public abstract class Light {
         this.type = type;
     }
 
-    Light(Type type, float[] position, float[] color, float intensity) {
-        if (type == null || position == null || color == null) {
-            throw new IllegalArgumentException("Null parameter");
+    /**
+     * Creates a new light
+     * 
+     * @param type
+     * @param light RGB + intensity
+     * @param position XYZ position
+     */
+    Light(Type type, float[] light, float[] position) {
+        if (type == null || position == null || light == null || position.length != 3 || light.length != 4) {
+            throw new IllegalArgumentException("Null parameter or wrong length of light arrays");
         }
         this.type = type;
-        this.position = position;
-        this.color = color;
-        this.intensity = intensity;
+        System.arraycopy(light, 0, this.light, 0, light.length);
+        System.arraycopy(position, 0, this.light, POSITION_INDEX, position.length);
+
     }
 
-    @SerializedName(COLOR)
-    private float[] color = new float[] { 1, 1, 1 };
+    @SerializedName(LIGHT)
+    private float[] light = new float[DATASIZE];
     @SerializedName(TYPE)
     private Type type;
-    @SerializedName(INTENSITY)
-    private float intensity = 1;
-    @SerializedName(POSITION)
-    private float[] position;
 
     /**
-     * Returns a reference to light color, any changes done will be reflected here
+     * Returns a reference to light colo, intensity and position - any changes done will be reflected here
      * 
-     * @return Reference to light color values, 3 values (RGB)
+     * @return Reference to light color, intensity and position values
      */
-    public float[] getColor() {
-        return color;
-    }
-
-    /**
-     * Returns a reference to light position
-     * 
-     * @return Light position, 3 values (XYZ)
-     */
-    public float[] getPosition() {
-        return position;
+    public float[] getLight() {
+        return light;
     }
 
 }
