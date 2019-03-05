@@ -12,8 +12,10 @@ uniform mediump sampler2D uTextureMR; //Metallic roughness texture sampler
 //F0         [3] - dieletricSpecular -> basecolor for metallic = 1
 //1 - F0     [3]
 //diffuse    [4]
-//k, alpha ^ 2
+//k, alpha ^ 2, exposure
 uniform vec4 _PBRDATA[5];
+//RGB + Intensity
+//XYZ
 uniform vec4 _LIGHT_0[2];
 
 const float pi = 3.141592;
@@ -48,8 +50,12 @@ vec4 calculateFresnelDiffuse(vec3 normal) {
     float NDotH = dot(normal, H);
     float GN = NDotH /(NDotH * (1.0 - k) + k);
     vec3 specular = max(vec3(0.0,0.0,0.0), (fresnel * (GL * GN) * distribution));// / max(1.0,(4.0 * (dot(normal, vLight) * (dot(normal, vEye))))));
-    return vec4(pow(diffuse + specular, vec3(oneByGamma)), _PBRDATA[3].a);
+        
+    vec3 hdrExposure = vec3(1.0) - exp(-(diffuse + specular) * 1);
+    return vec4(pow(hdrExposure, vec3(oneByGamma)), _PBRDATA[3].a);
+//    return vec4(pow(diffuse + specular, vec3(oneByGamma)), _PBRDATA[3].a);
 //    return vec4(pow(normal, vec3(oneByGamma)), _PBRDATA[3].a);
+  
 }
 
 vec4 calculateFresnelDiffuse(vec3 normal, vec3 metallicRoughness) {
@@ -68,7 +74,9 @@ vec4 calculateFresnelDiffuse(vec3 normal, vec3 metallicRoughness) {
     float NDotH = dot(normal, H);
     float GN = NDotH /(NDotH * (1.0 - k) + k);
     vec3 specular = max(vec3(0.0,0.0,0.0), (fresnel * (GL * GN) * distribution));// / max(1.0,(4.0 * (dot(normal, vLight) * (dot(normal, vEye))))));
-    return vec4(pow(diffuse + specular, vec3(oneByGamma)), _PBRDATA[3].a);
+    vec3 hdrExposure = vec3(1.0) - exp(-(diffuse + specular) * 1);
+    return vec4(pow(hdrExposure, vec3(oneByGamma)), _PBRDATA[3].a);
+//    return vec4(pow(diffuse + specular, vec3(oneByGamma)), _PBRDATA[3].a);
 }
 
 

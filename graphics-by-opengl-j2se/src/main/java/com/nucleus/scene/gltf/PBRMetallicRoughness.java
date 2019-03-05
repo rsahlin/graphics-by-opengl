@@ -75,16 +75,11 @@ public class PBRMetallicRoughness {
 
     /**
      * Precomputes the pbr data - call this method once at start or when pbr parameters have changed.
-     * F0 as vec4
-     * 1 - F0 : vec4
+     * metallic, roughness : float
+     * F0 as vec3
+     * 1 - F0 : vec3
      * diffuse : vec4
-     * metallic : float
-     * roughness : float
-     * roughness ^2 : float
-     * 
-     * cdiff = lerp(baseColor.rgb * (1 - dielectricSpecular.r), black, metallic)
-     * F0 = lerp(dielectricSpecular, baseColor.rgb, metallic)
-     * α = roughness ^ 2
+     * k, alpha^2
      */
 
     public void calculatePBRData() {
@@ -105,8 +100,8 @@ public class PBRMetallicRoughness {
 
         pbrData[METALLIC_INDEX] = metallicFactor;
         pbrData[ROUGHNESS_INDEX] = roughnessFactor;
-        float rSquared = roughnessFactor * roughnessFactor;
         pbrData[K_INDEX] = (float) (roughnessFactor * Math.sqrt(2 / Math.PI));
+        float rSquared = roughnessFactor * roughnessFactor;
         pbrData[ALPHA_SQUARED_INDEX] = rSquared * rSquared;
     }
 

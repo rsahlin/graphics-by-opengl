@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 /**
  * Base class for lightsources, the light is always stored as VEC4.
- * This class, and sublcasses, can be serialized using GSOn
+ * This class, and subclasses, can be serialized using GSOn
  */
 public abstract class Light {
 
@@ -63,16 +63,14 @@ public abstract class Light {
      * Creates a new light
      * 
      * @param type
-     * @param light RGB + intensity
-     * @param position XYZ position
+     * @param light RGB, intensity, XYZ
      */
-    Light(Type type, float[] light, float[] position) {
-        if (type == null || position == null || light == null || position.length != 3 || light.length != 4) {
+    Light(Type type, float[] values) {
+        if (type == null || values == null || values.length != 8) {
             throw new IllegalArgumentException("Null parameter or wrong length of light arrays");
         }
         this.type = type;
-        System.arraycopy(light, 0, this.light, 0, light.length);
-        System.arraycopy(position, 0, this.light, POSITION_INDEX, position.length);
+        System.arraycopy(values, 0, this.light, 0, light.length);
 
     }
 
