@@ -39,6 +39,8 @@ public class PBRMetallicRoughness {
     public static final int DIFFUSE_INDEX = 12;
     public static final int K_INDEX = 16;
     public static final int ALPHA_SQUARED_INDEX = 17;
+    public static final int EXPOSURE_INDEX = 18;
+    public static final int GAMMA_INDEX = 19;
     public static final int PBR_DATASIZE = 20;
 
     private static final String BASE_COLOR_TEXTURE = "baseColorTexture";
@@ -62,6 +64,8 @@ public class PBRMetallicRoughness {
     private Texture.TextureInfo metallicRoughnessTexture;
 
     transient private float[] pbrData = new float[PBR_DATASIZE];
+    transient private static float exposure = 1f;
+    transient private static float oneByGamma = 1.0f / 2.2f;
 
     /**
      * Copies precomputed bpr data into array - call {@link #calculatePBRData()} before calling this method.
@@ -79,7 +83,7 @@ public class PBRMetallicRoughness {
      * F0 as vec3
      * 1 - F0 : vec3
      * diffuse : vec4
-     * k, alpha^2
+     * k, alpha^2, exposure, gamma
      */
 
     public void calculatePBRData() {
@@ -103,6 +107,8 @@ public class PBRMetallicRoughness {
         pbrData[K_INDEX] = (float) (roughnessFactor * Math.sqrt(2 / Math.PI));
         float rSquared = roughnessFactor * roughnessFactor;
         pbrData[ALPHA_SQUARED_INDEX] = rSquared * rSquared;
+        pbrData[EXPOSURE_INDEX] = exposure;
+        pbrData[GAMMA_INDEX] = oneByGamma;
     }
 
     public float[] getBaseColorFactor() {
@@ -123,6 +129,24 @@ public class PBRMetallicRoughness {
 
     public Texture.TextureInfo getMetallicRoughnessTexture() {
         return metallicRoughnessTexture;
+    }
+
+    /**
+     * Sets the exposure value, this will change the exposure for all PBR metallic roughness objects.
+     * 
+     * @param exposure
+     */
+    public static void setExposure(float exposure) {
+        PBRMetallicRoughness.exposure = exposure;
+    }
+
+    /**
+     * Sets the gamma correction value, this will change the value for all PBR metallic roughness objects
+     * 
+     * @param gamma
+     */
+    public static void setGamma(float gamma) {
+        PBRMetallicRoughness.oneByGamma = 1.0f / gamma;
     }
 
 }
