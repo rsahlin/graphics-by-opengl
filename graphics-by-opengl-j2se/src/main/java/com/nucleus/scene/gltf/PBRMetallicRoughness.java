@@ -27,7 +27,6 @@ import com.nucleus.vecmath.Lerp;
 public class PBRMetallicRoughness {
 
     public static final float DIALECTRIC_SPECULAR = 0.04f;
-    public static final float MIN_ROUGHNESS = 0.01f;
     public static final float[] DIALECTRIC_SPECULAR_COLOR = new float[] { DIALECTRIC_SPECULAR, DIALECTRIC_SPECULAR,
             DIALECTRIC_SPECULAR };
     public static final float[] BLACK = new float[] { 0f, 0f, 0f };
@@ -78,7 +77,7 @@ public class PBRMetallicRoughness {
      * Precomputes the pbr data - call this method once at start or when pbr parameters have changed.
      * F0 as vec4
      * 1 - F0 : vec4
-     * diffuse : vec4 [diffuse = cDiff / pi]
+     * diffuse : vec4
      * metallic : float
      * roughness : float
      * roughness ^2 : float
@@ -89,7 +88,6 @@ public class PBRMetallicRoughness {
      */
 
     public void calculatePBRData() {
-        roughnessFactor = Math.max(MIN_ROUGHNESS, roughnessFactor);
 
         Lerp.lerpVec3(DIALECTRIC_SPECULAR_COLOR, baseColorFactor, metallicFactor, pbrData, F0_INDEX);
 

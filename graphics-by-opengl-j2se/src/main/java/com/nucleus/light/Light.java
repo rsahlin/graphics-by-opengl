@@ -90,4 +90,13 @@ public abstract class Light {
         return light;
     }
 
+    /**
+     * Sets the intensity of the light
+     * 
+     * @param intensity
+     */
+    public void setIntensity(float intensity) {
+        light[INTENSITY_INDEX] = intensity;
+    }
+
 }
