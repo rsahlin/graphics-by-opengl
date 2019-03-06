@@ -1,8 +1,9 @@
 ﻿#graphics-by-opengl
 A Java based API for graphics using OpenGLES.
 
-Support for glTF is being added, currently basic model import is working with texture.
-Basic lighting is in place with some BRDF support on vertex level - normal mapping is WIP.
+Support for glTF is being improved, currently basic model import is working with textures and normal maps.
+Basic lighting is in place with some BRDF support.
+Support for sRGB textures, gamma correction and (hdr) exposure.
 
 see #gltf-viewer for an app that displays gltf models.
 
