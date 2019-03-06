@@ -2,7 +2,7 @@
 A Java based API for graphics using OpenGLES.
 
 Support for glTF is being improved, currently basic model import is working with textures and normal maps.
-Basic lighting is in place with some BRDF support.
+Most lighting is in place with BRDF implementation.
 Support for sRGB textures, gamma correction and (hdr) exposure.
 
 see #gltf-viewer for an app that displays gltf models.
