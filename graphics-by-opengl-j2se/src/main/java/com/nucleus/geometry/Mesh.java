@@ -146,12 +146,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             T mesh = (T) createInstance();
             mesh.createMesh(texture, attributesPerVertex, null, material, vertexCount, indiceCount, mode);
             if (shapeBuilder != null) {
-                AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
-                if (attributes == null) {
-                    attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES);
-                }
-                shapeBuilder.build(attributes, mesh.getTexture(Texture2D.TEXTURE_0), mesh.getElementBuffer(),
-                        mesh.getMode());
+                shapeBuilder.build(mesh);
             }
             if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
                 BufferObjectsFactory.getInstance().createVBOs(gles, mesh);
@@ -161,6 +156,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
         @Override
         public ShaderProgram createProgram() {
+            // Default is to create a translate program, this will use an indexer so that creating 2D objects is
+            // possible.
+            // this is used mainly for ui elements
             return AssetManager.getInstance().getProgram(gles, new TranslateProgram(texture));
         }
 

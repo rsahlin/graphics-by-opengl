@@ -18,29 +18,30 @@ import com.nucleus.texturing.TextureType;
 public class TranslateProgram extends ShaderProgram {
 
     public static class TranslateProgramIndexer extends VariableIndexer {
-        protected final static String[] NAMES = new String[] { "aVertex", "aTexCoord", "aTranslate" };
-        protected final static int[] OFFSETS = new int[] { 0, 3, 0 };
+        protected final static String[] NAMES = new String[] { VariableIndexer.Property.VERTEX.name,
+                VariableIndexer.Property.UV.name, VariableIndexer.Property.TRANSLATE.name,
+                VariableIndexer.Property.ALBEDO.name };
+        protected final static int[] OFFSETS = new int[] { 0, 3, 0, 6 };
         protected final static VariableType[] TYPES = new VariableType[] { VariableType.ATTRIBUTE,
-                VariableType.ATTRIBUTE, VariableType.ATTRIBUTE };
+                VariableType.ATTRIBUTE, VariableType.ATTRIBUTE, VariableType.ATTRIBUTE };
         protected final static BufferIndex[] BUFFERINDEXES = new BufferIndex[] { BufferIndex.ATTRIBUTES_STATIC,
-                BufferIndex.ATTRIBUTES_STATIC, BufferIndex.ATTRIBUTES };
-        protected final static int[] SIZEPERVERTEX = new int[] { 3, 5 };
+                BufferIndex.ATTRIBUTES_STATIC, BufferIndex.ATTRIBUTES, BufferIndex.ATTRIBUTES };
+        protected final static int[] SIZEPERVERTEX = new int[] { 7, 5 };
 
         public TranslateProgramIndexer() {
             super(NAMES, OFFSETS, TYPES, BUFFERINDEXES, SIZEPERVERTEX);
         }
-
     }
 
     public TranslateProgram(Texture2D texture) {
-        super(null,
+        super(new SharedfragmentCategorizer(null,
                 (texture == null || texture.textureType == TextureType.Untextured) ? Shading.flat : Shading.textured,
-                null, ProgramType.VERTEX_FRAGMENT);
+                "translate"), ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
     }
 
     public TranslateProgram(Texture2D.Shading shading) {
-        super(null, shading, null, ProgramType.VERTEX_FRAGMENT);
+        super(new SharedfragmentCategorizer(null, shading, "translate"), ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
     }
 

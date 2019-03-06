@@ -39,6 +39,10 @@ public class Texture2D extends BaseReference {
         flat(),
         parametric(),
         textured(),
+        // Textured with normal map
+        textured_normal(),
+        // Flat with normal map
+        flat_normal(),
         colorize(),
         shadow1(),
         shadow2(),
@@ -54,6 +58,8 @@ public class Texture2D extends BaseReference {
         ALPHA(0x1906),
         RGB(0x1907),
         RGBA(0x1908),
+        SRGB(0x8C41),
+        SRGBA(0x8C43),
         LUMINANCE(0x1909),
         LUMINANCE_ALPHA(0x190A),
         DEPTH_COMPONENT(0x1902);

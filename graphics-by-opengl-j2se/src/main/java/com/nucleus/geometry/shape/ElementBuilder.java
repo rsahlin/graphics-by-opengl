@@ -3,7 +3,6 @@ package com.nucleus.geometry.shape;
 import java.nio.ShortBuffer;
 
 import com.nucleus.opengl.GLESWrapper;
-import com.nucleus.opengl.GLESWrapper.Mode;
 
 /**
  * Utility to create different type of element (index) buffers.
@@ -11,7 +10,7 @@ import com.nucleus.opengl.GLESWrapper.Mode;
  * @author Richard Sahlin
  *
  */
-public abstract class ElementBuilder extends ShapeBuilder {
+public abstract class ElementBuilder<T> extends ShapeBuilder<T> {
 
     /**
      * Builds the element buffer if present in the mesh

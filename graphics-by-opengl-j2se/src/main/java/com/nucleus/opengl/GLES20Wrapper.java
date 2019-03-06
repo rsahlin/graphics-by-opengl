@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.StreamUtils;
-import com.nucleus.opengl.GLException.Error;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RendererInfo;
 import com.nucleus.scene.gltf.Accessor;
@@ -425,30 +424,43 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             Accessor accessor = accessors.get(i);
             ShaderVariable v = program.getAttributeByName(attribs.get(i).name());
             if (v != null) {
-                int location = v.getLocation();
-                if (!enabledVertexArrays[location]) {
-                    glEnableVertexAttribArray(location);
-                    enabledVertexArrays[location] = true;
-                }
-                boolean normalized = accessor.isNormalized();
-                BufferView view = accessor.getBufferView();
-                com.nucleus.scene.gltf.Buffer b = view.getBuffer();
-                ComponentType ct = accessor.getComponentType();
-                Type t = accessor.getType();
-                if (b.getBufferName() > 0) {
-                    int target = view.getTarget() != null ? view.getTarget().value : GLES20.GL_ARRAY_BUFFER;
-                    glBindBuffer(target, b.getBufferName());
-                    glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(),
-                            accessor.getByteOffset() + view.getByteOffset());
-                } else {
-                    ByteBuffer bb = accessor.getBuffer();
-                    glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(), bb);
-                }
+                glVertexAttribPointer(program, accessor, v);
             } else {
                 // TODO - when fully implemented this should not happen.
             }
-            GLUtils.handleError(this, "VertexAttribPointer for attribute: " + attribs.get(i).name());
         }
+    }
+
+    /**
+     * Binds an accessor to a shader variable
+     * 
+     * @param program
+     * @param accessor
+     * @param attribute
+     * @throws GLException
+     */
+    public void glVertexAttribPointer(ShaderProgram program, Accessor accessor, ShaderVariable attribute)
+            throws GLException {
+        int location = attribute.getLocation();
+        if (!enabledVertexArrays[location]) {
+            glEnableVertexAttribArray(location);
+            enabledVertexArrays[location] = true;
+        }
+        boolean normalized = accessor.isNormalized();
+        BufferView view = accessor.getBufferView();
+        com.nucleus.scene.gltf.Buffer b = view.getBuffer();
+        ComponentType ct = accessor.getComponentType();
+        Type t = accessor.getType();
+        if (b.getBufferName() > 0) {
+            int target = view.getTarget() != null ? view.getTarget().value : GLES20.GL_ARRAY_BUFFER;
+            glBindBuffer(target, b.getBufferName());
+            glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(),
+                    accessor.getByteOffset() + view.getByteOffset());
+        } else {
+            ByteBuffer bb = accessor.getBuffer();
+            glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(), bb);
+        }
+        GLUtils.handleError(this, "VertexAttribPointer for attribute: " + attribute.getName());
     }
 
     /**
@@ -905,15 +917,18 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * 
      * @param image
      * @param level
+     * @return The internalformat used
      */
-    public void texImage(Image image, int level) {
+    public Format texImage(Image image, int level) {
         BufferImage bufferImage = image.getBufferImage();
         ImageFormat imageFormat = bufferImage.getFormat();
         Format format = TextureUtils.getFormat(imageFormat);
+        Format internalFormat = TextureUtils.getInternalFormat(imageFormat, bufferImage.getColorModel());
         com.nucleus.texturing.Texture2D.Type type = TextureUtils.getType(imageFormat);
-        glTexImage2D(GLES20.GL_TEXTURE_2D, level, format.format, bufferImage.getWidth(),
+        glTexImage2D(GLES20.GL_TEXTURE_2D, level, internalFormat.format, bufferImage.getWidth(),
                 bufferImage.getHeight(), 0, format.format, type.type,
                 bufferImage.getBuffer().position(0));
+        return internalFormat;
     }
 
     @Override

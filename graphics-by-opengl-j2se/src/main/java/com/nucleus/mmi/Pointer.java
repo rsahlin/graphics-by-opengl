@@ -1,11 +1,12 @@
 package com.nucleus.mmi;
 
-import com.nucleus.mmi.core.PointerListener;
+import com.nucleus.mmi.core.RawPointerInput;
 
 /**
- * Data for a pointer input
+ * Data for a low level (raw) pointer input - this is actions that is detected from an input device such as
+ * mouse or touch.
  */
-public class PointerData {
+public class Pointer {
 
     public final static float DOWN_PRESSURE = 1f;
     /**
@@ -112,7 +113,7 @@ public class PointerData {
     /**
      * The pointer type
      */
-    public final PointerData.Type type;
+    public final Pointer.Type type;
 
     /**
      * Creates a new pointerdata with pointer index and x,y pos
@@ -124,13 +125,13 @@ public class PointerData {
      * @param data Array with x and y position.
      * @param pressure Touch pressure
      */
-    protected PointerData(PointerAction action, Type type, long timestamp, int pointer, float[] data, float pressure) {
+    protected Pointer(PointerAction action, Type type, long timestamp, int pointer, float[] data, float pressure) {
         this.action = action;
         this.type = type;
         this.timeStamp = timestamp;
         this.pointer = pointer;
         this.pressure = pressure;
-        this.data = new float[] { data[PointerListener.X], data[PointerListener.Y] };
+        this.data = new float[] { data[RawPointerInput.X], data[RawPointerInput.Y] };
     }
 
     /**
@@ -144,7 +145,7 @@ public class PointerData {
      * @param y y value
      * @param pressure Touch pressure
      */
-    protected PointerData(PointerAction action, Type type, long timestamp, int pointer, float x, float y,
+    protected Pointer(PointerAction action, Type type, long timestamp, int pointer, float x, float y,
             float pressure) {
         this.action = action;
         this.type = type;

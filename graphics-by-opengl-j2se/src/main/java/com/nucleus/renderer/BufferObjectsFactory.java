@@ -167,15 +167,17 @@ public class BufferObjectsFactory {
     public void destroyVBOs(GLES20Wrapper gles, ArrayList<Buffer> buffers) throws GLException {
         int[] names = new int[1];
         int deleted = 0;
+        StringBuffer bufferStr = new StringBuffer();
         for (Buffer buffer : buffers) {
             names[0] = buffer.getBufferName();
             if (names[0] > 0) {
+                bufferStr.append("[" + (buffer.getUri() != null ? buffer.getUri() : buffer.getName()) + "]");
                 gles.glDeleteBuffers(1, names, 0);
                 deleted++;
                 buffer.setBufferName(0);
             }
         }
-        SimpleLogger.d(getClass(), "Deleted " + deleted + " buffers");
+        SimpleLogger.d(getClass(), "Deleted " + deleted + " buffers, " + bufferStr.toString());
     }
 
 }

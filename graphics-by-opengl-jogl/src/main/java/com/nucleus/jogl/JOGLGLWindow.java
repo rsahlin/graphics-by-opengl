@@ -26,9 +26,9 @@ import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
-import com.nucleus.mmi.KeyEvent.Action;
-import com.nucleus.mmi.PointerData.PointerAction;
-import com.nucleus.mmi.PointerData.Type;
+import com.nucleus.mmi.Key.Action;
+import com.nucleus.mmi.Pointer.PointerAction;
+import com.nucleus.mmi.Pointer.Type;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 
@@ -313,7 +313,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
         SimpleLogger.d(getClass(), "KeyEvent " + event.getEventType() + " : " + event.getKeyCode());
         switch (event.getEventType()) {
             case KeyEvent.EVENT_KEY_PRESSED:
-                super.handleKeyEvent(new com.nucleus.mmi.KeyEvent(Action.PRESSED,
+                super.handleKeyEvent(new com.nucleus.mmi.Key(Action.PRESSED,
                         AWTKeycodes.get((int) event.getKeyCode())));
                 switch (event.getKeyCode()) {
                     case KeyEvent.VK_ESCAPE:
@@ -321,7 +321,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
                 }
                 break;
             case KeyEvent.EVENT_KEY_RELEASED:
-                super.handleKeyEvent(new com.nucleus.mmi.KeyEvent(Action.RELEASED,
+                super.handleKeyEvent(new com.nucleus.mmi.Key(Action.RELEASED,
                         AWTKeycodes.get((int) event.getKeyCode())));
                 break;
             default:

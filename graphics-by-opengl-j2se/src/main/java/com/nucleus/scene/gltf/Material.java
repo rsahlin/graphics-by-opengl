@@ -3,6 +3,7 @@ package com.nucleus.scene.gltf;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
+import com.nucleus.scene.gltf.Texture.NormalTextureInfo;
 
 /**
  * The Material as it is loaded using the glTF format.
@@ -37,6 +38,7 @@ public class Material extends GLTFNamedValue implements RuntimeResolver {
 
     private static final String NAME = "name";
     private static final String PBR_METALLIC_ROUGHNESS = "pbrMetallicRoughness";
+    private static final String NORMAL_TEXTURE = "normalTexture";
     private static final String EMISSIVE_FACTOR = "emissiveFactor";
     private static final String ALPHA_MODE = "alphaMode";
     private static final String ALPHA_CUTOFF = "alphaCutoff";
@@ -50,6 +52,8 @@ public class Material extends GLTFNamedValue implements RuntimeResolver {
 
     @SerializedName(PBR_METALLIC_ROUGHNESS)
     private PBRMetallicRoughness pbrMetallicRoughness;
+    @SerializedName(NORMAL_TEXTURE)
+    private Texture.NormalTextureInfo normalTexture;
     @SerializedName(EMISSIVE_FACTOR)
     private float[] emissiveFactor = DEFAULT_EMISSIVE_FACTOR;
     @SerializedName(ALPHA_MODE)
@@ -59,31 +63,63 @@ public class Material extends GLTFNamedValue implements RuntimeResolver {
     @SerializedName(DOUBLE_SIDED)
     private boolean doubleSided = DEFAULT_DOUBLE_SIDED;
 
-    private transient Texture texture;
-
+    /**
+     * Returns the pbr object
+     * 
+     * @return
+     */
     public PBRMetallicRoughness getPbrMetallicRoughness() {
         return pbrMetallicRoughness;
     }
 
+    /**
+     * Returns the normal texture, if defined
+     * 
+     * @return Normal texture, or null if not defined
+     */
+    public NormalTextureInfo getNormalTexture() {
+        return normalTexture;
+    }
+
+    /**
+     * Returns the emissive color of the material
+     * 
+     * @return
+     */
     public float[] getEmissiveFactor() {
         return emissiveFactor;
     }
 
+    /**
+     * Returns the alpha rendering mode of the material
+     * 
+     * @return
+     */
     public AlphaMode getAlphaMode() {
         return alphaMode;
     }
 
+    /**
+     * Returns the alpha cutoff value of the material
+     * 
+     * @return
+     */
     public float getAlphaCutoff() {
         return alphaCutoff;
     }
 
+    /**
+     * Returns true if this is a doublesided material
+     * 
+     * @return
+     */
     public boolean isDoubleSided() {
         return doubleSided;
     }
 
     @Override
     public void resolve(GLTF asset) throws GLTFException {
-        texture = asset.getTexture(pbrMetallicRoughness);
+
     }
 
 }

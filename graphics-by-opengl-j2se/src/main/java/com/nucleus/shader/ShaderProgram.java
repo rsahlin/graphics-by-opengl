@@ -242,6 +242,28 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Categorizer for programs that share fragment shaders - source for fragment shader is normally in
+     * assets folder (not using category folder)
+     *
+     */
+    public static class SharedfragmentCategorizer extends Categorizer {
+
+        public SharedfragmentCategorizer(Pass pass, Shading shading, String category) {
+            super(pass, shading, category);
+        }
+
+        @Override
+        public String getShaderSourceName(int shaderType) {
+            switch (shaderType) {
+                case GLES20.GL_FRAGMENT_SHADER:
+                    // Fragment shaders are shared - skip category path
+                    return getPassString() + getShadingString();
+            }
+            return super.getShaderSourceName(shaderType);
+        }
+    }
+
+    /**
      * The basic function
      */
     protected Categorizer function;
@@ -301,7 +323,8 @@ public abstract class ShaderProgram {
     protected InterfaceBlock[] uniformInterfaceBlocks;
     protected BlockBuffer[] uniformBlockBuffers;
     /**
-     * Samplers (texture units)
+     * Samplers (texture units) - the texture unit to use for a shadervariable is stored at the intbuffer
+     * position. To fetch texture unit to use for a shadervariable do: samplers.position(shadervariable.position())
      */
     transient protected IntBuffer samplers;
 
@@ -354,10 +377,13 @@ public abstract class ShaderProgram {
     /**
      * Returns the offset within an attribute buffer where the data is or -1 if shader variable is not defined.
      * 
+     * Use {@link Property} to fetch shader variable instead.
+     * 
      * @param name Name of the shader variable to query
      * @return Offset into attribute (buffer) where the storage for the specified variable is, or -1 if the variable is
      * not found.
      */
+    @Deprecated
     public int getAttributeOffset(String name) {
         ShaderVariable v = getAttributeByName(name);
         if (v != null) {
@@ -775,11 +801,13 @@ public abstract class ShaderProgram {
     /**
      * Prepares a texture used before rendering starts.
      * This shall set texture parameters to used textures, ie activate texture, bind texture then set parameters.
+     * TODO - This should be moved to a class that handles nucleus texture/mesh
      * 
      * @param gles
      * @param texture
      * @throws GLException
      */
+    @Deprecated
     public void prepareTexture(GLES20Wrapper gles, Texture2D texture) throws GLException {
         if (texture == null || texture.getTextureType() == TextureType.Untextured) {
             return;
@@ -978,11 +1006,23 @@ public abstract class ShaderProgram {
     }
 
     /**
+     * Returns the attribute if defined in shader program.
+     * 
+     * @param attribute
+     * @return Shader variable for attribute, or null if not defined in shader
+     */
+    public ShaderVariable getAttribute(VariableIndexer.Property attribute) {
+        return getAttributeByName(attribute.name);
+    }
+
+    /**
      * Returns the active shader attribute by name, or null if not found
+     * Avoid using this in favour of {@link #getAttribute(com.nucleus.shader.VariableIndexer.Property)}
      * 
      * @param attrib Name of attribute to return
      * @return
      */
+    @Deprecated
     public ShaderVariable getAttributeByName(String attrib) {
         return getVariableByName(attrib, activeAttributes);
     }
@@ -1308,12 +1348,15 @@ public abstract class ShaderProgram {
      * 
      * @param gles
      * @param uniforms The uniform data
-     * @param variable Shader variable to set uniform data for, datatype and size is read.
+     * @param variable Shader variable to set uniform data for, datatype and size is read. If null then nothing is done
      * @param offset Offset into uniform array where data starts.
      * @throws GLException If there is an error setting a uniform to GL
      */
     public final void uploadUniform(GLES20Wrapper gles, FloatBuffer uniforms, ShaderVariable variable)
             throws GLException {
+        if (variable == null) {
+            return;
+        }
         int offset = variable.getOffset();
         uniforms.position(offset);
         GLUtils.handleError(gles, "Clear error");
@@ -1350,7 +1393,15 @@ public abstract class ShaderProgram {
             default:
                 throw new IllegalArgumentException("Not implemented for dataType: " + variable.getDataType());
         }
-        GLUtils.handleError(gles, "setUniform(), dataType: " + variable.getDataType());
+        if (GLUtils.handleError(gles, "setUniform: " + variable.getName() + ", dataType: " + variable.getDataType() +
+                ", size " + variable.getSize())) {
+            // Log shader sourcenames
+            StringBuffer strBuffer = new StringBuffer();
+            for (ShaderSource s : shaderSources) {
+                strBuffer.append(s.getFullSourceName() + " : ");
+            }
+            SimpleLogger.d(getClass(), strBuffer.toString());
+        }
 
     }
 
@@ -1578,13 +1629,17 @@ public abstract class ShaderProgram {
     /**
      * Sets the texture units to use for each sampler, default behavior is to start at unit 0 and increase for each
      * sampler.
+     * The {@link #samplers} array will contain the texture unit to use for each offset.
+     * To use, position the samplers array using samplers.position(shadervariable.getOffset()) - the index
+     * will contain the texture unit to use
      */
     protected void setSamplers() {
         ArrayList<ShaderVariable> samplersList = getSamplers(activeUniforms);
         if (samplersList.size() > 0) {
-            samplers.rewind();
             for (int i = 0; i < samplersList.size(); i++) {
-                samplers.put(samplersList.get(i).getOffset());
+                ShaderVariable sampler = samplersList.get(i);
+                samplers.position(sampler.getOffset());
+                samplers.put(i);
             }
         }
     }

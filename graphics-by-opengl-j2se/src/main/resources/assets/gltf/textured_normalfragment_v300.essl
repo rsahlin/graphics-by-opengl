@@ -1,0 +1,12 @@
+#version 300 es
+/* 
+ *
+ * Fragment shader for glTF asset
+ * @author Richard Sahlin
+ */
+precision highp float;
+
+void main() {
+    fragColor = texture(uTexture0, vTexCoord0) * 
+        calculateFresnelDiffuse(normalize((vec3(texture(uTextureNormal, vTexNormal)) * mTangentLight)));
+}

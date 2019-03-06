@@ -7,6 +7,8 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.bounds.Bounds;
+import com.nucleus.common.Environment;
+import com.nucleus.common.Environment.Property;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
@@ -19,6 +21,7 @@ import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
+import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.RenderableMesh;
 import com.nucleus.shader.GLTFShaderProgram;
@@ -206,16 +209,29 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
 
     /**
      * Creates an instance, not compiled or linked, of the shader program needed to render this primitive.
+     * If no basecolor texture is used the shading will be flat
      * 
      * @param primitive
      * @return
      */
     public GLTFShaderProgram createProgram(Primitive primitive) {
         Material mat = primitive.getMaterial();
-        if (mat != null && mat.getPbrMetallicRoughness().getBaseColorTexture() != null) {
-            return new GLTFShaderProgram(null, Shading.textured, "gltf", ProgramType.VERTEX_FRAGMENT);
+        Shading shading = Shading.flat;
+        boolean forceUntextured = Environment.getInstance().isProperty(Property.FORCE_UNTEXTURED, false);
+        if (mat != null) {
+            PBRMetallicRoughness pbr = mat.getPbrMetallicRoughness();
+            if (pbr.getBaseColorTexture() != null && !forceUntextured) {
+                // Textured
+                if (mat.getNormalTexture() != null) {
+                    shading = Shading.textured_normal;
+                } else {
+                    shading = Shading.textured;
+                }
+            } else if (mat.getNormalTexture() != null) {
+                shading = Shading.flat_normal;
+            }
         }
-        return new GLTFShaderProgram(null, Shading.flat, "gltf", ProgramType.VERTEX_FRAGMENT);
+        return new GLTFShaderProgram(null, shading, "gltf", ProgramType.VERTEX_FRAGMENT);
     }
 
     @Override

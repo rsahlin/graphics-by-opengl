@@ -8,10 +8,10 @@ import com.nucleus.CoreApp;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
 import com.nucleus.common.Environment;
-import com.nucleus.mmi.PointerData;
-import com.nucleus.mmi.PointerData.PointerAction;
-import com.nucleus.mmi.PointerData.Type;
-import com.nucleus.mmi.core.InputProcessor;
+import com.nucleus.mmi.Pointer;
+import com.nucleus.mmi.Pointer.PointerAction;
+import com.nucleus.mmi.Pointer.Type;
+import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.Renderers;
@@ -426,7 +426,7 @@ public abstract class NucleusActivity extends Activity
             case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_DOWN:
                 // This is the first pointer, or multitouch pointer going down.
-                InputProcessor.getInstance().pointerEvent(PointerAction.DOWN, type,
+                CoreInput.getInstance().pointerEvent(PointerAction.DOWN, type,
                         event.getEventTime() + androidUptimeDelta, finger,
                         new float[] { event.getX(index), event.getY(index) }, event.getPressure());
                 break;
@@ -434,7 +434,7 @@ public abstract class NucleusActivity extends Activity
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 // This is multitouch or the last pointer going up
-                InputProcessor.getInstance().pointerEvent(PointerAction.UP, type,
+                CoreInput.getInstance().pointerEvent(PointerAction.UP, type,
                         event.getEventTime() + androidUptimeDelta,
                         finger, new float[] { event.getX(index), event.getY(index) }, event.getPressure());
                 break;
@@ -444,12 +444,12 @@ public abstract class NucleusActivity extends Activity
                 for (int i = 0; i < count; i++) {
                     finger = event.getPointerId(i);
                     for (int h = 0; h < historySize; h++) {
-                        InputProcessor.getInstance().pointerEvent(PointerAction.MOVE, type,
+                        CoreInput.getInstance().pointerEvent(PointerAction.MOVE, type,
                                 event.getHistoricalEventTime(h) + androidUptimeDelta, finger,
                                 new float[] { event.getHistoricalX(i, h), event.getHistoricalY(i, h) },
                                 event.getHistoricalPressure(index, h));
                     }
-                    InputProcessor.getInstance().pointerEvent(PointerAction.MOVE, type,
+                    CoreInput.getInstance().pointerEvent(PointerAction.MOVE, type,
                             event.getEventTime() + androidUptimeDelta, finger,
                             new float[] { event.getX(i), event.getY(i) }, event.getPressure());
                 }
@@ -462,15 +462,15 @@ public abstract class NucleusActivity extends Activity
     private Type getType(int type) {
         switch (type) {
             case MotionEvent.TOOL_TYPE_ERASER:
-                return PointerData.Type.ERASER;
+                return Pointer.Type.ERASER;
             case MotionEvent.TOOL_TYPE_FINGER:
-                return PointerData.Type.FINGER;
+                return Pointer.Type.FINGER;
             case MotionEvent.TOOL_TYPE_MOUSE:
-                return PointerData.Type.MOUSE;
+                return Pointer.Type.MOUSE;
             case MotionEvent.TOOL_TYPE_STYLUS:
-                return PointerData.Type.STYLUS;
+                return Pointer.Type.STYLUS;
             default:
-                return PointerData.Type.MOUSE;
+                return Pointer.Type.MOUSE;
         }
     }
 

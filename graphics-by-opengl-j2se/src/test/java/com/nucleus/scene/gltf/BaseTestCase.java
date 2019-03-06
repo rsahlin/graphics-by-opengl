@@ -1,4 +1,4 @@
-package com.nucleus.gltf.loader;
+package com.nucleus.scene.gltf;
 
 import com.nucleus.J2SELogger;
 import com.nucleus.SimpleLogger;

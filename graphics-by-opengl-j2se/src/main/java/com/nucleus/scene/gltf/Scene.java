@@ -6,12 +6,15 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.scene.gltf.Camera.Perspective;
-import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.vecmath.Matrix;
 
 /**
- * The Scene as it is loaded using the glTF format.
+ * The glTF asset contains zero or more scenes, the set of visual objects to render. Scenes are defined in a scenes
+ * array. An additional property, scene (note singular), identifies which of the scenes in the array is to be displayed
+ * at load time.
+ * All nodes listed in scene.nodes array must be root nodes (see the next section for details).
+ * When scene is undefined, runtime is not required to render anything at load time.
  * 
  * Scenes use instances of Camera. The cameras that are referenced in this scene are stored here.
  * Use {@link #getCameraInstanceCount()} to check number of cameras. When scene is resolved a default camera will be
@@ -52,11 +55,16 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
     transient private float[] viewMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
     transient private int selectedCamera = 0;
 
-    /**
-     * returns the nodes, as indexes, that make up this scene
-     */
-    public int[] getNodeIndexes() {
-        return nodes;
+    public Scene() {
+
+    }
+
+    public Scene(GLTF asset, int[] nodes) {
+        if (nodes != null) {
+            this.nodes = new int[nodes.length];
+            System.arraycopy(nodes, 0, this.nodes, 0, nodes.length);
+            resolve(asset);
+        }
     }
 
     /**
@@ -68,8 +76,24 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         return sceneNodes;
     }
 
+    /**
+     * Returns the first found node that has a mesh - will search recursively into each node in this scene
+     * (depth first) - or null if no mesh found
+     * 
+     * @return First found node with Mesh, or null
+     */
+    public Node getFirstNodeWithMesh() {
+        for (Node node : sceneNodes) {
+            Node meshNode = node.getFirstNodeWithMesh();
+            if (meshNode != null) {
+                return meshNode;
+            }
+        }
+        return null;
+    }
+
     @Override
-    public void resolve(GLTF asset) throws GLTFException {
+    public void resolve(GLTF asset) {
         if (nodes != null && nodes.length > 0) {
             Node[] sources = asset.getNodes();
             sceneNodes = new Node[nodes.length];
@@ -87,17 +111,31 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
             }
             SimpleLogger.d(getClass(), "Found " + instanceCameras.size() + " cameras in scene. Adding default camera");
             addDefaultCamera(asset);
+            // Default to selecting the first camera
+            selectCameraInstance(getCameraInstanceCount() - 1);
         }
     }
 
     /**
      * Creates a default perspective projection camera, the camera will be added to list of cameras.
      * Camera will have a Node, camera index in node will be set.
-     * TODO - check bounds of geometry and create perspective accordingly
      * 
      */
     protected void addDefaultCamera(GLTF gltf) {
         // Setup a default projection
+        // Scale
+        // Node meshNode = getFirstNodeWithMesh();
+        // MaxMin maxMin = meshNode.calculateBounds();
+        MaxMin maxMin = calculateBounds();
+        float[] result = new float[3];
+        float scale = maxMin.getMaxDelta(result)[1];
+        if (scale == 0) {
+            // Y is totally flat - use x
+            scale = result[0] * (16f / 9);
+        }
+        if (scale == 0) {
+            scale = 1.0f;
+        }
         float YASPECT = 1f;
         Perspective p = new Perspective(16 / 9f, YASPECT, 10000, 0.1f);
         // This node will only be referenced by the camera
@@ -109,23 +147,18 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         // Add camera to gltf
         int index = gltf.addCamera(camera);
         node.setCamera(gltf, index);
-        // Scale
-        MaxMin maxMin = calculateMaxMin();
-        float[] delta = new float[2];
-        maxMin.getMaxDeltaXY(delta);
 
         Node parent = getMeshParent();
         // If parent to node with mesh is at root (ie does not have parent) then treat as normal
         if (parent != null && parent.getParent() != null) {
-            SimpleLogger.d(getClass(), "Found mesh parent, using inverse matrix for default camera");
+            // SimpleLogger.d(getClass(), "Found mesh parent, using inverse matrix for default camera");
             // Go backwards in parent hierarchy to find inverse matrix
-            float[] matrix = parent.concatParentsMatrix();
-            Matrix.invertM(node.getMatrix(), 0, matrix, 0);
+            // float[] matrix = parent.concatParentsMatrix();
+            // Matrix.invertM(node.getMatrix(), 0, matrix, 0);
         }
-        // For now just scale according to height.
-        // The inverse of the node matrix will be used - so just set the largest values
-        float scale = delta[1];
-        Matrix.translate(node.getMatrix(), 0, 0, 1f);
+        // Translation is applied to camera - so negate values, moving camera up will move scene down
+        maxMin.getTranslateToCenter(result);
+        Matrix.translate(node.getMatrix(), -result[0] / scale, -result[1] / scale, (-maxMin.maxmin[5] / scale) + 1);
         Matrix.scaleM(node.getMatrix(), 0, scale, scale, scale);
     }
 
@@ -247,24 +280,21 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
     }
 
     /**
-     * Calculates the max/min values for the meshes (Accessors) in this scene
-     * same as calling {@link #calculateMaxMin(float[])} with scale set to 1,1,1
+     * Calculates the bounds values for the meshes (Accessors) in this scene, this will expand a boundingbox
+     * with each transform node.
      * 
      * @return
      */
-    public MaxMin calculateMaxMin() {
-        return calculateMaxMin(new float[] { 1, 1, 1 });
-    }
-
-    /**
-     * Calculates the max/min values for the meshes (Accessors) in this scene, scale is used as a first scale-factor.
-     * 
-     * @return
-     */
-    public MaxMin calculateMaxMin(float[] scale) {
+    public MaxMin calculateBounds() {
         if (sceneNodes != null) {
             MaxMin mm = new MaxMin();
-            return Node.updateMaxMin(sceneNodes, mm, scale);
+            float[] matrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
+            for (Node node : sceneNodes) {
+                if (node != null) {
+                    node.calculateBounds(mm, matrix);
+                }
+            }
+            return mm;
         }
         return null;
     }

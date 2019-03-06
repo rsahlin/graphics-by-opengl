@@ -3,30 +3,28 @@ package com.nucleus.mmi;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.nucleus.mmi.PointerData.PointerAction;
-import com.nucleus.mmi.PointerData.Type;
+import com.nucleus.mmi.Pointer.PointerAction;
+import com.nucleus.mmi.Pointer.Type;
 
 /**
- * The pointer motion data for one pointer.
+ * The low level pointer motion data for one pointer.
  * Holds each pointer position for a pointer motion, beginning with down, each new position and up.
- * 
- * @author Richard Sahlin
  *
  */
-public class PointerMotionData {
+public class PointerMotion {
 
     /**
      * Each pointer data, the first will be the touch down, followed by movement.
      */
-    ArrayList<PointerData> pointerMovement = new ArrayList<>();
+    ArrayList<Pointer> pointerMovement = new ArrayList<>();
     /**
      * Two dimensional min-max values for touch delta:
      * [xMin, xMax, yMin, yMax]
-     * Updated when {@link #add(PointerData)} is called.
+     * Updated when {@link #add(Pointer)} is called.
      */
     private float[] minMax = new float[4];
 
-    public PointerMotionData() {
+    public PointerMotion() {
     }
 
     /**
@@ -36,7 +34,7 @@ public class PointerMotionData {
      * 
      * @param data Pointer data
      */
-    public void add(PointerData data) {
+    public void add(Pointer data) {
         pointerMovement.add(data);
         if (getCount() > 1) {
             float[] down = getFirstPosition();
@@ -77,11 +75,11 @@ public class PointerMotionData {
             return null;
         }
         float[] delta = new float[2];
-        PointerData last = pointerMovement.get(size - 1);
+        Pointer last = pointerMovement.get(size - 1);
         if (count >= size) {
             count = size - 1;
         }
-        PointerData first = pointerMovement.get((size - 1) - count);
+        Pointer first = pointerMovement.get((size - 1) - count);
         delta[0] = last.data[0] - first.data[0];
         delta[1] = last.data[1] - first.data[1];
         return delta;
@@ -116,7 +114,7 @@ public class PointerMotionData {
      * @param n
      * @return
      */
-    public PointerData get(int n) {
+    public Pointer get(int n) {
         if (pointerMovement.size() > n) {
             return pointerMovement.get(n);
         }
@@ -129,7 +127,7 @@ public class PointerMotionData {
      * 
      * @return The last received (newest) pointer data
      */
-    public PointerData getCurrent() {
+    public Pointer getCurrent() {
         return pointerMovement.get(pointerMovement.size() - 1);
     }
 
@@ -139,7 +137,7 @@ public class PointerMotionData {
      * 
      * @return The originating pointer down action.
      */
-    public PointerData getFirst() {
+    public Pointer getFirst() {
         return pointerMovement.get(0);
     }
 
@@ -154,9 +152,9 @@ public class PointerMotionData {
      * @param pressure
      * @return
      */
-    public PointerData create(PointerAction action, Type type, long timestamp, int pointer, float[] data,
+    public Pointer create(PointerAction action, Type type, long timestamp, int pointer, float[] data,
             float pressure) {
-        return new PointerData(action, type, timestamp, pointer, data, pressure);
+        return new Pointer(action, type, timestamp, pointer, data, pressure);
     }
 
     /**
@@ -171,9 +169,9 @@ public class PointerMotionData {
      * @param pressure
      * @return
      */
-    public PointerData create(PointerAction action, Type type, long timestamp, int pointer, float x, float y,
+    public Pointer create(PointerAction action, Type type, long timestamp, int pointer, float x, float y,
             float pressure) {
-        return new PointerData(action, type, timestamp, pointer, x, y, pressure);
+        return new Pointer(action, type, timestamp, pointer, x, y, pressure);
     }
 
     /**
@@ -182,7 +180,7 @@ public class PointerMotionData {
      * 
      * @return
      */
-    public List<PointerData> getPointers() {
+    public List<Pointer> getPointers() {
         return pointerMovement;
     }
 

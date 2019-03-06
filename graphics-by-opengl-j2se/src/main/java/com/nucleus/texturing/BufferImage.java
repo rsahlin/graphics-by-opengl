@@ -2,7 +2,6 @@ package com.nucleus.texturing;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 import com.nucleus.ErrorMessage;
 import com.nucleus.common.BufferUtils;
@@ -18,60 +17,61 @@ import com.nucleus.resource.ResourceBias.RESOLUTION;
  */
 public class BufferImage extends BufferObject {
 
+    public enum ColorModel {
+        LINEAR(),
+        SRGB();
+    }
+
     /**
      *
      * Image pixel formats
      */
     public enum ImageFormat {
 
-    /**
-     * From java.awt.image.BufferedImage
-     */
-    ABGR4(06, 4),
-    /**
-     * Image type RGBA 4 bits per pixel and component, ie 16 bit format.
-     */
-    RGBA4(0x8056, 2),
-    /**
-     * Image type RGB 555 + 1 bit alpha, 16 bit format.
-     */
-    RGB5_A1(0x8057, 2),
-    /**
-     * Image type RGB 565, 16 bit format.
-     */
-    RGB565(0x8D62, 2),
-    /**
-     * Image type RGB 888, 8 bits per component, 24 bit format.
-     */
-    RGB(0x1907, 3),
-    /**
-     * Image type RGBA 8888, 8 bits per component, 32 bit format.
-     */
-    RGBA(0x1908, 4),
-    /**
-     * 8 Bits luminance, 8 bits alpha, 16 bit format.
-     */
-    LUMINANCE_ALPHA(0x1909, 2),
-    /**
-     * 8 Bit luminance, 8 bit format
-     */
-    LUMINANCE(0x190A, 1),
-    /**
-     * 8 bit alpha format
-     */
-    ALPHA(0x1906, 1),
-    /**
-     * Depth texture 16
-     */
-    DEPTH_16(0x1403, 2),
-    /**
-     * Depth texture 24 bits
-     */
-    DEPTH_24(0x1405, 3),
-    /**
-     * Float depth texture
-     */
-    DEPTH_32F(0x1406, 4);
+        /**
+         * Image type RGBA 4 bits per pixel and component, ie 16 bit format.
+         */
+        RGBA4(0x8056, 2),
+        /**
+         * Image type RGB 555 + 1 bit alpha, 16 bit format.
+         */
+        RGB5_A1(0x8057, 2),
+        /**
+         * Image type RGB 565, 16 bit format.
+         */
+        RGB565(0x8D62, 2),
+        /**
+         * Image type RGB 888, 8 bits per component, 24 bit format.
+         */
+        RGB(0x1907, 3),
+        /**
+         * Image type RGBA 8888, 8 bits per component, 32 bit format.
+         */
+        RGBA(0x1908, 4),
+        /**
+         * 8 Bits luminance, 8 bits alpha, 16 bit format.
+         */
+        LUMINANCE_ALPHA(0x1909, 2),
+        /**
+         * 8 Bit luminance, 8 bit format
+         */
+        LUMINANCE(0x190A, 1),
+        /**
+         * 8 bit alpha format
+         */
+        ALPHA(0x1906, 1),
+        /**
+         * Depth texture 16
+         */
+        DEPTH_16(0x1403, 2),
+        /**
+         * Depth texture 24 bits
+         */
+        DEPTH_24(0x1405, 3),
+        /**
+         * Float depth texture
+         */
+        DEPTH_32F(0x1406, 4);
 
         public final int type;
         /**
@@ -84,16 +84,49 @@ public class BufferImage extends BufferObject {
             this.size = size;
         }
 
+    }
+
+    /**
+     * Loaded image formats
+     *
+     */
+    public enum SourceFormat {
         /**
-         * Returns the enum for the specified int value, if found
+         * From java.awt.image.BufferedImage
+         */
+        TYPE_4BYTE_ABGR(06, 4, ImageFormat.RGBA),
+        TYPE_3BYTE_BGR(05, 3, ImageFormat.RGB),
+        TYPE_INT_ARGB(02, 4, ImageFormat.RGBA),
+        // TODO - use ImageFormat.RGB565 instead?
+        TYPE_BYTE_INDEXED(13, 1, ImageFormat.RGB);
+
+        public final int type;
+        /**
+         * The size in bytes of each pixel
+         */
+        public final int size;
+
+        /**
+         * The most closely matching imageformat that can be used when loading
+         */
+        public final ImageFormat imageFormat;
+
+        SourceFormat(int type, int size, ImageFormat imageFormat) {
+            this.type = type;
+            this.size = size;
+            this.imageFormat = imageFormat;
+        }
+
+        /**
+         * Returns the enum for the specified awt buffered image int value, if found
          * 
          * @param type image type
          * @return The image format enum, or null if not found.
          */
-        public static ImageFormat getImageFormat(int type) {
-            for (ImageFormat imgFormat : ImageFormat.values()) {
-                if (imgFormat.type == type) {
-                    return imgFormat;
+        public static SourceFormat getFromAwtFormat(int type) {
+            for (SourceFormat format : SourceFormat.values()) {
+                if (format.type == type) {
+                    return format;
                 }
             }
             return null;
@@ -102,6 +135,7 @@ public class BufferImage extends BufferObject {
     }
 
     ImageFormat format;
+    ColorModel colorModel = ColorModel.LINEAR;
     ByteBuffer buffer;
     int width;
     int height;
@@ -138,6 +172,24 @@ public class BufferImage extends BufferObject {
         create(width, height, format, null);
     }
 
+    /**
+     * Sets the colormodel, default is LINEAR
+     * 
+     * @param colorModel
+     */
+    public void setColorModel(ColorModel colorModel) {
+        this.colorModel = colorModel;
+    }
+
+    /**
+     * Returns the colormodel for the pixels in the bufferimage
+     * 
+     * @return
+     */
+    public ColorModel getColorModel() {
+        return colorModel;
+    }
+
     protected void create(int width, int height, ImageFormat format, RESOLUTION resolution) {
         this.format = format;
         this.width = width;
@@ -153,7 +205,7 @@ public class BufferImage extends BufferObject {
             case LUMINANCE_ALPHA:
             case LUMINANCE:
             case ALPHA:
-                buffer =BufferUtils.createByteBuffer(sizeInBytes);
+                buffer = BufferUtils.createByteBuffer(sizeInBytes);
                 break;
             default:
                 throw new IllegalArgumentException(ErrorMessage.INVALID_TYPE + ", " + format);

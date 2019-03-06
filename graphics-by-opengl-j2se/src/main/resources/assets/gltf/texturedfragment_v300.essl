@@ -7,5 +7,5 @@
 precision highp float;
 
 void main() {
-    fragColor = texture(uTexture, vTexCoord0) * calculateFresnelDiffuse();
+    fragColor = texture(uTexture0, vTexCoord0) * calculateFresnelDiffuse(vNormal);
 }

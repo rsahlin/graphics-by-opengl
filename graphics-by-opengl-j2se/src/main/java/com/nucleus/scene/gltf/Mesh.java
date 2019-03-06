@@ -1,11 +1,21 @@
 package com.nucleus.scene.gltf;
 
+import java.util.ArrayList;
+
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
+import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
+import com.nucleus.scene.gltf.Primitive.Attributes;
+import com.nucleus.scene.gltf.Primitive.Mode;
+import com.nucleus.shader.GLTFShaderProgram;
+import com.nucleus.shader.ShaderProgram;
+import com.nucleus.shader.ShaderProgram.ProgramType;
+import com.nucleus.texturing.Texture2D.Shading;
 
 /**
  * 
@@ -35,10 +45,87 @@ public class Mesh extends GLTFNamedValue implements AttributeUpdater, RuntimeRes
     @SerializedName(WEIGHTS)
     private int[] weights;
 
+    /**
+     * Used to debug TBN vectors
+     */
+    transient private Primitive[] debugTBNPrimitives;
+    /**
+     * The unresolved shader program that can be used with AssetManager to get compiled program
+     */
+    transient static private ShaderProgram debugTBNProgram = new GLTFShaderProgram(
+            new String[] { "vecline", "vecline", "vecline" }, null, Shading.flat,
+            "ui", ProgramType.VERTEX_GEOMETRY_FRAGMENT, new String[] { null, null });
+
+    /**
+     * Returns the array of primitives for this Mesh
+     * 
+     * @return
+     */
     public Primitive[] getPrimitives() {
         return primitives;
     }
 
+    /**
+     * Returns the array of debug TBN primitives, or null if not created - create by calling
+     * {@link #createDebugTBNPrimitives(GLES20Wrapper, Primitive[])}
+     * 
+     * @return
+     */
+    public Primitive[] getDebugTBNPrimitives() {
+        return debugTBNPrimitives;
+    }
+
+    /**
+     * Returns the unresolved debug tbn program, use this with AssetManager to get compiled program.
+     * 
+     * @return
+     */
+    public ShaderProgram getDebugTBNProgram() {
+        return debugTBNProgram;
+    }
+
+    /**
+     * Creates the primitives, and program if not already created, needed to display debug TBN vectors
+     * TODO - perhaps create a DebugMesh class?
+     * 
+     * @param gles
+     * @param primitives
+     * @return
+     * @throws GLException
+     */
+    public Primitive[] createDebugTBNPrimitives(GLES20Wrapper gles, Primitive[] primitives) throws GLException {
+        Primitive[] debugTBNPrimitives = new Primitive[primitives.length];
+        for (int index = 0; index < debugTBNPrimitives.length; index++) {
+            Primitive p = debugTBNPrimitives[index];
+            if (p == null) {
+                Primitive primitive = primitives[index];
+                ArrayList<Attributes> attribList = new ArrayList<>();
+                ArrayList<Accessor> accessorList = new ArrayList<>();
+                // Check if position accessor has offset
+                Accessor position = primitive.getAccessor(Attributes.POSITION);
+                accessorList.add(position);
+                attribList.add(Attributes.POSITION);
+                accessorList.add(primitive.getAccessor(Attributes.NORMAL));
+                attribList.add(Attributes.NORMAL);
+                accessorList.add(primitive.getAccessor(Attributes.TANGENT));
+                attribList.add(Attributes.TANGENT);
+                accessorList.add(primitive.getAccessor(Attributes.BITANGENT));
+                attribList.add(Attributes.BITANGENT);
+                // Create the primitive used to draw vector lines
+                p = new Primitive(attribList, accessorList, primitive.getIndices(),
+                        new Material(),
+                        Mode.POINTS);
+                debugTBNPrimitives[index] = p;
+            }
+        }
+        return debugTBNPrimitives;
+    }
+
+    /**
+     * Returns the optional weights for morph targets
+     * 
+     * @return
+     */
     public int[] getWeights() {
         return weights;
     }

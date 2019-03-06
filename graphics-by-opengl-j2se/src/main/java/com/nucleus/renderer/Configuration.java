@@ -1,5 +1,6 @@
 package com.nucleus.renderer;
 
+import com.nucleus.scene.gltf.Primitive.Mode;
 import com.nucleus.texturing.TextureUtils;
 
 /**
@@ -14,6 +15,10 @@ public class Configuration {
 
     private boolean useVBO = true;
     private boolean generateMipMaps = true;
+    /**
+     * Read by gltfnode renderer to allow force setting of a specific drawmode
+     */
+    private Mode forceGLTFMode = null;
 
     /**
      * Returns the instance of the Configuration, this will always be the same.
@@ -64,6 +69,25 @@ public class Configuration {
      */
     public boolean isGenerateMipMaps() {
         return generateMipMaps;
+    }
+
+    /**
+     * If a specific gl drawmode shall be used when rendering GLTF it is set here.
+     * This is for debugging / visualization
+     * 
+     * @return The gl mode to use when rendering gltf
+     */
+    public Mode getGLTFMode() {
+        return forceGLTFMode;
+    }
+
+    /**
+     * Sets the gl mode to use when rendering gltf content, use for debugging / visualization
+     * 
+     * @param forceMode or null to remove any forced gl mode
+     */
+    public void setGLTFMode(Mode forceMode) {
+        forceGLTFMode = forceMode;
     }
 
 }

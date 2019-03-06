@@ -8,7 +8,6 @@
 
 void main() {
     positionLight();
-    vTexCoord0 = TEXCOORD_0;
 }
 
 

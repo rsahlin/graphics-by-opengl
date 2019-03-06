@@ -21,17 +21,14 @@ import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Node;
+import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Primitive.Mode;
 import com.nucleus.scene.gltf.Scene;
-import com.nucleus.scene.gltf.Texture;
 import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.shader.ShaderProgram.ProgramType;
 import com.nucleus.shader.ShaderVariable;
-import com.nucleus.texturing.Texture2D.Shading;
-import com.nucleus.texturing.TextureUtils;
 
 public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
 
@@ -44,11 +41,6 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     protected int currentProgram = -1;
     protected RenderState renderState;
     protected Cullface cullFace;
-    /**
-     * Used to debug TBN buffers
-     */
-    protected ShaderProgram vecLineDrawer;
-    protected Primitive vecLinePrimitive;
     protected Mode forceMode = null;
 
     /**
@@ -84,6 +76,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             // Do nothing
             return false;
         }
+        forceMode = Configuration.getInstance().getGLTFMode();
         renderState = renderer.getRenderState();
         pushMatrix(viewMatrixStack, matrices[Matrices.VIEW.index]);
         pushMatrix(projectionMatrixStack, matrices[Matrices.PROJECTION.index]);
@@ -123,7 +116,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     }
 
     /**
-     * Renders the node and then childnodes by calling {@link #renderNodes(GLTF, Node[])}
+     * Renders the Mesh in this node, then renders childnodes.
      * This will render the Node using depth first search
      * 
      * @param gles
@@ -136,11 +129,22 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         pushMatrix(modelMatrixStack, matrices[Matrices.MODEL.index]);
         matrices[Matrices.MODEL.index] = node.concatMatrix(matrices[Matrices.MODEL.index]);
         renderMesh(gles, glTF, node.getMesh(), matrices);
+        renderDebugMesh(gles, glTF, node.getMesh(), matrices);
+
         // Render children.
         renderNodes(gles, glTF, node.getChildren(), matrices);
         matrices[Matrices.MODEL.index] = popMatrix(modelMatrixStack);
     }
 
+    /**
+     * Renders the mesh using the specified MVP matrices, this will render each primitive.
+     * 
+     * @param gles
+     * @param glTF
+     * @param mesh
+     * @param matrices
+     * @throws GLException
+     */
     protected void renderMesh(GLES20Wrapper gles, GLTF glTF, Mesh mesh, float[][] matrices) throws GLException {
         if (mesh != null) {
             Primitive[] primitives = mesh.getPrimitives();
@@ -149,6 +153,22 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
                     renderPrimitive(gles, glTF, p, matrices);
                 }
             }
+        }
+    }
+
+    /**
+     * Used to render debug info for the Mesh - if {@value GLTF#debugTBN} is true then the TBN debug primitives are
+     * drawn.
+     * 
+     * @param gles
+     * @param glTF
+     * @param mesh
+     * @param matrices
+     * @throws GLException
+     */
+    protected void renderDebugMesh(GLES20Wrapper gles, GLTF glTF, Mesh mesh, float[][] matrices) throws GLException {
+        if (GLTF.debugTBN) {
+            debugTBN(gles, glTF, mesh, matrices);
         }
     }
 
@@ -179,15 +199,14 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         program.updateUniforms(gles, matrices);
         Material material = primitive.getMaterial();
         if (material != null) {
+            PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
             // Check for doublesided.
             if (material.isDoubleSided() && renderState.cullFace != Cullface.NONE) {
                 cullFace = renderState.cullFace;
                 gles.glDisable(GLES20.GL_CULL_FACE);
             }
-            Texture texture = glTF.getTexture(material.getPbrMetallicRoughness());
-            if (texture != null) {
-                TextureUtils.prepareTexture(gles, texture, glTF.getTexCoord(material.getPbrMetallicRoughness()));
-            }
+            program.prepareTextures(gles, glTF, primitive, material);
+
         }
         Accessor indices = primitive.getIndices();
         Accessor position = primitive.getAccessor(Attributes.POSITION);
@@ -199,12 +218,21 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             gles.glEnable(GLES20.GL_CULL_FACE);
             cullFace = null;
         }
-        if (GLTF.debugTBN) {
-            debugTBN(gles, glTF, primitive, matrices);
-        }
         gles.disableAttribPointers();
     }
 
+    /**
+     * Sets attrib pointers and draws indices or arrays - uniforms must be uploaded to GL before calling this method.
+     * 
+     * @param gles
+     * @param program
+     * @param indices
+     * @param vertexCount
+     * @param attribs
+     * @param accessors
+     * @param mode
+     * @throws GLException
+     */
     protected final void drawVertices(GLES20Wrapper gles, ShaderProgram program, Accessor indices, int vertexCount,
             ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, Mode mode) throws GLException {
         gles.glVertexAttribPointer(program, attribs, accessors);
@@ -234,47 +262,36 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
 
     }
 
-    private void debugTBN(GLES20Wrapper gles, GLTF gltf, Primitive primitive, float[][] matrices) throws GLException {
-        if (vecLineDrawer == null) {
-            ShaderProgram program = new GLTFShaderProgram(
-                    new String[] { "vecline", "vecline", "vecline" }, null, Shading.flat,
-                    "gltf", ProgramType.VERTEX_GEOMETRY_FRAGMENT, new String[] { null, null });
-            vecLineDrawer = AssetManager.getInstance().getProgram(gles, program);
-            gles.glUseProgram(vecLineDrawer.getProgram());
+    private void debugTBN(GLES20Wrapper gles, GLTF gltf, Mesh mesh, float[][] matrices) throws GLException {
+        if (mesh != null) {
+            Primitive[] primitives = mesh.getDebugTBNPrimitives();
+            if (primitives == null) {
+                primitives = mesh.createDebugTBNPrimitives(gles, mesh.getPrimitives());
+            }
+            ShaderProgram debugProgram = AssetManager.getInstance().getProgram(gles, mesh.getDebugTBNProgram());
+            gles.glUseProgram(debugProgram.getProgram());
             // Set uniforms.
-            ShaderVariable var = vecLineDrawer.getUniformByName(Attributes._EMISSIVE.name());
-            FloatBuffer uniformData = vecLineDrawer.getUniformData();
+            ShaderVariable var = debugProgram.getUniformByName(Attributes._EMISSIVE.name());
+            FloatBuffer uniformData = debugProgram.getUniformData();
             if (var != null && uniformData != null) {
                 uniformData.position(var.getOffset());
-                float[] debugColors = new float[] { 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1 };
+                float[] debugColors = new float[] { 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1 };
                 uniformData.put(debugColors);
             }
-            vecLineDrawer.uploadUniform(gles, vecLineDrawer.getUniformData(),
-                    vecLineDrawer.getUniformByName(Attributes._EMISSIVE.name()));
-            ArrayList<Attributes> attribList = new ArrayList<>();
-            ArrayList<Accessor> accessorList = new ArrayList<>();
-            // Check if position accessor has offset
-            Accessor position = primitive.getAccessor(Attributes.POSITION);
-            accessorList.add(position);
-            attribList.add(Attributes.POSITION);
-            accessorList.add(primitive.getAccessor(Attributes.NORMAL));
-            attribList.add(Attributes.NORMAL);
-            accessorList.add(primitive.getAccessor(Attributes.TANGENT));
-            attribList.add(Attributes.TANGENT);
-            accessorList.add(primitive.getAccessor(Attributes.BITANGENT));
-            attribList.add(Attributes.BITANGENT);
+            debugProgram.uploadUniform(gles, debugProgram.getUniformData(),
+                    debugProgram.getUniformByName(Attributes._EMISSIVE.name()));
 
-            // Create the primitive used to draw vector lines
-            vecLinePrimitive = new Primitive(attribList, accessorList, primitive.getIndices(), new Material(),
-                    Mode.POINTS);
+            gles.glUseProgram(debugProgram.getProgram());
+            debugProgram.updateUniforms(gles, matrices);
+            for (Primitive p : primitives) {
+                gles.disableAttribPointers();
+                Accessor position = p.getAccessor(Attributes.POSITION);
+                drawVertices(gles, debugProgram, null, position.getCount(),
+                        p.getAttributesArray(), p.getAccessorArray(), Mode.POINTS);
+                gles.glUseProgram(currentProgram);
+            }
         }
-        gles.disableAttribPointers();
-        gles.glUseProgram(vecLineDrawer.getProgram());
-        vecLineDrawer.updateUniforms(gles, matrices);
-        Accessor position = vecLinePrimitive.getAccessor(Attributes.POSITION);
-        drawVertices(gles, vecLineDrawer, null, position.getCount(),
-                vecLinePrimitive.getAttributesArray(), vecLinePrimitive.getAccessorArray(), Mode.POINTS);
-        gles.glUseProgram(currentProgram);
+
     }
 
     /**

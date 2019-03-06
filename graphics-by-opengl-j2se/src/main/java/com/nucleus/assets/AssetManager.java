@@ -35,12 +35,16 @@ import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.scene.gltf.Image;
+import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
+import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Texture;
+import com.nucleus.scene.gltf.Texture.TextureInfo;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.BufferImage;
+import com.nucleus.texturing.BufferImage.ColorModel;
 import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
@@ -71,6 +75,11 @@ public class AssetManager {
      * Store textures using the source image name.
      */
     private HashMap<String, Texture2D> textures = new HashMap<>();
+
+    /**
+     * Loaded images that are used to create textures - clear when textures are created
+     */
+    private HashMap<String, BufferImage> images = new HashMap<>();
 
     private HashMap<String, ShaderProgram> programs = new HashMap<>();
 
@@ -376,9 +385,10 @@ public class AssetManager {
      */
     public void loadGLTFAssets(GLES20Wrapper gles, GLTF glTF) throws IOException, GLException {
         loadBuffers(glTF);
-        loadTextures(gles, glTF);
+        loadTextures(gles, glTF, glTF.getMaterials());
         SimpleLogger.d(getClass(), "Loaded gltf assets");
         // Build TBN before creating VBOs
+        // This can mean that a number of buffers needs to be created, for instance normal, tangent and bitangent.
         for (Mesh m : glTF.getMeshes()) {
             buildTBN(glTF, m.getPrimitives());
         }
@@ -409,12 +419,12 @@ public class AssetManager {
      */
     public void deleteGLTFAssets(GLES20Wrapper gles, GLTF gltf) throws GLException {
         BufferObjectsFactory.getInstance().destroyVBOs(gles, gltf.getBuffers(null));
-        deleteTextures(gles, gltf.getImages());
+        deleteTextures(gles, gltf, gltf.getImages());
         gltfAssets.remove(gltf.getFilename());
         gltf.destroy();
     }
 
-    protected void deleteTextures(GLES20Wrapper gles, Image[] images) {
+    protected void deleteTextures(GLES20Wrapper gles, GLTF gltf, Image[] images) {
         int deleted = 0;
         if (images != null) {
             int[] names = new int[1];
@@ -426,7 +436,7 @@ public class AssetManager {
                     deleted++;
                 }
                 if (image.getBufferImage() != null) {
-                    destroyBufferImage(image);
+                    destroyBufferImage(gltf, image);
                 }
             }
         }
@@ -462,19 +472,22 @@ public class AssetManager {
      */
     private GLTF loadJSONAsset(String path, String fileName, InputStream is)
             throws IOException, GLTFException {
+        GLTF glTF = null;
         try {
             Reader reader = new InputStreamReader(is, "UTF-8");
             GsonBuilder builder = new GsonBuilder();
             Gson gson = builder.create();
-            GLTF glTF = gson.fromJson(reader, GLTF.class);
-            glTF.setPath(path);
-            glTF.setFilename(fileName);
-            glTF.resolve();
-            return glTF;
+            glTF = gson.fromJson(reader, GLTF.class);
         } catch (UnsupportedEncodingException e) {
             SimpleLogger.d(getClass(), e.getMessage());
             return null;
+        } catch (NullPointerException e) {
+            throw new IllegalArgumentException("Could not find gltf asset with name " + fileName);
         }
+        glTF.setPath(path);
+        glTF.setFilename(fileName);
+        glTF.resolve();
+        return glTF;
     }
 
     /**
@@ -497,31 +510,61 @@ public class AssetManager {
     }
 
     /**
-     * Loads and stores the images needed by the textures in the asset.
+     * Loads all textures for the specified material
      * 
-     * @param glTF
+     * @param gles
+     * @param gltf
+     * @param materials
      * @throws IOException
      */
-    protected void loadTextures(GLES20Wrapper gles, GLTF glTF) throws IOException {
-        Texture[] textures = glTF.getTextures();
-        if (textures != null) {
-            for (Texture t : textures) {
-                Image image = t.getImage();
-                if (image != null) {
-                    if (image.getUri() != null) {
-                        BufferImage bufferImage = getTextureImage(glTF.getPath(image.getUri()));
-                        image.setBufferImage(bufferImage);
-                        internalCreateTexture(gles, image);
-                    } else {
-                        throw new IllegalArgumentException("Only support for texture image referenced as URI");
-                    }
-                }
+    protected void loadTextures(GLES20Wrapper gles, GLTF gltf, Material[] materials) throws IOException {
+        if (materials != null) {
+            for (Material material : materials) {
+                PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
+                loadTextures(gles, gltf, pbr);
+                loadTexture(gles, gltf, material.getNormalTexture(), ColorModel.LINEAR);
             }
         }
     }
 
     /**
-     * Creates and uploads the texture - destroying the buffer image after upload.
+     * Loads the textures needed for the PBR material property, if texture bufferimage already loaded
+     * for a texture then it is skipped.
+     * 
+     * @param gles
+     * @param gltf
+     * @param pbr
+     * @throws IOException
+     */
+    protected void loadTextures(GLES20Wrapper gles, GLTF gltf, PBRMetallicRoughness pbr) throws IOException {
+        loadTexture(gles, gltf, pbr.getBaseColorTexture(), ColorModel.SRGB);
+    }
+
+    /**
+     * Loads the texture - if bufferimage is already present for the texture then nothing is done.
+     * If texInfo is null then nothing is done
+     * 
+     * @param gles
+     * @param gltf
+     * @param texInfo
+     * @param colorMode If model is linear or srgb
+     * @throws IOException
+     */
+    protected void loadTexture(GLES20Wrapper gles, GLTF gltf, TextureInfo texInfo, BufferImage.ColorModel colorModel)
+            throws IOException {
+        if (texInfo != null && gltf.getTexture(texInfo).getImage().getBufferImage() == null) {
+            // Have not loaded bufferimage for this texture
+            Texture texture = gltf.getTexture(texInfo);
+            Image img = texture.getImage();
+            BufferImage bufferImage = getTextureImage(gltf.getPath(img.getUri()));
+            bufferImage.setColorModel(colorModel);
+            img.setBufferImage(bufferImage);
+            internalCreateTexture(gles, img);
+        }
+    }
+
+    /**
+     * Creates and uploads the texture
      * 
      * @param gles
      * @param image
@@ -531,16 +574,15 @@ public class AssetManager {
             int[] name = createTextureName(gles);
             image.setTextureName(name[0]);
             TextureUtils.uploadTextures(gles, image, true);
-            SimpleLogger.d(getClass(), "Uploaded texture " + image.getUri());
-            destroyBufferImage(image);
         } catch (GLException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    private void destroyBufferImage(Image image) {
+    private void destroyBufferImage(GLTF gltf, Image image) {
         BufferImage.destroyImages(new BufferImage[] { image.getBufferImage() });
         image.setBufferImage(null);
+        images.remove(gltf.getPath(image.getUri()));
     }
 
     /**
@@ -552,8 +594,11 @@ public class AssetManager {
      */
     protected BufferImage getTextureImage(String uri) throws IOException {
         if (uri != null) {
-            BufferImage textureImage = BaseImageFactory.getInstance().createImage(uri, ImageFormat.RGBA);
-            SimpleLogger.d(getClass(), "Loaded gltf texture image " + uri);
+            BufferImage textureImage = images.get(uri);
+            if (textureImage == null) {
+                textureImage = BaseImageFactory.getInstance().createImage(uri, null);
+                images.put(uri, textureImage);
+            }
             return textureImage;
         } else {
             throw new IllegalArgumentException("Not implemented");
@@ -703,6 +748,9 @@ public class AssetManager {
     public String[] listResourceFolders(String path) {
         ClassLoader loader = getClass().getClassLoader();
         URL url = loader.getResource(path);
+        if (url == null) {
+            return new String[0];
+        }
         File[] files = new File(url.getFile()).listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {

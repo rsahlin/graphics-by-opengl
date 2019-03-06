@@ -7,6 +7,6 @@
 precision highp float;
 
 void main() {
-    fragColor = calculateFresnelDiffuse();
+    fragColor = calculateFresnelDiffuse(vNormal);
 }
 

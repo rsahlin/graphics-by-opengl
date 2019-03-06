@@ -1,18 +1,13 @@
 package com.nucleus.geometry.shape;
 
-import com.nucleus.geometry.AttributeBuffer;
-import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.opengl.GLESWrapper;
-import com.nucleus.opengl.GLESWrapper.Mode;
-import com.nucleus.texturing.Texture2D;
 
 /**
  * Defines methods for building a shape (surface) using a mesh, ie connecting vertices so that a shape is drawn.
  * This builder SHALL NOT create any buffer storage - that is done the {@link Mesh#Builder}
  * 
  */
-public abstract class ShapeBuilder {
+public abstract class ShapeBuilder<T> {
 
     /**
      * The shape builder configuration superclass, this shall be used by subclasses
@@ -58,11 +53,8 @@ public abstract class ShapeBuilder {
     /**
      * Builds the specified shape(s) on the mesh.
      * 
-     * @param attributes
-     * @param texture
-     * @param indices
-     * @param mode
+     * @param mesh
      */
-    public abstract void build(AttributeBuffer attributes, Texture2D texture, ElementBuffer indices, GLESWrapper.Mode mode);
- 
+    public abstract void build(T mesh);
+
 }

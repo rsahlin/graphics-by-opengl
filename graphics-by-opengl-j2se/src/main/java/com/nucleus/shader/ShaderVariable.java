@@ -350,8 +350,8 @@ public class ShaderVariable {
 
     @Override
     public String toString() {
-        return name + " : " + type + ", size " + size + ", offset " + offset + ", activeIndex " + activeIndex +
-                ", blockIndex " + blockIndex;
+        return name + " : " + type + ", size " + size + ", sizeinbytes: " + getSizeInBytes() + ", offset " + offset
+                + ", activeIndex " + activeIndex + ", blockIndex " + blockIndex;
     }
 
 }

@@ -1,6 +1,6 @@
 package com.nucleus.scene.gltf;
 
-import com.nucleus.mmi.core.InputProcessor;
+import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Vec2;
 import com.nucleus.vecmath.Vec3;
@@ -30,11 +30,16 @@ public class AlignedNodeTransform {
     private Scene target;
 
     public AlignedNodeTransform(Scene target, float[] moveScale) {
-        this.moveScale = new float[] { moveScale[0], moveScale[1] };
-        this.target = target;
+        this.moveScale = new float[] { moveScale[0], moveScale[1], moveScale[2] };
+        setNodeTarget(target);
         resetRotation();
     }
 
+    /**
+     * Replaces the scene target
+     * 
+     * @param target
+     */
     public void setNodeTarget(Scene target) {
         this.target = target;
     }
@@ -63,7 +68,7 @@ public class AlignedNodeTransform {
      */
     public void scale(Vec2 zoom) {
         float z = 1 + (zoom.vector[Vec2.MAGNITUDE] * zoom.vector[Vec2.X])
-                / InputProcessor.getInstance().getPointerScaleY();
+                / CoreInput.getInstance().getPointerScaleY();
         scale[0] *= z;
         scale[1] *= z;
         scale[2] *= z;
@@ -71,7 +76,8 @@ public class AlignedNodeTransform {
     }
 
     /**
-     * Translates the scene using the x and y in move, multiplied by the moveScale
+     * Translates the scene using the x,y and z, multiplied by {@link #moveScale} and divided by the scale in the
+     * target matrix.
      * 
      * @param move
      */
@@ -79,6 +85,7 @@ public class AlignedNodeTransform {
         Matrix.getScale(target.getViewMatrix(), viewScale);
         translate[0] += (move[0] * moveScale[0]) / viewScale[0];
         translate[1] += (move[1] * moveScale[1]) / viewScale[1];
+        translate[2] += (move[2] * moveScale[2]) / viewScale[2];
         composeMatrix(target.getSceneTransform().getMatrix());
     }
 

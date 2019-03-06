@@ -7,7 +7,7 @@
 precision mediump float;
 uniform sampler2D uTexture;      //The texture sampler
 //Put array declaration after name for GLSL compatibility
-uniform mat3 uKernel[3];		//0=kernel, 1=uoffset, 2=voffset
+uniform mat3 uKernel[3];    //0=kernel, 1=uoffset, 2=voffset
 varying vec2 vTexCoord;
 
 void main()

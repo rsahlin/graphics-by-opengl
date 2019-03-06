@@ -2,7 +2,6 @@ package com.nucleus.shader;
 
 import java.nio.FloatBuffer;
 
-import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
@@ -68,7 +67,7 @@ public class ShadowPass1Program extends ShadowPassProgram {
         // TODO implement light position/vector properly
         // float[] lightVector = GlobalLight.getInstance().getLightVector();
         // Matrix.setRotateM(matrix, 0, 0, lightVector[0], lightVector[1], lightVector[2]);
-        GlobalLight.getInstance().getLightMatrix(matrix);
+        // GlobalLight.getInstance().getLightMatrix(matrix);
         Matrix.setIdentity(matrix, 0);
         return matrix;
     }

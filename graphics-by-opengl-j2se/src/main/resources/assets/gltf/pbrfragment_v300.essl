@@ -4,41 +4,100 @@
  */
 precision highp float;
 
-uniform lowp sampler2D uTexture; //The texture sampler
-//F0, 1 - F0, diffuse, metallic, roughness, roughness ^2
-uniform vec4 _PBRDATA[4];
-uniform vec3 _LIGHT_0[1];
+uniform mediump sampler2D uTexture0; //The texture 0 sampler
+uniform highp sampler2D uTextureNormal; //normal texture sampler
+uniform mediump sampler2D uTextureMR; //Metallic roughness texture sampler
+
+//Metallic,roughnessfactor [2]
+//F0         [3] - dieletricSpecular -> basecolor for metallic = 1
+//1 - F0     [3]
+//diffuse    [4]
+//k, alpha ^ 2, exposure, gamma
+uniform vec4 _PBRDATA[5];
+//RGB + Intensity
+//XYZ
+uniform vec4 _LIGHT_0[2];
+
 const float pi = 3.141592;
 const float oneByPI = 1.0 / pi;
 const float twoByPI = 2.0 / pi;
+const float gamma = 2.2;
+const float oneByGamma = 1.0 / gamma;
 
 in vec2 vTexCoord0;
+in vec2 vTexNormal;
 in vec3 vNormal;
 in vec3 vEye;
 in vec3 vLight;
-in vec3 vLightOut;
-in vec3 vU;
+in mat3 mTangentLight;
 
 out vec4 fragColor;
 
 
-vec4 calculateFresnelDiffuse() {
+vec4 calculateFresnelDiffuse(vec3 normal) {
     vec3 H = normalize((vLight + vEye));
-//    vec3 lightOut = reflect(vLight, vNormal);
-//    vec3 u = lightOut + vLight;
+    //vec3 lightOut = reflect(vLight, normal);
     //u = (Bisect vector of (outcoming direction of light, Incoming direction of light) 
     //F(u) = F + (1 - F) (1 - u) ^ 5
-    vec3 fresnel = _PBRDATA[0].rgb + _PBRDATA[1].rgb * pow(1.0 - dot(vEye,vU),5.0);
-    vec3 diffuse = (1.0 - fresnel) * _PBRDATA[2].rgb;
-    float alpha = _PBRDATA[3].z;
-    float a2 = alpha * alpha;
-    float distribution = (a2) / (pi * pow((pow(dot(vNormal, H),2) * (a2 - 1.0) + 1.0),2.0));
-    float k = _PBRDATA[3].y * sqrt(twoByPI);
-    float vDotH = dot(vLight, vEye);
-    float attenuation = vDotH / (vDotH * (1.0 - k) + k);
-    //specular = (Fresnel * Geometric occlusion * Distribution) / ( 4.0 * (N dot L) * (N dot V)
-//    vec3 specular = max(vec3(0.0,0.0,0.0), (fresnel * distribution));// / (4.0 * dot(vNormal,vLight) * dot(vNormal, vEye)));
-    vec3 specular = (max(vec3(0.0,0.0,0.0), fresnel) * distribution);
-    return vec4(specular + diffuse, _PBRDATA[0].a);
+    vec3 fresnel = _PBRDATA[1].rgb + _PBRDATA[2].rgb * pow(1.0 - dot(vEye,H),5.0);
+    vec3 diffuse = max(vec3(0.0,0.0,0.0), (1.0 - fresnel) * (_PBRDATA[3].rgb * _LIGHT_0[0].rgb * _LIGHT_0[0].a) * dot(normal,vLight));
+    float a2 = _PBRDATA[4].y;
+    float distPow = pow(dot(normal, H),2.0);
+    float distribution = (a2) / (pi * pow((distPow * (a2 - 1.0) + 1.0),2.0));
+    const float k = _PBRDATA[4].x;
+    float LDotH = dot(vLight, H);
+    float GL = LDotH / (LDotH * (1.0 - k) + k);
+    float NDotH = dot(normal, H);
+    float GN = NDotH /(NDotH * (1.0 - k) + k);
+    vec3 specular = max(vec3(0.0,0.0,0.0), (fresnel * (GL * GN) * distribution));// / max(1.0,(4.0 * (dot(normal, vLight) * (dot(normal, vEye))))));
+        
+    vec3 hdrExposure = vec3(1.0) - exp(-(diffuse + specular) * _PBRDATA[4].z);
+    return vec4(pow(hdrExposure, vec3(_PBRDATA[4].w)), _PBRDATA[3].a);
+//    return vec4(pow(diffuse + specular, vec3(oneByGamma)), _PBRDATA[3].a);
+//    return vec4(pow(normal, vec3(oneByGamma)), _PBRDATA[3].a);
+  
 }
+
+vec4 calculateFresnelDiffuse(vec3 normal, vec3 metallicRoughness) {
+    vec3 H = normalize((vLight + vEye));
+    //vec3 lightOut = reflect(vLight, normal);
+    //u = (Bisect vector of (outcoming direction of light, Incoming direction of light) 
+    //F(u) = F + (1 - F) (1 - u) ^ 5
+    vec3 fresnel = _PBRDATA[1].rgb + _PBRDATA[2].rgb * pow(1.0 - dot(vEye,H),5.0);
+    vec3 diffuse = max(vec3(0.0,0.0,0.0), ((1.0 - fresnel) * _PBRDATA[3].rgb) * dot(normal,vLight));
+    float a2 = _PBRDATA[4].y;
+    float distPow = pow(dot(normal, H),2.0);
+    float distribution = (a2) / (pi * pow((distPow * (a2 - 1.0) + 1.0),2.0));
+    const float k = _PBRDATA[4].x;
+    float LDotH = dot(vLight, H);
+    float GL = LDotH / (LDotH * (1.0 - k) + k);
+    float NDotH = dot(normal, H);
+    float GN = NDotH /(NDotH * (1.0 - k) + k);
+    vec3 specular = max(vec3(0.0,0.0,0.0), (fresnel * (GL * GN) * distribution));// / max(1.0,(4.0 * (dot(normal, vLight) * (dot(normal, vEye))))));
+    vec3 hdrExposure = vec3(1.0) - exp(-(diffuse + specular) * _PBRDATA[4].z);
+    return vec4(pow(hdrExposure, vec3(_PBRDATA[4].w)), _PBRDATA[3].a);
+//    return vec4(pow(diffuse + specular, vec3(oneByGamma)), _PBRDATA[3].a);
+}
+
+
+vec4 calculateFresnelDiffuseTexNormal() {
+    vec3 H = normalize((vLight + vEye));
+    //u = (Bisect vector of (outcoming direction of light, Incoming direction of light) 
+    //F(u) = F + (1 - F) (1 - u) ^ 5
+    vec3 fresnel = _PBRDATA[1].rgb + _PBRDATA[2].rgb * pow(1.0 - dot(vEye,H),5.0);
+    vec3 normal = normalize((vec3(texture(uTextureNormal, vTexNormal)) * mTangentLight));
+    vec3 diffuse = max(vec3(0.0,0.0,0.0), ((1.0 - fresnel) * _PBRDATA[3].rgb) * dot(normal,vLight));
+    float a2 = _PBRDATA[4].y;
+    float distPow = pow(dot(normal, H),2.0);
+    float distribution = (a2) / (pi * pow((distPow * (a2 - 1.0) + 1.0),2.0));
+    const float k = _PBRDATA[4].x;
+    float LDotH = dot(vLight, H);
+    float GL = LDotH / (LDotH * (1.0 - k) + k);
+    float NDotH = dot(normal, H);
+    float GN = NDotH /(NDotH * (1.0 - k) + k);
+    vec3 specular = max(vec3(0.0,0.0,0.0), (fresnel * (GL * GN) * distribution));// / max(1.0,(4.0 * (dot(normal, vLight) * (dot(normal, vEye))))));
+    return vec4(pow(diffuse + specular, vec3(oneByGamma)), _PBRDATA[3].a);
+}
+
+
 

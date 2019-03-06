@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.nucleus.assets.AssetManager;
 import com.nucleus.exporter.Reference;
-import com.nucleus.mmi.NodeInputListener;
+import com.nucleus.mmi.UIElementInput;
 import com.nucleus.renderer.NucleusRenderer;
 
 /**
@@ -93,21 +93,21 @@ public interface RootNode extends Reference {
     public void destroy(NucleusRenderer renderer);
 
     /**
-     * Returns the {@link NodeInputListener}, or null if not set.
+     * Returns the {@link UIElementInput}, or null if not set.
      * This method should normally not be called
      * 
-     * @return The {@link NodeInputListener} for this node or null if not set
+     * @return The {@link UIElementInput} for this node or null if not set
      */
-    public NodeInputListener getObjectInputListener();
+    public UIElementInput getObjectInputListener();
 
     /**
-     * Sets the {@link NodeInputListener} for this rootnode, the listener will get callbacks for Nodes that
+     * Sets the {@link UIElementInput} for this rootnode, the listener will get callbacks for Nodes that
      * have bounds specified, when there is touch interaction.
      * Remember to set bounds for Nodes that shall get callbacks.
      * 
      * @param objectInputListener Listener to get callback when input interaction is registered on a Node with bounds.
      */
-    public void setObjectInputListener(NodeInputListener objectInputListener);
+    public void setObjectInputListener(UIElementInput objectInputListener);
 
     /**
      * Returns node with matching id, searching through children recursively.

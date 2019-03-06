@@ -15,6 +15,7 @@ import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilderFactory;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.shader.VariableIndexer;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -46,7 +47,7 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
     }
 
     @Override
-    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
+    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder<Mesh> shapeBuilder)
             throws IOException {
         SimpleLogger.d(getClass(), "Creating MeshBuilder for Node " + getId());
         int count = 1;
@@ -60,15 +61,20 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
         }
         builder.setTexture(tex);
         if (shapeBuilder == null) {
-            LayerNode layer = getRootNode().getNodeByType(NodeTypes.layernode.name(), LayerNode.class);
-
-            ViewFrustum view = layer.getViewFrustum();
+            // We may need program when creating shapeBuilder
+            setProgram(builder.createProgram());
             builder.setArrayMode(GLESWrapper.Mode.TRIANGLE_FAN, 4, 0);
             if (shape == null) {
+                LayerNode layer = getRootNode().getNodeByType(NodeTypes.layernode.name(), LayerNode.class);
+                ViewFrustum view = layer.getViewFrustum();
                 shapeBuilder = new RectangleShapeBuilder(
                         new RectangleConfiguration(view.getWidth(), view.getHeight(), 0f, 1, 0));
             } else {
-                shapeBuilder = ShapeBuilderFactory.createBuilder(shape, count, 0);
+                VariableIndexer indexer = program.getIndexer();
+                if (indexer == null) {
+                    indexer = program.createIndexer();
+                }
+                shapeBuilder = ShapeBuilderFactory.getInstance().createBuilder(shape, count, 0);
             }
         }
         // If program is not present in parent then the meshbuilder is called to create program.

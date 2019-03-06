@@ -108,7 +108,7 @@ public class GLTF {
     @SerializedName(SCENE)
     private int scene = -1;
     @SerializedName(SCENES)
-    private Scene[] scenes;
+    private ArrayList<Scene> scenes;
 
     /**
      * From where the main file was loaded - this is needed for loading assets
@@ -165,10 +165,10 @@ public class GLTF {
     }
 
     /**
-     * Creates a new Buffer with specified size and a BufferView for the created buffer
+     * Creates a new BufferView with specified size and a BufferView for the created buffer
      * Use this when a BufferView shall be created for a new buffer.
      * 
-     * @param bufferName
+     * @param bufferName Name of buffer and bufferview
      * @param bufferSize
      * @param byteOffset
      * @param byteStride
@@ -180,15 +180,27 @@ public class GLTF {
         Buffer buffer = new Buffer(bufferName, bufferSize);
         int index = addBuffer(buffer);
         BufferView bv = new BufferView(this, index, byteOffset, byteStride, target);
+        bv.name = bufferName;
         return bv;
     }
 
+    /**
+     * Creates a new BufferView using the specified buffer
+     * Name of BufferView will be taken from buffer
+     * 
+     * @param buffer
+     * @param byteOffset
+     * @param byteStride
+     * @param target
+     * @return
+     */
     public BufferView createBufferView(Buffer buffer, int byteOffset, int byteStride, Target target) {
         int index = buffers.indexOf(buffer);
         if (index < 0) {
             throw new IllegalArgumentException("Could not find index for Buffer - not added?");
         }
         BufferView bv = new BufferView(this, index, byteOffset, byteStride, target);
+        bv.name = buffer.getName();
         return bv;
     }
 
@@ -300,15 +312,6 @@ public class GLTF {
     }
 
     /**
-     * Returns the array holding the scenes
-     * 
-     * @return
-     */
-    public Scene[] getScenes() {
-        return scenes;
-    }
-
-    /**
      * Returns the array of defined images, or null if none used
      * 
      * @return
@@ -342,10 +345,19 @@ public class GLTF {
      * @return The scene for the index or null
      */
     public Scene getScene(int index) {
-        if (scenes != null && index >= 0 && index < scenes.length) {
-            return scenes[index];
+        if (scenes != null && index >= 0 && index < scenes.size()) {
+            return scenes.get(index);
         }
         return null;
+    }
+
+    /**
+     * Returns the defined scene index, or -1 if not specified
+     * 
+     * @return
+     */
+    public int getSceneIndex() {
+        return scene;
     }
 
     /**
@@ -354,13 +366,64 @@ public class GLTF {
      * @return The default scene or the first scene in the defined scenes list, or null if no scenes are defined.
      */
     public Scene getDefaultScene() {
-        return scene >= 0 ? scenes[scene] : scenes != null ? scenes[0] : null;
+        return scene >= 0 ? scenes.get(scene) : scenes != null ? scenes.get(0) : null;
     }
 
-    public Node[] getNodes() {
+    /**
+     * Sets the default scene, if scene >= number of scenes then nothing is done.
+     * 
+     * @param scene
+     */
+    public void setDefaultScene(int scene) {
+        if (scene < scenes.size()) {
+            this.scene = scene;
+        }
+    }
+
+    /**
+     * Adds a scene to list of scenes
+     * 
+     * @param scene
+     * @return The index of the added scene, call getScene(index) to fetch the scene.
+     */
+    public int addScene(Scene scene) {
+        scenes.add(scene);
+        return scenes.size() - 1;
+    }
+
+    /**
+     * Returns the array of defined nodes
+     * 
+     * @return
+     */
+    protected Node[] getNodes() {
         return nodes;
     }
 
+    /**
+     * Returns the gltf index of the node - or -1 if not found or no nodes defined.
+     * 
+     * @param node
+     * @return
+     */
+    public int getNodeIndex(Node node) {
+        if (nodes == null) {
+            return -1;
+        }
+        for (int i = 0; i < nodes.length; i++) {
+            if (node == nodes[i]) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the array of defined meshes.
+     * TODO - should this method be visible?
+     * 
+     * @return
+     */
     public Mesh[] getMeshes() {
         return meshes;
     }
@@ -388,30 +451,16 @@ public class GLTF {
     }
 
     /**
-     * If pbr is not null and pbr has base color texture then the Texture is returned, otherwise null.
+     * Returns the texture for the texture info - or null if not found or texInfo is null
      * 
-     * @param pbr
-     * @return Texture for the pbr or null
-     */
-    public Texture getTexture(PBRMetallicRoughness pbr) {
-        if (pbr != null && pbr.getBaseColorTexture() != null) {
-            return textures[pbr.getBaseColorTexture().getIndex()];
-        }
-        return null;
-    }
-
-    /**
-     * Returns the texture unit to use with the pbr, or -1 if not specified.
-     * 
-     * @param pbr
+     * @param texInfo
      * @return
      */
-    public int getTexCoord(PBRMetallicRoughness pbr) {
-        if (pbr != null && pbr.getBaseColorTexture() != null) {
-            return pbr.getBaseColorTexture().getTexCoord();
+    public Texture getTexture(Texture.TextureInfo texInfo) {
+        if (texInfo != null) {
+            return textures[texInfo.getIndex()];
         }
-        return -1;
-
+        return null;
     }
 
     /**
@@ -483,7 +532,7 @@ public class GLTF {
             result.addAll(Arrays.asList(nodes));
         }
         if (scenes != null) {
-            result.addAll(Arrays.asList(scenes));
+            result.addAll(scenes);
         }
         return result;
     }

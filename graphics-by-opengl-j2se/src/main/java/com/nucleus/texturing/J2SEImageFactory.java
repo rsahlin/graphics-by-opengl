@@ -1,8 +1,8 @@
 package com.nucleus.texturing;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
+import java.awt.image.IndexColorModel;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +11,7 @@ import javax.imageio.ImageIO;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.profiling.FrameSampler;
-import com.nucleus.texturing.BufferImage.ImageFormat;
+import com.nucleus.texturing.BufferImage.SourceFormat;
 
 /**
  * Implementation of image factory using J2SE, in this implementation java.awt will be used.
@@ -28,7 +28,7 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
 
     @Override
     public BufferImage createImage(String name, BufferImage.ImageFormat format) throws IOException {
-        if (name == null || format == null) {
+        if (name == null) {
             throw new IllegalArgumentException(NULL_PARAMETER);
         }
         ClassLoader classLoader = getClass().getClassLoader();
@@ -40,11 +40,11 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
                 throw new FileNotFoundException(name);
             }
             BufferedImage img = ImageIO.read(stream);
-            if (img.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
-                img = createImage(img, BufferedImage.TYPE_4BYTE_ABGR);
-            }
-            BufferImage image = new BufferImage(img.getWidth(), img.getHeight(), format);
-            copyPixels(img, image);
+            SourceFormat sourceFormat = SourceFormat.getFromAwtFormat(img.getType());
+            SimpleLogger.d(getClass(), "Loaded image " + name + ", in format: " + sourceFormat);
+            BufferImage image = new BufferImage(img.getWidth(), img.getHeight(),
+                    format != null ? format : sourceFormat.imageFormat);
+            copyPixels(img, sourceFormat, image);
             FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_IMAGE, " " + name, start,
                     System.currentTimeMillis());
             return image;
@@ -76,27 +76,49 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
      * This will copy all of the data (image)
      * 
      * @param source
+     * @oaram sourceFormat
      * @param destination
      */
-    public void copyPixels(BufferedImage source, BufferImage destination) {
-        ImageFormat sourceFormat = ImageFormat.getImageFormat(source.getType());
-        copyPixels(source.getData().getDataBuffer(), sourceFormat, destination);
-    }
-
-    /**
-     * Internal method, copies pixels from the DataBuffer source to the destination.
-     * Pixels are of the specified type.
-     * 
-     * @param source Source pixels
-     * @param sourceFormat The source type
-     * @param destination The destination image
-     */
-    private void copyPixels(DataBuffer source, ImageFormat sourceFormat, BufferImage destination) {
-        if (source instanceof DataBufferByte) {
-            copyPixels(((DataBufferByte) source).getData(), sourceFormat, destination);
+    public void copyPixels(BufferedImage source, SourceFormat sourceFormat, BufferImage destination) {
+        if (source.getData().getDataBuffer() instanceof DataBufferByte) {
+            byte[] data = ((DataBufferByte) source.getData().getDataBuffer()).getData();
+            switch (sourceFormat) {
+                case TYPE_BYTE_INDEXED:
+                    // Make sure no alpha in source - not supported
+                    if ((source.getColorModel().hasAlpha())) {
+                        throw new IllegalArgumentException("Alpha not supported in " + sourceFormat);
+                    }
+                    data = byteIndexedToBGR((IndexColorModel) source.getColorModel(), data);
+                    sourceFormat = SourceFormat.TYPE_3BYTE_BGR;
+                    break;
+                default:
+                    break;
+            }
+            copyPixels(data, sourceFormat, destination);
         } else {
             throw new IllegalArgumentException("Not implemented");
         }
+    }
+
+    private byte[] byteIndexedToBGR(IndexColorModel icm, byte[] data) {
+        int length = data.length;
+        byte[] result = new byte[length * 3];
+        int mapSize = icm.getMapSize();
+        byte[] r = new byte[mapSize];
+        byte[] g = new byte[mapSize];
+        byte[] b = new byte[mapSize];
+        icm.getReds(r);
+        icm.getGreens(g);
+        icm.getBlues(b);
+        int index = 0;
+        int value = 0;
+        for (int i = 0; i < length; i++) {
+            value = (data[i] & 0x0ff);
+            result[index++] = b[value];
+            result[index++] = g[value];
+            result[index++] = r[value];
+        }
+        return result;
     }
 
 }

@@ -1,6 +1,7 @@
 package com.nucleus.scene.gltf;
 
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
@@ -88,9 +89,12 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
         MAT4(4);
 
         public final int size;
+        public final int sizeInBytes;
 
         private Type(int size) {
             this.size = size;
+            sizeInBytes = size * 4;
+
         }
 
         public static Type getFromDataType(int dataType) {
@@ -267,14 +271,6 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
     }
 
     /**
-     * 
-     * 
-     */
-    public void updateMaxMin(MaxMin compare, float[] scale) {
-        compare.update(max, min, scale);
-    }
-
-    /**
      * Copies all data in this accessor to short buffer
      * If componentType in accessor is float then nothing is done.
      * If componentType is int then values are truncated to short.
@@ -284,7 +280,6 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
      * @param index
      */
     public void copy(short[] dest, int index) {
-        int size;
         switch (componentType) {
             case BYTE:
             case UNSIGNED_BYTE:
@@ -303,11 +298,50 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
             case SHORT:
             case UNSIGNED_SHORT:
                 ShortBuffer shortBuffer = getBuffer().asShortBuffer();
-                shortBuffer.get(dest, index, shortBuffer.remaining());
+                shortBuffer.get(dest, index, count);
+                break;
             default:
                 SimpleLogger.d(getClass(), "Wrong component type, cannot copy " + componentType + " to dest buffer");
         }
+    }
 
+    /**
+     * Copies all data in this accessor to float buffer, component type must be FLOAT otherwise nothing is done.
+     * 
+     * @param dest
+     * @param index
+     */
+    public void copy(float[] dest, int index) {
+        switch (componentType) {
+            case FLOAT:
+                copy(dest, index, getBuffer().asFloatBuffer());
+                break;
+            default:
+                SimpleLogger.d(getClass(), "Wrong component type, cannot copy " + componentType + " to float buffer");
+        }
+    }
+
+    /**
+     * 
+     * @param dest
+     * @param index
+     * @param buffer The source data
+     */
+    private void copy(float[] dest, int index, FloatBuffer buffer) {
+        BufferView bv = getBufferView();
+        if (bv.getByteStride() <= type.size) {
+            // Straight copy of all data
+            buffer.get(dest, index, count * type.size);
+        } else {
+            final int size = getType().size;
+            int stride = bv.getByteStride() / getComponentType().size;
+            int pos = buffer.position();
+            for (int i = 0; i < count; i++) {
+                buffer.get(dest, index + i * size, size);
+                pos += stride;
+                buffer.position(pos);
+            }
+        }
     }
 
 }

@@ -7,17 +7,13 @@ package com.nucleus.ui;
 public interface Toggle extends Element {
 
     /**
-     * A new item is selected, all other items shall be de-selected
-     *
+     * Called when state of a toggle has changed.
+     * 
+     * @param toggle
      */
     public interface ToggleListener {
-        public void onStateChanged(int selected);
+        public boolean onStateChanged(Toggle toggle);
     }
-
-    /**
-     * Selects the next item
-     */
-    public void toggle();
 
     /**
      * Sets the selected item

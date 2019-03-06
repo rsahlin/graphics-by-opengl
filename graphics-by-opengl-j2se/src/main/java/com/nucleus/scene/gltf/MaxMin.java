@@ -1,39 +1,56 @@
 package com.nucleus.scene.gltf;
 
+import com.nucleus.vecmath.Matrix;
+
 /**
  * Simple class to wrap accessor Max Min values.
  *
  */
 public class MaxMin {
 
-    protected float[] max = new float[] { -Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE };
-    protected float[] min = new float[] { Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE };
+    private final int COMPONENTS = 3;
+
+    protected float[] maxmin = new float[] { -Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE, Float.MAX_VALUE,
+            Float.MAX_VALUE, Float.MAX_VALUE };
 
     public MaxMin() {
 
     }
 
     public MaxMin(float[] max, float[] min) {
-        System.arraycopy(max, 0, this.max, 0, max.length);
-        System.arraycopy(min, 0, this.min, 0, min.length);
+        System.arraycopy(max, 0, maxmin, 0, COMPONENTS);
+        System.arraycopy(min, 0, maxmin, COMPONENTS, COMPONENTS);
     }
 
     /**
-     * Updates the max/min values in this object compared to the specified values, incoming max/min will be scaled using
-     * the specified scale-factor
+     * Updates the max/min values in this object compared to the specicied transformed maxmin
      * 
-     * @param max
-     * @param min
-     * @param scale max and min will be scaled according to this before comparison.
+     * @param compare This will be transformed using the matrix then compared to values in this object
+     * @param matrix
+     * 
      */
-    public void update(float[] max, float[] min, float[] scale) {
-        this.max[0] = Float.max(max[0] * scale[0], this.max[0]);
-        this.max[1] = Float.max(max[1] * scale[1], this.max[1]);
-        this.max[2] = Float.max(max[2] * scale[2], this.max[2]);
+    public void update(MaxMin compare, float[] matrix) {
+        update(compare.maxmin, matrix);
+    }
 
-        this.min[0] = Float.min(min[0] * scale[0], this.min[0]);
-        this.min[1] = Float.min(min[1] * scale[1], this.min[1]);
-        this.min[2] = Float.min(min[2] * scale[2], this.min[2]);
+    /**
+     * Updates the max/min values in this object compared to the specified values, incoming max/min will be transformed
+     * using matrix
+     * 
+     * @param maxmin
+     * @param Transform matrix
+     */
+    public void update(float[] maxmin, float[] matrix) {
+        float[] vec = new float[COMPONENTS * 2];
+        Matrix.transformVec3(matrix, 0, maxmin, vec, 2);
+
+        this.maxmin[0] = Float.max(Float.max(vec[0], vec[3]), this.maxmin[0]);
+        this.maxmin[1] = Float.max(Float.max(vec[1], vec[4]), this.maxmin[1]);
+        this.maxmin[2] = Float.max(Float.max(vec[2], vec[5]), this.maxmin[2]);
+
+        this.maxmin[3] = Float.min(Float.min(vec[0], vec[3]), this.maxmin[3]);
+        this.maxmin[4] = Float.min(Float.min(vec[1], vec[4]), this.maxmin[4]);
+        this.maxmin[5] = Float.min(Float.min(vec[2], vec[5]), this.maxmin[5]);
     }
 
     /**
@@ -42,7 +59,7 @@ public class MaxMin {
      * @return
      */
     public float getMaxValue() {
-        return Float.max(max[0], Float.max(max[1], max[2]));
+        return Float.max(maxmin[0], Float.max(maxmin[1], maxmin[2]));
     }
 
     /**
@@ -51,17 +68,50 @@ public class MaxMin {
      * @return
      */
     public float getMinValue() {
-        return Float.min(min[0], Float.min(min[1], min[2]));
+        return Float.min(maxmin[3], Float.min(maxmin[4], maxmin[5]));
     }
 
     /**
-     * Returns the max delta value for x and y
+     * Returns the min, x, y and z value
+     * 
+     * @param result, result array. If null a new result array is created with size 3
+     * @return
+     */
+    public float[] getMinValue(float[] result) {
+        if (result == null) {
+            result = new float[3];
+        }
+        result[0] = maxmin[3];
+        result[1] = maxmin[4];
+        result[2] = maxmin[5];
+        return result;
+    }
+
+    /**
+     * Returns the max delta value for x, y and z
      * 
      * @param result
      */
-    public void getMaxDeltaXY(float[] result) {
-        result[0] = max[0] - min[0];
-        result[1] = max[1] - min[1];
+    public float[] getMaxDelta(float[] result) {
+        result[0] = maxmin[0] - maxmin[3];
+        result[1] = maxmin[1] - maxmin[4];
+        result[2] = maxmin[2] - maxmin[5];
+        return result;
+    }
+
+    /**
+     * Returns how much this maxmin shall be translated to be centered, ie adding the result to the transaltion
+     * values will result in a centered bound (maxmin)
+     * 
+     * @param result
+     * @return
+     */
+    public float[] getTranslateToCenter(float[] result) {
+        result[0] = -(maxmin[0] + maxmin[3]) / 2;
+        result[1] = -(maxmin[1] + maxmin[4]) / 2;
+        result[2] = -(maxmin[2] + maxmin[5]) / 2;
+
+        return result;
     }
 
 }
