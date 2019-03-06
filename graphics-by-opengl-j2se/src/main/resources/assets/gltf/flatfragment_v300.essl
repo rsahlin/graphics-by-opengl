@@ -7,6 +7,8 @@
 precision highp float;
 
 void main() {
-    fragColor = calculateFresnelDiffuse(vNormal);
+    vec3 pbr = calculateFresnelDiffuse(vNormal);
+    vec3 hdrExposure = vec3(1.0) - exp(-(pbr) * _PBRDATA[4].z);
+    fragColor = vec4(pow(hdrExposure, vec3(_PBRDATA[4].w)), _PBRDATA[3].a); 
 }
 
