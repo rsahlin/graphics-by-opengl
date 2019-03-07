@@ -23,7 +23,7 @@ Code style and formatting:
 Follow the Google Java guidelines:
 https://google.github.io/styleguide/javaguide.html
 
-[[https://github.com/rsahlin/graphics-by-opengl/blob/develop/images/gltfrenderdemo05.png|alt=OpenGL ES GLTF PBR Renderer]]
+https://github.com/rsahlin/graphics-by-opengl/blob/develop/images/gltfrenderdemo05.png
 
 Eclipse:
 Use customformatter.xml
