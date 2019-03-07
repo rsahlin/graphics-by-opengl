@@ -12,6 +12,20 @@ import com.nucleus.ui.Toggle;
 public interface UIElementInput extends UIInput<Node> {
 
     /**
+     * Called when toggle is inflated from json
+     * 
+     * @param toggle
+     */
+    public void onInflated(Toggle toggle);
+
+    /**
+     * Called when button is inflated from json
+     * 
+     * @param button
+     */
+    public void onInflated(Button button);
+
+    /**
      * Called when a state change is detected on a Toggle
      * 
      * @param toggle

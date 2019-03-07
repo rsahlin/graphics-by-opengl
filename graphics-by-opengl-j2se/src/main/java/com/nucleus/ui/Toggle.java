@@ -1,10 +1,13 @@
 package com.nucleus.ui;
 
 /**
- * Toggle button, can have 1 or more selections. Only one selection can be active at a time.
+ * Toggle button, can toggle between selected and not selected
  *
  */
 public interface Toggle extends Element {
+
+    public final static String SELECTED = "selected";
+    public final static String SELECTED_FRAMES = "selectedFrames";
 
     /**
      * Called when state of a toggle has changed.
@@ -16,17 +19,17 @@ public interface Toggle extends Element {
     }
 
     /**
-     * Sets the selected item
+     * Sets the selected state
      * 
-     * @param selected
+     * @param selected True to select, false to unselect
      */
-    public void setSelected(int selected);
+    public void setSelected(boolean selected);
 
     /**
-     * Returns the item that is selected, 0 and upwards.
+     * Returns the selected state
      * 
-     * @return
+     * @return True if the state is selected, false otherwise
      */
-    public int getSelected();
+    public boolean isSelected();
 
 }
