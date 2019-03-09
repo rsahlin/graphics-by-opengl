@@ -11,7 +11,6 @@ import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
-import com.nucleus.shader.ShaderProgram.Shading;
 import com.nucleus.texturing.ParameterData;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -40,13 +39,13 @@ public class ShadowPass2Program extends ShadowPassProgram {
         }
 
         @Override
-        public String getShaderSourceName(int shaderType) {
-            switch (shaderType) {
-                case GLES20.GL_FRAGMENT_SHADER:
+        public String getShaderSourceName(ShaderType type) {
+            switch (type) {
+                case FRAGMENT:
                     // For fragment shader ignore the category
                     return getPassString() + getShadingString();
                 default:
-                    return super.getShaderSourceName(shaderType);
+                    return super.getShaderSourceName(type);
             }
         }
 

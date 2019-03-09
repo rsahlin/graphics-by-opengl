@@ -2,10 +2,8 @@ package com.nucleus.shader;
 
 import java.nio.FloatBuffer;
 
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
-import com.nucleus.shader.ShaderProgram.Shading;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -24,11 +22,11 @@ public class ShadowPass1Program extends ShadowPassProgram {
         }
 
         @Override
-        public String getShaderSourceName(int shaderType) {
-            switch (shaderType) {
-                case GLES20.GL_VERTEX_SHADER:
+        public String getShaderSourceName(ShaderType type) {
+            switch (type) {
+                case VERTEX:
                     // For vertex shader ignore the pass
-                    return getPath(shaderType) + getShadingString();
+                    return getPath(type) + getShadingString();
                 default:
                     return null;
 

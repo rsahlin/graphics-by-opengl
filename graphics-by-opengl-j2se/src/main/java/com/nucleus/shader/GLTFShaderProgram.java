@@ -11,9 +11,6 @@ import com.nucleus.common.Environment.Property;
 import com.nucleus.light.GlobalLight;
 import com.nucleus.light.Light;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.GLESWrapper.GLES31;
-import com.nucleus.opengl.GLESWrapper.GLES32;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.scene.gltf.Accessor;
@@ -235,19 +232,19 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     }
 
     @Override
-    protected String getShaderSourceName(int shaderType) {
-        switch (shaderType) {
-            case GLES20.GL_VERTEX_SHADER:
-            case GLES20.GL_FRAGMENT_SHADER:
-                return (function.getPath(shaderType) + function.getPassString()) +
+    protected String getShaderSourceName(ShaderType type) {
+        switch (type) {
+            case VERTEX:
+            case FRAGMENT:
+                return (function.getPath(type) + function.getPassString()) +
                         pbrShading.getTexturing().name + pbrShading.getMaterialTexture().name +
                         PBRTextures.getNames(pbrShading.getPBRTextures());
-            case GLES31.GL_COMPUTE_SHADER:
+            case COMPUTE:
                 return "";
-            case GLES32.GL_GEOMETRY_SHADER:
+            case GEOMETRY:
                 return "";
             default:
-                throw new IllegalArgumentException("Not implemented for type: " + shaderType);
+                throw new IllegalArgumentException("Not implemented for type: " + type);
 
         }
     }

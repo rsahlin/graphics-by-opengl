@@ -200,12 +200,11 @@ public abstract class ShaderProgram {
          * Returns the shader source name, excluding directory prefix and name of shader (vertex/fragment/compute)
          * Default behavior is to return getPath() / getPassString() + getShadingString()
          * 
-         * @param shaderType The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER,
-         * GL_COMPUTE_SHADER
+         * @param shaderType The shader type to return source for
          * @return
          */
-        public String getShaderSourceName(int shaderType) {
-            return (getPath(shaderType) + getPassString() + getShadingString());
+        public String getShaderSourceName(ShaderType type) {
+            return (getPath(type) + getPassString() + getShadingString());
         }
 
         /**
@@ -229,11 +228,10 @@ public abstract class ShaderProgram {
         /**
          * Returns the relative path - by default this is the category
          * 
-         * @param shaderType The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER,
-         * GL_COMPUTE_SHADER
+         * @param shaderType The shader type to return source for
          * @return The relative path, if defined it must end with the path separator char
          */
-        public String getPath(int shaderType) {
+        public String getPath(ShaderType type) {
             String path = getCategoryString();
             return path.length() == 0 ? path : path + File.separator;
         }
@@ -266,13 +264,13 @@ public abstract class ShaderProgram {
         }
 
         @Override
-        public String getShaderSourceName(int shaderType) {
-            switch (shaderType) {
-                case GLES20.GL_FRAGMENT_SHADER:
+        public String getShaderSourceName(ShaderType type) {
+            switch (type) {
+                case FRAGMENT:
                     // Fragment shaders are shared - skip category path
                     return getPassString() + getShadingString();
             }
-            return super.getShaderSourceName(shaderType);
+            return super.getShaderSourceName(type);
         }
     }
 
@@ -412,11 +410,11 @@ public abstract class ShaderProgram {
      * 
      * Default behavior is to return the function path + shader source name
      * 
-     * @param shaderType The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER
+     * @param shaderType The shader type to return source for
      * @return
      */
-    protected String getShaderSourceName(int shaderType) {
-        return function.getShaderSourceName(shaderType);
+    protected String getShaderSourceName(ShaderType type) {
+        return function.getShaderSourceName(type);
     }
 
     protected ShaderProgram(Pass pass, ShaderProgram.Shading shading, String category,
@@ -539,26 +537,18 @@ public abstract class ShaderProgram {
      */
     protected ShaderSource getShaderSource(Renderers version, ShaderType type) {
 
-        // TODO - use ShaderType instead - and change to getShaderSourceName(ShaderType type)
-        switch (type.value) {
-            case GLES20.GL_VERTEX_SHADER:
-                return new ShaderSource(
-                        PROGRAM_DIRECTORY + getShaderSourceName(type.value)
-                                + VERTEX_TYPE,
+        switch (type) {
+            case VERTEX:
+                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type) + VERTEX_TYPE,
                         getSourceNameVersion(version, type.value), type);
-            case GLES20.GL_FRAGMENT_SHADER:
-                return new ShaderSource(
-                        PROGRAM_DIRECTORY + getShaderSourceName(type.value)
-                                + FRAGMENT_TYPE,
+            case FRAGMENT:
+                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type) + FRAGMENT_TYPE,
                         getSourceNameVersion(version, type.value), type);
-            case GLES31.GL_COMPUTE_SHADER:
-                return new ShaderSource(
-                        PROGRAM_DIRECTORY + getShaderSourceName(type.value),
+            case COMPUTE:
+                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type),
                         getSourceNameVersion(version, type.value), type);
-            case GLES32.GL_GEOMETRY_SHADER:
-                return new ShaderSource(
-                        PROGRAM_DIRECTORY + getShaderSourceName(type.value)
-                                + GEOMETRY_TYPE,
+            case GEOMETRY:
+                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type) + GEOMETRY_TYPE,
                         getSourceNameVersion(version, type.value), type);
             default:
                 throw new IllegalArgumentException("Not implemented for type: " + type);

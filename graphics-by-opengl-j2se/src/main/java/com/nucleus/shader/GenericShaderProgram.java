@@ -40,15 +40,14 @@ public class GenericShaderProgram extends ShaderProgram {
     }
 
     @Override
-    protected String getShaderSourceName(int shaderType) {
+    protected String getShaderSourceName(ShaderType type) {
         if (source == null) {
-            return super.getShaderSourceName(shaderType);
+            return super.getShaderSourceName(type);
         }
-        ShaderType t = ShaderType.getFromType(shaderType);
-        if (t.index >= source.length) {
+        if (type.index >= source.length) {
             return "";
         }
-        return function.getPath(shaderType) + source[t.index];
+        return function.getPath(type) + source[type.index];
     }
 
     @Override
@@ -61,9 +60,9 @@ public class GenericShaderProgram extends ShaderProgram {
 
     @Override
     public String getKey() {
-        return getClass().getSimpleName() + getShaderSourceName(ShaderType.VERTEX.value)
-                + getShaderSourceName(ShaderType.GEOMETRY.value) +
-                getShaderSourceName(ShaderType.FRAGMENT.value) + getShaderSourceName(ShaderType.COMPUTE.value);
+        return getClass().getSimpleName() + getShaderSourceName(ShaderType.VERTEX)
+                + getShaderSourceName(ShaderType.GEOMETRY) + getShaderSourceName(ShaderType.FRAGMENT) +
+                getShaderSourceName(ShaderType.COMPUTE);
     }
 
 }

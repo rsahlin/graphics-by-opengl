@@ -4,7 +4,6 @@ import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.Pass;
-import com.nucleus.shader.ShaderProgram.Shading;
 
 public abstract class ShadowPassProgram extends ShaderProgram {
 
@@ -49,15 +48,15 @@ public abstract class ShadowPassProgram extends ShaderProgram {
     }
 
     @Override
-    protected String getShaderSourceName(int shaderType) {
+    protected String getShaderSourceName(ShaderType type) {
         /**
          * Shadow programs may need to call the objectProgram to get the sources, this is known if categorizer returns
          * null.
          * returns null.
          */
-        String name = function.getShaderSourceName(shaderType);
+        String name = function.getShaderSourceName(type);
         if (name == null) {
-            name = objectProgram.getShaderSourceName(shaderType);
+            name = objectProgram.getShaderSourceName(type);
         }
         return name;
     }
