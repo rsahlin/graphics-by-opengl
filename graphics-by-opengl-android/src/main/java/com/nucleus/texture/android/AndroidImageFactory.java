@@ -7,6 +7,7 @@ import com.nucleus.profiling.FrameSampler;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.BufferImage.ImageFormat;
+import com.nucleus.texturing.BufferImage.SourceFormat;
 import com.nucleus.texturing.ImageFactory;
 
 import android.graphics.Bitmap;
@@ -28,7 +29,10 @@ public class AndroidImageFactory extends BaseImageFactory implements ImageFactor
         ByteBuffer bb = ByteBuffer.wrap(bytePixels);
         b.copyPixelsToBuffer(bb);
         BufferImage image = new BufferImage(b.getWidth(), b.getHeight(), format);
-        copyPixels(bytePixels, ImageFormat.RGBA, image);
+        if (b.getConfig() != Bitmap.Config.ARGB_8888) {
+            throw new IllegalArgumentException("Not supported Bitmap.Config " + b.getConfig());
+        }
+        copyPixels(bytePixels, SourceFormat.TYPE_INT_ARGB, image);
         b.recycle();
         FrameSampler.getInstance().logTag(FrameSampler.Samples.COPY_IMAGE, " " + image.getFormat().toString(), loaded,
                 System.currentTimeMillis());
