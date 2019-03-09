@@ -3,7 +3,6 @@ package com.nucleus.shader;
 import java.nio.FloatBuffer;
 
 import com.nucleus.renderer.Pass;
-import com.nucleus.texturing.Texture2D.Shading;
 
 /**
  * Generic shader program - use this when a specific shader source shall be specified.
@@ -25,16 +24,18 @@ public class GenericShaderProgram extends ShaderProgram {
      * {@link ProgramType#VERTEX_FRAGMENT} then this must contain 2 values.
      * @param shaders
      */
-    public GenericShaderProgram(String[] source, Pass pass, Shading shading, String category, ProgramType shaders) {
+    public GenericShaderProgram(String[] source, Pass pass, ShaderProgram.Shading shading, String category,
+            ShaderProgram.ProgramType shaders) {
         super(pass, shading, category, shaders);
         this.source = source;
     }
 
-    public GenericShaderProgram(Pass pass, Shading shading, String category, ProgramType shaders) {
+    public GenericShaderProgram(Pass pass, ShaderProgram.Shading shading, String category,
+            ShaderProgram.ProgramType shaders) {
         super(pass, shading, category, shaders);
     }
 
-    public GenericShaderProgram(Categorizer function, ProgramType shaders) {
+    public GenericShaderProgram(Categorizer function, ShaderProgram.ProgramType shaders) {
         super(function, shaders);
     }
 

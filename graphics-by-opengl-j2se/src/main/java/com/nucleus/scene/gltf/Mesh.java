@@ -12,10 +12,9 @@ import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Primitive.Mode;
-import com.nucleus.shader.GLTFShaderProgram;
+import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
-import com.nucleus.texturing.Texture2D.Shading;
 
 /**
  * 
@@ -52,9 +51,9 @@ public class Mesh extends GLTFNamedValue implements AttributeUpdater, RuntimeRes
     /**
      * The unresolved shader program that can be used with AssetManager to get compiled program
      */
-    transient static private ShaderProgram debugTBNProgram = new GLTFShaderProgram(
-            new String[] { "vecline", "vecline", "vecline" }, null, Shading.flat,
-            "ui", ProgramType.VERTEX_GEOMETRY_FRAGMENT, new String[] { null, null });
+    transient static private ShaderProgram debugTBNProgram = new GenericShaderProgram(
+            new String[] { "vecline", "vecline", "vecline" }, null, ShaderProgram.Shading.flat,
+            "ui", ProgramType.VERTEX_GEOMETRY_FRAGMENT);
 
     /**
      * Returns the array of primitives for this Mesh

@@ -5,7 +5,7 @@ import java.nio.FloatBuffer;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
-import com.nucleus.texturing.Texture2D.Shading;
+import com.nucleus.shader.ShaderProgram.Shading;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -19,7 +19,7 @@ public class ShadowPass1Program extends ShadowPassProgram {
 
     static class Shadow1Categorizer extends Categorizer {
 
-        public Shadow1Categorizer(Pass pass, Shading shading, String category) {
+        public Shadow1Categorizer(Pass pass, ShaderProgram.Shading shading, String category) {
             super(pass, shading, category);
         }
 
@@ -41,7 +41,7 @@ public class ShadowPass1Program extends ShadowPassProgram {
      * @param categorizer
      * @param shaders
      */
-    public ShadowPass1Program(ShaderProgram objectProgram, Categorizer categorizer, ProgramType shaders) {
+    public ShadowPass1Program(ShaderProgram objectProgram, Categorizer categorizer, ShaderProgram.ProgramType shaders) {
         super(objectProgram, categorizer, shaders);
     }
 

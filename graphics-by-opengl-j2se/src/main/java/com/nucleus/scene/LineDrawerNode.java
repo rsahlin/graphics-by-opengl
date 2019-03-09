@@ -17,10 +17,11 @@ import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.Mode;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.GenericShaderProgram;
+import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
+import com.nucleus.shader.ShaderProgram.Shading;
 import com.nucleus.shader.VariableIndexer.Indexer;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
 
@@ -79,7 +80,7 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
         if (getProgram() == null) {
             setProgram(AssetManager.getInstance().getProgram(gles,
                     new GenericShaderProgram(new String[] { VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME }, null,
-                            Shading.flat, null,
+                            ShaderProgram.Shading.flat, null,
                             ProgramType.VERTEX_FRAGMENT)));
         }
         return initMeshBuilder(gles, count, builder.getShapeBuilder(), builder);

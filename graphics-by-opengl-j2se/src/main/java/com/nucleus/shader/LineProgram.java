@@ -6,9 +6,8 @@ import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.Pass;
+import com.nucleus.shader.ShaderProgram.Shading;
 import com.nucleus.shader.ShaderVariable.VariableType;
-import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.Texture2D.Shading;
 
 /**
  * Program for rendering lines and similar.
@@ -35,8 +34,8 @@ public class LineProgram extends ShaderProgram {
 
     public static final String CATEGORY = "line";
 
-    public LineProgram(Texture2D.Shading shading) {
-        super(null, shading, CATEGORY, ProgramType.VERTEX_FRAGMENT);
+    public LineProgram(ShaderProgram.Shading shading) {
+        super(null, shading, CATEGORY, ShaderProgram.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new LineProgramIndexer());
     }
 
@@ -49,7 +48,7 @@ public class LineProgram extends ShaderProgram {
     }
 
     @Override
-    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, Shading shading) {
+    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, ShaderProgram.Shading shading) {
         switch (pass) {
             case UNDEFINED:
             case ALL:

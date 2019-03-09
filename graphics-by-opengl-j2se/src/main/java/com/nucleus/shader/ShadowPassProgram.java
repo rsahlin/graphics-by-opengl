@@ -4,7 +4,7 @@ import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.Pass;
-import com.nucleus.texturing.Texture2D.Shading;
+import com.nucleus.shader.ShaderProgram.Shading;
 
 public abstract class ShadowPassProgram extends ShaderProgram {
 
@@ -20,14 +20,14 @@ public abstract class ShadowPassProgram extends ShaderProgram {
      * @param categorizer
      * @param shaders
      */
-    public ShadowPassProgram(ShaderProgram objectProgram, Categorizer categorizer, ProgramType shaders) {
+    public ShadowPassProgram(ShaderProgram objectProgram, Categorizer categorizer, ShaderProgram.ProgramType shaders) {
         super(categorizer, shaders);
         setIndexer(objectProgram.variableIndexer);
         this.objectProgram = objectProgram;
     }
 
     @Override
-    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, Shading shading) {
+    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, ShaderProgram.Shading shading) {
         throw new IllegalArgumentException("Not valid");
     }
 

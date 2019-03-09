@@ -33,22 +33,6 @@ public class Texture2D extends BaseReference {
     public static final String FLIPV = "flipv";
 
     /**
-     * TODO - is this really a property of the texture, maybe move to ShaderProgram?
-     */
-    public enum Shading {
-        flat(),
-        parametric(),
-        textured(),
-        // Textured with normal map
-        textured_normal(),
-        // Flat with normal map
-        flat_normal(),
-        colorize(),
-        shadow1(),
-        shadow2(),
-    }
-
-    /**
      * The GL texture formats
      * 
      * @author Richard Sahlin

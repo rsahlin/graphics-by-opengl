@@ -38,7 +38,6 @@ import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.shader.ShadowPass1Program.Shadow1Categorizer;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.TextureUtils;
 import com.nucleus.texturing.TiledTexture2D;
@@ -72,6 +71,20 @@ public abstract class ShaderProgram {
     protected final static String NO_ACTIVE_UNIFORMS = "No active uniforms, forgot to call createProgram()?";
 
     protected ShaderVariable modelUniform;
+
+    /**
+     * Different type of shadings that needs to be supported in shaders
+     *
+     */
+    public enum Shading {
+        flat(),
+        parametric(),
+        textured(),
+        pbr(),
+        colorize(),
+        shadow1(),
+        shadow2();
+    }
 
     /**
      * The different type of programs that can be linked from different type of shaders.
@@ -123,7 +136,7 @@ public abstract class ShaderProgram {
      * Subclasses may modify before {@link #createProgram(GLES20Wrapper)} is called - or before they call
      * super.createProgram()
      */
-    protected ProgramType shaders;
+    protected ShaderProgram.ProgramType shaders;
     protected ShaderProgram shadowPass1;
     protected ShaderProgram shadowPass2;
 
@@ -156,10 +169,10 @@ public abstract class ShaderProgram {
      */
     public static class Categorizer {
         protected Pass pass;
-        protected Texture2D.Shading shading;
+        protected ShaderProgram.Shading shading;
         protected String category;
 
-        public Categorizer(Pass pass, Texture2D.Shading shading, String category) {
+        public Categorizer(Pass pass, ShaderProgram.Shading shading, String category) {
             this.pass = pass;
             this.shading = shading;
             this.category = category;
@@ -170,7 +183,7 @@ public abstract class ShaderProgram {
          * 
          * @return
          */
-        public Texture2D.Shading getShading() {
+        public ShaderProgram.Shading getShading() {
             return shading;
         }
 
@@ -248,7 +261,7 @@ public abstract class ShaderProgram {
      */
     public static class SharedfragmentCategorizer extends Categorizer {
 
-        public SharedfragmentCategorizer(Pass pass, Shading shading, String category) {
+        public SharedfragmentCategorizer(Pass pass, ShaderProgram.Shading shading, String category) {
             super(pass, shading, category);
         }
 
@@ -350,7 +363,7 @@ public abstract class ShaderProgram {
      * @param pass
      * @param shading
      */
-    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, Shading shading) {
+    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, ShaderProgram.Shading shading) {
         switch (pass) {
             case UNDEFINED:
             case ALL:
@@ -406,12 +419,13 @@ public abstract class ShaderProgram {
         return function.getShaderSourceName(shaderType);
     }
 
-    protected ShaderProgram(Pass pass, Texture2D.Shading shading, String category, ProgramType shaders) {
+    protected ShaderProgram(Pass pass, ShaderProgram.Shading shading, String category,
+            ShaderProgram.ProgramType shaders) {
         function = new Categorizer(pass, shading, category);
         this.shaders = shaders;
     }
 
-    protected ShaderProgram(Categorizer function, ProgramType shaders) {
+    protected ShaderProgram(Categorizer function, ShaderProgram.ProgramType shaders) {
         this.function = function;
         this.shaders = shaders;
     }
@@ -525,6 +539,7 @@ public abstract class ShaderProgram {
      */
     protected ShaderSource getShaderSource(Renderers version, ShaderType type) {
 
+        // TODO - use ShaderType instead - and change to getShaderSourceName(ShaderType type)
         switch (type.value) {
             case GLES20.GL_VERTEX_SHADER:
                 return new ShaderSource(
@@ -1600,7 +1615,7 @@ public abstract class ShaderProgram {
      * 
      * @return
      */
-    public Shading getShading() {
+    public ShaderProgram.Shading getShading() {
         return function.shading;
     }
 

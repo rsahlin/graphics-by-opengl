@@ -7,8 +7,6 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.bounds.Bounds;
-import com.nucleus.common.Environment;
-import com.nucleus.common.Environment.Property;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
@@ -19,15 +17,12 @@ import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
-import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.Mesh;
-import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.RenderableMesh;
 import com.nucleus.shader.GLTFShaderProgram;
+import com.nucleus.shader.GLTFShaderProgram.PBRShading;
 import com.nucleus.shader.ShaderProgram;
-import com.nucleus.shader.ShaderProgram.ProgramType;
-import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -215,23 +210,8 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
      * @return
      */
     public GLTFShaderProgram createProgram(Primitive primitive) {
-        Material mat = primitive.getMaterial();
-        Shading shading = Shading.flat;
-        boolean forceUntextured = Environment.getInstance().isProperty(Property.FORCE_UNTEXTURED, false);
-        if (mat != null) {
-            PBRMetallicRoughness pbr = mat.getPbrMetallicRoughness();
-            if (pbr.getBaseColorTexture() != null && !forceUntextured) {
-                // Textured
-                if (mat.getNormalTexture() != null) {
-                    shading = Shading.textured_normal;
-                } else {
-                    shading = Shading.textured;
-                }
-            } else if (mat.getNormalTexture() != null) {
-                shading = Shading.flat_normal;
-            }
-        }
-        return new GLTFShaderProgram(null, shading, "gltf", ProgramType.VERTEX_FRAGMENT);
+        PBRShading pbrShading = new PBRShading(primitive);
+        return new GLTFShaderProgram(pbrShading);
     }
 
     @Override
