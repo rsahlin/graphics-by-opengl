@@ -44,7 +44,7 @@ vec3 calculateFresnelDiffuse(vec3 normal) {
     float a2 = _PBRDATA[4].y;
     float distPow = pow(dot(normal, H),2.0);
     float distribution = (a2) / (pi * pow((distPow * (a2 - 1.0) + 1.0),2.0));
-    const float k = _PBRDATA[4].x;
+    float k = _PBRDATA[4].x;
     float LDotH = dot(vLight, H);
     float GL = LDotH / (LDotH * (1.0 - k) + k);
     float NDotH = dot(normal, H);
@@ -67,7 +67,7 @@ vec3 calculateFresnelDiffuse(vec3 normal, vec3 metallicRoughness) {
     float a2 = _PBRDATA[4].y;
     float distPow = pow(dot(normal, H),2.0);
     float distribution = (a2) / (pi * pow((distPow * (a2 - 1.0) + 1.0),2.0));
-    const float k = _PBRDATA[4].x;
+    float k = _PBRDATA[4].x;
     float LDotH = dot(vLight, H);
     float GL = LDotH / (LDotH * (1.0 - k) + k);
     float NDotH = dot(normal, H);

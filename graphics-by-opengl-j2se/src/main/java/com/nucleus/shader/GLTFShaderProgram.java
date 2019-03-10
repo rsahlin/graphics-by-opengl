@@ -359,7 +359,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     public void prepareTexture(GLES20Wrapper gles, GLTF gltf, Primitive primitive, ShaderVariable attribute,
             ShaderVariable texUniform, TextureInfo texInfo)
             throws GLException {
-        if (texInfo == null || (attribute == null && texUniform == null)) {
+        if (texInfo == null || attribute == null || texUniform == null) {
             return;
         }
         TextureUtils.prepareTexture(gles, gltf.getTexture(texInfo), texInfo.getIndex());

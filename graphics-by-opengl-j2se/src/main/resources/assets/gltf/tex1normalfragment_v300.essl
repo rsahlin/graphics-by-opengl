@@ -9,7 +9,7 @@ precision highp float;
 void main() {
     vec4 pbr = texture(uTexture0, vTexCoord0) * 
         vec4(calculateFresnelDiffuse(
-            normalize(vec3(texture(uTextureNormal, vTexNormal) * 2 - 1) * mTangentLight)), 1.0);
+            normalize(vec3(texture(uTextureNormal, vTexNormal) * 2.0 - 1.0) * mTangentLight)), 1.0);
     vec3 hdrExposure = vec3(1.0) - exp(-(pbr.rgb) * _PBRDATA[4].z);
     fragColor = vec4(pow(hdrExposure, vec3(_PBRDATA[4].w)), _PBRDATA[3].a); 
 }

@@ -230,6 +230,7 @@ public abstract class BaseImageFactory implements ImageFactory {
                         throw new IllegalArgumentException(
                                 ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
                 }
+                break;
             case TYPE_3BYTE_BGR:
                 switch (destination.getFormat()) {
                     case RGB:
