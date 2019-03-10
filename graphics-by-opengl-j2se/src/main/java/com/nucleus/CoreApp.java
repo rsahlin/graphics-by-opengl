@@ -6,7 +6,6 @@ import com.nucleus.component.ComponentProcessorRunnable;
 import com.nucleus.component.J2SEComponentProcessor;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
-import com.nucleus.mmi.UIElementInput;
 import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
@@ -27,6 +26,7 @@ import com.nucleus.scene.RootNode;
 import com.nucleus.scene.RootNodeBuilder;
 import com.nucleus.scene.ViewController;
 import com.nucleus.system.ComponentHandler;
+import com.nucleus.ui.UIElementInput;
 
 /**
  * The platform agnostic application, this is the main app for J2SE platform independent code.

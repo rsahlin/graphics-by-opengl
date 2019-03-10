@@ -9,12 +9,12 @@ import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.mmi.MMIPointer;
 import com.nucleus.mmi.MMIPointer.Action;
 import com.nucleus.mmi.MMIPointerInput;
-import com.nucleus.mmi.UIElementInput;
-import com.nucleus.mmi.UIInput.EventConfiguration;
 import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.properties.Property;
 import com.nucleus.scene.Node.State;
 import com.nucleus.ui.Element;
+import com.nucleus.ui.UIElementInput;
+import com.nucleus.ui.UIInput.EventConfiguration;
 
 /**
  * Handles pointer input checking on nodes
