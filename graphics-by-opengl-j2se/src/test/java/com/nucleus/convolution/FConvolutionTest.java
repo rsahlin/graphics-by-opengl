@@ -52,7 +52,7 @@ public class FConvolutionTest extends BaseTestCase implements WindowListener {
 
     @AfterClass
     public static void waitForUser() {
-        wait = false;
+        wait = true;
         while (wait) {
             try {
                 Thread.sleep(100);
@@ -73,7 +73,12 @@ public class FConvolutionTest extends BaseTestCase implements WindowListener {
     }
 
     @Test
-    public void testProcessOriginal() throws IOException {
+    public void testProcessOriginal2X2() throws IOException {
+        executeTest(IMAGE_NAME, "Original 2X2", Kernel.SIZE_2X2, new float[] { 0, 1, 1, 0 }, ITERATIONS);
+    }
+
+    @Test
+    public void testProcessOriginal3X3() throws IOException {
         executeTest(IMAGE_NAME, "Original 3X3", Kernel.SIZE_3X3, new float[] { 0, 0, 0, 0, 1, 0, 0, 0, 0 }, ITERATIONS);
     }
 
@@ -89,7 +94,7 @@ public class FConvolutionTest extends BaseTestCase implements WindowListener {
 
     @Test
     public void testProcessBlur5X5() throws IOException {
-        executeTest(IMAGE_NAME, "Original 5X5", Kernel.SIZE_5X5, new float[] {
+        executeTest(IMAGE_NAME, "Blur 5X5", Kernel.SIZE_5X5, new float[] {
                 1, 2, 3, 2, 1,
                 2, 3, 4, 3, 2,
                 3, 4, 5, 4, 3,

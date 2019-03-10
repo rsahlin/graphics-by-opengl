@@ -236,6 +236,10 @@ public abstract class BaseImageFactory implements ImageFactory {
                     case RGB:
                         copyPixels_3BYTE_BGR_TO_RGB(source, buffer);
                         break;
+                    case RGBA:
+                        throw new IllegalArgumentException(
+                                "Can't convert from sourceformat " + sourceFormat + " to destination "
+                                        + destination.getFormat());
                     default:
                         throw new IllegalArgumentException(
                                 ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());

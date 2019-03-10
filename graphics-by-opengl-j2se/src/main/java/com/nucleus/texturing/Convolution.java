@@ -215,9 +215,9 @@ public class Convolution {
         int sourceIndex;
         switch (kernel) {
             case SIZE_2X2:
-                for (int y = 0; y < height; y++) {
+                for (int y = 0; y < height - 1; y++) {
                     index = (y * width) * sizeInBytes;
-                    for (int x = 0; x < width; x++) {
+                    for (int x = 0; x < width - 1; x++) {
                         clearAcc(acc);
                         sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * sizeInBytes));
                         fetchPixelRow2(pixels, sourceIndex, 0, acc);
@@ -238,30 +238,6 @@ public class Convolution {
                         fetchPixelRow3(pixels, sourceIndex - widthInBytes - sizeInBytes, 0, acc);
                         fetchPixelRow3(pixels, sourceIndex - sizeInBytes, 3, acc);
                         fetchPixelRow3(pixels, sourceIndex + widthInBytes - sizeInBytes, 6, acc);
-                        if (acc[0] < 0) {
-                            acc[0] = 0;
-                        }
-                        if (acc[1] < 0) {
-                            acc[1] = 0;
-                        }
-                        if (acc[2] < 0) {
-                            acc[2] = 0;
-                        }
-                        if (acc[3] < 0) {
-                            acc[3] = 0;
-                        }
-                        if (acc[0] > 255) {
-                            acc[0] = 255;
-                        }
-                        if (acc[1] > 255) {
-                            acc[1] = 255;
-                        }
-                        if (acc[2] > 255) {
-                            acc[2] = 255;
-                        }
-                        if (acc[3] > 255) {
-                            acc[3] = 255;
-                        }
                         destPixels[index++] = (byte) (acc[0]);
                         destPixels[index++] = (byte) (acc[1]);
                         destPixels[index++] = (byte) (acc[2]);
@@ -356,13 +332,13 @@ public class Convolution {
     private final void fetchPixelRow2(byte[] pixels, int offset, int index, float[] acc) {
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
 
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
 
     }
 
@@ -446,27 +422,28 @@ public class Convolution {
     private final void fetchPixelRow5(byte[] pixels, int offset, int index, float[] acc) {
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
-
-        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
-
-        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
-
-        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
-        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
-        offset++; // skip alpha
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
 
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
         acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
     }
 
     /**
