@@ -108,12 +108,14 @@ public class BufferImage extends BufferObject {
          */
         TYPE_RGB565(-1, 2, ImageFormat.RGB565);
 
+        /**
+         * The AWT BufferedImage type
+         */
         public final int type;
         /**
          * The size in bytes of each pixel
          */
         public final int size;
-
         /**
          * The most closely matching imageformat that can be used when loading
          */
@@ -135,6 +137,21 @@ public class BufferImage extends BufferObject {
             for (SourceFormat format : SourceFormat.values()) {
                 if (format.type == type) {
                     return format;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Matches the ImageFormat to a SourceFormat, or null if no match found
+         * 
+         * @param format
+         * @return
+         */
+        public static SourceFormat get(ImageFormat format) {
+            for (SourceFormat sf : SourceFormat.values()) {
+                if (sf.imageFormat == format) {
+                    return sf;
                 }
             }
             return null;

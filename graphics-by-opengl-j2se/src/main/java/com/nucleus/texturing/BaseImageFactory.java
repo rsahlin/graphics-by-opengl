@@ -62,13 +62,8 @@ public abstract class BaseImageFactory implements ImageFactory {
         switch (scale) {
             case 1:
             case 2:
-                c = new Convolution(Kernel.SIZE_2X2);
-                c.set(new float[] { 1, 1, 1, 1 }, 0, 0, Kernel.SIZE_2X2.size);
-                // c = new Convolution(Kernel.SIZE_4X4);
-                // c.set(new float[] { 1, 1, 1, 1,
-                // 1, 3, 2, 1,
-                // 1, 2, 3, 1,
-                // 1, 1, 1, 1 }, 0, 0, Kernel.SIZE_4X4.size);
+                c = new Convolution(Kernel.SIZE_3X3);
+                c.set(new float[] { 1, 1, 1, 1 }, 0, 0, Kernel.SIZE_3X3.size);
                 break;
             case 3:
                 c = new Convolution(Kernel.SIZE_3X3);

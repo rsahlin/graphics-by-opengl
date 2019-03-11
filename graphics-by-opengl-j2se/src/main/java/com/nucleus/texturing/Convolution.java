@@ -2,6 +2,8 @@ package com.nucleus.texturing;
 
 import java.nio.ByteBuffer;
 
+import com.nucleus.texturing.BufferImage.ImageFormat;
+
 /**
  * A simple image convolution (kernal) filter.
  * Used to filter images, for instance when mip-maps are created at runtime.
@@ -186,11 +188,15 @@ public class Convolution {
 
     /**
      * Process the source image and store the result in destination.
+     * Source and destination format must be the same
      * 
      * @param source
      * @param destination
      */
     public void process(BufferImage source, BufferImage destination) {
+        if (source.getFormat() != destination.getFormat()) {
+            throw new IllegalArgumentException("Only supports process of same source and destination format");
+        }
         byte[] pixels = new byte[source.getSizeInBytes()];
         byte[] destPixels = new byte[destination.getSizeInBytes()];
         source.getBuffer().rewind();
@@ -213,36 +219,30 @@ public class Convolution {
         int widthInBytes = sourceWidth * sizeInBytes;
         int index;
         int sourceIndex;
+        ImageFormat format = destination.getFormat();
         switch (kernel) {
             case SIZE_2X2:
-                for (int y = 0; y < height - 1; y++) {
-                    index = (y * width) * sizeInBytes;
-                    for (int x = 0; x < width - 1; x++) {
-                        clearAcc(acc);
-                        sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * sizeInBytes));
-                        fetchPixelRow2(pixels, sourceIndex, 0, acc);
-                        fetchPixelRow2(pixels, sourceIndex + widthInBytes, 2, acc);
-                        destPixels[index++] = (byte) (acc[0]);
-                        destPixels[index++] = (byte) (acc[1]);
-                        destPixels[index++] = (byte) (acc[2]);
-                        destPixels[index++] = (byte) (acc[3]);
-                    }
+                switch (format) {
+                    case RGBA:
+                        process2X2RGBA(pixels, destPixels, width, height, sourceWidth, sourceHeight);
+                        break;
+                    case RGB:
+                        process2X2RGB(pixels, destPixels, width, height, sourceWidth, sourceHeight);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unsupported format for 2X2 " + format);
                 }
                 break;
             case SIZE_3X3:
-                for (int y = 1; y < height - 1; y++) {
-                    index = (y * width) * sizeInBytes;
-                    for (int x = 1; x < width - 1; x++) {
-                        clearAcc(acc);
-                        sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * sizeInBytes));
-                        fetchPixelRow3(pixels, sourceIndex - widthInBytes - sizeInBytes, 0, acc);
-                        fetchPixelRow3(pixels, sourceIndex - sizeInBytes, 3, acc);
-                        fetchPixelRow3(pixels, sourceIndex + widthInBytes - sizeInBytes, 6, acc);
-                        destPixels[index++] = (byte) (acc[0]);
-                        destPixels[index++] = (byte) (acc[1]);
-                        destPixels[index++] = (byte) (acc[2]);
-                        destPixels[index++] = (byte) (acc[3]);
-                    }
+                switch (format) {
+                    case RGBA:
+                        process3X3RGBA(pixels, destPixels, width, height, sourceWidth, sourceHeight);
+                        break;
+                    case RGB:
+                        process3X3RGB(pixels, destPixels, width, height, sourceWidth, sourceHeight);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unsupported format for 2X2 " + format);
                 }
                 break;
             case SIZE_4X4:
@@ -309,6 +309,99 @@ public class Convolution {
         }
     }
 
+    private void process2X2RGB(byte[] pixels, byte[] destPixels, int width, int height, int sourceWidth,
+            int sourceHeight) {
+        int index;
+        int sourceIndex;
+        int widthInBytes = sourceWidth * 3;
+        float yScale = sourceHeight / height;
+        float xScale = sourceWidth / width;
+        float acc[] = new float[4];
+        for (int y = 0; y < height - 1; y++) {
+            index = (y * width) * 3;
+            for (int x = 0; x < width - 1; x++) {
+                clearAcc(acc);
+                sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * 3));
+                fetchPixelRow2RGB(pixels, sourceIndex, 0, acc);
+                fetchPixelRow2RGB(pixels, sourceIndex + widthInBytes, 2, acc);
+                destPixels[index++] = (byte) (acc[0]);
+                destPixels[index++] = (byte) (acc[1]);
+                destPixels[index++] = (byte) (acc[2]);
+            }
+        }
+    }
+
+    private void process2X2RGBA(byte[] pixels, byte[] destPixels, int width, int height, int sourceWidth,
+            int sourceHeight) {
+        int index;
+        int sourceIndex;
+        int widthInBytes = sourceWidth * 4;
+        float yScale = sourceHeight / height;
+        float xScale = sourceWidth / width;
+        float acc[] = new float[4];
+        for (int y = 0; y < height - 1; y++) {
+            index = (y * width) * 4;
+            for (int x = 0; x < width - 1; x++) {
+                clearAcc(acc);
+                sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * 4));
+                fetchPixelRow2RGBA(pixels, sourceIndex, 0, acc);
+                fetchPixelRow2RGBA(pixels, sourceIndex + widthInBytes, 2, acc);
+                destPixels[index++] = (byte) (acc[0]);
+                destPixels[index++] = (byte) (acc[1]);
+                destPixels[index++] = (byte) (acc[2]);
+                destPixels[index++] = (byte) (acc[3]);
+            }
+        }
+    }
+
+    private void process3X3RGBA(byte[] pixels, byte[] destPixels, int width, int height, int sourceWidth,
+            int sourceHeight) {
+        int index;
+        int sourceIndex;
+        int widthInBytes = sourceWidth * 4;
+        float yScale = sourceHeight / height;
+        float xScale = sourceWidth / width;
+        float acc[] = new float[4];
+        for (int y = 1; y < height - 1; y++) {
+            index = (y * width) * 4;
+            for (int x = 1; x < width - 1; x++) {
+                clearAcc(acc);
+                sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * 4));
+                fetchPixelRow3RGBA(pixels, sourceIndex - widthInBytes - 4, 0, acc);
+                fetchPixelRow3RGBA(pixels, sourceIndex - 4, 3, acc);
+                fetchPixelRow3RGBA(pixels, sourceIndex + widthInBytes - 4, 6, acc);
+                destPixels[index++] = (byte) (acc[0]);
+                destPixels[index++] = (byte) (acc[1]);
+                destPixels[index++] = (byte) (acc[2]);
+                destPixels[index++] = (byte) (acc[3]);
+            }
+        }
+
+    }
+
+    private void process3X3RGB(byte[] pixels, byte[] destPixels, int width, int height, int sourceWidth,
+            int sourceHeight) {
+        int index;
+        int sourceIndex;
+        int widthInBytes = sourceWidth * 3;
+        float yScale = sourceHeight / height;
+        float xScale = sourceWidth / width;
+        float acc[] = new float[4];
+        for (int y = 1; y < height - 1; y++) {
+            index = (y * width) * 3;
+            for (int x = 1; x < width - 1; x++) {
+                clearAcc(acc);
+                sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * 3));
+                fetchPixelRow3RGB(pixels, sourceIndex - widthInBytes - 3, 0, acc);
+                fetchPixelRow3RGB(pixels, sourceIndex - 3, 3, acc);
+                fetchPixelRow3RGB(pixels, sourceIndex + widthInBytes - 3, 6, acc);
+                destPixels[index++] = (byte) (acc[0]);
+                destPixels[index++] = (byte) (acc[1]);
+                destPixels[index++] = (byte) (acc[2]);
+            }
+        }
+    }
+
     /**
      * Clears the rgba values in the acc
      * 
@@ -322,14 +415,14 @@ public class Convolution {
     }
 
     /**
-     * Fetches a pixel row at index from pixels, and stores as RGB in acc
+     * Fetches a pixel row at index from pixels, and stores as RGBA in acc
      * 
      * @param pixels
      * @param offset Offset into pixels where RGBA is read
      * @param index Index into matrix
      * @param acc
      */
-    private final void fetchPixelRow2(byte[] pixels, int offset, int index, float[] acc) {
+    private final void fetchPixelRow2RGBA(byte[] pixels, int offset, int index, float[] acc) {
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
         acc[2] += (pixels[offset++] & 0xff) * matrix[index];
@@ -346,11 +439,30 @@ public class Convolution {
      * Fetches a pixel row at index from pixels, and stores as RGB in acc
      * 
      * @param pixels
+     * @param offset Offset into pixels where RGB is read
+     * @param index Index into matrix
+     * @param acc
+     */
+    private final void fetchPixelRow2RGB(byte[] pixels, int offset, int index, float[] acc) {
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
+
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
+
+    }
+
+    /**
+     * Fetches a pixel row at index from pixels, and stores as RGBA in acc
+     * 
+     * @param pixels
      * @param offset Offset into pixels where RGBA is read
      * @param index Index into matrix
      * @param acc
      */
-    private final void fetchPixelRow3(byte[] pixels, int offset, int index, float[] acc) {
+    private final void fetchPixelRow3RGBA(byte[] pixels, int offset, int index, float[] acc) {
         acc[0] += (pixels[offset++] & 0xff) * matrix[index];
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
         acc[2] += (pixels[offset++] & 0xff) * matrix[index];
@@ -365,6 +477,28 @@ public class Convolution {
         acc[1] += (pixels[offset++] & 0xff) * matrix[index];
         acc[2] += (pixels[offset++] & 0xff) * matrix[index];
         acc[3] += (pixels[offset++] & 0xff) * matrix[index++];
+    }
+
+    /**
+     * Fetches a pixel row at index from pixels, and stores as RGB in acc
+     * 
+     * @param pixels
+     * @param offset Offset into pixels where RGB is read
+     * @param index Index into matrix
+     * @param acc
+     */
+    private final void fetchPixelRow3RGB(byte[] pixels, int offset, int index, float[] acc) {
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
+
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
+
+        acc[0] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[1] += (pixels[offset++] & 0xff) * matrix[index];
+        acc[2] += (pixels[offset++] & 0xff) * matrix[index++];
     }
 
     /**
