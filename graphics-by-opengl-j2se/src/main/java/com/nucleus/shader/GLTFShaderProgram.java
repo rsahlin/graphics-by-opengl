@@ -40,6 +40,11 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      */
     protected AccessorDictionary<String> accessorDictionary = new AccessorDictionary<>();
 
+    /**
+     * Handles the PBR texture map parameters for normals, metallic roughness and occlusion map.
+     * Used to return name of shader handling the PBR material used.
+     *
+     */
     public static class PBRShading {
         public static final int TEXTURE_FLAG = 0x01;
         public static final int NORMAL_MAP_FLAG = 0x02;
@@ -83,7 +88,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
             /**
              * Metallic Roughness texture
              */
-            metallicRoughness("MR"),
+            metallicRoughness("mr"),
             /**
              * Occlusion texture
              */
@@ -124,6 +129,9 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                     // Textured
                     if (mat.getNormalTexture() != null) {
                         setFlag(NORMAL_MAP_FLAG);
+                    }
+                    if (pbr.getMetallicRoughnessTexture() != null) {
+                        setFlag(PBR_METALLIC_ROUGHNESS_MAP_FLAG);
                     }
                 }
             }
