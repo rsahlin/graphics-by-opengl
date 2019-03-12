@@ -17,6 +17,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.nucleus.BaseTestCase;
+import com.nucleus.SimpleLogger;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.BufferImage.SourceFormat;
@@ -25,6 +26,8 @@ import com.nucleus.texturing.Convolution.Kernel;
 import com.nucleus.texturing.J2SEImageFactory;
 
 public class FConvolutionTest extends BaseTestCase implements WindowListener {
+
+    public static final String WAIT_FOR_USER = "com.nucleus.convolution.waitforuser";
 
     private static volatile boolean wait = false;
     J2SEImageFactory imageFactory = new J2SEImageFactory();
@@ -53,7 +56,10 @@ public class FConvolutionTest extends BaseTestCase implements WindowListener {
 
     @AfterClass
     public static void waitForUser() {
-        wait = true;
+        String value = System.getProperty(WAIT_FOR_USER);
+        wait = value == null ? wait : Boolean.parseBoolean(value);
+        SimpleLogger.d(FConvolutionTest.class,
+                "Use property " + WAIT_FOR_USER + "=TRUE to wait for user input before exiting test");
         while (wait) {
             try {
                 Thread.sleep(100);

@@ -94,7 +94,7 @@ public class Environment {
     public void loadProperties() {
         SimpleLogger.d(getClass(), "Loading properties");
         for (Property p : Property.values()) {
-            String value = readProperty(p);
+            String value = getProperty(p);
             if (value != null) {
                 properties.put(p, value);
                 SimpleLogger.d(getClass(), "Read environment property " + p + " to " + value);
@@ -124,22 +124,12 @@ public class Environment {
     }
 
     /**
-     * Returns the system property from local map, call {@link #loadProperties()} to first load properties.
+     * Returns the system property.
      * 
      * @param property
      * @return The property value, or null if not set.
      */
     public String getProperty(Property property) {
-        return System.getProperty(property.key);
-    }
-
-    /**
-     * Fetches a system property, by getting it from System.getProperty()
-     * 
-     * @param property
-     * @return
-     */
-    public String readProperty(Property property) {
         return System.getProperty(property.key);
     }
 
