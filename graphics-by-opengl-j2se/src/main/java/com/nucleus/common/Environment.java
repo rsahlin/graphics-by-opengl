@@ -62,7 +62,8 @@ public class Environment {
         /**
          * If true then models are forced to untextured, basecolor texture is ignored.
          */
-        FORCE_UNTEXTURED("com.nucleus.gltf.force_untextured");
+        FORCE_UNTEXTURED("com.nucleus.gltf.force_untextured"),
+        FORCE_NO_METALLICROUGHNESSMAP("com.nucleus.gltf.force_nomrmap");
 
         public final String key;
 

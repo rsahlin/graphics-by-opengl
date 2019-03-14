@@ -130,7 +130,8 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                     if (mat.getNormalTexture() != null) {
                         setFlag(NORMAL_MAP_FLAG);
                     }
-                    if (pbr.getMetallicRoughnessTexture() != null) {
+                    if (pbr.getMetallicRoughnessTexture() != null
+                            && !Environment.getInstance().isProperty(Property.FORCE_NO_METALLICROUGHNESSMAP, false)) {
                         setFlag(PBR_METALLIC_ROUGHNESS_MAP_FLAG);
                     }
                 }
