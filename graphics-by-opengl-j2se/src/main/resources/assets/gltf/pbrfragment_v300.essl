@@ -1,4 +1,5 @@
 #version 300 es
+#line 1
 /**
  * Functions for gltf PBR model
  */
@@ -9,7 +10,7 @@ uniform highp sampler2D uTextureNormal; //normal texture sampler
 uniform mediump sampler2D uTextureMR; //Metallic roughness texture sampler
 
 //Metallic,roughnessfactor [2]
-//F0         [3] - dieletricSpecular -> basecolor for metallic = 1
+//F0         [3] - dielectricSpecular -> basecolor for metallic = 1
 //1 - F0     [3]
 //diffuse    [4]
 //k, alpha ^ 2, exposure, gamma
@@ -19,13 +20,17 @@ uniform vec4 _PBRDATA[5];
 uniform vec4 _LIGHT_0[2];
 
 const float pi = 3.141592;
+const float sqrtTwoByPi = sqrt(2.0 / pi);
 const float oneByPI = 1.0 / pi;
 const float twoByPI = 2.0 / pi;
 const float gamma = 2.2;
 const float oneByGamma = 1.0 / gamma;
+const vec3 dielectricSpecular = vec3(0.04, 0.04, 0.04);
+const vec3 black = vec3(0.0, 0.0, 0.0);
 
 in vec2 vTexCoord0;
 in vec2 vTexNormal;
+in vec2 vTexMR;
 in vec3 vNormal;
 in vec3 vEye;
 in vec3 vLight;
@@ -33,49 +38,54 @@ in mat3 mTangentLight;
 
 out vec4 fragColor;
 
-
-vec3 calculateFresnelDiffuse(vec3 normal) {
-    vec3 H = normalize((vLight + vEye));
-    //vec3 lightOut = reflect(vLight, normal);
-    //u = (Bisect vector of (outcoming direction of light, Incoming direction of light) 
-    //F(u) = F + (1 - F) (1 - u) ^ 5
-    vec3 fresnel = _PBRDATA[1].rgb + _PBRDATA[2].rgb * pow(1.0 - dot(vEye,H),5.0);
-    vec3 diffuse = max(vec3(0.0,0.0,0.0), (1.0 - fresnel) * (_PBRDATA[3].rgb * _LIGHT_0[0].rgb * _LIGHT_0[0].a) * dot(normal,vLight));
-    float a2 = _PBRDATA[4].y;
-    float distPow = pow(dot(normal, H),2.0);
-    float distribution = (a2) / (pi * pow((distPow * (a2 - 1.0) + 1.0),2.0));
-    float k = _PBRDATA[4].x;
-    float LDotH = dot(vLight, H);
-    float GL = LDotH / (LDotH * (1.0 - k) + k);
-    float NDotH = dot(normal, H);
-    float GN = NDotH /(NDotH * (1.0 - k) + k);
-    vec3 specular = max(vec3(0.0,0.0,0.0), (fresnel * (GL * GN) * distribution));// / max(1.0,(4.0 * (dot(normal, vLight) * (dot(normal, vEye))))));
-    return vec3(diffuse + specular);
-        
-//    vec3 hdrExposure = vec3(1.0) - exp(-(diffuse + specular) * _PBRDATA[4].z);
-//    return vec4(pow(hdrExposure, vec3(_PBRDATA[4].w)), _PBRDATA[3].a);
-  
+float lerp(float a, float b, float w) {
+  return a + w*(b-a);
+}
+vec3 lerp3(vec3 a, vec3 b, float w) {
+  return a + w * (b-a);
 }
 
-vec3 calculateFresnelDiffuse(vec3 normal, vec3 metallicRoughness) {
-    vec3 H = normalize((vLight + vEye));
+/**
+ * cdiff = lerp(baseColor.rgb * (1 - dielectricSpecular.r), black, metallic) 
+ * F0 = lerp(dielectricSpecular, baseColor.rgb, metallic) 
+ * α = roughness ^ 2
+ * F = F0 + (1 - F0) * (1.0 - V * H)^5
+ */
+vec3 internalCalculatePBR(vec3 normal, vec3 F0, float a2, float k) {
     //vec3 lightOut = reflect(vLight, normal);
     //u = (Bisect vector of (outcoming direction of light, Incoming direction of light) 
     //F(u) = F + (1 - F) (1 - u) ^ 5
-    vec3 fresnel = _PBRDATA[1].rgb + _PBRDATA[2].rgb * pow(1.0 - dot(vEye,H),5.0);
-    vec3 diffuse = max(vec3(0.0,0.0,0.0), ((1.0 - fresnel) * _PBRDATA[3].rgb) * dot(normal,vLight));
-    float a2 = _PBRDATA[4].y;
+    vec3 H = normalize((vLight + vEye));
+    vec3 fresnel = F0 + (1.0 - F0) * pow(1.0 - dot(vEye, H), 5.0);
+    vec3 diffuse = max(vec3(0.0,0.0,0.0), (1.0 - fresnel) * (_PBRDATA[3].rgb * _LIGHT_0[0].rgb * _LIGHT_0[0].a) * dot(normal,vLight));
     float distPow = pow(dot(normal, H),2.0);
     float distribution = (a2) / (pi * pow((distPow * (a2 - 1.0) + 1.0),2.0));
-    float k = _PBRDATA[4].x;
     float LDotH = dot(vLight, H);
     float GL = LDotH / (LDotH * (1.0 - k) + k);
     float NDotH = dot(normal, H);
     float GN = NDotH /(NDotH * (1.0 - k) + k);
-    vec3 specular = max(vec3(0.0,0.0,0.0), (fresnel * (GL * GN) * distribution));// / max(1.0,(4.0 * (dot(normal, vLight) * (dot(normal, vEye))))));
+    vec3 specular = max(vec3(0.0,0.0,0.0), ((fresnel * _LIGHT_0[0].rgb * _LIGHT_0[0].a) * (GL * GN) * distribution));// / max(1.0,(4.0 * (dot(normal, vLight) * (dot(normal, vEye))))));
     vec3 hdrExposure = vec3(1.0) - exp(-(diffuse + specular) * _PBRDATA[4].z);
     return vec3(pow(hdrExposure, vec3(_PBRDATA[4].w)));
-//    return vec4(pow(diffuse + specular, vec3(oneByGamma)), _PBRDATA[3].a);
 }
+
+vec3 calculateFresnelDiffuse(vec3 normal) {
+    return internalCalculatePBR(normal, _PBRDATA[1].rgb, _PBRDATA[4].y, _PBRDATA[4].x);
+}
+
+/**
+ * cdiff = lerp(baseColor.rgb * (1 - dielectricSpecular.r), black, metallic) 
+ * F0 = lerp(dielectricSpecular, baseColor.rgb, metallic) 
+ * α = roughness ^ 2
+ * F = F0 + (1 - F0) * (1.0 - V * H)^5
+ */
+vec3 calculateFresnelDiffuse(vec3 normal, vec3 metallicRoughness) {
+    float roughness = _PBRDATA[0].y * 1.0;// metallicRoughness.g;
+    float a2 = pow(roughness,4.0);
+    float k = roughness * sqrtTwoByPi;
+    vec3 F0 = lerp3(dielectricSpecular, _PBRDATA[3].rgb, _PBRDATA[0].x * metallicRoughness.b);
+    return internalCalculatePBR(normal, F0, a2, k);
+}
+
 
 
