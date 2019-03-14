@@ -58,7 +58,8 @@ vec3 internalCalculatePBR(vec3 normal, vec3 F0, float a2, float k) {
     float GL = LDotH / (LDotH * (1.0 - k) + k);
     float NDotH = dot(normal, H);
     float GN = NDotH /(NDotH * (1.0 - k) + k);
-    vec3 specular = max(vec3(0.0,0.0,0.0), ((fresnel * _LIGHT_0[0].rgb * _LIGHT_0[0].a) * (GL * GN) * distribution));// / max(1.0,(4.0 * (dot(normal, vLight) * (dot(normal, vEye))))));
+    //GL and GN needs to be limited otherwise negative light direction will produce light
+    vec3 specular = max(vec3(0.0,0.0,0.0), ((fresnel * _LIGHT_0[0].rgb * _LIGHT_0[0].a) * (GL * GN) * distribution));// / max(1.0 ,(4.0 * (dot(normal, vLight) * (dot(normal, vEye)))));
     vec3 hdrExposure = vec3(1.0) - exp(-(diffuse + specular) * _PBRDATA[4].z);
     return vec3(pow(hdrExposure, vec3(_PBRDATA[4].w)));
 }
