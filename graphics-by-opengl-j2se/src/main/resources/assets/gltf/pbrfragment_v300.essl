@@ -12,7 +12,7 @@ uniform mediump sampler2D uTextureMR; //Metallic roughness texture sampler
 //Metallic,roughnessfactor [2]
 //F0         [3] - dielectricSpecular -> basecolor for metallic = 1
 //1 - F0     [3]
-//diffuse    [4]
+//cdiff      [4] - lerp(diffuse, black, metallic)
 //k, alpha ^ 2, exposure, gamma
 uniform vec4 _PBRDATA[5];
 //RGB + Intensity
@@ -38,18 +38,12 @@ in mat3 mTangentLight;
 
 out vec4 fragColor;
 
-float lerp(float a, float b, float w) {
-  return a + w*(b-a);
-}
-vec3 lerp3(vec3 a, vec3 b, float w) {
-  return a + w * (b-a);
-}
-
 /**
  * cdiff = lerp(baseColor.rgb * (1 - dielectricSpecular.r), black, metallic) 
  * F0 = lerp(dielectricSpecular, baseColor.rgb, metallic) 
  * α = roughness ^ 2
  * F = F0 + (1 - F0) * (1.0 - V * H)^5
+ * diffuse = (1 - F) * cdiff
  */
 vec3 internalCalculatePBR(vec3 normal, vec3 F0, float a2, float k) {
     //vec3 lightOut = reflect(vLight, normal);
@@ -80,11 +74,11 @@ vec3 calculateFresnelDiffuse(vec3 normal) {
  * F = F0 + (1 - F0) * (1.0 - V * H)^5
  */
 vec3 calculateFresnelDiffuse(vec3 normal, vec3 metallicRoughness) {
-    float roughness = _PBRDATA[0].y * 1.0;// metallicRoughness.g;
+    float roughness = _PBRDATA[0].y * metallicRoughness.g;
     float a2 = pow(roughness,4.0);
     float k = roughness * sqrtTwoByPi;
-    vec3 F0 = lerp3(dielectricSpecular, _PBRDATA[3].rgb, _PBRDATA[0].x * metallicRoughness.b);
-    return internalCalculatePBR(normal, F0, a2, k);
+    vec3 F0 = mix(dielectricSpecular, _PBRDATA[3].rgb, _PBRDATA[0].x * metallicRoughness.b);
+    return internalCalculatePBR(normal, _PBRDATA[1].rgb, a2, k);
 }
 
 
