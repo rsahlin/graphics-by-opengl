@@ -1113,8 +1113,9 @@ public abstract class ShaderProgram {
             GLUtils.handleError(gles, COMPILE_SHADER_ERROR + source.getFullSourceName());
             checkCompileStatus(gles, source, shader);
         } catch (GLException e) {
+            String shaderSource = gles.glGetShaderSource(shader);
             SimpleLogger.d(getClass(), e.getMessage() + " from source:" + System.lineSeparator());
-            StringTokenizer st = new StringTokenizer(source.getVersionedShaderSource(), System.lineSeparator());
+            StringTokenizer st = new StringTokenizer(shaderSource, System.lineSeparator());
             StringBuffer sb = new StringBuffer();
             int index = 1;
             while (st.hasMoreTokens()) {
