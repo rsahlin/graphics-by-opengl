@@ -1,4 +1,5 @@
 #version 300 es
+#line 1
 /* 
  *
  * Fragment shader for glTF asset - using 1 texture, normal map and metallic roughness map
@@ -7,11 +8,8 @@
 precision highp float;
 
 void main() {
-    vec4 pbr = texture(uTexture0, vTexCoord0) * 
+    outputPixel(texture(uTexture0, vTexCoord0) * 
         vec4(calculateFresnelDiffuse(
-            normalize(vec3(texture(uTextureNormal, vTexNormal) * 2.0 - 1.0) * mTangentLight),
-            normalize(vec3(texture(uTextureMR, vTexMR)))
-            ), 1.0);
-    vec3 hdrExposure = vec3(1.0) - exp(-(pbr.rgb) * _PBRDATA[4].z);
-    fragColor = vec4(pow(hdrExposure, vec3(_PBRDATA[4].w)), _PBRDATA[3].a); 
+            vec3(texture(uTextureNormal, vTexNormal) * 2.0 - 1.0) * mTangentLight,
+            vec3(texture(uTextureMR, vTexMR))), 1.0));
 }

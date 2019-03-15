@@ -1,5 +1,4 @@
 #version 300 es
-#line 1
 /**
  * Functions for gltf PBR model
  */
@@ -38,6 +37,15 @@ in mat3 mTangentLight;
 
 out vec4 fragColor;
 
+/**
+ * Takes the incoming pbr calculated pixel, applies exposure and gamma correction then writes to fragColor
+ * using the alpha from the materials diffuse color.
+ * @param pbr The pbr calculated pixel - including alpha from texture if used.
+ */
+void outputPixel(vec4 pbr) {
+    vec3 hdrExposure = vec3(1.0) - exp(-(pbr.rgb) * _PBRDATA[4].z);
+    fragColor = vec4(pow(hdrExposure, vec3(_PBRDATA[4].w)), _PBRDATA[3].a); 
+}
 /**
  * cdiff = lerp(baseColor.rgb * (1 - dielectricSpecular.r), black, metallic) 
  * F0 = lerp(dielectricSpecular, baseColor.rgb, metallic) 

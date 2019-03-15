@@ -1,14 +1,12 @@
 #version 300 es
-/* Copyright 2015 Richard Sahlin
- *
+#line 1
+/* 
  * Fragment shader for glTF asset
  * @author Richard Sahlin
  */
 precision highp float;
 
 void main() {
-    vec3 pbr = calculateFresnelDiffuse(vNormal);
-    vec3 hdrExposure = vec3(1.0) - exp(-(pbr) * _PBRDATA[4].z);
-    fragColor = vec4(pow(hdrExposure, vec3(_PBRDATA[4].w)), _PBRDATA[3].a); 
+    outputPixel(vec4(calculateFresnelDiffuse(vNormal), 1.0));
 }
 
