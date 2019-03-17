@@ -136,8 +136,8 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         if (scale == 0) {
             scale = 1.0f;
         }
-        float YASPECT = 1f;
-        Perspective p = new Perspective(16 / 9f, YASPECT, 10000, 0.1f);
+        float YFOV = 1f;
+        Perspective p = new Perspective(16 / 9f, YFOV, 10000, 0.1f);
         // This node will only be referenced by the camera
         // TODO - Should a special CameraNode be created? Maybe better to keep Nodes simple?
         Node node = new Node();
