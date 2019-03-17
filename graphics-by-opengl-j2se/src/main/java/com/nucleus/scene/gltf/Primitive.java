@@ -66,7 +66,7 @@ public class Primitive implements RuntimeResolver {
         float[] uvArray;
         float[] normalArray;
         float[] tangentArray;
-        short[] indexArray;
+        int[] indexArray;
 
         /**
          * Creates the array buffers needed to calculate normals/tangents/bitanges
@@ -136,10 +136,10 @@ public class Primitive implements RuntimeResolver {
             return null;
         }
 
-        private short[] createIndexArray() {
+        private int[] createIndexArray() {
             Accessor indices = getIndices();
             if (indices != null) {
-                short[] indicesCopy = new short[indices.getCount() * indices.getType().size];
+                int[] indicesCopy = new int[indices.getCount() * indices.getType().size];
                 indices.copy(indicesCopy, 0);
                 return indicesCopy;
             }
@@ -435,22 +435,6 @@ public class Primitive implements RuntimeResolver {
      */
     public ArrayList<Buffer> getBufferArray() {
         return bufferList;
-    }
-
-    /**
-     * Returns the Accessor for the attribute, or null if not defined.
-     * 
-     * @param glTF
-     * @param attribute
-     * @return
-     */
-    @Deprecated
-    public Accessor getAccessor(GLTF glTF, Attributes attribute) {
-        Integer index = attributes.get(attribute);
-        if (index != null) {
-            return glTF.getAccessor(index);
-        }
-        return null;
     }
 
     /**
