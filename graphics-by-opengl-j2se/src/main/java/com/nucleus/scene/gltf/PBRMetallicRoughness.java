@@ -35,7 +35,7 @@ public class PBRMetallicRoughness {
     public static final int ROUGHNESS_INDEX = 1;
 
     public static final int F0_INDEX = 4;
-    public static final int ONE_MINUS_F0_INDEX = 8;
+    public static final int CDIFF_INDEX = 8;
     public static final int DIFFUSE_INDEX = 12;
     public static final int K_INDEX = 16;
     public static final int ALPHA_SQUARED_INDEX = 17;
@@ -90,17 +90,13 @@ public class PBRMetallicRoughness {
 
         Lerp.lerpVec3(DIALECTRIC_SPECULAR_COLOR, baseColorFactor, metallicFactor, pbrData, F0_INDEX);
 
-        pbrData[ONE_MINUS_F0_INDEX] = 1 - pbrData[F0_INDEX];
-        pbrData[ONE_MINUS_F0_INDEX + 1] = 1 - pbrData[F0_INDEX + 1];
-        pbrData[ONE_MINUS_F0_INDEX + 2] = 1 - pbrData[F0_INDEX + 2];
-
         float[] diffuse = new float[3];
         diffuse[0] = (baseColorFactor[0] * (1 - DIALECTRIC_SPECULAR));
         diffuse[1] = (baseColorFactor[1] * (1 - DIALECTRIC_SPECULAR));
         diffuse[2] = (baseColorFactor[2] * (1 - DIALECTRIC_SPECULAR));
 
-        Lerp.lerpVec3(diffuse, BLACK, metallicFactor, pbrData, DIFFUSE_INDEX);
-        pbrData[DIFFUSE_INDEX + 3] = baseColorFactor[3];
+        System.arraycopy(baseColorFactor, 0, pbrData, DIFFUSE_INDEX, 4);
+        Lerp.lerpVec3(diffuse, BLACK, metallicFactor, pbrData, CDIFF_INDEX);
 
         pbrData[METALLIC_INDEX] = metallicFactor;
         pbrData[ROUGHNESS_INDEX] = roughnessFactor;
