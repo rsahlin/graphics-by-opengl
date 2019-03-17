@@ -1,0 +1,13 @@
+#version 300 es
+#line 1
+/* 
+ *
+ * Fragment shader for glTF asset - using 1 texture, normal map and metallic roughness map
+ * @author Richard Sahlin
+ */
+precision highp float;
+
+void main() {
+    outputPixel(texture(uTexture0, vTexCoord0) * 
+        vec4(calculateFresnelDiffuse(vNormal, vec3(texture(uTextureMR, vTexMR))), 1.0));
+}

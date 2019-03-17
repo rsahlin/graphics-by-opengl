@@ -8,5 +8,5 @@
 //Put array declaration after name for GLSL compatibility
 
 void main() {
-    positionLightTexNormal();
+    positionLight();
 }

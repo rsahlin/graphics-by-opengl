@@ -1,6 +1,6 @@
 #version 300 es
 /* 
- * Vertex shader for textured glTF asset
+ * Vertex shader for textured glTF asset with texture and normal map
  */
  precision highp float;
  
@@ -8,5 +8,4 @@
 
 void main() {
     positionLightTexNormal();
-    
 }
