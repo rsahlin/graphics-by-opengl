@@ -6,7 +6,7 @@ package com.nucleus.light;
  */
 public class GlobalLight {
 
-    private Light light = new DirectionalLight(new float[] { 1, 1, 1, 1, 10000, 100000, 10000, 0 });
+    private Light light = new DirectionalLight(new float[] { 1, 1, 1, 1, -10000, 10000, 10000, 0 });
 
     private static GlobalLight globalLight = new GlobalLight();
 
