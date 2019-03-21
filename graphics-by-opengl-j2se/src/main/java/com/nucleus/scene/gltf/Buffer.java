@@ -50,6 +50,7 @@ public class Buffer extends GLTFNamedValue {
     /**
      * Creates a new buffer with the specified byteLength - the buffer will be created by calling
      * {@link #createBuffer()}
+     * Do not call this method directly
      * 
      * @param name Name of the buffer
      * @param byteLength

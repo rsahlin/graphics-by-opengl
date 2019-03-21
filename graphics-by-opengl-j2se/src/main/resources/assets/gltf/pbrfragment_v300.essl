@@ -1,23 +1,26 @@
 #version 300 es
 /**
  * Functions for gltf PBR model
- */
+ */ 
 precision highp float;
 
 uniform mediump sampler2D uTexture0; //The texture 0 sampler
 uniform highp sampler2D uTextureNormal; //normal texture sampler
 uniform mediump sampler2D uTextureMR; //Metallic roughness texture sampler
 
-//Metallic,roughnessfactor [2]
+//Metallic,roughnessfactor, exposure, gamma
 //F0         [3] - dielectricSpecular -> basecolor for metallic = 1
 //cDiff      [3]
 //diffuse    [4]
-//k, alpha ^ 2, exposure, gamma
-uniform vec4 _PBRDATA[5];
+uniform vec4 _PBRDATA[4];
 //RGB + Intensity
 //XYZ
-uniform vec4 _LIGHT_0[2];
+uniform vec4 _LIGHT_0[3];
+uniform vec3 _VIEWPOS[1];
 
+const float MIN_ROUGHNESS = 0.045;
+const float MIN_METALLIC = 0.02;
+const float MAX_METALLIC = 0.99;
 const float pi = 3.141592;
 const float sqrtTwoByPi = sqrt(2.0 / pi);
 const float oneByPI = 1.0 / pi;
@@ -31,8 +34,7 @@ in vec2 vTexCoord0;
 in vec2 vTexNormal;
 in vec2 vTexMR;
 in vec3 vNormal;
-in vec3 vEye;
-in vec3 vLight;
+in vec4 vWorldPos;
 in mat3 mTangentLight;
 
 out vec4 fragColor;
@@ -43,9 +45,59 @@ out vec4 fragColor;
  * @param pbr The pbr calculated pixel - including alpha from texture if used.
  */
 void outputPixel(vec4 pbr) {
-    vec3 hdrExposure = vec3(1.0) - exp(-(pbr.rgb) * _PBRDATA[4].z);
-    fragColor = vec4(pow(hdrExposure, vec3(_PBRDATA[4].w)), _PBRDATA[3].a); 
+    vec3 hdrExposure = vec3(1.0) - exp(-(pbr.rgb) * _PBRDATA[0].z);
+    fragColor = vec4(pow(hdrExposure, vec3(_PBRDATA[0].w)), _PBRDATA[3].a); 
 }
+
+vec3 F_Schlick(const vec3 F0, float VdotH) {
+    return F0 + (1.0 - F0) * pow(1.0 - VdotH, 5.0);
+//    float f = pow(1.0 - VdotH, 5.0);
+//    return f + f0 * (1.0 - f);
+}
+
+float V_SmithGGXCorrelated(float linearRoughness, float NoV, float NoL) {
+    // Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"
+    float a2 = linearRoughness * linearRoughness;
+    // TODO: lambdaV can be pre-computed for all the lights, it should be moved out of this function
+    float lambdaV = NoL * sqrt((NoV - a2 * NoV) * NoV + a2);
+    float lambdaL = NoV * sqrt((NoL - a2 * NoL) * NoL + a2);
+    float v = 0.5 / (lambdaV + lambdaL);
+    // a2=0 => v = 1 / 4*NoL*NoV   => min=1/4, max=+inf
+    // a2=1 => v = 1 / 2*(NoL+NoV) => min=1/4, max=+inf
+    // clamp to the maximum value representable in mediump
+    return clamp(v, 0.0, 1.0);
+}
+
+
+float D_GGX(float linearRoughness, float NoH, const vec3 n, const vec3 h) {
+    vec3 NxH = cross(n, h);
+    float a = NoH * linearRoughness;
+    float k = linearRoughness / (dot(NxH, NxH) + a * a);
+    float d = k * k * (1.0 / pi);
+    return max(d, 0.0);
+}
+
+float D_GLTF(float roughness, float NdotH, const vec3 n, const vec3 h, inout float distPow) {
+    vec3 NxH = cross(n, h);
+    float a = roughness * roughness;
+    float a2 = a * a;
+    distPow = 1.0 - dot(NxH, NxH);
+    //Use distPow to add tint
+    return ((a2) / (pi * pow((distPow * (a2 - 1.0) + 1.0),2.0)));
+}
+
+float V_GLTF(float roughness, float NdotV, float NdotL, float LdotH, float NdotH) {
+    float k = roughness * sqrtTwoByPi;
+    float GL = clamp(LdotH / (LdotH * (1.0 - k) + k), 0.0, 1.0);
+    float GN = clamp(NdotH /(NdotH * (1.0 - k) + k), 0.0, 1.0);
+    return (GL * GN) / max(1.0, 4 * NdotL * NdotV);
+}
+
+vec3 Diffuse_GLTF(vec3 fresnel, vec3 cDiff) {
+    return (1.0 - fresnel) * cDiff;
+}
+
+
 /**
  * cdiff = lerp(baseColor.rgb * (1 - dielectricSpecular.r), black, metallic) 
  * F0 = lerp(dielectricSpecular, baseColor.rgb, metallic) 
@@ -53,30 +105,37 @@ void outputPixel(vec4 pbr) {
  * F = F0 + (1 - F0) * (1.0 - V * H)^5
  * diffuse = (1 - F) * cdiff
  */
-vec3 internalCalculatePBR(vec3 normal, vec3 F0, vec3 cDiff, float a2, float k) {
-    //vec3 lightOut = reflect(vLight, normal);
-    //u = (Bisect vector of (outcoming direction of light, Incoming direction of light) 
-    //F(u) = F + (1 - F) (1 - u) ^ 5
-    vec3 H = normalize((vLight + vEye));
-    vec3 fresnel = F0 + (1.0 - F0) * pow(1.0 - dot(vEye, H), 5.0);
-    vec3 diffuse = ((1.0 - fresnel) * (cDiff * _LIGHT_0[0].rgb * _LIGHT_0[0].a));
-    float distPow = pow(dot(normal, H),2.0);
-//    float distribution = clamp((a2) / (pi * pow((distPow * (a2 - 1.0) + 1.0),2.0)), 0.0, 1.0);
-    float distribution = (a2) / (pi * pow((distPow * (a2 - 1.0) + 1.0),2.0));
-    //Do not include negative angles in occlusion
-    float LDotH = dot(vLight, H);
-    float GL = clamp(LDotH / (LDotH * (1.0 - k) + k), 0.0, 1.0);
-//    float GL = LDotH / (LDotH * (1.0 - k) + k);
-    float NDotH = dot(normal, H);
-    float GN = clamp(NDotH /(NDotH * (1.0 - k) + k), 0.0, 1.0);
-//    float GN = NDotH /(NDotH * (1.0 - k) + k);
-//    vec3 specular = max(vec3(0.0,0.0,0.0), ((fresnel * _LIGHT_0[0].rgb * _LIGHT_0[0].a) * (GL * GN * distribution))); // / (4.0 * (dot(normal, vLight) * (dot(normal, vEye)))));
-    vec3 specular = ((fresnel * _LIGHT_0[0].rgb * _LIGHT_0[0].a) * GL * GN * distribution) / (4 * dot(normal, vLight) * (dot(normal, vEye)));
-    return diffuse + specular;
+vec3[2] internalCalculatePBR(vec3 normal, vec3 F0, vec3 cDiff, float roughness) {
+    vec3 eye = normalize(_VIEWPOS[0] -vWorldPos.xyz);
+    vec3 light = normalize(_LIGHT_0[1].xyz - vWorldPos.xyz);
+    vec3 H = normalize(eye + light);
+    float NdotH = clamp(dot(normal, H), 0.0, 1.0);
+    float NdotL = clamp(dot(normal, light), 0.0, 1.0);
+    float VdotH = clamp(dot(eye, H), 0.0, 1.0);
+    float NdotV = abs(dot(normal, eye)) + 1e-5;
+    float LdotH = dot(light, H);
+    float a = roughness * roughness;
+    vec3 fresnel = F_Schlick(F0, VdotH);
+    float distPow;
+    float NDF = D_GLTF(roughness, NdotH, normal, H, distPow);
+    float V = V_GLTF(roughness, NdotL, NdotV, LdotH, NdotH);
+//    float V = V_SmithGGXCorrelated(roughness, NdotL, NdotV);
+    vec3[2] result;
+//    vec3 tint = mix(_PBRDATA[3].rgb, _LIGHT_0[0].rgb, NdotH);
+    vec3 specular = fresnel * NDF * V;
+    vec3 diffuse = (1.0 - fresnel) * (cDiff * oneByPI);
+    vec3 illumination = (NdotL * _LIGHT_0[0].rgb) *_LIGHT_0[0].a;
+//    result[0] = (diffuse + specular * mix(_PBRDATA[3].rgb, dielectricSpecular, 1 - distPow)) * illumination;
+//    result[1] = (specular * mix(dielectricSpecular, _LIGHT_0[0].rgb, 1 - distPow)) * illumination;
+    result[0] = (diffuse + specular) * illumination;
+    result[1] = vec3(0.0,0.0,0.0);
+    return result;
+    
 }
 
-vec3 calculateFresnelDiffuse(vec3 normal) {
-    return internalCalculatePBR(normal, _PBRDATA[1].rgb, _PBRDATA[2].rgb, _PBRDATA[4].y, _PBRDATA[4].x);
+
+vec3[2] calculateFresnelDiffuse(vec3 normal) {
+    return internalCalculatePBR(normal, _PBRDATA[1].rgb, _PBRDATA[2].rgb, max(MIN_ROUGHNESS, _PBRDATA[0].y));
 }
 
 /**
@@ -85,13 +144,11 @@ vec3 calculateFresnelDiffuse(vec3 normal) {
  * α = roughness ^ 2
  * F = F0 + (1 - F0) * (1.0 - V * H)^5
  */
-vec3 calculateFresnelDiffuse(vec3 normal, vec3 metallicRoughness) {
-    float roughness = _PBRDATA[0].y * metallicRoughness.g;
-    float a2 = pow(roughness, 4.0);
-    float k = roughness * sqrtTwoByPi;
-    float metal =  _PBRDATA[0].x * metallicRoughness.b;
+vec3[2] calculateFresnelDiffuse(vec3 normal, vec3 metallicRoughness) {
+    float roughness = max(MIN_ROUGHNESS,_PBRDATA[0].y * metallicRoughness.g);
+    float metal =  clamp(_PBRDATA[0].x * metallicRoughness.b, MIN_METALLIC, MAX_METALLIC);
     vec3 F0 = mix(dielectricSpecular, _PBRDATA[3].rgb, metal);
-    return internalCalculatePBR(normal, F0, mix(_PBRDATA[2].rgb, dielectricSpecular, metal), a2, k);
+    return internalCalculatePBR(normal, F0, mix(_PBRDATA[3].rgb, dielectricSpecular, metal), roughness);
 }
 
 

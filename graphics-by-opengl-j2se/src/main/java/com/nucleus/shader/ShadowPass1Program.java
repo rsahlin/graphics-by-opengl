@@ -46,7 +46,7 @@ public class ShadowPass1Program extends ShadowPassProgram {
     @Override
     public void setUniformMatrices(float[][] matrices) {
         if (modelUniform == null) {
-            modelUniform = getUniformByName(Matrices.MODEL.name);
+            modelUniform = getUniformByName(Matrices.Name);
         }
         uniforms.position(modelUniform.getOffset());
         uniforms.put(matrices[Matrices.MODEL.index], 0, Matrix.MATRIX_ELEMENTS);

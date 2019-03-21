@@ -33,15 +33,13 @@ public class PBRMetallicRoughness {
 
     public static final int METALLIC_INDEX = 0;
     public static final int ROUGHNESS_INDEX = 1;
+    public static final int EXPOSURE_INDEX = 2;
+    public static final int GAMMA_INDEX = 3;
 
     public static final int F0_INDEX = 4;
     public static final int CDIFF_INDEX = 8;
     public static final int DIFFUSE_INDEX = 12;
-    public static final int K_INDEX = 16;
-    public static final int ALPHA_SQUARED_INDEX = 17;
-    public static final int EXPOSURE_INDEX = 18;
-    public static final int GAMMA_INDEX = 19;
-    public static final int PBR_DATASIZE = 20;
+    public static final int PBR_DATASIZE = 16;
 
     private static final String BASE_COLOR_TEXTURE = "baseColorTexture";
     private static final String BASE_COLOR_FACTOR = "baseColorFactor";
@@ -100,9 +98,7 @@ public class PBRMetallicRoughness {
 
         pbrData[METALLIC_INDEX] = metallicFactor;
         pbrData[ROUGHNESS_INDEX] = roughnessFactor;
-        pbrData[K_INDEX] = (float) (roughnessFactor * Math.sqrt(2 / Math.PI));
         float rSquared = roughnessFactor * roughnessFactor;
-        pbrData[ALPHA_SQUARED_INDEX] = rSquared * rSquared;
         pbrData[EXPOSURE_INDEX] = exposure;
         pbrData[GAMMA_INDEX] = oneByGamma;
     }
@@ -111,10 +107,20 @@ public class PBRMetallicRoughness {
         return baseColorFactor;
     }
 
+    /**
+     * Returns the base metallic factor
+     * 
+     * @return Base metallic factor
+     */
     public float getMetallicFactor() {
         return metallicFactor;
     }
 
+    /**
+     * Returns the base roughness factor
+     * 
+     * @return Base roughness factor
+     */
     public float getRoughnessFactor() {
         return roughnessFactor;
     }
@@ -123,6 +129,11 @@ public class PBRMetallicRoughness {
         return baseColorTexture;
     }
 
+    /**
+     * Returns the metallic roughenss texture if defined
+     * 
+     * @return Metallic/Roughness texture or null
+     */
     public Texture.TextureInfo getMetallicRoughnessTexture() {
         return metallicRoughnessTexture;
     }
@@ -138,6 +149,7 @@ public class PBRMetallicRoughness {
 
     /**
      * Sets the gamma correction value, this will change the value for all PBR metallic roughness objects
+     * and will be applied after PBR calculations
      * 
      * @param gamma
      */

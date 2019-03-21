@@ -220,11 +220,6 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
         return matrix;
     }
 
-    public float[] invertMatrix() {
-        Matrix.invertM(inverseMatrix, 0, matrix, 0);
-        return inverseMatrix;
-    }
-
     /**
      * Multiply the matrix with this nodes transform/matrix and store in this nodes model matrix.
      * If this node does not have a transform an identity matrix is used.
@@ -364,7 +359,7 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
      * Calculates the current transform, by going through parents transforms.
      * Used for instance by camera to find the result matrix.
      * 
-     * @return result The sum of this nodes transform and all direct parents.
+     * @return the result matrix
      */
     public float[] concatParentsMatrix() {
         if (parent != null) {
@@ -374,6 +369,13 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
         return Matrix.copy(matrix, 0, parentMatrix, 0);
     }
 
+    /**
+     * Calculates the current transform, by going through parents transforms.
+     * Used for instance by camera to find the result matrix.
+     * 
+     * @param The current matrix
+     * @return result The sum of this nodes transform and all direct parents.
+     */
     private float[] concatParentsMatrix(float[] matrix) {
         if (parent != null) {
             Matrix.mul4(parent.matrix, matrix, parentMatrix);

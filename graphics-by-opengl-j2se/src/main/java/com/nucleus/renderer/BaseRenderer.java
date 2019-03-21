@@ -112,11 +112,9 @@ class BaseRenderer implements NucleusRenderer {
         }
         gles.createInfo();
         this.gles = gles;
-        matrices[Matrices.MODEL.index] = Matrix.createMatrix();
-        matrices[Matrices.VIEW.index] = Matrix.createMatrix();
-        matrices[Matrices.PROJECTION.index] = Matrix.setIdentity(Matrix.createMatrix(), 0);
-        matrices[Matrices.RENDERPASS_1.index] = Matrix.createMatrix();
-        matrices[Matrices.RENDERPASS_2.index] = Matrix.createMatrix();
+        for (int i = 0; i < matrices.length; i++) {
+            matrices[i] = Matrix.setIdentity(Matrix.createMatrix(), 0);
+        }
     }
 
     @Override
@@ -282,7 +280,6 @@ class BaseRenderer implements NucleusRenderer {
         }
         matrices[Matrices.MODEL.index] = nodeMatrix;
         matrices[Matrices.VIEW.index] = viewMatrix;
-        // Matrix.mul4(nodeMatrix, viewMatrix, matrices[Matrices.MODELVIEW.index]);
 
         NodeRenderer<RenderableNode<?>> nodeRenderer = (NodeRenderer<RenderableNode<?>>) node.getNodeRenderer();
         if (nodeRenderer != null) {

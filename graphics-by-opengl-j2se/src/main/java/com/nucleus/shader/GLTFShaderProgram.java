@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.common.Environment;
 import com.nucleus.common.Environment.Property;
-import com.nucleus.light.GlobalLight;
+import com.nucleus.environment.Lights;
 import com.nucleus.light.Light;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
@@ -20,9 +20,11 @@ import com.nucleus.scene.gltf.Material;
 import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
+import com.nucleus.scene.gltf.Scene;
 import com.nucleus.scene.gltf.Texture.TextureInfo;
 import com.nucleus.shader.GLTFShaderProgram.PBRShading.PBRTextures;
 import com.nucleus.texturing.TextureUtils;
+import com.nucleus.vecmath.Matrix;
 
 public class GLTFShaderProgram extends GenericShaderProgram {
 
@@ -31,9 +33,11 @@ public class GLTFShaderProgram extends GenericShaderProgram {
 
     transient protected ShaderVariable pbrDataUniform;
     transient protected ShaderVariable light0Uniform;
+    transient protected ShaderVariable viewPosUniform;
     transient protected float[] pbrData;
     transient protected IntBuffer samplerUniformBuffer = BufferUtils.createIntBuffer(1);
     transient private boolean renderNormalMap = false;
+    transient private boolean renderMRMap = false;
 
     /**
      * The dictionary created from linked program
@@ -238,6 +242,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
 
     private void init() {
         renderNormalMap = Environment.getInstance().isProperty(Property.RENDER_NORMALMAP, renderNormalMap);
+        renderMRMap = Environment.getInstance().isProperty(Property.RENDER_MRMAP, renderMRMap);
     }
 
     @Override
@@ -301,14 +306,31 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                 pbrData = new float[pbrDataUniform.getSizeInFloats()];
             }
             light0Uniform = getUniformByName(Attributes._LIGHT_0.name());
+            viewPosUniform = getUniformByName(Attributes._VIEWPOS.name());
         }
     }
 
     @Override
     public void updateUniformData(FloatBuffer destinationUniform) {
+
+    }
+
+    /**
+     * Update the global environment variables, camera and directional light
+     * 
+     * @param gles
+     * @param scene
+     */
+    public void updateEnvironmentUniforms(GLES20Wrapper gles, Scene scene) {
         if (light0Uniform != null) {
-            Light l = GlobalLight.getInstance().getLight();
+            Light l = Lights.getInstance().getLight();
             setUniformData(light0Uniform, l.getLight(), 0);
+        }
+        if (viewPosUniform != null) {
+            float[] viewPos = new float[] { 0, 0, 0 };
+            float[] cameraMatrix = scene.getCameraInstance().updateMatrix();
+            Matrix.getTranslate(cameraMatrix, viewPos, 0);
+            setUniformData(viewPosUniform, viewPos, 0);
         }
     }
 
@@ -343,6 +365,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
             throws GLException {
         uploadUniform(gles, uniformData, modelUniform);
         uploadUniform(gles, uniformData, light0Uniform);
+        uploadUniform(gles, uniformData, viewPosUniform);
         // uploadUniform(gles, uniformData, viewUniform);
         // uploadUniform(gles, uniformData, projectionUniform);
     }
@@ -396,6 +419,11 @@ public class GLTFShaderProgram extends GenericShaderProgram {
             prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes._TEXCOORDNORMAL.name()),
                     getUniformByName("uTexture0"),
                     material.getNormalTexture());
+        } else if (renderMRMap && material.getPbrMetallicRoughness().getMetallicRoughnessTexture() != null
+                && material.getPbrMetallicRoughness().getBaseColorTexture() != null) {
+            prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes._TEXCOORDMR.name()),
+                    getUniformByName("uTexture0"),
+                    material.getPbrMetallicRoughness().getMetallicRoughnessTexture());
         } else {
             prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes.TEXCOORD_0.name()),
                     getUniformByName("uTexture0"),
