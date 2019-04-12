@@ -6,7 +6,7 @@ package com.nucleus.light;
  */
 public class DirectionalLight extends Light {
 
-    DirectionalLight(float[] values) {
+    public DirectionalLight(float[] values) {
         super(Light.Type.DIRECITONAL, values);
     }
 

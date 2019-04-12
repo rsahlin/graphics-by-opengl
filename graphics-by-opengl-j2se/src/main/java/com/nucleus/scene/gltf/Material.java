@@ -39,6 +39,7 @@ public class Material extends GLTFNamedValue implements RuntimeResolver {
     private static final String NAME = "name";
     private static final String PBR_METALLIC_ROUGHNESS = "pbrMetallicRoughness";
     private static final String NORMAL_TEXTURE = "normalTexture";
+    private static final String OCCLUSION_TEXTURE = "occlusionTexture";
     private static final String EMISSIVE_FACTOR = "emissiveFactor";
     private static final String ALPHA_MODE = "alphaMode";
     private static final String ALPHA_CUTOFF = "alphaCutoff";
@@ -54,6 +55,8 @@ public class Material extends GLTFNamedValue implements RuntimeResolver {
     private PBRMetallicRoughness pbrMetallicRoughness;
     @SerializedName(NORMAL_TEXTURE)
     private Texture.NormalTextureInfo normalTexture;
+    @SerializedName(OCCLUSION_TEXTURE)
+    private Texture.OcclusionTextureInfo occlusionTexture;
     @SerializedName(EMISSIVE_FACTOR)
     private float[] emissiveFactor = DEFAULT_EMISSIVE_FACTOR;
     @SerializedName(ALPHA_MODE)
@@ -79,6 +82,15 @@ public class Material extends GLTFNamedValue implements RuntimeResolver {
      */
     public NormalTextureInfo getNormalTexture() {
         return normalTexture;
+    }
+
+    /**
+     * Returns the occlusion texture if defined
+     * 
+     * @return Occlusion texture, or null if not defined
+     */
+    public Texture.OcclusionTextureInfo getOcclusionTexture() {
+        return occlusionTexture;
     }
 
     /**

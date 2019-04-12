@@ -51,7 +51,7 @@ public class Environment {
          */
         USEVBO("com.nucleus.vbo"),
         /**
-         * If true then recalculate tangents on loaded geometry - this is for debugging etc.
+         * If true then recalculate tangents / normals on loaded geometry - this is for debugging etc.
          */
         RECALCULATE_TANGENTS("com.nucleus.gltf.recalculate_tangents"),
         /**
@@ -60,9 +60,15 @@ public class Environment {
          */
         RENDER_NORMALMAP("com.nucleus.gltf.render_normalmap"),
         /**
+         * If geometry has MR map then use it as a texture source.
+         * Used to debug mr maps
+         */
+        RENDER_MRMAP("com.nucleus.gltf.render_mrmap"),
+        /**
          * If true then models are forced to untextured, basecolor texture is ignored.
          */
-        FORCE_UNTEXTURED("com.nucleus.gltf.force_untextured");
+        FORCE_UNTEXTURED("com.nucleus.gltf.force_untextured"),
+        FORCE_NO_METALLICROUGHNESSMAP("com.nucleus.gltf.force_nomrmap");
 
         public final String key;
 
@@ -94,7 +100,7 @@ public class Environment {
     public void loadProperties() {
         SimpleLogger.d(getClass(), "Loading properties");
         for (Property p : Property.values()) {
-            String value = readProperty(p);
+            String value = getProperty(p);
             if (value != null) {
                 properties.put(p, value);
                 SimpleLogger.d(getClass(), "Read environment property " + p + " to " + value);
@@ -124,22 +130,12 @@ public class Environment {
     }
 
     /**
-     * Returns the system property from local map, call {@link #loadProperties()} to first load properties.
+     * Returns the system property.
      * 
      * @param property
      * @return The property value, or null if not set.
      */
     public String getProperty(Property property) {
-        return System.getProperty(property.key);
-    }
-
-    /**
-     * Fetches a system property, by getting it from System.getProperty()
-     * 
-     * @param property
-     * @return
-     */
-    public String readProperty(Property property) {
         return System.getProperty(property.key);
     }
 

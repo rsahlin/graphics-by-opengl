@@ -98,14 +98,24 @@ public class BufferImage extends BufferObject {
         TYPE_3BYTE_BGR(05, 3, ImageFormat.RGB),
         TYPE_INT_ARGB(02, 4, ImageFormat.RGBA),
         // TODO - use ImageFormat.RGB565 instead?
-        TYPE_BYTE_INDEXED(13, 1, ImageFormat.RGB);
+        TYPE_BYTE_INDEXED(13, 1, ImageFormat.RGB),
+        /**
+         * Bitmap with ARGB 8888 (eg Android)
+         */
+        TYPE_RGBA(-1, 4, ImageFormat.RGBA),
+        /**
+         * Bitmap with RGB 565 (eg Android)
+         */
+        TYPE_RGB565(-1, 2, ImageFormat.RGB565);
 
+        /**
+         * The AWT BufferedImage type
+         */
         public final int type;
         /**
          * The size in bytes of each pixel
          */
         public final int size;
-
         /**
          * The most closely matching imageformat that can be used when loading
          */
@@ -127,6 +137,21 @@ public class BufferImage extends BufferObject {
             for (SourceFormat format : SourceFormat.values()) {
                 if (format.type == type) {
                     return format;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Matches the ImageFormat to a SourceFormat, or null if no match found
+         * 
+         * @param format
+         * @return
+         */
+        public static SourceFormat get(ImageFormat format) {
+            for (SourceFormat sf : SourceFormat.values()) {
+                if (sf.imageFormat == format) {
+                    return sf;
                 }
             }
             return null;

@@ -1,11 +1,28 @@
 ﻿#graphics-by-opengl
-A Java based API for graphics using OpenGLES.
+PBR based renderer in Java using OpenGLES.
 
-Support for glTF is being improved, currently basic model import is working with textures and normal maps.
-Most lighting is in place with BRDF implementation.
+A forward renderer using node hierarchy to render meshes.
+Limits number of passes in order to reach high fps in 4-8K resolution and on mobile devices.
+The renderer is written in pure Java and uses OpenGL ES 3.X - this means it can run on _any_ os / platform that has an OpenGL ES implementation.
+
+Support for glTF is being improved, currently basic model import is working with textures, normal maps and pbr metallicroughenss textures.
+BRDF implementation supports one directional light.
 Support for sRGB textures, gamma correction and (hdr) exposure.
 
+List of feature that will be implemented or improved - in no particular order
+* Support for pbr occlusion map
+* Improved shading model with metal tint/highlight rendered properly
+* Model animations and skinning (Morph targets and joint hierarchy)
+* Shadow pass
+* Environment maps
+* Improved lightsource implementation using luminous intensity and attenuation (instead of made up scale-factor) 
+
 see #gltf-viewer for an app that displays gltf models.
+
+Currently there are 3 abstractions for the render backend along with window/surface support.
+- JOGL
+- LWJGL
+- Android
 
 As this is a multi platform project I use Eclipse and import as Maven project.
 
@@ -22,6 +39,8 @@ This can greatly reduce development times since starting and debugging a J2SE ap
 Code style and formatting:
 Follow the Google Java guidelines:
 https://google.github.io/styleguide/javaguide.html
+
+https://github.com/rsahlin/graphics-by-opengl/blob/develop/images/gltfrenderdemo05.png
 
 Eclipse:
 Use customformatter.xml

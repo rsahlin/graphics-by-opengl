@@ -13,7 +13,6 @@ import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.ParameterData;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureParameter.Name;
@@ -35,18 +34,18 @@ public class ShadowPass2Program extends ShadowPassProgram {
 
     static class Shadow2Categorizer extends Categorizer {
 
-        public Shadow2Categorizer(Pass pass, Shading shading, String category) {
+        public Shadow2Categorizer(Pass pass, ShaderProgram.Shading shading, String category) {
             super(pass, shading, category);
         }
 
         @Override
-        public String getShaderSourceName(int shaderType) {
-            switch (shaderType) {
-                case GLES20.GL_FRAGMENT_SHADER:
+        public String getShaderSourceName(ShaderType type) {
+            switch (type) {
+                case FRAGMENT:
                     // For fragment shader ignore the category
                     return getPassString() + getShadingString();
                 default:
-                    return super.getShaderSourceName(shaderType);
+                    return super.getShaderSourceName(type);
             }
         }
 
@@ -64,8 +63,8 @@ public class ShadowPass2Program extends ShadowPassProgram {
      * @param shading
      * @param shaders
      */
-    public ShadowPass2Program(ShaderProgram objectProgram, Pass pass, String category, Texture2D.Shading shading,
-            ProgramType shaders) {
+    public ShadowPass2Program(ShaderProgram objectProgram, Pass pass, String category, ShaderProgram.Shading shading,
+            ShaderProgram.ProgramType shaders) {
         super(objectProgram, new Shadow2Categorizer(Pass.SHADOW2, shading, category), shaders);
         setIndexer(
                 objectProgram.variableIndexer != null ? objectProgram.variableIndexer : objectProgram.createIndexer());
@@ -86,7 +85,7 @@ public class ShadowPass2Program extends ShadowPassProgram {
     @Override
     public void setUniformMatrices(float[][] matrices) {
         if (modelUniform == null) {
-            modelUniform = getUniformByName(Matrices.MODEL.name);
+            modelUniform = getUniformByName(Matrices.Name);
             lightUniform = getUniformByName("uLightMatrix");
         }
         uniforms.position(modelUniform.getOffset());

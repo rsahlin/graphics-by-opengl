@@ -162,6 +162,10 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
         this.componentType = componentType;
         this.count = count;
         this.type = type;
+        this.bufferViewIndex = bufferView.getBufferIndex();
+        if (bufferViewIndex == -1) {
+            throw new IllegalArgumentException("Invalid index for BufferView");
+        }
     }
 
     public int getBufferViewIndex() {
@@ -264,7 +268,7 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
                 str += bufferViewRef.toString(bufferViewRef.getBuffer().getBuffer().asFloatBuffer());
                 break;
             default:
-                throw new IllegalArgumentException("Not implemented");
+                str += "Not implemented toString() for " + componentType;
         }
 
         return str;
@@ -277,28 +281,31 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
      * No conversion is made.
      * 
      * @param dest
-     * @param index
+     * @param index Index into dest where data is copied
      */
-    public void copy(short[] dest, int index) {
+    public void copy(int[] dest, int index) {
         switch (componentType) {
             case BYTE:
             case UNSIGNED_BYTE:
                 ByteBuffer byteBuffer = getBuffer();
+
                 for (int i = 0; i < count; i++) {
                     dest[index++] = byteBuffer.get();
                 }
                 break;
             case UNSIGNED_INT:
                 IntBuffer intBuffer = getBuffer().asIntBuffer();
-                for (int i = 0; i < count; i++) {
-                    dest[index++] = (short) intBuffer.get();
-                }
+                intBuffer.get(dest, index, count);
                 break;
 
             case SHORT:
             case UNSIGNED_SHORT:
                 ShortBuffer shortBuffer = getBuffer().asShortBuffer();
-                shortBuffer.get(dest, index, count);
+                short[] ushort = new short[count];
+                shortBuffer.get(ushort, index, count);
+                for (int i = 0; i < count; i++) {
+                    dest[index++] = (ushort[i] & 0x0ffff);
+                }
                 break;
             default:
                 SimpleLogger.d(getClass(), "Wrong component type, cannot copy " + componentType + " to dest buffer");

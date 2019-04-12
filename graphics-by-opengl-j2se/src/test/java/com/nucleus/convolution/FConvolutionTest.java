@@ -17,18 +17,22 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.nucleus.BaseTestCase;
+import com.nucleus.SimpleLogger;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.BufferImage.ImageFormat;
+import com.nucleus.texturing.BufferImage.SourceFormat;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.Convolution.Kernel;
 import com.nucleus.texturing.J2SEImageFactory;
 
 public class FConvolutionTest extends BaseTestCase implements WindowListener {
 
+    public static final String WAIT_FOR_USER = "com.nucleus.convolution.waitforuser";
+
     private static volatile boolean wait = false;
     J2SEImageFactory imageFactory = new J2SEImageFactory();
-    private final static int ITERATIONS = 50;
-    private final static String IMAGE_NAME = "assets/af.png";
+    private final static int ITERATIONS = 10;
+    private final static String IMAGE_NAME = "assets/atari.png";
 
     private static List<Frame> frames = new ArrayList<Frame>();
 
@@ -52,7 +56,10 @@ public class FConvolutionTest extends BaseTestCase implements WindowListener {
 
     @AfterClass
     public static void waitForUser() {
-        wait = false;
+        String value = System.getProperty(WAIT_FOR_USER);
+        wait = value == null ? wait : Boolean.parseBoolean(value);
+        SimpleLogger.d(FConvolutionTest.class,
+                "Use property " + WAIT_FOR_USER + "=TRUE to wait for user input before exiting test");
         while (wait) {
             try {
                 Thread.sleep(100);
@@ -73,13 +80,32 @@ public class FConvolutionTest extends BaseTestCase implements WindowListener {
     }
 
     @Test
-    public void testProcessOriginal() throws IOException {
-        executeTest(IMAGE_NAME, "Original 3X3", Kernel.SIZE_3X3, new float[] { 0, 0, 0, 0, 1, 0, 0, 0, 0 }, ITERATIONS);
+    public void testProcessOriginal2X2RGBA() throws IOException {
+        executeTest(IMAGE_NAME, ImageFormat.RGBA, "Original 2X2 - RGBA", Kernel.SIZE_2X2, new float[] { 0, 1, 1, 0 },
+                ITERATIONS);
+    }
+
+    @Test
+    public void testProcessOriginal2X2RGB() throws IOException {
+        executeTest(IMAGE_NAME, ImageFormat.RGB, "Original 2X2 - RGB", Kernel.SIZE_2X2, new float[] { 0, 1, 1, 0 },
+                ITERATIONS);
+    }
+
+    @Test
+    public void testProcessOriginal3X3RGBA() throws IOException {
+        executeTest(IMAGE_NAME, ImageFormat.RGBA, "Original 3X3 - RGBA", Kernel.SIZE_3X3,
+                new float[] { 0, 0, 0, 0, 1, 0, 0, 0, 0 }, ITERATIONS);
+    }
+
+    @Test
+    public void testProcessOriginal3X3RGB() throws IOException {
+        executeTest(IMAGE_NAME, ImageFormat.RGB, "Original 3X3 RGB", Kernel.SIZE_3X3,
+                new float[] { 0, 0, 0, 0, 1, 0, 0, 0, 0 }, ITERATIONS);
     }
 
     @Test
     public void testProcessOriginal5X5() throws IOException {
-        executeTest(IMAGE_NAME, "Original 5X5", Kernel.SIZE_5X5, new float[] {
+        executeTest(IMAGE_NAME, ImageFormat.RGBA, "Original 5X5", Kernel.SIZE_5X5, new float[] {
                 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0,
                 0, 0, 1, 0, 0,
@@ -89,7 +115,7 @@ public class FConvolutionTest extends BaseTestCase implements WindowListener {
 
     @Test
     public void testProcessBlur5X5() throws IOException {
-        executeTest(IMAGE_NAME, "Original 5X5", Kernel.SIZE_5X5, new float[] {
+        executeTest(IMAGE_NAME, ImageFormat.RGBA, "Blur 5X5", Kernel.SIZE_5X5, new float[] {
                 1, 2, 3, 2, 1,
                 2, 3, 4, 3, 2,
                 3, 4, 5, 4, 3,
@@ -99,20 +125,31 @@ public class FConvolutionTest extends BaseTestCase implements WindowListener {
 
     @Test
     public void testProcessBlur() throws IOException {
-        executeTest(IMAGE_NAME, "Blur 3X3", Kernel.SIZE_3X3, new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 }, ITERATIONS);
+        executeTest(IMAGE_NAME, ImageFormat.RGBA, "Blur 3X3", Kernel.SIZE_3X3,
+                new float[] { 1, 2, 1, 2, 4, 2, 1, 2, 1 }, ITERATIONS);
     }
 
     @Test
     public void testProcessScaleHalf() throws IOException {
-        BufferImage source = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA);
-        BufferImage destination = new BufferImage(source.getWidth() >>> 1, source.getHeight() >>> 1,
-                source.getFormat());
-        executeTest(source, destination, "Scale 1/2 2X2", Kernel.SIZE_2X2, new float[] { 1, 1, 1, 1 }, 1);
+        BufferImage sourceRGBA = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA);
+        BufferImage destination = new BufferImage(sourceRGBA.getWidth() >>> 1, sourceRGBA.getHeight() >>> 1,
+                sourceRGBA.getFormat());
+        executeTest(sourceRGBA, destination, "Scale 1/2 2X2 - RGBA", Kernel.SIZE_2X2, new float[] { 1, 1, 1, 1 }, 1);
 
-        BufferImage destination2 = new BufferImage(source.getWidth() >>> 1, source.getHeight() >>> 1,
-                source.getFormat());
-        executeTest(source, destination2, "Scale 1/2 3X3", Kernel.SIZE_3X3, new float[] { 1, 4, 1, 4, 4, 4, 1, 4, 1 },
-                1);
+        BufferImage destination2 = new BufferImage(sourceRGBA.getWidth() >>> 1, sourceRGBA.getHeight() >>> 1,
+                sourceRGBA.getFormat());
+        executeTest(sourceRGBA, destination2, "Scale 1/2 3X3 - RGBA", Kernel.SIZE_3X3,
+                new float[] { 1, 4, 1, 4, 4, 4, 1, 4, 1 }, 1);
+
+        BufferImage sourceRGB = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGB);
+        destination = new BufferImage(sourceRGB.getWidth() >>> 1, sourceRGB.getHeight() >>> 1,
+                sourceRGB.getFormat());
+        executeTest(sourceRGB, destination, "Scale 1/2 2X2 - RGB", Kernel.SIZE_2X2, new float[] { 1, 1, 1, 1 }, 1);
+
+        destination2 = new BufferImage(sourceRGB.getWidth() >>> 1, sourceRGB.getHeight() >>> 1,
+                sourceRGB.getFormat());
+        executeTest(sourceRGB, destination2, "Scale 1/2 3X3 - RGB", Kernel.SIZE_3X3,
+                new float[] { 1, 4, 1, 4, 4, 4, 1, 4, 1 }, 1);
 
     }
 
@@ -134,15 +171,33 @@ public class FConvolutionTest extends BaseTestCase implements WindowListener {
      **/
     @Test
     public void testProcessScaleQuarter() throws IOException {
-        BufferImage source = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA);
-        BufferImage destination = new BufferImage(source.getWidth() >>> 2, source.getHeight() >>> 2,
-                source.getFormat());
-        executeTest(source, destination, "Scale 1/4 4X4", Kernel.SIZE_4X4, new float[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1 }, 1);
+        BufferImage sourceRGBA = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA);
+        BufferImage destination = new BufferImage(sourceRGBA.getWidth() >>> 2, sourceRGBA.getHeight() >>> 2,
+                sourceRGBA.getFormat());
+        executeTest(sourceRGBA, destination, "Scale 1/4 4X4 - RGBA", Kernel.SIZE_4X4,
+                new float[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1 },
+                1);
 
-        BufferImage destination2 = new BufferImage(source.getWidth() >>> 2, source.getHeight() >>> 2,
-                source.getFormat());
-        executeTest(source, destination2, "Scale 1/4 5X5", Kernel.SIZE_5X5, new float[] { 1, 2, 3, 2, 1,
+        BufferImage destination2 = new BufferImage(sourceRGBA.getWidth() >>> 2, sourceRGBA.getHeight() >>> 2,
+                sourceRGBA.getFormat());
+        executeTest(sourceRGBA, destination2, "Scale 1/4 5X5 - RGBA", Kernel.SIZE_5X5, new float[] { 1, 2, 3, 2, 1,
+                2, 3, 4, 3, 2,
+                3, 4, 5, 4, 3,
+                2, 3, 4, 3, 2,
+                1, 2, 3, 2, 1 },
+                1);
+        BufferImage sourceRGB = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGB);
+        destination = new BufferImage(sourceRGB.getWidth() >>> 2, sourceRGB.getHeight() >>> 2,
+                sourceRGB.getFormat());
+        executeTest(sourceRGB, destination, "Scale 1/4 4X4 - RGB", Kernel.SIZE_4X4,
+                new float[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1 },
+                1);
+
+        destination2 = new BufferImage(sourceRGB.getWidth() >>> 2, sourceRGB.getHeight() >>> 2,
+                sourceRGB.getFormat());
+        executeTest(sourceRGB, destination2, "Scale 1/4 5X5 - RGB", Kernel.SIZE_5X5, new float[] { 1, 2, 3, 2, 1,
                 2, 3, 4, 3, 2,
                 3, 4, 5, 4, 3,
                 2, 3, 4, 3, 2,
@@ -153,16 +208,72 @@ public class FConvolutionTest extends BaseTestCase implements WindowListener {
 
     @Test
     public void testProcessScaleEight() throws IOException {
-        BufferImage source = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA);
-        BufferImage destination = new BufferImage(source.getWidth() >>> 3, source.getHeight() >>> 3,
-                source.getFormat());
-        executeTest(source, destination, "Scale 1/8 8X8", Kernel.SIZE_8X8, new float[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, 1);
+        BufferImage sourceRGBA = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA);
+        BufferImage destination = new BufferImage(sourceRGBA.getWidth() >>> 3, sourceRGBA.getHeight() >>> 3,
+                sourceRGBA.getFormat());
+        executeTest(sourceRGBA, destination, "Scale 1/8 8X8 - RGBA", Kernel.SIZE_8X8, null, 1);
 
-        BufferImage destination2 = new BufferImage(source.getWidth() >>> 3, source.getHeight() >>> 3,
-                source.getFormat());
-        executeTest(source, destination2, "Scale 1/8 8X8 center", Kernel.SIZE_8X8, new float[] {
+        BufferImage destination2 = new BufferImage(sourceRGBA.getWidth() >>> 3, sourceRGBA.getHeight() >>> 3,
+                sourceRGBA.getFormat());
+        executeTest(sourceRGBA, destination2, "Scale 1/8 8X8 center - RGBA", Kernel.SIZE_8X8, new float[] {
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 2, 2, 1, 1, 1,
+                1, 1, 2, 3, 3, 2, 1, 1,
+                1, 2, 3, 4, 4, 3, 2, 1,
+                1, 2, 3, 4, 4, 3, 2, 1,
+                1, 1, 2, 3, 3, 2, 1, 1,
+                1, 1, 1, 2, 2, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1
+        }, 1);
+
+        BufferImage sourceRGB = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGB);
+        destination = new BufferImage(sourceRGB.getWidth() >>> 3, sourceRGB.getHeight() >>> 3,
+                sourceRGB.getFormat());
+        executeTest(sourceRGB, destination, "Scale 1/8 8X8 - RGB", Kernel.SIZE_8X8, null, 1);
+
+        destination2 = new BufferImage(sourceRGB.getWidth() >>> 3, sourceRGB.getHeight() >>> 3,
+                sourceRGB.getFormat());
+        executeTest(sourceRGB, destination2, "Scale 1/8 8X8 center - RGB", Kernel.SIZE_8X8, new float[] {
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 2, 2, 1, 1, 1,
+                1, 1, 2, 3, 3, 2, 1, 1,
+                1, 2, 3, 4, 4, 3, 2, 1,
+                1, 2, 3, 4, 4, 3, 2, 1,
+                1, 1, 2, 3, 3, 2, 1, 1,
+                1, 1, 1, 2, 2, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1
+        }, 1);
+
+    }
+
+    @Test
+    public void testProcessScaleSixteen() throws IOException {
+        BufferImage sourceRGBA = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA);
+        BufferImage destination = new BufferImage(sourceRGBA.getWidth() >>> 4, sourceRGBA.getHeight() >>> 4,
+                sourceRGBA.getFormat());
+        executeTest(sourceRGBA, destination, "Scale 1/16 16X16 - RGBA", Kernel.SIZE_16X16, null, 1);
+
+        BufferImage destination2 = new BufferImage(sourceRGBA.getWidth() >>> 4, sourceRGBA.getHeight() >>> 4,
+                sourceRGBA.getFormat());
+        executeTest(sourceRGBA, destination2, "Scale 1/16 16X16 center - RGBA", Kernel.SIZE_16X16, new float[] {
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 2, 2, 1, 1, 1,
+                1, 1, 2, 3, 3, 2, 1, 1,
+                1, 2, 3, 4, 4, 3, 2, 1,
+                1, 2, 3, 4, 4, 3, 2, 1,
+                1, 1, 2, 3, 3, 2, 1, 1,
+                1, 1, 1, 2, 2, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1
+        }, 1);
+
+        BufferImage sourceRGB = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGB);
+        destination = new BufferImage(sourceRGB.getWidth() >>> 4, sourceRGB.getHeight() >>> 4,
+                sourceRGB.getFormat());
+        executeTest(sourceRGB, destination, "Scale 1/8 8X8 - RGB", Kernel.SIZE_16X16, null, 1);
+
+        destination2 = new BufferImage(sourceRGB.getWidth() >>> 4, sourceRGB.getHeight() >>> 4,
+                sourceRGB.getFormat());
+        executeTest(sourceRGB, destination2, "Scale 1/8 8X8 center - RGB", Kernel.SIZE_16X16, new float[] {
                 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 2, 2, 1, 1, 1,
                 1, 1, 2, 3, 3, 2, 1, 1,
@@ -186,8 +297,9 @@ public class FConvolutionTest extends BaseTestCase implements WindowListener {
      * @param loop
      * @throws IOException
      */
-    private void executeTest(String imageName, String title, Kernel kernel, float[] data, int loop) throws IOException {
-        BufferImage source = imageFactory.createImage(imageName, ImageFormat.RGBA);
+    private void executeTest(String imageName, ImageFormat format, String title, Kernel kernel, float[] data, int loop)
+            throws IOException {
+        BufferImage source = imageFactory.createImage(imageName, format);
         BufferImage destination = new BufferImage(source.getWidth(), source.getHeight(), source.getFormat());
         executeTest(source, destination, title, kernel, data, loop);
     }
@@ -200,7 +312,8 @@ public class FConvolutionTest extends BaseTestCase implements WindowListener {
         }
         long end = System.currentTimeMillis();
         Assert.assertNotNull(destination);
-        BufferedImage image = toBufferedImage(destination, BufferedImage.TYPE_4BYTE_ABGR);
+        SourceFormat sf = SourceFormat.get(destination.getFormat());
+        BufferedImage image = toBufferedImage(destination, sf.type);
         String fillrateStr = "";
         if (loop > 1) {
             int size = destination.getWidth() * destination.getHeight();
@@ -213,6 +326,9 @@ public class FConvolutionTest extends BaseTestCase implements WindowListener {
     }
 
     private void processImage(Convolution.Kernel kernel, float[] data, BufferImage image, BufferImage destination) {
+        if (data == null) {
+            data = kernel.createDefaultKernel(1.0f);
+        }
         Convolution filter = new Convolution(kernel);
         filter.set(data, 0, 0, data.length);
         filter.normalize(false);

@@ -21,6 +21,7 @@ import com.nucleus.renderer.RenderTarget.Target;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.AbstractNode.NodeTypes;
 import com.nucleus.scene.gltf.GLTFRootNode;
+import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.TranslateProgram;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
@@ -67,7 +68,7 @@ public class RootNodeBuilder {
         NodeBuilder<Node> builder = new NodeBuilder<>();
         builder.setRoot(root);
         TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(gles,
-                new TranslateProgram(Texture2D.Shading.textured));
+                new TranslateProgram(ShaderProgram.Shading.textured));
         builder.setProgram(vt);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
         Texture2D texture = AssetManager.getInstance().getTexture(gles,

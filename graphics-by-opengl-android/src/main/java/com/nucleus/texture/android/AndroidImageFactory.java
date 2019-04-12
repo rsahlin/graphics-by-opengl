@@ -7,6 +7,7 @@ import com.nucleus.profiling.FrameSampler;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.BufferImage.ImageFormat;
+import com.nucleus.texturing.BufferImage.SourceFormat;
 import com.nucleus.texturing.ImageFactory;
 
 import android.graphics.Bitmap;
@@ -19,6 +20,7 @@ public class AndroidImageFactory extends BaseImageFactory implements ImageFactor
         long start = System.currentTimeMillis();
         ClassLoader classLoader = getClass().getClassLoader();
         Bitmap b = BitmapFactory.decodeStream(classLoader.getResourceAsStream(name));
+        SourceFormat sf = getFormat(b);
         long loaded = System.currentTimeMillis();
         FrameSampler.getInstance().logTag(FrameSampler.Samples.LOAD_IMAGE, start, loaded);
         if (b == null) {
@@ -27,11 +29,27 @@ public class AndroidImageFactory extends BaseImageFactory implements ImageFactor
         byte[] bytePixels = new byte[b.getWidth() * b.getHeight() * 4];
         ByteBuffer bb = ByteBuffer.wrap(bytePixels);
         b.copyPixelsToBuffer(bb);
-        BufferImage image = new BufferImage(b.getWidth(), b.getHeight(), format);
-        copyPixels(bytePixels, ImageFormat.RGBA, image);
+        BufferImage image = new BufferImage(b.getWidth(), b.getHeight(), format != null ? format : sf.imageFormat);
+        if (b.getConfig() != Bitmap.Config.ARGB_8888) {
+            throw new IllegalArgumentException("Not supported Bitmap.Config " + b.getConfig());
+        }
+        copyPixels(bytePixels, SourceFormat.TYPE_INT_ARGB, image);
         b.recycle();
         FrameSampler.getInstance().logTag(FrameSampler.Samples.COPY_IMAGE, " " + image.getFormat().toString(), loaded,
                 System.currentTimeMillis());
         return image;
     }
+
+    protected SourceFormat getFormat(Bitmap b) {
+        switch (b.getConfig()) {
+            case ARGB_8888:
+                return SourceFormat.TYPE_RGBA;
+            case RGB_565:
+                return SourceFormat.TYPE_RGB565;
+            default:
+                throw new IllegalArgumentException("No support for config " + b.getConfig());
+
+        }
+    }
+
 }

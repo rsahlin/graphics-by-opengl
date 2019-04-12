@@ -48,6 +48,7 @@ public class Primitive implements RuntimeResolver {
      */
     public static final String TANGENT_BITANGENT = "TangentBitangent";
     public static final String BITANGENT = "Bitangent";
+    public static final String NORMAL = "Normal";
 
     public abstract class BufferToArray<T, U> {
         public abstract U copyBuffer(T buffer);
@@ -61,21 +62,27 @@ public class Primitive implements RuntimeResolver {
     }
 
     public class Triangles {
+        final int POSITION = 0;
+        final int NORMAL = 1;
+        final int UV = 2;
 
         float[] verticeArray;
         float[] uvArray;
         float[] normalArray;
         float[] tangentArray;
-        short[] indexArray;
+        int[] indexArray;
 
         /**
          * Creates the array buffers needed to calculate normals/tangents/bitanges
          */
         public void createBuffers(GLTF gltf) {
+            if (!isPBRVertices()) {
+                // convertToArrayMode(gltf);
+            }
             verticeArray = createFloatArray(Attributes.POSITION);
             uvArray = createFloatArray(Attributes.TEXCOORD_0);
-            tangentArray = createFloatArray(Attributes.TANGENT);
             indexArray = createIndexArray();
+            tangentArray = createFloatArray(Attributes.TANGENT);
             normalArray = createFloatArray(Attributes.NORMAL);
             if (normalArray == null) {
                 normalArray = createNormals();
@@ -87,8 +94,99 @@ public class Primitive implements RuntimeResolver {
                 Accessor normalAccessor = new Accessor(normals, 0, ComponentType.FLOAT, normalArray.length, Type.VEC3);
                 accessorList.add(normalAccessor);
                 attributeList.add(Attributes.NORMAL);
-
             }
+        }
+
+        private void convertToArrayMode(GLTF gltf) {
+            if (indices == null) {
+                throw new IllegalArgumentException("Not supported to convert from array mode " + getMode());
+            }
+            Accessor position = getAccessor(Attributes.POSITION);
+            Accessor indices = getIndices();
+            Accessor uv = getAccessor(Attributes.TEXCOORD_0);
+            float[] positionArray = createFloatArray(Attributes.POSITION);
+            int[] indicesArray = createIndexArray();
+            float[] uvArray = createFloatArray(Attributes.TEXCOORD_0);
+
+            float[][] arrays = createArrayMode(Mode.TRIANGLES, Mode.TRIANGLES.getPrimitiveCount(indices.getCount()),
+                    positionArray, indicesArray, uvArray);
+            int byteSize = 0;
+            int[] offsets = new int[arrays.length];
+            int index = 0;
+            for (float[] a : arrays) {
+                if (a != null) {
+                    offsets[index] = byteSize;
+                    byteSize += a.length * ComponentType.FLOAT.size;
+                }
+                index++;
+            }
+            int bufferIndex = gltf.createBuffer(indices.getName(), byteSize);
+            addFloatArrayAsBufferView(gltf, "positions", arrays[POSITION].length / position.getType().size,
+                    position.getType(), offsets[POSITION], bufferIndex, arrays[POSITION], Attributes.POSITION);
+            addFloatArrayAsBufferView(gltf, "normals", arrays[NORMAL].length / position.getType().size,
+                    position.getType(), offsets[NORMAL], bufferIndex, arrays[NORMAL], Attributes.NORMAL);
+            addFloatArrayAsBufferView(gltf, "uv", arrays[UV].length / position.getType().size,
+                    position.getType(), offsets[UV], bufferIndex, arrays[UV], Attributes.TEXCOORD_0);
+        }
+
+        private float[][] createArrayMode(Mode mode, int count, float[] positions, int[] indices, float[] uv) {
+            float[][] result = new float[3][];
+
+            result[POSITION] = new float[count * 3]; // positions
+            result[NORMAL] = new float[count * 3]; // normals
+            result[UV] = new float[count * 2]; // uv
+
+            float[] vec = new float[9];
+            int dest = 0;
+            int destUV = 0;
+            for (int index = 0; index < count;) {
+                int v1 = indices[index] * 3;
+                int v2 = indices[index + 1] * 3;
+                int v3 = indices[index + 2] * 3;
+                int uv1 = indices[index] * 2;
+                int uv2 = indices[index + 1] * 2;
+                int uv3 = indices[index + 2] * 2;
+                index += 3;
+
+                Vec3.toVector(positions, v1, positions, v2, vec, 0);
+                Vec3.toVector(positions, v2, positions, v3, vec, 3);
+                Vec3.toVector(positions, v3, positions, v1, vec, 6);
+
+                System.arraycopy(vec, 0, result[POSITION], dest, 3);
+                Vec3.normalize(Vec3.cross3(vec, 6, 0, result[NORMAL], dest), dest);
+                result[UV][destUV] = uv[uv1];
+                result[UV][destUV + 1] = uv[uv1 + 1];
+                dest += 3;
+                destUV += 2;
+
+                System.arraycopy(vec, 3, result[POSITION], dest, 3);
+                Vec3.normalize(Vec3.cross3(vec, 0, 3, result[NORMAL], dest), dest);
+                result[UV][destUV] = uv[uv2];
+                result[UV][destUV + 1] = uv[uv2 + 1];
+                dest += 3;
+                destUV += 2;
+
+                System.arraycopy(vec, 6, result[POSITION], dest, 3);
+                Vec3.normalize(Vec3.cross3(vec, 3, 6, result[NORMAL], dest), dest);
+                result[UV][destUV] = uv[uv3];
+                result[UV][destUV + 1] = uv[uv3 + 1];
+                dest += 3;
+                destUV += 2;
+            }
+            return result;
+        }
+
+        /**
+         * Returns true if the primitive supports pbr, ie flat triangles
+         * This shall be array mode using triangles
+         * 
+         * @return
+         */
+        private boolean isPBRVertices() {
+            if (indices == null && mode == Mode.TRIANGLES) {
+                return true;
+            }
+            return false;
         }
 
         private float[] createNormals() {
@@ -108,14 +206,23 @@ public class Primitive implements RuntimeResolver {
                 Vec3.toVector(verticeArray, v2Index, verticeArray, v3Index, vec, 3);
                 Vec3.toVector(verticeArray, v3Index, verticeArray, v1Index, vec, 6);
                 Vec3.normalize(Vec3.cross3(vec, 6, 0, normal, 0), 0);
-                Vec3.normalize(Vec3.add(normal, 0, normals, v1Index, normals, v1Index), v1Index);
+                Vec3.add(normal, 0, normals, v1Index, normals, v1Index);
 
                 Vec3.normalize(Vec3.cross3(vec, 0, 3, normal, 0), 0);
-                Vec3.normalize(Vec3.add(normal, 0, normals, v2Index, normals, v2Index), v2Index);
+                Vec3.add(normal, 0, normals, v2Index, normals, v2Index);
 
                 Vec3.normalize(Vec3.cross3(vec, 3, 6, normal, 0), 0);
-                Vec3.normalize(Vec3.add(normal, 0, normals, v3Index, normals, v3Index), v3Index);
+                Vec3.add(normal, 0, normals, v3Index, normals, v3Index);
 
+            }
+            index = 0;
+            while (index < indexArray.length) {
+                v1Index = indexArray[index++] * 3;
+                v2Index = indexArray[index++] * 3;
+                v3Index = indexArray[index++] * 3;
+                Vec3.normalize(normals, v1Index);
+                Vec3.normalize(normals, v2Index);
+                Vec3.normalize(normals, v3Index);
             }
             return normals;
         }
@@ -125,6 +232,9 @@ public class Primitive implements RuntimeResolver {
             if (accessor != null) {
                 switch (accessor.getComponentType()) {
                     case FLOAT:
+                        SimpleLogger.d(getClass(),
+                                "Creating float array for attribute " + attribute + ", count="
+                                        + accessor.getCount());
                         float[] arrayCopy = new float[accessor.getCount() * accessor.getType().size];
                         accessor.copy(arrayCopy, 0);
                         return arrayCopy;
@@ -136,10 +246,14 @@ public class Primitive implements RuntimeResolver {
             return null;
         }
 
-        private short[] createIndexArray() {
+        private int[] createIndexArray() {
             Accessor indices = getIndices();
             if (indices != null) {
-                short[] indicesCopy = new short[indices.getCount() * indices.getType().size];
+                SimpleLogger.d(getClass(),
+                        "Creating index array for " + mode + " with type " + indices.getComponentType()
+                                + ", primitives="
+                                + mode.getPrimitiveCount(indices.getCount()));
+                int[] indicesCopy = new int[indices.getCount() * indices.getType().size];
                 indices.copy(indicesCopy, 0);
                 return indicesCopy;
             }
@@ -303,6 +417,10 @@ public class Primitive implements RuntimeResolver {
         _BOUNDS(),
         _PBRDATA(),
         _LIGHT_0(),
+        /**
+         * The world view position
+         */
+        _VIEWPOS(),
         _TEXCOORDNORMAL(),
         _TEXCOORDMR();
 
@@ -341,6 +459,33 @@ public class Primitive implements RuntimeResolver {
             this.value = value;
         }
 
+        /**
+         * Returns the number of primitives for the number of indices with the current mode
+         * 
+         * @param indices
+         * @return
+         */
+        public int getPrimitiveCount(int indices) {
+            switch (this) {
+                case LINE_LOOP:
+                    return indices;
+                case LINE_STRIP:
+                    return indices - 1;
+                case LINES:
+                    return indices << 1;
+                case POINTS:
+                    return indices;
+                case TRIANGLE_FAN:
+                    return indices - 2;
+                case TRIANGLE_STRIP:
+                    return indices - 2;
+                case TRIANGLES:
+                    return indices / 3;
+                default:
+                    throw new IllegalArgumentException("Invalid mode " + this);
+            }
+        }
+
         public static final Mode getMode(int index) {
             for (Mode m : values()) {
                 if (m.index == index) {
@@ -373,6 +518,9 @@ public class Primitive implements RuntimeResolver {
 
     transient private ArrayList<Accessor> accessorList;
     transient private ArrayList<Attributes> attributeList;
+    /**
+     * Contains list of buffers referenced from accessors
+     */
     transient private ArrayList<Buffer> bufferList;
     transient private Material materialRef;
     /**
@@ -435,22 +583,6 @@ public class Primitive implements RuntimeResolver {
      */
     public ArrayList<Buffer> getBufferArray() {
         return bufferList;
-    }
-
-    /**
-     * Returns the Accessor for the attribute, or null if not defined.
-     * 
-     * @param glTF
-     * @param attribute
-     * @return
-     */
-    @Deprecated
-    public Accessor getAccessor(GLTF glTF, Attributes attribute) {
-        Integer index = attributes.get(attribute);
-        if (index != null) {
-            return glTF.getAccessor(index);
-        }
-        return null;
     }
 
     /**
@@ -593,6 +725,40 @@ public class Primitive implements RuntimeResolver {
     }
 
     /**
+     * Adds an accessor for the float array, a BufferView with name will be created.
+     * Float data will be stored at byteOffset with type.
+     * 
+     * @param gltf
+     * @param name
+     * @param count
+     * @param type
+     * @param byteOffset
+     * @param bufferIndex The gltf Buffer index
+     * @param data The data to store in the buffer
+     * @param attribute
+     */
+    private void addFloatArrayAsBufferView(GLTF gltf, String name, int count, Type type, int byteOffset,
+            int bufferIndex, float[] data, Attributes attribute) {
+        BufferView bufferView;
+        Buffer buffer = gltf.getBuffer(bufferIndex);
+        bufferView = gltf.createBufferView(buffer, name, byteOffset, Type.VEC3.size * ComponentType.FLOAT.size,
+                Target.ARRAY_BUFFER);
+        buffer.put(data, byteOffset);
+        Accessor accessor = new Accessor(bufferView, 0, ComponentType.FLOAT, count, type);
+
+        int currentIndex = attributeList.indexOf(attribute);
+        if (currentIndex >= 0) {
+            SimpleLogger.d(getClass(), attribute + "  present - removing in favour of calculated");
+            attributeList.remove(currentIndex);
+            // TODO - prune bufferlist and remove unused buffer if only this accessor uses the buffer
+            Accessor removed = accessorList.remove(currentIndex);
+        }
+        accessorList.add(accessor);
+        attributeList.add(attribute);
+        bufferList.add(buffer);
+    }
+
+    /**
      * Builds the tangent buffer for this primitive using TRIANGLES mode.
      * 
      * @param gltf
@@ -622,7 +788,7 @@ public class Primitive implements RuntimeResolver {
         BufferView Tbv = gltf.createBufferView(TANGENT_BITANGENT, l * 4 * 2, 0,
                 Type.VEC4.size * ComponentType.FLOAT.size, Target.ARRAY_BUFFER);
         Buffer buffer = Tbv.getBuffer();
-        BufferView Bbv = gltf.createBufferView(buffer, l * 4, 16, Target.ARRAY_BUFFER);
+        BufferView Bbv = gltf.createBufferView(buffer, null, l * 4, 16, Target.ARRAY_BUFFER);
         buffer.put(TBArray[0], 0);
         buffer.put(TBArray[1], l);
         int count = l / 4;

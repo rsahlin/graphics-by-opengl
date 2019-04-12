@@ -64,11 +64,6 @@ public abstract class BaseImageFactory implements ImageFactory {
             case 2:
                 c = new Convolution(Kernel.SIZE_2X2);
                 c.set(new float[] { 1, 1, 1, 1 }, 0, 0, Kernel.SIZE_2X2.size);
-                // c = new Convolution(Kernel.SIZE_4X4);
-                // c.set(new float[] { 1, 1, 1, 1,
-                // 1, 3, 2, 1,
-                // 1, 2, 3, 1,
-                // 1, 1, 1, 1 }, 0, 0, Kernel.SIZE_4X4.size);
                 break;
             case 3:
                 c = new Convolution(Kernel.SIZE_3X3);
@@ -230,11 +225,16 @@ public abstract class BaseImageFactory implements ImageFactory {
                         throw new IllegalArgumentException(
                                 ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
                 }
+                break;
             case TYPE_3BYTE_BGR:
                 switch (destination.getFormat()) {
                     case RGB:
                         copyPixels_3BYTE_BGR_TO_RGB(source, buffer);
                         break;
+                    case RGBA:
+                        throw new IllegalArgumentException(
+                                "Can't convert from sourceformat " + sourceFormat + " to destination "
+                                        + destination.getFormat());
                     default:
                         throw new IllegalArgumentException(
                                 ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());

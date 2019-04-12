@@ -2,7 +2,6 @@ package com.nucleus.ui;
 
 import com.nucleus.exporter.Reference;
 import com.nucleus.mmi.Pointer;
-import com.nucleus.mmi.UIElementInput;
 
 /**
  * Base class for UI elements, this is the base for focus and touch events to UI.

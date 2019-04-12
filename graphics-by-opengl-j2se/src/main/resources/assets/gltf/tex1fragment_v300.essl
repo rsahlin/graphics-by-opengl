@@ -1,6 +1,7 @@
 #version 300 es
 #line 1
 /* 
+ *
  * Fragment shader for glTF asset
  * @author Richard Sahlin
  */
@@ -8,6 +9,5 @@ precision highp float;
 
 void main() {
     vec3[2] diffuseSpecular = calculateFresnelDiffuse(vNormal);
-    outputPixel(vec4(diffuseSpecular[0] + diffuseSpecular[1], 1.0));
+    outputPixel(vec4(diffuseSpecular[0] * texture(uTexture0, vTexCoord0).rgb + diffuseSpecular[1], 1.0));
 }
-

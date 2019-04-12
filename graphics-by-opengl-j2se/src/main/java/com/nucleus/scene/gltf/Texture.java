@@ -68,11 +68,10 @@ public class Texture extends GLTFNamedValue implements RuntimeResolver {
     }
 
     /**
-     * normalTextureInfo
-     * Reference to a texture.
-     * Properties
-     * Type Description Required
-     * index integer The index of the texture. ✅ Yes
+     * normalTextureInfo - Reference to a texture.
+     * Type - Description - Required:
+     * 
+     * index integer The index of the texture. Yes
      * texCoord integer The set index of texture's TEXCOORD attribute used for texture coordinate mapping. No, default:
      * 0
      * scale number The scalar multiplier applied to each normal vector of the normal texture. No, default: 1
@@ -81,7 +80,6 @@ public class Texture extends GLTFNamedValue implements RuntimeResolver {
      */
     public static class NormalTextureInfo extends TextureInfo {
         private static final String SCALE = "scale";
-
         @SerializedName(SCALE)
         private float scale = 1;
 
@@ -93,6 +91,39 @@ public class Texture extends GLTFNamedValue implements RuntimeResolver {
         public float getScale() {
             return scale;
         }
+    }
+
+    /**
+     * occlusionTextureInfo - Reference to a texture.
+     * Type - Description - Required:
+     * 
+     * index integer The index of the texture. Yes
+     * texCoord integer The set index of texture's TEXCOORD attribute used for texture coordinate mapping. No, default:
+     * 0
+     * strength number A scalar multiplier controlling the amount of occlusion applied. No, default: 1
+     * extensions object Dictionary object with extension-specific objects. No
+     * extras any Application-specific data. No
+     *
+     */
+    public static class OcclusionTextureInfo extends TextureInfo {
+        private static final String STRENGTH = "strength";
+        @SerializedName(STRENGTH)
+        private float strength = 1;
+
+        /**
+         * Returns the scalar strength to be applied to occlusion:
+         * A scalar multiplier controlling the amount of occlusion applied.
+         * A value of 0.0 means no occlusion. A value of 1.0 means full occlusion.
+         * This value affects the resulting color using the formula:
+         * occludedColor = lerp(color, color * <sampled occlusion texture value>, <occlusion strength>).
+         * This value is ignored if the corresponding texture is not specified. This value is linear.
+         * 
+         * @return Scalar strength
+         */
+        public float getStrength() {
+            return strength;
+        }
+
     }
 
     private static final String SAMPLER = "sampler";

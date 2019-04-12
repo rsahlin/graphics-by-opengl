@@ -4,18 +4,18 @@ import java.nio.FloatBuffer;
 
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.Pass;
-import com.nucleus.texturing.Texture2D.Shading;
+import com.nucleus.shader.ShaderProgram.Shading;
 
 public class ComputeShader extends ShaderProgram {
 
     public static final String CATEGORY = "compute";
 
     public ComputeShader(String category) {
-        super(null, null, category, ProgramType.COMPUTE);
+        super(null, null, category, ShaderProgram.ProgramType.COMPUTE);
     }
 
     @Override
-    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, Shading shading) {
+    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, ShaderProgram.Shading shading) {
         return this;
     }
 

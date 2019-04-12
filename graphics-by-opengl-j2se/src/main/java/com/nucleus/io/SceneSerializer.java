@@ -5,6 +5,7 @@ import java.io.OutputStream;
 
 import com.nucleus.common.Type;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeException;
 
 /**
@@ -17,6 +18,14 @@ import com.nucleus.scene.NodeException;
  * @param T The Scene rootnode.
  */
 public interface SceneSerializer<T> {
+
+    /**
+     * Used when a Node is inflated
+     *
+     */
+    public interface NodeInflaterListener {
+        public void onInflated(Node node);
+    }
 
     public final static String NULL_GLES_ERROR = "GLES is null.";
     public final static String NULL_MESHFACTORY_ERROR = "Mesh factory is null.";
@@ -58,11 +67,13 @@ public interface SceneSerializer<T> {
      * @param path Path to asset folder, this is the root folder where assets are located
      * @param filename Name of file containing scene data.
      * @param type The type of scene, this must be understood by the implementation
+     * @param inflaterListener Optional callback when nodes are inflated, may be null
      * @return The scene, including all defined children.
      * @throws NodeException If there is an exception loading the data.
      * @throws IllegalStateException If the renderer or nodefactory has not been set before calling this method.
      */
-    public T importScene(String path, String filename, String type) throws NodeException;
+    public T importScene(String path, String filename, String type, NodeInflaterListener inflaterListener)
+            throws NodeException;
 
     /**
      * Exports a scene in the same format as this serializer can import.

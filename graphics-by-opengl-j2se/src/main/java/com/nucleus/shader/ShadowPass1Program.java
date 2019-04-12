@@ -2,10 +2,8 @@ package com.nucleus.shader;
 
 import java.nio.FloatBuffer;
 
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
-import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -19,16 +17,16 @@ public class ShadowPass1Program extends ShadowPassProgram {
 
     static class Shadow1Categorizer extends Categorizer {
 
-        public Shadow1Categorizer(Pass pass, Shading shading, String category) {
+        public Shadow1Categorizer(Pass pass, ShaderProgram.Shading shading, String category) {
             super(pass, shading, category);
         }
 
         @Override
-        public String getShaderSourceName(int shaderType) {
-            switch (shaderType) {
-                case GLES20.GL_VERTEX_SHADER:
+        public String getShaderSourceName(ShaderType type) {
+            switch (type) {
+                case VERTEX:
                     // For vertex shader ignore the pass
-                    return getPath(shaderType) + getShadingString();
+                    return getPath(type) + getShadingString();
                 default:
                     return null;
 
@@ -41,14 +39,14 @@ public class ShadowPass1Program extends ShadowPassProgram {
      * @param categorizer
      * @param shaders
      */
-    public ShadowPass1Program(ShaderProgram objectProgram, Categorizer categorizer, ProgramType shaders) {
+    public ShadowPass1Program(ShaderProgram objectProgram, Categorizer categorizer, ShaderProgram.ProgramType shaders) {
         super(objectProgram, categorizer, shaders);
     }
 
     @Override
     public void setUniformMatrices(float[][] matrices) {
         if (modelUniform == null) {
-            modelUniform = getUniformByName(Matrices.MODEL.name);
+            modelUniform = getUniformByName(Matrices.Name);
         }
         uniforms.position(modelUniform.getOffset());
         uniforms.put(matrices[Matrices.MODEL.index], 0, Matrix.MATRIX_ELEMENTS);

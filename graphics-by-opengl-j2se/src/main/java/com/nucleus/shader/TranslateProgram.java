@@ -5,9 +5,9 @@ import java.nio.FloatBuffer;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.Pass;
+import com.nucleus.shader.ShaderProgram.Shading;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.texturing.TextureType;
 
 /**
@@ -35,18 +35,18 @@ public class TranslateProgram extends ShaderProgram {
 
     public TranslateProgram(Texture2D texture) {
         super(new SharedfragmentCategorizer(null,
-                (texture == null || texture.textureType == TextureType.Untextured) ? Shading.flat : Shading.textured,
-                "translate"), ProgramType.VERTEX_FRAGMENT);
+                (texture == null || texture.textureType == TextureType.Untextured) ? ShaderProgram.Shading.flat : ShaderProgram.Shading.textured,
+                "translate"), ShaderProgram.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
     }
 
-    public TranslateProgram(Texture2D.Shading shading) {
-        super(new SharedfragmentCategorizer(null, shading, "translate"), ProgramType.VERTEX_FRAGMENT);
+    public TranslateProgram(ShaderProgram.Shading shading) {
+        super(new SharedfragmentCategorizer(null, shading, "translate"), ShaderProgram.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
     }
 
     @Override
-    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, Shading shading) {
+    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, ShaderProgram.Shading shading) {
         switch (pass) {
             case UNDEFINED:
             case ALL:

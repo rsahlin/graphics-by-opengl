@@ -123,7 +123,8 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
     }
 
     @Override
-    public RootNode importScene(String path, String filename, String type) throws NodeException {
+    public RootNode importScene(String path, String filename, String type, NodeInflaterListener inflaterLister)
+            throws NodeException {
         if (!path.endsWith("/") && !path.endsWith("\\")) {
             path = path + File.pathSeparator;
         }
@@ -131,7 +132,7 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
         ClassLoader loader = getClass().getClassLoader();
         InputStream is = loader.getResourceAsStream(path + filename);
         try {
-            RootNode root = importScene(path, is, type);
+            RootNode root = importScene(path, is, type, inflaterLister);
             return root;
         } finally {
             if (is != null) {
@@ -145,7 +146,8 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
         }
     }
 
-    private RootNode importScene(String path, InputStream is, String type) throws NodeException {
+    private RootNode importScene(String path, InputStream is, String type, NodeInflaterListener inflaterListener)
+            throws NodeException {
         if (!isInitialized()) {
             throw new IllegalStateException(INIT_NOT_CALLED_ERROR);
         }
@@ -157,6 +159,7 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
             long start = System.currentTimeMillis();
             Reader reader = new InputStreamReader(is, "UTF-8");
             RootNode root = importFromGSON(reader, deserializer, RootNodeBuilder.getTypeClass(type));
+            root.setNodeInflaterListener(inflaterListener);
             long loaded = System.currentTimeMillis();
             FrameSampler.getInstance().logTag(FrameSampler.Samples.LOAD_SCENE, start, loaded);
             RootNode createdRoot = root.createInstance();

@@ -8,6 +8,7 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
+import com.nucleus.io.SceneSerializer.NodeInflaterListener;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.RenderPass;
@@ -215,6 +216,10 @@ public class NodeBuilder<T extends Node> {
                 }
             }
             created.onCreated();
+            NodeInflaterListener inflaterListener = root.getNodeInflaterListener();
+            if (inflaterListener != null) {
+                inflaterListener.onInflated(created);
+            }
             // Recursively create children if there are any
             if (source.getChildren() != null) {
                 for (Node nd : source.getChildren()) {

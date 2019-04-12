@@ -5,8 +5,9 @@ import java.util.List;
 
 import com.nucleus.assets.AssetManager;
 import com.nucleus.exporter.Reference;
-import com.nucleus.mmi.UIElementInput;
+import com.nucleus.io.SceneSerializer.NodeInflaterListener;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.ui.UIElementInput;
 
 /**
  * Starting point of a nodetree, the root has a collection of nodes the each represent a scene.
@@ -108,6 +109,20 @@ public interface RootNode extends Reference {
      * @param objectInputListener Listener to get callback when input interaction is registered on a Node with bounds.
      */
     public void setObjectInputListener(UIElementInput objectInputListener);
+
+    /**
+     * Sets the {@link NodeInflaterListener} that is called when nodes are inflated from JSON
+     * 
+     * @param nodeInflaterListener
+     */
+    public void setNodeInflaterListener(NodeInflaterListener nodeInflaterListener);
+
+    /**
+     * Returns the {@link NodeInflaterListener}, or null if not set.
+     * 
+     * @return
+     */
+    public NodeInflaterListener getNodeInflaterListener();
 
     /**
      * Returns node with matching id, searching through children recursively.

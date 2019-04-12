@@ -14,10 +14,10 @@ import com.nucleus.assets.AssetManager;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.common.Constants;
 import com.nucleus.common.StringUtils;
+import com.nucleus.environment.Lights;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
-import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLES30Wrapper;
 import com.nucleus.opengl.GLESWrapper;
@@ -38,7 +38,6 @@ import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.shader.ShadowPass1Program.Shadow1Categorizer;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.Texture2D.Shading;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.TextureUtils;
 import com.nucleus.texturing.TiledTexture2D;
@@ -72,6 +71,20 @@ public abstract class ShaderProgram {
     protected final static String NO_ACTIVE_UNIFORMS = "No active uniforms, forgot to call createProgram()?";
 
     protected ShaderVariable modelUniform;
+
+    /**
+     * Different type of shadings that needs to be supported in shaders
+     *
+     */
+    public enum Shading {
+        flat(),
+        parametric(),
+        textured(),
+        pbr(),
+        colorize(),
+        shadow1(),
+        shadow2();
+    }
 
     /**
      * The different type of programs that can be linked from different type of shaders.
@@ -123,7 +136,7 @@ public abstract class ShaderProgram {
      * Subclasses may modify before {@link #createProgram(GLES20Wrapper)} is called - or before they call
      * super.createProgram()
      */
-    protected ProgramType shaders;
+    protected ShaderProgram.ProgramType shaders;
     protected ShaderProgram shadowPass1;
     protected ShaderProgram shadowPass2;
 
@@ -156,10 +169,10 @@ public abstract class ShaderProgram {
      */
     public static class Categorizer {
         protected Pass pass;
-        protected Texture2D.Shading shading;
+        protected ShaderProgram.Shading shading;
         protected String category;
 
-        public Categorizer(Pass pass, Texture2D.Shading shading, String category) {
+        public Categorizer(Pass pass, ShaderProgram.Shading shading, String category) {
             this.pass = pass;
             this.shading = shading;
             this.category = category;
@@ -170,7 +183,7 @@ public abstract class ShaderProgram {
          * 
          * @return
          */
-        public Texture2D.Shading getShading() {
+        public ShaderProgram.Shading getShading() {
             return shading;
         }
 
@@ -187,12 +200,11 @@ public abstract class ShaderProgram {
          * Returns the shader source name, excluding directory prefix and name of shader (vertex/fragment/compute)
          * Default behavior is to return getPath() / getPassString() + getShadingString()
          * 
-         * @param shaderType The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER,
-         * GL_COMPUTE_SHADER
+         * @param shaderType The shader type to return source for
          * @return
          */
-        public String getShaderSourceName(int shaderType) {
-            return (getPath(shaderType) + getPassString() + getShadingString());
+        public String getShaderSourceName(ShaderType type) {
+            return (getPath(type) + getPassString() + getShadingString());
         }
 
         /**
@@ -216,11 +228,10 @@ public abstract class ShaderProgram {
         /**
          * Returns the relative path - by default this is the category
          * 
-         * @param shaderType The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER,
-         * GL_COMPUTE_SHADER
+         * @param shaderType The shader type to return source for
          * @return The relative path, if defined it must end with the path separator char
          */
-        public String getPath(int shaderType) {
+        public String getPath(ShaderType type) {
             String path = getCategoryString();
             return path.length() == 0 ? path : path + File.separator;
         }
@@ -248,18 +259,18 @@ public abstract class ShaderProgram {
      */
     public static class SharedfragmentCategorizer extends Categorizer {
 
-        public SharedfragmentCategorizer(Pass pass, Shading shading, String category) {
+        public SharedfragmentCategorizer(Pass pass, ShaderProgram.Shading shading, String category) {
             super(pass, shading, category);
         }
 
         @Override
-        public String getShaderSourceName(int shaderType) {
-            switch (shaderType) {
-                case GLES20.GL_FRAGMENT_SHADER:
+        public String getShaderSourceName(ShaderType type) {
+            switch (type) {
+                case FRAGMENT:
                     // Fragment shaders are shared - skip category path
                     return getPassString() + getShadingString();
             }
-            return super.getShaderSourceName(shaderType);
+            return super.getShaderSourceName(type);
         }
     }
 
@@ -298,7 +309,7 @@ public abstract class ShaderProgram {
 
     protected int attributeBufferCount = BufferIndex.values().length;
 
-    protected GlobalLight globalLight = GlobalLight.getInstance();
+    protected Lights globalLight = Lights.getInstance();
     /**
      * The size of each buffer for the attribute variables - as set either from indexer if this is used or taken
      * from defined attributes.
@@ -350,7 +361,7 @@ public abstract class ShaderProgram {
      * @param pass
      * @param shading
      */
-    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, Shading shading) {
+    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, ShaderProgram.Shading shading) {
         switch (pass) {
             case UNDEFINED:
             case ALL:
@@ -399,19 +410,20 @@ public abstract class ShaderProgram {
      * 
      * Default behavior is to return the function path + shader source name
      * 
-     * @param shaderType The shader type to return source for, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER
+     * @param shaderType The shader type to return source for
      * @return
      */
-    protected String getShaderSourceName(int shaderType) {
-        return function.getShaderSourceName(shaderType);
+    protected String getShaderSourceName(ShaderType type) {
+        return function.getShaderSourceName(type);
     }
 
-    protected ShaderProgram(Pass pass, Texture2D.Shading shading, String category, ProgramType shaders) {
+    protected ShaderProgram(Pass pass, ShaderProgram.Shading shading, String category,
+            ShaderProgram.ProgramType shaders) {
         function = new Categorizer(pass, shading, category);
         this.shaders = shaders;
     }
 
-    protected ShaderProgram(Categorizer function, ProgramType shaders) {
+    protected ShaderProgram(Categorizer function, ShaderProgram.ProgramType shaders) {
         this.function = function;
         this.shaders = shaders;
     }
@@ -525,25 +537,18 @@ public abstract class ShaderProgram {
      */
     protected ShaderSource getShaderSource(Renderers version, ShaderType type) {
 
-        switch (type.value) {
-            case GLES20.GL_VERTEX_SHADER:
-                return new ShaderSource(
-                        PROGRAM_DIRECTORY + getShaderSourceName(type.value)
-                                + VERTEX_TYPE,
+        switch (type) {
+            case VERTEX:
+                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type) + VERTEX_TYPE,
                         getSourceNameVersion(version, type.value), type);
-            case GLES20.GL_FRAGMENT_SHADER:
-                return new ShaderSource(
-                        PROGRAM_DIRECTORY + getShaderSourceName(type.value)
-                                + FRAGMENT_TYPE,
+            case FRAGMENT:
+                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type) + FRAGMENT_TYPE,
                         getSourceNameVersion(version, type.value), type);
-            case GLES31.GL_COMPUTE_SHADER:
-                return new ShaderSource(
-                        PROGRAM_DIRECTORY + getShaderSourceName(type.value),
+            case COMPUTE:
+                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type),
                         getSourceNameVersion(version, type.value), type);
-            case GLES32.GL_GEOMETRY_SHADER:
-                return new ShaderSource(
-                        PROGRAM_DIRECTORY + getShaderSourceName(type.value)
-                                + GEOMETRY_TYPE,
+            case GEOMETRY:
+                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type) + GEOMETRY_TYPE,
                         getSourceNameVersion(version, type.value), type);
             default:
                 throw new IllegalArgumentException("Not implemented for type: " + type);
@@ -1108,8 +1113,9 @@ public abstract class ShaderProgram {
             GLUtils.handleError(gles, COMPILE_SHADER_ERROR + source.getFullSourceName());
             checkCompileStatus(gles, source, shader);
         } catch (GLException e) {
+            String shaderSource = gles.glGetShaderSource(shader);
             SimpleLogger.d(getClass(), e.getMessage() + " from source:" + System.lineSeparator());
-            StringTokenizer st = new StringTokenizer(source.getVersionedShaderSource(), System.lineSeparator());
+            StringTokenizer st = new StringTokenizer(shaderSource, System.lineSeparator());
             StringBuffer sb = new StringBuffer();
             int index = 1;
             while (st.hasMoreTokens()) {
@@ -1514,7 +1520,7 @@ public abstract class ShaderProgram {
     public void setUniformMatrices(float[][] matrices) {
         // Refresh the uniform matrixes - default is model - view and projection
         if (modelUniform == null) {
-            modelUniform = getUniformByName(Matrices.MODEL.name);
+            modelUniform = getUniformByName(Matrices.Name);
         }
         uniforms.position(modelUniform.getOffset());
         uniforms.put(matrices[Matrices.MODEL.index], 0, Matrix.MATRIX_ELEMENTS);
@@ -1600,7 +1606,7 @@ public abstract class ShaderProgram {
      * 
      * @return
      */
-    public Shading getShading() {
+    public ShaderProgram.Shading getShading() {
         return function.shading;
     }
 

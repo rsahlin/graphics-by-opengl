@@ -50,6 +50,7 @@ public class Buffer extends GLTFNamedValue {
     /**
      * Creates a new buffer with the specified byteLength - the buffer will be created by calling
      * {@link #createBuffer()}
+     * Do not call this method directly
      * 
      * @param name Name of the buffer
      * @param byteLength
@@ -98,7 +99,8 @@ public class Buffer extends GLTFNamedValue {
     }
 
     /**
-     * Creates the buffer for the storage.
+     * Creates the buffer for the storage - this shall normally not be called.
+     * Buffers are created as assets are loaded.
      * 
      * @throws IllegalArgumentException If buffer has already been created, and not destroyed
      * 
@@ -109,6 +111,7 @@ public class Buffer extends GLTFNamedValue {
         }
         SimpleLogger.d(getClass(), "Creating buffer with byte size: " + byteLength);
         buffer = BufferUtils.createByteBuffer(byteLength);
+
     }
 
     /**
@@ -127,6 +130,7 @@ public class Buffer extends GLTFNamedValue {
      * Copies the contents of the bufferview in the source into the current position of this buffer.
      * Copy will use bytestride of source and copy tighly packed into this buffer.
      * Use if data should be packed into this buffer.
+     * 
      * @param source
      */
     public void put(Accessor source) {
@@ -137,7 +141,7 @@ public class Buffer extends GLTFNamedValue {
             sourceBuffer.limit(sourceBuffer.position() + buffer.remaining());
             buffer.put(sourceBuffer);
         } else {
-            //Must copy one type at a time
+            // Must copy one type at a time
             int count = source.getCount();
             int size = source.getType().size * source.getComponentType().size;
             byte[] d = new byte[size];
@@ -149,11 +153,11 @@ public class Buffer extends GLTFNamedValue {
                 pos += byteStride;
                 sourceBuffer.position(pos);
             }
-            
+
         }
         sourceBuffer.limit(limit);
     }
-    
+
     /**
      * Loads data from the uri into this buffer, must call {@link #createBuffer()} to create buffer before
      * loading data into this buffer
@@ -203,9 +207,9 @@ public class Buffer extends GLTFNamedValue {
     }
 
     public String toString(int position, int length) {
-        String str = "URI: " + uri + ", name: " + getName() + ", byteLength: " + byteLength + (bufferName > 0 ? 
-                " VBO " + bufferName : " no VBO");
-        
+        String str = "URI: " + uri + ", name: " + getName() + ", byteLength: " + byteLength
+                + (bufferName > 0 ? " VBO " + bufferName : " no VBO");
+
         str += "\n" + BufferUtils.getContentAsString(position, length, buffer);
         return str;
     }

@@ -1,4 +1,7 @@
-package com.nucleus.mmi;
+package com.nucleus.ui;
+
+import com.nucleus.mmi.Pointer;
+import com.nucleus.mmi.PointerMotion;
 
 /**
  * Interface for generic UI inputs, this is to handle UI inputs that are detected by means of touch, mouse or similar.

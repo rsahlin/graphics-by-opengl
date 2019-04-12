@@ -1,6 +1,7 @@
 #version 300 es
+#line 1
 /* 
- * Vertex shader for textured glTF asset
+ * Vertex shader for textured glTF asset without texture, with normal map and possibly metallicRoughness
  */
  precision highp float;
  
@@ -9,6 +10,3 @@
 void main() {
     positionLight();
 }
-
-
-

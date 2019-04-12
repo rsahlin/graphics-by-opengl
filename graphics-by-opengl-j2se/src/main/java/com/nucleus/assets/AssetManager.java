@@ -538,6 +538,7 @@ public class AssetManager {
      */
     protected void loadTextures(GLES20Wrapper gles, GLTF gltf, PBRMetallicRoughness pbr) throws IOException {
         loadTexture(gles, gltf, pbr.getBaseColorTexture(), ColorModel.SRGB);
+        loadTexture(gles, gltf, pbr.getMetallicRoughnessTexture(), ColorModel.LINEAR);
     }
 
     /**

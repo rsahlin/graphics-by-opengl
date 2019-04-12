@@ -136,8 +136,8 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
         if (scale == 0) {
             scale = 1.0f;
         }
-        float YASPECT = 1f;
-        Perspective p = new Perspective(16 / 9f, YASPECT, 10000, 0.1f);
+        float YFOV = 0.8f;
+        Perspective p = new Perspective(16 / 9f, YFOV, 1000, 0.1f);
         // This node will only be referenced by the camera
         // TODO - Should a special CameraNode be created? Maybe better to keep Nodes simple?
         Node node = new Node();
@@ -191,16 +191,16 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
     }
 
     /**
-     * Sets the view and projection matrices according to the chosen camera in the scene.
+     * Sets the view and projection matrix according to the chosen camera in the scene.
      * 
-     * @param matrices Matrix to set the view and projection to
+     * @param matrices View and projection matrices are set here
      * 
      */
-    public void setViewProjection(float[][] matrices) {
+    public void setMVP(float[][] matrices) {
         if (isCameraInstanced()) {
             Camera camera = getCameraInstance();
             matrices[Matrices.PROJECTION.index] = camera.getProjectionMatrix();
-            setView(camera, matrices);
+            matrices[Matrices.VIEW.index] = camera.getViewMatrix();
         }
     }
 
@@ -263,20 +263,6 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
             selectedCamera = 0;
         }
         return selectedCamera;
-    }
-
-    /**
-     * Sets the view matrix according to camera (inverted)
-     * This will locate the scene according to camera.
-     * The result is stored in matrices as well as the local viewMatrix
-     * Internal method - do not call directly
-     * 
-     * @param camera
-     * @param matrices The matrix to set the view transform to, if camera is present. Otherwise nothing is done.
-     */
-    protected void setView(Camera camera, float[][] matrices) {
-        matrices[Matrices.VIEW.index] = camera.concatCameraMatrix(null);
-        Matrix.copy(matrices[Matrices.VIEW.index], 0, viewMatrix, 0);
     }
 
     /**

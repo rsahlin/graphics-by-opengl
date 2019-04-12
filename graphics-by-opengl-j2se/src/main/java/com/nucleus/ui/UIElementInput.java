@@ -1,8 +1,6 @@
-package com.nucleus.mmi;
+package com.nucleus.ui;
 
 import com.nucleus.scene.Node;
-import com.nucleus.ui.Button;
-import com.nucleus.ui.Toggle;
 
 /**
  * Listener for (high level) input events on a (visible) UI element in a set of nodes.

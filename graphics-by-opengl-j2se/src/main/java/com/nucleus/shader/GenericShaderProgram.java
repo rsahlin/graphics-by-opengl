@@ -3,7 +3,6 @@ package com.nucleus.shader;
 import java.nio.FloatBuffer;
 
 import com.nucleus.renderer.Pass;
-import com.nucleus.texturing.Texture2D.Shading;
 
 /**
  * Generic shader program - use this when a specific shader source shall be specified.
@@ -25,29 +24,30 @@ public class GenericShaderProgram extends ShaderProgram {
      * {@link ProgramType#VERTEX_FRAGMENT} then this must contain 2 values.
      * @param shaders
      */
-    public GenericShaderProgram(String[] source, Pass pass, Shading shading, String category, ProgramType shaders) {
+    public GenericShaderProgram(String[] source, Pass pass, ShaderProgram.Shading shading, String category,
+            ShaderProgram.ProgramType shaders) {
         super(pass, shading, category, shaders);
         this.source = source;
     }
 
-    public GenericShaderProgram(Pass pass, Shading shading, String category, ProgramType shaders) {
+    public GenericShaderProgram(Pass pass, ShaderProgram.Shading shading, String category,
+            ShaderProgram.ProgramType shaders) {
         super(pass, shading, category, shaders);
     }
 
-    public GenericShaderProgram(Categorizer function, ProgramType shaders) {
+    public GenericShaderProgram(Categorizer function, ShaderProgram.ProgramType shaders) {
         super(function, shaders);
     }
 
     @Override
-    protected String getShaderSourceName(int shaderType) {
+    protected String getShaderSourceName(ShaderType type) {
         if (source == null) {
-            return super.getShaderSourceName(shaderType);
+            return super.getShaderSourceName(type);
         }
-        ShaderType t = ShaderType.getFromType(shaderType);
-        if (t.index >= source.length) {
+        if (type.index >= source.length) {
             return "";
         }
-        return function.getPath(shaderType) + source[t.index];
+        return function.getPath(type) + source[type.index];
     }
 
     @Override
@@ -60,9 +60,9 @@ public class GenericShaderProgram extends ShaderProgram {
 
     @Override
     public String getKey() {
-        return getClass().getSimpleName() + getShaderSourceName(ShaderType.VERTEX.value)
-                + getShaderSourceName(ShaderType.GEOMETRY.value) +
-                getShaderSourceName(ShaderType.FRAGMENT.value) + getShaderSourceName(ShaderType.COMPUTE.value);
+        return getClass().getSimpleName() + getShaderSourceName(ShaderType.VERTEX)
+                + getShaderSourceName(ShaderType.GEOMETRY) + getShaderSourceName(ShaderType.FRAGMENT) +
+                getShaderSourceName(ShaderType.COMPUTE);
     }
 
 }

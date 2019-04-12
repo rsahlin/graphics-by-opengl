@@ -8,8 +8,9 @@ import java.util.Map;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.common.ManagedList;
 import com.nucleus.io.BaseReference;
-import com.nucleus.mmi.UIElementInput;
+import com.nucleus.io.SceneSerializer.NodeInflaterListener;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.ui.UIElementInput;
 
 /**
  * Provides support minimal shared scene data - use this when importing scene data using JSON
@@ -58,11 +59,17 @@ public abstract class AbstractRootNode extends BaseReference implements RootNode
      */
     transient protected UIElementInput objectInputListener;
     /**
+     * Callbacks when nodes are inflated from JSON
+     */
+    transient protected NodeInflaterListener nodeInflaterListener;
+    /**
      * Table with all added childnodes and their id.
      */
     transient private Hashtable<String, Node> childNodeTable = new Hashtable<>();
 
     protected void copy(RootNodeImpl source) {
+        objectInputListener = source.objectInputListener;
+        nodeInflaterListener = source.nodeInflaterListener;
         setProperties(source);
     }
 
@@ -74,6 +81,16 @@ public abstract class AbstractRootNode extends BaseReference implements RootNode
     @Override
     public void setObjectInputListener(UIElementInput objectInputListener) {
         this.objectInputListener = objectInputListener;
+    }
+
+    @Override
+    public void setNodeInflaterListener(NodeInflaterListener nodeInflaterListener) {
+        this.nodeInflaterListener = nodeInflaterListener;
+    }
+
+    @Override
+    public NodeInflaterListener getNodeInflaterListener() {
+        return nodeInflaterListener;
     }
 
     /**
