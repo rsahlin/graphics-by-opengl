@@ -51,7 +51,7 @@ public class Environment {
          */
         USEVBO("com.nucleus.vbo"),
         /**
-         * If true then recalculate tangents on loaded geometry - this is for debugging etc.
+         * If true then recalculate tangents / normals on loaded geometry - this is for debugging etc.
          */
         RECALCULATE_TANGENTS("com.nucleus.gltf.recalculate_tangents"),
         /**
@@ -59,6 +59,11 @@ public class Environment {
          * Used to debug normal maps
          */
         RENDER_NORMALMAP("com.nucleus.gltf.render_normalmap"),
+        /**
+         * If geometry has MR map then use it as a texture source.
+         * Used to debug mr maps
+         */
+        RENDER_MRMAP("com.nucleus.gltf.render_mrmap"),
         /**
          * If true then models are forced to untextured, basecolor texture is ignored.
          */

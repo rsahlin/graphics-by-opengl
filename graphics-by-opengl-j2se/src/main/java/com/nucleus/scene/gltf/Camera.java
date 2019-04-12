@@ -92,7 +92,12 @@ public class Camera extends GLTFNamedValue {
             return znear;
         }
 
-        public float[] calculateMatrix() {
+        /**
+         * Creates a new matrix with the projection defined as Perspective
+         * 
+         * @return A new matrix with the perspective projection set
+         */
+        public float[] createMatrix() {
             float[] projection = Matrix.setIdentity(Matrix.createMatrix(), 0);
             if (zfar == -1) {
                 return calculateMatrixInfinite(projection);
@@ -175,7 +180,12 @@ public class Camera extends GLTFNamedValue {
             return znear;
         }
 
-        public float[] calculateMatrix() {
+        /**
+         * Creates a new matrix with the projection defined as Orthographic
+         * 
+         * @return A new matrix with the orthopgraphic projection set
+         */
+        public float[] createMatrix() {
             float[] projection = Matrix.setIdentity(Matrix.createMatrix(), 0);
             projection[0] = 1 / xmag;
             projection[5] = 1 / ymag;
@@ -302,10 +312,10 @@ public class Camera extends GLTFNamedValue {
         }
         switch (type) {
             case orthographic:
-                projectionMatrix = orthographic.calculateMatrix();
+                projectionMatrix = orthographic.createMatrix();
                 break;
             case perspective:
-                projectionMatrix = perspective.calculateMatrix();
+                projectionMatrix = perspective.createMatrix();
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for type " + type);
@@ -314,27 +324,26 @@ public class Camera extends GLTFNamedValue {
     }
 
     /**
-     * Multiplies the matrix with the inverse of the node matrix, stores result in this class inverse matrix and
-     * returns.
+     * Calculates the camera matrix
      * Use this method to get the transform for positioning a camera
      * 
-     * @param matrix Matrix to multiply camera node with, or null
-     * @return The camera matrix
+     * @return The result matrix, this will be the world transform for camera
      */
-    public float[] concatCameraMatrix(float[] matrix) {
+    public float[] updateMatrix() {
         if (node == null) {
             throw new IllegalArgumentException("Runtime node is null in Camera - not using instanced camera?");
         }
-        float[] parents = node.concatParentsMatrix();
-        Matrix.invertM(node.inverseMatrix, 0, parents, 0);
-        float[] inverse = node.inverseMatrix;
-        // node.updateMatrix();
-        // inverse = node.invertMatrix();
-        if (matrix != null) {
-            Matrix.mul4(matrix, inverse, inverseMatrix);
-        } else {
-            Matrix.copy(inverse, 0, inverseMatrix, 0);
-        }
+        Matrix.copy(node.concatParentsMatrix(), 0, cameraMatrix, 0);
+        Matrix.invertM(inverseMatrix, 0, cameraMatrix, 0);
+        return cameraMatrix;
+    }
+
+    /**
+     * Returns the inverse of the camera matrix, ie the matrix to transform objects into camera (view) space
+     * 
+     * @return The view matrix, transforms into camera space
+     */
+    public float[] getViewMatrix() {
         return inverseMatrix;
     }
 

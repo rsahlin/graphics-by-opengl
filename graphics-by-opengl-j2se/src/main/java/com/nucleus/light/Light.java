@@ -11,8 +11,9 @@ public abstract class Light {
     public static final int COLOR_INDEX = 0;
     public static final int INTENSITY_INDEX = 3;
     public static final int POSITION_INDEX = 4;
+    public static final int SKYCOLOR_INDEX = 8;
     // Must be multiple of 4
-    public static final int DATASIZE = 8;
+    public static final int DATASIZE = 12;
 
     /**
      * Light color, intensity and position, 7 values
@@ -66,7 +67,7 @@ public abstract class Light {
      * @param light RGB, intensity, XYZ
      */
     Light(Type type, float[] values) {
-        if (type == null || values == null || values.length != 8) {
+        if (type == null || values == null || values.length != DATASIZE) {
             throw new IllegalArgumentException("Null parameter or wrong length of light arrays");
         }
         this.type = type;

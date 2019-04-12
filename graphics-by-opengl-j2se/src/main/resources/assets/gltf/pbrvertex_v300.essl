@@ -8,7 +8,7 @@ uniform vec4 uProperties[1];
 uniform mat4 uModelMatrix[3];
 // color + intensity [4]
 // position [3]
-uniform vec4 _LIGHT_0[2];
+uniform vec4 _LIGHT_0[3];
 
 in vec3 POSITION;
 in vec3 NORMAL;
@@ -23,22 +23,27 @@ out vec2 vTexCoord0;
 out vec2 vTexNormal;
 out vec2 vTexMR;
 out vec3 vNormal;
-out vec3 vEye;
-out vec3 vLight;
 out mat3 mTangentLight;
+out vec4 vWorldPos;
 
+
+/**
+ * Calculate gl_Position and return the pos, set light, eye and tex coordinates.
+ */
+vec4 posLightTex() {
+    vWorldPos = vec4(POSITION, 1.0) * uModelMatrix[0];
+    gl_Position = vWorldPos * uModelMatrix[1] * uModelMatrix[2];
+    vTexCoord0 = TEXCOORD_0;
+    vTexMR = _TEXCOORDMR;
+    return vWorldPos;
+}
 
 /**
  * Calculates the position and light for pbr materials
  */
 void positionLight() {
     vNormal = normalize(NORMAL * mat3(uModelMatrix[0]));
-    vec4 pos = vec4(POSITION, 1.0) * uModelMatrix[0] * uModelMatrix[1];
-    gl_Position = pos * uModelMatrix[2];
-    vLight = normalize(vec3(_LIGHT_0[1]) - vec3(pos));
-    vEye = normalize(-vec3(pos));
-    vTexCoord0 = TEXCOORD_0;
-    vTexMR = _TEXCOORDMR;
+    posLightTex();
 }
 
 /**
@@ -49,13 +54,7 @@ void positionLightTexNormal() {
     vec3 bitangent = normalize(vec3(BITANGENT) * mat3(uModelMatrix[0]));
     vec3 normal = normalize(vec3(NORMAL) * mat3(uModelMatrix[0]));
     mTangentLight = transpose(mat3(tangent,bitangent,normal));
-//    mTangentLight = (transpose(mat3(vec3(TANGENT),BITANGENT,NORMAL))) * mat3(uModelMatrix[0]);
-    vec4 pos = vec4(POSITION, 1.0) * uModelMatrix[0] * uModelMatrix[1];
-    gl_Position = pos * uModelMatrix[2];
-    vLight = normalize(vec3(_LIGHT_0[1]) - vec3(pos));
-    vEye = normalize(-vec3(pos));
-    vTexCoord0 = TEXCOORD_0;
+    posLightTex();
     vTexNormal = _TEXCOORDNORMAL;
-    vTexMR = _TEXCOORDMR;
 }
 

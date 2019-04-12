@@ -72,6 +72,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     public boolean renderNode(NucleusRenderer renderer, GLTFNode node, Pass currentPass, float[][] matrices)
             throws GLException {
         GLTF glTF = node.getGLTF();
+        Scene scene = glTF.getDefaultScene();
         if (glTF == null) {
             // Do nothing
             return false;
@@ -87,15 +88,12 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         GLES20Wrapper gles = renderer.getGLES();
         // Set view matrix from previous render of this gltfNode
         // node.getSavedViewMatrix(matrices[Matrices.VIEW.index]);
-        Scene scene = glTF.getDefaultScene();
-        scene.setViewProjection(matrices);
+        scene.setMVP(matrices);
         // This will rotate the view - ie the camera
         // matrices[Matrices.VIEW.index] = scene.getSceneTransform().concatMatrix(matrices[Matrices.VIEW.index]);
         matrices[Matrices.MODEL.index] = scene.getSceneTransform().concatMatrix(matrices[Matrices.MODEL.index]);
         // Render the default scene.
         renderScene(gles, glTF, scene, currentPass, matrices);
-        // Save current viewmatrix to next render of this gltf
-        // node.saveViewMatrix(matrices[Matrices.VIEW.index]);
 
         matrices[Matrices.MODEL.index] = popMatrix(modelMatrixStack);
         matrices[Matrices.VIEW.index] = popMatrix(viewMatrixStack);
@@ -193,6 +191,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
                 program.validateProgram(gles);
             }
+            program.updateEnvironmentUniforms(gles, glTF.getDefaultScene());
         }
         // Can be optimized to update uniforms under the following conditions:
         // The program has changed OR the matrices have changed, ie another parent node.

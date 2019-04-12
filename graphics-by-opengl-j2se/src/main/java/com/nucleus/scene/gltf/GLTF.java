@@ -165,6 +165,21 @@ public class GLTF {
     }
 
     /**
+     * Creates a new buffer and adds to the gltf asset, returns the index of the created buffer.
+     * Call {@link #getBuffer(int)} to fetch the Buffer
+     * 
+     * @param name
+     * @param byteSize
+     * @return Index to buffer when calling {@link #getBuffer(int)
+     */
+    public int createBuffer(String name, int byteSize) {
+        Buffer buffer = new Buffer(name, byteSize);
+        int index = buffers.size();
+        buffers.add(buffer);
+        return index;
+    }
+
+    /**
      * Creates a new BufferView with specified size and a BufferView for the created buffer
      * Use this when a BufferView shall be created for a new buffer.
      * 
@@ -189,18 +204,19 @@ public class GLTF {
      * Name of BufferView will be taken from buffer
      * 
      * @param buffer
+     * @param name Name of BufferView, or null to use name from buffer
      * @param byteOffset
      * @param byteStride
      * @param target
      * @return
      */
-    public BufferView createBufferView(Buffer buffer, int byteOffset, int byteStride, Target target) {
+    public BufferView createBufferView(Buffer buffer, String name, int byteOffset, int byteStride, Target target) {
         int index = buffers.indexOf(buffer);
         if (index < 0) {
             throw new IllegalArgumentException("Could not find index for Buffer - not added?");
         }
         BufferView bv = new BufferView(this, index, byteOffset, byteStride, target);
-        bv.name = buffer.getName();
+        bv.name = name != null ? name : buffer.getName();
         return bv;
     }
 

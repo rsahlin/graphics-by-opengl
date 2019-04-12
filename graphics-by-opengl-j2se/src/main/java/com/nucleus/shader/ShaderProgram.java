@@ -14,10 +14,10 @@ import com.nucleus.assets.AssetManager;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.common.Constants;
 import com.nucleus.common.StringUtils;
+import com.nucleus.environment.Lights;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
-import com.nucleus.light.GlobalLight;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLES30Wrapper;
 import com.nucleus.opengl.GLESWrapper;
@@ -309,7 +309,7 @@ public abstract class ShaderProgram {
 
     protected int attributeBufferCount = BufferIndex.values().length;
 
-    protected GlobalLight globalLight = GlobalLight.getInstance();
+    protected Lights globalLight = Lights.getInstance();
     /**
      * The size of each buffer for the attribute variables - as set either from indexer if this is used or taken
      * from defined attributes.
@@ -1520,7 +1520,7 @@ public abstract class ShaderProgram {
     public void setUniformMatrices(float[][] matrices) {
         // Refresh the uniform matrixes - default is model - view and projection
         if (modelUniform == null) {
-            modelUniform = getUniformByName(Matrices.MODEL.name);
+            modelUniform = getUniformByName(Matrices.Name);
         }
         uniforms.position(modelUniform.getOffset());
         uniforms.put(matrices[Matrices.MODEL.index], 0, Matrix.MATRIX_ELEMENTS);

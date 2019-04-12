@@ -162,6 +162,10 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
         this.componentType = componentType;
         this.count = count;
         this.type = type;
+        this.bufferViewIndex = bufferView.getBufferIndex();
+        if (bufferViewIndex == -1) {
+            throw new IllegalArgumentException("Invalid index for BufferView");
+        }
     }
 
     public int getBufferViewIndex() {
