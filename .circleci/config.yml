@@ -1,11 +1,25 @@
-version: 2
+version: 2.1
 jobs:
-   build:
-     docker:
-       - image: circleci/openjdk:8-jdk-browsers
-       - image: buildpack-deps:trusty
-     steps:
-       - run: git clone https://github.com/rsahlin/vecmath.git
-       - checkout
-       - run: mvn compile
+  build-all:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/openjdk:8-jdk-browsers
+    steps:
+      - checkout
+      - run:
+          name: Download and build vecmath 
+          command: |
+            git clone https://github.com/rsahlin/vecmath.git
+            cd vecmath
+            mvn compile install
+      - run:
+         name: Build graphics-by-opengl
+         command: |
+           mvn compile install -DskipTests
+  
 
+workflows:
+  version: 2.1
+  main:
+    jobs:
+      - build-all
