@@ -1,0 +1,28 @@
+#version 300 es
+/**
+ * Source for strucs shared between vertex and fragment stage (possibly other stages)
+ * Currently a naming based locations are used in favour of numbered layouts - this is simply because
+ * keeping track of locations is cumbersome as long as number of fields/parameters change.
+ */
+ 
+/**
+ * PBR material properties
+ */ 
+struct Material {
+    vec3 H;
+    float NdotH;
+    float NdotL;
+    float VdotH;
+    float NdotV;
+    float LdotH;
+};
+
+/**
+ * Light properties
+ */
+struct Light {
+    // Location of eye
+    vec3 eye;
+    // Location of light
+    vec3 light;
+};

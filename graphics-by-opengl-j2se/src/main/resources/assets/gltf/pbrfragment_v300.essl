@@ -36,6 +36,8 @@ in vec2 vTexMR;
 in vec3 vNormal;
 in vec4 vWorldPos;
 in mat3 mTangentLight;
+in Material material;
+in Light light;
 
 out vec4 fragColor;
 
@@ -106,9 +108,9 @@ vec3 Diffuse_GLTF(vec3 fresnel, vec3 cDiff) {
  * diffuse = (1 - F) * cdiff
  */
 vec3[2] internalCalculatePBR(vec3 normal, vec3 F0, vec3 cDiff, float roughness) {
-    vec3 eye = normalize(_VIEWPOS[0] -vWorldPos.xyz);
-    vec3 light = normalize(_LIGHT_0[1].xyz - vWorldPos.xyz);
-    vec3 H = normalize(eye + light);
+    vec3 eye = light.eye;
+    vec3 light = light.light;
+    vec3 H = material.H;
     float NdotH = clamp(dot(normal, H), 0.0, 1.0);
     float NdotL = clamp(dot(normal, light), 0.0, 1.0);
     float VdotH = clamp(dot(eye, H), 0.0, 1.0);
