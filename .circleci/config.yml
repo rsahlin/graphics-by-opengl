@@ -13,9 +13,9 @@ jobs:
             cd vecmath
             mvn compile install
       - run:
-         name: Build graphics-by-opengl
+         name: Build graphics-by-opengl No Android
          command: |
-           mvn compile install -DskipTests
+           mvn compile install -DskipTests -DAndroid=false
   
 
 workflows:
