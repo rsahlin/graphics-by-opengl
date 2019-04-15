@@ -28,7 +28,8 @@ import com.nucleus.vecmath.Matrix;
 
 public class GLTFShaderProgram extends GenericShaderProgram {
 
-    transient protected String[] commonSourceNames = new String[] { "pbrvertex", "pbrfragment" };
+    transient protected String[][] commonSourceNames = new String[][] { { "common_structs", "pbrvertex" },
+            { "common_structs", "pbrfragment" } };
     transient protected PBRShading pbrShading;
 
     transient protected ShaderVariable pbrDataUniform;
@@ -278,16 +279,22 @@ public class GLTFShaderProgram extends GenericShaderProgram {
         switch (type) {
             case VERTEX:
                 if (commonSourceNames[ShaderType.VERTEX.index] != null) {
-                    return new String[] {
-                            PROGRAM_DIRECTORY + function.getCategory() + File.separatorChar
-                                    + commonSourceNames[ShaderType.VERTEX.index] };
+                    String[] result = new String[commonSourceNames[ShaderType.VERTEX.index].length];
+                    for (int i = 0; i < result.length; i++) {
+                        result[i] = PROGRAM_DIRECTORY + function.getCategory() + File.separatorChar
+                                + commonSourceNames[ShaderType.VERTEX.index][i];
+                    }
+                    return result;
                 }
                 break;
             case FRAGMENT:
                 if (commonSourceNames[ShaderType.FRAGMENT.index] != null) {
-                    return new String[] {
-                            PROGRAM_DIRECTORY + function.getCategory() + File.separatorChar
-                                    + commonSourceNames[ShaderType.FRAGMENT.index] };
+                    String[] result = new String[commonSourceNames[ShaderType.FRAGMENT.index].length];
+                    for (int i = 0; i < result.length; i++) {
+                        result[i] = PROGRAM_DIRECTORY + function.getCategory() + File.separatorChar
+                                + commonSourceNames[ShaderType.FRAGMENT.index][i];
+                    }
+                    return result;
                 }
                 break;
             default:
