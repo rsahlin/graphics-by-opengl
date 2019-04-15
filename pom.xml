@@ -14,10 +14,23 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Graphics By OpenGL - Parent</name>
+    <profiles>
+      <profile>
+        <id>Android</id>
+          <activation>
+            <property>
+              <name>Android</name>
+              <value>true</value>
+            </property>
+          </activation>
+          <modules>
+            <module>graphics-by-opengl-android</module>
+          </modules>
+        </profile>
+      </profiles>
     <modules>
-        <module>graphics-by-opengl-android</module>
-        <module>graphics-by-opengl-jogl</module>
         <module>graphics-by-opengl-j2se</module>
+        <module>graphics-by-opengl-jogl</module>
         <module>graphics-by-opengl-lwjgl3</module>
     </modules>
     <dependencyManagement>
