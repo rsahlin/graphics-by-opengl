@@ -94,7 +94,7 @@ float V_GLTF(const float roughness, const BRDF brdf) {
     float k = roughness * sqrtTwoByPi;
     float GL = clamp(material.LdotH / (material.LdotH * (1.0 - k) + k), 0.0, 1.0);
     float GN = clamp(brdf.NdotH /(brdf.NdotH * (1.0 - k) + k), 0.0, 1.0);
-    return (GL * GN) / max(1.0, 4 * brdf.NdotL * brdf.NdotV);
+    return (GL * GN) / max(1.0, 4.0 * brdf.NdotL * brdf.NdotV);
 }
 
 vec3 Diffuse_GLTF(vec3 fresnel, vec3 cDiff) {
@@ -120,8 +120,8 @@ vec3[2] internalCalculatePBR(const BRDF brdf, const vec3 F0, const vec3 cDiff, c
     vec3 specular = fresnel * NDF * V;
     vec3 diffuse = (1.0 - fresnel) * (cDiff * oneByPI);
     vec3 illumination = light.color.rgb * (light.color.a * brdf.NdotL);
-//    result[0] = (diffuse + specular * mix(_PBRDATA[3].rgb, dielectricSpecular, 1 - distPow)) * illumination;
-//    result[1] = (specular * mix(dielectricSpecular, light.color.rgb, 1 - distPow)) * illumination;
+//    result[0] = (diffuse + specular * mix(_PBRDATA[3].rgb, dielectricSpecular, 1.0 - distPow)) * illumination;
+//    result[1] = (specular * mix(dielectricSpecular, light.color.rgb, 1.0 - distPow)) * illumination;
     result[0] = (diffuse + specular) * illumination;
     result[1] = vec3(0.0,0.0,0.0);
     return result;
