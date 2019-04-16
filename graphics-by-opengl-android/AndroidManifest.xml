@@ -2,7 +2,7 @@
     package="com.super2k.nucleus.android" >
 
     <uses-sdk
-        android:minSdkVersion="19"
+        android:minSdkVersion="21"
         android:targetSdkVersion="25" />
 
     <uses-feature
