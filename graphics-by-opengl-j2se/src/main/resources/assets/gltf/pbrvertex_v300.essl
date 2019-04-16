@@ -9,7 +9,6 @@ precision highp float;
 //cDiff      [3]
 //diffuse    [4]
 uniform vec4 _PBRDATA[4];
-uniform vec4 uProperties[1];
 uniform mat4 uModelMatrix[3];
 // color + intensity [4]
 // position [3]
@@ -28,7 +27,6 @@ out vec4 vDiffuseColor;
 out vec2 vTexCoord0;
 out vec2 vTexNormal;
 out vec2 vTexMR;
-out vec3 vNormal;
 out mat3 mTangentLight;
 out vec4 vWorldPos;
 out Light light;
@@ -36,19 +34,18 @@ out Material material;
 
 void setLight() {
     light.eye = normalize(_VIEWPOS[0] -vWorldPos.xyz);
-    light.light = normalize(_LIGHT_0[1].xyz - vWorldPos.xyz);
+    light.direction = normalize(_LIGHT_0[1].xyz - vWorldPos.xyz);
+    light.color = _LIGHT_0[0];
 }
 void setMaterial(Light light) {
-    vec3 H = normalize(light.eye + light.light);
+    vec3 H = normalize(light.eye + light.direction);
     material.H = H;
-    material.NdotH = clamp(dot(vNormal, H), 0.0, 1.0);
-    material.NdotL = clamp(dot(vNormal, light.light), 0.0, 1.0);
+    material.NdotH = clamp(dot(material.normal, H), 0.0, 1.0);
+    material.NdotL = clamp(dot(material.normal, light.direction), 0.0, 1.0);
     material.VdotH = clamp(dot(light.eye, H), 0.0, 1.0);
-    material.NdotV = abs(dot(vNormal, light.eye)) + 1e-5;
-    material.LdotH = dot(light.light, H);
+    material.NdotV = abs(dot(material.normal, light.eye)) + 1e-5;
+    material.LdotH = dot(light.direction, H);
 }
-
-
 
 /**
  * Calculate gl_Position and return the pos, set light, eye and tex coordinates.
@@ -68,7 +65,7 @@ vec4 posLightTex() {
  * Calculates the position and light for pbr materials
  */
 void positionLight() {
-    vNormal = normalize(NORMAL * mat3(uModelMatrix[0]));
+    material.normal = normalize(NORMAL * mat3(uModelMatrix[0]));
     posLightTex();
 }
 
@@ -80,6 +77,7 @@ void positionLightTexNormal() {
     vec3 bitangent = normalize(vec3(BITANGENT) * mat3(uModelMatrix[0]));
     vec3 normal = normalize(vec3(NORMAL) * mat3(uModelMatrix[0]));
     mTangentLight = transpose(mat3(tangent,bitangent,normal));
+    material.normal = normalize(NORMAL * mat3(uModelMatrix[0]));
     posLightTex();
     vTexNormal = _TEXCOORDNORMAL;
 }

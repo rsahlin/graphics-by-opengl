@@ -8,6 +8,8 @@
 precision highp float;
 
 void main() {
-    vec3[2] diffuseSpecular = calculateFresnelDiffuse(vNormal, vec3(texture(uTextureMR, vTexMR));
+    BRDF brdf;
+    brdf.normal = material.normal;
+    vec3[2] diffuseSpecular = calculateFresnelDiffuse(brdf, vec3(texture(uTextureMR, vTexMR));
     outputPixel(vec4(diffuseSpecular[0] + diffuseSpecular[1], 1.0));
 }

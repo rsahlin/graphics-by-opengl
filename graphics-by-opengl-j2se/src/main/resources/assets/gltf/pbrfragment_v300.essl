@@ -13,27 +13,10 @@ uniform mediump sampler2D uTextureMR; //Metallic roughness texture sampler
 //cDiff      [3]
 //diffuse    [4]
 uniform vec4 _PBRDATA[4];
-//RGB + Intensity
-//XYZ
-uniform vec4 _LIGHT_0[3];
-uniform vec3 _VIEWPOS[1];
-
-const float MIN_ROUGHNESS = 0.045;
-const float MIN_METALLIC = 0.02;
-const float MAX_METALLIC = 0.99;
-const float pi = 3.141592;
-const float sqrtTwoByPi = sqrt(2.0 / pi);
-const float oneByPI = 1.0 / pi;
-const float twoByPI = 2.0 / pi;
-const float gamma = 2.2;
-const float oneByGamma = 1.0 / gamma;
-const vec3 dielectricSpecular = vec3(0.04, 0.04, 0.04);
-const vec3 black = vec3(0.0, 0.0, 0.0);
 
 in vec2 vTexCoord0;
 in vec2 vTexNormal;
 in vec2 vTexMR;
-in vec3 vNormal;
 in vec4 vWorldPos;
 in mat3 mTangentLight;
 in Material material;
@@ -51,18 +34,16 @@ void outputPixel(vec4 pbr) {
     fragColor = vec4(pow(hdrExposure, vec3(_PBRDATA[0].w)), _PBRDATA[3].a); 
 }
 
-vec3 F_Schlick(const vec3 F0, float VdotH) {
-    return F0 + (1.0 - F0) * pow(1.0 - VdotH, 5.0);
-//    float f = pow(1.0 - VdotH, 5.0);
-//    return f + f0 * (1.0 - f);
+vec3 F_Schlick(const vec3 F0, const BRDF brdf) {
+    return F0 + (1.0 - F0) * pow(1.0 - material.VdotH, 5.0);
 }
 
-float V_SmithGGXCorrelated(float linearRoughness, float NoV, float NoL) {
+float V_SmithGGXCorrelated(const float linearRoughness, const BRDF brdf) {
     // Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"
     float a2 = linearRoughness * linearRoughness;
     // TODO: lambdaV can be pre-computed for all the lights, it should be moved out of this function
-    float lambdaV = NoL * sqrt((NoV - a2 * NoV) * NoV + a2);
-    float lambdaL = NoV * sqrt((NoL - a2 * NoL) * NoL + a2);
+    float lambdaV = material.NdotL * sqrt((material.NdotV - a2 * material.NdotV) * material.NdotV + a2);
+    float lambdaL = material.NdotV * sqrt((material.NdotL - a2 * material.NdotL) * material.NdotL + a2);
     float v = 0.5 / (lambdaV + lambdaL);
     // a2=0 => v = 1 / 4*NoL*NoV   => min=1/4, max=+inf
     // a2=1 => v = 1 / 2*(NoL+NoV) => min=1/4, max=+inf
@@ -71,28 +52,28 @@ float V_SmithGGXCorrelated(float linearRoughness, float NoV, float NoL) {
 }
 
 
-float D_GGX(float linearRoughness, float NoH, const vec3 n, const vec3 h) {
-    vec3 NxH = cross(n, h);
-    float a = NoH * linearRoughness;
+float D_GGX(const float linearRoughness, const BRDF brdf) {
+    vec3 NxH = cross(brdf.normal, material.H);
+    float a = material.NdotH * linearRoughness;
     float k = linearRoughness / (dot(NxH, NxH) + a * a);
     float d = k * k * (1.0 / pi);
     return max(d, 0.0);
 }
 
-float D_GLTF(float roughness, float NdotH, const vec3 n, const vec3 h, inout float distPow) {
-    vec3 NxH = cross(n, h);
+float D_GLTF(float roughness, const BRDF brdf) {
+    vec3 NxH = cross(brdf.normal, material.H);
     float a = roughness * roughness;
     float a2 = a * a;
-    distPow = 1.0 - dot(NxH, NxH);
+    float distPow = 1.0 - dot(NxH, NxH);
     //Use distPow to add tint
     return ((a2) / (pi * pow((distPow * (a2 - 1.0) + 1.0),2.0)));
 }
 
-float V_GLTF(float roughness, float NdotV, float NdotL, float LdotH, float NdotH) {
+float V_GLTF(const float roughness, const BRDF brdf) {
     float k = roughness * sqrtTwoByPi;
-    float GL = clamp(LdotH / (LdotH * (1.0 - k) + k), 0.0, 1.0);
-    float GN = clamp(NdotH /(NdotH * (1.0 - k) + k), 0.0, 1.0);
-    return (GL * GN) / max(1.0, 4 * NdotL * NdotV);
+    float GL = clamp(material.LdotH / (material.LdotH * (1.0 - k) + k), 0.0, 1.0);
+    float GN = clamp(material.NdotH /(material.NdotH * (1.0 - k) + k), 0.0, 1.0);
+    return (GL * GN) / max(1.0, 4 * material.NdotL * material.NdotV);
 }
 
 vec3 Diffuse_GLTF(vec3 fresnel, vec3 cDiff) {
@@ -107,37 +88,27 @@ vec3 Diffuse_GLTF(vec3 fresnel, vec3 cDiff) {
  * F = F0 + (1 - F0) * (1.0 - V * H)^5
  * diffuse = (1 - F) * cdiff
  */
-vec3[2] internalCalculatePBR(vec3 normal, vec3 F0, vec3 cDiff, float roughness) {
-    vec3 eye = light.eye;
-    vec3 light = light.light;
-    vec3 H = material.H;
-    float NdotH = clamp(dot(normal, H), 0.0, 1.0);
-    float NdotL = clamp(dot(normal, light), 0.0, 1.0);
-    float VdotH = clamp(dot(eye, H), 0.0, 1.0);
-    float NdotV = abs(dot(normal, eye)) + 1e-5;
-    float LdotH = dot(light, H);
+vec3[2] internalCalculatePBR(const BRDF brdf, const vec3 F0, const vec3 cDiff, const float roughness) {
     float a = roughness * roughness;
-    vec3 fresnel = F_Schlick(F0, VdotH);
+    vec3 fresnel = F_Schlick(F0, brdf);
     float distPow;
-    float NDF = D_GLTF(roughness, NdotH, normal, H, distPow);
-    float V = V_GLTF(roughness, NdotL, NdotV, LdotH, NdotH);
-//    float V = V_SmithGGXCorrelated(roughness, NdotL, NdotV);
+    float NDF = D_GLTF(roughness, brdf);
+    float V = V_GLTF(roughness, brdf);
     vec3[2] result;
-//    vec3 tint = mix(_PBRDATA[3].rgb, _LIGHT_0[0].rgb, NdotH);
+//    vec3 tint = mix(_PBRDATA[3].rgb, light.color.rgb, NdotH);
     vec3 specular = fresnel * NDF * V;
     vec3 diffuse = (1.0 - fresnel) * (cDiff * oneByPI);
-    vec3 illumination = (NdotL * _LIGHT_0[0].rgb) *_LIGHT_0[0].a;
+    vec3 illumination = light.color.rgb * (light.color.a * material.NdotL);
 //    result[0] = (diffuse + specular * mix(_PBRDATA[3].rgb, dielectricSpecular, 1 - distPow)) * illumination;
-//    result[1] = (specular * mix(dielectricSpecular, _LIGHT_0[0].rgb, 1 - distPow)) * illumination;
+//    result[1] = (specular * mix(dielectricSpecular, light.color.rgb, 1 - distPow)) * illumination;
     result[0] = (diffuse + specular) * illumination;
     result[1] = vec3(0.0,0.0,0.0);
     return result;
     
 }
 
-
-vec3[2] calculateFresnelDiffuse(vec3 normal) {
-    return internalCalculatePBR(normal, _PBRDATA[1].rgb, _PBRDATA[2].rgb, max(MIN_ROUGHNESS, _PBRDATA[0].y));
+vec3[2] calculateFresnelDiffuse(const BRDF brdf) {
+    return internalCalculatePBR(brdf, _PBRDATA[1].rgb, _PBRDATA[2].rgb, max(MIN_ROUGHNESS, _PBRDATA[0].y));
 }
 
 /**
@@ -146,12 +117,10 @@ vec3[2] calculateFresnelDiffuse(vec3 normal) {
  * α = roughness ^ 2
  * F = F0 + (1 - F0) * (1.0 - V * H)^5
  */
-vec3[2] calculateFresnelDiffuse(vec3 normal, vec3 metallicRoughness) {
+vec3[2] calculateFresnelDiffuse(const BRDF brdf, const vec3 metallicRoughness) {
     float roughness = max(MIN_ROUGHNESS,_PBRDATA[0].y * metallicRoughness.g);
     float metal =  clamp(_PBRDATA[0].x * metallicRoughness.b, MIN_METALLIC, MAX_METALLIC);
     vec3 F0 = mix(dielectricSpecular, _PBRDATA[3].rgb, metal);
-    return internalCalculatePBR(normal, F0, mix(_PBRDATA[3].rgb, dielectricSpecular, metal), roughness);
+    return internalCalculatePBR(brdf, F0, mix(_PBRDATA[3].rgb, dielectricSpecular, metal), roughness);
 }
-
-
 

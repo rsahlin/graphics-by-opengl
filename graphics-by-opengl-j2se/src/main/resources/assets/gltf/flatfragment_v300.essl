@@ -7,7 +7,11 @@
 precision highp float;
 
 void main() {
-    vec3[2] diffuseSpecular = calculateFresnelDiffuse(vNormal);
+    BRDF brdf;
+    brdf.normal = material.normal;
+    brdf.NdotL = material.NdotL;
+    brdf.LdotH = material.LdotH;
+    vec3[2] diffuseSpecular = calculateFresnelDiffuse(brdf);
     outputPixel(vec4(diffuseSpecular[0] + diffuseSpecular[1], 1.0));
 }
 
