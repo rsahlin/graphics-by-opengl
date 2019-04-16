@@ -7,6 +7,8 @@
  */
 precision highp float;
 
+#define NORMALMAP 1
+
 void main() {
     BRDF brdf = getPerPixelBRDF(normalize(vec3(texture(uTextureNormal, vTexNormal) * 2.0 - 1.0) * mTangentLight));
     vec3[2] diffuseSpecular = calculateFresnelDiffuse(brdf);

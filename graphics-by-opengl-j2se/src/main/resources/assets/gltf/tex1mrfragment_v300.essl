@@ -6,6 +6,8 @@
  */
 precision highp float;
 
+#define MRMAP 1
+
 void main() {
     BRDF brdf = getPerVertexBRDF();
     vec3[2] diffuseSpecular = calculateFresnelDiffuse(brdf, vec3(texture(uTextureMR, vTexMR)));
