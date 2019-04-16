@@ -25,6 +25,27 @@ in Light light;
 out vec4 fragColor;
 
 /**
+ * Returns the BRDF to use for materials that have per vertex properties, ie not normal/metallicrough/occlusion map
+ */
+BRDF getPerVertexBRDF() {
+    BRDF brdf;
+    brdf.normal = material.normal;
+    brdf.NdotL = material.NdotL;
+    brdf.NdotH = material.NdotH;
+    brdf.NdotV = material.NdotV;
+    return brdf;
+}
+
+BRDF getPerPixelBRDF(const vec3 normal) {
+    BRDF brdf;
+    brdf.normal = normal;
+    brdf.NdotL = clamp(dot(normal, light.direction), 0.0, 1.0);
+    brdf.NdotH = clamp(dot(normal, material.H), 0.0, 1.0);
+    brdf.NdotV = abs(dot(normal, light.eye)) + 1e-5;
+    return brdf;
+}
+
+/**
  * Takes the incoming pbr calculated pixel, applies exposure and gamma correction then writes to fragColor
  * using the alpha from the materials diffuse color.
  * @param pbr The pbr calculated pixel - including alpha from texture if used.
@@ -42,8 +63,8 @@ float V_SmithGGXCorrelated(const float linearRoughness, const BRDF brdf) {
     // Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"
     float a2 = linearRoughness * linearRoughness;
     // TODO: lambdaV can be pre-computed for all the lights, it should be moved out of this function
-    float lambdaV = material.NdotL * sqrt((material.NdotV - a2 * material.NdotV) * material.NdotV + a2);
-    float lambdaL = material.NdotV * sqrt((material.NdotL - a2 * material.NdotL) * material.NdotL + a2);
+    float lambdaV = brdf.NdotL * sqrt((brdf.NdotV - a2 * brdf.NdotV) * brdf.NdotV + a2);
+    float lambdaL = brdf.NdotV * sqrt((brdf.NdotL - a2 * brdf.NdotL) * brdf.NdotL + a2);
     float v = 0.5 / (lambdaV + lambdaL);
     // a2=0 => v = 1 / 4*NoL*NoV   => min=1/4, max=+inf
     // a2=1 => v = 1 / 2*(NoL+NoV) => min=1/4, max=+inf
@@ -54,7 +75,7 @@ float V_SmithGGXCorrelated(const float linearRoughness, const BRDF brdf) {
 
 float D_GGX(const float linearRoughness, const BRDF brdf) {
     vec3 NxH = cross(brdf.normal, material.H);
-    float a = material.NdotH * linearRoughness;
+    float a = brdf.NdotH * linearRoughness;
     float k = linearRoughness / (dot(NxH, NxH) + a * a);
     float d = k * k * (1.0 / pi);
     return max(d, 0.0);
@@ -72,8 +93,8 @@ float D_GLTF(float roughness, const BRDF brdf) {
 float V_GLTF(const float roughness, const BRDF brdf) {
     float k = roughness * sqrtTwoByPi;
     float GL = clamp(material.LdotH / (material.LdotH * (1.0 - k) + k), 0.0, 1.0);
-    float GN = clamp(material.NdotH /(material.NdotH * (1.0 - k) + k), 0.0, 1.0);
-    return (GL * GN) / max(1.0, 4 * material.NdotL * material.NdotV);
+    float GN = clamp(brdf.NdotH /(brdf.NdotH * (1.0 - k) + k), 0.0, 1.0);
+    return (GL * GN) / max(1.0, 4 * brdf.NdotL * brdf.NdotV);
 }
 
 vec3 Diffuse_GLTF(vec3 fresnel, vec3 cDiff) {
@@ -98,7 +119,7 @@ vec3[2] internalCalculatePBR(const BRDF brdf, const vec3 F0, const vec3 cDiff, c
 //    vec3 tint = mix(_PBRDATA[3].rgb, light.color.rgb, NdotH);
     vec3 specular = fresnel * NDF * V;
     vec3 diffuse = (1.0 - fresnel) * (cDiff * oneByPI);
-    vec3 illumination = light.color.rgb * (light.color.a * material.NdotL);
+    vec3 illumination = light.color.rgb * (light.color.a * brdf.NdotL);
 //    result[0] = (diffuse + specular * mix(_PBRDATA[3].rgb, dielectricSpecular, 1 - distPow)) * illumination;
 //    result[1] = (specular * mix(dielectricSpecular, light.color.rgb, 1 - distPow)) * illumination;
     result[0] = (diffuse + specular) * illumination;
@@ -107,6 +128,10 @@ vec3[2] internalCalculatePBR(const BRDF brdf, const vec3 F0, const vec3 cDiff, c
     
 }
 
+/**
+ * Calculate BRDF using values that are set in vertex shader.
+ * This is used for materials that do not have normal/metallicrough/occlusion texture maps
+ */
 vec3[2] calculateFresnelDiffuse(const BRDF brdf) {
     return internalCalculatePBR(brdf, _PBRDATA[1].rgb, _PBRDATA[2].rgb, max(MIN_ROUGHNESS, _PBRDATA[0].y));
 }

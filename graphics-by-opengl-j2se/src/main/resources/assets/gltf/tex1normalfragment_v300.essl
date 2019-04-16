@@ -7,8 +7,7 @@
 precision highp float;
 
 void main() {
-    BRDF brdf;
-    brdf.normal =  normalize(vec3(texture(uTextureNormal, vTexNormal) * 2.0 - 1.0) * mTangentLight);
+    BRDF brdf = getPerPixelBRDF(normalize(vec3(texture(uTextureNormal, vTexNormal) * 2.0 - 1.0) * mTangentLight));
     vec3[2] diffuseSpecular = calculateFresnelDiffuse(brdf);
     outputPixel(vec4(diffuseSpecular[0] * texture(uTexture0, vTexCoord0).rgb + diffuseSpecular[1], 1.0));
 }

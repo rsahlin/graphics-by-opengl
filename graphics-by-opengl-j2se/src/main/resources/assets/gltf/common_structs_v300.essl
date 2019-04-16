@@ -26,8 +26,8 @@ struct Material {
     vec3 H;
     float NdotH;
     float NdotL;
-    float VdotH;
     float NdotV;
+    float VdotH;
     float LdotH;
 };
 
@@ -48,8 +48,10 @@ struct Light {
  */
 struct BRDF {
     vec3 normal;
+    //Todo store as Vec to simplify setting.
+    float NdotH;
     float NdotL;
-    float LdotH;
+    float NdotV;
     // Fresnel part
     vec3 F0;
     // Diffuse part (1 - F0) * baseColor
