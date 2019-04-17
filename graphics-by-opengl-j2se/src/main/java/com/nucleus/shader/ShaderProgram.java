@@ -1093,8 +1093,7 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Compiles the shader from the specified inputstream, the inputstream is not closed after reading.
-     * It is up to the caller to close the stream.
+     * Compiles the shader from the shader source.
      * The GL version will be appended to the source, calling {@link GLESWrapper#getShaderVersion()}
      * 
      * @param gles GLES20 platform specific wrapper.
@@ -1103,11 +1102,13 @@ public abstract class ShaderProgram {
      * @throws GLException If there is an error setting or compiling shader source.
      */
     public void compileShader(GLES20Wrapper gles, ShaderSource source, int shader) throws GLException {
+        String sourceStr = null;
         try {
             if (source.getSource() == null) {
                 throw new IllegalArgumentException("Shader source is null for " + source.getFullSourceName());
             }
-            gles.glShaderSource(shader, source.getVersionedShaderSource());
+            sourceStr = source.getVersionedShaderSource();
+            gles.glShaderSource(shader, sourceStr);
             GLUtils.handleError(gles, SHADER_SOURCE_ERROR + source.getFullSourceName());
             gles.glCompileShader(shader);
             GLUtils.handleError(gles, COMPILE_SHADER_ERROR + source.getFullSourceName());
@@ -1115,11 +1116,11 @@ public abstract class ShaderProgram {
         } catch (GLException e) {
             String shaderSource = gles.glGetShaderSource(shader);
             SimpleLogger.d(getClass(), e.getMessage() + " from source:" + System.lineSeparator());
-            StringTokenizer st = new StringTokenizer(shaderSource, System.lineSeparator());
+            StringTokenizer st = new StringTokenizer(shaderSource, "\n");
             StringBuffer sb = new StringBuffer();
-            int index = 1;
+            int index = 0;
             while (st.hasMoreTokens()) {
-                sb.append(index++ + " " + st.nextToken() + "\n\r");
+                sb.append(index++ + " " + st.nextToken() + System.lineSeparator());
             }
             SimpleLogger.d(getClass(), sb.toString());
             throw e;

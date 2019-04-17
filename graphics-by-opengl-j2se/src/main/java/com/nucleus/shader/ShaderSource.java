@@ -4,6 +4,7 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import com.nucleus.common.Constants;
+import com.nucleus.common.Environment;
 import com.nucleus.shader.ShaderProgram.ShaderType;
 
 /**
@@ -69,6 +70,7 @@ public class ShaderSource {
     public static String ES = "es";
     public static String SHADING_LANGUAGE_100 = "100";
     public static String PRECISION = "precision";
+    public static String DEFINE = "#define";
 
     /**
      * Use for shader source names that are versioned 300
@@ -229,11 +231,19 @@ public class ShaderSource {
             }
             int nextLineIndex = shaderSource.indexOf("\n", precisionIndex + PRECISION.length());
             if (nextLineIndex != -1) {
+                // Make sure no #define AFTER we insert source
+                if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
+                    int defineLineIndex = shaderSource.indexOf(DEFINE);
+                    if (defineLineIndex != -1 && defineLineIndex > precisionIndex) {
+                        throw new IllegalArgumentException(DEFINE + " must come after 'precision' qualifier");
+                    }
+                }
                 this.shaderSource = this.shaderSource.substring(0, nextLineIndex) + source +
                         this.shaderSource.substring(nextLineIndex);
             } else {
-                throw new IllegalArgumentException("Malformed? Could not find line delimiter after precision qualifier at " +
-                        precisionIndex);
+                throw new IllegalArgumentException(
+                        "Malformed? Could not find line delimiter after precision qualifier at " +
+                                precisionIndex);
             }
         }
     }
