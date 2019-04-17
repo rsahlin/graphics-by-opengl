@@ -1,13 +1,13 @@
 #version 300 es
 #line 1
+#define METALLIC_ROUGH_MAP 1
 /* 
  *
  * Fragment shader for glTF asset - no texture, with normal map and metallic roughness map
  * @author Richard Sahlin
  */
+ // Put all defines before precision - common source is inserted here
 precision highp float;
-
-#define MRMAP 1
 
 void main() {
     BRDF brdf = getPerVertexBRDF();

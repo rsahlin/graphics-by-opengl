@@ -1,14 +1,14 @@
 #version 300 es
 #line 1
+#define NORMAL_MAP 1
+#define METALLIC_ROUGH_MAP 1
 /* 
  *
  * Fragment shader for glTF asset
  * @author Richard Sahlin
  */
+ // Put all defines before precision - common source is inserted here
 precision highp float;
-
-#define NORMALMAP 1
-#define MRMAP 1
 
 void main() {
     BRDF brdf = getPerPixelBRDF(normalize(vec3(texture(uTextureNormal, vTexNormal) * 2.0 - 1.0) * mTangentLight));
