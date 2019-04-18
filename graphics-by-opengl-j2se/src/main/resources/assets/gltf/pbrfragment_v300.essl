@@ -73,21 +73,26 @@ float V_SmithGGXCorrelated(const float linearRoughness, const BRDF brdf) {
 }
 
 
-float D_GGX(const float linearRoughness, const BRDF brdf) {
+Shading D_GGX(const float linearRoughness, const BRDF brdf) {
     vec3 NxH = cross(brdf.normal, material.H);
     float a = brdf.NdotH * linearRoughness;
     float k = linearRoughness / (dot(NxH, NxH) + a * a);
     float d = k * k * (1.0 / pi);
-    return max(d, 0.0);
+    Shading shading;
+    shading.NDF = max(d, 0.0);
+    return shading;
 }
 
-float D_GLTF(float roughness, const BRDF brdf) {
+Shading D_GLTF(float roughness, const BRDF brdf) {
     vec3 NxH = cross(brdf.normal, material.H);
     float a = roughness * roughness;
     float a2 = a * a;
-    float distPow = 1.0 - dot(NxH, NxH);
-    //Use distPow to add tint
-    return ((a2) / (pi * pow((distPow * (a2 - 1.0) + 1.0),2.0)));
+    //Use specularLobe to add tint
+    float specularLobe = 1.0 - dot(NxH, NxH);
+    Shading shading;
+    shading.NDF = ((a2) / (pi * pow((specularLobe * (a2 - 1.0) + 1.0),2.0)));
+    shading.specularLobe = specularLobe;
+    return shading;
 }
 
 float V_GLTF(const float roughness, const BRDF brdf) {
@@ -112,17 +117,16 @@ vec3 Diffuse_GLTF(vec3 fresnel, vec3 cDiff) {
 vec3[2] internalCalculatePBR(const BRDF brdf, const vec3 F0, const vec3 cDiff, const float roughness) {
     float a = roughness * roughness;
     vec3 fresnel = F_Schlick(F0, brdf);
-    float distPow;
-    float NDF = D_GLTF(roughness, brdf);
+    Shading shading = D_GLTF(roughness, brdf);
     float V = V_GLTF(roughness, brdf);
     vec3[2] result;
 //    vec3 tint = mix(_PBRDATA[3].rgb, light.color.rgb, NdotH);
-    vec3 specular = fresnel * NDF * V;
+    vec3 specular = fresnel * shading.NDF * V;
     vec3 diffuse = (1.0 - fresnel) * (cDiff * oneByPI);
     vec3 illumination = light.color.rgb * (light.color.a * brdf.NdotL);
 //    result[0] = (diffuse + specular * mix(_PBRDATA[3].rgb, dielectricSpecular, 1.0 - distPow)) * illumination;
-    result[0] = (diffuse + (specular * mix(black, _PBRDATA[3].rgb, NDF))) * illumination;
-    result[1] = (specular * mix(black, light.color.rgb, NDF)) * illumination * NDF * 0.0;
+    result[0] = (diffuse + (specular * mix(black, _PBRDATA[3].rgb, shading.NDF))) * illumination;
+    result[1] = (specular * mix(black, light.color.rgb, shading.NDF)) * illumination * shading.NDF * 0.0;
     return result;
     
 }

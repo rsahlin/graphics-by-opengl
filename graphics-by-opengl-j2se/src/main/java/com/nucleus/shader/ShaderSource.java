@@ -150,8 +150,11 @@ public class ShaderSource {
         String version = hasVersion(source);
         if (version != null) {
             setShaderVersion(version);
+            // Remove version + newline char
+            this.shaderSource = source.substring(version.length() + 1);
+        } else {
+            this.shaderSource = source;
         }
-        this.shaderSource = source.substring(version.length());
     }
 
     /**
@@ -267,7 +270,7 @@ public class ShaderSource {
         } catch (NoSuchElementException e) {
             // Most likely means that file is empty.
             throw new IllegalArgumentException(
-                    "Could not find #version in file, is it empty?\n\r" + "Source:" + source + "\n\r");
+                    "Could not find #version in file, is it empty?\n" + "Source:" + source + "\n");
         }
     }
 

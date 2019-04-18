@@ -50,6 +50,7 @@ import com.nucleus.texturing.TextureUtils;
 public abstract class GLES20Wrapper extends GLESWrapper {
 
     protected boolean[] enabledVertexArrays = new boolean[16];
+    protected IntBuffer shaderSourceLength = BufferUtils.createIntBuffer(1);
 
     /**
      * Implementation constructor - DO NOT USE!!!
@@ -804,13 +805,12 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @return
      */
     public String glGetShaderSource(int shader) {
-        IntBuffer sourceLength = BufferUtils.createIntBuffer(1);
-        glGetShaderiv(shader, GLES20.GL_SHADER_SOURCE_LENGTH, sourceLength);
+        glGetShaderiv(shader, GLES20.GL_SHADER_SOURCE_LENGTH, shaderSourceLength);
         StringBuffer result = new StringBuffer();
-        if (sourceLength.get(0) == 0) {
+        if (shaderSourceLength.get(0) == 0) {
             return "No shader source";
         }
-        byte[] buffer = new byte[sourceLength.get(0)];
+        byte[] buffer = new byte[shaderSourceLength.get(0)];
         int[] read = new int[1];
         glGetShaderSource(shader, buffer.length, read, buffer);
         result.append(new String(buffer, 0, read[0]));
@@ -946,6 +946,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         if (shaderStream == null) {
             throw new IllegalArgumentException("Could not open " + source.getFullSourceName());
         }
+
         source.setSource(StreamUtils.readStringFromStream(shaderStream));
     }
 

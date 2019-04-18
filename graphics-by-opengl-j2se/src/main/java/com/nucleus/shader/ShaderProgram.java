@@ -6,8 +6,8 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
@@ -18,6 +18,7 @@ import com.nucleus.environment.Lights;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
+import com.nucleus.opengl.GLCompilerException;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLES30Wrapper;
 import com.nucleus.opengl.GLESWrapper;
@@ -1067,10 +1068,28 @@ public abstract class ShaderProgram {
             int index = 1;
             for (int name : shaderNames) {
                 SimpleLogger.d(getClass(), "Shader source for shader " + index++ + " : " + toString());
-                SimpleLogger.d(getClass(), gles.glGetShaderSource(name));
-
+                logNumberedShaderSource(gles, name);
             }
         }
+    }
+
+    /**
+     * Logs the shader source for the specified shader, using numbered lines.
+     * 
+     * @param gles
+     * @param shader
+     */
+    protected void logNumberedShaderSource(GLES20Wrapper gles, int shader) {
+        String shaderSource = gles.glGetShaderSource(shader);
+        // Android does not have full support for Java 8
+        Iterator<String> i = shaderSource.lines().iterator();
+        StringBuffer sb = new StringBuffer();
+        int index = 0;
+        while (i.hasNext()) {
+            sb.append(index++ + " " + i.next() + System.lineSeparator());
+
+        }
+        SimpleLogger.d(getClass(), System.lineSeparator() + sb.toString());
     }
 
     /**
@@ -1080,9 +1099,10 @@ public abstract class ShaderProgram {
      * @param source
      * @param library true if this is not the main shader
      * @return The created shader
-     * @throws GLException If there is an error setting or compiling shader source.
+     * @throws GLException If there is an error setting or calling to compiling shader source.
+     * @throws GLCompilerException If compilation failed
      */
-    public int compileShader(GLES20Wrapper gles, ShaderSource source) throws GLException {
+    public int compileShader(GLES20Wrapper gles, ShaderSource source) throws GLException, GLCompilerException {
         int shader = gles.glCreateShader(source.type.value);
         if (shader == 0) {
             throw new GLException(CREATE_SHADER_ERROR, GLES20.GL_NO_ERROR);
@@ -1099,32 +1119,25 @@ public abstract class ShaderProgram {
      * @param gles GLES20 platform specific wrapper.
      * @param source The shader source
      * @param shader OpenGL object to compile the shader to.
-     * @throws GLException If there is an error setting or compiling shader source.
+     * @throws GLException If there is an error setting or calling to compile shader source
+     * @throws GLCompilerException If compilation failed
      */
-    public void compileShader(GLES20Wrapper gles, ShaderSource source, int shader) throws GLException {
+    public void compileShader(GLES20Wrapper gles, ShaderSource source, int shader)
+            throws GLException, GLCompilerException {
         String sourceStr = null;
-        try {
-            if (source.getSource() == null) {
-                throw new IllegalArgumentException("Shader source is null for " + source.getFullSourceName());
-            }
-            sourceStr = source.getVersionedShaderSource();
-            gles.glShaderSource(shader, sourceStr);
-            GLUtils.handleError(gles, SHADER_SOURCE_ERROR + source.getFullSourceName());
-            gles.glCompileShader(shader);
-            GLUtils.handleError(gles, COMPILE_SHADER_ERROR + source.getFullSourceName());
-            checkCompileStatus(gles, source, shader);
-        } catch (GLException e) {
-            String shaderSource = gles.glGetShaderSource(shader);
-            SimpleLogger.d(getClass(), e.getMessage() + " from source:" + System.lineSeparator());
-            StringTokenizer st = new StringTokenizer(shaderSource, "\n");
-            StringBuffer sb = new StringBuffer();
-            int index = 0;
-            while (st.hasMoreTokens()) {
-                sb.append(index++ + " " + st.nextToken() + System.lineSeparator());
-            }
-            SimpleLogger.d(getClass(), sb.toString());
-            throw e;
+        if (source.getSource() == null) {
+            throw new IllegalArgumentException("Shader source is null for " + source.getFullSourceName());
         }
+        sourceStr = source.getVersionedShaderSource();
+        // These calls only return an error if there is an error in the parameters, invalid shader etc.
+        // ie it does not mean compilation is successful - check compile status to know.
+        gles.glShaderSource(shader, sourceStr);
+        GLUtils.handleError(gles, SHADER_SOURCE_ERROR + source.getFullSourceName());
+        gles.glCompileShader(shader);
+        GLUtils.handleError(gles, COMPILE_SHADER_ERROR + source.getFullSourceName());
+
+        // Check compilation status to know if compilation was success or failure
+        checkCompileStatus(gles, source, shader);
     }
 
     /**
@@ -1134,16 +1147,13 @@ public abstract class ShaderProgram {
      * @param gles GLES20 platform specific wrapper.
      * @param source
      * @param shader
-     * @throws GLException
+     * @throws GLCompilerException If there is an error compiling the shader
      */
-    public void checkCompileStatus(GLES20Wrapper gles, ShaderSource source, int shader) throws GLException {
+    protected void checkCompileStatus(GLES20Wrapper gles, ShaderSource source, int shader) throws GLCompilerException {
         IntBuffer compileStatus = BufferUtils.createIntBuffer(1);
         gles.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compileStatus);
         if (compileStatus.get(0) != GLES20.GL_TRUE) {
-            throw new GLException(
-                    COMPILE_STATUS_ERROR + source.getFullSourceName() + " : " + compileStatus.get(0) + "\n"
-                            + gles.glGetShaderInfoLog(shader),
-                    GLES20.GL_FALSE);
+            throw new GLCompilerException(compileStatus.get(0), shader, gles.glGetShaderInfoLog(shader));
         }
     }
 
@@ -1288,6 +1298,10 @@ public abstract class ShaderProgram {
             createSamplerStorage();
             setSamplers();
             initUniformData(uniforms);
+        } catch (GLCompilerException e) {
+            logNumberedShaderSource(gles, e.shader);
+            SimpleLogger.d(getClass(), e.getMessage() + " from source:" + System.lineSeparator());
+            throw e;
         } catch (GLException e) {
             logShaderSources(gles, shaderNames);
             throw e;

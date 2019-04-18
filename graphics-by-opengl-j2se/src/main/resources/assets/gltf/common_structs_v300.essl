@@ -18,7 +18,7 @@ const vec3 dielectricSpecular = vec3(0.04, 0.04, 0.04);
 const vec3 black = vec3(0.0, 0.0, 0.0);
  
 /**
- * PBR material properties - these are normally calculated in the vertex shader and used as varyings
+ * PBR material properties, if possible calculate on a per vertex basis
  */ 
 struct Material {
     // Per vertex attributes
@@ -32,7 +32,7 @@ struct Material {
 };
 
 /**
- * Light properties - these are normally calculated in the vertex shader
+ * Light properties, if possible calculate on a per vertex basis
  */
 struct Light {
     // Location of eye
@@ -45,6 +45,7 @@ struct Light {
 
 /**
  * Data needed when shading using the BRDF, used in fragment step
+ * Normally calculated per fragment
  */
 struct BRDF {
     vec3 normal;
@@ -57,4 +58,14 @@ struct BRDF {
     // Diffuse part (1 - F0) * baseColor
     vec3 diffuse;
     vec4 metallicRough;
+};
+
+/**
+ * BRDF shading variables, calculated within the BRDF
+ */
+struct Shading {
+    // Specular lobe (fallof)
+    float specularLobe;
+    // Normal distribution function
+    float NDF;
 };
