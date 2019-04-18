@@ -1,5 +1,5 @@
 #version 300 es
-#line 1
+#line 3
 /* 
  *
  * Fragment shader for glTF asset

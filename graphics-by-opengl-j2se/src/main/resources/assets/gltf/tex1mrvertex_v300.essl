@@ -1,5 +1,5 @@
 #version 300 es
-#line 1
+#line 3
 /* 
  * Vertex shader for textured glTF asset with texture normal map and possibly metallicRoughness
  */

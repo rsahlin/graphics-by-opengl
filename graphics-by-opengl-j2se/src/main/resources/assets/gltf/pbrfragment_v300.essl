@@ -125,7 +125,7 @@ vec3[2] internalCalculatePBR(const BRDF brdf, const vec3 F0, const vec3 cDiff, c
     vec3 diffuse = (1.0 - fresnel) * (cDiff * oneByPI);
     vec3 illumination = light.color.rgb * (light.color.a * brdf.NdotL);
 //    result[0] = (diffuse + specular * mix(_PBRDATA[3].rgb, dielectricSpecular, 1.0 - distPow)) * illumination;
-    result[0] = (diffuse + (specular * mix(black, _PBRDATA[3].rgb, shading.NDF))) * illumination;
+    result[0] = (diffuse + (specular * mix(black, _PBRDATA[3].rgb, shading.specularLobe))) * illumination;
     result[1] = (specular * mix(black, light.color.rgb, shading.NDF)) * illumination * shading.NDF * 0.0;
     return result;
     

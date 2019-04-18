@@ -1153,7 +1153,7 @@ public abstract class ShaderProgram {
         IntBuffer compileStatus = BufferUtils.createIntBuffer(1);
         gles.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compileStatus);
         if (compileStatus.get(0) != GLES20.GL_TRUE) {
-            throw new GLCompilerException(compileStatus.get(0), shader, gles.glGetShaderInfoLog(shader));
+            throw new GLCompilerException(compileStatus.get(0), shader, source, gles.glGetShaderInfoLog(shader));
         }
     }
 

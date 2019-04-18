@@ -1,12 +1,13 @@
 #version 300 es
-#line 1
+#line 3
 #define NORMAL_MAP 1
 /* 
  *
  * Fragment shader for glTF asset
+ * Put  #defines before precision - common source is inserted here
  */
- // Put all defines before precision - common source is inserted here
 precision highp float;
+
 
 void main() {
     BRDF brdf = getPerPixelBRDF(normalize(vec3(texture(uTextureNormal, vTexNormal) * 2.0 - 1.0) * mTangentLight));

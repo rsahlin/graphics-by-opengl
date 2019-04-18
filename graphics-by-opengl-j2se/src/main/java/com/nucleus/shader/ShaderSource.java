@@ -228,25 +228,24 @@ public class ShaderSource {
      */
     public void appendSource(String source) {
         if (source != null && source.length() > 0) {
-            int precisionIndex = this.shaderSource.indexOf(PRECISION);
-            if (precisionIndex < 0) {
+            int lineIndex = getLineIndexOf(PRECISION);
+            if (lineIndex < 0) {
                 throw new IllegalArgumentException("Shader source must define precision qualifier");
             }
-            int nextLineIndex = shaderSource.indexOf("\n", precisionIndex + PRECISION.length());
-            if (nextLineIndex != -1) {
-                // Make sure no #define AFTER we insert source
-                if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
-                    int defineLineIndex = shaderSource.indexOf(DEFINE);
-                    if (defineLineIndex != -1 && defineLineIndex > precisionIndex) {
-                        throw new IllegalArgumentException(DEFINE + " must come after 'precision' qualifier");
-                    }
+            // If debug mode then make sure no #define AFTER we insert source
+            if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
+                int defineLineIndex = getLineIndexOf(DEFINE);
+                if (defineLineIndex != -1 && defineLineIndex > lineIndex) {
+                    throw new IllegalArgumentException(DEFINE + " must come after 'precision' qualifier");
                 }
-                this.shaderSource = this.shaderSource.substring(0, nextLineIndex) + source +
-                        this.shaderSource.substring(nextLineIndex);
+            }
+            int nextLineIndex = shaderSource.indexOf("\n", lineIndex);
+            if (nextLineIndex >= 0) {
+                this.shaderSource = this.shaderSource.substring(0, lineIndex) + source +
+                        this.shaderSource.substring(lineIndex);
             } else {
-                throw new IllegalArgumentException(
-                        "Malformed? Could not find line delimiter after precision qualifier at " +
-                                precisionIndex);
+                throw new IllegalArgumentException(""
+                        + "Malformed? Could not find line delimiter after precision qualifier at " + lineIndex);
             }
         }
     }
@@ -290,6 +289,27 @@ public class ShaderSource {
             }
         }
         return minEssl;
+    }
+
+    /**
+     * Searches for the specified line, beginning with excluding whitespaces, and returns the source string Index (NOT
+     * linenumber) of the beginning of that line.
+     * 
+     * @param line The String to search for, ignoring whitespaces at beginning of line (indentation)
+     * @return The source index of the line beginning with the specified String, or -1 if not found
+     */
+    public int getLineIndexOf(String line) {
+        StringTokenizer st = new StringTokenizer(shaderSource, "\n");
+        int lineIndex = 0;
+        while (st.hasMoreTokens()) {
+            String str = st.nextToken();
+            if (str.trim().startsWith(PRECISION)) {
+                return lineIndex;
+            } else {
+                lineIndex += str.length() + 1;
+            }
+        }
+        return -1;
     }
 
 }
