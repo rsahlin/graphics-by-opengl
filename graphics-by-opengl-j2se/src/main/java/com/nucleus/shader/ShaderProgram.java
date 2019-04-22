@@ -1,7 +1,9 @@
 package com.nucleus.shader;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -1082,7 +1084,7 @@ public abstract class ShaderProgram {
     protected void logNumberedShaderSource(GLES20Wrapper gles, int shader) {
         String shaderSource = gles.glGetShaderSource(shader);
         // Android does not have full support for Java 8
-        Iterator<String> i = shaderSource.lines().iterator();
+        Iterator<String> i = new BufferedReader(new StringReader(shaderSource)).lines().iterator();
         StringBuffer sb = new StringBuffer();
         int index = 0;
         while (i.hasNext()) {
