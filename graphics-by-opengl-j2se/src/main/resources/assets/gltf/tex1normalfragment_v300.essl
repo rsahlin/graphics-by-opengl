@@ -6,7 +6,7 @@
  * Fragment shader for glTF asset
  * Put  #defines before precision - common source is inserted here
  */
-precision highp float;
+precision mediump float;
 
 
 void main() {

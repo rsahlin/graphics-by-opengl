@@ -7,7 +7,7 @@
  * @author Richard Sahlin
  */
  // Put all defines before precision - common source is inserted here
-precision highp float;
+precision mediump float;
 
 void main() {
     BRDF brdf = getPerPixelBRDF(normalize(vec3(texture(uTextureNormal, vTexNormal) * 2.0 - 1.0) * mTangentLight));

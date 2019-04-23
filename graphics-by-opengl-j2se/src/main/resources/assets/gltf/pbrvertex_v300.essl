@@ -23,11 +23,11 @@ in vec2 TEXCOORD_0;
 in vec2 _TEXCOORDNORMAL;
 in vec2 _TEXCOORDMR;
 
-out vec4 vDiffuseColor;
+out lowp vec4 vDiffuseColor;
 out vec2 vTexCoord0;
 out vec2 vTexNormal;
 out vec2 vTexMR;
-out mat3 mTangentLight;
+out mediump mat3 mTangentLight;
 out vec4 vWorldPos;
 out Light light;
 out Material material;

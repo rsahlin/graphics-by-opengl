@@ -2,10 +2,9 @@
 /**
  * Functions for gltf PBR model
  */ 
-precision highp float;
 
 uniform mediump sampler2D uTexture0; //The texture 0 sampler
-uniform highp sampler2D uTextureNormal; //normal texture sampler
+uniform mediump sampler2D uTextureNormal; //normal texture sampler
 uniform mediump sampler2D uTextureMR; //Metallic roughness texture sampler
 
 //Metallic,roughnessfactor, exposure, gamma

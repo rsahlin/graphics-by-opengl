@@ -7,7 +7,7 @@
  *
  * Fragment shader for glTF asset - using 1 texture, normal map and metallic roughness map
  */
-precision highp float;
+precision mediump float;
 
  // Put all defines before precision - common source is inserted here
 

@@ -5,7 +5,7 @@
  * Fragment shader for glTF asset
  * @author Richard Sahlin
  */
-precision highp float;
+precision mediump float;
 
 void main() {
     BRDF brdf = getPerVertexBRDF();

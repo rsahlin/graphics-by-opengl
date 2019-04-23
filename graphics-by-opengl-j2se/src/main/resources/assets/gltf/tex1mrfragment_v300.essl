@@ -6,7 +6,7 @@
  * Fragment shader for glTF asset - using 1 texture, normal map and metallic roughness map
  */
  // Put all defines before precision - common source is inserted here
-precision highp float;
+precision mediump float;
 
 void main() {
     BRDF brdf = getPerVertexBRDF();

@@ -22,13 +22,13 @@ const vec3 black = vec3(0.0, 0.0, 0.0);
  */ 
 struct Material {
     // Per vertex attributes
-    vec3 normal;
-    vec3 H;
-    float NdotH;
-    float NdotL;
-    float NdotV;
-    float VdotH;
-    float LdotH;
+    lowp vec3 normal;
+    lowp vec3 H;
+    lowp float NdotH;
+    lowp float NdotL;
+    lowp float NdotV;
+    lowp float VdotH;
+    lowp float LdotH;
 };
 
 /**
@@ -36,11 +36,11 @@ struct Material {
  */
 struct Light {
     // Location of eye
-    vec3 eye;
+    lowp vec3 eye;
     // Direction vector of light
-    vec3 direction;
+    lowp vec3 direction;
     // Color and intensity of light
-    vec4 color;
+    lowp vec4 color;
 };
 
 /**
@@ -48,16 +48,16 @@ struct Light {
  * Normally calculated per fragment
  */
 struct BRDF {
-    vec3 normal;
+    lowp vec3 normal;
     //Todo store as Vec to simplify setting.
-    float NdotH;
-    float NdotL;
-    float NdotV;
+    lowp float NdotH;
+    lowp float NdotL;
+    lowp float NdotV;
     // Fresnel part
-    vec3 F0;
+    lowp vec3 F0;
     // Diffuse part (1 - F0) * baseColor
-    vec3 diffuse;
-    vec4 metallicRough;
+    lowp vec3 diffuse;
+    lowp vec4 metallicRough;
 };
 
 /**
@@ -65,7 +65,7 @@ struct BRDF {
  */
 struct Shading {
     // Specular lobe (fallof)
-    float specularLobe;
+    lowp float specularLobe;
     // Normal distribution function
-    float NDF;
+    lowp float NDF;
 };
