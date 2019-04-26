@@ -87,11 +87,9 @@ Shading D_GLTF(float roughness, const BRDF brdf) {
     vec3 NxH = cross(brdf.normal, material.H);
     float a = roughness * roughness;
     float a2 = a * a;
-    //Use specularLobe to add tint
-    float specularLobe = 1.0 - dot(NxH, NxH);
     Shading shading;
-    shading.NDF = ((a2) / (pi * pow((specularLobe * (a2 - 1.0) + 1.0),2.0)));
-    shading.specularLobe = specularLobe;
+    shading.specularLobe = 1.0 - dot(NxH, NxH);
+    shading.NDF = ((a2) / (pi * pow((shading.specularLobe * (a2 - 1.0) + 1.0),2.0)));
     return shading;
 }
 
@@ -120,13 +118,14 @@ vec3[2] internalCalculatePBR(const BRDF brdf, const vec3 F0, const vec3 cDiff, c
     Shading shading = D_GLTF(roughness, brdf);
     float V = V_GLTF(roughness, brdf);
     vec3[2] result;
-//    vec3 tint = mix(_PBRDATA[3].rgb, light.color.rgb, NdotH);
     vec3 specular = fresnel * shading.NDF * V;
     vec3 diffuse = (1.0 - fresnel) * (cDiff * oneByPI);
     vec3 illumination = light.color.rgb * (light.color.a * brdf.NdotL);
-//    result[0] = (diffuse + specular * mix(_PBRDATA[3].rgb, dielectricSpecular, 1.0 - distPow)) * illumination;
-    result[0] = (diffuse + (specular * mix(black, _PBRDATA[3].rgb, shading.specularLobe))) * illumination;
-    result[1] = (specular * mix(black, light.color.rgb, shading.NDF)) * illumination * shading.NDF * 0.0;
+    float NdotH = brdf.NdotH;
+    // TODO - what is the value for the cutoff from specular color to tint?
+    float step = smoothstep(0.96, 1.0, shading.specularLobe * (1.0 - (a * a)));
+    result[0] = (diffuse + mix(black, specular, 1.0 - step)) * illumination;
+    result[1] = mix(black, specular, step) * illumination;
     return result;
     
 }
