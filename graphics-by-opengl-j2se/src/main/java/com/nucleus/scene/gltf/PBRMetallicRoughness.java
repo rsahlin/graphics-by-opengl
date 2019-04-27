@@ -38,7 +38,7 @@ public class PBRMetallicRoughness {
 
     public static final int F0_INDEX = 4;
     public static final int CDIFF_INDEX = 8;
-    public static final int DIFFUSE_INDEX = 12;
+    public static final int BASECOLOR_INDEX = 12;
     public static final int PBR_DATASIZE = 16;
 
     private static final String BASE_COLOR_TEXTURE = "baseColorTexture";
@@ -93,7 +93,7 @@ public class PBRMetallicRoughness {
         diffuse[1] = (baseColorFactor[1] * (1 - DIALECTRIC_SPECULAR));
         diffuse[2] = (baseColorFactor[2] * (1 - DIALECTRIC_SPECULAR));
 
-        System.arraycopy(baseColorFactor, 0, pbrData, DIFFUSE_INDEX, 4);
+        System.arraycopy(baseColorFactor, 0, pbrData, BASECOLOR_INDEX, 4);
         Lerp.lerpVec3(diffuse, BLACK, metallicFactor, pbrData, CDIFF_INDEX);
 
         pbrData[METALLIC_INDEX] = metallicFactor;

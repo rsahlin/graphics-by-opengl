@@ -11,7 +11,7 @@ uniform mediump sampler2D uTextureMR; //Metallic roughness texture sampler
 //Metallic,roughnessfactor, exposure, gamma
 //F0         [3] - dielectricSpecular -> basecolor for metallic = 1
 //cDiff      [3]
-//diffuse    [4]
+//basecolor  [4]
 uniform vec4 _PBRDATA[4];
 
 in vec2 vTexCoord0;
@@ -33,6 +33,8 @@ BRDF getPerVertexBRDF() {
     brdf.NdotL = material.NdotL;
     brdf.NdotH = material.NdotH;
     brdf.NdotV = material.NdotV;
+    brdf.mro.x = _PBRDATA[0].x;
+    brdf.mro.y = _PBRDATA[0].y;
     return brdf;
 }
 
@@ -119,11 +121,11 @@ vec3[2] internalCalculatePBR(const BRDF brdf, const vec3 F0, const vec3 cDiff, c
     float V = V_GLTF(roughness, brdf);
     vec3[2] result;
     vec3 specular = fresnel * shading.NDF * V;
-    vec3 diffuse = (1.0 - fresnel) * (cDiff * oneByPI);
+    vec3 diffuse = (1.0 - fresnel) * cDiff * oneByPI;
     vec3 illumination = light.color.rgb * (light.color.a * brdf.NdotL);
     float NdotH = brdf.NdotH;
     // TODO - what is the value for the cutoff from specular color to tint?
-    float step = smoothstep(0.96, 1.0, shading.specularLobe * (1.0 - (a * a)));
+    float step = smoothstep(0.95, 1.0, shading.specularLobe * (1.0 - a * a)) * (1.0 - brdf.mro.x);
     result[0] = (diffuse + mix(black, specular, 1.0 - step)) * illumination;
     result[1] = mix(black, specular, step) * illumination;
     return result;
@@ -144,10 +146,12 @@ vec3[2] calculateFresnelDiffuse(const BRDF brdf) {
  * α = roughness ^ 2
  * F = F0 + (1 - F0) * (1.0 - V * H)^5
  */
-vec3[2] calculateFresnelDiffuse(const BRDF brdf, const vec3 metallicRoughness) {
+vec3[2] calculateFresnelDiffuse(in BRDF brdf, const vec3 metallicRoughness) {
     float roughness = max(MIN_ROUGHNESS,_PBRDATA[0].y * metallicRoughness.g);
     float metal =  clamp(_PBRDATA[0].x * metallicRoughness.b, MIN_METALLIC, MAX_METALLIC);
     vec3 F0 = mix(dielectricSpecular, _PBRDATA[3].rgb, metal);
-    return internalCalculatePBR(brdf, F0, mix(_PBRDATA[3].rgb, dielectricSpecular, metal), roughness);
+    brdf.mro.x = metal;
+    brdf.mro.y = roughness;
+    return internalCalculatePBR(brdf, F0, _PBRDATA[3].rgb, roughness);
 }
 

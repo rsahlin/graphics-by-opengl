@@ -5,9 +5,9 @@
  * keeping track of locations is cumbersome as long as number of fields/parameters change.
  */
  
-const float MIN_ROUGHNESS = 0.045;
-const float MIN_METALLIC = 0.02;
-const float MAX_METALLIC = 0.99;
+const float MIN_ROUGHNESS = 0.02;
+const float MIN_METALLIC = 0.0;
+const float MAX_METALLIC = 1.0;
 const float pi = 3.141592;
 const float sqrtTwoByPi = sqrt(2.0 / pi);
 const float oneByPI = 1.0 / pi;
@@ -57,7 +57,8 @@ struct BRDF {
     vec3 F0;
     // Diffuse part (1 - F0) * baseColor
     vec3 diffuse;
-    vec4 metallicRough;
+    // Metallic, roughness, occlusion
+    vec3 mro;
 };
 
 /**
