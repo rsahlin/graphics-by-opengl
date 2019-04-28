@@ -5,8 +5,9 @@
 precision highp float;
 
 uniform mediump sampler2D uTexture0; //The texture 0 sampler
-uniform highp sampler2D uTextureNormal; //normal texture sampler
+uniform mediump sampler2D uTextureNormal; //normal texture sampler
 uniform mediump sampler2D uTextureMR; //Metallic roughness texture sampler
+uniform mediump sampler2D uTextureOcclusion; //Occlusion texture sampler
 
 //Metallic,roughnessfactor, exposure, gamma
 //F0         [3] - dielectricSpecular -> basecolor for metallic = 1
@@ -35,6 +36,7 @@ BRDF getPerVertexBRDF() {
     brdf.NdotV = material.NdotV;
     brdf.mro.x = _PBRDATA[0].x;
     brdf.mro.y = _PBRDATA[0].y;
+    brdf.mro.z = 1.0;
     return brdf;
 }
 
@@ -152,6 +154,7 @@ vec3[2] calculateFresnelDiffuse(in BRDF brdf, const vec3 metallicRoughness) {
     vec3 F0 = mix(dielectricSpecular, _PBRDATA[3].rgb, metal);
     brdf.mro.x = metal;
     brdf.mro.y = roughness;
+    brdf.mro.z = metallicRoughness.r;
     return internalCalculatePBR(brdf, F0, _PBRDATA[3].rgb, roughness);
 }
 

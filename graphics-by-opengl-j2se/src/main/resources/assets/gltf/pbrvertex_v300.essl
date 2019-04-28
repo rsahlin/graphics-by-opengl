@@ -22,11 +22,14 @@ in vec3 BITANGENT;
 in vec2 TEXCOORD_0;
 in vec2 _TEXCOORDNORMAL;
 in vec2 _TEXCOORDMR;
+in vec2 _TEXCOORDOCCLUSION;
 
 out vec4 vDiffuseColor;
 out vec2 vTexCoord0;
 out vec2 vTexNormal;
 out vec2 vTexMR;
+out vec2 vTexOccl;
+
 out mat3 mTangentLight;
 out vec4 vWorldPos;
 out Light light;
@@ -58,6 +61,7 @@ vec4 posLightTex() {
     setMaterial(light);
     vTexCoord0 = TEXCOORD_0;
     vTexMR = _TEXCOORDMR;
+    vTexOccl = _TEXCOORDOCCLUSION;
     return vWorldPos;
 }
 

@@ -440,6 +440,8 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                 getUniformByName("uTextureNormal"), material.getNormalTexture());
         prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes._TEXCOORDMR.name()),
                 getUniformByName("uTextureMR"), material.getPbrMetallicRoughness().getMetallicRoughnessTexture());
+        prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes._TEXCOORDOCCLUSION.name()),
+                getUniformByName("uTextureOcclusion"), material.getOcclusionTexture());
     }
 
 }

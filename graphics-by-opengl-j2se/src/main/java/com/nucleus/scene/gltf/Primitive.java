@@ -422,7 +422,8 @@ public class Primitive implements RuntimeResolver {
          */
         _VIEWPOS(),
         _TEXCOORDNORMAL(),
-        _TEXCOORDMR();
+        _TEXCOORDMR(),
+        _TEXCOORDOCCLUSION();
 
         private final static Attributes[] TEXCOORDS = new Attributes[] { TEXCOORD_0, TEXCOORD_1, TEXCOORD_2, TEXCOORD_3,
                 TEXCOORD_4, TEXCOORD_5 };
