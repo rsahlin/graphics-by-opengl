@@ -125,7 +125,7 @@ vec3[2] internalCalculatePBR(const BRDF brdf, const vec3 F0, const vec3 cDiff, c
     vec3 illumination = light.color.rgb * (light.color.a * brdf.NdotL);
     float NdotH = brdf.NdotH;
     // TODO - what is the value for the cutoff from specular color to tint?
-    float step = smoothstep(0.95, 1.0, shading.specularLobe * (1.0 - a * a)) * (1.0 - brdf.mro.x);
+    float step = smoothstep(SPECULAR_LOBE_TINT, 1.0, (shading.specularLobe) * (1.0 - a * a) * (1.0 - brdf.mro.x * brdf.mro.x));
     result[0] = (diffuse + mix(black, specular, 1.0 - step)) * illumination;
     result[1] = mix(black, specular, step) * illumination;
     return result;

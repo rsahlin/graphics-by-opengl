@@ -5,9 +5,11 @@
  * keeping track of locations is cumbersome as long as number of fields/parameters change.
  */
  
-const float MIN_ROUGHNESS = 0.02;
+const float MIN_ROUGHNESS = 0.03;
 const float MIN_METALLIC = 0.0;
 const float MAX_METALLIC = 1.0;
+// Mixes diffuse->specular channel
+const float SPECULAR_LOBE_TINT = 0.85;
 const float pi = 3.141592;
 const float sqrtTwoByPi = sqrt(2.0 / pi);
 const float oneByPI = 1.0 / pi;
