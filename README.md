@@ -11,7 +11,7 @@ Support for sRGB textures, gamma correction and (hdr) exposure.
 
 List of feature that will be implemented or improved - in no particular order
 * Support for pbr occlusion map
-* Improved shading model with metal tint/highlight rendered properly
+* DRACO support, may need to port DRACO decoder to Java?
 * Model animations and skinning (Morph targets and joint hierarchy)
 * Shadow pass
 * Environment maps
