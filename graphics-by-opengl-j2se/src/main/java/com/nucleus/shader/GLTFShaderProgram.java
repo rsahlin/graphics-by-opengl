@@ -132,12 +132,17 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                 if (pbr.getBaseColorTexture() != null) {
                     setFlag(TEXTURE_FLAG);
                     // Textured
-                    if (mat.getNormalTexture() != null) {
+                    if (mat.getNormalTexture() != null &&
+                            !Environment.getInstance().isProperty(Property.FORCE_NO_NORMALMAP, false)) {
                         setFlag(NORMAL_MAP_FLAG);
                     }
                     if (pbr.getMetallicRoughnessTexture() != null
                             && !Environment.getInstance().isProperty(Property.FORCE_NO_METALLICROUGHNESSMAP, false)) {
                         setFlag(PBR_METALLIC_ROUGHNESS_MAP_FLAG);
+                    }
+                    if (mat.getOcclusionTexture() != null
+                            && !Environment.getInstance().isProperty(Property.FORCE_NO_NOOCCLUSIONMAP, false)) {
+                        setFlag(PBR_OCCLUSION_MAP);
                     }
                 }
             }
