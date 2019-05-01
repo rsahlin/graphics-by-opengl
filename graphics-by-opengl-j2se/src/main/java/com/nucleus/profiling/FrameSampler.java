@@ -147,7 +147,7 @@ public class FrameSampler {
         CREATE_IMAGE(Level.NORMAL),
         LOAD_IMAGE(Level.NORMAL),
         COPY_IMAGE(Level.NORMAL),
-        GENERATE_MIPMAPS(Level.NORMAL),
+        UPLOAD_TEXTURE(Level.NORMAL),
         EGLSWAPBUFFERS(Level.HIGH),
         EGLWAITNATIVE(Level.HIGH),
         POINTER_INPUT(Level.NORMAL);

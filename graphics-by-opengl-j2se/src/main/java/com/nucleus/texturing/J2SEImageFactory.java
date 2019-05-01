@@ -41,7 +41,11 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
             }
             BufferedImage img = ImageIO.read(stream);
             SourceFormat sourceFormat = SourceFormat.getFromAwtFormat(img.getType());
-            SimpleLogger.d(getClass(), "Loaded image " + name + ", in format: " + sourceFormat);
+            int delta = (int) (System.currentTimeMillis() - start);
+            int size = img.getWidth() * img.getHeight();
+            SimpleLogger.d(getClass(),
+                    "Loaded image " + name + ", in format: " + sourceFormat + img.getWidth() + " X " + img.getHeight()
+                            + " in " + delta + " millis [" + size / delta + "K/s]");
             BufferImage image = new BufferImage(img.getWidth(), img.getHeight(),
                     format != null ? format : sourceFormat.imageFormat);
             copyPixels(img, sourceFormat, image);
@@ -80,6 +84,7 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
      * @param destination
      */
     public void copyPixels(BufferedImage source, SourceFormat sourceFormat, BufferImage destination) {
+        long start = System.currentTimeMillis();
         if (source.getData().getDataBuffer() instanceof DataBufferByte) {
             byte[] data = ((DataBufferByte) source.getData().getDataBuffer()).getData();
             switch (sourceFormat) {
@@ -95,6 +100,7 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
                     break;
             }
             copyPixels(data, sourceFormat, destination);
+            SimpleLogger.d(getClass(), "copyPixels took " + (System.currentTimeMillis() - start) + " millis");
         } else {
             throw new IllegalArgumentException("Not implemented");
         }

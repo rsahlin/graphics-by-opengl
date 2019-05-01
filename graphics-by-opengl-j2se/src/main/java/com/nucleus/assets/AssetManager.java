@@ -555,12 +555,15 @@ public class AssetManager {
             throws IOException {
         if (texInfo != null && gltf.getTexture(texInfo).getImage().getBufferImage() == null) {
             // Have not loaded bufferimage for this texture
+            long start = System.currentTimeMillis();
             Texture texture = gltf.getTexture(texInfo);
             Image img = texture.getImage();
             BufferImage bufferImage = getTextureImage(gltf.getPath(img.getUri()));
             bufferImage.setColorModel(colorModel);
             img.setBufferImage(bufferImage);
             internalCreateTexture(gles, img);
+            FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_TEXTURE, " " + texture.getName(), start,
+                    System.currentTimeMillis());
         }
     }
 

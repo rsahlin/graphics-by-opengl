@@ -179,7 +179,6 @@ public abstract class BaseImageFactory implements ImageFactory {
      * @param destination
      */
     protected void copyPixels(byte[] source, SourceFormat sourceFormat, BufferImage destination) {
-
         ByteBuffer buffer = (ByteBuffer) destination.getBuffer().rewind();
         switch (sourceFormat) {
             case TYPE_4BYTE_ABGR:
@@ -197,7 +196,7 @@ public abstract class BaseImageFactory implements ImageFactory {
                         copyPixels_4BYTE_ABGR_TO_RGB5551(source, buffer);
                         break;
                     case RGB:
-                        copyPixels_4BYTE_ABGR_TO_RGB(source, buffer);
+                        copyPixels_4BYTE_ABGR_TO_RGB(source, buffer, destination.getWidth(), destination.getHeight());
                         break;
                     default:
                         throw new IllegalArgumentException(
@@ -360,34 +359,48 @@ public abstract class BaseImageFactory implements ImageFactory {
      * 
      * @param source
      * @param destination
+     * @param width
+     * @param height
      */
-    protected void copyPixels_4BYTE_ABGR_TO_RGB(byte[] source, ByteBuffer destination) {
-        byte[] rgb = new byte[3];
-        int length = source.length;
-        for (int index = 0; index < length;) {
-            index++;
-            rgb[2] = source[index++];
-            rgb[1] = source[index++];
-            rgb[0] = source[index++];
-            destination.put(rgb, 0, rgb.length);
+    protected void copyPixels_4BYTE_ABGR_TO_RGB(byte[] source, ByteBuffer destination, int width, int height) {
+        byte[] rgb = new byte[3 * width];
+        int length = rgb.length;
+        int s = 0;
+        for (int y = 0; y < height; y++) {
+            int d = 0;
+            for (int x = 0; x < width; x++) {
+                s++;
+                rgb[d + 2] = source[s++];
+                rgb[d + 1] = source[s++];
+                rgb[d] = source[s++];
+                d += 3;
+            }
+            destination.put(rgb, 0, length);
         }
     }
 
     /**
      * Straight copy from source to destination - just swap BGR to RGB
+     * Source will be overwritten
      * 
      * @param source
      * @param destination
      */
     protected void copyPixels_3BYTE_BGR_TO_RGB(byte[] source, ByteBuffer destination) {
-        byte[] rgb = new byte[3];
+        int d = 0;
         int length = source.length;
-        for (int index = 0; index < length;) {
-            rgb[2] = source[index++];
-            rgb[1] = source[index++];
-            rgb[0] = source[index++];
-            destination.put(rgb, 0, rgb.length);
+        byte r;
+        byte g;
+        byte b;
+        for (int s = 0; s < length; s += 3) {
+            b = source[s];
+            g = source[s + 1];
+            r = source[s + 2];
+            source[d++] = r;
+            source[d++] = g;
+            source[d++] = b;
         }
+        destination.put(source, 0, length);
     }
 
     /**

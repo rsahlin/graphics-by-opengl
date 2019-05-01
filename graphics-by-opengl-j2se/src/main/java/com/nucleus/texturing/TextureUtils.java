@@ -105,6 +105,7 @@ public class TextureUtils {
         if (texture.getName() <= 0) {
             throw new IllegalArgumentException("No texture name for texture " + texture.getId());
         }
+        long start = System.currentTimeMillis();
         gles.glBindTexture(GLES20.GL_TEXTURE_2D, texture.getName());
         boolean isMipMapParams = texture.getTexParams().isMipMapFilter();
         if ((textureImages.length > 1 && !isMipMapParams) || (texture.getLevels() > 1 && !isMipMapParams)) {
@@ -129,12 +130,11 @@ public class TextureUtils {
         }
         if (textureImages.length == 1 && texture.getTexParams().isMipMapFilter()
                 || Configuration.getInstance().isGenerateMipMaps()) {
-            long start = System.currentTimeMillis();
             gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
             SimpleLogger.d(TextureUtils.class, "Generated mipmaps for texture " + texture.getId());
-            FrameSampler.getInstance().logTag(FrameSampler.Samples.GENERATE_MIPMAPS, texture.getId(), start,
-                    System.currentTimeMillis());
         }
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.UPLOAD_TEXTURE, texture.getId(), start,
+                System.currentTimeMillis());
     }
 
     /**
@@ -152,18 +152,18 @@ public class TextureUtils {
         if (image.getTextureName() <= 0) {
             throw new IllegalArgumentException("No texture name for texture " + image.getUri());
         }
+        long start = System.currentTimeMillis();
         gles.glBindTexture(GLES20.GL_TEXTURE_2D, image.getTextureName());
         Format internalFormat = gles.texImage(image, 0);
         GLUtils.handleError(gles, "texImage2D");
         SimpleLogger.d(TextureUtils.class,
                 "Uploaded texture " + image.getUri() + " with internalformat " + internalFormat);
         if (generateMipmaps || Configuration.getInstance().isGenerateMipMaps()) {
-            long start = System.currentTimeMillis();
             gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
             SimpleLogger.d(TextureUtils.class, "Generated mipmaps for texture " + image.getUri());
-            FrameSampler.getInstance().logTag(FrameSampler.Samples.GENERATE_MIPMAPS, image.getUri(), start,
-                    System.currentTimeMillis());
         }
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.UPLOAD_TEXTURE, " " + image.getUri(), start,
+                System.currentTimeMillis());
     }
 
     /**
