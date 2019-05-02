@@ -66,10 +66,11 @@ public abstract class ShaderProgram {
     /**
      * Shader suffix as added after checking for which version to use
      */
-    public static final String SHADER_SOURCE_SUFFIX = ".essl";
-    public static final String FRAGMENT_TYPE = "fragment";
-    public static final String VERTEX_TYPE = "vertex";
-    public static final String GEOMETRY_TYPE = "geometry";
+    public static final String FRAGMENT_TYPE_SUFFIX = ".fs";
+    public static final String VERTEX_TYPE_SUFFIX = ".vs";
+    public static final String GEOMETRY_TYPE_SUFFIX = ".gs";
+    public static final String COMPUTE_TYPE_SUFFIX = ".cs";
+
     protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
     protected final static String NO_ACTIVE_UNIFORMS = "No active uniforms, forgot to call createProgram()?";
 
@@ -104,17 +105,19 @@ public abstract class ShaderProgram {
      *
      */
     public enum ShaderType {
-        VERTEX(GLES20.GL_VERTEX_SHADER, 0),
-        FRAGMENT(GLES20.GL_FRAGMENT_SHADER, 1),
-        GEOMETRY(GLES32.GL_GEOMETRY_SHADER, 2),
-        COMPUTE(GLES31.GL_COMPUTE_SHADER, 3);
+        VERTEX(GLES20.GL_VERTEX_SHADER, 0, VERTEX_TYPE_SUFFIX),
+        FRAGMENT(GLES20.GL_FRAGMENT_SHADER, 1, FRAGMENT_TYPE_SUFFIX),
+        GEOMETRY(GLES32.GL_GEOMETRY_SHADER, 2, GEOMETRY_TYPE_SUFFIX),
+        COMPUTE(GLES31.GL_COMPUTE_SHADER, 3, COMPUTE_TYPE_SUFFIX);
 
         public final int value;
         public final int index;
+        public final String suffix;
 
-        private ShaderType(int value, int index) {
+        private ShaderType(int value, int index, String suffix) {
             this.value = value;
             this.index = index;
+            this.suffix = suffix;
         }
 
         /**
@@ -542,16 +545,16 @@ public abstract class ShaderProgram {
 
         switch (type) {
             case VERTEX:
-                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type) + VERTEX_TYPE,
+                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type),
                         getSourceNameVersion(version, type.value), type);
             case FRAGMENT:
-                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type) + FRAGMENT_TYPE,
+                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type),
                         getSourceNameVersion(version, type.value), type);
             case COMPUTE:
                 return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type),
                         getSourceNameVersion(version, type.value), type);
             case GEOMETRY:
-                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type) + GEOMETRY_TYPE,
+                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type),
                         getSourceNameVersion(version, type.value), type);
             default:
                 throw new IllegalArgumentException("Not implemented for type: " + type);
@@ -1710,12 +1713,24 @@ public abstract class ShaderProgram {
         if (common != null) {
             ShaderSource[] commonSources = new ShaderSource[common.length];
             for (int i = 0; i < commonSources.length; i++) {
-                commonSources[i] = new ShaderSource(common[i], sourceNameVersion, type);
+                commonSources[i] = createCommonSource(common[i], sourceNameVersion, type);
             }
             loadShaderSources(gles, commonSources);
             SimpleLogger.d(getClass(), "Adding common sources : " + StringUtils.getString(common));
             createCommonSources(gles, commonSources, type);
         }
+    }
+
+    /**
+     * Internal method to create common ShaderSource for a given source name, version and type
+     * 
+     * @param sourceName
+     * @param sourceNameVersion
+     * @param type
+     * @return
+     */
+    protected ShaderSource createCommonSource(String sourceName, String sourceNameVersion, ShaderType type) {
+        return new ShaderSource(sourceName, sourceNameVersion, type);
     }
 
     /**
