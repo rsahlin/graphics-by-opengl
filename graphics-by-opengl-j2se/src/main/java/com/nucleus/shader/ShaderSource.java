@@ -13,6 +13,8 @@ import com.nucleus.shader.ShaderProgram.ShaderType;
  */
 public class ShaderSource {
 
+    public final static String FILE_SUFFIX_SEPARATOR = ".";
+
     public enum ESSLVersion {
         VERSION100(100),
         VERSION300(300),
@@ -105,10 +107,31 @@ public class ShaderSource {
      */
     private String versionString;
 
+    private String suffix;
+
     /**
      * Shader type
      */
     protected ShaderType type;
+
+    /**
+     * Creates a shadersource from full sourcename - including any version and file suffix
+     * 
+     * @param sourcename Sourcename including file suffix - otherwise it is taken from type
+     * @param type
+     */
+    public ShaderSource(String sourcename, ShaderType type) {
+        int s = sourcename.indexOf(FILE_SUFFIX_SEPARATOR);
+        if (s > -1) {
+            suffix = sourcename.substring(s);
+            this.sourceName = sourcename.substring(0, s);
+        } else {
+            suffix = type.suffix;
+            this.sourceName = sourcename;
+        }
+        this.sourceNameVersion = "";
+        this.type = type;
+    }
 
     /**
      * Creates shader source with name of source, including source name version
@@ -121,6 +144,7 @@ public class ShaderSource {
         this.sourceName = sourceName;
         this.sourceNameVersion = sourceNameVersion;
         this.type = type;
+        this.suffix = type.suffix;
     }
 
     public String getSourceNameVersion() {
@@ -128,7 +152,7 @@ public class ShaderSource {
     }
 
     public String getFullSourceName() {
-        return sourceName + sourceNameVersion + ShaderProgram.SHADER_SOURCE_SUFFIX;
+        return sourceName + sourceNameVersion + suffix;
     }
 
     /**

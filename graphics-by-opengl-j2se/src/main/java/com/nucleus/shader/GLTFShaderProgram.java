@@ -28,8 +28,8 @@ import com.nucleus.vecmath.Matrix;
 
 public class GLTFShaderProgram extends GenericShaderProgram {
 
-    transient protected String[][] commonSourceNames = new String[][] { { "common_structs", "pbrvertex" },
-            { "common_structs", "pbrfragment" } };
+    transient protected String[][] commonSourceNames = new String[][] { { "common_structs.essl", "pbr_v300" },
+            { "common_structs.essl", "pbr_v300" } };
     transient protected PBRShading pbrShading;
 
     transient protected ShaderVariable pbrDataUniform;
@@ -142,7 +142,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                     }
                     if (mat.getOcclusionTexture() != null
                             && !Environment.getInstance().isProperty(Property.FORCE_NO_NOOCCLUSIONMAP, false)) {
-                        setFlag(PBR_OCCLUSION_MAP);
+                        // setFlag(PBR_OCCLUSION_MAP);
                     }
                 }
             }
@@ -306,6 +306,11 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                 return null;
         }
         return null;
+    }
+
+    @Override
+    protected ShaderSource createCommonSource(String sourceName, String sourceNameVersion, ShaderType type) {
+        return new ShaderSource(sourceName, type);
     }
 
     @Override
