@@ -239,6 +239,19 @@ public abstract class BaseImageFactory implements ImageFactory {
                                 ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
                 }
                 break;
+            case TYPE_RGBA:
+                switch (destination.getFormat()) {
+                    case RGB:
+                        copyPixels_4BYTE_RGBA_TO_RGB(source, buffer);
+                        break;
+                    case RGBA:
+                        copyPixels_4BYTE_RGBA_TO_RGBA(source, buffer);
+                        break;
+                    default:
+                        throw new IllegalArgumentException(
+                                ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
+                }
+                break;
             default:
                 throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + sourceFormat);
         }

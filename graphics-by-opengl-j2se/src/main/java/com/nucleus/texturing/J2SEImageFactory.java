@@ -44,7 +44,8 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
             int delta = (int) (System.currentTimeMillis() - start);
             int size = img.getWidth() * img.getHeight();
             SimpleLogger.d(getClass(),
-                    "Loaded image " + name + ", in format: " + sourceFormat + img.getWidth() + " X " + img.getHeight()
+                    "Loaded image " + name + ", in format: " + sourceFormat + " " + img.getWidth() + " X "
+                            + img.getHeight()
                             + " in " + delta + " millis [" + size / delta + "K/s]");
             BufferImage image = new BufferImage(img.getWidth(), img.getHeight(),
                     format != null ? format : sourceFormat.imageFormat);
@@ -91,10 +92,12 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
                 case TYPE_BYTE_INDEXED:
                     // Make sure no alpha in source - not supported
                     if ((source.getColorModel().hasAlpha())) {
-                        throw new IllegalArgumentException("Alpha not supported in " + sourceFormat);
+                        data = byteIndexedToRGBA((IndexColorModel) source.getColorModel(), data);
+                        sourceFormat = SourceFormat.TYPE_RGBA;
+                    } else {
+                        data = byteIndexedToBGR((IndexColorModel) source.getColorModel(), data);
+                        sourceFormat = SourceFormat.TYPE_3BYTE_BGR;
                     }
-                    data = byteIndexedToBGR((IndexColorModel) source.getColorModel(), data);
-                    sourceFormat = SourceFormat.TYPE_3BYTE_BGR;
                     break;
                 default:
                     break;
@@ -123,6 +126,30 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
             result[index++] = b[value];
             result[index++] = g[value];
             result[index++] = r[value];
+        }
+        return result;
+    }
+
+    private byte[] byteIndexedToRGBA(IndexColorModel icm, byte[] data) {
+        int length = data.length;
+        byte[] result = new byte[length * 4];
+        int mapSize = icm.getMapSize();
+        byte[] a = new byte[mapSize];
+        byte[] r = new byte[mapSize];
+        byte[] g = new byte[mapSize];
+        byte[] b = new byte[mapSize];
+        icm.getAlphas(a);
+        icm.getReds(r);
+        icm.getGreens(g);
+        icm.getBlues(b);
+        int index = 0;
+        int value = 0;
+        for (int i = 0; i < length; i++) {
+            value = (data[i] & 0x0ff);
+            result[index++] = r[value];
+            result[index++] = g[value];
+            result[index++] = b[value];
+            result[index++] = a[value];
         }
         return result;
     }
