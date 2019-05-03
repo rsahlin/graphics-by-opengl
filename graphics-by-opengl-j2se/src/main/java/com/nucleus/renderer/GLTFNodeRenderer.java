@@ -19,6 +19,7 @@ import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.BufferView;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Material;
+import com.nucleus.scene.gltf.Material.AlphaMode;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Node;
 import com.nucleus.scene.gltf.PBRMetallicRoughness;
@@ -205,7 +206,11 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
                 gles.glDisable(GLES20.GL_CULL_FACE);
             }
             program.prepareTextures(gles, glTF, primitive, material);
-
+            if (material.getAlphaMode() == AlphaMode.OPAQUE) {
+                gles.glDisable(GLES20.GL_BLEND);
+            } else {
+                gles.glEnable(GLES20.GL_BLEND);
+            }
         }
         Accessor indices = primitive.getIndices();
         Accessor position = primitive.getAccessor(Attributes.POSITION);
