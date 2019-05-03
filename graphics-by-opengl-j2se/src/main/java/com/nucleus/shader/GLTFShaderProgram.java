@@ -255,6 +255,8 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     protected String getShaderSourceName(ShaderType type) {
         switch (type) {
             case VERTEX:
+                return (function.getPath(type) + function.getPassString()) +
+                        pbrShading.getTexturing().name;
             case FRAGMENT:
                 return (function.getPath(type) + function.getPassString()) +
                         pbrShading.getTexturing().name + pbrShading.getMaterialTexture().name +

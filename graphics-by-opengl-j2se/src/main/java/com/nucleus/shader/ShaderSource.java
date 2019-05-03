@@ -248,11 +248,12 @@ public class ShaderSource {
     /**
      * Appends source at the specified line, the default is to append after the precision qualifier.
      * 
+     * @param line Search for line that starts with this
      * @param source Unversioned shader source
      */
-    public void appendSource(String source) {
+    public void appendSource(String line, String source) {
         if (source != null && source.length() > 0) {
-            int lineIndex = getLineIndexOf(PRECISION);
+            int lineIndex = getLineIndexOf(line);
             if (lineIndex < 0) {
                 throw new IllegalArgumentException("Shader source must define precision qualifier");
             }

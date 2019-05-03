@@ -1112,7 +1112,7 @@ public abstract class ShaderProgram {
         if (shader == 0) {
             throw new GLException(CREATE_SHADER_ERROR, GLES20.GL_NO_ERROR);
         }
-        source.appendSource(getCommonSources(source.type));
+        source.appendSource(ShaderSource.PRECISION, getCommonSources(source.type));
         compileShader(gles, source, shader);
         return shader;
     }
