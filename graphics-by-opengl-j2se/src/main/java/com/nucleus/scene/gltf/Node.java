@@ -5,6 +5,7 @@ import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.vecmath.Matrix;
+import com.nucleus.vecmath.Matrix.MatrixStack;
 
 /**
  * The Node as it is loaded using the glTF format.
@@ -299,12 +300,26 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
      * @return The updated bounds
      */
     public MaxMin calculateBounds(MaxMin bounds, float[] matrix) {
+        return calculateBounds(bounds, matrix, new Matrix.MatrixStack());
+    }
+
+    /**
+     * Same as {@link #calculateBounds(MaxMin, float[])} but using supplied {@link MatrixStack}
+     * 
+     * @param bounds The bounds to update
+     * @param matrix Current matrix
+     * @param stack Matrix stack
+     * @return The updated bounds
+     */
+    public MaxMin calculateBounds(MaxMin bounds, float[] matrix, MatrixStack stack) {
         if (matrix != null) {
+            stack.push(matrix, 0);
             float[] concatMatrix = Matrix.createMatrix();
             Matrix.mul4(matrix, updateMatrix(), concatMatrix);
             System.arraycopy(concatMatrix, 0, matrix, 0, Matrix.MATRIX_ELEMENTS);
         } else {
             matrix = Matrix.createMatrix();
+            stack.push(matrix, 0);
             System.arraycopy(updateMatrix(), 0, matrix, 0, Matrix.MATRIX_ELEMENTS);
         }
         if (getMesh() != null && getMesh().getPrimitives() != null) {
@@ -318,12 +333,12 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
                 }
             }
         }
-        if (childNodes == null) {
-            return bounds;
+        if (childNodes != null) {
+            for (Node child : childNodes) {
+                child.calculateBounds(bounds, matrix, stack);
+            }
         }
-        for (Node child : childNodes) {
-            child.calculateBounds(bounds, matrix);
-        }
+        stack.pop(matrix, 0);
         return bounds;
     }
 
