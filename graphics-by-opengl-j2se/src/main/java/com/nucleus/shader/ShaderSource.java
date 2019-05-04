@@ -4,7 +4,6 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import com.nucleus.common.Constants;
-import com.nucleus.common.Environment;
 import com.nucleus.shader.ShaderProgram.ShaderType;
 
 /**
@@ -255,23 +254,33 @@ public class ShaderSource {
         if (source != null && source.length() > 0) {
             int lineIndex = getLineIndexOf(line);
             if (lineIndex < 0) {
-                throw new IllegalArgumentException("Shader source must define precision qualifier");
+                throw new IllegalArgumentException("Shader source does not contain line: " + line);
             }
-            // If debug mode then make sure no #define AFTER we insert source
-            if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
-                int defineLineIndex = getLineIndexOf(DEFINE);
-                if (defineLineIndex != -1 && defineLineIndex > lineIndex) {
-                    throw new IllegalArgumentException(DEFINE + " must come after 'precision' qualifier");
-                }
-            }
-            int nextLineIndex = shaderSource.indexOf("\n", lineIndex);
+            int nextLineIndex = shaderSource.indexOf("\n", lineIndex) + 1;
             if (nextLineIndex >= 0) {
-                this.shaderSource = this.shaderSource.substring(0, lineIndex) + source +
-                        this.shaderSource.substring(lineIndex);
+                this.shaderSource = this.shaderSource.substring(0, nextLineIndex) + source +
+                        this.shaderSource.substring(nextLineIndex);
             } else {
                 throw new IllegalArgumentException(""
                         + "Malformed? Could not find line delimiter after precision qualifier at " + lineIndex);
             }
+        }
+    }
+
+    /**
+     * Inserts define statements before the specified line.
+     * 
+     * @param line
+     * @param defines
+     */
+    public void insertDefines(String line, String defines) {
+        if (defines != null && defines.length() > 0) {
+            int lineIndex = getLineIndexOf(line);
+            if (lineIndex < 0) {
+                throw new IllegalArgumentException("Shader source does not contain line: " + line);
+            }
+            this.shaderSource = this.shaderSource.substring(0, lineIndex) + defines
+                    + this.shaderSource.substring(lineIndex);
         }
     }
 

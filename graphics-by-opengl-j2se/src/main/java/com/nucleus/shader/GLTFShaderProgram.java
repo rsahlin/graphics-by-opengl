@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.nucleus.common.BufferUtils;
 import com.nucleus.common.Environment;
@@ -51,12 +52,29 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      *
      */
     public static class PBRShading {
-        public static final int TEXTURE_FLAG = 0x01;
-        public static final int NORMAL_MAP_FLAG = 0x02;
-        public static final int PBR_METALLIC_ROUGHNESS_MAP_FLAG = 0x04;
-        public static final int PBR_OCCLUSION_MAP = 0x08;
+        public static final String TEXTURE_DEFINE = "TEXTURE";
+        public static final String NORMAL_MAP_DEFINE = "NORMAL_MAP";
+        public static final String METALROUGH_MAP_DEFINE = "METALROUGH_MAP";
+        public static final String OCCLUSION_MAP_DEFINE = "OCCLUSION_MAP";
 
-        private int flags = 0;
+        public enum Flags {
+
+            TEXTURE(PBRTextures.none, TEXTURE_DEFINE),
+            NORMAL_MAP(PBRTextures.normalMap, NORMAL_MAP_DEFINE),
+            PBR_METALLIC_ROUGHNESS_MAP(PBRTextures.metallicRoughness, METALROUGH_MAP_DEFINE),
+            PBR_OCCLUSION(PBRTextures.occlusion, OCCLUSION_MAP_DEFINE);
+
+            public final PBRTextures texture;
+            public final String define;
+
+            Flags(PBRTextures texture, String define) {
+                this.texture = texture;
+                this.define = define;
+            }
+
+        }
+
+        private List<Flags> flags = new ArrayList<>();
 
         public enum Texturing {
             flat("flat"),
@@ -70,26 +88,15 @@ public class GLTFShaderProgram extends GenericShaderProgram {
         }
 
         /**
-         * Additional material texture maps
-         *
-         */
-        public enum MaterialTextures {
-            none(""),
-            normalMap("normal");
-
-            public final String name;
-
-            private MaterialTextures(String name) {
-                this.name = name;
-            }
-        }
-
-        /**
-         * PBR texture maps
+         * Texture maps
          *
          */
         public enum PBRTextures {
             none(""),
+            /**
+             * Normal map texture
+             */
+            normalMap("normal"),
             /**
              * Metallic Roughness texture
              */
@@ -130,76 +137,61 @@ public class GLTFShaderProgram extends GenericShaderProgram {
             if (mat != null) {
                 PBRMetallicRoughness pbr = mat.getPbrMetallicRoughness();
                 if (pbr.getBaseColorTexture() != null) {
-                    setFlag(TEXTURE_FLAG);
+                    setFlag(Flags.TEXTURE);
                     // Textured
                     if (mat.getNormalTexture() != null &&
                             !Environment.getInstance().isProperty(Property.FORCE_NO_NORMALMAP, false)) {
-                        setFlag(NORMAL_MAP_FLAG);
+                        setFlag(Flags.NORMAL_MAP);
                     }
                     if (pbr.getMetallicRoughnessTexture() != null
                             && !Environment.getInstance().isProperty(Property.FORCE_NO_METALLICROUGHNESSMAP, false)) {
-                        setFlag(PBR_METALLIC_ROUGHNESS_MAP_FLAG);
+                        setFlag(Flags.PBR_METALLIC_ROUGHNESS_MAP);
                     }
                     if (mat.getOcclusionTexture() != null
                             && !Environment.getInstance().isProperty(Property.FORCE_NO_NOOCCLUSIONMAP, false)) {
-                        // setFlag(PBR_OCCLUSION_MAP);
+                        setFlag(Flags.PBR_OCCLUSION);
                     }
                 }
             }
             if (Environment.getInstance().isProperty(Property.FORCE_UNTEXTURED, false)) {
-                clearFlag(TEXTURE_FLAG);
+                clearFlag(Flags.TEXTURE);
             }
         }
 
         /**
-         * One or more flags that are added to the builder
+         * Add a flag
          * 
-         * @param flag
+         * @param flag The flag to set
          * @return
          */
-        public PBRShading setFlag(int flag) {
-            flags |= flag;
+        public PBRShading setFlag(Flags flag) {
+            if (!flags.contains(flag)) {
+                flags.add(flag);
+            }
             return this;
         }
 
         /**
-         * Checks one or more flags - all flags must be set for true to be returned
+         * Clears a flag
          * 
-         * @param flags One or more flag values to check for
-         * @return True if all set flag values are set, false otherwise
-         */
-        public boolean isFlags(int flags) {
-            return (this.flags & flags) == flags;
-        }
-
-        /**
-         * Checks if one of the flag values is set
-         * 
-         * @param flags One or more flag values to check for
-         * @return True if one or more of the flag values are set - false if none of the flags are set
-         */
-        public boolean isOneOf(int flags) {
-            return (this.flags & flags) != 0;
-        }
-
-        /**
-         * Clears one or more flags
-         * 
-         * @param flag
+         * @param flag Flag to clear
          * @return
          */
-        public PBRShading clearFlag(int flag) {
-            flags ^= flag;
+        public PBRShading clearFlag(Flags flag) {
+            if (flags.contains(flag)) {
+                flags.remove(flag);
+            }
             return this;
         }
 
         /**
-         * Returns additional material texturing - currently normalmap texture
+         * Returns true if the specified flag is set
          * 
-         * @return The materialtexture to use
+         * @param flag
+         * @return
          */
-        public MaterialTextures getMaterialTexture() {
-            return (flags & NORMAL_MAP_FLAG) != 0 ? MaterialTextures.normalMap : MaterialTextures.none;
+        public boolean isFlag(Flags flag) {
+            return flags.contains(flag);
         }
 
         /**
@@ -209,7 +201,22 @@ public class GLTFShaderProgram extends GenericShaderProgram {
          * @return
          */
         public Texturing getTexturing() {
-            return (flags & TEXTURE_FLAG) != 0 ? Texturing.texture_1 : Texturing.flat;
+            return isFlag(Flags.TEXTURE) ? Texturing.texture_1 : Texturing.flat;
+        }
+
+        /**
+         * Returns the defines to turn on PBR functions for this material
+         * 
+         * @return
+         */
+        public String getDefines() {
+            StringBuffer sb = new StringBuffer();
+            for (Flags f : Flags.values()) {
+                if (isFlag(f)) {
+                    sb.append(ShaderSource.DEFINE + " " + f.define + " 1\n");
+                }
+            }
+            return sb.toString();
         }
 
         /**
@@ -218,19 +225,18 @@ public class GLTFShaderProgram extends GenericShaderProgram {
          * @return
          */
         public PBRTextures[] getPBRTextures() {
-            switch (flags & (PBR_METALLIC_ROUGHNESS_MAP_FLAG | PBR_OCCLUSION_MAP)) {
-                case PBR_METALLIC_ROUGHNESS_MAP_FLAG | PBR_OCCLUSION_MAP:
-                    return new PBRTextures[] { PBRTextures.metallicRoughness, PBRTextures.occlusion };
-                case PBR_METALLIC_ROUGHNESS_MAP_FLAG:
-                    return new PBRTextures[] { PBRTextures.metallicRoughness };
-                case PBR_OCCLUSION_MAP:
-                    return new PBRTextures[] { PBRTextures.occlusion };
-                case 0:
-                    return new PBRTextures[] { PBRTextures.none };
-                default:
-                    throw new IllegalArgumentException("Invalid");
+            if (flags.size() == 0) {
+                return new PBRTextures[] { PBRTextures.none };
             }
+            PBRTextures[] textures = new PBRTextures[flags.size()];
 
+            int index = 0;
+            for (Flags f : Flags.values()) {
+                if (isFlag(f)) {
+                    textures[index++] = f.texture;
+                }
+            }
+            return textures;
         }
 
     }
@@ -259,7 +265,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                         pbrShading.getTexturing().name;
             case FRAGMENT:
                 return (function.getPath(type) + function.getPassString()) +
-                        pbrShading.getTexturing().name + pbrShading.getMaterialTexture().name +
+                        pbrShading.getTexturing().name +
                         PBRTextures.getNames(pbrShading.getPBRTextures());
             case COMPUTE:
                 return "";
@@ -308,6 +314,11 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                 return null;
         }
         return null;
+    }
+
+    @Override
+    protected String getDefines(ShaderType type) {
+        return pbrShading.getDefines();
     }
 
     @Override
