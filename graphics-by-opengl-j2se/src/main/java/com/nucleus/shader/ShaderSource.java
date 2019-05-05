@@ -72,6 +72,7 @@ public class ShaderSource {
     public static String SHADING_LANGUAGE_100 = "100";
     public static String PRECISION = "precision";
     public static String DEFINE = "#define";
+    public static String UNDEF = "#undef";
 
     /**
      * Use for shader source names that are versioned 300

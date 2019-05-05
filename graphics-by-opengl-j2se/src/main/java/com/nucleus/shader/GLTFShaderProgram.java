@@ -23,7 +23,6 @@ import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Scene;
 import com.nucleus.scene.gltf.Texture.TextureInfo;
-import com.nucleus.shader.GLTFShaderProgram.PBRShading.PBRTextures;
 import com.nucleus.texturing.TextureUtils;
 import com.nucleus.vecmath.Matrix;
 
@@ -214,6 +213,8 @@ public class GLTFShaderProgram extends GenericShaderProgram {
             for (Flags f : Flags.values()) {
                 if (isFlag(f)) {
                     sb.append(ShaderSource.DEFINE + " " + f.define + " 1\n");
+                } else {
+                    sb.append(ShaderSource.UNDEF + " " + f.define + "\n");
                 }
             }
             return sb.toString();
@@ -261,12 +262,9 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     protected String getShaderSourceName(ShaderType type) {
         switch (type) {
             case VERTEX:
-                return (function.getPath(type) + function.getPassString()) +
-                        pbrShading.getTexturing().name;
+                return (function.getPath(type) + function.getPassString()) + "main";
             case FRAGMENT:
-                return (function.getPath(type) + function.getPassString()) +
-                        pbrShading.getTexturing().name +
-                        PBRTextures.getNames(pbrShading.getPBRTextures());
+                return (function.getPath(type) + function.getPassString()) + "main";
             case COMPUTE:
                 return "";
             case GEOMETRY:
