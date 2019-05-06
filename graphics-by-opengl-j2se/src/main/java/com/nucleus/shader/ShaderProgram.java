@@ -1112,7 +1112,8 @@ public abstract class ShaderProgram {
         if (shader == 0) {
             throw new GLException(CREATE_SHADER_ERROR, GLES20.GL_NO_ERROR);
         }
-        source.appendSource(getCommonSources(source.type));
+        source.appendSource(ShaderSource.PRECISION, getCommonSources(source.type));
+        source.insertDefines(ShaderSource.PRECISION, getDefines(source.type));
         compileShader(gles, source, shader);
         return shader;
     }
@@ -1762,6 +1763,16 @@ public abstract class ShaderProgram {
         for (ShaderSource source : commonSource) {
             commonSources[type.index].add(source.getSource());
         }
+    }
+
+    /**
+     * Returns the defines to insert into the shader source
+     * 
+     * @param type
+     * @return
+     */
+    protected String getDefines(ShaderType type) {
+        return null;
     }
 
     /**

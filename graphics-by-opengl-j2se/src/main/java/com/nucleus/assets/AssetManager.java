@@ -302,7 +302,8 @@ public class AssetManager {
      * @throws RuntimeException If the program could not be compiled or linked
      */
     public ShaderProgram getProgram(GLES20Wrapper gles, ShaderProgram program) {
-        ShaderProgram compiled = programs.get(program.getKey());
+        String key = program.getKey();
+        ShaderProgram compiled = programs.get(key);
         if (compiled != null) {
             return compiled;
         }
@@ -312,7 +313,8 @@ public class AssetManager {
             FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, program.getClass().getSimpleName(),
                     start,
                     System.currentTimeMillis());
-            programs.put(program.getKey(), program);
+            programs.put(key, program);
+            SimpleLogger.d(getClass(), "Stored shaderprogram with key: " + key);
             return program;
         } catch (GLException e) {
             throw new RuntimeException(e);

@@ -8,5 +8,9 @@
 //Put array declaration after name for GLSL compatibility
 
 void main() {
+#ifdef NORMAL_MAP
+    positionLightTexNormal();
+#else
     positionLight();
+#endif
 }
