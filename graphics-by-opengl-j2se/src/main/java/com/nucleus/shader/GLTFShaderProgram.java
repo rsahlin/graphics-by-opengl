@@ -60,8 +60,8 @@ public class GLTFShaderProgram extends GenericShaderProgram {
 
             TEXTURE(PBRTextures.none, TEXTURE_DEFINE),
             NORMAL_MAP(PBRTextures.normalMap, NORMAL_MAP_DEFINE),
-            PBR_METALLIC_ROUGHNESS_MAP(PBRTextures.metallicRoughness, METALROUGH_MAP_DEFINE),
-            PBR_OCCLUSION(PBRTextures.occlusion, OCCLUSION_MAP_DEFINE);
+            PBR_MR_MAP(PBRTextures.metallicRoughness, METALROUGH_MAP_DEFINE),
+            PBR_OCCLUSION_MAP(PBRTextures.occlusion, OCCLUSION_MAP_DEFINE);
 
             public final PBRTextures texture;
             public final String define;
@@ -144,11 +144,11 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                     }
                     if (pbr.getMetallicRoughnessTexture() != null
                             && !Environment.getInstance().isProperty(Property.FORCE_NO_METALLICROUGHNESSMAP, false)) {
-                        setFlag(Flags.PBR_METALLIC_ROUGHNESS_MAP);
+                        setFlag(Flags.PBR_MR_MAP);
                     }
                     if (mat.getOcclusionTexture() != null
                             && !Environment.getInstance().isProperty(Property.FORCE_NO_NOOCCLUSIONMAP, false)) {
-                        setFlag(Flags.PBR_OCCLUSION);
+                        setFlag(Flags.PBR_OCCLUSION_MAP);
                     }
                 }
             }
@@ -215,6 +215,21 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                     sb.append(ShaderSource.DEFINE + " " + f.define + " 1\n");
                 } else {
                     sb.append(ShaderSource.UNDEF + " " + f.define + "\n");
+                }
+            }
+            return sb.toString();
+        }
+
+        /**
+         * Returns the set flags as a text string.
+         * 
+         * @return
+         */
+        public String getFlags() {
+            StringBuffer sb = new StringBuffer();
+            for (Flags f : Flags.values()) {
+                if (isFlag(f)) {
+                    sb.append(f.name());
                 }
             }
             return sb.toString();
@@ -463,6 +478,11 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                 getUniformByName("uTextureMR"), material.getPbrMetallicRoughness().getMetallicRoughnessTexture());
         prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes._TEXCOORDOCCLUSION.name()),
                 getUniformByName("uTextureOcclusion"), material.getOcclusionTexture());
+    }
+
+    @Override
+    public String getKey() {
+        return getClass().getSimpleName() + pbrShading.getFlags();
     }
 
 }
