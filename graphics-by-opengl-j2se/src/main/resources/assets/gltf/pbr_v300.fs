@@ -18,6 +18,8 @@ uniform vec4 _PBRDATA[4];
 in vec2 vTexCoord0;
 in vec2 vTexNormal;
 in vec2 vTexMR;
+in vec2 vTexOccl;
+
 in vec4 vWorldPos;
 in mat3 mTangentLight;
 in Material material;
@@ -34,9 +36,9 @@ BRDF getPerVertexBRDF() {
     brdf.NdotL = material.NdotL;
     brdf.NdotH = material.NdotH;
     brdf.NdotV = material.NdotV;
-    brdf.mro.x = _PBRDATA[0].x;
-    brdf.mro.y = _PBRDATA[0].y;
-    brdf.mro.z = 1.0;
+    brdf.mro.b = _PBRDATA[0].x;
+    brdf.mro.g = _PBRDATA[0].y;
+    brdf.mro.r = 1.0;
     return brdf;
 }
 
@@ -127,7 +129,7 @@ vec3[2] internalCalculatePBR(const BRDF brdf, const vec3 F0, const vec3 cDiff, c
     vec3 illumination = light.color.rgb * (light.color.a * brdf.NdotL);
     float NdotH = brdf.NdotH;
     // TODO - what is the value for the cutoff from specular color to tint?
-    float step = smoothstep(SPECULAR_LOBE_TINT, 1.0, (shading.specularLobe) * (1.0 - a * a) * (1.0 - brdf.mro.x * brdf.mro.x));
+    float step = smoothstep(SPECULAR_LOBE_TINT, 1.0, (shading.specularLobe) * (1.0 - a * a) * (1.0 - brdf.mro.b * brdf.mro.b));
     result[0] = (diffuse + mix(black, specular, 1.0 - step)) * illumination;
     result[1] = mix(black, specular, step) * illumination;
     return result;
@@ -152,9 +154,16 @@ vec3[2] calculateFresnelDiffuse(in BRDF brdf, const vec3 metallicRoughness) {
     float roughness = max(MIN_ROUGHNESS,_PBRDATA[0].y * metallicRoughness.g);
     float metal =  clamp(_PBRDATA[0].x * metallicRoughness.b, MIN_METALLIC, MAX_METALLIC);
     vec3 F0 = mix(dielectricSpecular, _PBRDATA[3].rgb, metal);
-    brdf.mro.x = metal;
-    brdf.mro.y = roughness;
-    brdf.mro.z = metallicRoughness.r;
+    brdf.mro.b = metal;
+    brdf.mro.g = roughness;
+    brdf.mro.r = metallicRoughness.r;
     return internalCalculatePBR(brdf, F0, _PBRDATA[3].rgb, roughness);
 }
+
+vec3[2] calculateFresnelDiffuse(in BRDF brdf, const float occlusion) {
+    brdf.mro.r = occlusion;
+    return internalCalculatePBR(brdf,  _PBRDATA[1].rgb, _PBRDATA[2].rgb, max(MIN_ROUGHNESS, _PBRDATA[0].y));
+}
+
+
 

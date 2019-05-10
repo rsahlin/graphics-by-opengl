@@ -8,6 +8,10 @@ precision highp float;
 
 void main() {
 #ifdef NORMAL_MAP
+    // Scale of normal map not supported yet - ideally this should only be done if scale != 1.0, eg
+    // #ifdef NORMAL_SCALE 
+    // normalize((<sampled normal texture value> * 2.0 - 1.0) * vec3(<normal scale>, <normal scale>, 1.0))
+    // #endif
     BRDF brdf = getPerPixelBRDF(normalize(vec3(texture(uTextureNormal, vTexNormal) * 2.0 - 1.0) * mTangentLight));
 #else
     BRDF brdf = getPerVertexBRDF();
@@ -16,7 +20,11 @@ void main() {
 #ifdef METALROUGH_MAP
     vec3[2] diffuseSpecular = calculateFresnelDiffuse(brdf, vec3(texture(uTextureMR, vTexMR)));
 #else
+#ifdef OCCLUSION_MAP
+    vec3[2] diffuseSpecular = calculateFresnelDiffuse(brdf, texture(uTextureOcclusion, vTexOccl).r);
+#else
     vec3[2] diffuseSpecular = calculateFresnelDiffuse(brdf);
+#endif
 #endif 
 
 #ifdef TEXTURE
