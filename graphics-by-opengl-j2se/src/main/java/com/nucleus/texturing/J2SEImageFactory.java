@@ -42,6 +42,7 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
             BufferedImage img = ImageIO.read(stream);
             SourceFormat sourceFormat = SourceFormat.getFromAwtFormat(img.getType());
             int delta = (int) (System.currentTimeMillis() - start);
+            delta = delta > 0 ? delta : 1;
             int size = img.getWidth() * img.getHeight();
             SimpleLogger.d(getClass(),
                     "Loaded image " + name + ", in format: " + sourceFormat + " " + img.getWidth() + " X "
