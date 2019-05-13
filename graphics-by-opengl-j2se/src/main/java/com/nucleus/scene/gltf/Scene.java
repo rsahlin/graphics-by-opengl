@@ -199,8 +199,8 @@ public class Scene extends GLTFNamedValue implements RuntimeResolver {
     public void setMVP(float[][] matrices) {
         if (isCameraInstanced()) {
             Camera camera = getCameraInstance();
-            matrices[Matrices.PROJECTION.index] = camera.getProjectionMatrix();
-            matrices[Matrices.VIEW.index] = camera.getViewMatrix();
+            camera.getProjectionMatrix(matrices[Matrices.PROJECTION.index], 0);
+            camera.copyViewMatrix(matrices[Matrices.VIEW.index], 0);
         }
     }
 

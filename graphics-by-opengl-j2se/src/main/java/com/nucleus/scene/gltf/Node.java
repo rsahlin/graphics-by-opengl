@@ -225,16 +225,12 @@ public class Node extends GLTFNamedValue implements RuntimeResolver {
      * Multiply the matrix with this nodes transform/matrix and store in this nodes model matrix.
      * If this node does not have a transform an identity matrix is used.
      * 
-     * @param concatModel The matrix to multiply with this nodes transform/matrix
-     * @return The node model matrix - this nodes transform * matrix - this is a reference to the concatenated
-     * model matrix in this class
+     * @param matrix The matrix to multiply with this nodes transform/matrix
+     * @param index Index into matrix where result is stored
      */
-    public float[] concatMatrix(float[] matrix) {
-        if (matrix == null) {
-            return updateMatrix();
-        }
+    public void concatMatrix(float[] matrix, int index) {
         Matrix.mul4(matrix, updateMatrix(), modelMatrix);
-        return modelMatrix;
+        Matrix.copy(modelMatrix, 0, matrix, index);
     }
 
     /**

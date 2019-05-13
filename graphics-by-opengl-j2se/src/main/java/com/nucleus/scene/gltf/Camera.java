@@ -304,23 +304,23 @@ public class Camera extends GLTFNamedValue {
      * Returns the projectionmatrix for this camera, if it has not been calculated it is calculated now and returned.
      * Next call will return the calculated matrix.
      * 
-     * @return
+     * @param matrix The matrix storage
+     * @param index Index into matrix storage
      */
-    public float[] getProjectionMatrix() {
-        if (projectionMatrix != null) {
-            return projectionMatrix;
+    public void getProjectionMatrix(float[] matrix, int index) {
+        if (projectionMatrix == null) {
+            switch (type) {
+                case orthographic:
+                    projectionMatrix = orthographic.createMatrix();
+                    break;
+                case perspective:
+                    projectionMatrix = perspective.createMatrix();
+                    break;
+                default:
+                    throw new IllegalArgumentException("Not implemented for type " + type);
+            }
         }
-        switch (type) {
-            case orthographic:
-                projectionMatrix = orthographic.createMatrix();
-                break;
-            case perspective:
-                projectionMatrix = perspective.createMatrix();
-                break;
-            default:
-                throw new IllegalArgumentException("Not implemented for type " + type);
-        }
-        return projectionMatrix;
+        System.arraycopy(projectionMatrix, 0, matrix, index, Matrix.MATRIX_ELEMENTS);
     }
 
     /**
@@ -339,12 +339,13 @@ public class Camera extends GLTFNamedValue {
     }
 
     /**
-     * Returns the inverse of the camera matrix, ie the matrix to transform objects into camera (view) space
+     * Copiesthe inverse of the camera matrix, ie the matrix to transform objects into camera (view) space
      * 
-     * @return The view matrix, transforms into camera space
+     * @param matrix The dest matrix that will transform into camera space
+     * @param index Index into matrix
      */
-    public float[] getViewMatrix() {
-        return inverseMatrix;
+    public void copyViewMatrix(float[] matrix, int index) {
+        System.arraycopy(inverseMatrix, 0, matrix, index, Matrix.MATRIX_ELEMENTS);
     }
 
 }

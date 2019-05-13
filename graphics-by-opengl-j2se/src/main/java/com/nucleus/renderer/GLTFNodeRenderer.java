@@ -30,19 +30,20 @@ import com.nucleus.scene.gltf.Scene;
 import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderVariable;
+import com.nucleus.vecmath.Matrix.MatrixStack;
 
 public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
 
     transient protected FrameSampler timeKeeper = FrameSampler.getInstance();
     private Pass currentPass;
-    protected ArrayDeque<float[]> modelMatrixStack = new ArrayDeque<float[]>(100);
-    protected ArrayDeque<float[]> viewMatrixStack = new ArrayDeque<float[]>(5);
-    protected ArrayDeque<float[]> projectionMatrixStack = new ArrayDeque<float[]>(5);
     protected float[] modelMatrix;
     protected int currentProgram = -1;
     protected RenderState renderState;
     protected Cullface cullFace;
     protected Mode forceMode = null;
+    protected MatrixStack modelStack = new MatrixStack(100);
+    protected MatrixStack viewStack = new MatrixStack(5);
+    protected MatrixStack projectionStack = new MatrixStack(5);
 
     /**
      * Internal method to handle matrix stack, push a matrix on the stack
@@ -80,9 +81,9 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         }
         forceMode = Configuration.getInstance().getGLTFMode();
         renderState = renderer.getRenderState();
-        pushMatrix(viewMatrixStack, matrices[Matrices.VIEW.index]);
-        pushMatrix(projectionMatrixStack, matrices[Matrices.PROJECTION.index]);
-        pushMatrix(modelMatrixStack, matrices[Matrices.MODEL.index]);
+        modelStack.push(matrices[Matrices.MODEL.index], 0);
+        viewStack.push(matrices[Matrices.VIEW.index], 0);
+        projectionStack.push(matrices[Matrices.PROJECTION.index], 0);
 
         currentProgram = -1;
         this.currentPass = currentPass;
@@ -92,13 +93,13 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         scene.setMVP(matrices);
         // This will rotate the view - ie the camera
         // matrices[Matrices.VIEW.index] = scene.getSceneTransform().concatMatrix(matrices[Matrices.VIEW.index]);
-        matrices[Matrices.MODEL.index] = scene.getSceneTransform().concatMatrix(matrices[Matrices.MODEL.index]);
+        scene.getSceneTransform().concatMatrix(matrices[Matrices.MODEL.index], 0);
         // Render the default scene.
         renderScene(gles, glTF, scene, currentPass, matrices);
 
-        matrices[Matrices.MODEL.index] = popMatrix(modelMatrixStack);
-        matrices[Matrices.VIEW.index] = popMatrix(viewMatrixStack);
-        matrices[Matrices.PROJECTION.index] = popMatrix(projectionMatrixStack);
+        modelStack.pop(matrices[Matrices.MODEL.index], 0);
+        viewStack.pop(matrices[Matrices.VIEW.index], 0);
+        projectionStack.pop(matrices[Matrices.PROJECTION.index], 0);
 
         return true;
     }
@@ -125,14 +126,14 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      */
     protected void renderNode(GLES20Wrapper gles, GLTF glTF, Node node, float[][] matrices)
             throws GLException {
-        pushMatrix(modelMatrixStack, matrices[Matrices.MODEL.index]);
-        matrices[Matrices.MODEL.index] = node.concatMatrix(matrices[Matrices.MODEL.index]);
+        modelStack.push(matrices[Matrices.MODEL.index], 0);
+        node.concatMatrix(matrices[Matrices.MODEL.index], 0);
         renderMesh(gles, glTF, node.getMesh(), matrices);
         renderDebugMesh(gles, glTF, node.getMesh(), matrices);
 
         // Render children.
         renderNodes(gles, glTF, node.getChildren(), matrices);
-        matrices[Matrices.MODEL.index] = popMatrix(modelMatrixStack);
+        modelStack.pop(matrices[Matrices.MODEL.index], 0);
     }
 
     /**
