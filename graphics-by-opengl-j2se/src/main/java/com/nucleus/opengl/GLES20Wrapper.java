@@ -922,13 +922,12 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public Format texImage(Image image, int level) {
         BufferImage bufferImage = image.getBufferImage();
         ImageFormat imageFormat = bufferImage.getFormat();
-        Format format = TextureUtils.getFormat(imageFormat);
-        Format internalFormat = TextureUtils.getInternalFormat(imageFormat, bufferImage.getColorModel());
+        Format format = TextureUtils.getFormat(imageFormat, bufferImage.getColorModel());
         com.nucleus.texturing.Texture2D.Type type = TextureUtils.getType(imageFormat);
-        glTexImage2D(GLES20.GL_TEXTURE_2D, level, internalFormat.format, bufferImage.getWidth(),
+        glTexImage2D(GLES20.GL_TEXTURE_2D, level, format.internalFormat, bufferImage.getWidth(),
                 bufferImage.getHeight(), 0, format.format, type.type,
                 bufferImage.getBuffer().position(0));
-        return internalFormat;
+        return format;
     }
 
     @Override

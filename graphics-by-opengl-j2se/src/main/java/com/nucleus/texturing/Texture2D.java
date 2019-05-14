@@ -39,19 +39,22 @@ public class Texture2D extends BaseReference {
      *
      */
     public enum Format {
-        ALPHA(0x1906),
-        RGB(0x1907),
-        RGBA(0x1908),
-        SRGB(0x8C41),
-        SRGBA(0x8C43),
-        LUMINANCE(0x1909),
-        LUMINANCE_ALPHA(0x190A),
-        DEPTH_COMPONENT(0x1902);
+        ALPHA(0x1906, 0x1906),
+        RGB(0x1907, 0x1907),
+        RGBA(0x1908, 0x1908),
+        RG(0x8227, 0x822B),
+        SRGB(0x1907, 0x8C41),
+        SRGBA(0x1908, 0x8C43),
+        LUMINANCE(0x1909, 0x1909),
+        LUMINANCE_ALPHA(0x190A, 0x190A),
+        DEPTH_COMPONENT(0x1902, 0x1902);
 
         public final int format;
+        public final int internalFormat;
 
-        private Format(int format) {
+        private Format(int format, int internalFormat) {
             this.format = format;
+            this.internalFormat = internalFormat;
         }
     }
 

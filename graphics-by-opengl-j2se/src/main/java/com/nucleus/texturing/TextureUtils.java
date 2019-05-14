@@ -154,10 +154,10 @@ public class TextureUtils {
         }
         long start = System.currentTimeMillis();
         gles.glBindTexture(GLES20.GL_TEXTURE_2D, image.getTextureName());
-        Format internalFormat = gles.texImage(image, 0);
+        Format format = gles.texImage(image, 0);
         GLUtils.handleError(gles, "texImage2D");
         SimpleLogger.d(TextureUtils.class,
-                "Uploaded texture " + image.getUri() + " with internalformat " + internalFormat);
+                "Uploaded texture " + image.getUri() + " with format " + format);
         if (generateMipmaps || Configuration.getInstance().isGenerateMipMaps()) {
             gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
             SimpleLogger.d(TextureUtils.class, "Generated mipmaps for texture " + image.getUri());
@@ -227,6 +227,7 @@ public class TextureUtils {
             case ALPHA:
             case LUMINANCE:
             case LUMINANCE_ALPHA:
+            case RG:
                 return Type.UNSIGNED_BYTE;
             case RGB565:
                 return Type.UNSIGNED_SHORT_5_6_5;
@@ -258,6 +259,8 @@ public class TextureUtils {
             case RGBA:
             case RGB5_A1:
                 return Format.RGBA;
+            case RG:
+                return Format.RG;
             case ALPHA:
                 return Format.ALPHA;
             case LUMINANCE:
@@ -277,13 +280,13 @@ public class TextureUtils {
     }
 
     /**
-     * Return the GL internal format for the specified format.
+     * Return the GL format for the imageformat and colormodel
      * 
      * @param format Image pixel format.
      * @param colorModel
-     * @return GL internal format for the specified format, eg GL_ALPHA, GL_RGB, GL_RGBA, GL_SRGB
+     * @return Texture format
      */
-    public static Texture2D.Format getInternalFormat(ImageFormat format, ColorModel colorModel) {
+    public static Texture2D.Format getFormat(ImageFormat format, ColorModel colorModel) {
         switch (colorModel) {
             case LINEAR:
                 return getFormat(format);
