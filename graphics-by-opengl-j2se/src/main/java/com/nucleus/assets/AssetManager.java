@@ -391,9 +391,12 @@ public class AssetManager {
         SimpleLogger.d(getClass(), "Loaded gltf assets");
         // Build TBN before creating VBOs
         // This can mean that a number of buffers needs to be created, for instance normal, tangent and bitangent.
+        long start = System.currentTimeMillis();
         for (Mesh m : glTF.getMeshes()) {
             buildTBN(glTF, m.getPrimitives());
         }
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.PROCESS_BUFFERS, "_TBN", start,
+                System.currentTimeMillis());
         if (gles != null && com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
             BufferObjectsFactory.getInstance().createVBOs(gles, glTF.getBuffers(null));
             SimpleLogger.d(getClass(), "Created VBOs for gltf assets");
@@ -407,6 +410,7 @@ public class AssetManager {
                 p.calculateTBN(gltf);
             }
         }
+
     }
 
     /**
@@ -501,6 +505,7 @@ public class AssetManager {
      * @throws IOException
      */
     protected void loadBuffers(GLTF glTF) throws IOException {
+        long start = System.currentTimeMillis();
         try {
             for (Buffer b : glTF.getBuffers(null)) {
                 b.createBuffer();
@@ -509,10 +514,12 @@ public class AssetManager {
         } catch (URISyntaxException e) {
             throw new IOException(e);
         }
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.LOAD_BUFFERS, "_GLTF", start,
+                System.currentTimeMillis());
     }
 
     /**
-     * Loads all textures for the specified material
+     * Loads all textures for the specified materials
      * 
      * @param gles
      * @param gltf
@@ -520,11 +527,14 @@ public class AssetManager {
      * @throws IOException
      */
     protected void loadTextures(GLES20Wrapper gles, GLTF gltf, Material[] materials) throws IOException {
+        long start = System.currentTimeMillis();
         if (materials != null) {
             for (Material material : materials) {
                 loadTextures(gles, gltf, material);
             }
         }
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_TEXTURE, "_ALL", start,
+                System.currentTimeMillis());
     }
 
     /**
