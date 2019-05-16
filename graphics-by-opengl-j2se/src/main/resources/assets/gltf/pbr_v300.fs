@@ -160,6 +160,16 @@ vec3[2] calculateFresnelDiffuse(in BRDF brdf, const vec3 metallicRoughness) {
     return internalCalculatePBR(brdf, F0, _PBRDATA[3].rgb, roughness);
 }
 
+vec3[2] calculateFresnelDiffuse(in BRDF brdf, const vec2 metallicRoughness) {
+    float roughness = max(MIN_ROUGHNESS,_PBRDATA[0].y * metallicRoughness.r);
+    float metal =  clamp(_PBRDATA[0].x * metallicRoughness.g, MIN_METALLIC, MAX_METALLIC);
+    vec3 F0 = mix(dielectricSpecular, _PBRDATA[3].rgb, metal);
+    brdf.mro.b = metal;
+    brdf.mro.g = roughness;
+    return internalCalculatePBR(brdf, F0, _PBRDATA[3].rgb, roughness);
+}
+
+
 vec3[2] calculateFresnelDiffuse(in BRDF brdf, const float occlusion) {
     brdf.mro.r = occlusion;
     return internalCalculatePBR(brdf,  _PBRDATA[1].rgb, _PBRDATA[2].rgb, max(MIN_ROUGHNESS, _PBRDATA[0].y));

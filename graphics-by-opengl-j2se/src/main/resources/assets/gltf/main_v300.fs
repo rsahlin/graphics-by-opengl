@@ -18,7 +18,7 @@ void main() {
 #endif
 
 #ifdef METALROUGH_MAP
-    vec3[2] diffuseSpecular = calculateFresnelDiffuse(brdf, vec3(texture(uTextureMR, vTexMR)));
+    vec3[2] diffuseSpecular = calculateFresnelDiffuse(brdf, vec2(texture(uTextureMR, vTexMR).rg));
 #else
 #ifdef OCCLUSION_MAP
     vec3[2] diffuseSpecular = calculateFresnelDiffuse(brdf, texture(uTextureOcclusion, vTexOccl).r);

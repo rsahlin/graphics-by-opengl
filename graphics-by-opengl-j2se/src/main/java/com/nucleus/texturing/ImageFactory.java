@@ -14,25 +14,6 @@ import com.nucleus.texturing.BufferImage.ImageFormat;
 public interface ImageFactory {
 
     /**
-     * Definition of how pixels are stored for buffers that are used by the ImageFactory.
-     * Used when images are loaded and are not in a known GL format {@link ImageFormat}
-     * 
-     * @author Richard Sahlin
-     *
-     */
-    public enum PixelFormat {
-
-    BYTE_BGR(),
-    BYTE_ABGR(),
-    BYTE_RGB(),
-    BYTE_ARGB();
-
-        private PixelFormat() {
-        };
-
-    }
-
-    /**
      * Loads an image, the image must be in a format that is understood by the platform.
      * 
      * @param name The filename to load

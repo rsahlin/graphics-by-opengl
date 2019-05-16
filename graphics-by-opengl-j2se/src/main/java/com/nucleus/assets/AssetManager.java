@@ -522,25 +522,26 @@ public class AssetManager {
     protected void loadTextures(GLES20Wrapper gles, GLTF gltf, Material[] materials) throws IOException {
         if (materials != null) {
             for (Material material : materials) {
-                PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
-                loadTextures(gles, gltf, pbr);
-                loadTexture(gles, gltf, material.getNormalTexture(), ColorModel.LINEAR);
+                loadTextures(gles, gltf, material);
             }
         }
     }
 
     /**
-     * Loads the textures needed for the PBR material property, if texture bufferimage already loaded
+     * Loads the textures needed for the PBR and material property, if texture bufferimage already loaded
      * for a texture then it is skipped.
      * 
      * @param gles
      * @param gltf
-     * @param pbr
+     * @param material
      * @throws IOException
      */
-    protected void loadTextures(GLES20Wrapper gles, GLTF gltf, PBRMetallicRoughness pbr) throws IOException {
-        loadTexture(gles, gltf, pbr.getBaseColorTexture(), ColorModel.SRGB);
-        loadTexture(gles, gltf, pbr.getMetallicRoughnessTexture(), ColorModel.LINEAR);
+    protected void loadTextures(GLES20Wrapper gles, GLTF gltf, Material material)
+            throws IOException {
+        PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
+        loadTexture(gles, gltf, pbr.getBaseColorTexture(), null, ColorModel.SRGB);
+        loadTexture(gles, gltf, pbr.getMetallicRoughnessTexture(), ImageFormat.RG, ColorModel.LINEAR);
+        loadTexture(gles, gltf, material.getNormalTexture(), null, ColorModel.LINEAR);
     }
 
     /**
@@ -550,17 +551,19 @@ public class AssetManager {
      * @param gles
      * @param gltf
      * @param texInfo
+     * @param destFormat Optional destination image format, if null then same as source
      * @param colorMode If model is linear or srgb
      * @throws IOException
      */
-    protected void loadTexture(GLES20Wrapper gles, GLTF gltf, TextureInfo texInfo, BufferImage.ColorModel colorModel)
+    protected void loadTexture(GLES20Wrapper gles, GLTF gltf, TextureInfo texInfo, ImageFormat destFormat,
+            BufferImage.ColorModel colorModel)
             throws IOException {
         if (texInfo != null && gltf.getTexture(texInfo).getImage().getBufferImage() == null) {
             // Have not loaded bufferimage for this texture
             long start = System.currentTimeMillis();
             Texture texture = gltf.getTexture(texInfo);
             Image img = texture.getImage();
-            BufferImage bufferImage = getTextureImage(gltf.getPath(img.getUri()));
+            BufferImage bufferImage = getTextureImage(gltf.getPath(img.getUri()), destFormat);
             bufferImage.setColorModel(colorModel);
             img.setBufferImage(bufferImage);
             internalCreateTexture(gles, img);
@@ -595,14 +598,15 @@ public class AssetManager {
      * Returns the texture image, if not already loaded the image is loaded and returned.
      * 
      * @param uri Full path to Image resource
+     * @param destFormat Optional destination image format, if null then same format as source will be chosen.
      * @return
      * @throws IOException
      */
-    protected BufferImage getTextureImage(String uri) throws IOException {
+    protected BufferImage getTextureImage(String uri, ImageFormat destFormat) throws IOException {
         if (uri != null) {
             BufferImage textureImage = images.get(uri);
             if (textureImage == null) {
-                textureImage = BaseImageFactory.getInstance().createImage(uri, null);
+                textureImage = BaseImageFactory.getInstance().createImage(uri, destFormat);
                 images.put(uri, textureImage);
             }
             return textureImage;

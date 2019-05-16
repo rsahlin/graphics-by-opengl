@@ -49,6 +49,10 @@ public class BufferImage extends BufferObject {
          */
         RGBA(0x1908, 4),
         /**
+         * Image type RG 88, 8 bits per component 16 bit format
+         */
+        RG(0x8227, 2),
+        /**
          * 8 Bits luminance, 8 bits alpha, 16 bit format.
          */
         LUMINANCE_ALPHA(0x1909, 2),
@@ -100,13 +104,17 @@ public class BufferImage extends BufferObject {
         // TODO - use ImageFormat.RGB565 instead?
         TYPE_BYTE_INDEXED(13, 1, ImageFormat.RGB),
         /**
-         * Bitmap with ARGB 8888 (eg Android)
+         * Bitmap with RGBA 8888 (eg Android)
          */
         TYPE_RGBA(-1, 4, ImageFormat.RGBA),
         /**
          * Bitmap with RGB 565 (eg Android)
          */
-        TYPE_RGB565(-1, 2, ImageFormat.RGB565);
+        TYPE_RGB565(-1, 2, ImageFormat.RGB565),
+        /**
+         * Bitmap with RGB 888 (eg Android)
+         */
+        TYPE_RGB(-1, 3, ImageFormat.RGB);
 
         /**
          * The AWT BufferedImage type
@@ -157,6 +165,17 @@ public class BufferImage extends BufferObject {
             return null;
         }
 
+    }
+
+    public enum ConversionMask {
+
+        GREEN_BLUE(ImageFormat.RG);
+
+        private ConversionMask(ImageFormat destinationFormat) {
+            this.destinationFormat = destinationFormat;
+        }
+
+        public final ImageFormat destinationFormat;
     }
 
     ImageFormat format;
@@ -228,6 +247,7 @@ public class BufferImage extends BufferObject {
             case RGB:
             case RGBA:
             case LUMINANCE_ALPHA:
+            case RG:
             case LUMINANCE:
             case ALPHA:
                 buffer = BufferUtils.createByteBuffer(sizeInBytes);
