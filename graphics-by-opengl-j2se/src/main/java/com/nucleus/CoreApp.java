@@ -354,16 +354,17 @@ public class CoreApp implements FrameRenderer {
      * Window and GL context must be created before calling this method.
      * Will set the name of the window from ClientApplication.
      * 
-     * @param width
-     * @param height
-     * @param renderer
+     * @param width Width of display window
+     * @param height Height of display window
+     * @param renderer The renderer to use
+     * @param surfaceConfig The surface configuration
      * @return Instance of {@link CoreApp} with the specified clientclass {@link ClientApplication}
      */
-    public static CoreApp createCoreApp(int width, int height, NucleusRenderer renderer) {
+    public static CoreApp createCoreApp(int width, int height, NucleusRenderer renderer, SurfaceConfiguration surfaceConfig) {
         if (clientClass == null) {
             throw new IllegalArgumentException("Must call #setClientClass() before calling #createCoreApp()");
         }
-        renderer.init(new SurfaceConfiguration(), width, height);
+        renderer.init(surfaceConfig, width, height);
         try {
             ClientApplication clientApp = (ClientApplication) clientClass.newInstance();
             Window.getInstance().setTitle(clientApp.getAppName() + " " + clientApp.getVersion());

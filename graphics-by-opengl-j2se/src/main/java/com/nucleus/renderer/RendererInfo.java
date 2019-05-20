@@ -137,8 +137,7 @@ public class RendererInfo {
      */
     private boolean hasExtensionNoPrefix(String extension) {
         for (String str : extensions) {
-            int index = str.indexOf('_', 3) + 1;
-            if (str.substring(index).equals(extension)) {
+            if (str.contains(extension)) {
                 return true;
             }
         }

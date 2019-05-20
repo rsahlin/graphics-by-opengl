@@ -163,7 +163,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     @Override
     public void createCoreApp(int width, int height) {
         NucleusRenderer renderer = RendererFactory.getRenderer(j2seWindow.getGLESWrapper());
-        coreApp = CoreApp.createCoreApp(width, height, renderer);
+        coreApp = CoreApp.createCoreApp(width, height, renderer, j2seWindow.config);
         j2seWindow.setCoreApp(coreApp);
     }
 

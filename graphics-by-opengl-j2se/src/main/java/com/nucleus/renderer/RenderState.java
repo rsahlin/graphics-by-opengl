@@ -77,7 +77,7 @@ public class RenderState {
     public final static float DEFAULT_CLEARDEPTH = DEFAULT_DEPTHRANGE_FAR;
     public final static Cullface DEFAULT_CULLFACE = Cullface.NONE;
     public final static int DEFAULT_CLEARFLAG = GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT;
-    public final static boolean DEFAULT_MULTISAMPLING = false;
+    public final static boolean DEFAULT_MULTISAMPLING = true;
 
     public final static int CHANGE_FLAG_ALL = -1; // Flag that all values should be updated
     public final static int CHANGE_FLAG_NONE = 0; // NO values should be updated.

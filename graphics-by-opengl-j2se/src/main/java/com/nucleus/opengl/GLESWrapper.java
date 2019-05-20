@@ -1185,7 +1185,7 @@ public abstract class GLESWrapper {
      */
     public enum GLES_EXTENSIONS {
 
-        multisample_compatibility(),
+        ARB_multisample(),
         separate_shader_objects();
 
     }

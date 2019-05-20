@@ -215,7 +215,7 @@ class BaseRenderer implements NucleusRenderer {
         }
         if ((flags & RenderState.CHANGE_FLAG_MULTISAMPLE) != 0) {
             if (GLES20Wrapper.getInfo()
-                    .hasExtensionSupport(GLESWrapper.GLES_EXTENSIONS.multisample_compatibility)) {
+                    .hasExtensionSupport(GLESWrapper.GLES_EXTENSIONS.ARB_multisample)) {
                 if (surfaceConfig != null && surfaceConfig.getSamples() > 1 && state.isMultisampling()) {
                     gles.glEnable(GLES_EXTENSION_TOKENS.MULTISAMPLE_EXT.value);
                 } else {
