@@ -55,6 +55,7 @@ ECLIPSE
 Prerequisites:
 - Maven
 - Eclipse
+- If you are behind a proxy - configure maven proxy settings: https://maven.apache.org/guides/mini/guide-proxies.html
 - Andmore maven plugin from Eclipse Marketplace (https://projects.eclipse.org/projects/tools.andmore)
 Make sure that you are using Android Andmore and m2e plugins (not the old DDMS/ADT from 'The Android Open Source Project')
 Check by opening 'Help' - 'Install new software' - 'What is already installed?' 
