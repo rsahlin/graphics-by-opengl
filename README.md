@@ -55,6 +55,7 @@ ECLIPSE
 Prerequisites:
 - Maven
 - Eclipse
+- M2Eclipse plugin https://www.eclipse.org/m2e/
 - Andmore maven plugin from Eclipse Marketplace (https://projects.eclipse.org/projects/tools.andmore)
 Make sure that you are using Android Andmore and m2e plugins (not the old DDMS/ADT from 'The Android Open Source Project')
 Check by opening 'Help' - 'Install new software' - 'What is already installed?' 
