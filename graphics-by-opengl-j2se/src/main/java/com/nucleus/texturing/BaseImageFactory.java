@@ -196,6 +196,7 @@ public abstract class BaseImageFactory implements ImageFactory {
                         copyPixels_4BYTE_ABGR_TO_RGB(source, buffer, destination.getWidth(), destination.getHeight());
                         break;
                     case RG:
+                    case LUMINANCE_ALPHA:
                         copyPixels_4BYTE_ABGR_TO_RG(source, buffer, destination.getWidth(), destination.getHeight());
                         break;
 
@@ -229,6 +230,7 @@ public abstract class BaseImageFactory implements ImageFactory {
                         copyPixels_3BYTE_BGR_TO_RGB(source, buffer);
                         break;
                     case RG:
+                    case LUMINANCE_ALPHA:
                         copyPixels_3BYTE_BGR_TO_RG(source, buffer, destination.getWidth(),
                                 destination.getHeight());
                         break;
@@ -260,6 +262,7 @@ public abstract class BaseImageFactory implements ImageFactory {
                         buffer.put(source);
                         break;
                     case RG:
+                    case LUMINANCE_ALPHA:
                         copyPixels_3BYTE_BGR_TO_RG(source, buffer, destination.getWidth(),
                                 destination.getHeight());
                         break;
@@ -416,7 +419,7 @@ public abstract class BaseImageFactory implements ImageFactory {
     }
 
     /**
-     * Copies the 3 byte BGR to 16 bit RG
+     * Copies the 3 byte BGR to 16 bit 2 elements, RG, GB or LA depending on destination format
      * 
      * @param source
      * @param destination
@@ -477,7 +480,7 @@ public abstract class BaseImageFactory implements ImageFactory {
     }
 
     /**
-     * Copies the 4 byte ABGR to 16 bit RG
+     * Copies the 4 byte ABGR to 16 bit 2 ELEMENTS, RG, GB or LA depending on destination texture format.
      * 
      * @param source
      * @param destination

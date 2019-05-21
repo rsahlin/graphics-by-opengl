@@ -550,7 +550,7 @@ public class AssetManager {
             throws IOException {
         PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
         loadTexture(gles, gltf, pbr.getBaseColorTexture(), null, ColorModel.SRGB);
-        loadTexture(gles, gltf, pbr.getMetallicRoughnessTexture(), ImageFormat.RG, ColorModel.LINEAR);
+        loadTexture(gles, gltf, pbr.getMetallicRoughnessTexture(), ImageFormat.LUMINANCE_ALPHA, ColorModel.LINEAR);
         loadTexture(gles, gltf, material.getNormalTexture(), null, ColorModel.LINEAR);
     }
 
