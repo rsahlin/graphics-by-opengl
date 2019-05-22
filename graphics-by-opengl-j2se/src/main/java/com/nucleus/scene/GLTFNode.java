@@ -17,11 +17,11 @@ import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
+import com.nucleus.scene.gltf.Material.ShadingMaps;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.RenderableMesh;
 import com.nucleus.shader.GLTFShaderProgram;
-import com.nucleus.shader.GLTFShaderProgram.PBRShading;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.vecmath.Matrix;
 
@@ -204,13 +204,12 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
 
     /**
      * Creates an instance, not compiled or linked, of the shader program needed to render this primitive.
-     * If no basecolor texture is used the shading will be flat
      * 
      * @param primitive
      * @return
      */
     public GLTFShaderProgram createProgram(Primitive primitive) {
-        PBRShading pbrShading = new PBRShading(primitive);
+        ShadingMaps pbrShading = new ShadingMaps(primitive.getMaterial());
         return new GLTFShaderProgram(pbrShading);
     }
 
