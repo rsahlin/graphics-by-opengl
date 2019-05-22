@@ -1,8 +1,10 @@
 package com.nucleus.scene.gltf;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
+import com.nucleus.scene.gltf.Texture.Swizzle.Component;
 
 /**
  * 
@@ -21,6 +23,43 @@ import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
  * extras any Application-specific data. No
  */
 public class Texture extends GLTFNamedValue implements RuntimeResolver {
+
+    public static class Swizzle {
+
+        public enum Component {
+            RED(GLES30.GL_RED),
+            GREEN(GLES30.GL_GREEN),
+            BLUE(GLES30.GL_BLUE),
+            ALPHA(GLES30.GL_ALPHA);
+
+            public final int value;
+
+            Component(int value) {
+                this.value = value;
+            }
+
+        }
+
+        public final Component swizzleRed;
+        public final Component swizzleGreen;
+        public final Component swizzleBlue;
+        public final Component swizzleAlpha;
+
+        private Swizzle() {
+            swizzleRed = Component.RED;
+            swizzleGreen = Component.GREEN;
+            swizzleBlue = Component.BLUE;
+            swizzleAlpha = Component.ALPHA;
+        }
+
+        private Swizzle(Component r, Component g, Component b, Component a) {
+            swizzleRed = r;
+            swizzleGreen = g;
+            swizzleBlue = b;
+            swizzleAlpha = a;
+        }
+
+    }
 
     /**
      * textureInfo
@@ -136,6 +175,28 @@ public class Texture extends GLTFNamedValue implements RuntimeResolver {
 
     transient private Sampler samplerRef;
     transient private Image imageRef;
+    transient private Swizzle swizzle = new Swizzle();
+
+    /**
+     * Sets the swizzle for the r,g,b and alpha. This sets the source for respective output channel.
+     * 
+     * @param r The source of the red channel, RED for red
+     * @param g The source of the green channel, GREEN for green
+     * @param b The source of the blue channel, BLUE for blue
+     * @param a The source of the alpha channel, ALPHA for alpha
+     */
+    public void setSwizzle(Component r, Component g, Component b, Component a) {
+        swizzle = new Swizzle(r, g, b, a);
+    }
+
+    /**
+     * Returns the texture swizzle pattern
+     * 
+     * @return
+     */
+    public Swizzle getSwizzle() {
+        return swizzle;
+    }
 
     /**
      * Returns the sampler used by this texture

@@ -207,7 +207,7 @@ public class TextureUtils {
             gles.glActiveTexture(GLES20.GL_TEXTURE0 + unit);
             int textureID = texture.getImage().getTextureName();
             gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
-            gles.uploadTexParameters(texture.getSampler());
+            gles.uploadTexParameters(texture);
             GLUtils.handleError(gles, "glBindTexture()");
         }
     }
@@ -261,6 +261,8 @@ public class TextureUtils {
                 return Format.RGBA;
             case RG:
                 return Format.RG;
+            case R:
+                return Format.R;
             case ALPHA:
                 return Format.ALPHA;
             case LUMINANCE:

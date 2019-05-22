@@ -43,6 +43,7 @@ public class Texture2D extends BaseReference {
         RGB(0x1907, 0x1907),
         RGBA(0x1908, 0x1908),
         RG(0x8227, 0x822B),
+        R(0x1903, 0x8229),
         SRGB(0x1907, 0x8C41),
         SRGBA(0x1908, 0x8C43),
         LUMINANCE(0x1909, 0x1909),

@@ -260,7 +260,7 @@ public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
     @Override
     public void glTexParameteri(int target, int pname, int param) {
         org.lwjgl.opengles.GLES20.glTexParameteri(target, pname, param);
-
+        
     }
 
     @Override

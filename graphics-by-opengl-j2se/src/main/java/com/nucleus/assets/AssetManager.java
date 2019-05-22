@@ -40,6 +40,7 @@ import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Texture;
+import com.nucleus.scene.gltf.Texture.Swizzle.Component;
 import com.nucleus.scene.gltf.Texture.TextureInfo;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.BaseImageFactory;
@@ -550,8 +551,20 @@ public class AssetManager {
             throws IOException {
         PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
         loadTexture(gles, gltf, pbr.getBaseColorTexture(), null, ColorModel.SRGB);
-        loadTexture(gles, gltf, pbr.getMetallicRoughnessTexture(), ImageFormat.LUMINANCE_ALPHA, ColorModel.LINEAR);
-        loadTexture(gles, gltf, material.getNormalTexture(), null, ColorModel.LINEAR);
+        TextureInfo mrInfo = pbr.getMetallicRoughnessTexture();
+        loadTexture(gles, gltf, material.getNormalTexture(), ImageFormat.RGB, ColorModel.LINEAR);
+        TextureInfo occlInfo = material.getOcclusionTexture();
+        if (mrInfo != null && occlInfo != null && mrInfo.getIndex() == occlInfo.getIndex()) {
+            // Material has both metallicroughness and occlusion in the same texture
+            loadTexture(gles, gltf, pbr.getMetallicRoughnessTexture(), ImageFormat.RGB, ColorModel.LINEAR);
+        } else {
+            Texture mr = loadTexture(gles, gltf, pbr.getMetallicRoughnessTexture(), ImageFormat.RG, ColorModel.LINEAR);
+            if (mr != null) {
+                // Need to set texture swizzle so that RG is mapped to GB
+                mr.setSwizzle(Component.RED, Component.RED, Component.GREEN, Component.ALPHA);
+            }
+            loadTexture(gles, gltf, material.getOcclusionTexture(), ImageFormat.R, ColorModel.LINEAR);
+        }
     }
 
     /**
@@ -563,9 +576,10 @@ public class AssetManager {
      * @param texInfo
      * @param destFormat Optional destination image format, if null then same as source
      * @param colorMode If model is linear or srgb
+     * @return The loaded texture object
      * @throws IOException
      */
-    protected void loadTexture(GLES20Wrapper gles, GLTF gltf, TextureInfo texInfo, ImageFormat destFormat,
+    protected Texture loadTexture(GLES20Wrapper gles, GLTF gltf, TextureInfo texInfo, ImageFormat destFormat,
             BufferImage.ColorModel colorModel)
             throws IOException {
         if (texInfo != null && gltf.getTexture(texInfo).getImage().getBufferImage() == null) {
@@ -579,7 +593,9 @@ public class AssetManager {
             internalCreateTexture(gles, img);
             FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_TEXTURE, " " + texture.getName(), start,
                     System.currentTimeMillis());
+            return texture;
         }
+        return null;
     }
 
     /**

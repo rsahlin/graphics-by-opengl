@@ -53,6 +53,10 @@ public class BufferImage extends BufferObject {
          */
         RG(0x8227, 2),
         /**
+         * Image type R 8, 8 bit for Red component
+         */
+        R(0x1903, 1),
+        /**
          * 8 Bits luminance, 8 bits alpha, 16 bit format.
          */
         LUMINANCE_ALPHA(0x1909, 2),
@@ -167,17 +171,6 @@ public class BufferImage extends BufferObject {
 
     }
 
-    public enum ConversionMask {
-
-        GREEN_BLUE(ImageFormat.RG);
-
-        private ConversionMask(ImageFormat destinationFormat) {
-            this.destinationFormat = destinationFormat;
-        }
-
-        public final ImageFormat destinationFormat;
-    }
-
     ImageFormat format;
     ColorModel colorModel = ColorModel.LINEAR;
     ByteBuffer buffer;
@@ -248,6 +241,7 @@ public class BufferImage extends BufferObject {
             case RGBA:
             case LUMINANCE_ALPHA:
             case RG:
+            case R:
             case LUMINANCE:
             case ALPHA:
                 buffer = BufferUtils.createByteBuffer(sizeInBytes);

@@ -22,6 +22,7 @@ import com.nucleus.scene.gltf.Image;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Sampler;
+import com.nucleus.scene.gltf.Texture;
 import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderSource;
@@ -852,9 +853,10 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * Sets the texture parameter values for the texture parameter to OpenGL, call this to set the correct texture
      * parameters when rendering.
      * 
-     * @param sampler
+     * @param texture
      */
-    public void uploadTexParameters(Sampler sampler) throws GLException {
+    public void uploadTexParameters(Texture texture) throws GLException {
+        Sampler sampler = texture.getSampler();
         glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, sampler.getMinFilter());
         glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, sampler.getMagFilter());
         glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, sampler.getWrapS());
