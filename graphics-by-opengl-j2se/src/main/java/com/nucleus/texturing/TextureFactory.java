@@ -2,21 +2,14 @@ package com.nucleus.texturing;
 
 import com.nucleus.io.ExternalReference;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
-import com.nucleus.scene.gltf.GLTF;
-import com.nucleus.scene.gltf.Image;
-import com.nucleus.scene.gltf.Sampler;
-import com.nucleus.scene.gltf.Texture;
 import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.Texture2D.Type;
-import com.nucleus.texturing.TextureParameter.Parameter;
 
 /**
  * Used to create texture objects - ie not texture buffer
  * This class shall only handle creation of texture instance objects, not loading of image buffers.
  * 
- * @author Richard Sahlin
- *
  */
 public class TextureFactory {
 
@@ -124,26 +117,6 @@ public class TextureFactory {
     }
 
     /**
-     * Creates a new TiledTexture
-     * 
-     * @param id The name of the texture object
-     * @param externalReference External reference to the texture image
-     * @param targetResolution
-     * @param params
-     * @param mipmap Number of mipmap levels
-     * @param size Width and height of texture atlas, in number of tiles in x and y
-     * @param format
-     * @param type
-     * @return
-     */
-    public TiledTexture2D createTiledTexture(String id, ExternalReference externalReference,
-            RESOLUTION targetResolution, TextureParameter params, int mipmap, int[] size, Format format, Type type) {
-        TiledTexture2D tex = new TiledTexture2D(id, externalReference, targetResolution, params, mipmap, size, format,
-                type);
-        return tex;
-    }
-
-    /**
      * Copies the transient values (texture object name, width, height) and the texture format values into the
      * destination.
      * Use this to copy an instance of an existing texture but to a new type or with different texture parameters.
@@ -153,36 +126,6 @@ public class TextureFactory {
      */
     public void copyTextureInstance(Texture2D source, Texture2D destination) {
         destination.copyInstance(source);
-    }
-
-    /**
-     * Creates a texture2d object from a glTF texture
-     * 
-     * @param glTFTexture
-     * @return
-     */
-    public Texture2D createTexture(GLTF glTF, Texture glTFTexture) {
-        String id = glTFTexture.getName() != null ? glTFTexture.getName()
-                : (glTFTexture.getImage().getName() != null ? glTFTexture.getName() : glTFTexture.getImage().getUri());
-        Image img = glTFTexture.getImage();
-        TextureParameter textureParameter = createTextureParameter(glTFTexture.getSampler());
-        // If mipmapfilter then enable auto generation of mipmap levels
-        int levels = textureParameter.isMipMapFilter() ? 2 : 1;
-        return createTexture(TextureType.Texture2D, id, new ExternalReference(glTF.getPath(img.getUri())),
-                RESOLUTION.ULTRA_HD, textureParameter, levels, Format.RGBA, Type.UNSIGNED_BYTE);
-
-    }
-
-    /**
-     * Creates a TextureParameter from the Sampler values.
-     * 
-     * @param sampler
-     * @return
-     */
-    public TextureParameter createTextureParameter(Sampler sampler) {
-        return new TextureParameter(Parameter.get(sampler.getMinFilter()),
-                Parameter.get(sampler.getMagFilter()), Parameter.get(sampler.getWrapS()),
-                Parameter.get(sampler.getWrapT()));
     }
 
 }
