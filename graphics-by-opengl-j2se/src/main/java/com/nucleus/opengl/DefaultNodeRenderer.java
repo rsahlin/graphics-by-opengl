@@ -1,4 +1,4 @@
-package com.nucleus.renderer;
+package com.nucleus.opengl;
 
 import java.util.ArrayList;
 
@@ -9,12 +9,12 @@ import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.GLESWrapper.Mode;
-import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.renderer.Backend.DrawMode;
+import com.nucleus.renderer.NodeRenderer;
+import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.Pass;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.Texture2D;
@@ -23,10 +23,10 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
 
     transient protected FrameSampler timeKeeper = FrameSampler.getInstance();
     transient protected ArrayList<Mesh> nodeMeshes = new ArrayList<>();
-    transient protected Mode forceMode = null;
+    transient protected DrawMode forceMode = null;
 
     @Override
-    public void forceRenderMode(Mode mode) {
+    public void forceRenderMode(DrawMode mode) {
         this.forceMode = mode;
     }
 
@@ -54,22 +54,21 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
         program.prepareTexture(gles, mesh.getTexture(Texture2D.TEXTURE_0));
 
         material.setBlendModeSeparate(gles);
-
+        int mode = gles.getDrawMode(mesh.getMode());
         ElementBuffer indices = mesh.getElementBuffer();
-
         if (indices == null) {
-            gles.glDrawArrays(mesh.getMode().mode, mesh.getOffset(), mesh.getDrawCount());
+            gles.glDrawArrays(mode, mesh.getOffset(), mesh.getDrawCount());
             GLUtils.handleError(gles, "glDrawArrays ");
             timeKeeper.addDrawArrays(mesh.getDrawCount());
         } else {
             if (indices.getBufferName() > 0) {
                 gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
-                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
+                gles.glDrawElements(mode, mesh.getDrawCount(), indices.getType().type,
                         mesh.getOffset());
                 GLUtils.handleError(gles, "glDrawElements with ElementBuffer " + mesh.getMode() + ", "
                         + mesh.getDrawCount() + ", " + indices.getType() + ", " + mesh.getOffset());
             } else {
-                gles.glDrawElements(mesh.getMode().mode, mesh.getDrawCount(), indices.getType().type,
+                gles.glDrawElements(mode, mesh.getDrawCount(), indices.getType().type,
                         indices.getBuffer().position(mesh.getOffset()));
                 GLUtils.handleError(gles, "glDrawElements no ElementBuffer ");
             }

@@ -5,6 +5,8 @@ import java.util.StringTokenizer;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.StringUtils;
+import com.nucleus.renderer.Backend;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.RendererInfo;
 import com.nucleus.shader.ShaderSource;
 import com.nucleus.shader.ShaderSource.ESSLVersion;
@@ -12,7 +14,7 @@ import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 
-public abstract class GLESWrapper {
+public abstract class GLESWrapper extends Backend {
 
     public enum Error {
         INVALID_ENUM(GLES20.GL_INVALID_ENUM),
@@ -94,43 +96,8 @@ public abstract class GLESWrapper {
      */
     protected final Renderers renderVersion;
 
-    /**
-     * The supported renderers
-     * 
-     * @author Richard Sahlin
-     *
-     */
-    public enum Renderers {
-        GLES20(2, 0),
-        GLES30(3, 0),
-        GLES31(3, 1),
-        GLES32(3, 2);
-        public final int major;
-        public final int minor;
-
-        private Renderers(int major, int minor) {
-            this.major = major;
-            this.minor = minor;
-        };
-
-        /**
-         * Returns the enum from major.minor version
-         * 
-         * @param glVersion
-         * @return
-         */
-        public static Renderers get(int[] glVersion) {
-            for (Renderers r : Renderers.values()) {
-                if (r.major == glVersion[0] && r.minor == glVersion[1]) {
-                    return r;
-                }
-            }
-            return null;
-        }
-
-    }
-
     protected GLESWrapper(Platform platform, Renderers renderVersion) {
+        super(renderVersion);
         GLESWrapper.platform = platform;
         this.renderVersion = renderVersion;
         SimpleLogger.d(getClass(), "Created GLES wrapper " + renderVersion + " for platform " + platform);
@@ -1203,62 +1170,6 @@ public abstract class GLESWrapper {
     }
 
     /**
-     * The gl drawmodes
-     *
-     */
-    public enum Mode {
-        /**
-         * From GL_POINTS
-         */
-        POINTS(GLES20.GL_POINTS),
-        /**
-         * From GL_LINE_STRIP
-         */
-        LINE_STRIP(GLES20.GL_LINE_STRIP),
-        /**
-         * From GL_LINE_LOOP
-         */
-        LINE_LOOP(GLES20.GL_LINE_LOOP),
-        /**
-         * From GL_TRIANGLE_STRIP
-         */
-        TRIANGLE_STRIP(GLES20.GL_TRIANGLE_STRIP),
-        /**
-         * From GL_TRIANGLE_FAN
-         */
-        TRIANGLE_FAN(GLES20.GL_TRIANGLE_FAN),
-        /**
-         * From GL_TRIANGLES
-         */
-        TRIANGLES(GLES20.GL_TRIANGLES),
-        /**
-         * From GL_LINES
-         */
-        LINES(GLES20.GL_LINES);
-
-        public final int mode;
-
-        /**
-         * Fetches the enum from gl mode value
-         * 
-         * @param mode
-         * @return
-         */
-        public static Mode get(int mode) {
-            for (Mode m : Mode.values()) {
-                if (mode == m.mode) {
-                    return m;
-                }
-            }
-            return null;
-        }
-
-        private Mode(int mode) {
-            this.mode = mode;
-        }
-    }
-
-    /**
      * Returns the GLES shader language version for the platform implementation based on the shader source version.
      * If the shader source has a version string it shall be checked by the gles wrapper implementation and if needed
      * substituted for a version that is suitable for the current platform.
@@ -1390,6 +1301,33 @@ public abstract class GLESWrapper {
 
     public static Platform getPlatform() {
         return platform;
+    }
+
+    /**
+     * Fetches the
+     * 
+     * @param mode
+     * @return
+     */
+    public int getDrawMode(DrawMode mode) {
+        switch (mode) {
+            case LINE_LOOP:
+                return GLES20.GL_LINE_LOOP;
+            case LINE_STRIP:
+                return GLES20.GL_LINE_STRIP;
+            case LINES:
+                return GLES20.GL_LINES;
+            case POINTS:
+                return GLES20.GL_POINTS;
+            case TRIANGLE_FAN:
+                return GLES20.GL_TRIANGLE_FAN;
+            case TRIANGLE_STRIP:
+                return GLES20.GL_TRIANGLE_STRIP;
+            case TRIANGLES:
+                return GLES20.GL_TRIANGLES;
+            default:
+                throw new IllegalArgumentException("Not implemented for " + mode);
+        }
     }
 
 }

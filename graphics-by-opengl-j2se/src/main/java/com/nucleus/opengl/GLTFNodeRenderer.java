@@ -1,4 +1,4 @@
-package com.nucleus.renderer;
+package com.nucleus.opengl;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayDeque;
@@ -6,12 +6,15 @@ import java.util.ArrayList;
 
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Environment;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.renderer.Backend.DrawMode;
+import com.nucleus.renderer.Configuration;
+import com.nucleus.renderer.NodeRenderer;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
+import com.nucleus.renderer.Pass;
+import com.nucleus.renderer.RenderState;
 import com.nucleus.renderer.RenderState.Cullface;
 import com.nucleus.scene.GLTFNode;
 import com.nucleus.scene.gltf.Accessor;
@@ -25,7 +28,6 @@ import com.nucleus.scene.gltf.Node;
 import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
-import com.nucleus.scene.gltf.Primitive.Mode;
 import com.nucleus.scene.gltf.Scene;
 import com.nucleus.shader.GLTFShaderProgram;
 import com.nucleus.shader.ShaderProgram;
@@ -40,7 +42,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     protected int currentProgram = -1;
     protected RenderState renderState;
     protected Cullface cullFace;
-    protected Mode forceMode = null;
+    protected DrawMode forceMode = null;
     protected MatrixStack modelStack = new MatrixStack(100);
     protected MatrixStack viewStack = new MatrixStack(5);
     protected MatrixStack projectionStack = new MatrixStack(5);
@@ -66,8 +68,8 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     }
 
     @Override
-    public void forceRenderMode(com.nucleus.opengl.GLESWrapper.Mode mode) {
-        forceMode = mode != null ? Mode.getMode(mode.mode) : null;
+    public void forceRenderMode(DrawMode mode) {
+        forceMode = mode != null ? mode : null;
     }
 
     @Override
@@ -202,8 +204,8 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         if (material != null) {
             PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
             // Check for doublesided.
-            if (material.isDoubleSided() && renderState.cullFace != Cullface.NONE) {
-                cullFace = renderState.cullFace;
+            if (material.isDoubleSided() && renderState.getCullFace() != Cullface.NONE) {
+                cullFace = renderState.getCullFace();
                 gles.glDisable(GLES20.GL_CULL_FACE);
             }
             program.prepareTextures(gles, glTF, primitive, material);
@@ -239,9 +241,10 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @throws GLException
      */
     protected final void drawVertices(GLES20Wrapper gles, ShaderProgram program, Accessor indices, int vertexCount,
-            ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, Mode mode) throws GLException {
+            ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, DrawMode mode) throws GLException {
         gles.glVertexAttribPointer(program, attribs, accessors);
         GLUtils.handleError(gles, "glVertexAttribPointer");
+        int modeValue = gles.getDrawMode(mode);
         if (indices != null) {
             // Indexed mode - use glDrawElements
             BufferView indicesView = indices.getBufferView();
@@ -249,18 +252,18 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             if (buffer.getBufferName() > 0) {
                 gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, buffer.getBufferName());
                 GLUtils.handleError(gles, "glBindBuffer");
-                gles.glDrawElements(mode.value, indices.getCount(), indices.getComponentType().value,
+                gles.glDrawElements(modeValue, indices.getCount(), indices.getComponentType().value,
                         indices.getByteOffset() + indicesView.getByteOffset());
                 GLUtils.handleError(gles, "glDrawElements VBO " + buffer.getBufferName());
             } else {
-                gles.glDrawElements(mode.value, indices.getCount(), indices.getComponentType().value,
+                gles.glDrawElements(modeValue, indices.getCount(), indices.getComponentType().value,
                         indices.getBuffer());
                 GLUtils.handleError(gles, "glDrawElements");
             }
             timeKeeper.addDrawElements(indices.getCount(), vertexCount);
         } else {
             // Non indexed mode - use glDrawArrays
-            gles.glDrawArrays(mode.value, 0, vertexCount);
+            gles.glDrawArrays(modeValue, 0, vertexCount);
             GLUtils.handleError(gles, "glDrawArrays VBO");
             timeKeeper.addDrawArrays(vertexCount);
         }
@@ -292,7 +295,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
                 gles.disableAttribPointers();
                 Accessor position = p.getAccessor(Attributes.POSITION);
                 drawVertices(gles, debugProgram, null, position.getCount(),
-                        p.getAttributesArray(), p.getAccessorArray(), Mode.POINTS);
+                        p.getAttributesArray(), p.getAccessorArray(), DrawMode.POINTS);
                 gles.glUseProgram(currentProgram);
             }
         }

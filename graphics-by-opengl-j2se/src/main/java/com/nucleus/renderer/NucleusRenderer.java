@@ -22,6 +22,42 @@ import com.nucleus.scene.RootNode;
  */
 public interface NucleusRenderer {
 
+    /**
+     * The supported renderers
+     * 
+     */
+    public enum Renderers {
+        GLES20(2, 0),
+        GLES30(3, 0),
+        GLES31(3, 1),
+        GLES32(3, 2),
+        VULKAN_1_1(1, 1);
+
+        public final int major;
+        public final int minor;
+
+        private Renderers(int major, int minor) {
+            this.major = major;
+            this.minor = minor;
+        };
+
+        /**
+         * Returns the enum from major.minor version
+         * 
+         * @param glVersion
+         * @return
+         */
+        public static Renderers get(int[] glVersion) {
+            for (Renderers r : Renderers.values()) {
+                if (r.major == glVersion[0] && r.minor == glVersion[1]) {
+                    return r;
+                }
+            }
+            return null;
+        }
+
+    }
+
     public enum Matrices {
         MODEL(0),
         VIEW(1),

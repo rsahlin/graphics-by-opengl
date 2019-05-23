@@ -110,7 +110,7 @@ public class RenderTarget extends BaseReference {
             return texture;
         }
 
-        protected void setTexture(Texture2D texture) {
+        public void setTexture(Texture2D texture) {
             this.texture = texture;
         }
 

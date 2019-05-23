@@ -1,6 +1,5 @@
 package com.nucleus;
 
-
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
@@ -13,10 +12,10 @@ import com.nucleus.mmi.Pointer.Type;
 import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.renderer.Backend;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.renderer.Window;
-import com.nucleus.resource.ResourceBias.RESOLUTION;
 
 /**
  * Window that connects to the underlying GL.
@@ -69,7 +68,7 @@ public abstract class J2SEWindow implements WindowListener {
      * @return The GLES wrapper or null if not created
      * This may mean that the window has not been made visible.
      */
-    public GLESWrapper getGLESWrapper() {
+    public Backend getBackend() {
         return wrapper;
     }
 

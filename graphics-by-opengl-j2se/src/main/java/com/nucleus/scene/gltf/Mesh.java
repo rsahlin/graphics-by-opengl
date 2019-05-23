@@ -7,11 +7,11 @@ import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.scene.gltf.Primitive.Attributes;
-import com.nucleus.scene.gltf.Primitive.Mode;
 import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
@@ -112,8 +112,7 @@ public class Mesh extends GLTFNamedValue implements AttributeUpdater, RuntimeRes
                 attribList.add(Attributes.BITANGENT);
                 // Create the primitive used to draw vector lines
                 p = new Primitive(attribList, accessorList, primitive.getIndices(),
-                        new Material(),
-                        Mode.POINTS);
+                        new Material(), DrawMode.POINTS);
                 debugTBNPrimitives[index] = p;
             }
         }

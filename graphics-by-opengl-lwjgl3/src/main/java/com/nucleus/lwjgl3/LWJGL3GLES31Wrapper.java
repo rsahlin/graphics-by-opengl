@@ -6,6 +6,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES31Wrapper;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 
 public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
 
@@ -260,7 +261,7 @@ public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
     @Override
     public void glTexParameteri(int target, int pname, int param) {
         org.lwjgl.opengles.GLES20.glTexParameteri(target, pname, param);
-        
+
     }
 
     @Override

@@ -4,9 +4,8 @@ import java.nio.FloatBuffer;
 
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper.Renderers;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.Pass;
-import com.nucleus.shader.ShaderProgram.Shading;
 import com.nucleus.shader.ShaderVariable.VariableType;
 
 /**

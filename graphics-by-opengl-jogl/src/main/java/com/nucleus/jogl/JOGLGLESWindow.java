@@ -4,7 +4,7 @@ import com.jogamp.opengl.GLAutoDrawable;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.SimpleLogger;
 import com.nucleus.opengl.GLESWrapper;
-import com.nucleus.opengl.GLESWrapper.Renderers;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 
 /**
@@ -27,9 +27,7 @@ public class JOGLGLESWindow extends JOGLGLWindow {
      * @param swapInterval
      */
     public JOGLGLESWindow(Renderers version, CoreAppStarter coreAppStarter, SurfaceConfiguration config, int width,
-            int height,
-            boolean undecorated,
-            boolean fullscreen, int swapInterval) {
+            int height, boolean undecorated, boolean fullscreen, int swapInterval) {
         super(version, coreAppStarter, config, width, height, undecorated, fullscreen, swapInterval);
     }
 

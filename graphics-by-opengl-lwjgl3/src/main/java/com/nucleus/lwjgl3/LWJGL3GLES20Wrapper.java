@@ -2,12 +2,12 @@ package com.nucleus.lwjgl3;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.common.BufferUtils;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 
 public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
@@ -123,7 +123,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     @Override
     public void glGetActiveUniform(int program, int index, int[] length, int lengthOffset, int[] size,
             int sizeOffset, int[] type, int typeOffset, byte[] name) {
-        IntBuffer lengthBuffer =BufferUtils.createIntBuffer(1);
+        IntBuffer lengthBuffer = BufferUtils.createIntBuffer(1);
         IntBuffer sizeBuffer = BufferUtils.createIntBuffer(1);
         IntBuffer typeBuffer = BufferUtils.createIntBuffer(1);
         ByteBuffer nameBuffer = BufferUtils.createByteBuffer(name.length);
@@ -216,7 +216,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     public void glUniform1iv(int location, int count, IntBuffer buffer) {
         org.lwjgl.opengles.GLES20.glUniform1iv(location, buffer);
     }
-    
+
     @Override
     public void glDrawArrays(int mode, int first, int count) {
         org.lwjgl.opengles.GLES20.glDrawArrays(mode, first, count);

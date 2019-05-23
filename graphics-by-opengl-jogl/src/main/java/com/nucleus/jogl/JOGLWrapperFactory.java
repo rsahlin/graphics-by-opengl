@@ -3,7 +3,7 @@ package com.nucleus.jogl;
 import com.jogamp.opengl.GLContext;
 import com.jogamp.opengl.GLProfile;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper.Renderers;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 
 /**
  * Factory for GLES wrapper creation

@@ -12,7 +12,7 @@ import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
 import com.nucleus.renderer.RenderState;
@@ -75,7 +75,7 @@ public class RootNodeBuilder {
                 BaseImageFactory.getInstance(), "texture",
                 new ExternalReference(splashImage), splashResolution, texParam, 1);
         Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(gles);
-        meshBuilder.setElementMode(GLESWrapper.Mode.TRIANGLES, 4, 0, 6);
+        meshBuilder.setElementMode(DrawMode.TRIANGLES, 4, 0, 6);
         meshBuilder.setTexture(texture);
         Material material = new Material();
         Rectangle rect = texture.calculateRectangle(0);

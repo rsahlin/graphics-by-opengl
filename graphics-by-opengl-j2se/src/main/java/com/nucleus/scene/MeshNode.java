@@ -14,7 +14,7 @@ import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilderFactory;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper;
+import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.shader.VariableIndexer;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
@@ -63,7 +63,7 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
         if (shapeBuilder == null) {
             // We may need program when creating shapeBuilder
             setProgram(builder.createProgram());
-            builder.setArrayMode(GLESWrapper.Mode.TRIANGLE_FAN, 4, 0);
+            builder.setArrayMode(DrawMode.TRIANGLE_FAN, 4, 0);
             if (shape == null) {
                 LayerNode layer = getRootNode().getNodeByType(NodeTypes.layernode.name(), LayerNode.class);
                 ViewFrustum view = layer.getViewFrustum();

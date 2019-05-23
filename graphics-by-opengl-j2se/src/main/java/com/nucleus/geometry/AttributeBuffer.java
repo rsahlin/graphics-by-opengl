@@ -1,13 +1,11 @@
 package com.nucleus.geometry;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /**
  * Create and hold data for OpenGL attribute arrays, this can for instance be the vertice position, texture coordinates,
@@ -45,37 +43,24 @@ public class AttributeBuffer extends BufferObject {
     private int verticeCount;
 
     /**
-     * Datatype
-     */
-    private int type;
-
-    /**
-     * Creates the buffer storage for specified number of vertices, this can be used to draw different types, for
+     * Creates the float buffer storage for specified number of vertices, this can be used to draw different types, for
      * instance with an element (vertex index) buffer or with drawArrays.
      * 
      * @param verticeCount Number of vertices to allocate storage for
      * @param sizePerVertex Size in floats to allocate for each vertex, eg 3 if xyz is specified
-     * @param type The datatype GLES20.GL_FLOAT
-     * @throws IllegalArgumentException If type is not GLES20.GL_FLOAT
      */
-    public AttributeBuffer(int verticeCount, int sizePerVertex, int type) {
+    public AttributeBuffer(int verticeCount, int sizePerVertex) {
         super(verticeCount * sizePerVertex * DATATYPE_SIZE);
-        init(verticeCount, sizePerVertex, type);
+        init(verticeCount, sizePerVertex);
     }
 
     /**
-     * Creates the buffer to hold vertice and attribute data.
+     * Creates the float buffer to hold vertice and attribute data.
      * 
      * @param verticeCount Number of vertices to allocate storage for
      * @param sizePerVertex Size in floats to allocate for each vertex, normal usecase for x,y,z + texture uv is 5
-     * @param type The datatype GLES20.GL_FLOAT
-     * @throws IllegalArgumentException If type is not GLES20.GL_FLOAT
      */
-    private void init(int verticeCount, int sizePerVertex, int type) {
-        if (type != GLES20.GL_FLOAT) {
-            throw new IllegalArgumentException(ILLEGAL_DATATYPE_STR + type);
-        }
-        this.type = type;
+    private void init(int verticeCount, int sizePerVertex) {
         this.verticeCount = verticeCount;
         byteBuffer = BufferUtils.createByteBuffer(sizeInBytes);
         attributes = byteBuffer.asFloatBuffer();
@@ -196,16 +181,6 @@ public class AttributeBuffer extends BufferObject {
     }
 
     /**
-     * Returns the datatype for this buffer, this is the type of data contained within, ie is the data byte, short float
-     * Use for vertex attrib pointer.
-     * 
-     * @return
-     */
-    public int getDataType() {
-        return type;
-    }
-
-    /**
      * The byte offset between consecutive variables
      * 
      * @return Number of bytes between consecutive variables
@@ -270,21 +245,20 @@ public class AttributeBuffer extends BufferObject {
     }
 
     /**
-     * Creates attribute buffers
+     * Creates float attribute buffers
      * 
      * @param attributeSizes Attributes per vertex for each buffer, if < 1 then no buffer created.
      * @param verticeCount Number of vertices to allocate storage for
-     * @param type Type of buffer, normally GL_FLOAT
      * @return The created buffers as needed by the Mesh to render.
      */
-    public static AttributeBuffer[] createAttributeBuffers(int[] attributeSizes, int verticeCount, int type) {
+    public static AttributeBuffer[] createAttributeBuffers(int[] attributeSizes, int verticeCount) {
         AttributeBuffer[] buffers = new AttributeBuffer[attributeSizes.length];
         for (BufferIndex index : BufferIndex.values()) {
             if (index.index >= buffers.length) {
                 break;
             }
             if (attributeSizes[index.index] > 0) {
-                buffers[index.index] = new AttributeBuffer(verticeCount, attributeSizes[index.index], type);
+                buffers[index.index] = new AttributeBuffer(verticeCount, attributeSizes[index.index]);
             }
         }
         return buffers;

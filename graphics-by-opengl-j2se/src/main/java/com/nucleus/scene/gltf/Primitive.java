@@ -9,7 +9,7 @@ import java.util.Set;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Environment;
-import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.scene.gltf.Accessor.ComponentType;
 import com.nucleus.scene.gltf.Accessor.Type;
 import com.nucleus.scene.gltf.BufferView.Target;
@@ -108,7 +108,8 @@ public class Primitive implements RuntimeResolver {
             int[] indicesArray = createIndexArray();
             float[] uvArray = createFloatArray(Attributes.TEXCOORD_0);
 
-            float[][] arrays = createArrayMode(Mode.TRIANGLES, Mode.TRIANGLES.getPrimitiveCount(indices.getCount()),
+            float[][] arrays = createArrayMode(DrawMode.TRIANGLES,
+                    DrawMode.TRIANGLES.getPrimitiveCount(indices.getCount()),
                     positionArray, indicesArray, uvArray);
             int byteSize = 0;
             int[] offsets = new int[arrays.length];
@@ -129,7 +130,7 @@ public class Primitive implements RuntimeResolver {
                     position.getType(), offsets[UV], bufferIndex, arrays[UV], Attributes.TEXCOORD_0);
         }
 
-        private float[][] createArrayMode(Mode mode, int count, float[] positions, int[] indices, float[] uv) {
+        private float[][] createArrayMode(DrawMode mode, int count, float[] positions, int[] indices, float[] uv) {
             float[][] result = new float[3][];
 
             result[POSITION] = new float[count * 3]; // positions
@@ -183,7 +184,7 @@ public class Primitive implements RuntimeResolver {
          * @return
          */
         private boolean isPBRVertices() {
-            if (indices == null && mode == Mode.TRIANGLES) {
+            if (indices == null && mode == DrawMode.TRIANGLES) {
                 return true;
             }
             return false;
@@ -440,64 +441,6 @@ public class Primitive implements RuntimeResolver {
 
     }
 
-    public enum Mode {
-        POINTS(0, GLES20.GL_POINTS),
-        LINES(1, GLES20.GL_LINES),
-        LINE_LOOP(2, GLES20.GL_LINE_LOOP),
-        LINE_STRIP(3, GLES20.GL_LINE_STRIP),
-        TRIANGLES(4, GLES20.GL_TRIANGLES),
-        TRIANGLE_STRIP(5, GLES20.GL_TRIANGLE_STRIP),
-        TRIANGLE_FAN(6, GLES20.GL_TRIANGLE_FAN);
-
-        public final int index;
-        /**
-         * The OpenGL value
-         */
-        public final int value;
-
-        private Mode(int index, int value) {
-            this.index = index;
-            this.value = value;
-        }
-
-        /**
-         * Returns the number of primitives for the number of indices with the current mode
-         * 
-         * @param indices
-         * @return
-         */
-        public int getPrimitiveCount(int indices) {
-            switch (this) {
-                case LINE_LOOP:
-                    return indices;
-                case LINE_STRIP:
-                    return indices - 1;
-                case LINES:
-                    return indices << 1;
-                case POINTS:
-                    return indices;
-                case TRIANGLE_FAN:
-                    return indices - 2;
-                case TRIANGLE_STRIP:
-                    return indices - 2;
-                case TRIANGLES:
-                    return indices / 3;
-                default:
-                    throw new IllegalArgumentException("Invalid mode " + this);
-            }
-        }
-
-        public static final Mode getMode(int index) {
-            for (Mode m : values()) {
-                if (m.index == index) {
-                    return m;
-                }
-            }
-            return null;
-        }
-
-    }
-
     @SerializedName(ATTRIBUTES)
     private HashMap<Attributes, Integer> attributes;
     @SerializedName(INDICES)
@@ -530,7 +473,7 @@ public class Primitive implements RuntimeResolver {
     @Deprecated
     transient private GLTFShaderProgram program;
     transient private Accessor indices;
-    transient private Mode mode;
+    transient private DrawMode mode;
 
     public Primitive() {
 
@@ -547,7 +490,7 @@ public class Primitive implements RuntimeResolver {
      * @param mode
      */
     public Primitive(ArrayList<Attributes> attributeList, ArrayList<Accessor> accessorList, Accessor indices,
-            Material material, Mode mode) {
+            Material material, DrawMode mode) {
         this.attributeList = attributeList;
         this.accessorList = accessorList;
         this.indices = indices;
@@ -643,13 +586,13 @@ public class Primitive implements RuntimeResolver {
         return materialRef;
     }
 
-    public Mode getMode() {
+    public DrawMode getMode() {
         return mode;
     }
 
     @Override
     public void resolve(GLTF asset) throws GLTFException {
-        mode = Mode.getMode(modeIndex);
+        mode = getMode(modeIndex);
         createAttributeList(asset);
         if (material >= 0) {
             this.materialRef = asset.getMaterials()[material];
@@ -824,6 +767,33 @@ public class Primitive implements RuntimeResolver {
     @Deprecated
     public GLTFShaderProgram getProgram() {
         return program;
+    }
+
+    /**
+     * Returns the DrawMode for the gltf mode
+     * 
+     * @param index
+     * @return
+     */
+    public DrawMode getMode(int index) {
+        switch (index) {
+            case 0:
+                return DrawMode.POINTS;
+            case 1:
+                return DrawMode.LINES;
+            case 2:
+                return DrawMode.LINE_LOOP;
+            case 3:
+                return DrawMode.LINE_STRIP;
+            case 4:
+                return DrawMode.TRIANGLES;
+            case 5:
+                return DrawMode.TRIANGLE_STRIP;
+            case 6:
+                return DrawMode.TRIANGLE_FAN;
+            default:
+                throw new IllegalArgumentException("No value for mode " + index);
+        }
     }
 
 }

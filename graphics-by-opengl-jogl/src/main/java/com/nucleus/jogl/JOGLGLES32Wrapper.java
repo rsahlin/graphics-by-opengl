@@ -7,6 +7,7 @@ import java.nio.IntBuffer;
 
 import com.jogamp.opengl.GL4ES3;
 import com.nucleus.opengl.GLES32Wrapper;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 
 public class JOGLGLES32Wrapper extends GLES32Wrapper {
 
@@ -255,7 +256,7 @@ public class JOGLGLES32Wrapper extends GLES32Wrapper {
     public void glUniform1iv(int location, int count, IntBuffer buffer) {
         gles.glUniform1iv(location, count, buffer);
     }
-    
+
     @Override
     public void glTexParameterf(int target, int pname, float param) {
         gles.glTexParameterf(target, pname, param);

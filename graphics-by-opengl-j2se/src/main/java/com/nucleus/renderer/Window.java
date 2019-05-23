@@ -52,7 +52,7 @@ public class Window {
      * @param width
      * @param height
      */
-    protected void setSize(int width, int height) {
+    public void setSize(int width, int height) {
         SimpleLogger.d(getClass(), "setSize() " + width + ", " + height);
         this.width = width;
         this.height = height;
@@ -120,10 +120,11 @@ public class Window {
 
     /**
      * Returns the resolution of display, use this for image scale bias
+     * 
      * @return
      */
     public RESOLUTION getResolution() {
         return resolution;
     }
-    
+
 }

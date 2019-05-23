@@ -3,7 +3,7 @@ package com.nucleus.lwjgl3;
 import org.lwjgl.opengles.GLESCapabilities;
 
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper.Renderers;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 
 public class LWJGLWrapperFactory {
 

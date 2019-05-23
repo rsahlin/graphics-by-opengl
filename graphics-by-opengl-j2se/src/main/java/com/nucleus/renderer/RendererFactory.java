@@ -1,7 +1,7 @@
 package com.nucleus.renderer;
 
+import com.nucleus.opengl.BaseRenderer;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper;
 
 /**
  * Creates an implementation of the nucleus renderer interface.
@@ -15,22 +15,25 @@ public class RendererFactory {
     private final static String NOT_IMPLEMENTED_ERROR = "Not implemented support for: ";
 
     /**
-     * Creates a new nucleus renderer with the specified version.
-     * Currently only supports GLES20
+     * Creates a new nucleus renderer for the backend
      * 
-     * @param gles The GLESWrapper for the specified version, {@link GLES20Wrapper} for GLES20
+     * @param backend The API backend to create renderer for
      * @return New instance of nucleus renderer
-     * @throws IllegalArgumentException If gles is not matching for the renderer version.
+     * @throws IllegalArgumentException If backend is null or an instance that is not supported
      */
-    public static NucleusRenderer getRenderer(GLESWrapper gles) {
-        if (gles == null) {
+    public static NucleusRenderer getRenderer(Backend backend) {
+        if (backend == null) {
             throw new IllegalArgumentException("GLESWrapper is null");
         }
         NucleusRenderer renderer = null;
-        if (!(gles instanceof GLES20Wrapper)) {
-            throw new IllegalArgumentException(WRONG_GLES + gles.getClass().getName());
+        switch (backend.getVersion()) {
+            case GLES20:
+            case GLES30:
+            case GLES31:
+            case GLES32:
+                return new BaseRenderer((GLES20Wrapper) backend);
+            default:
+                throw new IllegalArgumentException("Not implemented for " + backend.getVersion());
         }
-        renderer = new BaseRenderer((GLES20Wrapper) gles);
-        return renderer;
     }
 }

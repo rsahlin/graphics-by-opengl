@@ -1,7 +1,7 @@
 package com.nucleus.renderer;
 
-import com.nucleus.opengl.GLESWrapper.Mode;
 import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.Backend.DrawMode;
 
 public interface NodeRenderer<T> {
 
@@ -23,8 +23,8 @@ public interface NodeRenderer<T> {
      * Force render mode of objects/meshes
      * Set to null to render meshes normally
      * 
-     * @param The GL mode The mode to render meshes with
+     * @param mode The mode to render meshes with
      */
-    public void forceRenderMode(Mode mode);
+    public void forceRenderMode(DrawMode mode);
 
 }

@@ -5,7 +5,7 @@ import com.nucleus.android.egl14.EGL14Utils;
 import com.nucleus.common.Environment;
 import com.nucleus.egl.EGL14Constants;
 import com.nucleus.egl.EGLUtils;
-import com.nucleus.opengl.GLESWrapper.Renderers;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
 import com.nucleus.renderer.SurfaceConfiguration;

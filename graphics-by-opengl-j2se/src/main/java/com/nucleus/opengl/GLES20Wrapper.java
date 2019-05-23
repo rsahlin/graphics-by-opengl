@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.StreamUtils;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.RenderTarget.Attachement;
-import com.nucleus.renderer.RendererInfo;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Accessor.ComponentType;
 import com.nucleus.scene.gltf.Accessor.Type;
@@ -79,7 +79,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     @Override
     public void createInfo() {
         if (rendererInfo == null) {
-            rendererInfo = new RendererInfo(this, renderVersion);
+            rendererInfo = new GLRendererInfo(this, renderVersion);
         }
     }
 
@@ -375,7 +375,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                         glEnableVertexAttribArray(location);
                         enabledVertexArrays[location] = true;
                     }
-                    glVertexAttribPointer(location, a.getComponentCount(), buffer.getDataType(), false,
+                    glVertexAttribPointer(location, a.getComponentCount(), GLES20.GL_FLOAT, false,
                             buffer.getByteStride(), a.getOffset() * 4);
                 }
             }
@@ -389,7 +389,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                         glEnableVertexAttribArray(location);
                         enabledVertexArrays[location] = true;
                     }
-                    glVertexAttribPointer(location, a.getComponentCount(), buffer.getDataType(), false,
+                    glVertexAttribPointer(location, a.getComponentCount(), GLES20.GL_FLOAT, false,
                             buffer.getByteStride(), fb);
                 }
             }

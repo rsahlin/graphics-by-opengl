@@ -1,4 +1,4 @@
-package com.nucleus.renderer;
+package com.nucleus.opengl;
 
 import java.util.ArrayList;
 
@@ -6,13 +6,8 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLES30Wrapper;
-import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
-import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.GLUtils;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.shader.BlockBuffer;

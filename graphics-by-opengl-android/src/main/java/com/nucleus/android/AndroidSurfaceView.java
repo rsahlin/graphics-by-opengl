@@ -9,7 +9,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.android.egl10.EGL10Utils;
-import com.nucleus.opengl.GLESWrapper.Renderers;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
 import com.nucleus.renderer.SurfaceConfiguration;
 

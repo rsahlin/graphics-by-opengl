@@ -9,6 +9,7 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2ES2;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 
 /**
  * JOGL based GLES2 wrapper, this is the wrapper that lets the {@link NucleusRenderer} use GLES2
@@ -201,7 +202,7 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     public void glUniform1fv(int location, int count, FloatBuffer buffer) {
         gles.glUniform1fv(location, count, buffer);
     }
-    
+
     @Override
     public void glUniform1iv(int location, int count, IntBuffer buffer) {
         gles.glUniform1iv(location, count, buffer);

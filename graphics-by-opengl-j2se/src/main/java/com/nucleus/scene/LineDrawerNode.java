@@ -13,13 +13,11 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper;
-import com.nucleus.opengl.GLESWrapper.Mode;
+import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderProgram.ProgramType;
-import com.nucleus.shader.ShaderProgram.Shading;
 import com.nucleus.shader.VariableIndexer.Indexer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -42,7 +40,7 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
     @SerializedName(LINE_COUNT)
     private int lineCount;
     @SerializedName(LINE_MODE)
-    private GLESWrapper.Mode lineMode;
+    private DrawMode lineMode;
 
     transient private float[] attributes;
     transient private boolean attributesDirty = false;
@@ -61,13 +59,13 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
         builder.setShapeBuilder(shapeBuilder);
         switch (getLineMode()) {
             case LINES:
-                builder.setArrayMode(GLESWrapper.Mode.LINES, count * 2, 0);
+                builder.setArrayMode(DrawMode.LINES, count * 2, 0);
                 break;
             case LINE_STRIP:
-                builder.setArrayMode(GLESWrapper.Mode.LINE_STRIP, count + 1, 0);
+                builder.setArrayMode(DrawMode.LINE_STRIP, count + 1, 0);
                 break;
             case POINTS:
-                builder.setArrayMode(GLESWrapper.Mode.POINTS, count, 0);
+                builder.setArrayMode(DrawMode.POINTS, count, 0);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for mode " + getLineMode());
@@ -118,7 +116,7 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
      * 
      * @return
      */
-    public Mode getLineMode() {
+    public DrawMode getLineMode() {
         return lineMode;
     }
 

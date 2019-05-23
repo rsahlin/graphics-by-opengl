@@ -7,13 +7,13 @@ import com.nucleus.component.J2SEComponentProcessor;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.mmi.core.CoreInput;
-import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.profiling.FrameSampler.Sample;
 import com.nucleus.profiling.FrameSampler.Samples;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
@@ -56,7 +56,7 @@ public class CoreApp implements FrameRenderer {
          * method
          * is called.
          * 
-         * @param version Version of GLES to use.
+         * @param version Version of renderer to use, GLES/VULKAN
          */
         public void createCoreWindows(Renderers version);
 
@@ -360,7 +360,8 @@ public class CoreApp implements FrameRenderer {
      * @param surfaceConfig The surface configuration
      * @return Instance of {@link CoreApp} with the specified clientclass {@link ClientApplication}
      */
-    public static CoreApp createCoreApp(int width, int height, NucleusRenderer renderer, SurfaceConfiguration surfaceConfig) {
+    public static CoreApp createCoreApp(int width, int height, NucleusRenderer renderer,
+            SurfaceConfiguration surfaceConfig) {
         if (clientClass == null) {
             throw new IllegalArgumentException("Must call #setClientClass() before calling #createCoreApp()");
         }

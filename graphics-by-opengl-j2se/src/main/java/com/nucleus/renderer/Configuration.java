@@ -1,6 +1,6 @@
 package com.nucleus.renderer;
 
-import com.nucleus.scene.gltf.Primitive.Mode;
+import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.texturing.TextureUtils;
 
 /**
@@ -18,7 +18,7 @@ public class Configuration {
     /**
      * Read by gltfnode renderer to allow force setting of a specific drawmode
      */
-    private Mode forceGLTFMode = null;
+    private DrawMode forceGLTFMode = null;
 
     /**
      * Returns the instance of the Configuration, this will always be the same.
@@ -77,7 +77,7 @@ public class Configuration {
      * 
      * @return The gl mode to use when rendering gltf
      */
-    public Mode getGLTFMode() {
+    public DrawMode getGLTFMode() {
         return forceGLTFMode;
     }
 
@@ -86,7 +86,7 @@ public class Configuration {
      * 
      * @param forceMode or null to remove any forced gl mode
      */
-    public void setGLTFMode(Mode forceMode) {
+    public void setGLTFMode(DrawMode forceMode) {
         forceGLTFMode = forceMode;
     }
 

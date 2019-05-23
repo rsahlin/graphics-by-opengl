@@ -16,11 +16,11 @@ import com.nucleus.jogl.JOGLApplication;
 import com.nucleus.mmi.MMIPointer;
 import com.nucleus.mmi.MMIPointerInput;
 import com.nucleus.mmi.core.CoreInput;
-import com.nucleus.opengl.GLESWrapper;
-import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeBuilder;
@@ -42,7 +42,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
      * 
      */
     public enum ClientClasses implements Type<Object> {
-            clientclass(MyClientApplication.class);
+        clientclass(MyClientApplication.class);
 
         private final Class<?> theClass;
 
@@ -144,7 +144,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
                     BaseImageFactory.getInstance(), "texture",
                     new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, texParam, 1);
             Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer.getGLES());
-            meshBuilder.setElementMode(GLESWrapper.Mode.TRIANGLES, 4, 0, 6);
+            meshBuilder.setElementMode(DrawMode.TRIANGLES, 4, 0, 6);
             meshBuilder.setTexture(texture);
             program = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
                     new ConvolutionProgram());

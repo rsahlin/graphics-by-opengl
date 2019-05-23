@@ -1,4 +1,4 @@
-package com.nucleus.renderer;
+package com.nucleus.opengl;
 
 import java.nio.Buffer;
 import java.util.ArrayDeque;
@@ -10,16 +10,20 @@ import java.util.Set;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
-import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES_EXTENSION_TOKENS;
-import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.renderer.NodeRenderer;
+import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.Pass;
+import com.nucleus.renderer.RenderPass;
+import com.nucleus.renderer.RenderState;
 import com.nucleus.renderer.RenderState.Cullface;
+import com.nucleus.renderer.RenderTarget;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
+import com.nucleus.renderer.SurfaceConfiguration;
+import com.nucleus.renderer.Window;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RenderableNode;
@@ -37,9 +41,8 @@ import com.nucleus.vecmath.Matrix;
  * to access OpenGLES methods directly.
  * This class does not create thread to drive rendering, that shall be done separately.
  * 
- * @author Richard Sahlin
  */
-class BaseRenderer implements NucleusRenderer {
+public class BaseRenderer implements NucleusRenderer {
 
     public final static String NOT_INITIALIZED_ERROR = "Not initialized, must call init()";
 
@@ -101,12 +104,10 @@ class BaseRenderer implements NucleusRenderer {
     /**
      * Creates a new renderer using the specified GLES20Wrapper
      * 
-     * @param gles
+     * @param gles The gles wrapper
      * @throws IllegalArgumentException If gles is null
-     * TODO Remove parameters from constructor and move to setter methods, this is in order for injection to be more
-     * straightforward
      */
-    BaseRenderer(GLES20Wrapper gles) {
+    public BaseRenderer(GLES20Wrapper gles) {
         if (gles == null) {
             throw new IllegalArgumentException(NULL_GLESWRAPPER_ERROR);
         }
@@ -215,7 +216,7 @@ class BaseRenderer implements NucleusRenderer {
         }
         if ((flags & RenderState.CHANGE_FLAG_MULTISAMPLE) != 0) {
             if (GLES20Wrapper.getInfo()
-                    .hasExtensionSupport(GLESWrapper.GLES_EXTENSIONS.ARB_multisample)) {
+                    .hasExtensionSupport(GLESWrapper.GLES_EXTENSIONS.ARB_multisample.name())) {
                 if (surfaceConfig != null && surfaceConfig.getSamples() > 1 && state.isMultisampling()) {
                     gles.glEnable(GLES_EXTENSION_TOKENS.MULTISAMPLE_EXT.value);
                 } else {
@@ -458,7 +459,7 @@ class BaseRenderer implements NucleusRenderer {
         if (target == null || target.getAttachements() == null || target.getAttachements().size() == 0) {
             // Bind default windowbuffer
             gles.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-            gles.glViewport(0, 0, window.width, window.height);
+            gles.glViewport(0, 0, window.getWidth(), window.getHeight());
             enable(Attachement.COLOR);
         } else {
             throw new IllegalArgumentException("Not implemented");

@@ -4,8 +4,8 @@ import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.J2SEWindow;
 import com.nucleus.J2SEWindowApplication;
 import com.nucleus.common.Type;
-import com.nucleus.opengl.GLESWrapper.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 
 /**
  * Base class for an application using {@link NucleusRenderer} through JOGL
