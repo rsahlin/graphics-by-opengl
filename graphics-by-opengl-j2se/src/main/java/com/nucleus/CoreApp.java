@@ -332,7 +332,7 @@ public class CoreApp implements FrameRenderer {
     public void displaySplash(int width, int height) throws GLException, NodeException {
         FrameSampler.getInstance().logTag(FrameSampler.Samples.DISPLAY_SPLASH);
         RootNodeBuilder rootBuilder = new RootNodeBuilder();
-        RootNode root = rootBuilder.createSplashRoot(renderer.getGLES(), SPLASH_FILENAME, RESOLUTION.ULTRA_HD, width,
+        RootNode root = rootBuilder.createSplashRoot(renderer, SPLASH_FILENAME, RESOLUTION.ULTRA_HD, width,
                 height);
         renderer.beginFrame();
         renderer.render(root);

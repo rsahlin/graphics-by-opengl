@@ -13,6 +13,7 @@ import com.nucleus.common.Constants;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES_EXTENSION_TOKENS;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.renderer.Configuration;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
@@ -28,9 +29,15 @@ import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
+import com.nucleus.scene.gltf.Image;
+import com.nucleus.scene.gltf.Texture;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShadowPass1Program;
+import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.Texture2D.Format;
+import com.nucleus.texturing.TextureParameter;
+import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.TextureUtils;
 import com.nucleus.vecmath.Matrix;
 
@@ -374,7 +381,7 @@ public class BaseRenderer implements NucleusRenderer {
             disable(attachement);
         } else {
             Texture2D texture = ad.getTexture();
-            TextureUtils.prepareTexture(gles, texture, Texture2D.TEXTURE_0);
+            prepareTexture(texture, Texture2D.TEXTURE_0);
             gles.bindFramebufferTexture(texture, target.getFramebufferName(), attachement);
             gles.glViewport(0, 0, texture.getWidth(), texture.getHeight());
             enable(attachement);
@@ -646,6 +653,103 @@ public class BaseRenderer implements NucleusRenderer {
     @Override
     public RenderState getRenderState() {
         return renderState;
+    }
+
+    @Override
+    public void uploadTextures(Texture2D texture, BufferImage[] textureImages)
+            throws GLException {
+        if (texture.getName() <= 0) {
+            throw new IllegalArgumentException("No texture name for texture " + texture.getId());
+        }
+        long start = System.currentTimeMillis();
+        gles.glBindTexture(GLES20.GL_TEXTURE_2D, texture.getName());
+        boolean isMipMapParams = texture.getTexParams().isMipMapFilter();
+        if ((textureImages.length > 1 && !isMipMapParams) || (texture.getLevels() > 1 && !isMipMapParams)) {
+            throw new IllegalArgumentException(
+                    "Multiple mipmap images but wrong min filter "
+                            + texture.getTexParams().getParameters()[TextureParameter.MIN_FILTER_INDEX]);
+        }
+        int level = 0;
+        texture.setup(textureImages[0].getWidth(), textureImages[0].getHeight());
+        for (BufferImage textureImg : textureImages) {
+            if (textureImg != null) {
+                if (texture.getFormat() == null || texture.getType() == null) {
+                    throw new IllegalArgumentException("Texture format or type is null for id " + texture.getId()
+                            + " : " + texture.getFormat() + ", " + texture.getType());
+                }
+                gles.texImage(texture, textureImg, level);
+                GLUtils.handleError(gles, "texImage2D");
+                level++;
+            } else {
+                break;
+            }
+        }
+        if (textureImages.length == 1 && texture.getTexParams().isMipMapFilter()
+                || Configuration.getInstance().isGenerateMipMaps()) {
+            gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+            SimpleLogger.d(TextureUtils.class, "Generated mipmaps for texture " + texture.getId());
+        }
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.UPLOAD_TEXTURE, texture.getId(), start,
+                System.currentTimeMillis());
+    }
+
+    @Override
+    public void uploadTextures(Image image, boolean generateMipmaps)
+            throws GLException {
+        if (image.getTextureName() <= 0) {
+            throw new IllegalArgumentException("No texture name for texture " + image.getUri());
+        }
+        long start = System.currentTimeMillis();
+        gles.glBindTexture(GLES20.GL_TEXTURE_2D, image.getTextureName());
+        Format format = gles.texImage(image, 0);
+        GLUtils.handleError(gles, "texImage2D");
+        SimpleLogger.d(TextureUtils.class,
+                "Uploaded texture " + image.getUri() + " with format " + format);
+        if (generateMipmaps || Configuration.getInstance().isGenerateMipMaps()) {
+            gles.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+            SimpleLogger.d(TextureUtils.class, "Generated mipmaps for texture " + image.getUri());
+        }
+        FrameSampler.getInstance().logTag(FrameSampler.Samples.UPLOAD_TEXTURE, " " + image.getUri(), start,
+                System.currentTimeMillis());
+    }
+
+    @Override
+    public void prepareTexture(Texture2D texture, int unit) throws GLException {
+        if (texture != null && texture.textureType != TextureType.Untextured) {
+            gles.glActiveTexture(GLES20.GL_TEXTURE0 + unit);
+            int textureID = texture.getName();
+            if (textureID == Constants.NO_VALUE && texture.getExternalReference().isIdReference()) {
+                // Texture has no texture object - and is id reference
+                // Should only be used for dynamic textures, eg ones that depend on define in existing node
+                AssetManager.getInstance().getIdReference(texture);
+                textureID = texture.getName();
+                gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
+                gles.uploadTexParameters(texture.getTexParams());
+                GLUtils.handleError(gles, "glBindTexture()");
+            } else {
+                gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
+                gles.uploadTexParameters(texture.getTexParams());
+                GLUtils.handleError(gles, "glBindTexture()");
+            }
+        }
+    }
+
+    @Override
+    public void prepareTexture(Texture texture, int unit) throws GLException {
+        if (texture != null) {
+            gles.glActiveTexture(GLES20.GL_TEXTURE0 + unit);
+            int textureID = texture.getImage().getTextureName();
+            gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
+            gles.uploadTexParameters(texture);
+            GLUtils.handleError(gles, "glBindTexture()");
+        }
+    }
+
+    @Override
+    public int[] createTextureName() {
+        int[] textures = new int[1];
+        gles.glGenTextures(textures);
+        return textures;
     }
 
 }

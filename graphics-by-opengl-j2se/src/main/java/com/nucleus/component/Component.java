@@ -6,9 +6,8 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.common.Type;
 import com.nucleus.common.TypeResolver;
 import com.nucleus.io.BaseReference;
-import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.ComponentNode;
-import com.nucleus.scene.RootNodeImpl;
 
 /**
  * The component part of behavior, this holds the data needed to perform actions.
@@ -33,8 +32,7 @@ public abstract class Component extends BaseReference {
 
     transient protected ArrayList<ComponentBuffer> buffers = new ArrayList<>();
     /**
-     * Keep track if component is initialized, for instance make sure
-     * {@link #initComponent(GLES20Wrapper, RootNodeImpl, Component)} not called more than with this component
+     * Keep track if component is initialized
      */
     transient protected boolean initialized = false;
 
@@ -49,11 +47,11 @@ public abstract class Component extends BaseReference {
      * Creates the data and objects needed for the component - when this method returns the component shall be ready to
      * be used.
      * 
-     * @param gles
+     * @param renderer
      * @param parent
      * @throws ComponentException If there is an error preventing the component to be created
      */
-    public abstract void create(GLES20Wrapper gles, ComponentNode parent)
+    public abstract void create(NucleusRenderer renderer, ComponentNode parent)
             throws ComponentException;
 
     /**

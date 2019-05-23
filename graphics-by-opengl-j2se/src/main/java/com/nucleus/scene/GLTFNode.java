@@ -14,6 +14,7 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLTFNodeRenderer;
 import com.nucleus.renderer.NodeRenderer;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
@@ -45,7 +46,7 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     private String glTFName;
 
     transient private GLTF glTF;
-    transient GLES20Wrapper gles;
+    transient NucleusRenderer renderer;
     /**
      * Used to save viewmatrix between frames
      */
@@ -81,18 +82,18 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     /**
      * Loads a gltf asset into this node.
      * 
-     * @param gles
+     * @param renderer
      * @paramn glTFName name of gltf asset to load (minus GLTF_PATH)
      * @throws IOException
      * @throws GLException
      */
-    public void loadGLTFAsset(GLES20Wrapper gles, String glTFName)
+    public void loadGLTFAsset(NucleusRenderer renderer, String glTFName)
             throws IOException, GLException {
         if (glTFName != null) {
             try {
                 glTF = AssetManager.getInstance()
                         .getGLTFAsset(getRootNode().getProperty(RootNodeImpl.GLTF_PATH, "") + glTFName);
-                AssetManager.getInstance().loadGLTFAssets(gles, glTF);
+                AssetManager.getInstance().loadGLTFAssets(renderer, glTF);
                 setPass(Pass.ALL);
                 setState(State.ON);
                 createPrograms(glTF);
@@ -161,9 +162,9 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     }
 
     @Override
-    public MeshBuilder<RenderableMesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
+    public MeshBuilder<RenderableMesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
             throws IOException {
-        this.gles = gles;
+        this.renderer = renderer;
         return this;
     }
 
@@ -182,7 +183,7 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     public void create(RenderableNode<RenderableMesh> parent) throws IOException, GLException {
         // Since this node implements MeshBuilder the parent will be this class
         if (glTFName != null) {
-            loadGLTFAsset(gles, glTFName);
+            loadGLTFAsset(renderer, glTFName);
         }
     }
 
@@ -196,7 +197,8 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
             for (Mesh m : glTF.getMeshes()) {
                 for (Primitive p : m.getPrimitives()) {
                     GLTFShaderProgram program = createProgram(p);
-                    p.setProgram((GLTFShaderProgram) AssetManager.getInstance().getProgram(gles, program));
+                    p.setProgram(
+                            (GLTFShaderProgram) AssetManager.getInstance().getProgram(renderer.getGLES(), program));
                 }
             }
         }

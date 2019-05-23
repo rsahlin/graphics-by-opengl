@@ -13,6 +13,7 @@ import com.nucleus.light.Light;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.AccessorDictionary;
 import com.nucleus.scene.gltf.GLTF;
@@ -24,7 +25,6 @@ import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Scene;
 import com.nucleus.scene.gltf.Texture.TextureInfo;
-import com.nucleus.texturing.TextureUtils;
 import com.nucleus.vecmath.Matrix;
 
 public class GLTFShaderProgram extends GenericShaderProgram {
@@ -216,23 +216,23 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * Prepares a texture used before rendering starts.
      * This shall set texture parameters to used textures, ie activate texture, bind texture then set parameters.
      * 
-     * @param gles
+     * @param renderer
      * @param texture
      * @throws GLException
      */
-    public void prepareTexture(GLES20Wrapper gles, GLTF gltf, Primitive primitive, ShaderVariable attribute,
+    public void prepareTexture(NucleusRenderer renderer, GLTF gltf, Primitive primitive, ShaderVariable attribute,
             ShaderVariable texUniform, TextureInfo texInfo)
             throws GLException {
         if (texInfo == null || attribute == null || texUniform == null) {
             return;
         }
-        TextureUtils.prepareTexture(gles, gltf.getTexture(texInfo), texInfo.getIndex());
+        renderer.prepareTexture(gltf.getTexture(texInfo), texInfo.getIndex());
         Accessor accessor = primitive.getAccessor(Attributes.getTextureCoord(texInfo.getTexCoord()));
-        gles.glVertexAttribPointer(this, accessor, attribute);
+        renderer.getGLES().glVertexAttribPointer(this, accessor, attribute);
         samplerUniformBuffer.put(texInfo.getIndex());
         samplerUniformBuffer.rewind();
-        gles.glUniform1iv(texUniform.getLocation(), texUniform.getSize(), samplerUniformBuffer);
-        GLUtils.handleError(gles, "glUniform1iv - " + attribute.getName());
+        renderer.getGLES().glUniform1iv(texUniform.getLocation(), texUniform.getSize(), samplerUniformBuffer);
+        GLUtils.handleError(renderer.getGLES(), "glUniform1iv - " + attribute.getName());
 
     }
 
@@ -244,28 +244,28 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * @param material
      * @throws GLException
      */
-    public void prepareTextures(GLES20Wrapper gles, GLTF gltf, Primitive primitive, Material material)
+    public void prepareTextures(NucleusRenderer renderer, GLTF gltf, Primitive primitive, Material material)
             throws GLException {
         if (renderNormalMap && material.getNormalTexture() != null
                 && material.getPbrMetallicRoughness().getBaseColorTexture() != null) {
-            prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes._TEXCOORDNORMAL.name()),
+            prepareTexture(renderer, gltf, primitive, getAttributeByName(Attributes._TEXCOORDNORMAL.name()),
                     getUniformByName("uTexture0"),
                     material.getNormalTexture());
         } else if (renderMRMap && material.getPbrMetallicRoughness().getMetallicRoughnessTexture() != null
                 && material.getPbrMetallicRoughness().getBaseColorTexture() != null) {
-            prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes._TEXCOORDMR.name()),
+            prepareTexture(renderer, gltf, primitive, getAttributeByName(Attributes._TEXCOORDMR.name()),
                     getUniformByName("uTexture0"),
                     material.getPbrMetallicRoughness().getMetallicRoughnessTexture());
         } else {
-            prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes.TEXCOORD_0.name()),
+            prepareTexture(renderer, gltf, primitive, getAttributeByName(Attributes.TEXCOORD_0.name()),
                     getUniformByName("uTexture0"),
                     material.getPbrMetallicRoughness().getBaseColorTexture());
         }
-        prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes._TEXCOORDNORMAL.name()),
+        prepareTexture(renderer, gltf, primitive, getAttributeByName(Attributes._TEXCOORDNORMAL.name()),
                 getUniformByName("uTextureNormal"), material.getNormalTexture());
-        prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes._TEXCOORDMR.name()),
+        prepareTexture(renderer, gltf, primitive, getAttributeByName(Attributes._TEXCOORDMR.name()),
                 getUniformByName("uTextureMR"), material.getPbrMetallicRoughness().getMetallicRoughnessTexture());
-        prepareTexture(gles, gltf, primitive, getAttributeByName(Attributes._TEXCOORDOCCLUSION.name()),
+        prepareTexture(renderer, gltf, primitive, getAttributeByName(Attributes._TEXCOORDOCCLUSION.name()),
                 getUniformByName("uTextureOcclusion"), material.getOcclusionTexture());
     }
 
@@ -290,6 +290,5 @@ public class GLTFShaderProgram extends GenericShaderProgram {
         }
         return sb.toString();
     }
-    
-    
+
 }

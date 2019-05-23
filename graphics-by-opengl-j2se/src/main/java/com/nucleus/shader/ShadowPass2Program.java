@@ -5,10 +5,10 @@ import java.nio.FloatBuffer;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.ParameterData;
@@ -20,7 +20,6 @@ import com.nucleus.texturing.TextureParameter.Param;
 import com.nucleus.texturing.TextureParameter.Parameter;
 import com.nucleus.texturing.TextureParameter.Target;
 import com.nucleus.texturing.TextureType;
-import com.nucleus.texturing.TextureUtils;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -97,7 +96,7 @@ public class ShadowPass2Program extends ShadowPassProgram {
     }
 
     @Override
-    public void prepareTexture(GLES20Wrapper gles, Texture2D texture) throws GLException {
+    public void prepareTexture(NucleusRenderer renderer, Texture2D texture) throws GLException {
         int textureID = shadow.getName();
         if (textureID == Constants.NO_VALUE) {
             AssetManager.getInstance().getIdReference(shadow);
@@ -107,15 +106,15 @@ public class ShadowPass2Program extends ShadowPassProgram {
          * TODO - make texture names into enums
          */
         int unit = samplers.get(getUniformByName("uShadowTexture").getOffset());
-        TextureUtils.prepareTexture(gles, shadow, unit);
-        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_COMPARE_MODE, GLES30.GL_COMPARE_REF_TO_TEXTURE);
-        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_COMPARE_FUNC, GLES20.GL_LESS);
+        renderer.prepareTexture(shadow, unit);
+        renderer.getGLES().glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_COMPARE_MODE,
+                GLES30.GL_COMPARE_REF_TO_TEXTURE);
+        renderer.getGLES().glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_COMPARE_FUNC, GLES20.GL_LESS);
         if (texture != null && texture.textureType != TextureType.Untextured) {
             /**
              * TODO - make texture names into enums
              */
-            TextureUtils.prepareTexture(gles, texture,
-                    samplers.get(getUniformByName("uTexture").getOffset()));
+            renderer.prepareTexture(texture, samplers.get(getUniformByName("uTexture").getOffset()));
         }
     }
 

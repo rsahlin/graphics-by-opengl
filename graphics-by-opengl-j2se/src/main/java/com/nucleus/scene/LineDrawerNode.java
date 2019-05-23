@@ -12,7 +12,6 @@ import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.GenericShaderProgram;
@@ -52,10 +51,10 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
     transient int drawOffset = Constants.NO_VALUE;
 
     @Override
-    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
+    public MeshBuilder<Mesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
             throws IOException {
         int count = getLineCount();
-        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(gles);
+        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
         builder.setShapeBuilder(shapeBuilder);
         switch (getLineMode()) {
             case LINES:
@@ -76,12 +75,12 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
         Texture2D tex = TextureFactory.getInstance().createTexture(TextureType.Untextured);
         builder.setTexture(tex);
         if (getProgram() == null) {
-            setProgram(AssetManager.getInstance().getProgram(gles,
+            setProgram(AssetManager.getInstance().getProgram(renderer.getGLES(),
                     new GenericShaderProgram(new String[] { VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME }, null,
                             ShaderProgram.Shading.flat, null,
                             ProgramType.VERTEX_FRAGMENT)));
         }
-        return initMeshBuilder(gles, count, builder.getShapeBuilder(), builder);
+        return initMeshBuilder(renderer, count, builder.getShapeBuilder(), builder);
     }
 
     /**

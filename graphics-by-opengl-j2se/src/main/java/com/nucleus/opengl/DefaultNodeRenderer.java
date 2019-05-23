@@ -51,7 +51,7 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
 
         program.updateAttributes(gles, mesh);
         program.updateUniforms(gles, matrices);
-        program.prepareTexture(gles, mesh.getTexture(Texture2D.TEXTURE_0));
+        program.prepareTexture(renderer, mesh.getTexture(Texture2D.TEXTURE_0));
 
         material.setBlendModeSeparate(gles);
         int mode = gles.getDrawMode(mesh.getMode());

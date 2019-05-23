@@ -11,6 +11,7 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.io.SceneSerializer.NodeInflaterListener;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderPass;
 import com.nucleus.shader.ShaderProgram;
 
@@ -120,18 +121,18 @@ public class NodeBuilder<T extends Node> {
     /**
      * Creates Node and adds to root - then creates childnodes in source and returns the root.
      * 
-     * @param gles
+     * @param renderer
      * @param source
      * @return
      * @throws NodeException
      */
-    public RootNode createRoot(GLES20Wrapper gles, T source) throws NodeException {
+    public RootNode createRoot(NucleusRenderer renderer, T source) throws NodeException {
         if (root == null) {
             throw new IllegalAccessError("Root is null in builder");
         }
         T created = (T) source.createInstance(root);
         root.addChild(created);
-        create(gles, source, created, null);
+        create(renderer, source, created, null);
         return root;
     }
 
@@ -143,16 +144,16 @@ public class NodeBuilder<T extends Node> {
      * is called to create MeshBuilder.
      * Node is added to parent.
      * 
-     * @param gles
+     * @param renderer
      * @param source
      * @param parent Parent if this method is called with a parent Node
      * @param builder
      * @return
      * @throws NodeException
      */
-    protected T create(GLES20Wrapper gles, T source, T parent) throws NodeException {
+    protected T create(NucleusRenderer renderer, T source, T parent) throws NodeException {
         T created = (T) source.createInstance(root);
-        return create(gles, source, created, parent);
+        return create(renderer, source, created, parent);
     }
 
     /**
@@ -199,7 +200,7 @@ public class NodeBuilder<T extends Node> {
         }
     }
 
-    protected T create(GLES20Wrapper gles, T source, T created, T parent) throws NodeException {
+    protected T create(NucleusRenderer renderer, T source, T created, T parent) throws NodeException {
         created.createTransient();
         try {
             if (parent != null) {
@@ -209,7 +210,7 @@ public class NodeBuilder<T extends Node> {
                 MeshBuilder<?> mBuilder = meshBuilder;
                 RenderableNode<?> rNode = (RenderableNode<?>) created;
                 if (mBuilder == null) {
-                    mBuilder = rNode.createMeshBuilder(gles, null);
+                    mBuilder = rNode.createMeshBuilder(renderer, null);
                 }
                 if (mBuilder != null) {
                     createMesh(mBuilder, created, 1);
@@ -223,7 +224,7 @@ public class NodeBuilder<T extends Node> {
             // Recursively create children if there are any
             if (source.getChildren() != null) {
                 for (Node nd : source.getChildren()) {
-                    create(gles, (T) nd, created);
+                    create(renderer, (T) nd, created);
                 }
             }
             return created;

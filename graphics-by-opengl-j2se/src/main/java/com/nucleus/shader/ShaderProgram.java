@@ -32,6 +32,7 @@ import com.nucleus.opengl.GLESWrapper.GLES32;
 import com.nucleus.opengl.GLESWrapper.ProgramInfo;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.Pass;
@@ -42,7 +43,6 @@ import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.shader.ShadowPass1Program.Shadow1Categorizer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
-import com.nucleus.texturing.TextureUtils;
 import com.nucleus.texturing.TiledTexture2D;
 import com.nucleus.vecmath.Matrix;
 
@@ -814,12 +814,12 @@ public abstract class ShaderProgram {
      * This shall set texture parameters to used textures, ie activate texture, bind texture then set parameters.
      * TODO - This should be moved to a class that handles nucleus texture/mesh
      * 
-     * @param gles
+     * @param renderer
      * @param texture
      * @throws GLException
      */
     @Deprecated
-    public void prepareTexture(GLES20Wrapper gles, Texture2D texture) throws GLException {
+    public void prepareTexture(NucleusRenderer renderer, Texture2D texture) throws GLException {
         if (texture == null || texture.getTextureType() == TextureType.Untextured) {
             return;
         }
@@ -827,7 +827,7 @@ public abstract class ShaderProgram {
          * TODO - make texture names into enums
          */
         int unit = samplers.get(getUniformByName("uTexture").getOffset());
-        TextureUtils.prepareTexture(gles, texture, unit);
+        renderer.prepareTexture(texture, unit);
     }
 
     /**

@@ -11,7 +11,6 @@ import com.nucleus.component.ComponentException;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.system.ComponentHandler;
 import com.nucleus.system.System;
@@ -117,17 +116,17 @@ public class ComponentNode extends AbstractMeshNode<Mesh> implements ComponentCo
      * Create the components, the {@link System} needed by the component will be created and registered with the
      * {@link ComponentHandler}
      * 
-     * @param gles
+     * @param renderer
      * @throws ComponentException
      * If one or more of the components could not be created
      */
-    public void createComponents(GLES20Wrapper gles) throws ComponentException {
+    public void createComponents(NucleusRenderer renderer) throws ComponentException {
         ComponentHandler handler = ComponentHandler.getInstance();
         try {
             for (Component c : components) {
                 handler.createSystem(c);
                 handler.registerComponent(c);
-                c.create(gles, this);
+                c.create(renderer, this);
             }
         } catch (InstantiationException | IllegalAccessException e) {
             throw new ComponentException(e);
@@ -214,10 +213,10 @@ public class ComponentNode extends AbstractMeshNode<Mesh> implements ComponentCo
     }
 
     @Override
-    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder<Mesh> shapeBuilder)
+    public MeshBuilder<Mesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder<Mesh> shapeBuilder)
             throws IOException {
         try {
-            createComponents(gles);
+            createComponents(renderer);
         } catch (ComponentException e) {
             throw new RuntimeException(e);
         }

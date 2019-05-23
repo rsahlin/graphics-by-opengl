@@ -89,7 +89,6 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
 
         currentProgram = -1;
         this.currentPass = currentPass;
-        GLES20Wrapper gles = renderer.getGLES();
         // Set view matrix from previous render of this gltfNode
         // node.getSavedViewMatrix(matrices[Matrices.VIEW.index]);
         scene.setMVP(matrices);
@@ -97,7 +96,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         // matrices[Matrices.VIEW.index] = scene.getSceneTransform().concatMatrix(matrices[Matrices.VIEW.index]);
         scene.getSceneTransform().concatMatrix(matrices[Matrices.MODEL.index], 0);
         // Render the default scene.
-        renderScene(gles, glTF, scene, currentPass, matrices);
+        renderScene(renderer, glTF, scene, currentPass, matrices);
 
         modelStack.pop(matrices[Matrices.MODEL.index], 0);
         viewStack.pop(matrices[Matrices.VIEW.index], 0);
@@ -106,13 +105,13 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         return true;
     }
 
-    protected void renderScene(GLES20Wrapper gles, GLTF glTF, Scene scene, Pass currentPass, float[][] matrices)
+    protected void renderScene(NucleusRenderer renderer, GLTF glTF, Scene scene, Pass currentPass, float[][] matrices)
             throws GLException {
         // Traverse the nodes and render each.
         Node[] sceneNodes = scene.getNodes();
         if (sceneNodes != null) {
             for (int i = 0; i < sceneNodes.length; i++) {
-                renderNode(gles, glTF, sceneNodes[i], matrices);
+                renderNode(renderer, glTF, sceneNodes[i], matrices);
             }
         }
     }
@@ -121,38 +120,38 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * Renders the Mesh in this node, then renders childnodes.
      * This will render the Node using depth first search
      * 
-     * @param gles
+     * @param renderer
      * @param glTF
      * @param node
      * @param matrices
      */
-    protected void renderNode(GLES20Wrapper gles, GLTF glTF, Node node, float[][] matrices)
+    protected void renderNode(NucleusRenderer renderer, GLTF glTF, Node node, float[][] matrices)
             throws GLException {
         modelStack.push(matrices[Matrices.MODEL.index], 0);
         node.concatMatrix(matrices[Matrices.MODEL.index], 0);
-        renderMesh(gles, glTF, node.getMesh(), matrices);
-        renderDebugMesh(gles, glTF, node.getMesh(), matrices);
+        renderMesh(renderer, glTF, node.getMesh(), matrices);
+        renderDebugMesh(renderer, glTF, node.getMesh(), matrices);
 
         // Render children.
-        renderNodes(gles, glTF, node.getChildren(), matrices);
+        renderNodes(renderer, glTF, node.getChildren(), matrices);
         modelStack.pop(matrices[Matrices.MODEL.index], 0);
     }
 
     /**
      * Renders the mesh using the specified MVP matrices, this will render each primitive.
      * 
-     * @param gles
+     * @param renderer
      * @param glTF
      * @param mesh
      * @param matrices
      * @throws GLException
      */
-    protected void renderMesh(GLES20Wrapper gles, GLTF glTF, Mesh mesh, float[][] matrices) throws GLException {
+    protected void renderMesh(NucleusRenderer renderer, GLTF glTF, Mesh mesh, float[][] matrices) throws GLException {
         if (mesh != null) {
             Primitive[] primitives = mesh.getPrimitives();
             if (primitives != null) {
                 for (Primitive p : primitives) {
-                    renderPrimitive(gles, glTF, p, matrices);
+                    renderPrimitive(renderer, glTF, p, matrices);
                 }
             }
         }
@@ -162,31 +161,33 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * Used to render debug info for the Mesh - if {@value GLTF#debugTBN} is true then the TBN debug primitives are
      * drawn.
      * 
-     * @param gles
+     * @param renderer
      * @param glTF
      * @param mesh
      * @param matrices
      * @throws GLException
      */
-    protected void renderDebugMesh(GLES20Wrapper gles, GLTF glTF, Mesh mesh, float[][] matrices) throws GLException {
+    protected void renderDebugMesh(NucleusRenderer renderer, GLTF glTF, Mesh mesh, float[][] matrices)
+            throws GLException {
         if (GLTF.debugTBN) {
-            debugTBN(gles, glTF, mesh, matrices);
+            debugTBN(renderer, glTF, mesh, matrices);
         }
     }
 
     /**
      * Renders the primitive
      * 
-     * @param gles
+     * @param renderer
      * @param glTF
      * @param program
      * @param primitive
      * @param matrices
      * @throws GLException
      */
-    protected void renderPrimitive(GLES20Wrapper gles, GLTF glTF, Primitive primitive, float[][] matrices)
+    protected void renderPrimitive(NucleusRenderer renderer, GLTF glTF, Primitive primitive, float[][] matrices)
             throws GLException {
-        GLTFShaderProgram program = (GLTFShaderProgram) getProgram(gles, primitive, currentPass);
+        GLES20Wrapper gles = renderer.getGLES();
+        GLTFShaderProgram program = (GLTFShaderProgram) getProgram(renderer, primitive, currentPass);
         if (currentProgram != program.getProgram()) {
             currentProgram = program.getProgram();
             gles.glUseProgram(currentProgram);
@@ -208,7 +209,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
                 cullFace = renderState.getCullFace();
                 gles.glDisable(GLES20.GL_CULL_FACE);
             }
-            program.prepareTextures(gles, glTF, primitive, material);
+            program.prepareTextures(renderer, glTF, primitive, material);
             if (material.getAlphaMode() == AlphaMode.OPAQUE) {
                 gles.glDisable(GLES20.GL_BLEND);
             } else {
@@ -270,8 +271,9 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
 
     }
 
-    private void debugTBN(GLES20Wrapper gles, GLTF gltf, Mesh mesh, float[][] matrices) throws GLException {
+    private void debugTBN(NucleusRenderer renderer, GLTF gltf, Mesh mesh, float[][] matrices) throws GLException {
         if (mesh != null) {
+            GLES20Wrapper gles = renderer.getGLES();
             Primitive[] primitives = mesh.getDebugTBNPrimitives();
             if (primitives == null) {
                 primitives = mesh.createDebugTBNPrimitives(gles, mesh.getPrimitives());
@@ -306,33 +308,33 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * Renders an array of nodes - each node will be rendered by calling {@link #renderNode(GLTF, Node)}
      * This means rendering will be depth first.
      * 
-     * @param gles
+     * @param renderer
      * @param glTF
      * @param children
      * @param matrices
      */
-    protected void renderNodes(GLES20Wrapper gles, GLTF glTF, Node[] children,
+    protected void renderNodes(NucleusRenderer renderer, GLTF glTF, Node[] children,
             float[][] matrices) throws GLException {
         if (children != null && children.length > 0) {
             for (Node n : children) {
-                renderNode(gles, glTF, n, matrices);
+                renderNode(renderer, glTF, n, matrices);
             }
         }
     }
 
     /**
      * 
-     * @param gles
+     * @param renderer
      * @param primitive
      * @param pass The currently defined pass
      * @return
      */
-    protected ShaderProgram getProgram(GLES20Wrapper gles, Primitive primitive, Pass pass) {
+    protected ShaderProgram getProgram(NucleusRenderer renderer, Primitive primitive, Pass pass) {
         ShaderProgram program = primitive.getProgram();
         if (program == null) {
             throw new IllegalArgumentException("No program for primitive ");
         }
-        return program.getProgram(gles, pass, program.getShading());
+        return program.getProgram(renderer.getGLES(), pass, program.getShading());
     }
 
 }

@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
-import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Layer;
 import com.nucleus.renderer.Window;
 import com.nucleus.vecmath.Matrix;
@@ -125,7 +125,7 @@ public class LayerNode extends MeshNode {
     }
 
     @Override
-    public MeshBuilder<Mesh> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder shapeBuilder)
+    public MeshBuilder<Mesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
             throws IOException {
         // Dont create a meshbuilder for layernode
         return null;

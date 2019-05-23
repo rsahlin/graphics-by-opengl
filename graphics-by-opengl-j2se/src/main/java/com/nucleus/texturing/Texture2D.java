@@ -256,7 +256,7 @@ public class Texture2D extends BaseReference {
      * @param width
      * @param height
      */
-    protected void setup(int width, int height) {
+    public void setup(int width, int height) {
         this.width = width;
         this.height = height;
     }

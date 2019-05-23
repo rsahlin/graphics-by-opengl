@@ -11,7 +11,7 @@ import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.renderer.Window;
 import com.nucleus.texturing.BaseImageFactory;
-import com.nucleus.texturing.J2SEImageFactory;
+import com.nucleus.texturing.AWTImageFactory;
 
 /**
  * Base class for J2SE Windowed application, use this for implementations that need to create a window
@@ -80,7 +80,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
      */
     public J2SEWindowApplication(String[] args, Renderers version, Type<Object> clientClass) {
         SimpleLogger.setLogger(new J2SELogger());
-        BaseImageFactory.setFactory(new J2SEImageFactory());
+        BaseImageFactory.setFactory(new AWTImageFactory());
         CoreApp.setClientClass(clientClass);
         setProperties(args);
         createCoreWindows(version);

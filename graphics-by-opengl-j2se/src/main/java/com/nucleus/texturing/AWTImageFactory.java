@@ -16,13 +16,11 @@ import com.nucleus.texturing.BufferImage.SourceFormat;
 
 /**
  * Implementation of image factory using J2SE, in this implementation java.awt will be used.
- * TODO Consider moving image factory to a separate package.
- * TODO Rename to AWTImageFactory - this class is not J2SE only, it needs AWT in order to function
  * 
  * @author Richard Sahlin
  *
  */
-public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
+public class AWTImageFactory extends BaseImageFactory implements ImageFactory {
 
     private class IndexedToByte {
 
@@ -41,7 +39,7 @@ public class J2SEImageFactory extends BaseImageFactory implements ImageFactory {
         byte[] resultData;
     }
 
-    public J2SEImageFactory() {
+    public AWTImageFactory() {
     }
 
     @Override

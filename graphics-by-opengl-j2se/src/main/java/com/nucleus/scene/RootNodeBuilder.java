@@ -13,6 +13,7 @@ import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.Backend.DrawMode;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
 import com.nucleus.renderer.RenderState;
@@ -40,13 +41,13 @@ public class RootNodeBuilder {
 
     private NodeBuilder<Node> nodeBuilder;
 
-    public RootNode create(GLES20Wrapper gles, String id, String type) throws NodeException {
+    public RootNode create(NucleusRenderer renderer, String id, String type) throws NodeException {
         if (nodeBuilder == null) {
             throw new IllegalArgumentException("Builder is null");
         }
         RootNode root = newInstance(type, id);
         nodeBuilder.setRoot(root);
-        nodeBuilder.createRoot(gles, nodeBuilder.create("scene"));
+        nodeBuilder.createRoot(renderer, nodeBuilder.create("scene"));
         return root;
     }
 
@@ -54,27 +55,28 @@ public class RootNodeBuilder {
      * Creates a rootnode for a scene displaying splash image
      * Projection will be set to orthographic with aspect (width / height) with height normalized
      * 
-     * @param gles
+     * @param renderer
      * @param splashImage
      * @param width Width of window
      * @param height Height of window
      * @return
      * @throws NodeException
      */
-    public RootNode createSplashRoot(GLES20Wrapper gles, String splashImage, RESOLUTION splashResolution, int width,
+    public RootNode createSplashRoot(NucleusRenderer renderer, String splashImage, RESOLUTION splashResolution,
+            int width,
             int height)
             throws NodeException {
         RootNode root = newInstance(NUCLEUS_SCENE, "splashroot");
         NodeBuilder<Node> builder = new NodeBuilder<>();
         builder.setRoot(root);
-        TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(gles,
+        TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
                 new TranslateProgram(ShaderProgram.Shading.textured));
         builder.setProgram(vt);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
-        Texture2D texture = AssetManager.getInstance().getTexture(gles,
+        Texture2D texture = AssetManager.getInstance().getTexture(renderer,
                 BaseImageFactory.getInstance(), "texture",
                 new ExternalReference(splashImage), splashResolution, texParam, 1);
-        Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(gles);
+        Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
         meshBuilder.setElementMode(DrawMode.TRIANGLES, 4, 0, 6);
         meshBuilder.setTexture(texture);
         Material material = new Material();
@@ -91,7 +93,7 @@ public class RootNodeBuilder {
         float aspect = (float) width / height;
         vf.setOrthoProjection(-aspect / 2, aspect / 2, -0.5f, 0.5f, 0, 10);
         builder.setViewFrustum(vf);
-        return builder.createRoot(gles, builder.create("scene"));
+        return builder.createRoot(renderer, builder.create("scene"));
     }
 
     /**

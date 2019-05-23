@@ -23,14 +23,14 @@ import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.BufferImage.SourceFormat;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.Convolution.Kernel;
-import com.nucleus.texturing.J2SEImageFactory;
+import com.nucleus.texturing.AWTImageFactory;
 
 public class FConvolutionTest extends BaseTestCase implements WindowListener {
 
     public static final String WAIT_FOR_USER = "com.nucleus.convolution.waitforuser";
 
     private static volatile boolean wait = false;
-    J2SEImageFactory imageFactory = new J2SEImageFactory();
+    AWTImageFactory imageFactory = new AWTImageFactory();
     private final static int ITERATIONS = 10;
     private final static String IMAGE_NAME = "assets/atari.png";
 

@@ -9,6 +9,10 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
+import com.nucleus.scene.gltf.Image;
+import com.nucleus.scene.gltf.Texture;
+import com.nucleus.texturing.BufferImage;
+import com.nucleus.texturing.Texture2D;
 
 /**
  * An interface for rendering scenes. This is done by supporting a Node base hierarchy.
@@ -342,5 +346,53 @@ public interface NucleusRenderer {
      * @return
      */
     public RenderState getRenderState();
+
+    /**
+     * Creates a texture object name
+     */
+    public int[] createTextureName();
+
+    /**
+     * Uploads the image(s) to the texture, checks if mipmaps should be created.
+     * The size of the image will be set in the texture. Texture object must have texture name allocated.
+     * 
+     * @param texture The texture object, shall have texture name set
+     * @param textureImages Array with one or more images to send to GL. If more than
+     * one image is specified then multiple mip-map levels will be set.
+     * Level 0 shall be at index 0
+     * @throws GLException If there is an error uploading the textures
+     * @throws IllegalArgumentException If multiple mipmaps provided but texture min filter is not _MIPMAP_
+     * @throws IllegalArgumentException If texture does not have a GL texture name
+     */
+    public void uploadTextures(Texture2D texture, BufferImage[] textureImages) throws GLException;
+
+    /**
+     * Uploads the image(s) to the texture, checks if mipmaps should be created.
+     * 
+     * @param image The glTF Image
+     * @param true to generate mipmaps
+     * @throws GLException If there is an error uploading the textures
+     * @throws IllegalArgumentException If multiple mipmaps provided but texture min filter is not _MIPMAP_
+     * @throws IllegalArgumentException If texture does not have a GL texture name
+     */
+    public void uploadTextures(Image image, boolean generateMipmaps) throws GLException;
+
+    /**
+     * Activates texturing, binds the texture and sets texture parameters
+     * Checks if texture is an id (dynamic) reference and sets the texture name if not present.
+     * 
+     * @param texture
+     * @param unit The texture unit number to use, 0 and up
+     */
+    public void prepareTexture(Texture2D texture, int unit) throws GLException;
+
+    /**
+     * Activates texturing, binds the texture and sets texture parameters
+     * Checks if texture is an id (dynamic) reference and sets the texture name if not present.
+     * 
+     * @param texture Texture to prepare or null
+     * @param unit The texture unit number to use, 0 and up
+     */
+    public void prepareTexture(Texture texture, int unit) throws GLException;
 
 }

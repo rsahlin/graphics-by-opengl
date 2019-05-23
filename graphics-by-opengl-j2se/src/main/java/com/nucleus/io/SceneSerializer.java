@@ -5,6 +5,7 @@ import java.io.OutputStream;
 
 import com.nucleus.common.Type;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeException;
 
@@ -27,7 +28,7 @@ public interface SceneSerializer<T> {
         public void onInflated(Node node);
     }
 
-    public final static String NULL_GLES_ERROR = "GLES is null.";
+    public final static String NULL_RENDERER_ERROR = "Renderer is null.";
     public final static String NULL_MESHFACTORY_ERROR = "Mesh factory is null.";
 
     public final static String INIT_NOT_CALLED_ERROR = "Init not called before import, must call #init()";
@@ -36,11 +37,11 @@ public interface SceneSerializer<T> {
      * Sets the GLES wrapper needed when scenes are imported.
      * This method must be called before importScene is called.
      * 
-     * @param gles
+     * @param renderer
      * @param types List of key/value classnames and types that can be serialized, or null
      * @throws IllegalArgumentException If renderer is null
      */
-    public void init(GLES20Wrapper gles, Type<?>[] types);
+    public void init(NucleusRenderer renderer, Type<?>[] types);
 
     /**
      * Registers a list of types that can be resolved to classes, these are the user defined classes serialized by

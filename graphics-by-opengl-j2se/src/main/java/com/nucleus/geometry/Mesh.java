@@ -44,7 +44,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     public static class Builder<T extends Mesh> implements MeshBuilder<Mesh> {
 
-        protected GLES20Wrapper gles;
+        protected NucleusRenderer renderer;
         protected Texture2D texture;
         protected Material material;
         protected int[] attributesPerVertex;
@@ -65,14 +65,14 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         /**
          * Creates a new builder
          * 
-         * @param gles
+         * @param renderer
          * @throws IllegalArgumentException If gles is null
          */
-        public Builder(GLES20Wrapper gles) {
-            if (gles == null) {
-                throw new IllegalArgumentException("GLES may not be null");
+        public Builder(NucleusRenderer renderer) {
+            if (renderer == null) {
+                throw new IllegalArgumentException("Renderer may not be null");
             }
-            this.gles = gles;
+            this.renderer = renderer;
         }
 
         /**
@@ -148,7 +148,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
                 shapeBuilder.build(mesh);
             }
             if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
-                BufferObjectsFactory.getInstance().createVBOs(gles, mesh);
+                BufferObjectsFactory.getInstance().createVBOs(renderer.getGLES(), mesh);
             }
             return mesh;
         }
@@ -158,7 +158,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
             // Default is to create a translate program, this will use an indexer so that creating 2D objects is
             // possible.
             // this is used mainly for ui elements
-            return AssetManager.getInstance().getProgram(gles, new TranslateProgram(texture));
+            return AssetManager.getInstance().getProgram(renderer.getGLES(), new TranslateProgram(texture));
         }
 
         @Override
@@ -173,7 +173,8 @@ public class Mesh extends BaseReference implements AttributeUpdater {
          * @throws IOException If the texture could not be loaded
          */
         public Builder<T> setTexture(ExternalReference textureRef) throws IOException {
-            this.texture = AssetManager.getInstance().getTexture(gles, BaseImageFactory.getInstance(), textureRef);
+            this.texture = AssetManager.getInstance().getTexture(renderer, BaseImageFactory.getInstance(),
+                    textureRef);
             return this;
         }
 
@@ -273,7 +274,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     /**
      * Creates a Builder to create a mesh that can be rendered in a Node
      * 
-     * @gles
+     * @param renderer
      * @param maxVerticeCount
      * @param material
      * @param program
@@ -282,9 +283,9 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      * @param mode
      * @return
      */
-    public static Builder<Mesh> createBuilder(GLES20Wrapper gles, int maxVerticeCount, Material material,
+    public static Builder<Mesh> createBuilder(NucleusRenderer renderer, int maxVerticeCount, Material material,
             ShaderProgram program, Texture2D texture, ShapeBuilder shapeBuilder, DrawMode mode) {
-        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(gles);
+        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
         builder.setTexture(texture);
         builder.setMaterial(material);
         builder.setArrayMode(mode, maxVerticeCount, 0);

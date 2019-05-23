@@ -140,10 +140,10 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
             RootNodeBuilder rootBuilder = new RootNodeBuilder();
             NodeBuilder<Node> builder = new NodeBuilder<>();
             TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
-            Texture2D texture = AssetManager.getInstance().getTexture(renderer.getGLES(),
+            Texture2D texture = AssetManager.getInstance().getTexture(renderer,
                     BaseImageFactory.getInstance(), "texture",
                     new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, texParam, 1);
-            Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer.getGLES());
+            Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
             meshBuilder.setElementMode(DrawMode.TRIANGLES, 4, 0, 6);
             meshBuilder.setTexture(texture);
             program = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
@@ -155,7 +155,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
             builder.setType(com.nucleus.scene.AbstractNode.NodeTypes.layernode).setMeshBuilder(meshBuilder)
                     .setMeshCount(1);
             rootBuilder.setNodeBuilder(builder);
-            RootNode root = rootBuilder.create(renderer.getGLES(), "rootnode", RootNodeBuilder.NUCLEUS_SCENE);
+            RootNode root = rootBuilder.create(renderer, "rootnode", RootNodeBuilder.NUCLEUS_SCENE);
             uKernel = program.getUniformByName("uKernel");
             renderer.addFrameListener(this);
             coreApp.setRootNode(root);

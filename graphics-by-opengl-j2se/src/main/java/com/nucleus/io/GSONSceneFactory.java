@@ -21,7 +21,6 @@ import com.nucleus.exporter.NucleusNodeExporter;
 import com.nucleus.io.gson.GLTFDeserializerImpl;
 import com.nucleus.io.gson.NucleusDeserializer;
 import com.nucleus.io.gson.NucleusDeserializerImpl;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.AbstractNode;
@@ -51,7 +50,7 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
     public final static String NOT_IMPLEMENTED = "Not implemented: ";
     private final static String WRONG_CLASS_ERROR = "Wrong class: ";
 
-    protected GLES20Wrapper gles;
+    protected NucleusRenderer renderer;
     protected NodeExporter nodeExporter;
 
     /**
@@ -112,11 +111,11 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
     }
 
     @Override
-    public void init(GLES20Wrapper gles, Type<?>[] types) {
-        if (gles == null) {
-            throw new IllegalArgumentException(NULL_GLES_ERROR);
+    public void init(NucleusRenderer renderer, Type<?>[] types) {
+        if (renderer == null) {
+            throw new IllegalArgumentException(NULL_RENDERER_ERROR);
         }
-        this.gles = gles;
+        this.renderer = renderer;
         if (types != null) {
             registerTypes(types);
         }
@@ -223,7 +222,7 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
         NodeBuilder<Node> builder = new NodeBuilder<Node>();
         builder.setRoot(root);
         for (Node node : children) {
-            builder.createRoot(gles, node);
+            builder.createRoot(renderer, node);
         }
     }
 
@@ -262,7 +261,7 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
 
     @Override
     public boolean isInitialized() {
-        return (gles != null);
+        return (renderer != null);
     }
 
     @Override

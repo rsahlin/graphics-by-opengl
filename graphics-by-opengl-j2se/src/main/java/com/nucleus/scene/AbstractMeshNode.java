@@ -16,7 +16,6 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.DefaultNodeRenderer;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
@@ -217,11 +216,11 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
     }
 
     @Override
-    public MeshBuilder<T> createMeshBuilder(GLES20Wrapper gles, ShapeBuilder<T> shapeBuilder)
+    public MeshBuilder<T> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder<T> shapeBuilder)
             throws IOException {
 
-        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(gles);
-        return initMeshBuilder(gles, 1, shapeBuilder, builder);
+        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
+        return initMeshBuilder(renderer, 1, shapeBuilder, builder);
     }
 
     /**
@@ -232,13 +231,13 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
      * method is called to create a suitable program.
      * The returned builder shall have needed values to create a mesh.
      * 
-     * @param gles
+     * @param renderer
      * @param count Number of objects
      * @param shapeBuilder
      * @param builder
      * @throws IOException
      */
-    protected MeshBuilder<T> initMeshBuilder(GLES20Wrapper gles, int count, ShapeBuilder<T> shapeBuilder,
+    protected MeshBuilder<T> initMeshBuilder(NucleusRenderer renderer, int count, ShapeBuilder<T> shapeBuilder,
             Mesh.Builder<Mesh> builder)
             throws IOException {
         if (builder.getTexture() == null) {

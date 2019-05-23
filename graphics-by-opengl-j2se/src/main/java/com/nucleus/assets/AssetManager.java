@@ -29,6 +29,7 @@ import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderTarget;
 import com.nucleus.renderer.RenderTarget.AttachementData;
+import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.GLTF;
@@ -128,23 +129,23 @@ public class AssetManager {
      * If already has been loaded the loaded instance will be returned.
      * Treat textures as immutable object
      * 
-     * @param gles
+     * @param renderer
      * @param imageFactory
      * @param ref
      * @return The texture
      * @throws IOException
      * @throws IllegalArgumentException If renderer or ref is null
      */
-    public Texture2D getTexture(GLES20Wrapper gles, ImageFactory imageFactory, ExternalReference ref)
+    public Texture2D getTexture(NucleusRenderer renderer, ImageFactory imageFactory, ExternalReference ref)
             throws IOException {
-        if (gles == null || ref == null) {
-            throw new IllegalArgumentException(NULL_PARAMETER + gles + ", " + null);
+        if (ref == null) {
+            throw new IllegalArgumentException(NULL_PARAMETER);
         }
         String idRef = ref.getIdReference();
         if (idRef != null) {
             return getTexture(idRef);
         } else {
-            return getTexture(gles, imageFactory, createTexture(ref));
+            return getTexture(renderer, imageFactory, createTexture(ref));
         }
     }
 
@@ -155,7 +156,7 @@ public class AssetManager {
      * supplied they will be used.
      * If the device current resolution is lower than the texture target resolution then a lower mip-map level is used.
      * 
-     * @param gles
+     * @param renderer
      * @param imageFactory
      * @param id The id of the texture
      * @param externalReference
@@ -164,11 +165,11 @@ public class AssetManager {
      * @param mipmap
      * @return A new texture object containing the texture image.
      */
-    public Texture2D getTexture(GLES20Wrapper gles, ImageFactory imageFactory, String id,
+    public Texture2D getTexture(NucleusRenderer renderer, ImageFactory imageFactory, String id,
             ExternalReference externalReference, RESOLUTION resolution, TextureParameter parameter, int mipmap) {
         Texture2D source = TextureFactory.getInstance().createTexture(TextureType.Texture2D, id, externalReference,
                 resolution, parameter, mipmap, Format.RGBA, Type.UNSIGNED_BYTE);
-        internalCreateTexture(gles, imageFactory, source);
+        internalCreateTexture(renderer, imageFactory, source);
         return source;
     }
 
@@ -222,7 +223,7 @@ public class AssetManager {
                     new Parameter[] { Parameter.NEAREST, Parameter.NEAREST, Parameter.CLAMP,
                             Parameter.CLAMP });
             ImageFormat format = attachement.getFormat();
-            texture = createTexture(renderer.getGLES(), type, renderTarget.getId(), resolution, size, format,
+            texture = createTexture(renderer, type, renderTarget.getId(), resolution, size, format,
                     texParams, GLES20.GL_TEXTURE_2D);
             texture.setId(renderTarget.getAttachementId(attachement));
             textures.put(renderTarget.getAttachementId(attachement), texture);
@@ -236,13 +237,14 @@ public class AssetManager {
      * If already has been loaded the loaded instance will be returned.
      * Treat textures as immutable object
      * 
-     * @param gles
+     * @param renderer
      * @param imageFactory
      * @param source The external ref is used to load a texture
      * @return The texture specifying the external reference to the texture to load and return.
      * @throws IOException
      */
-    protected Texture2D getTexture(GLES20Wrapper gles, ImageFactory imageFactory, Texture2D source) throws IOException {
+    protected Texture2D getTexture(NucleusRenderer renderer, ImageFactory imageFactory, Texture2D source)
+            throws IOException {
         /**
          * External ref for untextured needs to be "" so it can be stored and fetched.
          */
@@ -267,7 +269,7 @@ public class AssetManager {
             if (texture == null) {
                 long start = System.currentTimeMillis();
                 // Texture not loaded
-                texture = createTexture(gles, imageFactory, source);
+                texture = createTexture(renderer, imageFactory, source);
                 textures.put(refSource, texture);
                 FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_TEXTURE, " " + texture.getName(), start,
                         System.currentTimeMillis());
@@ -381,14 +383,14 @@ public class AssetManager {
      * Loads the assets needed for the glTF models. This will load binary buffers and texture images.
      * After this call the glTF is ready to be used
      * 
-     * @param gles
+     * @param renderer
      * @param glTF
      * @throws IOException If there is an error reading binary buffers or images
      * @throws GLException If VBO creation fails
      */
-    public void loadGLTFAssets(GLES20Wrapper gles, GLTF glTF) throws IOException, GLException {
+    public void loadGLTFAssets(NucleusRenderer renderer, GLTF glTF) throws IOException, GLException {
         loadBuffers(glTF);
-        loadTextures(gles, glTF, glTF.getMaterials());
+        loadTextures(renderer, glTF, glTF.getMaterials());
         SimpleLogger.d(getClass(), "Loaded gltf assets");
         // Build TBN before creating VBOs
         // This can mean that a number of buffers needs to be created, for instance normal, tangent and bitangent.
@@ -398,8 +400,8 @@ public class AssetManager {
         }
         FrameSampler.getInstance().logTag(FrameSampler.Samples.PROCESS_BUFFERS, "_TBN", start,
                 System.currentTimeMillis());
-        if (gles != null && com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
-            BufferObjectsFactory.getInstance().createVBOs(gles, glTF.getBuffers(null));
+        if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
+            BufferObjectsFactory.getInstance().createVBOs(renderer.getGLES(), glTF.getBuffers(null));
             SimpleLogger.d(getClass(), "Created VBOs for gltf assets");
         }
 
@@ -522,16 +524,16 @@ public class AssetManager {
     /**
      * Loads all textures for the specified materials
      * 
-     * @param gles
+     * @param renderer
      * @param gltf
      * @param materials
      * @throws IOException
      */
-    protected void loadTextures(GLES20Wrapper gles, GLTF gltf, Material[] materials) throws IOException {
+    protected void loadTextures(NucleusRenderer renderer, GLTF gltf, Material[] materials) throws IOException {
         long start = System.currentTimeMillis();
         if (materials != null) {
             for (Material material : materials) {
-                loadTextures(gles, gltf, material);
+                loadTextures(renderer, gltf, material);
             }
         }
         FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_TEXTURE, "_ALL", start,
@@ -542,28 +544,29 @@ public class AssetManager {
      * Loads the textures needed for the PBR and material property, if texture bufferimage already loaded
      * for a texture then it is skipped.
      * 
-     * @param gles
+     * @param renderer
      * @param gltf
      * @param material
      * @throws IOException
      */
-    protected void loadTextures(GLES20Wrapper gles, GLTF gltf, Material material)
+    protected void loadTextures(NucleusRenderer renderer, GLTF gltf, Material material)
             throws IOException {
         PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
-        loadTexture(gles, gltf, pbr.getBaseColorTexture(), null, ColorModel.SRGB);
+        loadTexture(renderer, gltf, pbr.getBaseColorTexture(), null, ColorModel.SRGB);
         TextureInfo mrInfo = pbr.getMetallicRoughnessTexture();
-        loadTexture(gles, gltf, material.getNormalTexture(), ImageFormat.RGB, ColorModel.LINEAR);
+        loadTexture(renderer, gltf, material.getNormalTexture(), ImageFormat.RGB, ColorModel.LINEAR);
         TextureInfo occlInfo = material.getOcclusionTexture();
         if (mrInfo != null && occlInfo != null && mrInfo.getIndex() == occlInfo.getIndex()) {
             // Material has both metallicroughness and occlusion in the same texture
-            loadTexture(gles, gltf, pbr.getMetallicRoughnessTexture(), ImageFormat.RGB, ColorModel.LINEAR);
+            loadTexture(renderer, gltf, pbr.getMetallicRoughnessTexture(), ImageFormat.RGB, ColorModel.LINEAR);
         } else {
-            Texture mr = loadTexture(gles, gltf, pbr.getMetallicRoughnessTexture(), ImageFormat.RG, ColorModel.LINEAR);
+            Texture mr = loadTexture(renderer, gltf, pbr.getMetallicRoughnessTexture(), ImageFormat.RG,
+                    ColorModel.LINEAR);
             if (mr != null) {
                 // Need to set texture swizzle so that RG is mapped to GB
                 mr.setSwizzle(Component.RED, Component.RED, Component.GREEN, Component.ALPHA);
             }
-            loadTexture(gles, gltf, material.getOcclusionTexture(), ImageFormat.R, ColorModel.LINEAR);
+            loadTexture(renderer, gltf, material.getOcclusionTexture(), ImageFormat.R, ColorModel.LINEAR);
         }
     }
 
@@ -571,7 +574,7 @@ public class AssetManager {
      * Loads the texture - if bufferimage is already present for the texture then nothing is done.
      * If texInfo is null then nothing is done
      * 
-     * @param gles
+     * @param renderer
      * @param gltf
      * @param texInfo
      * @param destFormat Optional destination image format, if null then same as source
@@ -579,7 +582,7 @@ public class AssetManager {
      * @return The loaded texture object
      * @throws IOException
      */
-    protected Texture loadTexture(GLES20Wrapper gles, GLTF gltf, TextureInfo texInfo, ImageFormat destFormat,
+    protected Texture loadTexture(NucleusRenderer renderer, GLTF gltf, TextureInfo texInfo, ImageFormat destFormat,
             BufferImage.ColorModel colorModel)
             throws IOException {
         if (texInfo != null && gltf.getTexture(texInfo).getImage().getBufferImage() == null) {
@@ -590,7 +593,7 @@ public class AssetManager {
             BufferImage bufferImage = getTextureImage(gltf.getPath(img.getUri()), destFormat);
             bufferImage.setColorModel(colorModel);
             img.setBufferImage(bufferImage);
-            internalCreateTexture(gles, img);
+            internalCreateTexture(renderer, img);
             FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_TEXTURE, " " + texture.getName(), start,
                     System.currentTimeMillis());
             return texture;
@@ -599,16 +602,73 @@ public class AssetManager {
     }
 
     /**
+     * Loads an image into several mip-map levels, the same image will be scaled to produce the
+     * different mip-map levels.
+     * If the value of {@link Texture2D#getLevels()} is > 1 and the texture parameters are set to support mipmap then
+     * the mip levels are generated.
+     * To automatically generate mipmaps, just set the texture parameters to support mipmap.
+     * 
+     * @param imageFactory ImageFactory to use when creating/scaling image
+     * @param texture The texture source object
+     * @return Array with an image for each mip-map level.
+     */
+    public BufferImage[] loadTextureMIPMAP(ImageFactory imageFactory, Texture2D texture) {
+        try {
+            long start = System.currentTimeMillis();
+            BufferImage image = loadTextureImage(imageFactory, texture);
+            long loaded = System.currentTimeMillis();
+            FrameSampler.getInstance()
+                    .logTag(FrameSampler.Samples.CREATE_IMAGE, " " + texture.getExternalReference().getSource(), start,
+                            loaded);
+            int levels = texture.getLevels();
+            if (levels == 0 || !texture.getTexParams().isMipMapFilter()) {
+                levels = 1;
+            }
+            // Do not use levels, mipmaps created when textures are uploaded
+            levels = 1;
+            BufferImage[] images = new BufferImage[levels];
+            images[0] = image;
+            return images;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Loads the texture image for the texture, fitting the result for the texture resolution bias and screen resolution
+     * 
+     * @param factory
+     * @param texture
+     * @return
+     * @throws IOException
+     */
+    protected BufferImage loadTextureImage(ImageFactory factory, Texture2D texture) throws IOException {
+        SimpleLogger.d(TextureUtils.class, "Loading image " + texture.getExternalReference().getSource());
+        float scale = (float) Window.getInstance().getHeight() / texture.getResolution().lines;
+        if (scale < 0.9) {
+            RESOLUTION res = RESOLUTION.getResolution(Window.getInstance().getHeight());
+            BufferImage img = factory.createImage(texture.getExternalReference().getSource(), scale, scale,
+                    TextureUtils.getImageFormat(texture), res);
+            SimpleLogger.d(TextureUtils.class,
+                    "Image scaled " + scale + " to " + img.getWidth() + ", " + img.getHeight()
+                            + " for target resolution " + res);
+            return img;
+        }
+        return factory.createImage(texture.getExternalReference().getSource(), TextureUtils.getImageFormat(texture));
+
+    }
+
+    /**
      * Creates and uploads the texture
      * 
-     * @param gles
+     * @param renderer
      * @param image
      */
-    private void internalCreateTexture(GLES20Wrapper gles, Image image) {
+    private void internalCreateTexture(NucleusRenderer renderer, Image image) {
         try {
-            int[] name = createTextureName(gles);
+            int[] name = renderer.createTextureName();
             image.setTextureName(name[0]);
-            TextureUtils.uploadTextures(gles, image, true);
+            renderer.uploadTextures(image, true);
         } catch (GLException e) {
             throw new IllegalArgumentException(e);
         }
@@ -694,14 +754,14 @@ public class AssetManager {
      * supplied they will be used.
      * If the device current resolution is lower than the texture target resolution then a lower mip-map level is used.
      * 
-     * @param gles The gles wrapper
+     * @param renderer
      * @param imageFactory factor for image creation
      * @param source The texture source, the new texture will be a copy of this with the texture image loaded into GL.
      * @return A new texture object containing the texture image.
      */
-    protected Texture2D createTexture(GLES20Wrapper gles, ImageFactory imageFactory, Texture2D source) {
+    protected Texture2D createTexture(NucleusRenderer renderer, ImageFactory imageFactory, Texture2D source) {
         Texture2D texture = TextureFactory.getInstance().createTexture(source);
-        internalCreateTexture(gles, imageFactory, texture);
+        internalCreateTexture(renderer, imageFactory, texture);
         return texture;
     }
 
@@ -713,20 +773,19 @@ public class AssetManager {
      * Texture parameters are uploaded.
      * When this method returns the texture is ready to be used.
      * 
-     * @param gles
+     * @param renderer
      * @param texture The texture
      * @param imageFactory The imagefactory to use for image creation
      */
-    private void internalCreateTexture(GLES20Wrapper gles, ImageFactory imageFactory, Texture2D texture) {
+    private void internalCreateTexture(NucleusRenderer renderer, ImageFactory imageFactory, Texture2D texture) {
         if (texture.getTextureType() == TextureType.Untextured) {
             return;
         }
-        BufferImage[] textureImg = TextureUtils
-                .loadTextureMIPMAP(imageFactory, texture);
-        internalCreateTexture(gles, textureImg, texture);
+        BufferImage[] textureImg = loadTextureMIPMAP(imageFactory, texture);
+        internalCreateTexture(renderer, textureImg, texture);
     }
 
-    private void internalCreateTexture(GLES20Wrapper gles, BufferImage[] textureImg, Texture2D texture) {
+    private void internalCreateTexture(NucleusRenderer renderer, BufferImage[] textureImg, Texture2D texture) {
         if (textureImg[0].getResolution() != null) {
             if (texture.getWidth() > 0 || texture.getHeight() > 0) {
                 throw new IllegalArgumentException("Size is already set in texture " + texture.getId());
@@ -734,9 +793,9 @@ public class AssetManager {
             texture.setResolution(textureImg[0].getResolution());
         }
         try {
-            int[] name = createTextureName(gles);
+            int[] name = renderer.createTextureName();
             texture.setTextureName(name[0]);
-            TextureUtils.uploadTextures(gles, texture, textureImg);
+            renderer.uploadTextures(texture, textureImg);
             SimpleLogger.d(getClass(), "Uploaded texture " + texture.toString());
             BufferImage.destroyImages(textureImg);
         } catch (GLException e) {
@@ -748,7 +807,7 @@ public class AssetManager {
     /**
      * Creates a new texture, allocating a texture for the specified size.
      * 
-     * @param gles
+     * @param renderer
      * @param type
      * @param id
      * @param resolution
@@ -758,21 +817,15 @@ public class AssetManager {
      * @params target Texture target
      * @return
      */
-    protected Texture2D createTexture(GLES20Wrapper gles, TextureType type, String id, RESOLUTION resolution,
+    protected Texture2D createTexture(NucleusRenderer renderer, TextureType type, String id, RESOLUTION resolution,
             int[] size, ImageFormat format, TextureParameter texParams, int target) throws GLException {
-        int[] textureName = createTextureName(gles);
+        int[] textureName = renderer.createTextureName();
         Texture2D result = TextureFactory.getInstance().createTexture(type, id, resolution, texParams, size, format,
                 textureName[0]);
-        gles.glBindTexture(target, result.getName());
-        gles.texImage(result);
-        GLUtils.handleError(gles, "glTexImage2D");
+        renderer.getGLES().glBindTexture(target, result.getName());
+        renderer.getGLES().texImage(result);
+        GLUtils.handleError(renderer.getGLES(), "glTexImage2D");
         return result;
-    }
-
-    public int[] createTextureName(GLES20Wrapper gles) {
-        int[] textures = new int[1];
-        gles.glGenTextures(textures);
-        return textures;
     }
 
     /**
