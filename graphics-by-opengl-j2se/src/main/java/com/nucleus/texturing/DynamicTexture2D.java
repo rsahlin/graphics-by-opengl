@@ -1,7 +1,7 @@
 package com.nucleus.texturing;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.assets.AssetManager;
+import com.nucleus.opengl.assets.AssetManager;
 
 /**
  * A dynamic texture, for instance attached as framebuffer when render to texture.

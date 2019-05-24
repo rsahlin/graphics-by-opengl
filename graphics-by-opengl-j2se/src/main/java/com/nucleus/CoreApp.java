@@ -1,19 +1,19 @@
 package com.nucleus;
 
-import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Type;
 import com.nucleus.component.ComponentProcessorRunnable;
 import com.nucleus.component.J2SEComponentProcessor;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.mmi.core.CoreInput;
-import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.profiling.FrameSampler.Sample;
 import com.nucleus.profiling.FrameSampler.Samples;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
+import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
@@ -256,7 +256,7 @@ public class CoreApp implements FrameRenderer {
                     destroy();
                 }
                 logPerformance();
-            } catch (GLException e) {
+            } catch (RenderBackendException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -329,7 +329,7 @@ public class CoreApp implements FrameRenderer {
      * }
      */
 
-    public void displaySplash(int width, int height) throws GLException, NodeException {
+    public void displaySplash(int width, int height) throws RenderBackendException, NodeException {
         FrameSampler.getInstance().logTag(FrameSampler.Samples.DISPLAY_SPLASH);
         RootNodeBuilder rootBuilder = new RootNodeBuilder();
         RootNode root = rootBuilder.createSplashRoot(renderer, SPLASH_FILENAME, RESOLUTION.ULTRA_HD, width,
@@ -372,7 +372,7 @@ public class CoreApp implements FrameRenderer {
             CoreApp coreApp = new CoreApp(renderer, clientApp);
             try {
                 coreApp.displaySplash(width, height);
-            } catch (GLException | NodeException e) {
+            } catch (RenderBackendException | NodeException e) {
                 throw new RuntimeException(e);
             }
             return coreApp;

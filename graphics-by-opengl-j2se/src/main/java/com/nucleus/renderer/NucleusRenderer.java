@@ -5,7 +5,6 @@ import java.nio.Buffer;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLException;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
@@ -238,9 +237,9 @@ public interface NucleusRenderer {
      * This must be called by the thread driving rendering.
      * 
      * @param root The root node to render
-     * @throws GLException If there is a GL error when rendering.
+     * @throws RenderBackendException If there is a GL error when rendering.
      */
-    public void render(RootNode root) throws GLException;
+    public void render(RootNode root) throws RenderBackendException;
 
     /**
      * Signals the end of a frame - rendering is considered to be finished and implementations should call
@@ -254,9 +253,9 @@ public interface NucleusRenderer {
      * If node is drawn it will be added to {@link RootNode} list of rendered nodes.
      * 
      * @param node The node to be rendered
-     * @throws GLException If there is an error in GL while drawing this node.
+     * @throws RenderBackendException If there is an error in GL while drawing this node.
      */
-    public void render(RenderableNode<?> node) throws GLException;
+    public void render(RenderableNode<?> node) throws RenderBackendException;
 
     /**
      * Returns true if this renderer has been initialized by calling init() when
@@ -360,22 +359,22 @@ public interface NucleusRenderer {
      * @param textureImages Array with one or more images to send to GL. If more than
      * one image is specified then multiple mip-map levels will be set.
      * Level 0 shall be at index 0
-     * @throws GLException If there is an error uploading the textures
+     * @throws RenderBackendException If there is an error uploading the textures
      * @throws IllegalArgumentException If multiple mipmaps provided but texture min filter is not _MIPMAP_
      * @throws IllegalArgumentException If texture does not have a GL texture name
      */
-    public void uploadTextures(Texture2D texture, BufferImage[] textureImages) throws GLException;
+    public void uploadTextures(Texture2D texture, BufferImage[] textureImages) throws RenderBackendException;
 
     /**
      * Uploads the image(s) to the texture, checks if mipmaps should be created.
      * 
      * @param image The glTF Image
      * @param true to generate mipmaps
-     * @throws GLException If there is an error uploading the textures
+     * @throws RenderBackendException If there is an error uploading the textures
      * @throws IllegalArgumentException If multiple mipmaps provided but texture min filter is not _MIPMAP_
      * @throws IllegalArgumentException If texture does not have a GL texture name
      */
-    public void uploadTextures(Image image, boolean generateMipmaps) throws GLException;
+    public void uploadTextures(Image image, boolean generateMipmaps) throws RenderBackendException;
 
     /**
      * Activates texturing, binds the texture and sets texture parameters
@@ -384,7 +383,7 @@ public interface NucleusRenderer {
      * @param texture
      * @param unit The texture unit number to use, 0 and up
      */
-    public void prepareTexture(Texture2D texture, int unit) throws GLException;
+    public void prepareTexture(Texture2D texture, int unit) throws RenderBackendException;
 
     /**
      * Activates texturing, binds the texture and sets texture parameters
@@ -393,6 +392,6 @@ public interface NucleusRenderer {
      * @param texture Texture to prepare or null
      * @param unit The texture unit number to use, 0 and up
      */
-    public void prepareTexture(Texture texture, int unit) throws GLException;
+    public void prepareTexture(Texture texture, int unit) throws RenderBackendException;
 
 }

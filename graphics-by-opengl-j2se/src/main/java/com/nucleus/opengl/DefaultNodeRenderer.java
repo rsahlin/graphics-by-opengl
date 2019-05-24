@@ -15,6 +15,7 @@ import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
+import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.Texture2D;
@@ -32,13 +33,13 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
 
     @Override
     public boolean renderNode(NucleusRenderer renderer, RenderableNode<Mesh> node, Pass currentPass, float[][] matrices)
-            throws GLException {
+            throws RenderBackendException {
         renderMeshes(renderer, node, currentPass, matrices);
         return true;
     }
 
     public void renderMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, float[][] matrices)
-            throws GLException {
+            throws RenderBackendException {
         GLES20Wrapper gles = renderer.getGLES();
         Consumer updater = mesh.getAttributeConsumer();
         if (updater != null) {
@@ -82,7 +83,7 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
     }
 
     public boolean renderMeshes(NucleusRenderer renderer, RenderableNode<Mesh> node, Pass currentPass,
-            float[][] matrices) throws GLException {
+            float[][] matrices) throws RenderBackendException {
         nodeMeshes.clear();
         node.getMeshes(nodeMeshes);
         if (nodeMeshes.size() > 0) {

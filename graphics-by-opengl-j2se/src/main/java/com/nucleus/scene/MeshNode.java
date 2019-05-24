@@ -4,13 +4,13 @@ import java.io.IOException;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
-import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
+import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilderFactory;
 import com.nucleus.renderer.Backend.DrawMode;

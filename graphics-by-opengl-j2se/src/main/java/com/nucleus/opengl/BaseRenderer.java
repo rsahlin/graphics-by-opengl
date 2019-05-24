@@ -8,15 +8,16 @@ import java.util.List;
 import java.util.Set;
 
 import com.nucleus.SimpleLogger;
-import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES_EXTENSION_TOKENS;
+import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.Configuration;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
+import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.RenderPass;
 import com.nucleus.renderer.RenderState;
 import com.nucleus.renderer.RenderState.Cullface;
@@ -190,9 +191,9 @@ public class BaseRenderer implements NucleusRenderer {
      * Internal method to apply the rendersettings.
      * 
      * @param state
-     * @throws GLException
+     * @throws RenderBackendException
      */
-    private void setRenderState(RenderState state) throws GLException {
+    private void setRenderState(RenderState state) throws RenderBackendException {
         renderState.set(state);
         int flags = state.getChangeFlag();
         if ((flags & RenderState.CHANGE_FLAG_CLEARCOLOR) != 0) {
@@ -239,7 +240,7 @@ public class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void render(RenderableNode<?> node) throws GLException {
+    public void render(RenderableNode<?> node) throws RenderBackendException {
         Pass pass = node.getPass();
         if (pass != null && (currentPass.getFlags() & pass.getFlags()) != 0) {
             // Node has defined pass and masked with current pass
@@ -276,9 +277,9 @@ public class BaseRenderer implements NucleusRenderer {
      * Will recursively render child nodes.
      * 
      * @param node
-     * @throws GLException
+     * @throws RenderBackendException
      */
-    private void internalRender(RenderableNode<?> node) throws GLException {
+    private void internalRender(RenderableNode<?> node) throws RenderBackendException {
         float[] nodeMatrix = node.concatModelMatrix(this.modelMatrix);
         // Fetch projection just before render
         float[] projection = node.getProjection(currentPass);
@@ -310,7 +311,7 @@ public class BaseRenderer implements NucleusRenderer {
         }
     }
 
-    private void setupRenderTarget(RenderTarget target) throws GLException {
+    private void setupRenderTarget(RenderTarget target) throws RenderBackendException {
         boolean init = false;
         if (target.getFramebufferName() == Constants.NO_VALUE && target.getAttachements() != null) {
             createBuffers(target);
@@ -361,7 +362,7 @@ public class BaseRenderer implements NucleusRenderer {
      * 
      * @param target
      */
-    private void bindTextureFramebuffer(RenderTarget target) throws GLException {
+    private void bindTextureFramebuffer(RenderTarget target) throws RenderBackendException {
         // Loop through all attachments and setup, if not defined in rendertarget then disable
         for (Attachement a : Attachement.values()) {
             bindTextureFramebuffer(target, a);
@@ -373,9 +374,9 @@ public class BaseRenderer implements NucleusRenderer {
      * 
      * @param target
      * @param attachement
-     * @throws GLException
+     * @throws RenderBackendException
      */
-    private void bindTextureFramebuffer(RenderTarget target, Attachement attachement) throws GLException {
+    private void bindTextureFramebuffer(RenderTarget target, Attachement attachement) throws RenderBackendException {
         AttachementData ad = target.getAttachement(attachement);
         if (ad == null) {
             disable(attachement);
@@ -388,7 +389,7 @@ public class BaseRenderer implements NucleusRenderer {
         }
     }
 
-    private void disable(Attachement attachement) throws GLException {
+    private void disable(Attachement attachement) throws RenderBackendException {
         switch (attachement) {
             case COLOR:
                 gles.glColorMask(false, false, false, false);
@@ -406,7 +407,7 @@ public class BaseRenderer implements NucleusRenderer {
         GLUtils.handleError(gles, "glDisable " + attachement);
     }
 
-    private void enable(Attachement attachement) throws GLException {
+    private void enable(Attachement attachement) throws RenderBackendException {
         switch (attachement) {
             case COLOR:
                 gles.glColorMask(true, true, true, true);
@@ -433,7 +434,7 @@ public class BaseRenderer implements NucleusRenderer {
      * 
      * @param target
      */
-    private void createBuffers(RenderTarget target) throws GLException {
+    private void createBuffers(RenderTarget target) throws RenderBackendException {
         ArrayList<AttachementData> attachements = target.getAttachements();
         if (attachements == null) {
             // No attachements - what does this mean?
@@ -462,7 +463,7 @@ public class BaseRenderer implements NucleusRenderer {
      * 
      * @param target Null target or target with empty/null attachements
      */
-    private void bindFramebuffer(RenderTarget target) throws GLException {
+    private void bindFramebuffer(RenderTarget target) throws RenderBackendException {
         if (target == null || target.getAttachements() == null || target.getAttachements().size() == 0) {
             // Bind default windowbuffer
             gles.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
@@ -479,10 +480,10 @@ public class BaseRenderer implements NucleusRenderer {
      * 
      * @param renderTarget
      * @param attachementData
-     * @throws GLException
+     * @throws RenderBackendException
      */
     private void createAttachementBuffer(RenderTarget renderTarget, AttachementData attachementData)
-            throws GLException {
+            throws RenderBackendException {
         switch (renderTarget.getTarget()) {
             case TEXTURE:
                 attachementData.setTexture(createTexture(renderTarget, attachementData));
@@ -505,13 +506,14 @@ public class BaseRenderer implements NucleusRenderer {
      * @param renderTarget
      * @param attachementData
      * @return Texture object name
-     * @throws GLException
+     * @throws RenderBackendException
      */
-    private Texture2D createTexture(RenderTarget renderTarget, AttachementData attachementData) throws GLException {
+    private Texture2D createTexture(RenderTarget renderTarget, AttachementData attachementData)
+            throws RenderBackendException {
         return AssetManager.getInstance().createTexture(this, renderTarget, attachementData);
     }
 
-    private void setRenderPass(RenderPass renderPass) throws GLException {
+    private void setRenderPass(RenderPass renderPass) throws RenderBackendException {
         // First set state so that rendertargets can override enable/disable writing to buffers
         if (renderPass.getPass() == null || renderPass.getTarget() == null) {
             throw new IllegalArgumentException(
@@ -609,7 +611,7 @@ public class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void render(RootNode root) throws GLException {
+    public void render(RootNode root) throws RenderBackendException {
         long start = System.currentTimeMillis();
         List<Node> scene = root.getChildren();
         if (scene != null) {
@@ -657,7 +659,7 @@ public class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void uploadTextures(Texture2D texture, BufferImage[] textureImages)
-            throws GLException {
+            throws RenderBackendException {
         if (texture.getName() <= 0) {
             throw new IllegalArgumentException("No texture name for texture " + texture.getId());
         }
@@ -695,7 +697,7 @@ public class BaseRenderer implements NucleusRenderer {
 
     @Override
     public void uploadTextures(Image image, boolean generateMipmaps)
-            throws GLException {
+            throws RenderBackendException {
         if (image.getTextureName() <= 0) {
             throw new IllegalArgumentException("No texture name for texture " + image.getUri());
         }
@@ -714,7 +716,7 @@ public class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void prepareTexture(Texture2D texture, int unit) throws GLException {
+    public void prepareTexture(Texture2D texture, int unit) throws RenderBackendException {
         if (texture != null && texture.textureType != TextureType.Untextured) {
             gles.glActiveTexture(GLES20.GL_TEXTURE0 + unit);
             int textureID = texture.getName();
@@ -735,7 +737,7 @@ public class BaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void prepareTexture(Texture texture, int unit) throws GLException {
+    public void prepareTexture(Texture texture, int unit) throws RenderBackendException {
         if (texture != null) {
             gles.glActiveTexture(GLES20.GL_TEXTURE0 + unit);
             int textureID = texture.getImage().getTextureName();

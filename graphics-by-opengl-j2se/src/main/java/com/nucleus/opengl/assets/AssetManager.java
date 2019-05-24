@@ -1,23 +1,20 @@
-package com.nucleus.assets;
+package com.nucleus.opengl.assets;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nucleus.SimpleLogger;
+import com.nucleus.assets.Assets;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.io.gson.TextureDeserializer;
 import com.nucleus.opengl.BufferObjectsFactory;
@@ -27,6 +24,7 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.RenderTarget;
 import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.renderer.Window;
@@ -69,7 +67,7 @@ import com.nucleus.texturing.TextureUtils;
  * @author Richard Sahlin
  *
  */
-public class AssetManager {
+public class AssetManager implements Assets {
     protected static AssetManager assetManager = null;
     private final static String NO_TEXTURE_SOURCE_ERROR = "No texture source for id: ";
     private final static String NULL_PARAMETER = "Parameter is null: ";
@@ -98,7 +96,7 @@ public class AssetManager {
     private AssetManager() {
     }
 
-    public static AssetManager getInstance() {
+    public static Assets getInstance() {
         if (assetManager == null) {
             assetManager = new AssetManager();
         }
@@ -124,18 +122,7 @@ public class AssetManager {
         public void destroy();
     }
 
-    /**
-     * Returns the texture, if the texture has not been loaded it will be loaded and stored in the assetmanager.
-     * If already has been loaded the loaded instance will be returned.
-     * Treat textures as immutable object
-     * 
-     * @param renderer
-     * @param imageFactory
-     * @param ref
-     * @return The texture
-     * @throws IOException
-     * @throws IllegalArgumentException If renderer or ref is null
-     */
+    @Override
     public Texture2D getTexture(NucleusRenderer renderer, ImageFactory imageFactory, ExternalReference ref)
             throws IOException {
         if (ref == null) {
@@ -145,42 +132,28 @@ public class AssetManager {
         if (idRef != null) {
             return getTexture(idRef);
         } else {
-            return getTexture(renderer, imageFactory, createTexture(ref));
+            try {
+                return getTexture(renderer, imageFactory, createTexture(ref));
+            } catch (RenderBackendException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
-    /**
-     * Returns the texture, if the texture has not been loaded it will be and stored in the assetmanager
-     * Format will be RGBA and type UNSIGNED_BYTE
-     * The texture will be uploaded to GL using the specified texture object name, if several mip-map levels are
-     * supplied they will be used.
-     * If the device current resolution is lower than the texture target resolution then a lower mip-map level is used.
-     * 
-     * @param renderer
-     * @param imageFactory
-     * @param id The id of the texture
-     * @param externalReference
-     * @param resolution
-     * @param parameter
-     * @param mipmap
-     * @return A new texture object containing the texture image.
-     */
+    @Override
     public Texture2D getTexture(NucleusRenderer renderer, ImageFactory imageFactory, String id,
             ExternalReference externalReference, RESOLUTION resolution, TextureParameter parameter, int mipmap) {
         Texture2D source = TextureFactory.getInstance().createTexture(TextureType.Texture2D, id, externalReference,
                 resolution, parameter, mipmap, Format.RGBA, Type.UNSIGNED_BYTE);
-        internalCreateTexture(renderer, imageFactory, source);
+        try {
+            internalCreateTexture(renderer, imageFactory, source);
+        } catch (RenderBackendException e) {
+            throw new RuntimeException(e);
+        }
         return source;
     }
 
-    /**
-     * If the reference texture is id reference and the reference is registered then the texture data is copied into
-     * the reference, overwriting transient values and non-set (null) values.
-     * The reference texture must NOT set format/type/name/width/height of texture since these values are taken from
-     * the target texture.
-     * 
-     * @param reference
-     */
+    @Override
     public void getIdReference(Texture2D reference) {
         if (reference != null && reference.getExternalReference().isIdReference()) {
             Texture2D source = getTexture(reference.getExternalReference().getIdReference());
@@ -198,36 +171,31 @@ public class AssetManager {
         }
     }
 
-    /**
-     * Returns the texture for the rendertarget attachement, if not already created it will be created and stored in the
-     * assetmanager with id taken from renderTarget and attachement
-     * If already created the instance will be returned.
-     * 
-     * @param renderer
-     * @param renderTarget The rendertarget that this texture is to be used for
-     * @param attachement The attachement point for the texture
-     * @return
-     */
+    @Override
     public Texture2D createTexture(NucleusRenderer renderer, RenderTarget renderTarget, AttachementData attachement)
-            throws GLException {
+            throws RenderBackendException {
         if (renderTarget.getId() == null) {
             throw new IllegalArgumentException("RenderTarget must have an id");
         }
         Texture2D texture = textures.get(renderTarget.getAttachementId(attachement));
         if (texture == null) {
-            // TODO - What values should be used when creating the texture?
-            TextureType type = TextureType.DynamicTexture2D;
-            RESOLUTION resolution = RESOLUTION.HD;
-            int[] size = attachement.getSize();
-            TextureParameter texParams = new TextureParameter(
-                    new Parameter[] { Parameter.NEAREST, Parameter.NEAREST, Parameter.CLAMP,
-                            Parameter.CLAMP });
-            ImageFormat format = attachement.getFormat();
-            texture = createTexture(renderer, type, renderTarget.getId(), resolution, size, format,
-                    texParams, GLES20.GL_TEXTURE_2D);
-            texture.setId(renderTarget.getAttachementId(attachement));
-            textures.put(renderTarget.getAttachementId(attachement), texture);
-            SimpleLogger.d(getClass(), "Created texture: " + texture.toString());
+            try {
+                // TODO - What values should be used when creating the texture?
+                TextureType type = TextureType.DynamicTexture2D;
+                RESOLUTION resolution = RESOLUTION.HD;
+                int[] size = attachement.getSize();
+                TextureParameter texParams = new TextureParameter(
+                        new Parameter[] { Parameter.NEAREST, Parameter.NEAREST, Parameter.CLAMP,
+                                Parameter.CLAMP });
+                ImageFormat format = attachement.getFormat();
+                texture = createTexture(renderer, type, renderTarget.getId(), resolution, size, format,
+                        texParams, GLES20.GL_TEXTURE_2D);
+                texture.setId(renderTarget.getAttachementId(attachement));
+                textures.put(renderTarget.getAttachementId(attachement), texture);
+                SimpleLogger.d(getClass(), "Created texture: " + texture.toString());
+            } catch (GLException e) {
+                throw new RenderBackendException(e.getMessage());
+            }
         }
         return texture;
     }
@@ -242,9 +210,10 @@ public class AssetManager {
      * @param source The external ref is used to load a texture
      * @return The texture specifying the external reference to the texture to load and return.
      * @throws IOException
+     * @throws RenderBackendException
      */
     protected Texture2D getTexture(NucleusRenderer renderer, ImageFactory imageFactory, Texture2D source)
-            throws IOException {
+            throws IOException, RenderBackendException {
         /**
          * External ref for untextured needs to be "" so it can be stored and fetched.
          */
@@ -293,17 +262,7 @@ public class AssetManager {
 
     }
 
-    /**
-     * Returns a loaded and compiled shader program, if the program has not already been loaded and compiled it will be
-     * added to AssetManager using shader program and function.
-     * Next time this method is called with the same shaderprogram and function the existing instance is returned.
-     * 
-     * @param gles
-     * @param program
-     * @return An instance of the ShaderProgram that is loaded and compiled
-     * or linking the program.
-     * @throws RuntimeException If the program could not be compiled or linked
-     */
+    @Override
     public ShaderProgram getProgram(GLES20Wrapper gles, ShaderProgram program) {
         String key = program.getKey();
         ShaderProgram compiled = programs.get(key);
@@ -329,6 +288,7 @@ public class AssetManager {
      * 
      * @param renderer
      */
+    @Override
     public void destroy(NucleusRenderer renderer) {
         SimpleLogger.d(getClass(), "destroy");
         deletePrograms(renderer.getGLES());
@@ -355,15 +315,7 @@ public class AssetManager {
         programs.clear();
     }
 
-    /**
-     * If the Asset already has been loaded it is returned, otherwise AssetManager will load and return the GLTF asset.
-     * This method will not load binary data (buffers) or images.
-     * 
-     * @param name
-     * @return The loaded GLTF asset, without binary buffers and images loaded.
-     * @throws IOException If there is an io exception reading the file, or it cannot be found.
-     * @throws
-     */
+    @Override
     public GLTF getGLTFAsset(String fileName) throws IOException, GLTFException {
         GLTF gltf = gltfAssets.get(fileName);
         if (gltf != null) {
@@ -379,16 +331,8 @@ public class AssetManager {
         return gltf;
     }
 
-    /**
-     * Loads the assets needed for the glTF models. This will load binary buffers and texture images.
-     * After this call the glTF is ready to be used
-     * 
-     * @param renderer
-     * @param glTF
-     * @throws IOException If there is an error reading binary buffers or images
-     * @throws GLException If VBO creation fails
-     */
-    public void loadGLTFAssets(NucleusRenderer renderer, GLTF glTF) throws IOException, GLException {
+    @Override
+    public void loadGLTFAssets(NucleusRenderer renderer, GLTF glTF) throws IOException, RenderBackendException {
         loadBuffers(glTF);
         loadTextures(renderer, glTF, glTF.getMaterials());
         SimpleLogger.d(getClass(), "Loaded gltf assets");
@@ -401,13 +345,17 @@ public class AssetManager {
         FrameSampler.getInstance().logTag(FrameSampler.Samples.PROCESS_BUFFERS, "_TBN", start,
                 System.currentTimeMillis());
         if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
-            BufferObjectsFactory.getInstance().createVBOs(renderer.getGLES(), glTF.getBuffers(null));
-            SimpleLogger.d(getClass(), "Created VBOs for gltf assets");
+            try {
+                BufferObjectsFactory.getInstance().createVBOs(renderer.getGLES(), glTF.getBuffers(null));
+                SimpleLogger.d(getClass(), "Created VBOs for gltf assets");
+            } catch (GLException e) {
+                throw new RenderBackendException(e.getMessage());
+            }
         }
 
     }
 
-    public void buildTBN(GLTF gltf, Primitive[] primitives) {
+    protected void buildTBN(GLTF gltf, Primitive[] primitives) {
         if (primitives != null) {
             for (Primitive p : primitives) {
                 p.calculateTBN(gltf);
@@ -416,21 +364,16 @@ public class AssetManager {
 
     }
 
-    /**
-     * Deletes loaded gltf assets. This will delete binary buffers and texture images and then remove
-     * the gltf asset from AssetManager.
-     * Do not call this wile gltf model is in use - must call outside from render.
-     * After this call the gltf asset must be loaded in order to be used again.
-     * 
-     * @param gles
-     * @param gltf
-     * @throws GLException
-     */
-    public void deleteGLTFAssets(GLES20Wrapper gles, GLTF gltf) throws GLException {
-        BufferObjectsFactory.getInstance().destroyVBOs(gles, gltf.getBuffers(null));
-        deleteTextures(gles, gltf, gltf.getImages());
-        gltfAssets.remove(gltf.getFilename());
-        gltf.destroy();
+    @Override
+    public void deleteGLTFAssets(NucleusRenderer renderer, GLTF gltf) throws RenderBackendException {
+        try {
+            BufferObjectsFactory.getInstance().destroyVBOs(renderer.getGLES(), gltf.getBuffers(null));
+            deleteTextures(renderer.getGLES(), gltf, gltf.getImages());
+            gltfAssets.remove(gltf.getFilename());
+            gltf.destroy();
+        } catch (GLException e) {
+            throw new RenderBackendException(e.getMessage());
+        }
     }
 
     protected void deleteTextures(GLES20Wrapper gles, GLTF gltf, Image[] images) {
@@ -528,8 +471,10 @@ public class AssetManager {
      * @param gltf
      * @param materials
      * @throws IOException
+     * @throws RenderBackendException
      */
-    protected void loadTextures(NucleusRenderer renderer, GLTF gltf, Material[] materials) throws IOException {
+    protected void loadTextures(NucleusRenderer renderer, GLTF gltf, Material[] materials)
+            throws IOException, RenderBackendException {
         long start = System.currentTimeMillis();
         if (materials != null) {
             for (Material material : materials) {
@@ -550,7 +495,7 @@ public class AssetManager {
      * @throws IOException
      */
     protected void loadTextures(NucleusRenderer renderer, GLTF gltf, Material material)
-            throws IOException {
+            throws IOException, RenderBackendException {
         PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
         loadTexture(renderer, gltf, pbr.getBaseColorTexture(), null, ColorModel.SRGB);
         TextureInfo mrInfo = pbr.getMetallicRoughnessTexture();
@@ -584,7 +529,7 @@ public class AssetManager {
      */
     protected Texture loadTexture(NucleusRenderer renderer, GLTF gltf, TextureInfo texInfo, ImageFormat destFormat,
             BufferImage.ColorModel colorModel)
-            throws IOException {
+            throws IOException, RenderBackendException {
         if (texInfo != null && gltf.getTexture(texInfo).getImage().getBufferImage() == null) {
             // Have not loaded bufferimage for this texture
             long start = System.currentTimeMillis();
@@ -601,17 +546,7 @@ public class AssetManager {
         return null;
     }
 
-    /**
-     * Loads an image into several mip-map levels, the same image will be scaled to produce the
-     * different mip-map levels.
-     * If the value of {@link Texture2D#getLevels()} is > 1 and the texture parameters are set to support mipmap then
-     * the mip levels are generated.
-     * To automatically generate mipmaps, just set the texture parameters to support mipmap.
-     * 
-     * @param imageFactory ImageFactory to use when creating/scaling image
-     * @param texture The texture source object
-     * @return Array with an image for each mip-map level.
-     */
+    @Override
     public BufferImage[] loadTextureMIPMAP(ImageFactory imageFactory, Texture2D texture) {
         try {
             long start = System.currentTimeMillis();
@@ -663,15 +598,12 @@ public class AssetManager {
      * 
      * @param renderer
      * @param image
+     * @throws RenderBackendException
      */
-    private void internalCreateTexture(NucleusRenderer renderer, Image image) {
-        try {
-            int[] name = renderer.createTextureName();
-            image.setTextureName(name[0]);
-            renderer.uploadTextures(image, true);
-        } catch (GLException e) {
-            throw new IllegalArgumentException(e);
-        }
+    private void internalCreateTexture(NucleusRenderer renderer, Image image) throws RenderBackendException {
+        int[] name = renderer.createTextureName();
+        image.setTextureName(name[0]);
+        renderer.uploadTextures(image, true);
     }
 
     private void destroyBufferImage(GLTF gltf, Image image) {
@@ -758,8 +690,10 @@ public class AssetManager {
      * @param imageFactory factor for image creation
      * @param source The texture source, the new texture will be a copy of this with the texture image loaded into GL.
      * @return A new texture object containing the texture image.
+     * @throws RenderBackendException
      */
-    protected Texture2D createTexture(NucleusRenderer renderer, ImageFactory imageFactory, Texture2D source) {
+    protected Texture2D createTexture(NucleusRenderer renderer, ImageFactory imageFactory, Texture2D source)
+            throws RenderBackendException {
         Texture2D texture = TextureFactory.getInstance().createTexture(source);
         internalCreateTexture(renderer, imageFactory, texture);
         return texture;
@@ -776,8 +710,10 @@ public class AssetManager {
      * @param renderer
      * @param texture The texture
      * @param imageFactory The imagefactory to use for image creation
+     * @throws RenderBackendException
      */
-    private void internalCreateTexture(NucleusRenderer renderer, ImageFactory imageFactory, Texture2D texture) {
+    private void internalCreateTexture(NucleusRenderer renderer, ImageFactory imageFactory, Texture2D texture)
+            throws RenderBackendException {
         if (texture.getTextureType() == TextureType.Untextured) {
             return;
         }
@@ -785,23 +721,19 @@ public class AssetManager {
         internalCreateTexture(renderer, textureImg, texture);
     }
 
-    private void internalCreateTexture(NucleusRenderer renderer, BufferImage[] textureImg, Texture2D texture) {
+    private void internalCreateTexture(NucleusRenderer renderer, BufferImage[] textureImg, Texture2D texture)
+            throws RenderBackendException {
         if (textureImg[0].getResolution() != null) {
             if (texture.getWidth() > 0 || texture.getHeight() > 0) {
                 throw new IllegalArgumentException("Size is already set in texture " + texture.getId());
             }
             texture.setResolution(textureImg[0].getResolution());
         }
-        try {
-            int[] name = renderer.createTextureName();
-            texture.setTextureName(name[0]);
-            renderer.uploadTextures(texture, textureImg);
-            SimpleLogger.d(getClass(), "Uploaded texture " + texture.toString());
-            BufferImage.destroyImages(textureImg);
-        } catch (GLException e) {
-            throw new IllegalArgumentException(e);
-        }
-
+        int[] name = renderer.createTextureName();
+        texture.setTextureName(name[0]);
+        renderer.uploadTextures(texture, textureImg);
+        SimpleLogger.d(getClass(), "Uploaded texture " + texture.toString());
+        BufferImage.destroyImages(textureImg);
     }
 
     /**
@@ -825,63 +757,6 @@ public class AssetManager {
         renderer.getGLES().glBindTexture(target, result.getName());
         renderer.getGLES().texImage(result);
         GLUtils.handleError(renderer.getGLES(), "glTexImage2D");
-        return result;
-    }
-
-    /**
-     * Utility method to return a list with the folder in the specified resource path
-     * 
-     * @param path List of subfolders of this path will be returned
-     * @return folders in the specified path (excluding the path in the returned folder names)
-     */
-    public String[] listResourceFolders(String path) {
-        ClassLoader loader = getClass().getClassLoader();
-        URL url = loader.getResource(path);
-        if (url == null) {
-            return new String[0];
-        }
-        File[] files = new File(url.getFile()).listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.isDirectory();
-            }
-        });
-        // Truncate name so only include the part after specified path.
-        String[] folders = new String[files.length];
-        int index = 0;
-        path = path.replace('/', File.separatorChar);
-        for (File f : files) {
-            int start = f.toString().indexOf(path);
-            folders[index++] = f.toString().substring(start + path.length());
-        }
-        return folders;
-    }
-
-    /**
-     * 
-     * @param path
-     * @param folders
-     * @param mime
-     * @return List of folder/filname for files that ends with mime
-     */
-    public ArrayList<String> listFiles(String path, String[] folders, final String mime) {
-        ArrayList<String> result = new ArrayList<>();
-        ClassLoader loader = getClass().getClassLoader();
-        String comparePath = path.replace('/', File.separatorChar);
-        for (String folder : folders) {
-            URL url = loader.getResource(path + folder);
-            File[] files = new File(url.getFile()).listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(mime);
-                }
-            });
-            // Truncate name so only include the part after specified path.
-            for (File f : files) {
-                int start = f.toString().indexOf(comparePath);
-                result.add(f.toString().substring(start + comparePath.length()));
-            }
-        }
         return result;
     }
 

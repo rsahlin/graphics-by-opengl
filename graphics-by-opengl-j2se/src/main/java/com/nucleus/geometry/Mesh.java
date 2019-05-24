@@ -3,7 +3,6 @@ package com.nucleus.geometry;
 import java.io.IOException;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.assets.AssetManager;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.geometry.ElementBuffer.Type;
 import com.nucleus.geometry.shape.ShapeBuilder;
@@ -12,6 +11,7 @@ import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.BufferObjectsFactory;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RenderableNode;

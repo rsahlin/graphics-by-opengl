@@ -4,7 +4,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import com.nucleus.SimpleLogger;
-import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
@@ -12,6 +11,7 @@ import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;

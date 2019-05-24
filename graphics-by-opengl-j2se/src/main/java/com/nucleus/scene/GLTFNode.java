@@ -5,17 +5,17 @@ import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
-import com.nucleus.assets.AssetManager;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLTFNodeRenderer;
+import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
+import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.Material.ShadingMaps;
@@ -97,7 +97,7 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
                 setPass(Pass.ALL);
                 setState(State.ON);
                 createPrograms(glTF);
-            } catch (IOException | GLTFException e) {
+            } catch (IOException | GLTFException | RenderBackendException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -108,14 +108,14 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
      * If the gltf asset is loaded, all resource are released - buffers and textures but not programs.
      * The resources are destroyed immediately, hence it is important not to call while rendering is taking place.
      * 
-     * @param gles
+     * @param renderer
      * @param glTFName
-     * @throws GLException
+     * @throws RenderBackendException
      */
-    public void deleteAsset(GLES20Wrapper gles) throws GLException {
+    public void deleteAsset(NucleusRenderer renderer) throws RenderBackendException {
         if (glTF != null) {
 
-            AssetManager.getInstance().deleteGLTFAssets(gles, glTF);
+            AssetManager.getInstance().deleteGLTFAssets(renderer, glTF);
             glTF = null;
             glTFName = null;
         } else {

@@ -1,6 +1,5 @@
 package com.nucleus.renderer;
 
-import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.Backend.DrawMode;
 
 public interface NodeRenderer<T> {
@@ -14,10 +13,10 @@ public interface NodeRenderer<T> {
      * @param matrices
      * @return True if the node was rendered - false if node does not contain any mesh or the state was such that
      * nothing was rendered.
-     * @throws GLException
+     * @throws RenderBackendException
      */
     public boolean renderNode(NucleusRenderer renderer, T node, Pass currentPass, float[][] matrices)
-            throws GLException;
+            throws RenderBackendException;
 
     /**
      * Force render mode of objects/meshes

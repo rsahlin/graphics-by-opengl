@@ -2,15 +2,15 @@ package com.nucleus.shader;
 
 import java.nio.FloatBuffer;
 
-import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
-import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
+import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.texturing.ParameterData;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -96,7 +96,7 @@ public class ShadowPass2Program extends ShadowPassProgram {
     }
 
     @Override
-    public void prepareTexture(NucleusRenderer renderer, Texture2D texture) throws GLException {
+    public void prepareTexture(NucleusRenderer renderer, Texture2D texture) throws RenderBackendException {
         int textureID = shadow.getName();
         if (textureID == Constants.NO_VALUE) {
             AssetManager.getInstance().getIdReference(shadow);

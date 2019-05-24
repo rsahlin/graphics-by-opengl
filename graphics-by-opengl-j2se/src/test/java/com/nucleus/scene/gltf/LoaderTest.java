@@ -9,7 +9,7 @@ import java.util.HashMap;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.nucleus.assets.AssetManager;
+import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Asset;
 import com.nucleus.scene.gltf.Buffer;

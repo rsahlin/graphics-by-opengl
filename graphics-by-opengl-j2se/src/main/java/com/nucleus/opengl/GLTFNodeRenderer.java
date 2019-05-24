@@ -4,9 +4,9 @@ import java.nio.FloatBuffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 
-import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Environment;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.Configuration;
@@ -14,6 +14,7 @@ import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
+import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.RenderState;
 import com.nucleus.renderer.RenderState.Cullface;
 import com.nucleus.scene.GLTFNode;
@@ -74,7 +75,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
 
     @Override
     public boolean renderNode(NucleusRenderer renderer, GLTFNode node, Pass currentPass, float[][] matrices)
-            throws GLException {
+            throws RenderBackendException {
         GLTF glTF = node.getGLTF();
         Scene scene = glTF.getDefaultScene();
         if (glTF == null) {
@@ -106,7 +107,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     }
 
     protected void renderScene(NucleusRenderer renderer, GLTF glTF, Scene scene, Pass currentPass, float[][] matrices)
-            throws GLException {
+            throws RenderBackendException {
         // Traverse the nodes and render each.
         Node[] sceneNodes = scene.getNodes();
         if (sceneNodes != null) {
@@ -126,7 +127,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param matrices
      */
     protected void renderNode(NucleusRenderer renderer, GLTF glTF, Node node, float[][] matrices)
-            throws GLException {
+            throws RenderBackendException {
         modelStack.push(matrices[Matrices.MODEL.index], 0);
         node.concatMatrix(matrices[Matrices.MODEL.index], 0);
         renderMesh(renderer, glTF, node.getMesh(), matrices);
@@ -144,9 +145,10 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param glTF
      * @param mesh
      * @param matrices
-     * @throws GLException
+     * @throws RenderBackendException
      */
-    protected void renderMesh(NucleusRenderer renderer, GLTF glTF, Mesh mesh, float[][] matrices) throws GLException {
+    protected void renderMesh(NucleusRenderer renderer, GLTF glTF, Mesh mesh, float[][] matrices)
+            throws RenderBackendException {
         if (mesh != null) {
             Primitive[] primitives = mesh.getPrimitives();
             if (primitives != null) {
@@ -182,10 +184,10 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param program
      * @param primitive
      * @param matrices
-     * @throws GLException
+     * @throws RenderBackendException
      */
     protected void renderPrimitive(NucleusRenderer renderer, GLTF glTF, Primitive primitive, float[][] matrices)
-            throws GLException {
+            throws RenderBackendException {
         GLES20Wrapper gles = renderer.getGLES();
         GLTFShaderProgram program = (GLTFShaderProgram) getProgram(renderer, primitive, currentPass);
         if (currentProgram != program.getProgram()) {
@@ -314,7 +316,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param matrices
      */
     protected void renderNodes(NucleusRenderer renderer, GLTF glTF, Node[] children,
-            float[][] matrices) throws GLException {
+            float[][] matrices) throws RenderBackendException {
         if (children != null && children.length > 0) {
             for (Node n : children) {
                 renderNode(renderer, glTF, n, matrices);
