@@ -9,17 +9,8 @@ import java.util.HashMap;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.nucleus.opengl.assets.AssetManager;
-import com.nucleus.scene.gltf.Accessor;
-import com.nucleus.scene.gltf.Asset;
-import com.nucleus.scene.gltf.Buffer;
-import com.nucleus.scene.gltf.BufferView;
-import com.nucleus.scene.gltf.GLTF;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
-import com.nucleus.scene.gltf.Material;
-import com.nucleus.scene.gltf.Mesh;
-import com.nucleus.scene.gltf.Node;
-import com.nucleus.scene.gltf.Scene;
 
 public class LoaderTest extends BaseTestCase {
 

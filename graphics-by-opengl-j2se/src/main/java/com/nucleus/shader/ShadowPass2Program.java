@@ -2,11 +2,11 @@ package com.nucleus.shader;
 
 import java.nio.FloatBuffer;
 
+import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Constants;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
-import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;

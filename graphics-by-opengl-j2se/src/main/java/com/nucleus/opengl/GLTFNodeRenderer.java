@@ -4,9 +4,9 @@ import java.nio.FloatBuffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 
+import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Environment;
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.Configuration;

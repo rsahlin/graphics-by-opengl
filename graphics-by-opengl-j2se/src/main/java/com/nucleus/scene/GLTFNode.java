@@ -5,13 +5,13 @@ import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLTFNodeRenderer;
-import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;

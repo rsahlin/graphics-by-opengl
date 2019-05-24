@@ -1,12 +1,12 @@
 package com.nucleus;
 
+import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Type;
 import com.nucleus.component.ComponentProcessorRunnable;
 import com.nucleus.component.J2SEComponentProcessor;
 import com.nucleus.event.EventManager;
 import com.nucleus.event.EventManager.EventHandler;
 import com.nucleus.mmi.core.CoreInput;
-import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.profiling.FrameSampler.Sample;
 import com.nucleus.profiling.FrameSampler.Samples;

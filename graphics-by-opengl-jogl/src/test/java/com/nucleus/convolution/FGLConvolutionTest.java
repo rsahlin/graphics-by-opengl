@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.ClientApplication;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
@@ -16,7 +17,6 @@ import com.nucleus.mmi.MMIPointer;
 import com.nucleus.mmi.MMIPointerInput;
 import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;

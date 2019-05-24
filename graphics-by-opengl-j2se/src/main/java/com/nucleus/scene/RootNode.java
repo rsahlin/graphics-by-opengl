@@ -3,9 +3,9 @@ package com.nucleus.scene;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.nucleus.assets.AssetManager;
 import com.nucleus.exporter.Reference;
 import com.nucleus.io.SceneSerializer.NodeInflaterListener;
-import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.ui.UIElementInput;
 

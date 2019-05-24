@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.common.Constants;
 import com.nucleus.common.StringUtils;
@@ -31,7 +32,6 @@ import com.nucleus.opengl.GLESWrapper.GLES32;
 import com.nucleus.opengl.GLESWrapper.ProgramInfo;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
-import com.nucleus.opengl.assets.AssetManager;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.NucleusRenderer.Renderers;

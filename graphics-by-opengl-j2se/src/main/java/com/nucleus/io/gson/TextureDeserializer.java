@@ -9,7 +9,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.nucleus.opengl.assets.AssetManager;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.scene.Node;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;

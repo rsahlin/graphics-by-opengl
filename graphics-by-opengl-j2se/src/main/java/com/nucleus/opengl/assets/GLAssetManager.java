@@ -14,6 +14,7 @@ import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nucleus.SimpleLogger;
+import com.nucleus.assets.AssetManager;
 import com.nucleus.assets.Assets;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.io.gson.TextureDeserializer;
@@ -23,6 +24,7 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.renderer.Backend;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.RenderTarget;
@@ -67,8 +69,7 @@ import com.nucleus.texturing.TextureUtils;
  * @author Richard Sahlin
  *
  */
-public class AssetManager implements Assets {
-    protected static AssetManager assetManager = null;
+public class GLAssetManager implements Assets {
     private final static String NO_TEXTURE_SOURCE_ERROR = "No texture source for id: ";
     private final static String NULL_PARAMETER = "Parameter is null: ";
     /**
@@ -91,35 +92,10 @@ public class AssetManager implements Assets {
     private static final Map<String, Texture2D> loadedTextures = new HashMap<>();
 
     /**
-     * Hide the constructor
+     * Internal constructor - do not use directly
+     * Use {@link AssetManager}
      */
-    private AssetManager() {
-    }
-
-    public static Assets getInstance() {
-        if (assetManager == null) {
-            assetManager = new AssetManager();
-        }
-        return assetManager;
-    }
-
-    public interface Asset {
-        /**
-         * Loads an instance of the asset into memory, after this method returns the asset SHALL be ready to be used.
-         * 
-         * @param source The source of the object, it is up to implementations to decide what sources to support.
-         * For images the normal usecase is InputStream
-         * 
-         * @return The id of the asset, this is a counter starting at 1 and increasing.
-         * @throws IOException If there is an exception reading from the stream.
-         */
-        public int load(Object source) throws IOException;
-
-        /**
-         * Releases the asset and all allocated memory, after this method returns all memory and objects shall be
-         * released.
-         */
-        public void destroy();
+    public GLAssetManager(Backend backend) {
     }
 
     @Override
