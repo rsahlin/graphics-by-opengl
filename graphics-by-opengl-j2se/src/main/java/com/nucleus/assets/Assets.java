@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.RenderTarget;
@@ -11,7 +12,6 @@ import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
-import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;

@@ -4,11 +4,11 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.common.BufferUtils;
+import com.nucleus.opengl.shader.ShaderVariable;
+import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
+import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
+import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
-import com.nucleus.shader.ShaderSource.ESSLVersion;
-import com.nucleus.shader.ShaderVariable;
-import com.nucleus.shader.ShaderVariable.InterfaceBlock;
-import com.nucleus.shader.ShaderVariable.VariableType;
 
 /**
  * Wrapper for GLES30

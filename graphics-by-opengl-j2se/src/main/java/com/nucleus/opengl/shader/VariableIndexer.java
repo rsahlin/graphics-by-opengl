@@ -1,10 +1,10 @@
-package com.nucleus.shader;
+package com.nucleus.opengl.shader;
 
 import java.util.ArrayList;
 
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
-import com.nucleus.shader.ShaderVariable.VariableType;
+import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 
 /**
  * Connecting variables in shader programs with offsets so that data can be written into buffer that stores the

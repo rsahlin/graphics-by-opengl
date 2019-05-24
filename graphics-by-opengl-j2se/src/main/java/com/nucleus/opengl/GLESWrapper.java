@@ -5,14 +5,14 @@ import java.util.StringTokenizer;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.StringUtils;
+import com.nucleus.opengl.shader.ShaderSource;
+import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
+import com.nucleus.opengl.shader.ShaderVariable;
+import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
+import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 import com.nucleus.renderer.Backend;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.RendererInfo;
-import com.nucleus.shader.ShaderSource;
-import com.nucleus.shader.ShaderSource.ESSLVersion;
-import com.nucleus.shader.ShaderVariable;
-import com.nucleus.shader.ShaderVariable.InterfaceBlock;
-import com.nucleus.shader.ShaderVariable.VariableType;
 
 public abstract class GLESWrapper extends Backend {
 

@@ -12,6 +12,8 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLTFNodeRenderer;
+import com.nucleus.opengl.shader.GLTFShaderProgram;
+import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
@@ -22,8 +24,6 @@ import com.nucleus.scene.gltf.Material.ShadingMaps;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.RenderableMesh;
-import com.nucleus.shader.GLTFShaderProgram;
-import com.nucleus.shader.ShaderProgram;
 import com.nucleus.vecmath.Matrix;
 
 /**

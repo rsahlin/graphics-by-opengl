@@ -11,9 +11,9 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.io.SceneSerializer.NodeInflaterListener;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderPass;
-import com.nucleus.shader.ShaderProgram;
 
 /**
  * Builder for Nodes, use this when nodes are created programmatically or instantiated from loaded resources.

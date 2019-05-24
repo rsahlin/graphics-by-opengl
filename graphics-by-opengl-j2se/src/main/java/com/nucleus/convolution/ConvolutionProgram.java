@@ -7,12 +7,12 @@ import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.shader.GenericShaderProgram;
+import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.opengl.shader.ShaderProgram.Shading;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.Pass;
-import com.nucleus.shader.GenericShaderProgram;
-import com.nucleus.shader.ShaderProgram;
-import com.nucleus.shader.ShaderProgram.Shading;
 import com.nucleus.vecmath.Matrix;
 
 public class ConvolutionProgram extends GenericShaderProgram {

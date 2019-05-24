@@ -8,10 +8,10 @@ import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
+import com.nucleus.opengl.shader.BlockBuffer;
+import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.Primitive;
-import com.nucleus.shader.BlockBuffer;
-import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 
 /**
  * This class takes care of allocation and release of buffer objects

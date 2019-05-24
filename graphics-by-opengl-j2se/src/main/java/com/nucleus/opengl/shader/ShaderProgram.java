@@ -1,4 +1,4 @@
-package com.nucleus.shader;
+package com.nucleus.opengl.shader;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,6 +30,10 @@ import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.GLESWrapper.GLES31;
 import com.nucleus.opengl.GLESWrapper.GLES32;
 import com.nucleus.opengl.GLESWrapper.ProgramInfo;
+import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
+import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
+import com.nucleus.opengl.shader.ShaderVariable.VariableType;
+import com.nucleus.opengl.shader.ShadowPass1Program.Shadow1Categorizer;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.NucleusRenderer;
@@ -38,10 +42,6 @@ import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.Window;
-import com.nucleus.shader.ShaderSource.ESSLVersion;
-import com.nucleus.shader.ShaderVariable.InterfaceBlock;
-import com.nucleus.shader.ShaderVariable.VariableType;
-import com.nucleus.shader.ShadowPass1Program.Shadow1Categorizer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.TiledTexture2D;
@@ -1029,7 +1029,7 @@ public abstract class ShaderProgram {
 
     /**
      * Returns the active shader attribute by name, or null if not found
-     * Avoid using this in favour of {@link #getAttribute(com.nucleus.shader.VariableIndexer.Property)}
+     * Avoid using this in favour of {@link #getAttribute(com.nucleus.opengl.shader.VariableIndexer.Property)}
      * 
      * @param attrib Name of attribute to return
      * @return

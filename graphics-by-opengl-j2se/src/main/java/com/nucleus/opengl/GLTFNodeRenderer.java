@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Environment;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.shader.GLTFShaderProgram;
+import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.opengl.shader.ShaderVariable;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.Configuration;
@@ -30,9 +33,6 @@ import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Scene;
-import com.nucleus.shader.GLTFShaderProgram;
-import com.nucleus.shader.ShaderProgram;
-import com.nucleus.shader.ShaderVariable;
 import com.nucleus.vecmath.Matrix.MatrixStack;
 
 public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {

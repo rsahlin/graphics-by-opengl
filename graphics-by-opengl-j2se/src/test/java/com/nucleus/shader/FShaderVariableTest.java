@@ -4,7 +4,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.shader.ShaderVariable.VariableType;
+import com.nucleus.opengl.shader.ShaderVariable;
+import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 
 public class FShaderVariableTest {
 

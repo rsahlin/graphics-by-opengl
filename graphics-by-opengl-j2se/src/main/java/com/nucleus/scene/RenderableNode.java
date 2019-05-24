@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.MeshBuilder.MeshBuilderFactory;
+import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
-import com.nucleus.shader.ShaderProgram;
 import com.nucleus.vecmath.Transform;
 
 /**

@@ -1,7 +1,7 @@
 package com.nucleus.texturing;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.shader.ShaderProgram;
+import com.nucleus.opengl.shader.ShaderProgram;
 
 /**
  * For untextured objects, can define a shading which corresponds to the untextured program to use.

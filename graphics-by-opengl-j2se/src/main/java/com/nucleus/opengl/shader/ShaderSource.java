@@ -1,10 +1,10 @@
-package com.nucleus.shader;
+package com.nucleus.opengl.shader;
 
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import com.nucleus.common.Constants;
-import com.nucleus.shader.ShaderProgram.ShaderType;
+import com.nucleus.opengl.shader.ShaderProgram.ShaderType;
 
 /**
  * Holds source and data related to the source for a shader

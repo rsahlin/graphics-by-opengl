@@ -1,10 +1,10 @@
-package com.nucleus.shader;
+package com.nucleus.opengl.shader;
 
 import java.nio.FloatBuffer;
 
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.shader.ShaderProgram.Shading;
 import com.nucleus.renderer.Pass;
-import com.nucleus.shader.ShaderProgram.Shading;
 
 public class ComputeShader extends ShaderProgram {
 

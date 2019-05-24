@@ -10,6 +10,7 @@ import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NodeRenderer;
@@ -17,7 +18,6 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.scene.RenderableNode;
-import com.nucleus.shader.ShaderProgram;
 import com.nucleus.texturing.Texture2D;
 
 public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {

@@ -1,6 +1,6 @@
 package com.nucleus.opengl;
 
-import com.nucleus.shader.ShaderSource;
+import com.nucleus.opengl.shader.ShaderSource;
 
 /**
  * If there is an exception compiling a GL shader, ie call to check compile status returns an status error code.

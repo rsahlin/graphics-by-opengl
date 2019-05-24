@@ -1,4 +1,4 @@
-package com.nucleus.shader;
+package com.nucleus.opengl.shader;
 
 public class QuadExpanderShader extends ComputeShader {
 

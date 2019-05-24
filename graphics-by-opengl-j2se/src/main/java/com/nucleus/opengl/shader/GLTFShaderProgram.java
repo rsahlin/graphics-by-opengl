@@ -1,4 +1,4 @@
-package com.nucleus.shader;
+package com.nucleus.opengl.shader;
 
 import java.io.File;
 import java.nio.FloatBuffer;

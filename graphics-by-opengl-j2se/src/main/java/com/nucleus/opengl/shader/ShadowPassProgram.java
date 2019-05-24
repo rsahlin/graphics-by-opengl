@@ -1,4 +1,4 @@
-package com.nucleus.shader;
+package com.nucleus.opengl.shader;
 
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.opengl.GLES20Wrapper;

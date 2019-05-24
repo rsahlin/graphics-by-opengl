@@ -1,10 +1,10 @@
-package com.nucleus.shader;
+package com.nucleus.opengl.shader;
 
 import java.nio.FloatBuffer;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
-import com.nucleus.shader.ShaderVariable.InterfaceBlock;
+import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
 
 /**
  * Float storage for a variable block, for instance uniform block

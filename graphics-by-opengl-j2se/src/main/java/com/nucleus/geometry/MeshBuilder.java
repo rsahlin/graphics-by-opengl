@@ -6,9 +6,9 @@ import com.nucleus.bounds.Bounds;
 import com.nucleus.component.ComponentException;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RenderableNode;
-import com.nucleus.shader.ShaderProgram;
 
 /**
  * Interface for Mesh builders

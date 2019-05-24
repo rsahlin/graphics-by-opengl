@@ -1,12 +1,12 @@
-package com.nucleus.shader;
+package com.nucleus.opengl.shader;
 
 import java.nio.FloatBuffer;
 
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.Pass;
-import com.nucleus.shader.ShaderVariable.VariableType;
 
 /**
  * Program for rendering lines and similar.
