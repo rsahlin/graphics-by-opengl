@@ -2,8 +2,8 @@ package com.nucleus.component;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.shader.VariableIndexer.Indexer;
+import com.nucleus.renderer.Backend;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
@@ -54,7 +54,8 @@ public class CPUQuadExpander extends AttributeExpander {
      * @param source
      * @param destination
      */
-    public CPUQuadExpander(Texture2D texture, Indexer mapper, CPUComponentBuffer source, CPUComponentBuffer destination) {
+    public CPUQuadExpander(Texture2D texture, Indexer mapper, CPUComponentBuffer source,
+            CPUComponentBuffer destination) {
         super(mapper, destination, 4);
         this.source = source;
         this.sourceData = source.data;
@@ -63,7 +64,7 @@ public class CPUQuadExpander extends AttributeExpander {
         this.sizePerVertex = mapper.attributesPerVertex;
         if (texture.getTextureType() == TextureType.UVTexture2D) {
             // TODO - how to sync this with the creation of uniform block buffer in shader program?
-            if (GLES20Wrapper.getInfo().getRenderVersion().major < 3) {
+            if (Backend.getInstance().getVersion().major < 3) {
                 SimpleLogger.d(getClass(), "GLES version < 3 - not using uniform block buffers for UV data");
                 copyUVAtlas(((UVTexture2D) texture).getUVAtlas());
                 tempData = new float[mapper.attributesPerVertex];

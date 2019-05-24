@@ -8,11 +8,23 @@ import com.nucleus.renderer.NucleusRenderer.Renderers;
  */
 public abstract class Backend {
 
+    protected static Backend backend;
+
     public Backend(Renderers version) {
         if (version == null) {
             throw new IllegalArgumentException("Renderer version is null");
         }
         this.version = version;
+    }
+
+    /**
+     * Returns the singleton backend instance - this can be used to check what version/type of backend that is used.
+     * This is created when the GLES/GL/Vulkan wrapper is created.
+     * 
+     * @return The backend that is running - or null if not created, ie the current render wrapper is not created yet
+     */
+    public static Backend getInstance() {
+        return backend;
     }
 
     private final Renderers version;
