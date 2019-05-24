@@ -202,7 +202,7 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
                 for (Primitive p : m.getPrimitives()) {
                     GLTFShaderProgram program = createProgram(p);
                     p.setProgram(
-                            (GLTFShaderProgram) AssetManager.getInstance().getProgram(renderer.getGLES(), program));
+                            (GLTFShaderProgram) AssetManager.getInstance().getProgram(renderer, program));
                 }
             }
         }

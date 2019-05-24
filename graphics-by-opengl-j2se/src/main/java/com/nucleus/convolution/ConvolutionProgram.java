@@ -11,6 +11,7 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.opengl.shader.GenericShaderProgram;
 import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.vecmath.Matrix;
 
@@ -36,7 +37,7 @@ public class ConvolutionProgram extends GenericShaderProgram {
     }
 
     @Override
-    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, ShaderProgram.Shading shading) {
+    public ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, ShaderProgram.Shading shading) {
         switch (pass) {
             case UNDEFINED:
             case ALL:

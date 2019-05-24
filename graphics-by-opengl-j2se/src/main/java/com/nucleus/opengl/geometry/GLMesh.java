@@ -130,7 +130,7 @@ public class GLMesh extends Mesh {
             // Default is to create a translate program, this will use an indexer so that creating 2D objects is
             // possible.
             // this is used mainly for ui elements
-            return AssetManager.getInstance().getProgram(renderer.getGLES(), new TranslateProgram(texture));
+            return AssetManager.getInstance().getProgram(renderer, new TranslateProgram(texture));
         }
 
         @Override

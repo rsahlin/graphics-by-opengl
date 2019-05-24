@@ -365,11 +365,11 @@ public abstract class ShaderProgram {
      * Returns the program for the specified pass and shading, this is used to resolve the correct
      * program for different passes
      * 
-     * @param gles
+     * @param renderer
      * @param pass
      * @param shading
      */
-    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, ShaderProgram.Shading shading) {
+    public ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, ShaderProgram.Shading shading) {
         switch (pass) {
             case UNDEFINED:
             case ALL:
@@ -377,14 +377,14 @@ public abstract class ShaderProgram {
                 return this;
             case SHADOW1:
                 if (shadowPass1 == null) {
-                    shadowPass1 = AssetManager.getInstance().getProgram(gles,
+                    shadowPass1 = AssetManager.getInstance().getProgram(renderer,
                             new ShadowPass1Program(this, new Shadow1Categorizer(Pass.SHADOW1, shading,
                                     function.getCategory()), shaders));
                 }
                 return shadowPass1;
             case SHADOW2:
                 if (shadowPass2 == null) {
-                    shadowPass2 = AssetManager.getInstance().getProgram(gles,
+                    shadowPass2 = AssetManager.getInstance().getProgram(renderer,
                             new ShadowPass2Program(this, pass, function.getCategory(), shading, shaders));
                 }
                 return shadowPass2;

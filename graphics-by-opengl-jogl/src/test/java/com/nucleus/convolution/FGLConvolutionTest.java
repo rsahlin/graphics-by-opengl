@@ -148,7 +148,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
             MeshBuilder<Mesh> meshBuilder = new GLMesh.Builder<>(renderer);
             meshBuilder.setElementMode(DrawMode.TRIANGLES, 4, 0, 6);
             meshBuilder.setTexture(texture);
-            program = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
+            program = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer,
                     new ConvolutionProgram());
             Material material = new Material();
             meshBuilder.setMaterial(material).setAttributesPerVertex(program.getAttributeSizes());

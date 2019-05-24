@@ -21,9 +21,9 @@ import com.nucleus.io.gson.TextureDeserializer;
 import com.nucleus.opengl.BufferObjectsFactory;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.Backend;
 import com.nucleus.renderer.NucleusRenderer;
@@ -239,7 +239,7 @@ public class GLAssetManager implements Assets {
     }
 
     @Override
-    public ShaderProgram getProgram(GLES20Wrapper gles, ShaderProgram program) {
+    public ShaderProgram getProgram(NucleusRenderer renderer, ShaderProgram program) {
         String key = program.getKey();
         ShaderProgram compiled = programs.get(key);
         if (compiled != null) {
@@ -247,7 +247,7 @@ public class GLAssetManager implements Assets {
         }
         try {
             long start = System.currentTimeMillis();
-            program.createProgram(gles);
+            program.createProgram(renderer.getGLES());
             FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, program.getClass().getSimpleName(),
                     start,
                     System.currentTimeMillis());

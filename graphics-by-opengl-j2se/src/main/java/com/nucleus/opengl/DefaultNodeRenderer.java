@@ -2,34 +2,20 @@ package com.nucleus.opengl;
 
 import java.util.ArrayList;
 
-import com.nucleus.common.Environment;
-import com.nucleus.geometry.AttributeBuffer;
-import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
-import com.nucleus.geometry.ElementBuffer;
-import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.profiling.FrameSampler;
-import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.scene.RenderableNode;
-import com.nucleus.texturing.Texture2D;
 
 public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
 
     transient protected FrameSampler timeKeeper = FrameSampler.getInstance();
     transient protected ArrayList<Mesh> nodeMeshes = new ArrayList<>();
-    transient protected DrawMode forceMode = null;
-
-    @Override
-    public void forceRenderMode(DrawMode mode) {
-        this.forceMode = mode;
-    }
 
     @Override
     public boolean renderNode(NucleusRenderer renderer, RenderableNode<Mesh> node, Pass currentPass, float[][] matrices)
@@ -47,40 +33,7 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
         if (mesh.getDrawCount() == 0) {
             return;
         }
-        Material material = mesh.getMaterial();
-        program.setUniformMatrices(matrices);
-        program.updateUniformData(program.getUniformData());
-
-        GLES20Wrapper gles = renderer.getGLES();
-        program.updateAttributes(gles, mesh);
-        program.uploadUniforms(gles);
-        program.prepareTexture(renderer, mesh.getTexture(Texture2D.TEXTURE_0));
-        material.setBlendModeSeparate(gles);
-        int mode = gles.getDrawMode(mesh.getMode());
-        ElementBuffer indices = mesh.getElementBuffer();
-        if (indices == null) {
-            gles.glDrawArrays(mode, mesh.getOffset(), mesh.getDrawCount());
-            GLUtils.handleError(gles, "glDrawArrays ");
-            timeKeeper.addDrawArrays(mesh.getDrawCount());
-        } else {
-            if (indices.getBufferName() > 0) {
-                gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.getBufferName());
-                gles.glDrawElements(mode, mesh.getDrawCount(), indices.getType().type,
-                        mesh.getOffset());
-                GLUtils.handleError(gles, "glDrawElements with ElementBuffer " + mesh.getMode() + ", "
-                        + mesh.getDrawCount() + ", " + indices.getType() + ", " + mesh.getOffset());
-            } else {
-                gles.glDrawElements(mode, mesh.getDrawCount(), indices.getType().type,
-                        indices.getBuffer().position(mesh.getOffset()));
-                GLUtils.handleError(gles, "glDrawElements no ElementBuffer ");
-            }
-            AttributeBuffer vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
-            if (vertices == null) {
-                vertices = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES);
-            }
-            timeKeeper.addDrawElements(vertices.getVerticeCount(), mesh.getDrawCount());
-        }
-        gles.disableAttribPointers();
+        renderer.renderMesh(program, mesh, matrices);
     }
 
     public boolean renderMeshes(NucleusRenderer renderer, RenderableNode<Mesh> node, Pass currentPass,
@@ -88,14 +41,8 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
         nodeMeshes.clear();
         node.getMeshes(nodeMeshes);
         if (nodeMeshes.size() > 0) {
-            GLES20Wrapper gles = renderer.getGLES();
-            ShaderProgram program = getProgram(gles, node, currentPass);
-            gles.glUseProgram(program.getProgram());
-            GLUtils.handleError(gles, "glUseProgram " + program.getProgram());
-            // TODO - is this the best place for this check - remember, this should only be done in debug cases.
-            if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
-                program.validateProgram(gles);
-            }
+            ShaderProgram program = getProgram(renderer, node, currentPass);
+            renderer.useProgram(program);
             for (Mesh mesh : nodeMeshes) {
                 renderMesh(renderer, program, mesh, matrices);
             }
@@ -110,12 +57,12 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
      * @param pass The currently defined pass
      * @return
      */
-    protected ShaderProgram getProgram(GLES20Wrapper gles, RenderableNode<Mesh> node, Pass pass) {
+    protected ShaderProgram getProgram(NucleusRenderer renderer, RenderableNode<Mesh> node, Pass pass) {
         ShaderProgram program = node.getProgram();
         if (program == null) {
             throw new IllegalArgumentException("No program for node " + node.getId());
         }
-        return program.getProgram(gles, pass, program.getShading());
+        return program.getProgram(renderer, pass, program.getShading());
     }
 
 }

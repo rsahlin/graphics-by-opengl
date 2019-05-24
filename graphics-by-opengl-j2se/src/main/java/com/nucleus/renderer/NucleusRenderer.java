@@ -1,14 +1,23 @@
 package com.nucleus.renderer;
 
 import java.nio.Buffer;
+import java.util.ArrayList;
 
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.ClientApplication;
+import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.shader.GLTFShaderProgram;
+import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
+import com.nucleus.scene.gltf.Accessor;
+import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Image;
+import com.nucleus.scene.gltf.Primitive;
+import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Texture;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.Texture2D;
@@ -249,6 +258,14 @@ public interface NucleusRenderer {
     public void endFrame();
 
     /**
+     * Force render mode of objects/meshes
+     * Set to null to render meshes normally
+     * 
+     * @param mode The mode to render meshes with
+     */
+    public void forceRenderMode(DrawMode mode);
+
+    /**
      * Renders the node using the current mvp matrix, will call children recursively.
      * If node is drawn it will be added to {@link RootNode} list of rendered nodes.
      * 
@@ -256,6 +273,42 @@ public interface NucleusRenderer {
      * @throws RenderBackendException If there is an error in GL while drawing this node.
      */
     public void render(RenderableNode<?> node) throws RenderBackendException;
+
+    /**
+     * Renders the mesh using the program and matrices
+     * 
+     * @param program
+     * @param mesh
+     * @param matrices
+     * @throws RenderBackendException
+     */
+    public void renderMesh(ShaderProgram program, Mesh mesh, float[][] matrices) throws RenderBackendException;
+
+    /**
+     * Renders the GLTF primitive
+     * 
+     * @param program
+     * @param glTF
+     * @param primitive
+     * @param matrices
+     * @throws RenderBackendException
+     */
+    public void renderPrimitive(GLTFShaderProgram program, GLTF glTF, Primitive primitive, float[][] matrices)
+            throws RenderBackendException;
+
+    /**
+     * Sets attrib pointers and draws indices or arrays - uniforms must be uploaded to GL before calling this method.
+     * 
+     * @param program
+     * @param indices
+     * @param vertexCount
+     * @param attribs
+     * @param accessors
+     * @param mode
+     * @throws RenderBackendException
+     */
+    public void drawVertices(ShaderProgram program, Accessor indices, int vertexCount,
+            ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, DrawMode mode) throws RenderBackendException;
 
     /**
      * Returns true if this renderer has been initialized by calling init() when
@@ -393,5 +446,13 @@ public interface NucleusRenderer {
      * @param unit The texture unit number to use, 0 and up
      */
     public void prepareTexture(Texture texture, int unit) throws RenderBackendException;
+
+    /**
+     * Enable the program
+     * 
+     * @param program
+     * @return true if program was changed, ie previously used a different program
+     */
+    public boolean useProgram(ShaderProgram program) throws RenderBackendException;
 
 }

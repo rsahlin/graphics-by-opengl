@@ -3,7 +3,6 @@ package com.nucleus.assets;
 import java.io.IOException;
 
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderBackendException;
@@ -121,13 +120,13 @@ public interface Assets {
      * added to AssetManager using shader program and function.
      * Next time this method is called with the same shaderprogram and function the existing instance is returned.
      * 
-     * @param gles
+     * @param renderer
      * @param program
      * @return An instance of the ShaderProgram that is loaded and compiled
      * or linking the program.
      * @throws RuntimeException If the program could not be compiled or linked
      */
-    public ShaderProgram getProgram(GLES20Wrapper gles, ShaderProgram program);
+    public ShaderProgram getProgram(NucleusRenderer renderer, ShaderProgram program);
 
     /**
      * Deletes loaded gltf assets. This will delete binary buffers and texture images and then remove

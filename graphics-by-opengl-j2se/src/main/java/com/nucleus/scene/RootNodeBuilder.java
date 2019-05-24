@@ -71,7 +71,7 @@ public class RootNodeBuilder {
         RootNode root = newInstance(NUCLEUS_SCENE, "splashroot");
         NodeBuilder<Node> builder = new NodeBuilder<>();
         builder.setRoot(root);
-        TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),
+        TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(renderer,
                 new TranslateProgram(ShaderProgram.Shading.textured));
         builder.setProgram(vt);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);

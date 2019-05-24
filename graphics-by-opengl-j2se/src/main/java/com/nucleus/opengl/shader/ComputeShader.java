@@ -2,8 +2,7 @@ package com.nucleus.opengl.shader;
 
 import java.nio.FloatBuffer;
 
-import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.shader.ShaderProgram.Shading;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 
 public class ComputeShader extends ShaderProgram {
@@ -15,7 +14,7 @@ public class ComputeShader extends ShaderProgram {
     }
 
     @Override
-    public ShaderProgram getProgram(GLES20Wrapper gles, Pass pass, ShaderProgram.Shading shading) {
+    public ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, ShaderProgram.Shading shading) {
         return this;
     }
 

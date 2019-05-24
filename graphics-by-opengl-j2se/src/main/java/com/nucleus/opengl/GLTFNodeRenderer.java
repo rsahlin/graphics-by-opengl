@@ -2,34 +2,24 @@ package com.nucleus.opengl;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 
 import com.nucleus.assets.AssetManager;
-import com.nucleus.common.Environment;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.opengl.shader.ShaderVariable;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.Backend.DrawMode;
-import com.nucleus.renderer.Configuration;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.RenderState;
-import com.nucleus.renderer.RenderState.Cullface;
 import com.nucleus.scene.GLTFNode;
 import com.nucleus.scene.gltf.Accessor;
-import com.nucleus.scene.gltf.Buffer;
-import com.nucleus.scene.gltf.BufferView;
 import com.nucleus.scene.gltf.GLTF;
-import com.nucleus.scene.gltf.Material;
-import com.nucleus.scene.gltf.Material.AlphaMode;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Node;
-import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Scene;
@@ -40,10 +30,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     transient protected FrameSampler timeKeeper = FrameSampler.getInstance();
     private Pass currentPass;
     protected float[] modelMatrix;
-    protected int currentProgram = -1;
     protected RenderState renderState;
-    protected Cullface cullFace;
-    protected DrawMode forceMode = null;
     protected MatrixStack modelStack = new MatrixStack(100);
     protected MatrixStack viewStack = new MatrixStack(5);
     protected MatrixStack projectionStack = new MatrixStack(5);
@@ -69,11 +56,6 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     }
 
     @Override
-    public void forceRenderMode(DrawMode mode) {
-        forceMode = mode != null ? mode : null;
-    }
-
-    @Override
     public boolean renderNode(NucleusRenderer renderer, GLTFNode node, Pass currentPass, float[][] matrices)
             throws RenderBackendException {
         GLTF glTF = node.getGLTF();
@@ -82,13 +64,11 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             // Do nothing
             return false;
         }
-        forceMode = Configuration.getInstance().getGLTFMode();
         renderState = renderer.getRenderState();
         modelStack.push(matrices[Matrices.MODEL.index], 0);
         viewStack.push(matrices[Matrices.VIEW.index], 0);
         projectionStack.push(matrices[Matrices.PROJECTION.index], 0);
 
-        currentProgram = -1;
         this.currentPass = currentPass;
         // Set view matrix from previous render of this gltfNode
         // node.getSavedViewMatrix(matrices[Matrices.VIEW.index]);
@@ -167,10 +147,10 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param glTF
      * @param mesh
      * @param matrices
-     * @throws GLException
+     * @throws RenderBackendException
      */
     protected void renderDebugMesh(NucleusRenderer renderer, GLTF glTF, Mesh mesh, float[][] matrices)
-            throws GLException {
+            throws RenderBackendException {
         if (GLTF.debugTBN) {
             debugTBN(renderer, glTF, mesh, matrices);
         }
@@ -188,101 +168,19 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      */
     protected void renderPrimitive(NucleusRenderer renderer, GLTF glTF, Primitive primitive, float[][] matrices)
             throws RenderBackendException {
-        GLES20Wrapper gles = renderer.getGLES();
         GLTFShaderProgram program = (GLTFShaderProgram) getProgram(renderer, primitive, currentPass);
-        if (currentProgram != program.getProgram()) {
-            currentProgram = program.getProgram();
-            gles.glUseProgram(currentProgram);
-            GLUtils.handleError(gles, "glUseProgram " + currentProgram);
-            // TODO - is this the best place for this check - remember, this should only be done in debug cases.
-            if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
-                program.validateProgram(gles);
-            }
-            program.updateEnvironmentUniforms(gles, glTF.getDefaultScene());
-        }
-        // Can be optimized to update uniforms under the following conditions:
-        // The program has changed OR the matrices have changed, ie another parent node.
-        program.setUniformMatrices(matrices);
-        program.updateUniformData(program.getUniformData());
-        program.uploadUniforms(gles);
-        Material material = primitive.getMaterial();
-        if (material != null) {
-            PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
-            // Check for doublesided.
-            if (material.isDoubleSided() && renderState.getCullFace() != Cullface.NONE) {
-                cullFace = renderState.getCullFace();
-                gles.glDisable(GLES20.GL_CULL_FACE);
-            }
-            program.prepareTextures(renderer, glTF, primitive, material);
-            if (material.getAlphaMode() == AlphaMode.OPAQUE) {
-                gles.glDisable(GLES20.GL_BLEND);
-            } else {
-                gles.glEnable(GLES20.GL_BLEND);
-            }
-        }
-        Accessor indices = primitive.getIndices();
-        Accessor position = primitive.getAccessor(Attributes.POSITION);
-        program.updatePBRUniforms(gles, primitive);
-        drawVertices(gles, program, indices, position.getCount(), primitive.getAttributesArray(),
-                primitive.getAccessorArray(), forceMode == null ? primitive.getMode() : forceMode);
-        // Restore cullface if changed.
-        if (cullFace != null) {
-            gles.glEnable(GLES20.GL_CULL_FACE);
-            cullFace = null;
-        }
-        gles.disableAttribPointers();
+        renderer.renderPrimitive(program, glTF, primitive, matrices);
     }
 
-    /**
-     * Sets attrib pointers and draws indices or arrays - uniforms must be uploaded to GL before calling this method.
-     * 
-     * @param gles
-     * @param program
-     * @param indices
-     * @param vertexCount
-     * @param attribs
-     * @param accessors
-     * @param mode
-     * @throws GLException
-     */
-    protected final void drawVertices(GLES20Wrapper gles, ShaderProgram program, Accessor indices, int vertexCount,
-            ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, DrawMode mode) throws GLException {
-        gles.glVertexAttribPointer(program, attribs, accessors);
-        GLUtils.handleError(gles, "glVertexAttribPointer");
-        int modeValue = gles.getDrawMode(mode);
-        if (indices != null) {
-            // Indexed mode - use glDrawElements
-            BufferView indicesView = indices.getBufferView();
-            Buffer buffer = indicesView.getBuffer();
-            if (buffer.getBufferName() > 0) {
-                gles.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, buffer.getBufferName());
-                GLUtils.handleError(gles, "glBindBuffer");
-                gles.glDrawElements(modeValue, indices.getCount(), indices.getComponentType().value,
-                        indices.getByteOffset() + indicesView.getByteOffset());
-                GLUtils.handleError(gles, "glDrawElements VBO " + buffer.getBufferName());
-            } else {
-                gles.glDrawElements(modeValue, indices.getCount(), indices.getComponentType().value,
-                        indices.getBuffer());
-                GLUtils.handleError(gles, "glDrawElements");
-            }
-            timeKeeper.addDrawElements(indices.getCount(), vertexCount);
-        } else {
-            // Non indexed mode - use glDrawArrays
-            gles.glDrawArrays(modeValue, 0, vertexCount);
-            GLUtils.handleError(gles, "glDrawArrays VBO");
-            timeKeeper.addDrawArrays(vertexCount);
-        }
-
-    }
-
-    private void debugTBN(NucleusRenderer renderer, GLTF gltf, Mesh mesh, float[][] matrices) throws GLException {
+    private void debugTBN(NucleusRenderer renderer, GLTF gltf, Mesh mesh, float[][] matrices)
+            throws RenderBackendException {
         if (mesh != null) {
             GLES20Wrapper gles = renderer.getGLES();
             Primitive[] primitives = mesh.getDebugTBNPrimitives();
             if (primitives == null) {
                 primitives = mesh.createDebugTBNPrimitives(gles, mesh.getPrimitives());
             }
-            ShaderProgram debugProgram = AssetManager.getInstance().getProgram(gles, mesh.getDebugTBNProgram());
+            ShaderProgram debugProgram = AssetManager.getInstance().getProgram(renderer, mesh.getDebugTBNProgram());
             gles.glUseProgram(debugProgram.getProgram());
             // Set uniforms.
             ShaderVariable var = debugProgram.getUniformByName(Attributes._EMISSIVE.name());
@@ -302,9 +200,8 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             for (Primitive p : primitives) {
                 gles.disableAttribPointers();
                 Accessor position = p.getAccessor(Attributes.POSITION);
-                drawVertices(gles, debugProgram, null, position.getCount(),
+                renderer.drawVertices(debugProgram, null, position.getCount(),
                         p.getAttributesArray(), p.getAccessorArray(), DrawMode.POINTS);
-                gles.glUseProgram(currentProgram);
             }
         }
 
@@ -340,7 +237,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         if (program == null) {
             throw new IllegalArgumentException("No program for primitive ");
         }
-        return program.getProgram(renderer.getGLES(), pass, program.getShading());
+        return program.getProgram(renderer, pass, program.getShading());
     }
 
 }
