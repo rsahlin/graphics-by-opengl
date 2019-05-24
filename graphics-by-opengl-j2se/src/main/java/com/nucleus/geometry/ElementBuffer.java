@@ -2,7 +2,6 @@ package com.nucleus.geometry;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;

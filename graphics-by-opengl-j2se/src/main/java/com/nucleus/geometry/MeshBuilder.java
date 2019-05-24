@@ -5,10 +5,13 @@ import java.io.IOException;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.component.ComponentException;
 import com.nucleus.geometry.shape.ShapeBuilder;
+import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RenderableNode;
+import com.nucleus.texturing.Texture2D;
 
 /**
  * Interface for Mesh builders
@@ -88,5 +91,96 @@ public interface MeshBuilder<T> {
      * @return
      */
     public Bounds createBounds();
+
+    /**
+     * Sets the shapebuilder to be used when building mesh shape(s)
+     * 
+     * @param shapeBuilder The shape builder, or null
+     * @return
+     */
+    public MeshBuilder<T> setShapeBuilder(ShapeBuilder shapeBuilder);
+
+    /**
+     * Set mode and vertex count for array based drawing - this will not use element (indice) buffer.
+     * ie glDrawArrays() will be used to draw the mesh.
+     * 
+     * @param mode The drawmode for vertices
+     * @param vertexCount Number of vertices
+     * @param vertexStride Extra attributes to allocate per vertex, if a value larger than 0 is specified then this
+     * number of attributes will be added to the attributes allocated for the mesh (for each vertex)
+     * @return
+     */
+    public MeshBuilder<T> setArrayMode(DrawMode mode, int vertexCount, int vertexStride);
+
+    /**
+     * Fetches the texture and stores as texture to be used when creating mesh
+     * 
+     * @param textureRef
+     * @throws IOException If the texture could not be loaded
+     */
+    public MeshBuilder<T> setTexture(ExternalReference textureRef) throws IOException;
+
+    /**
+     * Set mode, vertexcount and element (indice) count. The created mesh will have vertexbuffer and indice buffer.
+     * When drawn glDrawElements will be used.
+     * 
+     * @param mode
+     * @param vertexCount
+     * @param vertexStride Extra attributes to allocate per vertex, if a value larger than 0 is specified then this
+     * number of attributes will be added to the attributes allocated for the mesh (for each vertex)
+     * @param indiceCount
+     */
+    public MeshBuilder<T> setElementMode(DrawMode mode, int vertexCount, int vertexStride, int indiceCount);
+
+    /**
+     * Sets the material to be used in the mesh
+     * 
+     * @param material
+     */
+    public MeshBuilder<T> setMaterial(Material material);
+
+    /**
+     * Sets the number of objects the builder shall create mesh for, used for instance when mesh uses
+     * batching/instancing, or is a geometryshader
+     * 
+     * @param objectCount Number of objects to create when building the mesh
+     * @return
+     */
+    public MeshBuilder<T> setObjectCount(int objectCount);
+
+    /**
+     * Sets the drawmode for the mesh
+     * 
+     * @param mode
+     * @return Meshbuilder
+     */
+    public MeshBuilder<T> setMode(DrawMode mode);
+
+    /**
+     * Sets the number of attributes (floats) per vertex to create for each buffer
+     * 
+     * @param sizePerVertex
+     * @return
+     */
+    public MeshBuilder<T> setAttributesPerVertex(int[] sizePerVertex);
+
+    /**
+     * Sets the texture to use for the created mesh
+     * 
+     * @param texture
+     * @return
+     */
+    public MeshBuilder<T> setTexture(Texture2D texture);
+
+    /**
+     * Returns the ShapeBuilder to use for creating vertices or null
+     * 
+     * @return
+     */
+    public ShapeBuilder getShapeBuilder();
+
+    public Texture2D getTexture();
+
+    public Material getMaterial();
 
 }

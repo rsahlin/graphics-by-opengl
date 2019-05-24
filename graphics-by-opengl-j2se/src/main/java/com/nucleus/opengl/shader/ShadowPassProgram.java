@@ -36,7 +36,7 @@ public abstract class ShadowPassProgram extends ShaderProgram {
     }
 
     @Override
-    public void updateUniforms(GLES20Wrapper gles, float[][] matrices) throws GLException {
+    public void uploadUniforms(GLES20Wrapper gles) throws GLException {
         /**
          * Currently calls ShaderProgram#setUniformData() in order to set necessary data from the program int
          * uniform storage.
@@ -44,7 +44,7 @@ public abstract class ShadowPassProgram extends ShaderProgram {
          * TODO - Make sure that the interface declares and mandates that uniform data shall be set in #setUniformData()
          */
         objectProgram.updateUniformData(uniforms);
-        super.updateUniforms(gles, matrices);
+        super.uploadUniforms(gles);
     }
 
     @Override

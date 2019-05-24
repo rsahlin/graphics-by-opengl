@@ -40,7 +40,6 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
 
     public void renderMesh(NucleusRenderer renderer, ShaderProgram program, Mesh mesh, float[][] matrices)
             throws RenderBackendException {
-        GLES20Wrapper gles = renderer.getGLES();
         Consumer updater = mesh.getAttributeConsumer();
         if (updater != null) {
             updater.updateAttributeData(renderer);
@@ -49,11 +48,13 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
             return;
         }
         Material material = mesh.getMaterial();
+        program.setUniformMatrices(matrices);
+        program.updateUniformData(program.getUniformData());
 
+        GLES20Wrapper gles = renderer.getGLES();
         program.updateAttributes(gles, mesh);
-        program.updateUniforms(gles, matrices);
+        program.uploadUniforms(gles);
         program.prepareTexture(renderer, mesh.getTexture(Texture2D.TEXTURE_0));
-
         material.setBlendModeSeparate(gles);
         int mode = gles.getDrawMode(mesh.getMode());
         ElementBuffer indices = mesh.getElementBuffer();

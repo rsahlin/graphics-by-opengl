@@ -4,9 +4,9 @@ import java.nio.FloatBuffer;
 
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.shader.ShaderProgram.Shading;
 import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 import com.nucleus.renderer.Pass;
+import com.nucleus.shader.Indexer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 
@@ -18,9 +18,9 @@ import com.nucleus.texturing.TextureType;
 public class TranslateProgram extends ShaderProgram {
 
     public static class TranslateProgramIndexer extends VariableIndexer {
-        protected final static String[] NAMES = new String[] { VariableIndexer.Property.VERTEX.name,
-                VariableIndexer.Property.UV.name, VariableIndexer.Property.TRANSLATE.name,
-                VariableIndexer.Property.ALBEDO.name };
+        protected final static String[] NAMES = new String[] { Indexer.Property.VERTEX.name,
+                Indexer.Property.UV.name, Indexer.Property.TRANSLATE.name,
+                Indexer.Property.ALBEDO.name };
         protected final static int[] OFFSETS = new int[] { 0, 3, 0, 6 };
         protected final static VariableType[] TYPES = new VariableType[] { VariableType.ATTRIBUTE,
                 VariableType.ATTRIBUTE, VariableType.ATTRIBUTE, VariableType.ATTRIBUTE };
@@ -35,7 +35,8 @@ public class TranslateProgram extends ShaderProgram {
 
     public TranslateProgram(Texture2D texture) {
         super(new SharedfragmentCategorizer(null,
-                (texture == null || texture.textureType == TextureType.Untextured) ? ShaderProgram.Shading.flat : ShaderProgram.Shading.textured,
+                (texture == null || texture.textureType == TextureType.Untextured) ? ShaderProgram.Shading.flat
+                        : ShaderProgram.Shading.textured,
                 "translate"), ShaderProgram.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
     }

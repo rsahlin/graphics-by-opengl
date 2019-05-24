@@ -11,9 +11,10 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
-import com.nucleus.opengl.shader.VariableIndexer;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilderFactory;
+import com.nucleus.opengl.geometry.GLMesh;
+import com.nucleus.opengl.shader.VariableIndexer;
 import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.texturing.BaseImageFactory;
@@ -51,7 +52,7 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
             throws IOException {
         SimpleLogger.d(getClass(), "Creating MeshBuilder for Node " + getId());
         int count = 1;
-        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
+        MeshBuilder<Mesh> builder = new GLMesh.Builder<>(renderer);
         Texture2D tex = null;
         if (getTextureRef() == null) {
             tex = TextureFactory.getInstance().createTexture(TextureType.Untextured);

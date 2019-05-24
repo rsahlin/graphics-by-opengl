@@ -8,12 +8,15 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.common.Type;
+import com.nucleus.geometry.Material;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
+import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLTFNodeRenderer;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
@@ -24,6 +27,7 @@ import com.nucleus.scene.gltf.Material.ShadingMaps;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.RenderableMesh;
+import com.nucleus.texturing.Texture2D;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -249,6 +253,73 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
      */
     public void saveViewMatrix(float[] viewMatrix) {
         Matrix.copy(viewMatrix, 0, saveViewMatrix, 0);
+    }
+
+    @Override
+    public MeshBuilder<RenderableMesh> setShapeBuilder(ShapeBuilder shapeBuilder) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public MeshBuilder<RenderableMesh> setArrayMode(DrawMode mode, int vertexCount, int vertexStride) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public MeshBuilder<RenderableMesh> setTexture(ExternalReference textureRef) throws IOException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public MeshBuilder<RenderableMesh> setElementMode(DrawMode mode, int vertexCount, int vertexStride,
+            int indiceCount) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public MeshBuilder<RenderableMesh> setMaterial(Material material) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public MeshBuilder<RenderableMesh> setObjectCount(int objectCount) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public MeshBuilder<RenderableMesh> setMode(DrawMode mode) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public MeshBuilder<RenderableMesh> setAttributesPerVertex(int[] sizePerVertex) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public MeshBuilder<RenderableMesh> setTexture(Texture2D texture) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ShapeBuilder getShapeBuilder() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Texture2D getTexture() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

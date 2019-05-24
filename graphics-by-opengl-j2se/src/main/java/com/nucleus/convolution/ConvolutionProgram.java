@@ -7,11 +7,10 @@ import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.shader.GenericShaderProgram;
-import com.nucleus.opengl.shader.ShaderProgram;
-import com.nucleus.opengl.shader.ShaderProgram.Shading;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
+import com.nucleus.opengl.shader.GenericShaderProgram;
+import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.renderer.Pass;
 import com.nucleus.vecmath.Matrix;
 
@@ -34,14 +33,6 @@ public class ConvolutionProgram extends GenericShaderProgram {
                 attributeVariables[BufferIndex.ATTRIBUTES_STATIC.index]);
         GLUtils.handleError(gles, "glVertexAttribPointers ");
 
-    }
-
-    @Override
-    public void updateUniforms(GLES20Wrapper gles, float[][] matrices)
-            throws GLException {
-        Matrix.mul4(matrices[0], matrices[1], matrix);
-        System.arraycopy(matrix, 0, uniforms, 0, Matrix.MATRIX_ELEMENTS);
-        uploadUniforms(gles, uniforms, activeUniforms);
     }
 
     @Override

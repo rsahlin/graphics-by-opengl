@@ -10,6 +10,7 @@ import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.jogl.JOGLApplication;
@@ -17,6 +18,7 @@ import com.nucleus.mmi.MMIPointer;
 import com.nucleus.mmi.MMIPointerInput;
 import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.geometry.GLMesh;
 import com.nucleus.opengl.shader.ShaderVariable;
 import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
@@ -143,7 +145,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
             Texture2D texture = AssetManager.getInstance().getTexture(renderer,
                     BaseImageFactory.getInstance(), "texture",
                     new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, texParam, 1);
-            Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
+            MeshBuilder<Mesh> meshBuilder = new GLMesh.Builder<>(renderer);
             meshBuilder.setElementMode(DrawMode.TRIANGLES, 4, 0, 6);
             meshBuilder.setTexture(texture);
             program = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer.getGLES(),

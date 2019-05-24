@@ -2,9 +2,9 @@ package com.nucleus.component;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
-import com.nucleus.opengl.shader.VariableIndexer.Indexer;
 import com.nucleus.renderer.Backend;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.shader.Indexer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.UVAtlas;

@@ -7,6 +7,7 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.Pass;
+import com.nucleus.shader.Indexer;
 
 /**
  * Program for rendering lines and similar.
@@ -16,8 +17,8 @@ public class LineProgram extends ShaderProgram {
 
     public static class LineProgramIndexer extends VariableIndexer {
 
-        protected final static String[] NAMES = new String[] { VariableIndexer.Property.VERTEX.name,
-                VariableIndexer.Property.ALBEDO.name };
+        protected final static String[] NAMES = new String[] { Indexer.Property.VERTEX.name,
+                Indexer.Property.ALBEDO.name };
         protected final static int[] OFFSETS = new int[] { 0, 3 };
         protected final static VariableType[] TYPES = new VariableType[] { VariableType.ATTRIBUTE,
                 VariableType.ATTRIBUTE };

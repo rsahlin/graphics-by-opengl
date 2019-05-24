@@ -1,25 +1,10 @@
 package com.nucleus.geometry;
 
-import java.io.IOException;
-
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.assets.AssetManager;
-import com.nucleus.bounds.Bounds;
 import com.nucleus.geometry.ElementBuffer.Type;
-import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.BaseReference;
-import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.BufferObjectsFactory;
-import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.shader.BlockBuffer;
-import com.nucleus.opengl.shader.ShaderProgram;
-import com.nucleus.opengl.shader.TranslateProgram;
-import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.scene.RenderableNode;
-import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;
 
@@ -32,266 +17,10 @@ import com.nucleus.texturing.TiledTexture2D;
  * @author Richard Sahlin
  *
  */
-public class Mesh extends BaseReference implements AttributeUpdater {
+public abstract class Mesh extends BaseReference implements AttributeUpdater {
 
     private final static String NULL_NAMES = "Buffer names is null";
     private final static String NOT_ENOUGH_NAMES = "Not enough buffer names";
-
-    /**
-     * Builder for meshes
-     *
-     * @param <T>
-     */
-    public static class Builder<T extends Mesh> implements MeshBuilder<Mesh> {
-
-        protected NucleusRenderer renderer;
-        protected Texture2D texture;
-        protected Material material;
-        protected int[] attributesPerVertex;
-        protected int vertexCount = -1;
-        protected int indiceCount = 0;
-        /**
-         * Extra attributes to allocate for each vertex
-         */
-        protected int vertexStride;
-        /**
-         * Optional builder parameter that can be used to determine number of vertices.
-         */
-        protected int objectCount = 1;
-        protected ElementBuffer.Type indiceBufferType = Type.SHORT;
-        protected DrawMode mode;
-        protected ShapeBuilder shapeBuilder;
-
-        /**
-         * Creates a new builder
-         * 
-         * @param renderer
-         * @throws IllegalArgumentException If gles is null
-         */
-        public Builder(NucleusRenderer renderer) {
-            if (renderer == null) {
-                throw new IllegalArgumentException("Renderer may not be null");
-            }
-            this.renderer = renderer;
-        }
-
-        /**
-         * Sets the number of objects the builder shall create mesh for, used for instance when mesh uses
-         * batching/instancing, or is a geometryshader
-         * 
-         * @param objectCount Number of objects to create when building the mesh
-         * @return
-         */
-        public Builder<T> setObjectCount(int objectCount) {
-            this.objectCount = objectCount;
-            return this;
-        }
-
-        /**
-         * Sets the drawmode for the mesh
-         * 
-         * @param mode
-         * @return Meshbuilder
-         */
-        public Builder<T> setMode(DrawMode mode) {
-            this.mode = mode;
-            return this;
-        }
-
-        /**
-         * Sets the number of attributes (floats) per vertex to create for each buffer
-         * 
-         * @param sizePerVertex
-         * @return
-         */
-        public Builder<T> setAttributesPerVertex(int[] sizePerVertex) {
-            this.attributesPerVertex = sizePerVertex;
-            return this;
-        }
-
-        /**
-         * Sets the texture to use for the created mesh
-         * 
-         * @param texture
-         * @return
-         */
-        public Builder<T> setTexture(Texture2D texture) {
-            this.texture = texture;
-            return this;
-        }
-
-        /**
-         * 
-         * @param vertexStride Extra attributes to allocate per vertex, if a value larger than 0 is specified then this
-         * number of attributes will be added to the attributes allocated for the mesh (for each vertex)
-         * @return
-         */
-        public Builder<T> setVertexStride(int vertexStride) {
-            this.vertexStride = vertexStride;
-            return this;
-        }
-
-        @Override
-        public void create(RenderableNode<Mesh> parent) throws IOException, GLException {
-            if (parent == null) {
-                throw new IllegalArgumentException("Parent node may not be null when creating mesh");
-            }
-            parent.addMesh(create());
-        }
-
-        @Override
-        public T create() throws IOException, GLException {
-            validate();
-            T mesh = (T) createInstance();
-            mesh.createMesh(texture, attributesPerVertex, null, material, vertexCount, indiceCount, mode);
-            if (shapeBuilder != null) {
-                shapeBuilder.build(mesh);
-            }
-            if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
-                BufferObjectsFactory.getInstance().createVBOs(renderer.getGLES(), mesh);
-            }
-            return mesh;
-        }
-
-        @Override
-        public ShaderProgram createProgram() {
-            // Default is to create a translate program, this will use an indexer so that creating 2D objects is
-            // possible.
-            // this is used mainly for ui elements
-            return AssetManager.getInstance().getProgram(renderer.getGLES(), new TranslateProgram(texture));
-        }
-
-        @Override
-        public Mesh createInstance() {
-            return new Mesh();
-        }
-
-        /**
-         * Fetches the texture and stores as texture to be used when creating mesh
-         * 
-         * @param textureRef
-         * @throws IOException If the texture could not be loaded
-         */
-        public Builder<T> setTexture(ExternalReference textureRef) throws IOException {
-            this.texture = AssetManager.getInstance().getTexture(renderer, BaseImageFactory.getInstance(),
-                    textureRef);
-            return this;
-        }
-
-        /**
-         * Set mode and vertex count for array based drawing - this will not use element (indice) buffer.
-         * ie glDrawArrays() will be used to draw the mesh.
-         * 
-         * @param mode The drawmode for vertices
-         * @param vertexCount Number of vertices
-         * @param vertexStride Extra attributes to allocate per vertex, if a value larger than 0 is specified then this
-         * number of attributes will be added to the attributes allocated for the mesh (for each vertex)
-         * @return
-         */
-        public Builder<T> setArrayMode(DrawMode mode, int vertexCount, int vertexStride) {
-            this.vertexCount = vertexCount;
-            this.mode = mode;
-            this.vertexStride = vertexStride;
-            return this;
-        }
-
-        /**
-         * Set mode, vertexcount and element (indice) count. The created mesh will have vertexbuffer and indice buffer.
-         * When drawn glDrawElements will be used.
-         * 
-         * @param mode
-         * @param vertexCount
-         * @param vertexStride Extra attributes to allocate per vertex, if a value larger than 0 is specified then this
-         * number of attributes will be added to the attributes allocated for the mesh (for each vertex)
-         * @param indiceCount
-         */
-        public Builder<T> setElementMode(DrawMode mode, int vertexCount, int vertexStride, int indiceCount) {
-            this.indiceCount = indiceCount;
-            this.vertexCount = vertexCount;
-            this.mode = mode;
-            this.vertexStride = vertexStride;
-            return this;
-        }
-
-        /**
-         * Sets the material to be used in the mesh
-         * 
-         * @param material
-         */
-        public Builder<T> setMaterial(Material material) {
-            this.material = material;
-            return this;
-        }
-
-        /**
-         * Sets the shapebuilder to be used when building mesh shape(s)
-         * 
-         * @param shapeBuilder The shape builder, or null
-         * @return
-         */
-        public Builder<T> setShapeBuilder(ShapeBuilder shapeBuilder) {
-            this.shapeBuilder = shapeBuilder;
-            return this;
-        }
-
-        /**
-         * Checks that the needed arguments has been set
-         */
-        protected void validate() {
-            if ((attributesPerVertex == null) || texture == null || vertexCount <= 0 || mode == null
-                    || material == null) {
-                throw new IllegalArgumentException(
-                        "Missing argument when creating mesh: texture=" + texture + ", vertexcount="
-                                + vertexCount + ", mode=" + mode + ", material=" + material + ", attributesPerVertex="
-                                + attributesPerVertex);
-            }
-        }
-
-        /**
-         * Calculates the bounds covering this mesh.
-         * 
-         * @return
-         */
-        @Override
-        public Bounds createBounds() {
-            return null;
-        }
-
-        public Texture2D getTexture() {
-            return texture;
-        }
-
-        public Material getMaterial() {
-            return material;
-        }
-
-        public ShapeBuilder getShapeBuilder() {
-            return shapeBuilder;
-        }
-
-    }
-
-    /**
-     * Creates a Builder to create a mesh that can be rendered in a Node
-     * 
-     * @param renderer
-     * @param maxVerticeCount
-     * @param material
-     * @param program
-     * @param texture
-     * @param shapeBuilder
-     * @param mode
-     * @return
-     */
-    public static Builder<Mesh> createBuilder(NucleusRenderer renderer, int maxVerticeCount, Material material,
-            ShaderProgram program, Texture2D texture, ShapeBuilder shapeBuilder, DrawMode mode) {
-        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
-        builder.setTexture(texture);
-        builder.setMaterial(material);
-        builder.setArrayMode(mode, maxVerticeCount, 0);
-        builder.setShapeBuilder(shapeBuilder).setAttributesPerVertex(program.getAttributeSizes());
-        return builder;
-    }
 
     public final static int MAX_TEXTURE_COUNT = 1;
     private final static String NULL_PARAMETER_STR = "Null parameter";
@@ -321,7 +50,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     transient protected AttributeBuffer[] attributes;
     transient protected ElementBuffer indices;
-    transient protected BlockBuffer[] blockBuffers;
     /**
      * Number of elements to draw
      */
@@ -329,7 +57,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
     /**
      * Max number of vertices in buffer
      */
-    transient int maxVertexCount;
+    protected transient int maxVertexCount;
     /**
      * Offset to first element
      */
@@ -347,26 +75,17 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     transient protected Material material;
 
-    /**
-     * Creates a new empty mesh, the attribute/index buffers must be prepared before rendering can take place.
-     */
-    public Mesh() {
+    protected Mesh() {
         super();
     }
 
-    /**
-     * Creates a shallow copy of the source mesh, only the serialized values are copied, id and textureRef.
-     * 
-     * @param source
-     */
-    public Mesh(Mesh source) {
+    protected Mesh(Mesh source) {
         setId(source.getId());
         textureRef = source.textureRef;
     }
 
-    public void createMesh(Texture2D texture, int[] attributeSizes, InterfaceBlock[] interfaceBlocks, Material material,
-            int vertexCount,
-            int indiceCount, DrawMode mode) {
+    public void createMesh(Texture2D texture, int[] attributeSizes, Material material,
+            int vertexCount, int indiceCount, DrawMode mode) {
         if (texture == null || material == null || mode == null || attributeSizes == null) {
             throw new IllegalArgumentException(
                     "Null parameter: " + texture + ", " + material + ", " + mode + ", " + attributeSizes);
@@ -374,22 +93,19 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         setTexture(texture, Texture2D.TEXTURE_0);
         setMode(mode);
         this.material = new Material(material);
-        internalCreateBuffers(attributeSizes, interfaceBlocks, vertexCount, indiceCount);
+        internalCreateBuffers(attributeSizes, vertexCount, indiceCount);
     }
 
     /**
      * Creates the buffers, vertex and indexbuffers as needed - and sets the static data in uniforms
      * If texture is {@link TiledTexture2D} then vertice and index storage will be createde for 1 sprite.
-     * Do not call this method directly - it is called from {@link #createMesh(ShaderProgram, Texture2D, Material)}
      * 
      * @param attributeSizes Number of (float) attributes to allocate for each vertex. One float = 4 bytes.
-     * @param interfaceBlocks Number of block buffers to allocate and their sizes
      * @param vertexCount Number of vertices to create storage for
      * @param indiceCount Number of elementbuffer indices
      * @param drawMode Mesh drawmode
      */
-    protected void internalCreateBuffers(int[] attributeSizes, InterfaceBlock[] interfaceBlocks, int vertexCount,
-            int indiceCount) {
+    protected void internalCreateBuffers(int[] attributeSizes, int vertexCount, int indiceCount) {
         attributes = AttributeBuffer.createAttributeBuffers(attributeSizes, vertexCount);
         maxVertexCount = vertexCount;
         if (indiceCount > 0) {
@@ -398,7 +114,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
         } else {
             setDrawCount(vertexCount, 0);
         }
-        blockBuffers = BlockBuffer.createBlockBuffers(interfaceBlocks);
     }
 
     /**
@@ -438,15 +153,6 @@ public class Mesh extends BaseReference implements AttributeUpdater {
      */
     public AttributeBuffer[] getAttributeBuffers() {
         return attributes;
-    }
-
-    /**
-     * Returns the block buffer storage, for instance uniform blocks.
-     * 
-     * @return
-     */
-    public BlockBuffer[] getBlockBuffers() {
-        return blockBuffers;
     }
 
     /**
@@ -530,8 +236,7 @@ public class Mesh extends BaseReference implements AttributeUpdater {
 
     /**
      * Returns the number of buffer object names that are needed for this mesh.
-     * Usage of buffer objects is recommended over passing java.nio.Buffers directly to
-     * {@link GLES20Wrapper#glVertexAttribPointer(int, int, int, boolean, int, java.nio.Buffer)}
+     * Usage of buffer objects is recommended over passing java.nio.Buffers directly
      * 
      * @return
      */

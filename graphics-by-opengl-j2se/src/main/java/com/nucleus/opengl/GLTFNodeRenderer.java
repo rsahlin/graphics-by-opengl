@@ -202,7 +202,9 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         }
         // Can be optimized to update uniforms under the following conditions:
         // The program has changed OR the matrices have changed, ie another parent node.
-        program.updateUniforms(gles, matrices);
+        program.setUniformMatrices(matrices);
+        program.updateUniformData(program.getUniformData());
+        program.uploadUniforms(gles);
         Material material = primitive.getMaterial();
         if (material != null) {
             PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
@@ -294,7 +296,9 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
                     debugProgram.getUniformByName(Attributes._EMISSIVE.name()));
 
             gles.glUseProgram(debugProgram.getProgram());
-            debugProgram.updateUniforms(gles, matrices);
+            debugProgram.setUniformMatrices(matrices);
+            debugProgram.updateUniformData(debugProgram.getUniformData());
+            debugProgram.uploadUniforms(gles);
             for (Primitive p : primitives) {
                 gles.disableAttribPointers();
                 Accessor position = p.getAccessor(Attributes.POSITION);

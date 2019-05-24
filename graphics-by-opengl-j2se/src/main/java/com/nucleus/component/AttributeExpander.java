@@ -2,7 +2,7 @@ package com.nucleus.component;
 
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
-import com.nucleus.opengl.shader.VariableIndexer.Indexer;
+import com.nucleus.shader.Indexer;
 
 /**
  * Copy and expand attribute data from source to destination.

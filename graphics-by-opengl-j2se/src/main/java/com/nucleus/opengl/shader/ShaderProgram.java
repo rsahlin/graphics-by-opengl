@@ -30,18 +30,19 @@ import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.GLESWrapper.GLES31;
 import com.nucleus.opengl.GLESWrapper.GLES32;
 import com.nucleus.opengl.GLESWrapper.ProgramInfo;
+import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.GLUtils;
 import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
 import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 import com.nucleus.opengl.shader.ShadowPass1Program.Shadow1Categorizer;
-import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.Window;
+import com.nucleus.shader.Indexer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.TiledTexture2D;
@@ -654,7 +655,7 @@ public abstract class ShaderProgram {
      * @param buffer The buffer to get attributes per vertex for
      * @return Number of attributes as used by this program, per vertex 0 or -1 if not defined.
      */
-    protected int getAttributesPerVertex(BufferIndex buffer) {
+    public int getAttributesPerVertex(BufferIndex buffer) {
         if (attributesPerVertex.length > buffer.index) {
             return attributesPerVertex[buffer.index];
         } else {
@@ -768,19 +769,13 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Updates the data uploaded to GL as uniforms, if uniforms are static then only the matrices needs to be updated.
-     * Calls {@link #setUniformMatrices(float[][])} to update uniform matrices.
-     * Then call {@link #updateUniformData(float[])} to set program specific uniform data
-     * Then sets uniforms to GL by calling {@link #uploadUniforms(GLES20Wrapper, float[], ShaderVariable[])
+     * Uploads the uniforms to render backend
      * When this method returns the uniform data has been uploaded to GL and is ready.
      * 
      * @param gles
-     * @param matrices modelview, projection and renderpass matrices
      */
-    public void updateUniforms(GLES20Wrapper gles, float[][] matrices)
+    public void uploadUniforms(GLES20Wrapper gles)
             throws GLException {
-        setUniformMatrices(matrices);
-        updateUniformData(uniforms);
         uploadUniforms(gles, uniforms, activeUniforms);
     }
 
@@ -1023,7 +1018,7 @@ public abstract class ShaderProgram {
      * @param attribute
      * @return Shader variable for attribute, or null if not defined in shader
      */
-    public ShaderVariable getAttribute(VariableIndexer.Property attribute) {
+    public ShaderVariable getAttribute(Indexer.Property attribute) {
         return getAttributeByName(attribute.name);
     }
 

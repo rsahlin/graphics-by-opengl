@@ -12,12 +12,13 @@ import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
+import com.nucleus.opengl.geometry.GLMesh;
 import com.nucleus.opengl.shader.GenericShaderProgram;
 import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.opengl.shader.ShaderProgram.ProgramType;
-import com.nucleus.opengl.shader.VariableIndexer.Indexer;
 import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.shader.Indexer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
@@ -49,12 +50,13 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
      */
     transient int drawCount = Constants.NO_VALUE;
     transient int drawOffset = Constants.NO_VALUE;
+    transient Indexer indexer;
 
     @Override
     public MeshBuilder<Mesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
             throws IOException {
         int count = getLineCount();
-        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
+        MeshBuilder<Mesh> builder = new GLMesh.Builder<>(renderer);
         builder.setShapeBuilder(shapeBuilder);
         switch (getLineMode()) {
             case LINES:
@@ -144,7 +146,7 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
         lineMode = source.lineMode;
     }
 
-    private ShapeBuilder createShapeBuilder(Mesh.Builder<Mesh> meshBuilder) {
+    private ShapeBuilder createShapeBuilder(MeshBuilder<Mesh> meshBuilder) {
         switch (lineMode) {
             case LINES:
             case LINE_STRIP:

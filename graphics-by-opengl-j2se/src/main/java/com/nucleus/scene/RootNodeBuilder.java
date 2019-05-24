@@ -8,10 +8,12 @@ import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder;
 import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.geometry.GLMesh;
 import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.opengl.shader.TranslateProgram;
 import com.nucleus.renderer.Backend.DrawMode;
@@ -76,7 +78,7 @@ public class RootNodeBuilder {
         Texture2D texture = AssetManager.getInstance().getTexture(renderer,
                 BaseImageFactory.getInstance(), "texture",
                 new ExternalReference(splashImage), splashResolution, texParam, 1);
-        Mesh.Builder<Mesh> meshBuilder = new Mesh.Builder<>(renderer);
+        MeshBuilder<Mesh> meshBuilder = new GLMesh.Builder<>(renderer);
         meshBuilder.setElementMode(DrawMode.TRIANGLES, 4, 0, 6);
         meshBuilder.setTexture(texture);
         Material material = new Material();

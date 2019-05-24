@@ -16,8 +16,8 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.DefaultNodeRenderer;
+import com.nucleus.opengl.geometry.GLMesh;
 import com.nucleus.opengl.shader.ShaderProgram;
-import com.nucleus.opengl.shader.VariableIndexer.Indexer;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
@@ -69,7 +69,6 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
      */
     transient float[] modelMatrix = Matrix.createMatrix();
     transient protected ShaderProgram program;
-    transient protected Indexer indexer;
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -219,7 +218,7 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
     public MeshBuilder<T> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder<T> shapeBuilder)
             throws IOException {
 
-        Mesh.Builder<Mesh> builder = new Mesh.Builder<>(renderer);
+        MeshBuilder<Mesh> builder = new GLMesh.Builder<>(renderer);
         return initMeshBuilder(renderer, 1, shapeBuilder, builder);
     }
 
@@ -238,7 +237,7 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
      * @throws IOException
      */
     protected MeshBuilder<T> initMeshBuilder(NucleusRenderer renderer, int count, ShapeBuilder<T> shapeBuilder,
-            Mesh.Builder<Mesh> builder)
+            MeshBuilder<Mesh> builder)
             throws IOException {
         if (builder.getTexture() == null) {
             builder.setTexture(getTextureRef());
