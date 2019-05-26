@@ -7,6 +7,7 @@ import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES30Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 
 public class AndroidGLES30Wrapper extends GLES30Wrapper {
 

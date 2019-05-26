@@ -15,6 +15,13 @@ public abstract class Backend {
             throw new IllegalArgumentException("Renderer version is null");
         }
         this.version = version;
+        createInstance(version);
+    }
+
+    private void createInstance(Renderers version) {
+        if (backend == null) {
+            backend = this;
+        }
     }
 
     /**

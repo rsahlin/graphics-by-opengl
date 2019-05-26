@@ -14,8 +14,8 @@ import com.nucleus.mmi.Pointer.Type;
 import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.RendererFactory;
 import com.nucleus.renderer.RendererInfo;
 import com.nucleus.renderer.SurfaceConfiguration;
@@ -99,6 +99,8 @@ public abstract class NucleusActivity extends Activity
      * If true this activity is moved to background in {@link #onBackPressed()} otherwise activity is finished.
      */
     protected boolean backgroundTaskOnBackPressed = true;
+
+    protected SurfaceConfiguration surfaceConfig;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -222,7 +224,7 @@ public abstract class NucleusActivity extends Activity
      */
     private void setup(Renderers version, int rendermode) {
         minVersion = version;
-        SurfaceConfiguration surfaceConfig = createSurfaceConfig();
+        surfaceConfig = createSurfaceConfig();
         SimpleLogger.d(getClass(), "Using SurfaceConfig:\n" + surfaceConfig.toString());
         surfaceView = createSurfaceView(version, surfaceConfig, rendermode);
         surfaceView.setSystemUiVisibility(
@@ -374,7 +376,7 @@ public abstract class NucleusActivity extends Activity
         }
         NucleusRenderer renderer = RendererFactory.getRenderer(gles);
         if (coreApp == null) {
-            coreApp = CoreApp.createCoreApp(width, height, renderer);
+            coreApp = CoreApp.createCoreApp(width, height, renderer, surfaceConfig);
             return true;
         }
         return false;

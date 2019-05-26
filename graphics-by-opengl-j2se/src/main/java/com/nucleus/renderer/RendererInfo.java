@@ -1,6 +1,7 @@
 package com.nucleus.renderer;
 
 import java.util.List;
+import java.util.StringTokenizer;
 
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 
@@ -86,6 +87,29 @@ public abstract class RendererInfo {
             }
         }
         return false;
+    }
+
+    /**
+     * Parses the String, navigate to first number char by locating whitespaces, and returns the major.minor version.
+     * Eg, 'OPENGL ES 3.2' will return [3][2]
+     * 
+     * @param glVersion
+     * @return Array with to int values for major.minor if version info was found, null otherwise
+     */
+    public static int[] getVersionStr(String glVersion) {
+        StringTokenizer st = new StringTokenizer(glVersion);
+        int[] result = null;
+        while (result == null && st.hasMoreTokens()) {
+            String token = st.nextToken();
+            char chr = token.charAt(0);
+            if (chr >= '0' && chr <= '9') {
+                result = new int[2];
+                float val = Float.parseFloat(token);
+                result[0] = (int) val;
+                result[1] = (int) ((val - result[0]) * 10);
+            }
+        }
+        return result;
     }
 
 }

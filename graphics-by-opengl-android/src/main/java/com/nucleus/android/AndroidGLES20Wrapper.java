@@ -6,8 +6,9 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.shader.ShaderSource.ESSLVersion;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 
 public class AndroidGLES20Wrapper extends GLES20Wrapper {
 
