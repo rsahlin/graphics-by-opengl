@@ -455,4 +455,22 @@ public interface NucleusRenderer {
      */
     public boolean useProgram(ShaderProgram program) throws RenderBackendException;
 
+    /**
+     * Creates storage for an (empty) texture
+     * 
+     * @param texture The texture to create storage for
+     * @param target
+     * @throws RenderBackendException
+     */
+    public void createTexture(Texture2D texture, int target) throws RenderBackendException;
+
+    /**
+     * Deletes the textures
+     * 
+     * @param names
+     */
+    public void deleteTextures(int[] names);
+
+    public void deletePrograms(int[] names);
+
 }

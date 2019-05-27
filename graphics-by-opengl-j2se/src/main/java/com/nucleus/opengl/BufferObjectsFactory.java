@@ -10,6 +10,7 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.shader.BlockBuffer;
 import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.Primitive;
 
@@ -155,11 +156,11 @@ public class BufferObjectsFactory {
     /**
      * Destroys the buffers if VBOs have been allocated.
      * 
-     * @param gles
+     * @param renderer
      * @param buffers
      * @throws GLException
      */
-    public void destroyVBOs(GLES20Wrapper gles, ArrayList<Buffer> buffers) throws GLException {
+    public void destroyVBOs(NucleusRenderer renderer, ArrayList<Buffer> buffers) throws GLException {
         int[] names = new int[1];
         int deleted = 0;
         StringBuffer bufferStr = new StringBuffer();
@@ -167,7 +168,7 @@ public class BufferObjectsFactory {
             names[0] = buffer.getBufferName();
             if (names[0] > 0) {
                 bufferStr.append("[" + (buffer.getUri() != null ? buffer.getUri() : buffer.getName()) + "]");
-                gles.glDeleteBuffers(1, names, 0);
+                renderer.getGLES().glDeleteBuffers(1, names, 0);
                 deleted++;
                 buffer.setBufferName(0);
             }

@@ -22,7 +22,6 @@ import com.nucleus.opengl.BufferObjectsFactory;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.GLUtils;
 import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.Backend;
@@ -267,11 +266,11 @@ public class GLAssetManager implements Assets {
     @Override
     public void destroy(NucleusRenderer renderer) {
         SimpleLogger.d(getClass(), "destroy");
-        deletePrograms(renderer.getGLES());
-        deleteTextures(renderer.getGLES());
+        deletePrograms(renderer);
+        deleteTextures(renderer);
     }
 
-    private void deleteTextures(GLES20Wrapper wrapper) {
+    private void deleteTextures(NucleusRenderer renderer) {
         if (textures.size() == 0) {
             return;
         }
@@ -280,13 +279,13 @@ public class GLAssetManager implements Assets {
         for (Texture2D texture : textures.values()) {
             texNames[i++] = texture.getName();
         }
-        wrapper.glDeleteTextures(texNames);
+        renderer.deleteTextures(texNames);
         textures.clear();
     }
 
-    private void deletePrograms(GLES20Wrapper wrapper) {
+    private void deletePrograms(NucleusRenderer renderer) {
         for (ShaderProgram program : programs.values()) {
-            wrapper.glDeleteProgram(program.getProgram());
+            renderer.deletePrograms(new int[] { program.getProgram() });
         }
         programs.clear();
     }
@@ -343,8 +342,8 @@ public class GLAssetManager implements Assets {
     @Override
     public void deleteGLTFAssets(NucleusRenderer renderer, GLTF gltf) throws RenderBackendException {
         try {
-            BufferObjectsFactory.getInstance().destroyVBOs(renderer.getGLES(), gltf.getBuffers(null));
-            deleteTextures(renderer.getGLES(), gltf, gltf.getImages());
+            BufferObjectsFactory.getInstance().destroyVBOs(renderer, gltf.getBuffers(null));
+            deleteTextures(renderer, gltf, gltf.getImages());
             gltfAssets.remove(gltf.getFilename());
             gltf.destroy();
         } catch (GLException e) {
@@ -352,14 +351,14 @@ public class GLAssetManager implements Assets {
         }
     }
 
-    protected void deleteTextures(GLES20Wrapper gles, GLTF gltf, Image[] images) {
+    protected void deleteTextures(NucleusRenderer renderer, GLTF gltf, Image[] images) {
         int deleted = 0;
         if (images != null) {
             int[] names = new int[1];
             for (Image image : images) {
                 names[0] = image.getTextureName();
                 if (names[0] > 0) {
-                    gles.glDeleteTextures(names);
+                    renderer.deleteTextures(names);
                     image.setTextureName(0);
                     deleted++;
                 }
@@ -726,13 +725,11 @@ public class GLAssetManager implements Assets {
      * @return
      */
     protected Texture2D createTexture(NucleusRenderer renderer, TextureType type, String id, RESOLUTION resolution,
-            int[] size, ImageFormat format, TextureParameter texParams, int target) throws GLException {
+            int[] size, ImageFormat format, TextureParameter texParams, int target) throws RenderBackendException {
         int[] textureName = renderer.createTextureName();
         Texture2D result = TextureFactory.getInstance().createTexture(type, id, resolution, texParams, size, format,
                 textureName[0]);
-        renderer.getGLES().glBindTexture(target, result.getName());
-        renderer.getGLES().texImage(result);
-        GLUtils.handleError(renderer.getGLES(), "glTexImage2D");
+        renderer.createTexture(result, target);
         return result;
     }
 

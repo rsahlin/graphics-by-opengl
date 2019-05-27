@@ -886,4 +886,23 @@ public class GLESBaseRenderer implements NucleusRenderer {
 
     }
 
+    @Override
+    public void createTexture(Texture2D texture, int target) throws RenderBackendException {
+        getGLES().glBindTexture(target, texture.getName());
+        getGLES().texImage(texture);
+        GLUtils.handleError(getGLES(), "glTexImage2D");
+    }
+
+    @Override
+    public void deleteTextures(int[] names) {
+        getGLES().glDeleteTextures(names);
+    }
+
+    @Override
+    public void deletePrograms(int[] names) {
+        for (int i : names) {
+            getGLES().glDeleteProgram(i);
+        }
+    }
+
 }
