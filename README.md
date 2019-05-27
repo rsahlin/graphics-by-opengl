@@ -1,5 +1,5 @@
 ﻿#graphics-by-opengl
-PBR based renderer in Java using OpenGLES.
+PBR based renderer in Java using OpenGLES (Vulkan support is planned)
 
 A forward renderer using node hierarchy to render meshes.
 Limits number of passes in order to reach high fps in 4-8K resolution and on mobile devices.
@@ -10,6 +10,7 @@ BRDF implementation supports one directional light.
 Support for sRGB textures, gamma correction and (hdr) exposure.
 
 List of feature that will be implemented or improved - in no particular order
+* Vulkan support - however this will somewhat break the name of the repository as it will be graphics-by-opengl-vulkan :-)
 * Support for pbr occlusion map
 * DRACO support, may need to port DRACO decoder to Java?
 * Model animations and skinning (Morph targets and joint hierarchy)
