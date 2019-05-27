@@ -33,7 +33,7 @@ public class JOGLGLESWindow extends JOGLGLWindow {
 
     @Override
     public void display(GLAutoDrawable drawable) {
-        if (wrapper != null) {
+        if (backend != null) {
             JOGLGLESUtils.freeNames();
         }
         super.display(drawable);
@@ -48,8 +48,8 @@ public class JOGLGLESWindow extends JOGLGLWindow {
     @Override
     public void init(GLAutoDrawable drawable) {
         SimpleLogger.d(getClass(), "init()");
-        if (wrapper == null) {
-            wrapper = JOGLWrapperFactory.createWrapper(version, drawable.getContext());
+        if (backend == null) {
+            backend = JOGLWrapperFactory.createWrapper(version, drawable.getContext());
         }
         super.init(drawable);
     }

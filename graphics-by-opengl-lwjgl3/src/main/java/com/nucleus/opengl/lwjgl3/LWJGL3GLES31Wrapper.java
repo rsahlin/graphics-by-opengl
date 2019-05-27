@@ -1,33 +1,28 @@
-package com.nucleus.lwjgl3;
+package com.nucleus.opengl.lwjgl3;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import com.nucleus.common.BufferUtils;
-import com.nucleus.opengl.GLES30Wrapper;
-import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.opengl.GLES31Wrapper;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 
-/**
- * Implementation of the LWJGL3 wrapper
- * TODO - Shall this be made static since the underlying GL/GLES is static?
- * It would simplify handling GLES2.0, 3.0, 3.1
- *
- */
-public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
+public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
 
-    protected LWJGL3GLES20Wrapper gles20;
+    LWJGL3GLES20Wrapper gles20;
+    LWJGL3GLES30Wrapper gles30;
 
     /**
-     * Implementation constructor - DO NOT USE - fetch wrapper from {@link NucleusRenderer}
+     * Implementation constructor - DO NOT USE - fetch from {@link LWJGLWrapperFactory}
      * 
      * @param renderVersion If higher than GLES30, otherwise null
+     * 
      */
-    public LWJGL3GLES30Wrapper(Renderers version) {
+    protected LWJGL3GLES31Wrapper(Renderers version) {
         super(Platform.GL, version);
         gles20 = new LWJGL3GLES20Wrapper(version);
+        gles30 = new LWJGL3GLES30Wrapper(version);
     }
 
     /**
@@ -388,9 +383,9 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
 
     /**
      * 
-     * **************************************************************************************
-     * GLES30--------------------------------------------------------------------------------
-     * **************************************************************************************
+     * -----------------------------------------------------------------------------
+     * GLES30 methods - just pass on to gles30 wrapper if not simple oneliner
+     * -----------------------------------------------------------------------------
      * 
      */
 
@@ -421,7 +416,7 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
 
     @Override
     public void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, IntBuffer buffer) {
-        org.lwjgl.opengles.GLES30.glGetActiveUniformBlockiv(program, uniformBlockIndex, pname, buffer);
+        gles30.glGetActiveUniformBlockiv(program, uniformBlockIndex, pname, buffer);
     }
 
     @Override
@@ -432,14 +427,7 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int indicesOffset,
             int pname, int[] params, int paramsOffset) {
-        IntBuffer indicesBuffer = BufferUtils.createIntBuffer(uniformCount);
-        indicesBuffer.put(uniformIndices, indicesOffset, uniformCount);
-        indicesBuffer.position(0);
-        IntBuffer paramsBuffer = BufferUtils.createIntBuffer(uniformCount);
-        org.lwjgl.opengles.GLES30.glGetActiveUniformsiv(program, indicesBuffer, pname, paramsBuffer);
-        paramsBuffer.position(0);
-        paramsBuffer.get(params, paramsOffset, uniformCount);
-
+        gles30.glGetActiveUniformsiv(program, uniformCount, uniformIndices, indicesOffset, pname, params, paramsOffset);
     }
 
     @Override
@@ -465,6 +453,250 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
     @Override
     public void glTexStorage2D(int target, int levels, int internalformat, int width, int height) {
         org.lwjgl.opengles.GLES30.glTexStorage2D(target, levels, internalformat, width, height);
+    }
+
+    /**
+     * 
+     * -----------------------------------------------------------------------------
+     * GLES31 methods
+     * -----------------------------------------------------------------------------
+     * 
+     */
+
+    @Override
+    public void glDispatchCompute(int num_groups_x, int num_groups_y, int num_groups_z) {
+        org.lwjgl.opengles.GLES31.glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
+    }
+
+    @Override
+    public void glDispatchComputeIndirect(int offset) {
+        org.lwjgl.opengles.GLES31.glDispatchComputeIndirect(offset);
+    }
+
+    @Override
+    public void glDrawArraysIndirect(int mode, int offset) {
+        org.lwjgl.opengles.GLES31.glDrawArraysIndirect(mode, offset);
+    }
+
+    @Override
+    public void glDrawElementsIndirect(int mode, int type, int offset) {
+        org.lwjgl.opengles.GLES31.glDrawElementsIndirect(mode, type, offset);
+    }
+
+    @Override
+    public void glGetFramebufferParameteriv(int target, int pname, IntBuffer params) {
+        org.lwjgl.opengles.GLES31.glGetFramebufferParameteriv(target, pname, params);
+    }
+
+    @Override
+    public void glGetProgramInterfaceiv(int program, int programInterface, int pname, IntBuffer params) {
+        org.lwjgl.opengles.GLES31.glGetProgramInterfaceiv(program, programInterface, pname, params);
+    }
+
+    @Override
+    public int glGetProgramResourceIndex(int program, int programInterface, String name) {
+        return org.lwjgl.opengles.GLES31.glGetProgramResourceIndex(program, programInterface, name);
+    }
+
+    @Override
+    public String glGetProgramResourceName(int program, int programInterface, int index) {
+        return org.lwjgl.opengles.GLES31.glGetProgramResourceName(program, programInterface, index);
+    }
+
+    @Override
+    public void glGetProgramResourceiv(int program, int programInterface, int index, int propCount, IntBuffer props,
+            int bufSize, IntBuffer length, IntBuffer params) {
+        org.lwjgl.opengles.GLES31.glGetProgramResourceiv(program, programInterface, index, props, length, params);
+    }
+
+    @Override
+    public int glGetProgramResourceLocation(int program, int programInterface, String name) {
+        return org.lwjgl.opengles.GLES31.glGetProgramResourceLocation(program, programInterface, name);
+    }
+
+    @Override
+    public void glUseProgramStages(int pipeline, int stages, int program) {
+        org.lwjgl.opengles.GLES31.glUseProgramStages(pipeline, stages, program);
+    }
+
+    @Override
+    public void glActiveShaderProgram(int pipeline, int program) {
+        org.lwjgl.opengles.GLES31.glActiveShaderProgram(pipeline, program);
+    }
+
+    @Override
+    public int glCreateShaderProgramv(int type, String[] strings) {
+        return org.lwjgl.opengles.GLES31.glCreateShaderProgramv(type, strings);
+    }
+
+    @Override
+    public void glBindProgramPipeline(int pipeline) {
+        org.lwjgl.opengles.GLES31.glBindProgramPipeline(pipeline);
+    }
+
+    @Override
+    public void glDeleteProgramPipelines(int n, IntBuffer pipelines) {
+        throw new IllegalArgumentException("Not implemented");
+    }
+
+    @Override
+    public void glGenProgramPipelines(int n, IntBuffer pipelines) {
+        throw new IllegalArgumentException("Not implemented");
+    }
+
+    @Override
+    public boolean glIsProgramPipeline(int pipeline) {
+        return org.lwjgl.opengles.GLES31.glIsProgramPipeline(pipeline);
+    }
+
+    @Override
+    public void glGetProgramPipelineiv(int pipeline, int pname, IntBuffer params) {
+        org.lwjgl.opengles.GLES31.glGetProgramPipelineiv(pipeline, pname, params);
+    }
+
+    @Override
+    public void glProgramUniform1i(int program, int location, int v0) {
+        org.lwjgl.opengles.GLES31.glProgramUniform1i(program, location, v0);
+    }
+
+    @Override
+    public void glProgramUniform4i(int program, int location, int v0, int v1, int v2, int v3) {
+        org.lwjgl.opengles.GLES31.glProgramUniform4i(program, location, v0, v1, v2, v3);
+    }
+
+    @Override
+    public void glProgramUniform4ui(int program, int location, int v0, int v1, int v2, int v3) {
+        org.lwjgl.opengles.GLES31.glProgramUniform4ui(program, location, v0, v1, v2, v3);
+    }
+
+    @Override
+    public void glProgramUniform4f(int program, int location, float v0, float v1, float v2, float v3) {
+        org.lwjgl.opengles.GLES31.glProgramUniform4f(program, location, v0, v1, v2, v3);
+    }
+
+    @Override
+    public void glProgramUniform4iv(int program, int location, int count, IntBuffer value) {
+        org.lwjgl.opengles.GLES31.glProgramUniform4iv(program, location, value);
+    }
+
+    @Override
+    public void glProgramUniform4uiv(int program, int location, int count, IntBuffer value) {
+        org.lwjgl.opengles.GLES31.glProgramUniform4uiv(program, location, value);
+    }
+
+    @Override
+    public void glProgramUniform4fv(int program, int location, int count, FloatBuffer value) {
+        org.lwjgl.opengles.GLES31.glProgramUniform4fv(program, location, value);
+    }
+
+    @Override
+    public void glProgramUniformMatrix2fv(int program, int location, int count, boolean transpose, FloatBuffer value) {
+        org.lwjgl.opengles.GLES31.glProgramUniformMatrix2fv(program, location, transpose, value);
+    }
+
+    @Override
+    public void glProgramUniformMatrix3fv(int program, int location, int count, boolean transpose, FloatBuffer value) {
+        org.lwjgl.opengles.GLES31.glProgramUniformMatrix3fv(program, location, transpose, value);
+    }
+
+    @Override
+    public void glProgramUniformMatrix4fv(int program, int location, int count, boolean transpose, FloatBuffer value) {
+        org.lwjgl.opengles.GLES31.glProgramUniformMatrix4fv(program, location, transpose, value);
+    }
+
+    @Override
+    public void glProgramUniformMatrix3x4fv(int program, int location, int count, boolean transpose,
+            FloatBuffer value) {
+        org.lwjgl.opengles.GLES31.glProgramUniformMatrix3x4fv(program, location, transpose, value);
+    }
+
+    @Override
+    public void glProgramUniformMatrix4x3fv(int program, int location, int count, boolean transpose,
+            FloatBuffer value) {
+        org.lwjgl.opengles.GLES31.glProgramUniformMatrix4x3fv(program, location, transpose, value);
+    }
+
+    @Override
+    public void glValidateProgramPipeline(int pipeline) {
+        org.lwjgl.opengles.GLES31.glValidateProgramPipeline(pipeline);
+    }
+
+    @Override
+    public String glGetProgramPipelineInfoLog(int program) {
+        return org.lwjgl.opengles.GLES31.glGetProgramPipelineInfoLog(program);
+    }
+
+    @Override
+    public void glBindImageTexture(int unit, int texture, int level, boolean layered, int layer, int access,
+            int format) {
+        org.lwjgl.opengles.GLES31.glBindImageTexture(unit, texture, level, layered, layer, access, format);
+    }
+
+    @Override
+    public void glGetBooleani_v(int target, int index, IntBuffer data) {
+        throw new IllegalArgumentException("Not implemented");
+    }
+
+    @Override
+    public void glMemoryBarrier(int barriers) {
+        org.lwjgl.opengles.GLES31.glMemoryBarrier(barriers);
+    }
+
+    @Override
+    public void glMemoryBarrierByRegion(int barriers) {
+        org.lwjgl.opengles.GLES31.glMemoryBarrierByRegion(barriers);
+    }
+
+    @Override
+    public void glTexStorage2DMultisample(int target, int samples, int internalformat, int width, int height,
+            boolean fixedsamplelocations) {
+        org.lwjgl.opengles.GLES31.glTexStorage2DMultisample(target, samples, internalformat, width, height,
+                fixedsamplelocations);
+    }
+
+    @Override
+    public void glGetMultisamplefv(int pname, int index, FloatBuffer val) {
+        org.lwjgl.opengles.GLES31.glGetMultisamplefv(pname, index, val);
+    }
+
+    @Override
+    public void glSampleMaski(int maskNumber, int mask) {
+        org.lwjgl.opengles.GLES31.glSampleMaski(maskNumber, maskNumber);
+    }
+
+    @Override
+    public void glGetTexLevelParameteriv(int target, int level, int pname, IntBuffer params) {
+        org.lwjgl.opengles.GLES31.glGetTexLevelParameteriv(target, level, pname, params);
+    }
+
+    @Override
+    public void glGetTexLevelParameterfv(int target, int level, int pname, FloatBuffer params) {
+        org.lwjgl.opengles.GLES31.glGetTexLevelParameterfv(target, level, pname, params);
+    }
+
+    @Override
+    public void glBindVertexBuffer(int bindingindex, int buffer, long offset, int stride) {
+        org.lwjgl.opengles.GLES31.glBindVertexBuffer(bindingindex, buffer, offset, stride);
+    }
+
+    @Override
+    public void glVertexAttribFormat(int attribindex, int size, int type, boolean normalized, int relativeoffset) {
+        org.lwjgl.opengles.GLES31.glVertexAttribFormat(attribindex, size, type, normalized, relativeoffset);
+    }
+
+    @Override
+    public void glVertexAttribIFormat(int attribindex, int size, int type, int relativeoffset) {
+        org.lwjgl.opengles.GLES31.glVertexAttribIFormat(attribindex, size, type, relativeoffset);
+    }
+
+    @Override
+    public void glVertexAttribBinding(int attribindex, int bindingindex) {
+        org.lwjgl.opengles.GLES31.glVertexAttribBinding(attribindex, bindingindex);
+    }
+
+    @Override
+    public void glVertexBindingDivisor(int bindingindex, int divisor) {
+        org.lwjgl.opengles.GLES31.glVertexBindingDivisor(bindingindex, divisor);
     }
 
 }

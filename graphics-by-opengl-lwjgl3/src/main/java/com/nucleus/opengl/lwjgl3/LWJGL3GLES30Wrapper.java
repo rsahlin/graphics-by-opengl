@@ -1,4 +1,4 @@
-package com.nucleus.lwjgl3;
+package com.nucleus.opengl.lwjgl3;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -6,19 +6,35 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.common.BufferUtils;
-import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.GLES30Wrapper;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 
-public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
+/**
+ * Implementation of the LWJGL3 wrapper
+ * TODO - Shall this be made static since the underlying GL/GLES is static?
+ * It would simplify handling GLES2.0, 3.0, 3.1
+ *
+ */
+public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
+
+    protected LWJGL3GLES20Wrapper gles20;
 
     /**
-     * Implementaiton constructor - DO NOT USE
+     * Implementation constructor - DO NOT USE - fetch wrapper from {@link NucleusRenderer}
      * 
      * @param renderVersion If higher than GLES30, otherwise null
      */
-    protected LWJGL3GLES20Wrapper(Renderers version) {
+    public LWJGL3GLES30Wrapper(Renderers version) {
         super(Platform.GL, version);
+        gles20 = new LWJGL3GLES20Wrapper(version);
     }
+
+    /**
+     * ---------------------------------------------------
+     * GLES20 calls - just pass on to GLES20 wrapper unless simple oneliner
+     * ---------------------------------------------------
+     */
 
     @Override
     public void glAttachShader(int program, int shader) {
@@ -57,16 +73,12 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glGenBuffers(int[] buffers) {
-        IntBuffer ib = BufferUtils.createIntBuffer(buffers.length);
-        org.lwjgl.opengles.GLES20.glGenBuffers(ib);
-        LWJGLUtils.toArray((IntBuffer) ib.rewind(), buffers, 0);
+        gles20.glGenBuffers(buffers);
     }
 
     @Override
     public void glDeleteBuffers(int n, int[] buffers, int offset) {
-        IntBuffer ib = LWJGLUtils.toIntBuffer(buffers, buffers.length - offset, offset);
-        org.lwjgl.opengles.GLES20.glDeleteBuffers(ib);
-        LWJGLUtils.toArray(ib, buffers, offset);
+        gles20.glDeleteBuffers(n, buffers, offset);
     }
 
     @Override
@@ -76,13 +88,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glBufferData(int target, int size, Buffer data, int usage) {
-        if (data instanceof FloatBuffer) {
-            org.lwjgl.opengles.GLES20.glBufferData(target, (FloatBuffer) data, usage);
-        } else if (data instanceof ByteBuffer) {
-            org.lwjgl.opengles.GLES20.glBufferData(target, (ByteBuffer) data, usage);
-        } else {
-            throw new IllegalArgumentException("Not handled");
-        }
+        gles20.glBufferData(target, size, data, usage);
     }
 
     @Override
@@ -97,44 +103,19 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glGetProgramiv(int program, int pname, int[] params, int offset) {
-        IntBuffer v = BufferUtils.createIntBuffer(1);
-        org.lwjgl.opengles.GLES20.glGetProgramiv(program, pname, v);
-        v.position(0);
-        params[offset] = v.get();
+        gles20.glGetProgramiv(program, pname, params, offset);
     }
 
     @Override
     public void glGetActiveAttrib(int program, int index, int[] length, int lengthOffset, int[] size,
             int sizeOffset, int[] type, int typeOffset, byte[] name) {
-        IntBuffer lengthBuffer = BufferUtils.createIntBuffer(1);
-        IntBuffer sizeBuffer = BufferUtils.createIntBuffer(1);
-        IntBuffer typeBuffer = BufferUtils.createIntBuffer(1);
-        ByteBuffer nameBuffer = BufferUtils.createByteBuffer(name.length);
-        org.lwjgl.opengles.GLES20.glGetActiveAttrib(program, index, lengthBuffer, sizeBuffer, typeBuffer, nameBuffer);
-        lengthBuffer.position(0);
-        sizeBuffer.position(0);
-        typeBuffer.position(0);
-        length[lengthOffset] = lengthBuffer.get();
-        size[sizeOffset] = sizeBuffer.get();
-        type[typeOffset] = typeBuffer.get();
-        nameBuffer.get(name);
+        gles20.glGetActiveAttrib(program, index, length, lengthOffset, size, sizeOffset, type, typeOffset, name);
     }
 
     @Override
     public void glGetActiveUniform(int program, int index, int[] length, int lengthOffset, int[] size,
             int sizeOffset, int[] type, int typeOffset, byte[] name) {
-        IntBuffer lengthBuffer = BufferUtils.createIntBuffer(1);
-        IntBuffer sizeBuffer = BufferUtils.createIntBuffer(1);
-        IntBuffer typeBuffer = BufferUtils.createIntBuffer(1);
-        ByteBuffer nameBuffer = BufferUtils.createByteBuffer(name.length);
-        org.lwjgl.opengles.GLES20.glGetActiveUniform(program, index, lengthBuffer, sizeBuffer, typeBuffer, nameBuffer);
-        lengthBuffer.position(0);
-        sizeBuffer.position(0);
-        typeBuffer.position(0);
-        length[lengthOffset] = lengthBuffer.get();
-        size[sizeOffset] = sizeBuffer.get();
-        type[typeOffset] = typeBuffer.get();
-        nameBuffer.get(name);
+        gles20.glGetActiveUniform(program, index, length, lengthOffset, size, sizeOffset, type, typeOffset, name);
     }
 
     @Override
@@ -153,12 +134,12 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, ByteBuffer ptr) {
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, FloatBuffer ptr) {
         org.lwjgl.opengles.GLES20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
     }
 
     @Override
-    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, FloatBuffer ptr) {
+    public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, ByteBuffer ptr) {
         org.lwjgl.opengles.GLES20.glVertexAttribPointer(index, size, type, normalized, stride, ptr);
     }
 
@@ -254,9 +235,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glGenTextures(int[] textures) {
-        IntBuffer ib = BufferUtils.createIntBuffer(textures.length);
-        org.lwjgl.opengles.GLES20.glGenTextures(ib);
-        LWJGLUtils.toArray((IntBuffer) ib.rewind(), textures, 0);
+        gles20.glGenTextures(textures);
     }
 
     @Override
@@ -276,10 +255,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glGetIntegerv(int pname, int[] params) {
-        IntBuffer intBuffer = BufferUtils.createIntBuffer(params.length);
-        org.lwjgl.opengles.GLES20.glGetIntegerv(pname, intBuffer);
-        intBuffer.position(0);
-        intBuffer.get(params);
+        gles20.glGetIntegerv(pname, params);
     }
 
     @Override
@@ -407,10 +383,88 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     @Override
     public void glGetShaderSource(int shader, int bufsize, int[] length, byte[] source) {
-        ByteBuffer bufferSource = BufferUtils.createByteBuffer(bufsize);
-        org.lwjgl.opengles.GLES20.glGetShaderSource(shader, length, bufferSource);
-        bufferSource.position(0);
-        bufferSource.get(source, 0, length[0]);
+        gles20.glGetShaderSource(shader, bufsize, length, source);
+    }
+
+    /**
+     * 
+     * **************************************************************************************
+     * GLES30--------------------------------------------------------------------------------
+     * **************************************************************************************
+     * 
+     */
+
+    @Override
+    public void glSamplerParameteri(int sampler, int pname, int param) {
+        org.lwjgl.opengles.GLES30.glSamplerParameteri(sampler, pname, sampler);
+    }
+
+    @Override
+    public void glBindBufferBase(int target, int index, int buffer) {
+        org.lwjgl.opengles.GLES30.glBindBufferBase(target, index, buffer);
+    }
+
+    @Override
+    public void glUniformBlockBinding(int program, int uniformBlockIndex, int uniformBlockBinding) {
+        org.lwjgl.opengles.GLES30.glUniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding);
+    }
+
+    @Override
+    public void glBindBufferRange(int target, int index, int buffer, int ptroffset, int ptrsize) {
+        org.lwjgl.opengles.GLES30.glBindBufferRange(target, index, buffer, ptroffset, ptrsize);
+    }
+
+    @Override
+    public int glGetUniformBlockIndex(int program, String uniformBlockName) {
+        return org.lwjgl.opengles.GLES30.glGetUniformBlockIndex(program, uniformBlockName);
+    }
+
+    @Override
+    public void glGetActiveUniformBlockiv(int program, int uniformBlockIndex, int pname, IntBuffer buffer) {
+        org.lwjgl.opengles.GLES30.glGetActiveUniformBlockiv(program, uniformBlockIndex, pname, buffer);
+    }
+
+    @Override
+    public String glGetActiveUniformBlockName(int program, int uniformBlockIndex) {
+        return org.lwjgl.opengles.GLES30.glGetActiveUniformBlockName(program, uniformBlockIndex);
+    }
+
+    @Override
+    public void glGetActiveUniformsiv(int program, int uniformCount, int[] uniformIndices, int indicesOffset,
+            int pname, int[] params, int paramsOffset) {
+        IntBuffer indicesBuffer = BufferUtils.createIntBuffer(uniformCount);
+        indicesBuffer.put(uniformIndices, indicesOffset, uniformCount);
+        indicesBuffer.position(0);
+        IntBuffer paramsBuffer = BufferUtils.createIntBuffer(uniformCount);
+        org.lwjgl.opengles.GLES30.glGetActiveUniformsiv(program, indicesBuffer, pname, paramsBuffer);
+        paramsBuffer.position(0);
+        paramsBuffer.get(params, paramsOffset, uniformCount);
+
+    }
+
+    @Override
+    public ByteBuffer glMapBufferRange(int target, int offset, int length, int access) {
+        return org.lwjgl.opengles.GLES30.glMapBufferRange(target, offset, length, access);
+    }
+
+    @Override
+    public boolean glUnmapBuffer(int target) {
+        return org.lwjgl.opengles.GLES30.glUnmapBuffer(target);
+    }
+
+    @Override
+    public void glFlushMappedBufferRange(int target, int offset, int length) {
+        org.lwjgl.opengles.GLES30.glFlushMappedBufferRange(target, offset, length);
+    }
+
+    @Override
+    public void glDrawRangeElements(int mode, int start, int end, int count, int type, int offset) {
+        org.lwjgl.opengles.GLES30.glDrawRangeElements(mode, start, end, count, type, offset);
+    }
+
+    @Override
+    public void glTexStorage2D(int target, int levels, int internalformat, int width, int height) {
+        org.lwjgl.opengles.GLES30.glTexStorage2D(target, levels, internalformat, width, height);
     }
 
 }

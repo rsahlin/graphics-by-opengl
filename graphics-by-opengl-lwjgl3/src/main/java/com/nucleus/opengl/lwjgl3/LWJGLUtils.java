@@ -1,4 +1,4 @@
-package com.nucleus.lwjgl3;
+package com.nucleus.opengl.lwjgl3;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

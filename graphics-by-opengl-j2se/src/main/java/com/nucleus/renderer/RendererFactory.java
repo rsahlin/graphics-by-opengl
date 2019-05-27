@@ -1,6 +1,6 @@
 package com.nucleus.renderer;
 
-import com.nucleus.opengl.BaseRenderer;
+import com.nucleus.opengl.GLESBaseRenderer;
 import com.nucleus.opengl.GLES20Wrapper;
 
 /**
@@ -31,7 +31,8 @@ public class RendererFactory {
             case GLES30:
             case GLES31:
             case GLES32:
-                return new BaseRenderer((GLES20Wrapper) backend);
+                return new GLESBaseRenderer((GLES20Wrapper) backend);
+            case VULKAN11:
             default:
                 throw new IllegalArgumentException("Not implemented for " + backend.getVersion());
         }

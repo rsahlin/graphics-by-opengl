@@ -65,7 +65,7 @@ import com.nucleus.vecmath.Matrix;
  * This class does not create thread to drive rendering, that shall be done separately.
  * 
  */
-public class BaseRenderer implements NucleusRenderer {
+public class GLESBaseRenderer implements NucleusRenderer {
 
     public final static String NOT_INITIALIZED_ERROR = "Not initialized, must call init()";
 
@@ -103,7 +103,7 @@ public class BaseRenderer implements NucleusRenderer {
 
     protected GLES20Wrapper gles;
     private Set<RenderContextListener> contextListeners = new HashSet<RenderContextListener>();
-    private Set<FrameListener> frameListeners = new HashSet<BaseRenderer.FrameListener>();
+    private Set<FrameListener> frameListeners = new HashSet<GLESBaseRenderer.FrameListener>();
     protected int currentProgram = -1;
     protected Cullface cullFace;
     protected DrawMode forceMode = null;
@@ -133,7 +133,7 @@ public class BaseRenderer implements NucleusRenderer {
      * @param gles The gles wrapper
      * @throws IllegalArgumentException If gles is null
      */
-    public BaseRenderer(GLES20Wrapper gles) {
+    public GLESBaseRenderer(GLES20Wrapper gles) {
         if (gles == null) {
             throw new IllegalArgumentException(NULL_GLESWRAPPER_ERROR);
         }

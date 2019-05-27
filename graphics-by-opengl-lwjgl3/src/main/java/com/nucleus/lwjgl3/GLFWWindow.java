@@ -2,19 +2,13 @@ package com.nucleus.lwjgl3;
 
 import java.lang.reflect.Field;
 import java.util.Hashtable;
-import java.util.Objects;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallbackI;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallbackI;
 import org.lwjgl.glfw.GLFWScrollCallbackI;
-import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWWindowCloseCallbackI;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengles.GLES;
-import org.lwjgl.opengles.GLESCapabilities;
-import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryUtil;
 
 import com.nucleus.CoreApp;
@@ -31,15 +25,14 @@ import com.nucleus.renderer.SurfaceConfiguration;
  * 
  *
  */
-public class GLFWWindow extends J2SEWindow {
+public abstract class GLFWWindow extends J2SEWindow {
 
-    private static final int MAX_MOUSE_BUTTONS = 3;
+    protected static final int MAX_MOUSE_BUTTONS = 3;
     // The window handle
-    private long window;
-    private GLESCapabilities gles;
-    private int[] buttonActions = new int[MAX_MOUSE_BUTTONS];
-    private int[] cursorPosition = new int[2];
-    private Hashtable<Integer, Integer> GLFWKeycodes;
+    protected long window;
+    protected int[] buttonActions = new int[MAX_MOUSE_BUTTONS];
+    protected int[] cursorPosition = new int[2];
+    protected Hashtable<Integer, Integer> GLFWKeycodes;
 
     /**
      * 
@@ -53,7 +46,7 @@ public class GLFWWindow extends J2SEWindow {
         init(version, coreAppStarter, width, height);
     }
 
-    private void init(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
+    protected void init(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
         GLFWErrorCallback.createPrint().set();
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize glfw");
@@ -62,30 +55,29 @@ public class GLFWWindow extends J2SEWindow {
         GLFW.glfwDefaultWindowHints();
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
-
-        // GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
-        // GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GLES20.GL_TRUE);
-
-        // GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_CREATION_API, GLFW.GLFW_NATIVE_CONTEXT_API);
         GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
         GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 1);
-        // GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_API);
-        // GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API);
         GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, config.getSamples());
+
         window = GLFW.glfwCreateWindow(width, height, "", MemoryUtil.NULL, MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
-        long monitor = GLFW.glfwGetPrimaryMonitor();
 
-        GLFWVidMode vidmode = Objects.requireNonNull(GLFW.glfwGetVideoMode(monitor));
-        GLFW.glfwMakeContextCurrent(window);
+        initFW(window);
+        initInput();
 
-        Configuration.OPENGLES_EXPLICIT_INIT.set(true);
-        GLES.create(GL.getFunctionProvider());
-        gles = GLES.createCapabilities();
-        wrapper = LWJGLWrapperFactory.createWrapper(gles, null);
+    }
 
+    /**
+     * Initialises the glfw render framework, GLES/Vulkan etc
+     * GLFW is already initialized before calling this method and the window handle is created
+     * 
+     * @param GLFWWindow
+     */
+    protected abstract void initFW(long GLFWWindow);
+
+    protected void initInput() {
         /**
          * Fetch scancode for fields that start with VK_ and store keycodes in array to convert scancode to AWT values
          */
@@ -156,9 +148,10 @@ public class GLFWWindow extends J2SEWindow {
                 mouseWheelMoved((int) yoffset, System.currentTimeMillis());
             }
         });
+
     }
 
-    private Hashtable<Integer, Integer> getGLFWKeys() {
+    protected Hashtable<Integer, Integer> getGLFWKeys() {
         Hashtable<Integer, Integer> GLFWFields = new Hashtable<>();
         for (Field scanField : GLFW.class.getDeclaredFields()) {
             if (java.lang.reflect.Modifier.isStatic(scanField.getModifiers())) {
@@ -183,12 +176,6 @@ public class GLFWWindow extends J2SEWindow {
 
     @Override
     public void drawFrame() {
-        // This line is critical for LWJGL's interoperation with GLFW's
-        // OpenGL context, or any context that is managed externally.
-        // LWJGL detects the context that is current in the current thread,
-        // creates the GLCapabilities instance and makes the OpenGL
-        // bindings available for use.
-        GLES.setCapabilities(gles);
         coreApp.renderFrame();
         GLFW.glfwSwapBuffers(window); // swap the color buffers
         // Poll for window events. The key callback above will only be

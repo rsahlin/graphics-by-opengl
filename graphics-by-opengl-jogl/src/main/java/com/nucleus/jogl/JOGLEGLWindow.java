@@ -106,7 +106,7 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
 
             // EGL.eglCreateContext(eglDevice.getNativeDisplayID(), eglC, share_context, attrib_list)
 
-            wrapper = JOGLWrapperFactory.createWrapper(version, glContext);
+            backend = JOGLWrapperFactory.createWrapper(version, glContext);
         }
 
     }

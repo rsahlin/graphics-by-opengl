@@ -10,8 +10,6 @@ import com.nucleus.mmi.Pointer;
 import com.nucleus.mmi.Pointer.PointerAction;
 import com.nucleus.mmi.Pointer.Type;
 import com.nucleus.mmi.core.CoreInput;
-import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.renderer.Backend;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.SurfaceConfiguration;
@@ -27,7 +25,7 @@ public abstract class J2SEWindow implements WindowListener {
 
     protected CoreApp coreApp;
 
-    protected GLES20Wrapper wrapper;
+    protected Backend backend;
     protected CoreApp.CoreAppStarter coreAppStarter;
     protected int width;
     protected int height;
@@ -63,13 +61,13 @@ public abstract class J2SEWindow implements WindowListener {
     }
 
     /**
-     * Returns the {@link GLESWrapper} this must be created in subclasses
+     * Returns the Backend core wrapper, this must be created in subclasses
      * 
-     * @return The GLES wrapper or null if not created
+     * @return The Backend wrapper or null if not created
      * This may mean that the window has not been made visible.
      */
     public Backend getBackend() {
-        return wrapper;
+        return backend;
     }
 
     /**

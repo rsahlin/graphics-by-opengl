@@ -22,8 +22,9 @@ import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.Pointer.PointerAction;
 import com.nucleus.mmi.Pointer.Type;
-import com.nucleus.renderer.NucleusRenderer.Renderers;
+import com.nucleus.opengl.lwjgl3.LWJGLWrapperFactory;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 
 /**
@@ -89,7 +90,8 @@ public class JAWTWindow extends J2SEWindow
 
     @Override
     public void internalCreateCoreApp(int width, int height) {
-        wrapper = LWJGLWrapperFactory.createWrapper(GLES.createCapabilities(), null);
+        Renderers v = LWJGLWrapperFactory.getGLESVersion(GLES.createCapabilities());
+        backend = LWJGLWrapperFactory.createGLESWrapper(v);
         super.internalCreateCoreApp(width, height);
     }
 

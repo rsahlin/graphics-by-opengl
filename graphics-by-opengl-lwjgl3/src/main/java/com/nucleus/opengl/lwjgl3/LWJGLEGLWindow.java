@@ -1,4 +1,4 @@
-package com.nucleus.lwjgl3;
+package com.nucleus.opengl.lwjgl3;
 
 import java.lang.reflect.Field;
 import java.nio.IntBuffer;
@@ -24,9 +24,9 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.common.Environment;
 import com.nucleus.egl.EGLUtils;
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 
 public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
@@ -273,7 +273,7 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
 
     @Override
     public void internalCreateCoreApp(int width, int height) {
-        wrapper = LWJGLWrapperFactory.createWrapper(gles, version);
+        backend = LWJGLWrapperFactory.createGLESWrapper(LWJGLWrapperFactory.getGLESVersion(gles));
         super.internalCreateCoreApp(width, height);
     }
 

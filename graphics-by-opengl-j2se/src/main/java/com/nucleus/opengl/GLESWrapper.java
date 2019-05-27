@@ -14,6 +14,10 @@ import com.nucleus.renderer.Backend;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.RendererInfo;
 
+/**
+ * The GLES backend wrapper - all things related to common GLES functionality independent of version
+ *
+ */
 public abstract class GLESWrapper extends Backend {
 
     public enum Error {
