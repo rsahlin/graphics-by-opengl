@@ -1,10 +1,11 @@
-package com.nucleus.texturing;
+package com.nucleus.opengl;
 
 import com.nucleus.ErrorMessage;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.texturing.BufferImage.ColorModel;
 import com.nucleus.texturing.BufferImage.ImageFormat;
+import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.Texture2D.Type;
 

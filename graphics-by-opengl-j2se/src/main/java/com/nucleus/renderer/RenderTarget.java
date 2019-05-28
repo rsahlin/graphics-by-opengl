@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.common.Constants;
 import com.nucleus.io.BaseReference;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.Texture2D;
 
@@ -20,26 +19,26 @@ public class RenderTarget extends BaseReference {
     private static final String ATTACHEMENTS = "attachements";
 
     public enum Attachement {
-        COLOR(GLES20.GL_COLOR_ATTACHMENT0),
-        DEPTH(GLES20.GL_DEPTH_ATTACHMENT),
-        STENCIL(GLES20.GL_STENCIL_ATTACHMENT);
+        COLOR(0),
+        DEPTH(1),
+        STENCIL(2);
 
-        public final int value;
+        public final int index;
 
-        private Attachement(int value) {
-            this.value = value;
+        private Attachement(int index) {
+            this.index = index;
         }
     }
 
     public enum Target {
-        FRAMEBUFFER(GLES20.GL_FRAMEBUFFER),
-        RENDERBUFFER(GLES20.GL_RENDERBUFFER),
-        TEXTURE(GLES20.GL_TEXTURE);
+        FRAMEBUFFER(0),
+        RENDERBUFFER(1),
+        TEXTURE(2);
 
-        public final int target;
+        public final int index;
 
-        private Target(int target) {
-            this.target = target;
+        private Target(int index) {
+            this.index = index;
         }
 
     }

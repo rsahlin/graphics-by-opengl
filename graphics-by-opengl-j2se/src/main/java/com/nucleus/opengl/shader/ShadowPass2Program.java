@@ -16,7 +16,6 @@ import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureParameter.Name;
-import com.nucleus.texturing.TextureParameter.Param;
 import com.nucleus.texturing.TextureParameter.Parameter;
 import com.nucleus.texturing.TextureParameter.Target;
 import com.nucleus.texturing.TextureType;
@@ -75,8 +74,8 @@ public class ShadowPass2Program extends ShadowPassProgram {
         TextureParameter texParam = new TextureParameter(
                 new Parameter[] { Parameter.LINEAR, Parameter.LINEAR, Parameter.CLAMP, Parameter.CLAMP });
         ParameterData[] extra = new ParameterData[] {
-                new ParameterData(Target.TEXTURE_2D, Name.TEXTURE_COMPARE_MODE, Param.COMPARE_REF_TO_TEXTURE),
-                new ParameterData(Target.TEXTURE_2D, Name.TEXTURE_COMPARE_FUNC, Param.LESS) };
+                new ParameterData(Target.TEXTURE_2D, Name.TEXTURE_COMPARE_MODE, Parameter.COMPARE_REF_TO_TEXTURE),
+                new ParameterData(Target.TEXTURE_2D, Name.TEXTURE_COMPARE_FUNC, Parameter.LESS) };
         texParam.setParameterData(extra);
         shadow.set(texParam);
     }

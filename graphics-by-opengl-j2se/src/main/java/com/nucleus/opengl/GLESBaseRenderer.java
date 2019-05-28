@@ -22,6 +22,7 @@ import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.opengl.shader.ShadowPass1Program;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.renderer.Backend;
 import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.Configuration;
 import com.nucleus.renderer.NodeRenderer;
@@ -30,7 +31,9 @@ import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.RenderPass;
 import com.nucleus.renderer.RenderState;
+import com.nucleus.renderer.RenderState.ClearFunc;
 import com.nucleus.renderer.RenderState.Cullface;
+import com.nucleus.renderer.RenderState.DepthFunc;
 import com.nucleus.renderer.RenderTarget;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
@@ -54,7 +57,6 @@ import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureType;
-import com.nucleus.texturing.TextureUtils;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -72,6 +74,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
     protected final static String BASE_RENDERER_TAG = "BaseRenderer";
 
     private final static String NULL_GLESWRAPPER_ERROR = "GLES wrapper is null";
+    private final static String INVALID_WRAPPER_ERROR = "Render backend wrapper is not instance of GLES";
 
     private final static int FPS_SAMPLER_DELAY = 5;
 
@@ -128,17 +131,20 @@ public class GLESBaseRenderer implements NucleusRenderer {
     protected RenderState renderState = new RenderState();
 
     /**
-     * Creates a new renderer using the specified GLES20Wrapper
+     * Creates a new GLES based renderer
      * 
-     * @param gles The gles wrapper
-     * @throws IllegalArgumentException If gles is null
+     * @param backend The render backend wrapper, must be instance of GLESWrapper
+     * @throws IllegalArgumentException If gles is null or not instance of GLESWrapper
      */
-    public GLESBaseRenderer(GLES20Wrapper gles) {
-        if (gles == null) {
+    public GLESBaseRenderer(Backend backend) {
+        if (backend == null) {
             throw new IllegalArgumentException(NULL_GLESWRAPPER_ERROR);
         }
+        if (!(backend instanceof GLESWrapper)) {
+            throw new IllegalArgumentException(INVALID_WRAPPER_ERROR);
+        }
+        gles = (GLES20Wrapper) backend;
         gles.createInfo();
-        this.gles = gles;
         for (int i = 0; i < matrices.length; i++) {
             matrices[i] = Matrix.setIdentity(Matrix.createMatrix(), 0);
         }
@@ -222,15 +228,16 @@ public class GLESBaseRenderer implements NucleusRenderer {
             // Set GL values.
             if (state.getCullFace() != Cullface.NONE) {
                 gles.glEnable(GLES20.GL_CULL_FACE);
-                gles.glCullFace(state.getCullFace().value);
+                gles.glCullFace(gles.getCullFace(state.getCullFace()));
             } else {
                 gles.glDisable(GLES20.GL_CULL_FACE);
             }
         }
         if ((flags & RenderState.CHANGE_FLAG_DEPTH) != 0) {
-            if (state.getDepthFunc() != GLES20.GL_NONE) {
+            DepthFunc function = state.getDepthFunc();
+            if (state.getDepthFunc() != DepthFunc.NONE) {
                 gles.glEnable(GLES20.GL_DEPTH_TEST);
-                gles.glDepthFunc(state.getDepthFunc());
+                gles.glDepthFunc(gles.getDepthFunc(function));
                 gles.glDepthMask(true);
                 gles.glClearDepthf(state.getClearDepth());
                 gles.glDepthRangef(state.getDepthRangeNear(), state.getDepthRangeFar());
@@ -552,9 +559,9 @@ public class GLESBaseRenderer implements NucleusRenderer {
         }
         setupRenderTarget(renderPass.getTarget());
         // Clear buffer according to settings
-        int clearFunc = state.getClearFunction();
-        if (clearFunc != GLES20.GL_NONE) {
-            gles.glClear(clearFunc);
+        int clearFunc = state.getClearFlags();
+        if (clearFunc != ClearFunc.NONE.flag) {
+            gles.glClear(gles.getClearMask(clearFunc));
         }
         switch (renderPass.getPass()) {
             case SHADOW2:

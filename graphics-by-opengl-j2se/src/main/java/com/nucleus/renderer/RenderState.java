@@ -1,7 +1,6 @@
 package com.nucleus.renderer;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 
 /* Copyright 2017 Richard Sahlin
  *
@@ -27,33 +26,50 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 public class RenderState {
 
     public enum DepthFunc {
-        NONE(GLES20.GL_NONE),
-        NEVER(GLES20.GL_NEVER),
-        LESS(GLES20.GL_LESS),
-        EQUAL(GLES20.GL_EQUAL),
-        LEQUAL(GLES20.GL_LEQUAL),
-        GREATER(GLES20.GL_GREATER),
-        GEQUAL(GLES20.GL_GEQUAL),
-        ALWAYS(GLES20.GL_ALWAYS);
+        NONE(0),
+        NEVER(1),
+        LESS(2),
+        EQUAL(3),
+        LEQUAL(4),
+        GREATER(5),
+        GEQUAL(6),
+        ALWAYS(7);
 
-        public final int value;
+        public final int index;
 
-        private DepthFunc(int value) {
-            this.value = value;
+        private DepthFunc(int index) {
+            this.index = index;
         }
+
     }
 
     public enum Cullface {
-        NONE(GLES20.GL_NONE),
-        FRONT(GLES20.GL_FRONT),
-        BACK(GLES20.GL_BACK),
-        FRONTANDBACK(GLES20.GL_FRONT_AND_BACK);
+        NONE(0),
+        FRONT(1),
+        BACK(2),
+        FRONTANDBACK(3);
 
-        public final int value;
+        public final int index;
 
-        private Cullface(int value) {
-            this.value = value;
+        private Cullface(int index) {
+            this.index = index;
         }
+    }
+
+    public enum ClearFunc {
+        NONE(0, 1),
+        COLOR_BUFFER_BIT(1, 2),
+        DEPTH_BUFFER_BIT(2, 4),
+        STENCIL_BUFFER_BIT(3, 8);
+
+        public final int index;
+        public final int flag;
+
+        private ClearFunc(int index, int flag) {
+            this.index = index;
+            this.flag = flag;
+        }
+
     }
 
     public static final String MULTISAMPLING = "multisampling";
@@ -76,7 +92,7 @@ public class RenderState {
     public final static float DEFAULT_DEPTHRANGE_FAR = 5f;
     public final static float DEFAULT_CLEARDEPTH = DEFAULT_DEPTHRANGE_FAR;
     public final static Cullface DEFAULT_CULLFACE = Cullface.NONE;
-    public final static int DEFAULT_CLEARFLAG = GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT;
+    public final static int DEFAULT_CLEARFLAG = ClearFunc.COLOR_BUFFER_BIT.flag | ClearFunc.DEPTH_BUFFER_BIT.flag;
     public final static boolean DEFAULT_MULTISAMPLING = true;
 
     public final static int CHANGE_FLAG_ALL = -1; // Flag that all values should be updated
@@ -174,7 +190,7 @@ public class RenderState {
         cullFace = source.cullFace;
         clearFlags = source.clearFlags;
     }
-    
+
     /**
      * Enables or disables multisampling, to be disabled the surface must also support GLES_EXTENSIONS.MULTISAMPLE_EXT
      * This is checked before multisample is enabled/disable in the renderer.
@@ -235,21 +251,17 @@ public class RenderState {
      * 
      * @return Depth function.
      */
-    public int getDepthFunc() {
-        return depthFunc.value;
+    public DepthFunc getDepthFunc() {
+        return depthFunc;
     }
 
     /**
-     * Returns the flags that contol what buffers should be cleared between frames.
-     * ConstantValues.NONE for no clearing of buffers
-     * The following flags are ored together to enable clearing of multiple buffers.
-     * ConstantValues.DEPTH_BUFFER_BIT to clear depth buffer between frames.
-     * ConstantValues.COLOR_BUFFER_BIT to clear color buffer between frames.
-     * ConstantValues.STENCIL_BUFFER_BIT to clear stencil buffer between frames.
+     * Returns the flags that contol what buffers should be cleared between frames,
+     * this is the ored flag value from {@link ClearFunc}
      * 
      * @return Flags to control what buffer should be cleared between frames.
      */
-    public int getClearFunction() {
+    public int getClearFlags() {
         return clearFlags;
     }
 
@@ -384,17 +396,15 @@ public class RenderState {
      * 
      * @param clearFlags The flags for clear function in beginFrame() method of Renderer.
      * The following flags are ored together to enable clearing of multiple buffers.
-     * GLES20.DEPTH_BUFFER_BIT, GLES20.STENCIL_BUFFER_BIT,
-     * GLES20.COLOR_BUFFER_BIT or GLES20.GL_NONE
+     * DEPTH_BUFFER_BIT, STENCIL_BUFFER_BIT, COLOR_BUFFER_BIT or GL_NONE
      * @throws IllegalArgumentException If clearFlags is invalid.
      */
     public void setClearFunction(int clearFlags) {
-        if ((clearFlags ^ (clearFlags & (GLES20.GL_DEPTH_BUFFER_BIT |
-                GLES20.GL_STENCIL_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT))) != 0) {
+        if ((clearFlags ^ (clearFlags & (ClearFunc.DEPTH_BUFFER_BIT.flag | ClearFunc.NONE.flag |
+                ClearFunc.STENCIL_BUFFER_BIT.flag | ClearFunc.COLOR_BUFFER_BIT.flag))) != 0) {
             throw new IllegalArgumentException(INVALID_CLEARFLAG_STR);
         }
         this.clearFlags = clearFlags;
-
     }
 
 }

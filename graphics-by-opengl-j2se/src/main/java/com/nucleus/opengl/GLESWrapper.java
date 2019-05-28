@@ -12,7 +12,14 @@ import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 import com.nucleus.renderer.Backend;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
+import com.nucleus.renderer.RenderState.ClearFunc;
+import com.nucleus.renderer.RenderState.Cullface;
+import com.nucleus.renderer.RenderState.DepthFunc;
+import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RendererInfo;
+import com.nucleus.texturing.TextureParameter.Name;
+import com.nucleus.texturing.TextureParameter.Parameter;
+import com.nucleus.texturing.TextureParameter.Target;
 
 /**
  * The GLES backend wrapper - all things related to common GLES functionality independent of version
@@ -106,6 +113,47 @@ public abstract class GLESWrapper extends Backend {
         this.renderVersion = renderVersion;
         SimpleLogger.d(getClass(), "Created GLES wrapper " + renderVersion + " for platform " + platform);
     }
+
+    /**
+     * Must match the values in {@link DepthFunc}
+     */
+    protected final int[] depthFunc = new int[] { GLES20.GL_NONE, GLES20.GL_NEVER, GLES20.GL_LESS, GLES20.GL_EQUAL,
+            GLES20.GL_LEQUAL,
+            GLES20.GL_GREATER, GLES20.GL_GEQUAL, GLES20.GL_ALWAYS
+    };
+
+    /**
+     * Must match the values in {@link Attachement}
+     */
+    protected final int[] attachement = new int[] { GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_DEPTH_ATTACHMENT,
+            GLES20.GL_STENCIL_ATTACHMENT };
+
+    /**
+     * Must match the values in {@link Cullface}
+     */
+    protected final int[] cullFace = new int[] { GLES20.GL_NONE, GLES20.GL_FRONT, GLES20.GL_BACK,
+            GLES20.GL_FRONT_AND_BACK };
+
+    /**
+     * Must match values in {@link Parameter}
+     */
+    protected final int[] textureParameter = new int[] { GLES20.GL_NEAREST, GLES20.GL_LINEAR,
+            GLES20.GL_NEAREST_MIPMAP_NEAREST,
+            GLES20.GL_LINEAR_MIPMAP_NEAREST, GLES20.GL_NEAREST_MIPMAP_LINEAR, GLES20.GL_LINEAR_MIPMAP_LINEAR,
+            GLES20.GL_CLAMP_TO_EDGE, GLES20.GL_REPEAT, GLES20.GL_MIRRORED_REPEAT, GLES20.GL_LESS, GLES20.GL_LEQUAL,
+            GLES20.GL_GREATER,
+            GLES30.GL_COMPARE_REF_TO_TEXTURE
+    };
+
+    protected final int[] texturePName = new int[] { GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_TEXTURE_MAG_FILTER,
+            GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_TEXTURE_WRAP_T, GLES30.GL_TEXTURE_COMPARE_MODE,
+            GLES30.GL_TEXTURE_COMPARE_FUNC };
+
+    /**
+     * Must match values in {@link Target}
+     */
+    protected final int[] textureTarget = new int[] { GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_3D,
+            GLES30.GL_TEXTURE_2D_ARRAY, GLES30.GL_TEXTURE_CUBE_MAP };
 
     public abstract class GL10 {
 
@@ -1171,6 +1219,7 @@ public abstract class GLESWrapper extends Backend {
         private GLES_EXTENSION_TOKENS(int value) {
             this.value = value;
         }
+
     }
 
     /**
@@ -1308,7 +1357,7 @@ public abstract class GLESWrapper extends Backend {
     }
 
     /**
-     * Fetches the
+     * Fetches the GL drawmode
      * 
      * @param mode
      * @return
@@ -1332,6 +1381,69 @@ public abstract class GLESWrapper extends Backend {
             default:
                 throw new IllegalArgumentException("Not implemented for " + mode);
         }
+    }
+
+    /**
+     * Returns the GL value for the depth function
+     * 
+     * @param function
+     * @return The GL value for the depth function
+     */
+    public int getDepthFunc(DepthFunc function) {
+        return depthFunc[function.index];
+    }
+
+    /**
+     * Returns the GL value for the cullface
+     * 
+     * @param cull
+     * @return
+     */
+    public int getCullFace(Cullface cull) {
+        return cullFace[cull.index];
+    }
+
+    /**
+     * Returns the GL clear mask for the {@link ClearFunc} flags
+     * 
+     * @param flags RenderState clear flags
+     * @return GL clear mask for the clear flags
+     */
+    public int getClearMask(int flags) {
+        int mask = (flags & ClearFunc.COLOR_BUFFER_BIT.flag) != 0 ? GLES20.GL_COLOR_BUFFER_BIT : 0;
+        mask |= (flags & ClearFunc.STENCIL_BUFFER_BIT.flag) != 0 ? GLES20.GL_STENCIL_BUFFER_BIT : 0;
+        mask |= (flags & ClearFunc.DEPTH_BUFFER_BIT.flag) != 0 ? GLES20.GL_DEPTH_BUFFER_BIT : 0;
+        return mask;
+    }
+
+    /**
+     * Returns the GL value for the texture parameter
+     * 
+     * @param parameter The texture parameter
+     * @return GL value
+     */
+    public int getTextureParameter(Parameter parameter) {
+        return textureParameter[parameter.index];
+    }
+
+    /**
+     * Returns the GL value for the texture target
+     * 
+     * @param target The texture target
+     * @return GL value
+     */
+    public int getTextureTarget(Target target) {
+        return textureTarget[target.index];
+    }
+
+    /**
+     * Returns the GL value for the texture pname
+     * 
+     * @param name The texture parameter pname
+     * @return
+     */
+    public int getTexturePName(Name name) {
+        return texturePName[name.index];
     }
 
 }

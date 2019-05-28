@@ -22,6 +22,7 @@ import com.nucleus.opengl.BufferObjectsFactory;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.TextureUtils;
 import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.Backend;
@@ -55,7 +56,6 @@ import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureParameter.Parameter;
 import com.nucleus.texturing.TextureType;
-import com.nucleus.texturing.TextureUtils;
 
 /**
  * Loading and unloading assets, mainly textures - this is the main entrypoint for loading of textures and programs.
@@ -246,14 +246,14 @@ public class GLAssetManager implements Assets {
         }
         try {
             long start = System.currentTimeMillis();
-            program.createProgram(renderer.getGLES());
+            program.createProgram(renderer);
             FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, program.getClass().getSimpleName(),
                     start,
                     System.currentTimeMillis());
             programs.put(key, program);
             SimpleLogger.d(getClass(), "Stored shaderprogram with key: " + key);
             return program;
-        } catch (GLException e) {
+        } catch (RenderBackendException e) {
             throw new RuntimeException(e);
         }
     }

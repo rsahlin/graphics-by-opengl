@@ -1,7 +1,7 @@
 package com.nucleus.renderer;
 
+import com.nucleus.opengl.TextureUtils;
 import com.nucleus.renderer.Backend.DrawMode;
-import com.nucleus.texturing.TextureUtils;
 
 /**
  * Renderer configuration, this is the runtime configuration parameters.

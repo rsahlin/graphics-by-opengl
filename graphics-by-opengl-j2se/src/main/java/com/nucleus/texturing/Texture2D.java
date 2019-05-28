@@ -4,8 +4,6 @@ import com.google.gson.annotations.SerializedName;
 import com.nucleus.common.Constants;
 import com.nucleus.io.BaseReference;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.vecmath.Rectangle;
@@ -55,21 +53,6 @@ public class Texture2D extends BaseReference {
 
         private Format(int format, int internalFormat) {
             this.format = format;
-            this.internalFormat = internalFormat;
-        }
-    }
-
-    /**
-     * Internal GL formats, needed on GL 3 and up
-     */
-    public enum InternalFormat {
-        DEPTH_COMPONENT16(GLES20.GL_DEPTH_COMPONENT16),
-        DEPTH_COMPONENT24(GLES30.GL_DEPTH_COMPONENT24),
-        DEPTH_COMPONENT32F(GLES30.GL_DEPTH_COMPONENT32F);
-
-        public final int internalFormat;
-
-        private InternalFormat(int internalFormat) {
             this.internalFormat = internalFormat;
         }
     }

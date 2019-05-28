@@ -1,8 +1,6 @@
 package com.nucleus.texturing;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.GLESWrapper.GLES30;
 
 /**
  * Info for the texture parameters, GL MIN and MAG filter, S and T wrap modes.
@@ -26,37 +24,25 @@ public class TextureParameter {
             Parameter.NEAREST, Parameter.CLAMP,
             Parameter.CLAMP };
 
-    // TODO replace with Param
     public enum Parameter {
-        NEAREST(GLES20.GL_NEAREST),
-        LINEAR(GLES20.GL_LINEAR),
-        NEAREST_MIPMAP_NEAREST(GLES20.GL_NEAREST_MIPMAP_NEAREST),
-        LINEAR_MIPMAP_NEAREST(GLES20.GL_LINEAR_MIPMAP_NEAREST),
-        NEAREST_MIPMAP_LINEAR(GLES20.GL_NEAREST_MIPMAP_LINEAR),
-        LINEAR_MIPMAP_LINEAR(GLES20.GL_LINEAR_MIPMAP_LINEAR),
-        CLAMP(GLES20.GL_CLAMP_TO_EDGE),
-        REPEAT(GLES20.GL_REPEAT),
-        MIRRORED_REPEAT(GLES20.GL_MIRRORED_REPEAT);
+        NEAREST(0),
+        LINEAR(1),
+        NEAREST_MIPMAP_NEAREST(2),
+        LINEAR_MIPMAP_NEAREST(3),
+        NEAREST_MIPMAP_LINEAR(4),
+        LINEAR_MIPMAP_LINEAR(5),
+        CLAMP(6),
+        REPEAT(7),
+        MIRRORED_REPEAT(8),
+        LESS(9),
+        LEQUAL(10),
+        GREATER(11),
+        COMPARE_REF_TO_TEXTURE(12);
 
-        public final int value;
+        public final int index;
 
-        private Parameter(int value) {
-            this.value = value;
-        }
-
-        /**
-         * Returns the Parameter with matching gl value
-         * 
-         * @param value
-         * @return The Parameter with the value or null if no matching.
-         */
-        public static Parameter get(int value) {
-            for (Parameter p : Parameter.values()) {
-                if (p.value == value) {
-                    return p;
-                }
-            }
-            return null;
+        private Parameter(int index) {
+            this.index = index;
         }
 
         /**
@@ -72,15 +58,6 @@ public class TextureParameter {
          * Allowed texture wrap modes
          */
         public static final Parameter[] WRAPMODES = new Parameter[] { CLAMP, REPEAT, MIRRORED_REPEAT };
-
-        /**
-         * Returns the GL value for the texture parameter
-         * 
-         * @return
-         */
-        public int getValue() {
-            return value;
-        }
 
         /**
          * Returns an array with the texture UV wrap modes.
@@ -132,29 +109,28 @@ public class TextureParameter {
     }
 
     /**
-     * Valid targets, including 3.0 and 3.1 targets
-     * TODO - Should this class be split into one for gles 2.x and one for 3.x?
+     * Valid texture targets
      *
      */
     public enum Target {
-        TEXTURE_2D(GLES20.GL_TEXTURE_2D),
+        TEXTURE_2D(0),
         /**
          * GLES 3 target
          */
-        TEXTURE_3D(GLES30.GL_TEXTURE_3D),
+        TEXTURE_3D(1),
         /**
          * GLES 3 target
          */
-        TEXTURE_2D_ARRAY(GLES30.GL_TEXTURE_2D_ARRAY),
+        TEXTURE_2D_ARRAY(2),
         /**
          * GLES 3 target
          */
-        TEXTURE_CUBE_MAP(GLES30.GL_TEXTURE_CUBE_MAP);
+        TEXTURE_CUBE_MAP(3);
 
-        public final int target;
+        public final int index;
 
-        private Target(int target) {
-            this.target = target;
+        private Target(int index) {
+            this.index = index;
         }
 
     }
@@ -163,41 +139,18 @@ public class TextureParameter {
      * The pname variable in OpenGL
      */
     public enum Name {
-        MIN_FILTER(GLES20.GL_TEXTURE_MIN_FILTER),
-        MAG_FILTER(GLES20.GL_TEXTURE_MAG_FILTER),
-        WRAP_S(GLES20.GL_TEXTURE_WRAP_S),
-        WRAP_T(GLES20.GL_TEXTURE_WRAP_T),
-        TEXTURE_COMPARE_MODE(GLES30.GL_TEXTURE_COMPARE_MODE),
-        TEXTURE_COMPARE_FUNC(GLES30.GL_TEXTURE_COMPARE_FUNC);
+        MIN_FILTER(0),
+        MAG_FILTER(1),
+        WRAP_S(2),
+        WRAP_T(3),
+        TEXTURE_COMPARE_MODE(4),
+        TEXTURE_COMPARE_FUNC(5);
 
-        public final int name;
+        public final int index;
 
-        private Name(int name) {
-            this.name = name;
+        private Name(int index) {
+            this.index = index;
         }
-    }
-
-    public enum Param {
-        NEAREST(GLES20.GL_NEAREST),
-        LINEAR(GLES20.GL_LINEAR),
-        NEAREST_MIPMAP_NEAREST(GLES20.GL_NEAREST_MIPMAP_NEAREST),
-        LINEAR_MIPMAP_NEAREST(GLES20.GL_LINEAR_MIPMAP_NEAREST),
-        NEAREST_MIPMAP_LINEAR(GLES20.GL_NEAREST_MIPMAP_LINEAR),
-        LINEAR_MIPMAP_LINEAR(GLES20.GL_LINEAR_MIPMAP_LINEAR),
-        CLAMP(GLES20.GL_CLAMP_TO_EDGE),
-        REPEAT(GLES20.GL_REPEAT),
-        MIRRORED_REPEAT(GLES20.GL_MIRRORED_REPEAT),
-        LESS(GLES20.GL_LESS),
-        LEQUAL(GLES20.GL_LEQUAL),
-        GREATER(GLES20.GL_GREATER),
-        COMPARE_REF_TO_TEXTURE(GLES30.GL_COMPARE_REF_TO_TEXTURE);
-
-        public final int param;
-
-        private Param(int param) {
-            this.param = param;
-        }
-
     }
 
     /**

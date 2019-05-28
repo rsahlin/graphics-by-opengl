@@ -14,8 +14,8 @@ import com.nucleus.io.StreamUtils;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.opengl.shader.ShaderSource;
-import com.nucleus.opengl.shader.ShaderVariable;
 import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
+import com.nucleus.opengl.shader.ShaderVariable;
 import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
@@ -37,7 +37,6 @@ import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureParameter.Parameter;
-import com.nucleus.texturing.TextureUtils;
 
 /**
  * Abstraction for OpenGL GLES 2.X, this is used for platform independent usage of GLES functions.
@@ -835,15 +834,18 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     public void uploadTexParameters(TextureParameter texParameters) throws GLException {
         Parameter[] values = texParameters.getParameters();
         glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
-                values[TextureParameter.MIN_FILTER_INDEX].value);
+                getTextureParameter(values[TextureParameter.MIN_FILTER_INDEX]));
         glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
-                values[TextureParameter.MAG_FILTER_INDEX].value);
-        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, values[TextureParameter.WRAP_S_INDEX].value);
-        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, values[TextureParameter.WRAP_T_INDEX].value);
+                getTextureParameter(values[TextureParameter.MAG_FILTER_INDEX]));
+        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
+                getTextureParameter(values[TextureParameter.WRAP_S_INDEX]));
+        glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
+                getTextureParameter(values[TextureParameter.WRAP_T_INDEX]));
         ParameterData[] parameters = texParameters.getParameterData();
         if (parameters != null) {
             for (ParameterData data : parameters) {
-                glTexParameteri(data.target.target, data.name.name, data.param.param);
+                glTexParameteri(getTextureTarget(data.target), getTexturePName(data.name),
+                        getTextureParameter(data.param));
             }
         }
         GLUtils.handleError(this, "glTexParameteri ");
@@ -876,7 +878,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      */
     public void bindFramebufferTexture(Texture2D texture, int fbName, Attachement attachement) throws GLException {
         glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fbName);
-        glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, attachement.value, GLES20.GL_TEXTURE_2D,
+        glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, this.attachement[attachement.index], GLES20.GL_TEXTURE_2D,
                 texture.getName(), 0);
         GLUtils.handleError(this, "glFramebufferTexture");
         int status = glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER);

@@ -1,6 +1,7 @@
 package com.nucleus.texturing;
 
 import com.nucleus.io.ExternalReference;
+import com.nucleus.opengl.TextureUtils;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.Texture2D.Format;

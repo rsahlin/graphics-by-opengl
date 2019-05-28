@@ -2,7 +2,7 @@ package com.nucleus.texturing;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.texturing.TextureParameter.Name;
-import com.nucleus.texturing.TextureParameter.Param;
+import com.nucleus.texturing.TextureParameter.Parameter;
 import com.nucleus.texturing.TextureParameter.Target;
 
 /**
@@ -15,7 +15,7 @@ public class ParameterData {
     public final static String NAME = "name";
     public final static String PARAM = "param";
 
-    public ParameterData(Target target, Name name, Param param) {
+    public ParameterData(Target target, Name name, Parameter param) {
         this.target = target;
         this.name = name;
         this.param = param;
@@ -40,6 +40,6 @@ public class ParameterData {
      * Used for texture parameters other than min,mag filter, wrap s/t
      */
     @SerializedName(PARAM)
-    public Param param;
+    public Parameter param;
 
 }

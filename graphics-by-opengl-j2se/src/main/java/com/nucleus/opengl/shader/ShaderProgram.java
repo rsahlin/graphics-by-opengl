@@ -141,7 +141,7 @@ public abstract class ShaderProgram {
 
     /**
      * Read when shader source is created in {@link #createShaderSource(Renderers)}
-     * Subclasses may modify before {@link #createProgram(GLES20Wrapper)} is called - or before they call
+     * Subclasses may modify before {@link #createProgram(NucleusRenderer)} is called - or before they call
      * super.createProgram()
      */
     protected ShaderProgram.ProgramType shaders;
@@ -587,15 +587,15 @@ public abstract class ShaderProgram {
      * This method must be called before the program is used, or the other methods are called.
      * It will create the {@link #shaderSources} field, compile and link the shader sources specified.
      * 
-     * @param gles The GLES20 wrapper to use when compiling and linking program.
-     * @throws GLException If program could not be compiled and linked, possibly due to IOException
+     * @param renderer The render backend to use when compiling and linking program.
+     * @throws RenderBackendException If program could not be compiled and linked, possibly due to IOException
      */
-    public void createProgram(GLES20Wrapper gles) throws GLException {
+    public void createProgram(NucleusRenderer renderer) throws RenderBackendException {
         shaderSources = createShaderSource(GLES20Wrapper.getInfo().getRenderVersion());
         if (shaderSources == null) {
             throw new ShaderProgramException(MUST_SET_FIELDS);
         }
-        createProgram(gles, shaderSources);
+        createProgram(renderer.getGLES(), shaderSources);
     }
 
     /**
