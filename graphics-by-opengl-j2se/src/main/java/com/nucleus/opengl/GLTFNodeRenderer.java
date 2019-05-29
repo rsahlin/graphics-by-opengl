@@ -3,17 +3,16 @@ package com.nucleus.opengl;
 import java.nio.FloatBuffer;
 import java.util.ArrayDeque;
 
-import com.nucleus.assets.AssetManager;
+import com.nucleus.Backend.DrawMode;
+import com.nucleus.BackendException;
+import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
-import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.opengl.shader.ShaderVariable;
 import com.nucleus.profiling.FrameSampler;
-import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
-import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.RenderState;
 import com.nucleus.scene.GLTFNode;
 import com.nucleus.scene.gltf.Accessor;
@@ -57,7 +56,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
 
     @Override
     public boolean renderNode(NucleusRenderer renderer, GLTFNode node, Pass currentPass, float[][] matrices)
-            throws RenderBackendException {
+            throws BackendException {
         GLTF glTF = node.getGLTF();
         Scene scene = glTF.getDefaultScene();
         if (glTF == null) {
@@ -87,7 +86,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     }
 
     protected void renderScene(NucleusRenderer renderer, GLTF glTF, Scene scene, Pass currentPass, float[][] matrices)
-            throws RenderBackendException {
+            throws BackendException {
         // Traverse the nodes and render each.
         Node[] sceneNodes = scene.getNodes();
         if (sceneNodes != null) {
@@ -107,7 +106,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param matrices
      */
     protected void renderNode(NucleusRenderer renderer, GLTF glTF, Node node, float[][] matrices)
-            throws RenderBackendException {
+            throws BackendException {
         modelStack.push(matrices[Matrices.MODEL.index], 0);
         node.concatMatrix(matrices[Matrices.MODEL.index], 0);
         renderMesh(renderer, glTF, node.getMesh(), matrices);
@@ -125,10 +124,10 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param glTF
      * @param mesh
      * @param matrices
-     * @throws RenderBackendException
+     * @throws BackendException
      */
     protected void renderMesh(NucleusRenderer renderer, GLTF glTF, Mesh mesh, float[][] matrices)
-            throws RenderBackendException {
+            throws BackendException {
         if (mesh != null) {
             Primitive[] primitives = mesh.getPrimitives();
             if (primitives != null) {
@@ -147,10 +146,10 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param glTF
      * @param mesh
      * @param matrices
-     * @throws RenderBackendException
+     * @throws BackendException
      */
     protected void renderDebugMesh(NucleusRenderer renderer, GLTF glTF, Mesh mesh, float[][] matrices)
-            throws RenderBackendException {
+            throws BackendException {
         if (GLTF.debugTBN) {
             debugTBN(renderer, glTF, mesh, matrices);
         }
@@ -164,23 +163,23 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param program
      * @param primitive
      * @param matrices
-     * @throws RenderBackendException
+     * @throws BackendException
      */
     protected void renderPrimitive(NucleusRenderer renderer, GLTF glTF, Primitive primitive, float[][] matrices)
-            throws RenderBackendException {
+            throws BackendException {
         GLTFShaderProgram program = (GLTFShaderProgram) getProgram(renderer, primitive, currentPass);
         renderer.renderPrimitive(program, glTF, primitive, matrices);
     }
 
     private void debugTBN(NucleusRenderer renderer, GLTF gltf, Mesh mesh, float[][] matrices)
-            throws RenderBackendException {
+            throws BackendException {
         if (mesh != null) {
             GLES20Wrapper gles = renderer.getGLES();
             Primitive[] primitives = mesh.getDebugTBNPrimitives();
             if (primitives == null) {
                 primitives = mesh.createDebugTBNPrimitives(gles, mesh.getPrimitives());
             }
-            ShaderProgram debugProgram = AssetManager.getInstance().getProgram(renderer, mesh.getDebugTBNProgram());
+            GLShaderProgram debugProgram = renderer.getAssets().getProgram(renderer, mesh.getDebugTBNProgram());
             gles.glUseProgram(debugProgram.getProgram());
             // Set uniforms.
             ShaderVariable var = debugProgram.getUniformByName(Attributes._EMISSIVE.name());
@@ -217,7 +216,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param matrices
      */
     protected void renderNodes(NucleusRenderer renderer, GLTF glTF, Node[] children,
-            float[][] matrices) throws RenderBackendException {
+            float[][] matrices) throws BackendException {
         if (children != null && children.length > 0) {
             for (Node n : children) {
                 renderNode(renderer, glTF, n, matrices);
@@ -232,8 +231,8 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param pass The currently defined pass
      * @return
      */
-    protected ShaderProgram getProgram(NucleusRenderer renderer, Primitive primitive, Pass pass) {
-        ShaderProgram program = primitive.getProgram();
+    protected GLShaderProgram getProgram(NucleusRenderer renderer, Primitive primitive, Pass pass) {
+        GLShaderProgram program = primitive.getProgram();
         if (program == null) {
             throw new IllegalArgumentException("No program for primitive ");
         }

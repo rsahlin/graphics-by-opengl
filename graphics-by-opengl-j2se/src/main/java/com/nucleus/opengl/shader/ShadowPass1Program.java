@@ -17,7 +17,7 @@ public class ShadowPass1Program extends ShadowPassProgram {
 
     static class Shadow1Categorizer extends Categorizer {
 
-        public Shadow1Categorizer(Pass pass, ShaderProgram.Shading shading, String category) {
+        public Shadow1Categorizer(Pass pass, GLShaderProgram.Shading shading, String category) {
             super(pass, shading, category);
         }
 
@@ -39,7 +39,7 @@ public class ShadowPass1Program extends ShadowPassProgram {
      * @param categorizer
      * @param shaders
      */
-    public ShadowPass1Program(ShaderProgram objectProgram, Categorizer categorizer, ShaderProgram.ProgramType shaders) {
+    public ShadowPass1Program(GLShaderProgram objectProgram, Categorizer categorizer, GLShaderProgram.ProgramType shaders) {
         super(objectProgram, categorizer, shaders);
     }
 

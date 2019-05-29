@@ -6,12 +6,12 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 
-public abstract class ShadowPassProgram extends ShaderProgram {
+public abstract class ShadowPassProgram extends GLShaderProgram {
 
     /**
      * The program that should be used to render the object casting shadow
      */
-    protected ShaderProgram objectProgram;
+    protected GLShaderProgram objectProgram;
 
     /**
      * TODO Look into the shader programs using this constructor - maybe they can be unified?
@@ -20,14 +20,14 @@ public abstract class ShadowPassProgram extends ShaderProgram {
      * @param categorizer
      * @param shaders
      */
-    public ShadowPassProgram(ShaderProgram objectProgram, Categorizer categorizer, ShaderProgram.ProgramType shaders) {
+    public ShadowPassProgram(GLShaderProgram objectProgram, Categorizer categorizer, GLShaderProgram.ProgramType shaders) {
         super(categorizer, shaders);
         setIndexer(objectProgram.variableIndexer);
         this.objectProgram = objectProgram;
     }
 
     @Override
-    public ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, ShaderProgram.Shading shading) {
+    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, GLShaderProgram.Shading shading) {
         throw new IllegalArgumentException("Not valid");
     }
 

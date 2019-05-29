@@ -3,13 +3,15 @@ package com.nucleus.renderer;
 import java.nio.Buffer;
 import java.util.ArrayList;
 
+import com.nucleus.Backend.DrawMode;
+import com.nucleus.BackendException;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.ClientApplication;
+import com.nucleus.assets.Assets;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
-import com.nucleus.opengl.shader.ShaderProgram;
-import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
@@ -246,9 +248,9 @@ public interface NucleusRenderer {
      * This must be called by the thread driving rendering.
      * 
      * @param root The root node to render
-     * @throws RenderBackendException If there is a GL error when rendering.
+     * @throws BackendException If there is a GL error when rendering.
      */
-    public void render(RootNode root) throws RenderBackendException;
+    public void render(RootNode root) throws BackendException;
 
     /**
      * Signals the end of a frame - rendering is considered to be finished and implementations should call
@@ -270,9 +272,9 @@ public interface NucleusRenderer {
      * If node is drawn it will be added to {@link RootNode} list of rendered nodes.
      * 
      * @param node The node to be rendered
-     * @throws RenderBackendException If there is an error in GL while drawing this node.
+     * @throws BackendException If there is an error in GL while drawing this node.
      */
-    public void render(RenderableNode<?> node) throws RenderBackendException;
+    public void render(RenderableNode<?> node) throws BackendException;
 
     /**
      * Renders the mesh using the program and matrices
@@ -280,9 +282,9 @@ public interface NucleusRenderer {
      * @param program
      * @param mesh
      * @param matrices
-     * @throws RenderBackendException
+     * @throws BackendException
      */
-    public void renderMesh(ShaderProgram program, Mesh mesh, float[][] matrices) throws RenderBackendException;
+    public void renderMesh(GLShaderProgram program, Mesh mesh, float[][] matrices) throws BackendException;
 
     /**
      * Renders the GLTF primitive
@@ -291,10 +293,10 @@ public interface NucleusRenderer {
      * @param glTF
      * @param primitive
      * @param matrices
-     * @throws RenderBackendException
+     * @throws BackendException
      */
     public void renderPrimitive(GLTFShaderProgram program, GLTF glTF, Primitive primitive, float[][] matrices)
-            throws RenderBackendException;
+            throws BackendException;
 
     /**
      * Sets attrib pointers and draws indices or arrays - uniforms must be uploaded to GL before calling this method.
@@ -305,10 +307,10 @@ public interface NucleusRenderer {
      * @param attribs
      * @param accessors
      * @param mode
-     * @throws RenderBackendException
+     * @throws BackendException
      */
-    public void drawVertices(ShaderProgram program, Accessor indices, int vertexCount,
-            ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, DrawMode mode) throws RenderBackendException;
+    public void drawVertices(GLShaderProgram program, Accessor indices, int vertexCount,
+            ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, DrawMode mode) throws BackendException;
 
     /**
      * Returns true if this renderer has been initialized by calling init() when
@@ -412,22 +414,22 @@ public interface NucleusRenderer {
      * @param textureImages Array with one or more images to send to GL. If more than
      * one image is specified then multiple mip-map levels will be set.
      * Level 0 shall be at index 0
-     * @throws RenderBackendException If there is an error uploading the textures
+     * @throws BackendException If there is an error uploading the textures
      * @throws IllegalArgumentException If multiple mipmaps provided but texture min filter is not _MIPMAP_
      * @throws IllegalArgumentException If texture does not have a GL texture name
      */
-    public void uploadTextures(Texture2D texture, BufferImage[] textureImages) throws RenderBackendException;
+    public void uploadTextures(Texture2D texture, BufferImage[] textureImages) throws BackendException;
 
     /**
      * Uploads the image(s) to the texture, checks if mipmaps should be created.
      * 
      * @param image The glTF Image
      * @param true to generate mipmaps
-     * @throws RenderBackendException If there is an error uploading the textures
+     * @throws BackendException If there is an error uploading the textures
      * @throws IllegalArgumentException If multiple mipmaps provided but texture min filter is not _MIPMAP_
      * @throws IllegalArgumentException If texture does not have a GL texture name
      */
-    public void uploadTextures(Image image, boolean generateMipmaps) throws RenderBackendException;
+    public void uploadTextures(Image image, boolean generateMipmaps) throws BackendException;
 
     /**
      * Activates texturing, binds the texture and sets texture parameters
@@ -436,7 +438,7 @@ public interface NucleusRenderer {
      * @param texture
      * @param unit The texture unit number to use, 0 and up
      */
-    public void prepareTexture(Texture2D texture, int unit) throws RenderBackendException;
+    public void prepareTexture(Texture2D texture, int unit) throws BackendException;
 
     /**
      * Activates texturing, binds the texture and sets texture parameters
@@ -445,7 +447,7 @@ public interface NucleusRenderer {
      * @param texture Texture to prepare or null
      * @param unit The texture unit number to use, 0 and up
      */
-    public void prepareTexture(Texture texture, int unit) throws RenderBackendException;
+    public void prepareTexture(Texture texture, int unit) throws BackendException;
 
     /**
      * Enable the program
@@ -453,16 +455,16 @@ public interface NucleusRenderer {
      * @param program
      * @return true if program was changed, ie previously used a different program
      */
-    public boolean useProgram(ShaderProgram program) throws RenderBackendException;
+    public boolean useProgram(GLShaderProgram program) throws BackendException;
 
     /**
      * Creates storage for an (empty) texture
      * 
      * @param texture The texture to create storage for
      * @param target
-     * @throws RenderBackendException
+     * @throws BackendException
      */
-    public void createTexture(Texture2D texture, int target) throws RenderBackendException;
+    public void createTexture(Texture2D texture, int target) throws BackendException;
 
     /**
      * Deletes the textures
@@ -479,5 +481,13 @@ public interface NucleusRenderer {
      * @return
      */
     public BufferFactory getBufferFactory();
+
+    /**
+     * Returns the assets manager for the renderer, this shall be used to load/fetch resource such as textures and
+     * shaders
+     * 
+     * @return The assets manager for the renderer
+     */
+    public Assets getAssets();
 
 }

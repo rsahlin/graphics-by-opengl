@@ -8,9 +8,9 @@ import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
+import com.nucleus.Backend.DrawMode;
 import com.nucleus.common.Environment;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
-import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.scene.gltf.Accessor.ComponentType;
 import com.nucleus.scene.gltf.Accessor.Type;
 import com.nucleus.scene.gltf.BufferView.Target;

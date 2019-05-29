@@ -16,7 +16,7 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.geometry.GLMesh;
-import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.DefaultNodeRenderer;
 import com.nucleus.renderer.NodeRenderer;
@@ -68,7 +68,7 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
      * DO NOT WRITE TO THIS!
      */
     transient float[] modelMatrix = Matrix.createMatrix();
-    transient protected ShaderProgram program;
+    transient protected GLShaderProgram program;
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -151,12 +151,12 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
     }
 
     @Override
-    public ShaderProgram getProgram() {
+    public GLShaderProgram getProgram() {
         return program;
     }
 
     @Override
-    public void setProgram(ShaderProgram program) {
+    public void setProgram(GLShaderProgram program) {
         if (program == null) {
             throw new IllegalArgumentException(NULL_PROGRAM_STRING);
         }

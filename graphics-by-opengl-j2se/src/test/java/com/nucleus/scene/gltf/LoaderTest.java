@@ -7,28 +7,8 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 
 import org.junit.Assert;
-import org.junit.Test;
-
-import com.nucleus.assets.AssetManager;
-import com.nucleus.scene.gltf.GLTF.GLTFException;
 
 public class LoaderTest extends BaseTestCase {
-
-    @Test
-    public void loadglTFAssetBox() throws IOException, URISyntaxException, GLTFException {
-
-        // Use known scene to validate that values are not null
-        GLTF asset = AssetManager.getInstance().getGLTFAsset("Box/glTF/Box.gltf");
-
-        Assert.assertNotNull(asset);
-        checkAsset(asset.getAsset());
-        checkNode(asset.getNodes()[0]);
-        checkMesh(asset.getMeshes()[0]);
-        checkBuffer(asset, asset.getBuffer(0));
-        checkMaterial(asset.getMaterials()[0]);
-        checkAccessor(asset.getAccessor(0));
-
-    }
 
     protected void checkAccessor(Accessor accessor) {
         Assert.assertNotNull(accessor.getMax());

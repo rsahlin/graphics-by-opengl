@@ -7,12 +7,12 @@ import static com.nucleus.vecmath.Rectangle.INDEX_Y;
 
 import java.nio.ShortBuffer;
 
+import com.nucleus.Backend.DrawMode;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.ElementBuffer.Type;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.Window;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureParameter;

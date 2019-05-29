@@ -4,8 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.Backend.DrawMode;
+import com.nucleus.BackendException;
 import com.nucleus.SimpleLogger;
-import com.nucleus.assets.AssetManager;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Material;
@@ -14,13 +15,11 @@ import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLTFNodeRenderer;
+import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
-import com.nucleus.opengl.shader.ShaderProgram;
-import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
-import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.Material.ShadingMaps;
@@ -95,13 +94,13 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
             throws IOException, GLException {
         if (glTFName != null) {
             try {
-                glTF = AssetManager.getInstance()
+                glTF = renderer.getAssets()
                         .getGLTFAsset(getRootNode().getProperty(RootNodeImpl.GLTF_PATH, "") + glTFName);
-                AssetManager.getInstance().loadGLTFAssets(renderer, glTF);
+                renderer.getAssets().loadGLTFAssets(renderer, glTF);
                 setPass(Pass.ALL);
                 setState(State.ON);
                 createPrograms(glTF);
-            } catch (IOException | GLTFException | RenderBackendException e) {
+            } catch (IOException | GLTFException | BackendException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -114,12 +113,12 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
      * 
      * @param renderer
      * @param glTFName
-     * @throws RenderBackendException
+     * @throws BackendException
      */
-    public void deleteAsset(NucleusRenderer renderer) throws RenderBackendException {
+    public void deleteAsset(NucleusRenderer renderer) throws BackendException {
         if (glTF != null) {
 
-            AssetManager.getInstance().deleteGLTFAssets(renderer, glTF);
+            renderer.getAssets().deleteGLTFAssets(renderer, glTF);
             glTF = null;
             glTFName = null;
         } else {
@@ -156,12 +155,12 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     }
 
     @Override
-    public ShaderProgram getProgram() {
+    public GLShaderProgram getProgram() {
         return program;
     }
 
     @Override
-    public void setProgram(ShaderProgram program) {
+    public void setProgram(GLShaderProgram program) {
         this.program = program;
     }
 
@@ -202,7 +201,7 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
                 for (Primitive p : m.getPrimitives()) {
                     GLTFShaderProgram program = createProgram(p);
                     p.setProgram(
-                            (GLTFShaderProgram) AssetManager.getInstance().getProgram(renderer, program));
+                            (GLTFShaderProgram) renderer.getAssets().getProgram(renderer, program));
                 }
             }
         }
@@ -232,7 +231,7 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     }
 
     @Override
-    public ShaderProgram createProgram() {
+    public GLShaderProgram createProgram() {
         return null;
     }
 

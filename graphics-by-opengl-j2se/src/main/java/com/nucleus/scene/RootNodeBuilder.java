@@ -3,8 +3,8 @@ package com.nucleus.scene;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
+import com.nucleus.Backend.DrawMode;
 import com.nucleus.SimpleLogger;
-import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
@@ -14,9 +14,8 @@ import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.geometry.GLMesh;
-import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.TranslateProgram;
-import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
@@ -71,11 +70,11 @@ public class RootNodeBuilder {
         RootNode root = newInstance(NUCLEUS_SCENE, "splashroot");
         NodeBuilder<Node> builder = new NodeBuilder<>();
         builder.setRoot(root);
-        TranslateProgram vt = (TranslateProgram) AssetManager.getInstance().getProgram(renderer,
-                new TranslateProgram(ShaderProgram.Shading.textured));
+        TranslateProgram vt = (TranslateProgram) renderer.getAssets().getProgram(renderer,
+                new TranslateProgram(GLShaderProgram.Shading.textured));
         builder.setProgram(vt);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
-        Texture2D texture = AssetManager.getInstance().getTexture(renderer,
+        Texture2D texture = renderer.getAssets().getTexture(renderer,
                 BaseImageFactory.getInstance(), "texture",
                 new ExternalReference(splashImage), splashResolution, texParam, 1);
         MeshBuilder<Mesh> meshBuilder = new GLMesh.Builder<>(renderer);

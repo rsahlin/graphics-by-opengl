@@ -13,7 +13,7 @@ import com.nucleus.shader.Indexer;
  * Program for rendering lines and similar.
  *
  */
-public class LineProgram extends ShaderProgram {
+public class LineProgram extends GLShaderProgram {
 
     public static class LineProgramIndexer extends VariableIndexer {
 
@@ -34,8 +34,8 @@ public class LineProgram extends ShaderProgram {
 
     public static final String CATEGORY = "line";
 
-    public LineProgram(ShaderProgram.Shading shading) {
-        super(null, shading, CATEGORY, ShaderProgram.ProgramType.VERTEX_FRAGMENT);
+    public LineProgram(GLShaderProgram.Shading shading) {
+        super(null, shading, CATEGORY, GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new LineProgramIndexer());
     }
 
@@ -48,7 +48,7 @@ public class LineProgram extends ShaderProgram {
     }
 
     @Override
-    public ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, ShaderProgram.Shading shading) {
+    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, GLShaderProgram.Shading shading) {
         switch (pass) {
             case UNDEFINED:
             case ALL:

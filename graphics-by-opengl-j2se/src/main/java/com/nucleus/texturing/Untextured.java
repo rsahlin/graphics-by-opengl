@@ -1,7 +1,7 @@
 package com.nucleus.texturing;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.opengl.shader.GLShaderProgram;
 
 /**
  * For untextured objects, can define a shading which corresponds to the untextured program to use.
@@ -12,7 +12,7 @@ import com.nucleus.opengl.shader.ShaderProgram;
 public class Untextured extends Texture2D {
 
     @SerializedName("shading")
-    private ShaderProgram.Shading shading;
+    private GLShaderProgram.Shading shading;
 
     protected Untextured() {
         super();
@@ -37,7 +37,7 @@ public class Untextured extends Texture2D {
      * 
      * @return
      */
-    public ShaderProgram.Shading getShading() {
+    public GLShaderProgram.Shading getShading() {
         return shading;
     }
 

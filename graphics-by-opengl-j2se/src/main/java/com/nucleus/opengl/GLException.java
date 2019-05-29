@@ -3,8 +3,8 @@ package com.nucleus.opengl;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.nucleus.BackendException;
 import com.nucleus.opengl.GLESWrapper.Error;
-import com.nucleus.renderer.RenderBackendException;
 
 /**
  * An exception for GL / GLES error codes, since GL and GLES are based on C APIs there is no support for Exceptions
@@ -14,7 +14,7 @@ import com.nucleus.renderer.RenderBackendException;
  * @author Richard Sahlin
  *
  */
-public class GLException extends RenderBackendException {
+public class GLException extends BackendException {
 
     /**
      * One or more error codes from OpenGL/ES

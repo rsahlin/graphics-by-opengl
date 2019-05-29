@@ -7,8 +7,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.nucleus.Backend;
+import com.nucleus.Backend.DrawMode;
+import com.nucleus.BackendException;
 import com.nucleus.SimpleLogger;
-import com.nucleus.assets.AssetManager;
+import com.nucleus.assets.Assets;
 import com.nucleus.common.Constants;
 import com.nucleus.common.Environment;
 import com.nucleus.geometry.AttributeBuffer;
@@ -18,18 +21,16 @@ import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES_EXTENSION_TOKENS;
+import com.nucleus.opengl.assets.GLAssetManager;
+import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
-import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.opengl.shader.ShadowPass1Program;
 import com.nucleus.profiling.FrameSampler;
-import com.nucleus.renderer.Backend;
-import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.BufferFactory;
 import com.nucleus.renderer.Configuration;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
-import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.RenderPass;
 import com.nucleus.renderer.RenderState;
 import com.nucleus.renderer.RenderState.ClearFunc;
@@ -107,6 +108,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
 
     protected GLES20Wrapper gles;
     protected BufferFactory bufferFactory;
+    protected Assets assetManager;
     private Set<RenderContextListener> contextListeners = new HashSet<RenderContextListener>();
     private Set<FrameListener> frameListeners = new HashSet<GLESBaseRenderer.FrameListener>();
     protected int currentProgram = -1;
@@ -148,6 +150,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
         gles = (GLES20Wrapper) backend;
         gles.createInfo();
         bufferFactory = new GLESBufferFactory(gles);
+        assetManager = new GLAssetManager(backend);
         for (int i = 0; i < matrices.length; i++) {
             matrices[i] = Matrix.setIdentity(Matrix.createMatrix(), 0);
         }
@@ -218,9 +221,9 @@ public class GLESBaseRenderer implements NucleusRenderer {
      * Internal method to apply the rendersettings.
      * 
      * @param state
-     * @throws RenderBackendException
+     * @throws BackendException
      */
-    private void setRenderState(RenderState state) throws RenderBackendException {
+    private void setRenderState(RenderState state) throws BackendException {
         renderState.set(state);
         int flags = state.getChangeFlag();
         if ((flags & RenderState.CHANGE_FLAG_CLEARCOLOR) != 0) {
@@ -273,7 +276,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void render(RenderableNode<?> node) throws RenderBackendException {
+    public void render(RenderableNode<?> node) throws BackendException {
         forceMode = Configuration.getInstance().getGLTFMode();
         Pass pass = node.getPass();
         if (pass != null && (currentPass.getFlags() & pass.getFlags()) != 0) {
@@ -311,9 +314,9 @@ public class GLESBaseRenderer implements NucleusRenderer {
      * Will recursively render child nodes.
      * 
      * @param node
-     * @throws RenderBackendException
+     * @throws BackendException
      */
-    private void internalRender(RenderableNode<?> node) throws RenderBackendException {
+    private void internalRender(RenderableNode<?> node) throws BackendException {
         float[] nodeMatrix = node.concatModelMatrix(this.modelMatrix);
         // Fetch projection just before render
         float[] projection = node.getProjection(currentPass);
@@ -345,7 +348,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
         }
     }
 
-    private void setupRenderTarget(RenderTarget target) throws RenderBackendException {
+    private void setupRenderTarget(RenderTarget target) throws BackendException {
         boolean init = false;
         if (target.getFramebufferName() == Constants.NO_VALUE && target.getAttachements() != null) {
             createBuffers(target);
@@ -396,7 +399,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
      * 
      * @param target
      */
-    private void bindTextureFramebuffer(RenderTarget target) throws RenderBackendException {
+    private void bindTextureFramebuffer(RenderTarget target) throws BackendException {
         // Loop through all attachments and setup, if not defined in rendertarget then disable
         for (Attachement a : Attachement.values()) {
             bindTextureFramebuffer(target, a);
@@ -408,9 +411,9 @@ public class GLESBaseRenderer implements NucleusRenderer {
      * 
      * @param target
      * @param attachement
-     * @throws RenderBackendException
+     * @throws BackendException
      */
-    private void bindTextureFramebuffer(RenderTarget target, Attachement attachement) throws RenderBackendException {
+    private void bindTextureFramebuffer(RenderTarget target, Attachement attachement) throws BackendException {
         AttachementData ad = target.getAttachement(attachement);
         if (ad == null) {
             disable(attachement);
@@ -423,7 +426,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
         }
     }
 
-    private void disable(Attachement attachement) throws RenderBackendException {
+    private void disable(Attachement attachement) throws BackendException {
         switch (attachement) {
             case COLOR:
                 gles.glColorMask(false, false, false, false);
@@ -441,7 +444,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
         GLUtils.handleError(gles, "glDisable " + attachement);
     }
 
-    private void enable(Attachement attachement) throws RenderBackendException {
+    private void enable(Attachement attachement) throws BackendException {
         switch (attachement) {
             case COLOR:
                 gles.glColorMask(true, true, true, true);
@@ -468,7 +471,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
      * 
      * @param target
      */
-    private void createBuffers(RenderTarget target) throws RenderBackendException {
+    private void createBuffers(RenderTarget target) throws BackendException {
         ArrayList<AttachementData> attachements = target.getAttachements();
         if (attachements == null) {
             // No attachements - what does this mean?
@@ -497,7 +500,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
      * 
      * @param target Null target or target with empty/null attachements
      */
-    private void bindFramebuffer(RenderTarget target) throws RenderBackendException {
+    private void bindFramebuffer(RenderTarget target) throws BackendException {
         if (target == null || target.getAttachements() == null || target.getAttachements().size() == 0) {
             // Bind default windowbuffer
             gles.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
@@ -514,10 +517,10 @@ public class GLESBaseRenderer implements NucleusRenderer {
      * 
      * @param renderTarget
      * @param attachementData
-     * @throws RenderBackendException
+     * @throws BackendException
      */
     private void createAttachementBuffer(RenderTarget renderTarget, AttachementData attachementData)
-            throws RenderBackendException {
+            throws BackendException {
         switch (renderTarget.getTarget()) {
             case TEXTURE:
                 attachementData.setTexture(createTexture(renderTarget, attachementData));
@@ -540,14 +543,14 @@ public class GLESBaseRenderer implements NucleusRenderer {
      * @param renderTarget
      * @param attachementData
      * @return Texture object name
-     * @throws RenderBackendException
+     * @throws BackendException
      */
     private Texture2D createTexture(RenderTarget renderTarget, AttachementData attachementData)
-            throws RenderBackendException {
-        return AssetManager.getInstance().createTexture(this, renderTarget, attachementData);
+            throws BackendException {
+        return getAssets().createTexture(this, renderTarget, attachementData);
     }
 
-    private void setRenderPass(RenderPass renderPass) throws RenderBackendException {
+    private void setRenderPass(RenderPass renderPass) throws BackendException {
         // First set state so that rendertargets can override enable/disable writing to buffers
         if (renderPass.getPass() == null || renderPass.getTarget() == null) {
             throw new IllegalArgumentException(
@@ -631,7 +634,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void render(RootNode root) throws RenderBackendException {
+    public void render(RootNode root) throws BackendException {
         long start = System.currentTimeMillis();
         List<Node> scene = root.getChildren();
         if (scene != null) {
@@ -679,7 +682,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
 
     @Override
     public void uploadTextures(Texture2D texture, BufferImage[] textureImages)
-            throws RenderBackendException {
+            throws BackendException {
         if (texture.getName() <= 0) {
             throw new IllegalArgumentException("No texture name for texture " + texture.getId());
         }
@@ -717,7 +720,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
 
     @Override
     public void uploadTextures(Image image, boolean generateMipmaps)
-            throws RenderBackendException {
+            throws BackendException {
         if (image.getTextureName() <= 0) {
             throw new IllegalArgumentException("No texture name for texture " + image.getUri());
         }
@@ -736,14 +739,14 @@ public class GLESBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void prepareTexture(Texture2D texture, int unit) throws RenderBackendException {
+    public void prepareTexture(Texture2D texture, int unit) throws BackendException {
         if (texture != null && texture.textureType != TextureType.Untextured) {
             gles.glActiveTexture(GLES20.GL_TEXTURE0 + unit);
             int textureID = texture.getName();
             if (textureID == Constants.NO_VALUE && texture.getExternalReference().isIdReference()) {
                 // Texture has no texture object - and is id reference
                 // Should only be used for dynamic textures, eg ones that depend on define in existing node
-                AssetManager.getInstance().getIdReference(texture);
+                getAssets().getIdReference(texture);
                 textureID = texture.getName();
                 gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
                 gles.uploadTexParameters(texture.getTexParams());
@@ -757,7 +760,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void prepareTexture(Texture texture, int unit) throws RenderBackendException {
+    public void prepareTexture(Texture texture, int unit) throws BackendException {
         if (texture != null) {
             gles.glActiveTexture(GLES20.GL_TEXTURE0 + unit);
             int textureID = texture.getImage().getTextureName();
@@ -775,7 +778,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public boolean useProgram(ShaderProgram program) throws RenderBackendException {
+    public boolean useProgram(GLShaderProgram program) throws BackendException {
         if (currentProgram != program.getProgram()) {
             currentProgram = program.getProgram();
             gles.glUseProgram(currentProgram);
@@ -790,7 +793,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void renderMesh(ShaderProgram program, Mesh mesh, float[][] matrices) throws RenderBackendException {
+    public void renderMesh(GLShaderProgram program, Mesh mesh, float[][] matrices) throws BackendException {
         Material material = mesh.getMaterial();
         program.setUniformMatrices(matrices);
         program.updateUniformData(program.getUniformData());
@@ -828,7 +831,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
 
     @Override
     public void renderPrimitive(GLTFShaderProgram program, GLTF glTF, Primitive primitive, float[][] matrices)
-            throws RenderBackendException {
+            throws BackendException {
         if (useProgram(program)) {
             program.updateEnvironmentUniforms(gles, glTF.getDefaultScene());
         }
@@ -866,8 +869,8 @@ public class GLESBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void drawVertices(ShaderProgram program, Accessor indices, int vertexCount,
-            ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, DrawMode mode) throws RenderBackendException {
+    public void drawVertices(GLShaderProgram program, Accessor indices, int vertexCount,
+            ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, DrawMode mode) throws BackendException {
         gles.glVertexAttribPointer(program, attribs, accessors);
         GLUtils.handleError(gles, "glVertexAttribPointer");
         int modeValue = gles.getDrawMode(mode);
@@ -897,7 +900,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void createTexture(Texture2D texture, int target) throws RenderBackendException {
+    public void createTexture(Texture2D texture, int target) throws BackendException {
         getGLES().glBindTexture(target, texture.getName());
         getGLES().texImage(texture);
         GLUtils.handleError(getGLES(), "glTexImage2D");
@@ -918,6 +921,11 @@ public class GLESBaseRenderer implements NucleusRenderer {
     @Override
     public BufferFactory getBufferFactory() {
         return bufferFactory;
+    }
+
+    @Override
+    public Assets getAssets() {
+        return assetManager;
     }
 
 }

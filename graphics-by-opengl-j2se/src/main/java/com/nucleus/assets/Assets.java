@@ -2,10 +2,10 @@ package com.nucleus.assets;
 
 import java.io.IOException;
 
+import com.nucleus.BackendException;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.RenderTarget;
 import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
@@ -42,9 +42,9 @@ public interface Assets {
      * @param renderer
      * @param glTF
      * @throws IOException If there is an error reading binary buffers or images
-     * @throws RenderBackendException If there is an error creating textures, objects or programs
+     * @throws BackendException If there is an error creating textures, objects or programs
      */
-    public void loadGLTFAssets(NucleusRenderer renderer, GLTF glTF) throws IOException, RenderBackendException;
+    public void loadGLTFAssets(NucleusRenderer renderer, GLTF glTF) throws IOException, BackendException;
 
     /**
      * Returns the texture, if the texture has not been loaded it will be and stored in the assetmanager
@@ -100,10 +100,10 @@ public interface Assets {
      * @param renderTarget The rendertarget that this texture is to be used for
      * @param attachement The attachement point for the texture
      * @return The texture2D object
-     * @throws RenderBackendException If there is an error creating the texture
+     * @throws BackendException If there is an error creating the texture
      */
     public Texture2D createTexture(NucleusRenderer renderer, RenderTarget renderTarget, AttachementData attachement)
-            throws RenderBackendException;
+            throws BackendException;
 
     /**
      * If the reference texture is id reference and the reference is registered then the texture data is copied into
@@ -126,7 +126,7 @@ public interface Assets {
      * or linking the program.
      * @throws RuntimeException If the program could not be compiled or linked
      */
-    public ShaderProgram getProgram(NucleusRenderer renderer, ShaderProgram program);
+    public GLShaderProgram getProgram(NucleusRenderer renderer, GLShaderProgram program);
 
     /**
      * Deletes loaded gltf assets. This will delete binary buffers and texture images and then remove
@@ -136,9 +136,9 @@ public interface Assets {
      * 
      * @param renderer
      * @param gltf
-     * @throws RenderBackendException If there is an error deleting resources
+     * @throws BackendException If there is an error deleting resources
      */
-    public void deleteGLTFAssets(NucleusRenderer renderer, GLTF gltf) throws RenderBackendException;
+    public void deleteGLTFAssets(NucleusRenderer renderer, GLTF gltf) throws BackendException;
 
     /**
      * Teardown and claenup all assets, removes all references and resources, call when the program is exiting.

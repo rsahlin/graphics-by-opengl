@@ -2,7 +2,8 @@ package com.nucleus.opengl.geometry;
 
 import java.io.IOException;
 
-import com.nucleus.assets.AssetManager;
+import com.nucleus.Backend.DrawMode;
+import com.nucleus.BackendException;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.ElementBuffer.Type;
@@ -11,11 +12,9 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.TranslateProgram;
-import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
@@ -100,7 +99,7 @@ public class GLMesh extends Mesh {
         }
 
         @Override
-        public void create(RenderableNode<Mesh> parent) throws IOException, RenderBackendException {
+        public void create(RenderableNode<Mesh> parent) throws IOException, BackendException {
             if (parent == null) {
                 throw new IllegalArgumentException("Parent node may not be null when creating mesh");
             }
@@ -108,7 +107,7 @@ public class GLMesh extends Mesh {
         }
 
         @Override
-        public T create() throws IOException, RenderBackendException {
+        public T create() throws IOException, BackendException {
             validate();
             T mesh = (T) createInstance();
             mesh.createMesh(texture, attributesPerVertex, material, vertexCount, indiceCount, mode);
@@ -122,11 +121,11 @@ public class GLMesh extends Mesh {
         }
 
         @Override
-        public ShaderProgram createProgram() {
+        public GLShaderProgram createProgram() {
             // Default is to create a translate program, this will use an indexer so that creating 2D objects is
             // possible.
             // this is used mainly for ui elements
-            return AssetManager.getInstance().getProgram(renderer, new TranslateProgram(texture));
+            return renderer.getAssets().getProgram(renderer, new TranslateProgram(texture));
         }
 
         @Override
@@ -136,7 +135,7 @@ public class GLMesh extends Mesh {
 
         @Override
         public Builder<T> setTexture(ExternalReference textureRef) throws IOException {
-            this.texture = AssetManager.getInstance().getTexture(renderer, BaseImageFactory.getInstance(),
+            this.texture = renderer.getAssets().getTexture(renderer, BaseImageFactory.getInstance(),
                     textureRef);
             return this;
         }
@@ -240,7 +239,7 @@ public class GLMesh extends Mesh {
      * @return
      */
     public static Builder<Mesh> createBuilder(NucleusRenderer renderer, int maxVerticeCount, Material material,
-            ShaderProgram program, Texture2D texture, ShapeBuilder shapeBuilder, DrawMode mode) {
+            GLShaderProgram program, Texture2D texture, ShapeBuilder shapeBuilder, DrawMode mode) {
         GLMesh.Builder<Mesh> builder = new GLMesh.Builder<Mesh>(renderer);
         builder.setTexture(texture);
         builder.setMaterial(material);

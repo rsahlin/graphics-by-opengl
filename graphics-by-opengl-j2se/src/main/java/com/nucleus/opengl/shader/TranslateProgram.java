@@ -15,7 +15,7 @@ import com.nucleus.texturing.TextureType;
  * Can be used to draw objects that cannot be independently rotated or scaled, for instance a quad, but it can
  * be positioned using the translate variable.
  */
-public class TranslateProgram extends ShaderProgram {
+public class TranslateProgram extends GLShaderProgram {
 
     public static class TranslateProgramIndexer extends VariableIndexer {
         protected final static String[] NAMES = new String[] { Indexer.Property.VERTEX.name,
@@ -35,19 +35,19 @@ public class TranslateProgram extends ShaderProgram {
 
     public TranslateProgram(Texture2D texture) {
         super(new SharedfragmentCategorizer(null,
-                (texture == null || texture.textureType == TextureType.Untextured) ? ShaderProgram.Shading.flat
-                        : ShaderProgram.Shading.textured,
-                "translate"), ShaderProgram.ProgramType.VERTEX_FRAGMENT);
+                (texture == null || texture.textureType == TextureType.Untextured) ? GLShaderProgram.Shading.flat
+                        : GLShaderProgram.Shading.textured,
+                "translate"), GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
     }
 
-    public TranslateProgram(ShaderProgram.Shading shading) {
-        super(new SharedfragmentCategorizer(null, shading, "translate"), ShaderProgram.ProgramType.VERTEX_FRAGMENT);
+    public TranslateProgram(GLShaderProgram.Shading shading) {
+        super(new SharedfragmentCategorizer(null, shading, "translate"), GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
     }
 
     @Override
-    public ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, ShaderProgram.Shading shading) {
+    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, GLShaderProgram.Shading shading) {
         switch (pass) {
             case UNDEFINED:
             case ALL:

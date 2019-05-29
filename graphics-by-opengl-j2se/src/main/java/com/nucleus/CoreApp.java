@@ -1,6 +1,5 @@
 package com.nucleus;
 
-import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Type;
 import com.nucleus.component.ComponentProcessorRunnable;
 import com.nucleus.component.J2SEComponentProcessor;
@@ -13,7 +12,6 @@ import com.nucleus.profiling.FrameSampler.Samples;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
-import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
@@ -214,7 +212,7 @@ public class CoreApp implements FrameRenderer {
      * DO NOT USE this class after calling this method.
      */
     protected void destroy() {
-        AssetManager.getInstance().destroy(renderer);
+        renderer.getAssets().destroy(renderer);
         rootNode.destroy(renderer);
         renderer = null;
         componentRunnable.destroy();
@@ -256,7 +254,7 @@ public class CoreApp implements FrameRenderer {
                     destroy();
                 }
                 logPerformance();
-            } catch (RenderBackendException e) {
+            } catch (BackendException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -329,7 +327,7 @@ public class CoreApp implements FrameRenderer {
      * }
      */
 
-    public void displaySplash(int width, int height) throws RenderBackendException, NodeException {
+    public void displaySplash(int width, int height) throws BackendException, NodeException {
         FrameSampler.getInstance().logTag(FrameSampler.Samples.DISPLAY_SPLASH);
         RootNodeBuilder rootBuilder = new RootNodeBuilder();
         RootNode root = rootBuilder.createSplashRoot(renderer, SPLASH_FILENAME, RESOLUTION.ULTRA_HD, width,
@@ -372,7 +370,7 @@ public class CoreApp implements FrameRenderer {
             CoreApp coreApp = new CoreApp(renderer, clientApp);
             try {
                 coreApp.displaySplash(width, height);
-            } catch (RenderBackendException | NodeException e) {
+            } catch (BackendException | NodeException e) {
                 throw new RuntimeException(e);
             }
             return coreApp;

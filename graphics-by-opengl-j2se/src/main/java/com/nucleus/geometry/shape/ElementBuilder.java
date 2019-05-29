@@ -2,7 +2,7 @@ package com.nucleus.geometry.shape;
 
 import java.nio.ShortBuffer;
 
-import com.nucleus.renderer.Backend.DrawMode;
+import com.nucleus.Backend.DrawMode;
 
 /**
  * Utility to create different type of element (index) buffers.

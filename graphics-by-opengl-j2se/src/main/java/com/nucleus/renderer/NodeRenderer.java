@@ -1,5 +1,7 @@
 package com.nucleus.renderer;
 
+import com.nucleus.BackendException;
+
 public interface NodeRenderer<T> {
 
     /**
@@ -11,9 +13,9 @@ public interface NodeRenderer<T> {
      * @param matrices
      * @return True if the node was rendered - false if node does not contain any mesh or the state was such that
      * nothing was rendered.
-     * @throws RenderBackendException
+     * @throws BackendException
      */
     public boolean renderNode(NucleusRenderer renderer, T node, Pass currentPass, float[][] matrices)
-            throws RenderBackendException;
+            throws BackendException;
 
 }

@@ -3,8 +3,8 @@ package com.nucleus.scene;
 import java.io.IOException;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.Backend.DrawMode;
 import com.nucleus.SimpleLogger;
-import com.nucleus.assets.AssetManager;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Mesh;
@@ -15,7 +15,6 @@ import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilderFactory;
 import com.nucleus.opengl.geometry.GLMesh;
 import com.nucleus.opengl.shader.VariableIndexer;
-import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
@@ -58,7 +57,7 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
             tex = TextureFactory.getInstance().createTexture(TextureType.Untextured);
 
         } else {
-            tex = AssetManager.getInstance().getTexture(renderer, BaseImageFactory.getInstance(), getTextureRef());
+            tex = renderer.getAssets().getTexture(renderer, BaseImageFactory.getInstance(), getTextureRef());
         }
         builder.setTexture(tex);
         if (shapeBuilder == null) {

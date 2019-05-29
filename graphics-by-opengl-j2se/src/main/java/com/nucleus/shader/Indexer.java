@@ -1,7 +1,7 @@
 package com.nucleus.shader;
 
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
-import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.opengl.shader.GLShaderProgram;
 
 /**
  * Holds the runtime offset into attribute/uniform in shader programs.
@@ -52,7 +52,7 @@ public class Indexer {
      * 
      * @param program
      */
-    public Indexer(ShaderProgram program) {
+    public Indexer(GLShaderProgram program) {
         vertex = program.getAttributeOffset(Property.VERTEX.name);
         uv = program.getAttributeOffset(Property.UV.name);
         translate = program.getAttributeOffset(Property.TRANSLATE.name);

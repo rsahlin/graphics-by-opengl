@@ -1,9 +1,9 @@
 package com.nucleus.geometry;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.Backend.DrawMode;
 import com.nucleus.geometry.ElementBuffer.Type;
 import com.nucleus.io.BaseReference;
-import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TiledTexture2D;

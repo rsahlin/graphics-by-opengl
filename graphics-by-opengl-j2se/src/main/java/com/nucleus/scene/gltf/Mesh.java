@@ -3,14 +3,14 @@ package com.nucleus.scene.gltf;
 import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.Backend.DrawMode;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.shader.GenericShaderProgram;
-import com.nucleus.opengl.shader.ShaderProgram;
-import com.nucleus.opengl.shader.ShaderProgram.ProgramType;
-import com.nucleus.renderer.Backend.DrawMode;
+import com.nucleus.opengl.shader.GLShaderProgram;
+import com.nucleus.opengl.shader.GLShaderProgram.ProgramType;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
@@ -51,8 +51,8 @@ public class Mesh extends GLTFNamedValue implements AttributeUpdater, RuntimeRes
     /**
      * The unresolved shader program that can be used with AssetManager to get compiled program
      */
-    transient static private ShaderProgram debugTBNProgram = new GenericShaderProgram(
-            new String[] { "vecline", "vecline", "vecline" }, null, ShaderProgram.Shading.flat,
+    transient static private GLShaderProgram debugTBNProgram = new GenericShaderProgram(
+            new String[] { "vecline", "vecline", "vecline" }, null, GLShaderProgram.Shading.flat,
             "ui", ProgramType.VERTEX_GEOMETRY_FRAGMENT);
 
     /**
@@ -79,7 +79,7 @@ public class Mesh extends GLTFNamedValue implements AttributeUpdater, RuntimeRes
      * 
      * @return
      */
-    public ShaderProgram getDebugTBNProgram() {
+    public GLShaderProgram getDebugTBNProgram() {
         return debugTBNProgram;
     }
 

@@ -3,14 +3,15 @@ package com.nucleus.vulkan;
 import java.nio.Buffer;
 import java.util.ArrayList;
 
+import com.nucleus.Backend.DrawMode;
+import com.nucleus.BackendException;
+import com.nucleus.assets.Assets;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
-import com.nucleus.opengl.shader.ShaderProgram;
-import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.BufferFactory;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.RenderState;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.scene.RenderableNode;
@@ -57,7 +58,7 @@ public class VulkanBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void render(RootNode root) throws RenderBackendException {
+    public void render(RootNode root) throws BackendException {
         // TODO Auto-generated method stub
 
     }
@@ -75,27 +76,27 @@ public class VulkanBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void render(RenderableNode<?> node) throws RenderBackendException {
+    public void render(RenderableNode<?> node) throws BackendException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void renderMesh(ShaderProgram program, Mesh mesh, float[][] matrices) throws RenderBackendException {
+    public void renderMesh(GLShaderProgram program, Mesh mesh, float[][] matrices) throws BackendException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
     public void renderPrimitive(GLTFShaderProgram program, GLTF glTF, Primitive primitive, float[][] matrices)
-            throws RenderBackendException {
+            throws BackendException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void drawVertices(ShaderProgram program, Accessor indices, int vertexCount, ArrayList<Attributes> attribs,
-            ArrayList<Accessor> accessors, DrawMode mode) throws RenderBackendException {
+    public void drawVertices(GLShaderProgram program, Accessor indices, int vertexCount, ArrayList<Attributes> attribs,
+            ArrayList<Accessor> accessors, DrawMode mode) throws BackendException {
         // TODO Auto-generated method stub
 
     }
@@ -161,37 +162,37 @@ public class VulkanBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void uploadTextures(Texture2D texture, BufferImage[] textureImages) throws RenderBackendException {
+    public void uploadTextures(Texture2D texture, BufferImage[] textureImages) throws BackendException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void uploadTextures(Image image, boolean generateMipmaps) throws RenderBackendException {
+    public void uploadTextures(Image image, boolean generateMipmaps) throws BackendException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void prepareTexture(Texture2D texture, int unit) throws RenderBackendException {
+    public void prepareTexture(Texture2D texture, int unit) throws BackendException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void prepareTexture(Texture texture, int unit) throws RenderBackendException {
+    public void prepareTexture(Texture texture, int unit) throws BackendException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public boolean useProgram(ShaderProgram program) throws RenderBackendException {
+    public boolean useProgram(GLShaderProgram program) throws BackendException {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public void createTexture(Texture2D texture, int target) throws RenderBackendException {
+    public void createTexture(Texture2D texture, int target) throws BackendException {
         // TODO Auto-generated method stub
 
     }
@@ -210,6 +211,12 @@ public class VulkanBaseRenderer implements NucleusRenderer {
 
     @Override
     public BufferFactory getBufferFactory() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Assets getAssets() {
         // TODO Auto-generated method stub
         return null;
     }

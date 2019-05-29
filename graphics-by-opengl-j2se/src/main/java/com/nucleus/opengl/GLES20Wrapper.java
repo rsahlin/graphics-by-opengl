@@ -12,7 +12,7 @@ import com.nucleus.common.BufferUtils;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
-import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.ShaderSource;
 import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
 import com.nucleus.opengl.shader.ShaderVariable;
@@ -419,7 +419,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param attribs
      * @param accessors
      */
-    public void glVertexAttribPointer(ShaderProgram program, ArrayList<Attributes> attribs,
+    public void glVertexAttribPointer(GLShaderProgram program, ArrayList<Attributes> attribs,
             ArrayList<Accessor> accessors) throws GLException {
         for (int i = 0; i < attribs.size(); i++) {
             Accessor accessor = accessors.get(i);
@@ -440,7 +440,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param attribute
      * @throws GLException
      */
-    public void glVertexAttribPointer(ShaderProgram program, Accessor accessor, ShaderVariable attribute)
+    public void glVertexAttribPointer(GLShaderProgram program, Accessor accessor, ShaderVariable attribute)
             throws GLException {
         int location = attribute.getLocation();
         if (!enabledVertexArrays[location]) {

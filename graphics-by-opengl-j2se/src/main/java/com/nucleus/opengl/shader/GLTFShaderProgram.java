@@ -5,6 +5,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 
+import com.nucleus.BackendException;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.common.Environment;
 import com.nucleus.common.Environment.Property;
@@ -14,7 +15,6 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.AccessorDictionary;
 import com.nucleus.scene.gltf.GLTF;
@@ -219,10 +219,10 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * 
      * @param renderer
      * @param texture
-     * @throws RenderBackendException
+     * @throws BackendException
      */
     public void prepareTexture(NucleusRenderer renderer, GLTF gltf, Primitive primitive, ShaderVariable attribute,
-            ShaderVariable texUniform, TextureInfo texInfo) throws RenderBackendException {
+            ShaderVariable texUniform, TextureInfo texInfo) throws BackendException {
         if (texInfo == null || attribute == null || texUniform == null) {
             return;
         }
@@ -242,10 +242,10 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * @param gles
      * @param gltf
      * @param material
-     * @throws RenderBackendException
+     * @throws BackendException
      */
     public void prepareTextures(NucleusRenderer renderer, GLTF gltf, Primitive primitive, Material material)
-            throws RenderBackendException {
+            throws BackendException {
         if (renderNormalMap && material.getNormalTexture() != null
                 && material.getPbrMetallicRoughness().getBaseColorTexture() != null) {
             prepareTexture(renderer, gltf, primitive, getAttributeByName(Attributes._TEXCOORDNORMAL.name()),

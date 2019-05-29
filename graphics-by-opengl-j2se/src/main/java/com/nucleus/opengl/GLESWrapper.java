@@ -3,6 +3,7 @@ package com.nucleus.opengl;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
+import com.nucleus.Backend;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.StringUtils;
 import com.nucleus.opengl.shader.ShaderSource;
@@ -10,7 +11,6 @@ import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
 import com.nucleus.opengl.shader.ShaderVariable;
 import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.opengl.shader.ShaderVariable.VariableType;
-import com.nucleus.renderer.Backend;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.RenderState.ClearFunc;
 import com.nucleus.renderer.RenderState.Cullface;

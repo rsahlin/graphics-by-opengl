@@ -4,7 +4,7 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import com.nucleus.common.Constants;
-import com.nucleus.opengl.shader.ShaderProgram.ShaderType;
+import com.nucleus.opengl.shader.GLShaderProgram.ShaderType;
 
 /**
  * Holds source and data related to the source for a shader

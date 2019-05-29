@@ -4,15 +4,15 @@ package com.nucleus.scene;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.nucleus.BackendException;
 import com.nucleus.SimpleLogger;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.io.SceneSerializer.NodeInflaterListener;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.RenderPass;
 
 /**
@@ -26,7 +26,7 @@ public class NodeBuilder<T extends Node> {
     protected RootNode root;
     protected int meshCount = 0;
     protected MeshBuilder<?> meshBuilder;
-    protected ShaderProgram program;
+    protected GLShaderProgram program;
     protected ArrayList<RenderPass> renderPass;
     protected ViewFrustum viewFrustum;
 
@@ -68,7 +68,7 @@ public class NodeBuilder<T extends Node> {
      * @param program
      * @return
      */
-    public NodeBuilder<T> setProgram(ShaderProgram program) {
+    public NodeBuilder<T> setProgram(GLShaderProgram program) {
         this.program = program;
         return this;
     }
@@ -195,7 +195,7 @@ public class NodeBuilder<T extends Node> {
             createMesh(meshBuilder, node, meshCount);
             node.onCreated();
             return (T) node;
-        } catch (InstantiationException | IllegalAccessException | RenderBackendException | IOException e) {
+        } catch (InstantiationException | IllegalAccessException | BackendException | IOException e) {
             throw new NodeException("Could not create node: " + e.getMessage());
         }
     }
@@ -228,7 +228,7 @@ public class NodeBuilder<T extends Node> {
                 }
             }
             return created;
-        } catch (IOException | RenderBackendException e) {
+        } catch (IOException | BackendException e) {
             throw new NodeException(e);
         }
 
@@ -262,10 +262,10 @@ public class NodeBuilder<T extends Node> {
      * @param node
      * @param meshCount
      * @throws IOException
-     * @throws RenderBackendException
+     * @throws BackendException
      */
     protected void createMesh(MeshBuilder meshBuilder, Node node, int meshCount)
-            throws IOException, RenderBackendException {
+            throws IOException, BackendException {
         if (node instanceof RenderableNode<?>) {
             RenderableNode<?> rNode = (RenderableNode<?>) node;
             for (int i = 0; i < meshCount; i++) {

@@ -13,6 +13,8 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.nucleus.Backend;
+import com.nucleus.BackendException;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.assets.Assets;
@@ -22,11 +24,9 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.TextureUtils;
-import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.profiling.FrameSampler;
-import com.nucleus.renderer.Backend;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.RenderTarget;
 import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.renderer.Window;
@@ -80,7 +80,7 @@ public class GLAssetManager implements Assets {
      */
     private HashMap<String, BufferImage> images = new HashMap<>();
 
-    private HashMap<String, ShaderProgram> programs = new HashMap<>();
+    private HashMap<String, GLShaderProgram> programs = new HashMap<>();
 
     private HashMap<String, GLTF> gltfAssets = new HashMap<>();
 
@@ -108,7 +108,7 @@ public class GLAssetManager implements Assets {
         } else {
             try {
                 return getTexture(renderer, imageFactory, createTexture(ref));
-            } catch (RenderBackendException e) {
+            } catch (BackendException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -121,7 +121,7 @@ public class GLAssetManager implements Assets {
                 resolution, parameter, mipmap, Format.RGBA, Type.UNSIGNED_BYTE);
         try {
             internalCreateTexture(renderer, imageFactory, source);
-        } catch (RenderBackendException e) {
+        } catch (BackendException e) {
             throw new RuntimeException(e);
         }
         return source;
@@ -147,7 +147,7 @@ public class GLAssetManager implements Assets {
 
     @Override
     public Texture2D createTexture(NucleusRenderer renderer, RenderTarget renderTarget, AttachementData attachement)
-            throws RenderBackendException {
+            throws BackendException {
         if (renderTarget.getId() == null) {
             throw new IllegalArgumentException("RenderTarget must have an id");
         }
@@ -168,7 +168,7 @@ public class GLAssetManager implements Assets {
                 textures.put(renderTarget.getAttachementId(attachement), texture);
                 SimpleLogger.d(getClass(), "Created texture: " + texture.toString());
             } catch (GLException e) {
-                throw new RenderBackendException(e.getMessage());
+                throw new BackendException(e.getMessage());
             }
         }
         return texture;
@@ -184,10 +184,10 @@ public class GLAssetManager implements Assets {
      * @param source The external ref is used to load a texture
      * @return The texture specifying the external reference to the texture to load and return.
      * @throws IOException
-     * @throws RenderBackendException
+     * @throws BackendException
      */
     protected Texture2D getTexture(NucleusRenderer renderer, ImageFactory imageFactory, Texture2D source)
-            throws IOException, RenderBackendException {
+            throws IOException, BackendException {
         /**
          * External ref for untextured needs to be "" so it can be stored and fetched.
          */
@@ -237,9 +237,9 @@ public class GLAssetManager implements Assets {
     }
 
     @Override
-    public ShaderProgram getProgram(NucleusRenderer renderer, ShaderProgram program) {
+    public GLShaderProgram getProgram(NucleusRenderer renderer, GLShaderProgram program) {
         String key = program.getKey();
-        ShaderProgram compiled = programs.get(key);
+        GLShaderProgram compiled = programs.get(key);
         if (compiled != null) {
             return compiled;
         }
@@ -252,7 +252,7 @@ public class GLAssetManager implements Assets {
             programs.put(key, program);
             SimpleLogger.d(getClass(), "Stored shaderprogram with key: " + key);
             return program;
-        } catch (RenderBackendException e) {
+        } catch (BackendException e) {
             throw new RuntimeException(e);
         }
     }
@@ -283,7 +283,7 @@ public class GLAssetManager implements Assets {
     }
 
     private void deletePrograms(NucleusRenderer renderer) {
-        for (ShaderProgram program : programs.values()) {
+        for (GLShaderProgram program : programs.values()) {
             renderer.deletePrograms(new int[] { program.getProgram() });
         }
         programs.clear();
@@ -306,7 +306,7 @@ public class GLAssetManager implements Assets {
     }
 
     @Override
-    public void loadGLTFAssets(NucleusRenderer renderer, GLTF glTF) throws IOException, RenderBackendException {
+    public void loadGLTFAssets(NucleusRenderer renderer, GLTF glTF) throws IOException, BackendException {
         loadBuffers(glTF);
         loadTextures(renderer, glTF, glTF.getMaterials());
         SimpleLogger.d(getClass(), "Loaded gltf assets");
@@ -323,7 +323,7 @@ public class GLAssetManager implements Assets {
                 renderer.getBufferFactory().createVBOs(glTF.getBuffers(null));
                 SimpleLogger.d(getClass(), "Created VBOs for gltf assets");
             } catch (GLException e) {
-                throw new RenderBackendException(e.getMessage());
+                throw new BackendException(e.getMessage());
             }
         }
 
@@ -339,14 +339,14 @@ public class GLAssetManager implements Assets {
     }
 
     @Override
-    public void deleteGLTFAssets(NucleusRenderer renderer, GLTF gltf) throws RenderBackendException {
+    public void deleteGLTFAssets(NucleusRenderer renderer, GLTF gltf) throws BackendException {
         try {
             renderer.getBufferFactory().destroyVBOs(renderer, gltf.getBuffers(null));
             deleteTextures(renderer, gltf, gltf.getImages());
             gltfAssets.remove(gltf.getFilename());
             gltf.destroy();
         } catch (GLException e) {
-            throw new RenderBackendException(e.getMessage());
+            throw new BackendException(e.getMessage());
         }
     }
 
@@ -445,10 +445,10 @@ public class GLAssetManager implements Assets {
      * @param gltf
      * @param materials
      * @throws IOException
-     * @throws RenderBackendException
+     * @throws BackendException
      */
     protected void loadTextures(NucleusRenderer renderer, GLTF gltf, Material[] materials)
-            throws IOException, RenderBackendException {
+            throws IOException, BackendException {
         long start = System.currentTimeMillis();
         if (materials != null) {
             for (Material material : materials) {
@@ -469,7 +469,7 @@ public class GLAssetManager implements Assets {
      * @throws IOException
      */
     protected void loadTextures(NucleusRenderer renderer, GLTF gltf, Material material)
-            throws IOException, RenderBackendException {
+            throws IOException, BackendException {
         PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
         loadTexture(renderer, gltf, pbr.getBaseColorTexture(), null, ColorModel.SRGB);
         TextureInfo mrInfo = pbr.getMetallicRoughnessTexture();
@@ -503,7 +503,7 @@ public class GLAssetManager implements Assets {
      */
     protected Texture loadTexture(NucleusRenderer renderer, GLTF gltf, TextureInfo texInfo, ImageFormat destFormat,
             BufferImage.ColorModel colorModel)
-            throws IOException, RenderBackendException {
+            throws IOException, BackendException {
         if (texInfo != null && gltf.getTexture(texInfo).getImage().getBufferImage() == null) {
             // Have not loaded bufferimage for this texture
             long start = System.currentTimeMillis();
@@ -572,9 +572,9 @@ public class GLAssetManager implements Assets {
      * 
      * @param renderer
      * @param image
-     * @throws RenderBackendException
+     * @throws BackendException
      */
-    private void internalCreateTexture(NucleusRenderer renderer, Image image) throws RenderBackendException {
+    private void internalCreateTexture(NucleusRenderer renderer, Image image) throws BackendException {
         int[] name = renderer.createTextureName();
         image.setTextureName(name[0]);
         renderer.uploadTextures(image, true);
@@ -664,10 +664,10 @@ public class GLAssetManager implements Assets {
      * @param imageFactory factor for image creation
      * @param source The texture source, the new texture will be a copy of this with the texture image loaded into GL.
      * @return A new texture object containing the texture image.
-     * @throws RenderBackendException
+     * @throws BackendException
      */
     protected Texture2D createTexture(NucleusRenderer renderer, ImageFactory imageFactory, Texture2D source)
-            throws RenderBackendException {
+            throws BackendException {
         Texture2D texture = TextureFactory.getInstance().createTexture(source);
         internalCreateTexture(renderer, imageFactory, texture);
         return texture;
@@ -684,10 +684,10 @@ public class GLAssetManager implements Assets {
      * @param renderer
      * @param texture The texture
      * @param imageFactory The imagefactory to use for image creation
-     * @throws RenderBackendException
+     * @throws BackendException
      */
     private void internalCreateTexture(NucleusRenderer renderer, ImageFactory imageFactory, Texture2D texture)
-            throws RenderBackendException {
+            throws BackendException {
         if (texture.getTextureType() == TextureType.Untextured) {
             return;
         }
@@ -696,7 +696,7 @@ public class GLAssetManager implements Assets {
     }
 
     private void internalCreateTexture(NucleusRenderer renderer, BufferImage[] textureImg, Texture2D texture)
-            throws RenderBackendException {
+            throws BackendException {
         if (textureImg[0].getResolution() != null) {
             if (texture.getWidth() > 0 || texture.getHeight() > 0) {
                 throw new IllegalArgumentException("Size is already set in texture " + texture.getId());
@@ -724,7 +724,7 @@ public class GLAssetManager implements Assets {
      * @return
      */
     protected Texture2D createTexture(NucleusRenderer renderer, TextureType type, String id, RESOLUTION resolution,
-            int[] size, ImageFormat format, TextureParameter texParams, int target) throws RenderBackendException {
+            int[] size, ImageFormat format, TextureParameter texParams, int target) throws BackendException {
         int[] textureName = renderer.createTextureName();
         Texture2D result = TextureFactory.getInstance().createTexture(type, id, resolution, texParams, size, format,
                 textureName[0]);

@@ -10,7 +10,7 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.opengl.shader.GenericShaderProgram;
-import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.vecmath.Matrix;
@@ -23,8 +23,8 @@ public class ConvolutionProgram extends GenericShaderProgram {
     private static final String FRAGMENT_SHADER_NAME = "convolution";
 
     public ConvolutionProgram() {
-        super(new String[] { VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME }, null, ShaderProgram.Shading.textured, null,
-                ShaderProgram.ProgramType.VERTEX_FRAGMENT);
+        super(new String[] { VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME }, null, GLShaderProgram.Shading.textured, null,
+                GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class ConvolutionProgram extends GenericShaderProgram {
     }
 
     @Override
-    public ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, ShaderProgram.Shading shading) {
+    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, GLShaderProgram.Shading shading) {
         switch (pass) {
             case UNDEFINED:
             case ALL:

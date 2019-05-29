@@ -4,9 +4,9 @@ import java.nio.FloatBuffer;
 
 import org.junit.Test;
 
+import com.nucleus.Backend.DrawMode;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.ClientApplication;
-import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
@@ -20,7 +20,6 @@ import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.geometry.GLMesh;
 import com.nucleus.opengl.shader.ShaderVariable;
-import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameListener;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
@@ -142,13 +141,13 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
             RootNodeBuilder rootBuilder = new RootNodeBuilder();
             NodeBuilder<Node> builder = new NodeBuilder<>();
             TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
-            Texture2D texture = AssetManager.getInstance().getTexture(renderer,
+            Texture2D texture = renderer.getAssets().getTexture(renderer,
                     BaseImageFactory.getInstance(), "texture",
                     new ExternalReference("assets/testimage.jpg"), RESOLUTION.HD, texParam, 1);
             MeshBuilder<Mesh> meshBuilder = new GLMesh.Builder<>(renderer);
             meshBuilder.setElementMode(DrawMode.TRIANGLES, 4, 0, 6);
             meshBuilder.setTexture(texture);
-            program = (ConvolutionProgram) AssetManager.getInstance().getProgram(renderer,
+            program = (ConvolutionProgram) renderer.getAssets().getProgram(renderer,
                     new ConvolutionProgram());
             Material material = new Material();
             meshBuilder.setMaterial(material).setAttributesPerVertex(program.getAttributeSizes());

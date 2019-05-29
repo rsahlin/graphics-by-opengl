@@ -2,7 +2,7 @@ package com.nucleus.opengl.shader;
 
 import java.nio.FloatBuffer;
 
-import com.nucleus.assets.AssetManager;
+import com.nucleus.BackendException;
 import com.nucleus.common.Constants;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLESWrapper.GLES20;
@@ -10,7 +10,6 @@ import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
-import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.texturing.ParameterData;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -32,7 +31,7 @@ public class ShadowPass2Program extends ShadowPassProgram {
 
     static class Shadow2Categorizer extends Categorizer {
 
-        public Shadow2Categorizer(Pass pass, ShaderProgram.Shading shading, String category) {
+        public Shadow2Categorizer(Pass pass, GLShaderProgram.Shading shading, String category) {
             super(pass, shading, category);
         }
 
@@ -61,8 +60,9 @@ public class ShadowPass2Program extends ShadowPassProgram {
      * @param shading
      * @param shaders
      */
-    public ShadowPass2Program(ShaderProgram objectProgram, Pass pass, String category, ShaderProgram.Shading shading,
-            ShaderProgram.ProgramType shaders) {
+    public ShadowPass2Program(GLShaderProgram objectProgram, Pass pass, String category,
+            GLShaderProgram.Shading shading,
+            GLShaderProgram.ProgramType shaders) {
         super(objectProgram, new Shadow2Categorizer(Pass.SHADOW2, shading, category), shaders);
         setIndexer(
                 objectProgram.variableIndexer != null ? objectProgram.variableIndexer : objectProgram.createIndexer());
@@ -95,10 +95,10 @@ public class ShadowPass2Program extends ShadowPassProgram {
     }
 
     @Override
-    public void prepareTexture(NucleusRenderer renderer, Texture2D texture) throws RenderBackendException {
+    public void prepareTexture(NucleusRenderer renderer, Texture2D texture) throws BackendException {
         int textureID = shadow.getName();
         if (textureID == Constants.NO_VALUE) {
-            AssetManager.getInstance().getIdReference(shadow);
+            renderer.getAssets().getIdReference(shadow);
             textureID = shadow.getName();
         }
         /**

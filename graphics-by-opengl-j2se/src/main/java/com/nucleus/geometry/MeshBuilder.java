@@ -2,14 +2,14 @@ package com.nucleus.geometry;
 
 import java.io.IOException;
 
+import com.nucleus.BackendException;
+import com.nucleus.Backend.DrawMode;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.component.ComponentException;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.shader.ShaderProgram;
-import com.nucleus.renderer.Backend.DrawMode;
+import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.texturing.Texture2D;
 
@@ -60,9 +60,9 @@ public interface MeshBuilder<T> {
      * @return The mesh
      * @throws IllegalArgumentException If the needed arguments has not been set
      * @throws IOException If there is an error loading data, for instance texture
-     * @throws RenderBackendException If there is a problem calling GL, for instance when setting VBO data
+     * @throws BackendException If there is a problem calling GL, for instance when setting VBO data
      */
-    public void create(RenderableNode<T> parent) throws IOException, RenderBackendException;
+    public void create(RenderableNode<T> parent) throws IOException, BackendException;
 
     /**
      * Creates one mesh using the builder and returns it.
@@ -72,9 +72,9 @@ public interface MeshBuilder<T> {
      * @return The mesh
      * @throws IllegalArgumentException If the needed arguments has not been set
      * @throws IOException If there is an error loading data, for instance texture
-     * @throws RenderBackendException If there is a problem calling GL, for instance when setting VBO data
+     * @throws BackendException If there is a problem calling GL, for instance when setting VBO data
      */
-    public T create() throws IOException, RenderBackendException;
+    public T create() throws IOException, BackendException;
 
     /**
      * Returns the shader program that can be used to draw the mesh. This is normally only used when program to use
@@ -83,7 +83,7 @@ public interface MeshBuilder<T> {
      * 
      * @return Shader program to use for drawing mesh.
      */
-    public ShaderProgram createProgram();
+    public GLShaderProgram createProgram();
 
     /**
      * Calculates the bounds covering this mesh - this may return null.

@@ -9,7 +9,7 @@ import com.nucleus.renderer.Pass;
  * Loads from /assets folder and appends 'vertex', 'fragment', 'geometry' after source name.
  *
  */
-public class GenericShaderProgram extends ShaderProgram {
+public class GenericShaderProgram extends GLShaderProgram {
 
     protected String[] source;
 
@@ -24,18 +24,18 @@ public class GenericShaderProgram extends ShaderProgram {
      * {@link ProgramType#VERTEX_FRAGMENT} then this must contain 2 values.
      * @param shaders
      */
-    public GenericShaderProgram(String[] source, Pass pass, ShaderProgram.Shading shading, String category,
-            ShaderProgram.ProgramType shaders) {
+    public GenericShaderProgram(String[] source, Pass pass, GLShaderProgram.Shading shading, String category,
+            GLShaderProgram.ProgramType shaders) {
         super(pass, shading, category, shaders);
         this.source = source;
     }
 
-    public GenericShaderProgram(Pass pass, ShaderProgram.Shading shading, String category,
-            ShaderProgram.ProgramType shaders) {
+    public GenericShaderProgram(Pass pass, GLShaderProgram.Shading shading, String category,
+            GLShaderProgram.ProgramType shaders) {
         super(pass, shading, category, shaders);
     }
 
-    public GenericShaderProgram(Categorizer function, ShaderProgram.ProgramType shaders) {
+    public GenericShaderProgram(Categorizer function, GLShaderProgram.ProgramType shaders) {
         super(function, shaders);
     }
 

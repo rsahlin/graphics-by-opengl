@@ -10,7 +10,7 @@ import com.nucleus.opengl.shader.ShaderVariable.VariableType;
  * Connecting variables in shader programs with offsets so that data can be written into buffer that stores the
  * attributes. This can be seen as a type of layout where the purpose is to connect the fields defined in a shader
  * with the usage.
- * Case be set to {@link ShaderProgram} by calling {@link ShaderProgram#setIndexer(VariableIndexer)} to set attribute
+ * Case be set to {@link GLShaderProgram} by calling {@link GLShaderProgram#setIndexer(VariableIndexer)} to set attribute
  * offsets.
  *
  */

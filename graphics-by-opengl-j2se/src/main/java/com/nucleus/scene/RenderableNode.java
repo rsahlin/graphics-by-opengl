@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.MeshBuilder.MeshBuilderFactory;
-import com.nucleus.opengl.shader.ShaderProgram;
+import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
@@ -46,7 +46,7 @@ public interface RenderableNode<T> extends MeshBuilderFactory<T>, Node {
      * 
      * @return
      */
-    public ShaderProgram getProgram();
+    public GLShaderProgram getProgram();
 
     /**
      * Sets the program to use when rendering the meshes in this node.
@@ -54,7 +54,7 @@ public interface RenderableNode<T> extends MeshBuilderFactory<T>, Node {
      * @param program
      * @throws IllegalArgumentException If program is null
      */
-    public void setProgram(ShaderProgram program);
+    public void setProgram(GLShaderProgram program);
 
     /**
      * Returns the loaded material definition for the Node

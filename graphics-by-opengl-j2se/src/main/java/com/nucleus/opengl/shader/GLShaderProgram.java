@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import com.nucleus.BackendException;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.AssetManager;
 import com.nucleus.common.BufferUtils;
@@ -39,7 +40,6 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.Pass;
-import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.Window;
 import com.nucleus.shader.Indexer;
 import com.nucleus.texturing.Texture2D;
@@ -61,7 +61,7 @@ import com.nucleus.vecmath.Matrix;
  * @author Richard Sahlin
  *
  */
-public abstract class ShaderProgram {
+public abstract class GLShaderProgram {
 
     public static final String PROGRAM_DIRECTORY = "assets/";
     /**
@@ -143,9 +143,9 @@ public abstract class ShaderProgram {
      * Subclasses may modify before {@link #createProgram(NucleusRenderer)} is called - or before they call
      * super.createProgram()
      */
-    protected ShaderProgram.ProgramType shaders;
-    protected ShaderProgram shadowPass1;
-    protected ShaderProgram shadowPass2;
+    protected GLShaderProgram.ProgramType shaders;
+    protected GLShaderProgram shadowPass1;
+    protected GLShaderProgram shadowPass2;
 
     /**
      * Number of vertices per sprite - this is for a quad that is created using element buffer.
@@ -176,10 +176,10 @@ public abstract class ShaderProgram {
      */
     public static class Categorizer {
         protected Pass pass;
-        protected ShaderProgram.Shading shading;
+        protected GLShaderProgram.Shading shading;
         protected String category;
 
-        public Categorizer(Pass pass, ShaderProgram.Shading shading, String category) {
+        public Categorizer(Pass pass, GLShaderProgram.Shading shading, String category) {
             this.pass = pass;
             this.shading = shading;
             this.category = category;
@@ -190,7 +190,7 @@ public abstract class ShaderProgram {
          * 
          * @return
          */
-        public ShaderProgram.Shading getShading() {
+        public GLShaderProgram.Shading getShading() {
             return shading;
         }
 
@@ -266,7 +266,7 @@ public abstract class ShaderProgram {
      */
     public static class SharedfragmentCategorizer extends Categorizer {
 
-        public SharedfragmentCategorizer(Pass pass, ShaderProgram.Shading shading, String category) {
+        public SharedfragmentCategorizer(Pass pass, GLShaderProgram.Shading shading, String category) {
             super(pass, shading, category);
         }
 
@@ -368,7 +368,7 @@ public abstract class ShaderProgram {
      * @param pass
      * @param shading
      */
-    public ShaderProgram getProgram(NucleusRenderer renderer, Pass pass, ShaderProgram.Shading shading) {
+    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, GLShaderProgram.Shading shading) {
         switch (pass) {
             case UNDEFINED:
             case ALL:
@@ -376,14 +376,14 @@ public abstract class ShaderProgram {
                 return this;
             case SHADOW1:
                 if (shadowPass1 == null) {
-                    shadowPass1 = AssetManager.getInstance().getProgram(renderer,
+                    shadowPass1 = renderer.getAssets().getProgram(renderer,
                             new ShadowPass1Program(this, new Shadow1Categorizer(Pass.SHADOW1, shading,
                                     function.getCategory()), shaders));
                 }
                 return shadowPass1;
             case SHADOW2:
                 if (shadowPass2 == null) {
-                    shadowPass2 = AssetManager.getInstance().getProgram(renderer,
+                    shadowPass2 = renderer.getAssets().getProgram(renderer,
                             new ShadowPass2Program(this, pass, function.getCategory(), shading, shaders));
                 }
                 return shadowPass2;
@@ -424,13 +424,13 @@ public abstract class ShaderProgram {
         return function.getShaderSourceName(type);
     }
 
-    protected ShaderProgram(Pass pass, ShaderProgram.Shading shading, String category,
-            ShaderProgram.ProgramType shaders) {
+    protected GLShaderProgram(Pass pass, GLShaderProgram.Shading shading, String category,
+            GLShaderProgram.ProgramType shaders) {
         function = new Categorizer(pass, shading, category);
         this.shaders = shaders;
     }
 
-    protected ShaderProgram(Categorizer function, ShaderProgram.ProgramType shaders) {
+    protected GLShaderProgram(Categorizer function, GLShaderProgram.ProgramType shaders) {
         this.function = function;
         this.shaders = shaders;
     }
@@ -587,9 +587,9 @@ public abstract class ShaderProgram {
      * It will create the {@link #shaderSources} field, compile and link the shader sources specified.
      * 
      * @param renderer The render backend to use when compiling and linking program.
-     * @throws RenderBackendException If program could not be compiled and linked, possibly due to IOException
+     * @throws BackendException If program could not be compiled and linked, possibly due to IOException
      */
-    public void createProgram(NucleusRenderer renderer) throws RenderBackendException {
+    public void createProgram(NucleusRenderer renderer) throws BackendException {
         shaderSources = createShaderSource(GLES20Wrapper.getInfo().getRenderVersion());
         if (shaderSources == null) {
             throw new ShaderProgramException(MUST_SET_FIELDS);
@@ -723,7 +723,7 @@ public abstract class ShaderProgram {
      * @param renderer
      * @return Uniform variable block buffers, using buffer objects, for this program, or null if not used.
      */
-    public BlockBuffer[] createUniformBlockBuffers(NucleusRenderer renderer) throws RenderBackendException {
+    public BlockBuffer[] createUniformBlockBuffers(NucleusRenderer renderer) throws BackendException {
         if (uniformInterfaceBlocks == null) {
             return null;
         }
@@ -811,10 +811,10 @@ public abstract class ShaderProgram {
      * 
      * @param renderer
      * @param texture
-     * @throws RenderBackendException
+     * @throws BackendException
      */
     @Deprecated
-    public void prepareTexture(NucleusRenderer renderer, Texture2D texture) throws RenderBackendException {
+    public void prepareTexture(NucleusRenderer renderer, Texture2D texture) throws BackendException {
         if (texture == null || texture.getTextureType() == TextureType.Untextured) {
             return;
         }
@@ -1263,9 +1263,9 @@ public abstract class ShaderProgram {
      * 
      * @param renderer
      * @param sources Name of shaders to load, compile and link
-     * @throws RenderBackendException If program could not be compiled and linked
+     * @throws BackendException If program could not be compiled and linked
      */
-    protected void createProgram(NucleusRenderer renderer, ShaderSource[] sources) throws RenderBackendException {
+    protected void createProgram(NucleusRenderer renderer, ShaderSource[] sources) throws BackendException {
         SimpleLogger.d(getClass(),
                 "Creating program for: " + sources.length + " shaders in program " + getClass().getSimpleName()
                         + ", sources are:");
@@ -1304,7 +1304,7 @@ public abstract class ShaderProgram {
             logNumberedShaderSource(gles, e.shader);
             SimpleLogger.d(getClass(), e.getMessage() + " from source:" + System.lineSeparator());
             throw e;
-        } catch (RenderBackendException e) {
+        } catch (BackendException e) {
             logShaderSources(gles, shaderNames);
             throw e;
         } catch (IOException e) {
@@ -1623,7 +1623,7 @@ public abstract class ShaderProgram {
      * 
      * @return
      */
-    public ShaderProgram.Shading getShading() {
+    public GLShaderProgram.Shading getShading() {
         return function.shading;
     }
 

@@ -2,6 +2,7 @@ package com.nucleus.opengl;
 
 import java.util.ArrayList;
 
+import com.nucleus.BackendException;
 import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.ElementBuffer;
@@ -12,7 +13,6 @@ import com.nucleus.opengl.shader.BlockBuffer;
 import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.renderer.BufferFactory;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.Primitive;
 
@@ -41,7 +41,7 @@ public class GLESBufferFactory implements BufferFactory {
     }
 
     @Override
-    public void createVBOs(Mesh mesh) throws RenderBackendException {
+    public void createVBOs(Mesh mesh) throws BackendException {
         int vboCount = mesh.getBufferNameCount();
         // TODO Need a way to tie the allocated buffer names to the element/vertex buffers
         int[] names = new int[vboCount];
@@ -68,7 +68,7 @@ public class GLESBufferFactory implements BufferFactory {
     }
 
     @Override
-    public void createUBOs(BlockBuffer[] uniformBlocks) throws RenderBackendException {
+    public void createUBOs(BlockBuffer[] uniformBlocks) throws BackendException {
         if (uniformBlocks == null) {
             return;
         }
@@ -91,26 +91,26 @@ public class GLESBufferFactory implements BufferFactory {
     }
 
     @Override
-    public void createVBOs(Primitive primitive) throws RenderBackendException {
+    public void createVBOs(Primitive primitive) throws BackendException {
         createVBOs(primitive.getBufferArray());
     }
 
     @Override
-    public void createVBOs(ArrayList<Buffer> buffers) throws RenderBackendException {
+    public void createVBOs(ArrayList<Buffer> buffers) throws BackendException {
         for (Buffer buffer : buffers) {
             createVBO(buffer);
         }
     }
 
     @Override
-    public void createVBOs(Buffer[] buffers) throws RenderBackendException {
+    public void createVBOs(Buffer[] buffers) throws BackendException {
         for (Buffer buffer : buffers) {
             createVBO(buffer);
         }
     }
 
     @Override
-    public void createVBO(Buffer buffer) throws RenderBackendException {
+    public void createVBO(Buffer buffer) throws BackendException {
         if (buffer.getBufferName() <= 0) {
             SimpleLogger.d(getClass(),
                     "Allocating VBO for buffer: " + buffer.getUri() + ", name: " + buffer.getName() + ", total size: "
@@ -127,7 +127,7 @@ public class GLESBufferFactory implements BufferFactory {
     }
 
     @Override
-    public void destroyVBOs(NucleusRenderer renderer, ArrayList<Buffer> buffers) throws RenderBackendException {
+    public void destroyVBOs(NucleusRenderer renderer, ArrayList<Buffer> buffers) throws BackendException {
         int[] names = new int[1];
         int deleted = 0;
         StringBuffer bufferStr = new StringBuffer();
