@@ -10,7 +10,9 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.shader.BlockBuffer;
 import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
+import com.nucleus.renderer.BufferFactory;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.Primitive;
 
@@ -18,34 +20,28 @@ import com.nucleus.scene.gltf.Primitive;
  * This class takes care of allocation and release of buffer objects
  * Use this as much as possible instead of {@link GLES20Wrapper#glGenBuffers(int, int[], int)} to keep track of
  * allocated buffers objects.
- * This class shall not have dependency to GLES implementations
  * 
  * @author Richard Sahlin
  *
  */
-public class BufferObjectsFactory {
+public class GLESBufferFactory implements BufferFactory {
 
-    private final static BufferObjectsFactory instance = new BufferObjectsFactory();
+    protected GLES20Wrapper gles;
+    protected GLES30Wrapper gles30;
 
     /**
-     * Returns the buffer objects factory, this is a singleton and will always stay the same.
      * 
-     * @return The buffer object factory instance.
+     * @param gles Must be at least GLES30 to support UBOs
      */
-    public static BufferObjectsFactory getInstance() {
-        return instance;
+    public GLESBufferFactory(GLES20Wrapper gles) {
+        this.gles = gles;
+        if (gles instanceof GLES30Wrapper) {
+            gles30 = (GLES30Wrapper) gles;
+        }
     }
 
-    /**
-     * Creates the vbos and uploads data for the specified mesh, the buffer objects will be stored in the contained
-     * buffers in the mesh.
-     * After this call the mesh can be rendered using the specified buffer objects (VBO)
-     * 
-     * @param gles
-     * @param mesh
-     * @throws GLException If there is an error setting buffer data
-     */
-    public void createVBOs(GLES20Wrapper gles, Mesh mesh) throws GLException {
+    @Override
+    public void createVBOs(Mesh mesh) throws RenderBackendException {
         int vboCount = mesh.getBufferNameCount();
         // TODO Need a way to tie the allocated buffer names to the element/vertex buffers
         int[] names = new int[vboCount];
@@ -71,73 +67,50 @@ public class BufferObjectsFactory {
         }
     }
 
-    /**
-     * Creates buffer objects for the uniform blocks, buffers are allocated and names stored in uniformBlocks
-     * 
-     * @param gles
-     * @param uniformBlocks uniform block buffers to create buffer objects for, or null
-     * @throws GLException
-     */
-    public void createUBOs(GLES30Wrapper gles, BlockBuffer[] uniformBlocks) throws GLException {
+    @Override
+    public void createUBOs(BlockBuffer[] uniformBlocks) throws RenderBackendException {
         if (uniformBlocks == null) {
             return;
         }
         int[] names = new int[uniformBlocks.length];
-        gles.glGenBuffers(names);
+        gles30.glGenBuffers(names);
         int index = 0;
         for (BlockBuffer bb : uniformBlocks) {
             InterfaceBlock block = bb.getInterfaceBlock();
             bb.position(0);
-            gles.glUniformBlockBinding(block.program, block.blockIndex, index);
-            gles.glBindBuffer(GLES30.GL_UNIFORM_BUFFER, names[index]);
-            gles.glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, block.blockIndex, names[index]);
-            gles.glBufferData(GLES30.GL_UNIFORM_BUFFER, bb.getSizeInBytes(), bb.getBuffer(),
+            gles30.glUniformBlockBinding(block.program, block.blockIndex, index);
+            gles30.glBindBuffer(GLES30.GL_UNIFORM_BUFFER, names[index]);
+            gles30.glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, block.blockIndex, names[index]);
+            gles30.glBufferData(GLES30.GL_UNIFORM_BUFFER, bb.getSizeInBytes(), bb.getBuffer(),
                     GLES30.GL_STATIC_DRAW);
             bb.setBufferName(names[index]);
             bb.setDirty(false);
-            GLUtils.handleError(gles, "Create UBOs for " + bb.getBlockName());
+            GLUtils.handleError(gles30, "Create UBOs for " + bb.getBlockName());
             index++;
         }
     }
 
-    /**
-     * Creates VBO's and uploads data for the buffer(s) that are used by the primitive.
-     * 
-     * @param gles
-     * @param primitive
-     * @throws GLException
-     */
-    public void createVBOs(GLES20Wrapper gles, Primitive primitive) throws GLException {
-        createVBOs(gles, primitive.getBufferArray());
+    @Override
+    public void createVBOs(Primitive primitive) throws RenderBackendException {
+        createVBOs(primitive.getBufferArray());
     }
 
-    /**
-     * Creates VBO's and uploads data for the buffer(s)
-     * 
-     * @param gles
-     * @param buffers
-     * @throws GLException
-     */
-    public void createVBOs(GLES20Wrapper gles, ArrayList<Buffer> buffers) throws GLException {
+    @Override
+    public void createVBOs(ArrayList<Buffer> buffers) throws RenderBackendException {
         for (Buffer buffer : buffers) {
-            createVBO(gles, buffer);
+            createVBO(buffer);
         }
     }
 
-    /**
-     * Creates VBO's and uploads data for the buffer(s)
-     * 
-     * @param gles
-     * @param buffers
-     * @throws GLException
-     */
-    public void createVBOs(GLES20Wrapper gles, Buffer[] buffers) throws GLException {
+    @Override
+    public void createVBOs(Buffer[] buffers) throws RenderBackendException {
         for (Buffer buffer : buffers) {
-            createVBO(gles, buffer);
+            createVBO(buffer);
         }
     }
 
-    public void createVBO(GLES20Wrapper gles, Buffer buffer) throws GLException {
+    @Override
+    public void createVBO(Buffer buffer) throws RenderBackendException {
         if (buffer.getBufferName() <= 0) {
             SimpleLogger.d(getClass(),
                     "Allocating VBO for buffer: " + buffer.getUri() + ", name: " + buffer.getName() + ", total size: "
@@ -153,14 +126,8 @@ public class BufferObjectsFactory {
         }
     }
 
-    /**
-     * Destroys the buffers if VBOs have been allocated.
-     * 
-     * @param renderer
-     * @param buffers
-     * @throws GLException
-     */
-    public void destroyVBOs(NucleusRenderer renderer, ArrayList<Buffer> buffers) throws GLException {
+    @Override
+    public void destroyVBOs(NucleusRenderer renderer, ArrayList<Buffer> buffers) throws RenderBackendException {
         int[] names = new int[1];
         int deleted = 0;
         StringBuffer bufferStr = new StringBuffer();

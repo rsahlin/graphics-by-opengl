@@ -10,9 +10,9 @@ import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.io.SceneSerializer.NodeInflaterListener;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.RenderPass;
 
 /**
@@ -195,7 +195,7 @@ public class NodeBuilder<T extends Node> {
             createMesh(meshBuilder, node, meshCount);
             node.onCreated();
             return (T) node;
-        } catch (InstantiationException | IllegalAccessException | GLException | IOException e) {
+        } catch (InstantiationException | IllegalAccessException | RenderBackendException | IOException e) {
             throw new NodeException("Could not create node: " + e.getMessage());
         }
     }
@@ -228,7 +228,7 @@ public class NodeBuilder<T extends Node> {
                 }
             }
             return created;
-        } catch (IOException | GLException e) {
+        } catch (IOException | RenderBackendException e) {
             throw new NodeException(e);
         }
 
@@ -262,9 +262,10 @@ public class NodeBuilder<T extends Node> {
      * @param node
      * @param meshCount
      * @throws IOException
-     * @throws GLException
+     * @throws RenderBackendException
      */
-    protected void createMesh(MeshBuilder meshBuilder, Node node, int meshCount) throws IOException, GLException {
+    protected void createMesh(MeshBuilder meshBuilder, Node node, int meshCount)
+            throws IOException, RenderBackendException {
         if (node instanceof RenderableNode<?>) {
             RenderableNode<?> rNode = (RenderableNode<?>) node;
             for (int i = 0; i < meshCount; i++) {

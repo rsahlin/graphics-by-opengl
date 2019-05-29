@@ -8,6 +8,7 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.renderer.Backend.DrawMode;
+import com.nucleus.renderer.BufferFactory;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.renderer.RenderState;
@@ -205,6 +206,12 @@ public class VulkanBaseRenderer implements NucleusRenderer {
     public void deletePrograms(int[] names) {
         // TODO Auto-generated method stub
 
+    }
+
+    @Override
+    public BufferFactory getBufferFactory() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

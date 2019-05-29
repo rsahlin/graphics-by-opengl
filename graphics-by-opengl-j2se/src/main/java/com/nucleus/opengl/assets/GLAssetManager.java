@@ -18,7 +18,6 @@ import com.nucleus.assets.AssetManager;
 import com.nucleus.assets.Assets;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.io.gson.TextureDeserializer;
-import com.nucleus.opengl.BufferObjectsFactory;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
@@ -321,7 +320,7 @@ public class GLAssetManager implements Assets {
                 System.currentTimeMillis());
         if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
             try {
-                BufferObjectsFactory.getInstance().createVBOs(renderer.getGLES(), glTF.getBuffers(null));
+                renderer.getBufferFactory().createVBOs(glTF.getBuffers(null));
                 SimpleLogger.d(getClass(), "Created VBOs for gltf assets");
             } catch (GLException e) {
                 throw new RenderBackendException(e.getMessage());
@@ -342,7 +341,7 @@ public class GLAssetManager implements Assets {
     @Override
     public void deleteGLTFAssets(NucleusRenderer renderer, GLTF gltf) throws RenderBackendException {
         try {
-            BufferObjectsFactory.getInstance().destroyVBOs(renderer, gltf.getBuffers(null));
+            renderer.getBufferFactory().destroyVBOs(renderer, gltf.getBuffers(null));
             deleteTextures(renderer, gltf, gltf.getImages());
             gltfAssets.remove(gltf.getFilename());
             gltf.destroy();

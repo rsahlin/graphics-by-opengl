@@ -20,7 +20,6 @@ import com.nucleus.environment.Lights;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
-import com.nucleus.opengl.BufferObjectsFactory;
 import com.nucleus.opengl.GLCompilerException;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLES30Wrapper;
@@ -595,7 +594,7 @@ public abstract class ShaderProgram {
         if (shaderSources == null) {
             throw new ShaderProgramException(MUST_SET_FIELDS);
         }
-        createProgram(renderer.getGLES(), shaderSources);
+        createProgram(renderer, shaderSources);
     }
 
     /**
@@ -721,19 +720,19 @@ public abstract class ShaderProgram {
      * Binds uniform block to a binding point using the block index, this means that there is one binding point
      * per uniform block.
      * 
-     * @param gles
+     * @param renderer
      * @return Uniform variable block buffers, using buffer objects, for this program, or null if not used.
      */
-    public BlockBuffer[] createUniformBlockBuffers(GLES30Wrapper gles) throws GLException {
+    public BlockBuffer[] createUniformBlockBuffers(NucleusRenderer renderer) throws RenderBackendException {
         if (uniformInterfaceBlocks == null) {
             return null;
         }
         for (InterfaceBlock block : uniformInterfaceBlocks) {
             // Here the binding point and block index is the same.
-            gles.glUniformBlockBinding(program, block.blockIndex, block.blockIndex);
+            ((GLES30Wrapper) renderer.getGLES()).glUniformBlockBinding(program, block.blockIndex, block.blockIndex);
         }
         BlockBuffer[] buffers = BlockBuffer.createBlockBuffers(uniformInterfaceBlocks);
-        BufferObjectsFactory.getInstance().createUBOs(gles, buffers);
+        renderer.getBufferFactory().createUBOs(buffers);
         return buffers;
     }
 
@@ -1262,17 +1261,18 @@ public abstract class ShaderProgram {
      * Vertex shader, fragment shader and program objects will be created.
      * If program compiles successfully then the program info is fetched.
      * 
-     * @param gles
+     * @param renderer
      * @param sources Name of shaders to load, compile and link
-     * @throws GLException If program could not be compiled and linked
+     * @throws RenderBackendException If program could not be compiled and linked
      */
-    protected void createProgram(GLES20Wrapper gles, ShaderSource[] sources) throws GLException {
+    protected void createProgram(NucleusRenderer renderer, ShaderSource[] sources) throws RenderBackendException {
         SimpleLogger.d(getClass(),
                 "Creating program for: " + sources.length + " shaders in program " + getClass().getSimpleName()
                         + ", sources are:");
         for (ShaderSource ss : sources) {
             SimpleLogger.d(getClass(), ss.getFullSourceName());
         }
+        GLES20Wrapper gles = renderer.getGLES();
         try {
             loadShaderSources(gles, sources);
             createCommonShaders(gles, sources);
@@ -1295,7 +1295,7 @@ public abstract class ShaderProgram {
             setAttributesPerVertex();
             uniforms = createUniformArray();
             if (GLES20Wrapper.getInfo().getRenderVersion().major >= 3) {
-                uniformBlockBuffers = createUniformBlockBuffers((GLES30Wrapper) gles);
+                uniformBlockBuffers = createUniformBlockBuffers(renderer);
             }
             createSamplerStorage();
             setSamplers();
@@ -1304,7 +1304,7 @@ public abstract class ShaderProgram {
             logNumberedShaderSource(gles, e.shader);
             SimpleLogger.d(getClass(), e.getMessage() + " from source:" + System.lineSeparator());
             throw e;
-        } catch (GLException e) {
+        } catch (RenderBackendException e) {
             logShaderSources(gles, shaderNames);
             throw e;
         } catch (IOException e) {

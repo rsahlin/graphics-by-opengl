@@ -11,13 +11,11 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.BufferObjectsFactory;
-import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.shader.BlockBuffer;
 import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.opengl.shader.TranslateProgram;
 import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
@@ -27,8 +25,6 @@ import com.nucleus.texturing.Texture2D;
  *
  */
 public class GLMesh extends Mesh {
-
-    transient protected BlockBuffer[] blockBuffers;
 
     /**
      * Builder for meshes
@@ -104,7 +100,7 @@ public class GLMesh extends Mesh {
         }
 
         @Override
-        public void create(RenderableNode<Mesh> parent) throws IOException, GLException {
+        public void create(RenderableNode<Mesh> parent) throws IOException, RenderBackendException {
             if (parent == null) {
                 throw new IllegalArgumentException("Parent node may not be null when creating mesh");
             }
@@ -112,7 +108,7 @@ public class GLMesh extends Mesh {
         }
 
         @Override
-        public T create() throws IOException, GLException {
+        public T create() throws IOException, RenderBackendException {
             validate();
             T mesh = (T) createInstance();
             mesh.createMesh(texture, attributesPerVertex, material, vertexCount, indiceCount, mode);
@@ -120,7 +116,7 @@ public class GLMesh extends Mesh {
                 shapeBuilder.build(mesh);
             }
             if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
-                BufferObjectsFactory.getInstance().createVBOs(renderer.getGLES(), mesh);
+                renderer.getBufferFactory().createVBOs(mesh);
             }
             return mesh;
         }
@@ -251,15 +247,6 @@ public class GLMesh extends Mesh {
         builder.setArrayMode(mode, maxVerticeCount, 0);
         builder.setShapeBuilder(shapeBuilder).setAttributesPerVertex(program.getAttributeSizes());
         return builder;
-    }
-
-    /**
-     * Returns the block buffer storage, for instance uniform blocks.
-     * 
-     * @return
-     */
-    public BlockBuffer[] getBlockBuffers() {
-        return blockBuffers;
     }
 
 }

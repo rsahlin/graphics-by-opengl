@@ -473,4 +473,11 @@ public interface NucleusRenderer {
 
     public void deletePrograms(int[] names);
 
+    /**
+     * Returns the factory that shall be used to create buffers
+     * 
+     * @return
+     */
+    public BufferFactory getBufferFactory();
+
 }

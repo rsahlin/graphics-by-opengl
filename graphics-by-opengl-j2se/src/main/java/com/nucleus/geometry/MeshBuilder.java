@@ -6,10 +6,10 @@ import com.nucleus.bounds.Bounds;
 import com.nucleus.component.ComponentException;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.renderer.Backend.DrawMode;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.texturing.Texture2D;
 
@@ -60,9 +60,9 @@ public interface MeshBuilder<T> {
      * @return The mesh
      * @throws IllegalArgumentException If the needed arguments has not been set
      * @throws IOException If there is an error loading data, for instance texture
-     * @throws GLException If there is a problem calling GL, for instance when setting VBO data
+     * @throws RenderBackendException If there is a problem calling GL, for instance when setting VBO data
      */
-    public void create(RenderableNode<T> parent) throws IOException, GLException;
+    public void create(RenderableNode<T> parent) throws IOException, RenderBackendException;
 
     /**
      * Creates one mesh using the builder and returns it.
@@ -72,9 +72,9 @@ public interface MeshBuilder<T> {
      * @return The mesh
      * @throws IllegalArgumentException If the needed arguments has not been set
      * @throws IOException If there is an error loading data, for instance texture
-     * @throws GLException If there is a problem calling GL, for instance when setting VBO data
+     * @throws RenderBackendException If there is a problem calling GL, for instance when setting VBO data
      */
-    public T create() throws IOException, GLException;
+    public T create() throws IOException, RenderBackendException;
 
     /**
      * Returns the shader program that can be used to draw the mesh. This is normally only used when program to use

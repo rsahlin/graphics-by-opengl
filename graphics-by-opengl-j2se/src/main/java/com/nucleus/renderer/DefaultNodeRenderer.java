@@ -1,4 +1,4 @@
-package com.nucleus.opengl;
+package com.nucleus.renderer;
 
 import java.util.ArrayList;
 
@@ -6,10 +6,6 @@ import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.shader.ShaderProgram;
 import com.nucleus.profiling.FrameSampler;
-import com.nucleus.renderer.NodeRenderer;
-import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.Pass;
-import com.nucleus.renderer.RenderBackendException;
 import com.nucleus.scene.RenderableNode;
 
 public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {

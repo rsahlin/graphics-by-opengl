@@ -24,6 +24,7 @@ import com.nucleus.opengl.shader.ShadowPass1Program;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.Backend;
 import com.nucleus.renderer.Backend.DrawMode;
+import com.nucleus.renderer.BufferFactory;
 import com.nucleus.renderer.Configuration;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
@@ -105,6 +106,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
     protected float[] tempMatrix = Matrix.createMatrix();
 
     protected GLES20Wrapper gles;
+    protected BufferFactory bufferFactory;
     private Set<RenderContextListener> contextListeners = new HashSet<RenderContextListener>();
     private Set<FrameListener> frameListeners = new HashSet<GLESBaseRenderer.FrameListener>();
     protected int currentProgram = -1;
@@ -145,6 +147,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
         }
         gles = (GLES20Wrapper) backend;
         gles.createInfo();
+        bufferFactory = new GLESBufferFactory(gles);
         for (int i = 0; i < matrices.length; i++) {
             matrices[i] = Matrix.setIdentity(Matrix.createMatrix(), 0);
         }
@@ -910,6 +913,11 @@ public class GLESBaseRenderer implements NucleusRenderer {
         for (int i : names) {
             getGLES().glDeleteProgram(i);
         }
+    }
+
+    @Override
+    public BufferFactory getBufferFactory() {
+        return bufferFactory;
     }
 
 }
