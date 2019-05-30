@@ -160,7 +160,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
             setUniformData(light0Uniform, l.getLight(), 0);
         }
         if (viewPosUniform != null) {
-            float[] viewPos = new float[] { 0, 0, 0 };
+            float[] viewPos = new float[viewPosUniform.getSizeInFloats()];
             float[] cameraMatrix = scene.getCameraInstance().updateMatrix();
             Matrix.getTranslate(cameraMatrix, viewPos, 0);
             setUniformData(viewPosUniform, viewPos, 0);

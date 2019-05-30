@@ -12,8 +12,8 @@ uniform vec4 _PBRDATA[4];
 uniform mat4 uModelMatrix[3];
 // color + intensity [4]
 // position [3]
-uniform vec4 _LIGHT_0[3];
-uniform vec3 _VIEWPOS[1];
+uniform vec4 _LIGHT_0[2];
+uniform vec3 _VIEWPOS[2];
 
 in vec3 POSITION;
 in vec3 NORMAL;
