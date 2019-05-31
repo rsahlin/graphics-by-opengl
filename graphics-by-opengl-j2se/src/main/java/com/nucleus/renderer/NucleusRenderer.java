@@ -7,11 +7,10 @@ import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.ClientApplication;
+import com.nucleus.GraphicsPipeline;
 import com.nucleus.assets.Assets;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.shader.GLShaderProgram;
-import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
@@ -277,31 +276,31 @@ public interface NucleusRenderer {
     public void render(RenderableNode<?> node) throws BackendException;
 
     /**
-     * Renders the mesh using the program and matrices
+     * Renders the mesh using the pipeline and matrices
      * 
-     * @param program
+     * @param pipeline
      * @param mesh
      * @param matrices
      * @throws BackendException
      */
-    public void renderMesh(GLShaderProgram program, Mesh mesh, float[][] matrices) throws BackendException;
+    public void renderMesh(GraphicsPipeline pipeline, Mesh mesh, float[][] matrices) throws BackendException;
 
     /**
      * Renders the GLTF primitive
      * 
-     * @param program
+     * @param pipeline
      * @param glTF
      * @param primitive
      * @param matrices
      * @throws BackendException
      */
-    public void renderPrimitive(GLTFShaderProgram program, GLTF glTF, Primitive primitive, float[][] matrices)
+    public void renderPrimitive(GraphicsPipeline pipeline, GLTF glTF, Primitive primitive, float[][] matrices)
             throws BackendException;
 
     /**
      * Sets attrib pointers and draws indices or arrays - uniforms must be uploaded to GL before calling this method.
      * 
-     * @param program
+     * @param pipeline
      * @param indices
      * @param vertexCount
      * @param attribs
@@ -309,7 +308,7 @@ public interface NucleusRenderer {
      * @param mode
      * @throws BackendException
      */
-    public void drawVertices(GLShaderProgram program, Accessor indices, int vertexCount,
+    public void drawVertices(GraphicsPipeline pipeline, Accessor indices, int vertexCount,
             ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, DrawMode mode) throws BackendException;
 
     /**
@@ -450,12 +449,12 @@ public interface NucleusRenderer {
     public void prepareTexture(Texture texture, int unit) throws BackendException;
 
     /**
-     * Enable the program
+     * Enable the pipeline
      * 
-     * @param program
-     * @return true if program was changed, ie previously used a different program
+     * @param pipeline
+     * @return true if pipeline was changed, ie previously used a different pipeline
      */
-    public boolean useProgram(GLShaderProgram program) throws BackendException;
+    public boolean usePipeline(GraphicsPipeline pipeline) throws BackendException;
 
     /**
      * Creates storage for an (empty) texture

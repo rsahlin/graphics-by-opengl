@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.GraphicsPipeline;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Constants;
 import com.nucleus.common.Type;
@@ -16,7 +17,6 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.geometry.GLMesh;
-import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.DefaultNodeRenderer;
 import com.nucleus.renderer.NodeRenderer;
@@ -36,7 +36,7 @@ import com.nucleus.vecmath.Transform;
  */
 public abstract class AbstractMeshNode<T> extends AbstractNode implements RenderableNode<T> {
 
-    public final static String NULL_PROGRAM_STRING = "Program is null";
+    public final static String NULL_PROGRAM_STRING = "Pipeline is null";
 
     @SerializedName(Transform.TRANSFORM)
     protected Transform transform;
@@ -68,7 +68,7 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
      * DO NOT WRITE TO THIS!
      */
     transient float[] modelMatrix = Matrix.createMatrix();
-    transient protected GLShaderProgram program;
+    transient protected GraphicsPipeline pipeline;
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -151,16 +151,16 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
     }
 
     @Override
-    public GLShaderProgram getProgram() {
-        return program;
+    public GraphicsPipeline getPipeline() {
+        return pipeline;
     }
 
     @Override
-    public void setProgram(GLShaderProgram program) {
-        if (program == null) {
+    public void setPipeline(GraphicsPipeline pipeline) {
+        if (pipeline == null) {
             throw new IllegalArgumentException(NULL_PROGRAM_STRING);
         }
-        this.program = program;
+        this.pipeline = pipeline;
     }
 
     @Override
@@ -249,10 +249,10 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
         if (builder.getShapeBuilder() == null) {
             builder.setShapeBuilder(shapeBuilder);
         }
-        if (getProgram() == null) {
-            setProgram(builder.createProgram());
+        if (getPipeline() == null) {
+            setPipeline(builder.createPipeline());
         }
-        builder.setAttributesPerVertex(getProgram().getAttributeSizes());
+        builder.setAttributesPerVertex(getPipeline().getAttributeSizes());
         return (MeshBuilder<T>) builder;
     }
 

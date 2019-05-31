@@ -7,10 +7,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
-import com.nucleus.SimpleLogger;
 import com.nucleus.Backend.DrawMode;
+import com.nucleus.GraphicsPipeline;
+import com.nucleus.SimpleLogger;
 import com.nucleus.common.Environment;
-import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.scene.gltf.Accessor.ComponentType;
 import com.nucleus.scene.gltf.Accessor.Type;
 import com.nucleus.scene.gltf.BufferView.Target;
@@ -468,10 +468,9 @@ public class Primitive implements RuntimeResolver {
     transient private ArrayList<Buffer> bufferList;
     transient private Material materialRef;
     /**
-     * Program to use when rendering this primitive
+     * pipeline to use when rendering this primitive
      */
-    @Deprecated
-    transient private GLTFShaderProgram program;
+    transient private GraphicsPipeline pipeline;
     transient private Accessor indices;
     transient private DrawMode mode;
 
@@ -750,23 +749,19 @@ public class Primitive implements RuntimeResolver {
     }
 
     /**
-     * @deprecated Primitive should not have a reference to ShaderProgram, use index instead and fetch from
-     * AssetManager.
-     * @param program
+     * @param pipeline
      */
-    @Deprecated
-    public void setProgram(GLTFShaderProgram program) {
-        this.program = program;
+    public void setPipeline(GraphicsPipeline pipeline) {
+        this.pipeline = pipeline;
     }
 
     /**
-     * Returns the program to be used to render this primitive
+     * Returns the pipeline to be used to render this primitive
      * 
      * @return
      */
-    @Deprecated
-    public GLTFShaderProgram getProgram() {
-        return program;
+    public GraphicsPipeline getPipeline() {
+        return pipeline;
     }
 
     /**

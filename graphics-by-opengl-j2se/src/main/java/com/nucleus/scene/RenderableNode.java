@@ -2,10 +2,10 @@ package com.nucleus.scene;
 
 import java.util.ArrayList;
 
+import com.nucleus.GraphicsPipeline;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.MeshBuilder.MeshBuilderFactory;
-import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
@@ -42,19 +42,19 @@ public interface RenderableNode<T> extends MeshBuilderFactory<T>, Node {
     public void addMesh(T mesh);
 
     /**
-     * Returns the program to use when rendering the meshes in this node.
+     * Returns the pipeline to use when rendering the meshes in this node.
      * 
-     * @return
+     * @return The pipeline
      */
-    public GLShaderProgram getProgram();
+    public GraphicsPipeline getPipeline();
 
     /**
-     * Sets the program to use when rendering the meshes in this node.
+     * Sets the pipeline to use when rendering the meshes in this node.
      * 
-     * @param program
-     * @throws IllegalArgumentException If program is null
+     * @param pipeline
+     * @throws IllegalArgumentException If pipeline is null
      */
-    public void setProgram(GLShaderProgram program);
+    public void setPipeline(GraphicsPipeline pipeline);
 
     /**
      * Returns the loaded material definition for the Node

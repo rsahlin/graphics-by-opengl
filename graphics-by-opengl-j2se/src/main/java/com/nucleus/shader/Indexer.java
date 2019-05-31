@@ -1,7 +1,8 @@
 package com.nucleus.shader;
 
+import com.nucleus.GraphicsPipeline;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
-import com.nucleus.opengl.shader.GLShaderProgram;
+import com.nucleus.opengl.shader.ShaderVariable;
 
 /**
  * Holds the runtime offset into attribute/uniform in shader programs.
@@ -52,16 +53,20 @@ public class Indexer {
      * 
      * @param program
      */
-    public Indexer(GLShaderProgram program) {
-        vertex = program.getAttributeOffset(Property.VERTEX.name);
-        uv = program.getAttributeOffset(Property.UV.name);
-        translate = program.getAttributeOffset(Property.TRANSLATE.name);
-        rotate = program.getAttributeOffset(Property.ROTATE.name);
-        scale = program.getAttributeOffset(Property.SCALE.name);
-        frame = program.getAttributeOffset(Property.FRAME.name);
-        albedo = program.getAttributeOffset(Property.ALBEDO.name);
-        emissive = program.getAttributeOffset(Property.EMISSIVE.name);
-        attributesPerVertex = program.getAttributesPerVertex(BufferIndex.ATTRIBUTES);
+    public Indexer(GraphicsPipeline pipeline) {
+        vertex = getOffset(pipeline.getAttributeByName(Property.VERTEX.name));
+        uv = getOffset(pipeline.getAttributeByName(Property.UV.name));
+        translate = getOffset(pipeline.getAttributeByName(Property.TRANSLATE.name));
+        rotate = getOffset(pipeline.getAttributeByName(Property.ROTATE.name));
+        scale = getOffset(pipeline.getAttributeByName(Property.SCALE.name));
+        frame = getOffset(pipeline.getAttributeByName(Property.FRAME.name));
+        albedo = getOffset(pipeline.getAttributeByName(Property.ALBEDO.name));
+        emissive = getOffset(pipeline.getAttributeByName(Property.EMISSIVE.name));
+        attributesPerVertex = pipeline.getAttributesPerVertex(BufferIndex.ATTRIBUTES);
+    }
+
+    private int getOffset(ShaderVariable variable) {
+        return variable != null ? variable.getOffset() : -1;
     }
 
     protected Indexer(Indexer source) {

@@ -151,10 +151,10 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     /**
      * Update the global environment variables, camera and directional light
      * 
-     * @param gles
+     * @param renderer
      * @param scene
      */
-    public void updateEnvironmentUniforms(GLES20Wrapper gles, Scene scene) {
+    public void updateEnvironmentUniforms(NucleusRenderer renderer, Scene scene) {
         if (light0Uniform != null) {
             Light l = Lights.getInstance().getLight();
             setUniformData(light0Uniform, l.getLight(), 0);

@@ -2,7 +2,6 @@ package com.nucleus;
 
 import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.CoreApp.CoreAppStarter;
-import com.nucleus.assets.AssetManager;
 import com.nucleus.common.Environment;
 import com.nucleus.common.Type;
 import com.nucleus.renderer.NucleusRenderer;
@@ -164,7 +163,6 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     @Override
     public void createCoreApp(int width, int height) {
         NucleusRenderer renderer = RendererFactory.getRenderer(j2seWindow.getBackend());
-        AssetManager.createInstance(j2seWindow.getBackend());
         coreApp = CoreApp.createCoreApp(width, height, renderer, j2seWindow.config);
         j2seWindow.setCoreApp(coreApp);
     }

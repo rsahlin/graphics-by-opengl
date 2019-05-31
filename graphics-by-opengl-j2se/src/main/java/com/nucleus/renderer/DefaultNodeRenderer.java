@@ -2,10 +2,11 @@ package com.nucleus.renderer;
 
 import java.util.ArrayList;
 
-import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.BackendException;
+import com.nucleus.GraphicsPipeline;
+import com.nucleus.SimpleLogger;
+import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.RenderableNode;
 
@@ -21,7 +22,7 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
         return true;
     }
 
-    public void renderMesh(NucleusRenderer renderer, GLShaderProgram program, Mesh mesh, float[][] matrices)
+    public void renderMesh(NucleusRenderer renderer, GraphicsPipeline pipeline, Mesh mesh, float[][] matrices)
             throws BackendException {
         Consumer updater = mesh.getAttributeConsumer();
         if (updater != null) {
@@ -30,7 +31,7 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
         if (mesh.getDrawCount() == 0) {
             return;
         }
-        renderer.renderMesh(program, mesh, matrices);
+        renderer.renderMesh(pipeline, mesh, matrices);
     }
 
     public boolean renderMeshes(NucleusRenderer renderer, RenderableNode<Mesh> node, Pass currentPass,
@@ -38,10 +39,11 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
         nodeMeshes.clear();
         node.getMeshes(nodeMeshes);
         if (nodeMeshes.size() > 0) {
-            GLShaderProgram program = getProgram(renderer, node, currentPass);
-            renderer.useProgram(program);
+            GraphicsPipeline pipeline = getPipeline(renderer, node, currentPass);
+
+            renderer.usePipeline(pipeline);
             for (Mesh mesh : nodeMeshes) {
-                renderMesh(renderer, program, mesh, matrices);
+                renderMesh(renderer, pipeline, mesh, matrices);
             }
             return true;
         }
@@ -54,12 +56,13 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
      * @param pass The currently defined pass
      * @return
      */
-    protected GLShaderProgram getProgram(NucleusRenderer renderer, RenderableNode<Mesh> node, Pass pass) {
-        GLShaderProgram program = node.getProgram();
-        if (program == null) {
-            throw new IllegalArgumentException("No program for node " + node.getId());
+    protected GraphicsPipeline getPipeline(NucleusRenderer renderer, RenderableNode<Mesh> node, Pass pass) {
+        GraphicsPipeline pipeline = node.getPipeline();
+        if (pipeline == null) {
+            throw new IllegalArgumentException("No pipeline for node " + node.getId());
         }
-        return program.getProgram(renderer, pass, program.getShading());
+        SimpleLogger.d(getClass(), "Not solved how to get pipeline for pass");
+        return pipeline;
     }
 
 }

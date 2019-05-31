@@ -3,7 +3,6 @@ package com.nucleus.scene;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.nucleus.assets.AssetManager;
 import com.nucleus.exporter.Reference;
 import com.nucleus.io.SceneSerializer.NodeInflaterListener;
 import com.nucleus.renderer.NucleusRenderer;
@@ -87,7 +86,7 @@ public interface RootNode extends Reference {
     /**
      * Release all nodes in the nodetree and destroy the root
      * Call this when you will not use any of the nodes in the tree.
-     * This will not free any textures or programs - to do that, use the {@link AssetManager}
+     * This will not free any textures/programs or buffers
      * 
      * @param renderer
      */

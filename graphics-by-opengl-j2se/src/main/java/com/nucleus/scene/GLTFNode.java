@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
+import com.nucleus.GraphicsPipeline;
 import com.nucleus.SimpleLogger;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.common.Type;
@@ -14,6 +15,7 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.GLPipeline;
 import com.nucleus.opengl.GLTFNodeRenderer;
 import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
@@ -155,16 +157,6 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     }
 
     @Override
-    public GLShaderProgram getProgram() {
-        return program;
-    }
-
-    @Override
-    public void setProgram(GLShaderProgram program) {
-        this.program = program;
-    }
-
-    @Override
     public MeshBuilder<RenderableMesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
             throws IOException {
         this.renderer = renderer;
@@ -199,9 +191,15 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
         if (glTF.getMeshes() != null) {
             for (Mesh m : glTF.getMeshes()) {
                 for (Primitive p : m.getPrimitives()) {
+                    /**
+                     * TODO dont just create new pipelines, fetch from Assets
+                     */
                     GLTFShaderProgram program = createProgram(p);
-                    p.setProgram(
-                            (GLTFShaderProgram) renderer.getAssets().getProgram(renderer, program));
+                    GLShaderProgram shader = renderer.getAssets().getProgram(renderer, program);
+                    GraphicsPipeline gp = new GLPipeline(renderer, shader, material, renderer.getRenderState());
+                    p.setPipeline(gp);
+                    SimpleLogger.d(getClass(),
+                            "----WARNING---- NOT KEEPING TRACK OF PIPELINES--------------------------");
                 }
             }
         }
@@ -231,7 +229,14 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     }
 
     @Override
-    public GLShaderProgram createProgram() {
+    public void setPipeline(GraphicsPipeline pipeline) {
+        /**
+         * This does nothing - pipelines are created in #createPrograms(GLTF)
+         */
+    }
+
+    @Override
+    public GraphicsPipeline createPipeline() {
         return null;
     }
 

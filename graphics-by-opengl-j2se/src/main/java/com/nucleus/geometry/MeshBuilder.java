@@ -2,13 +2,13 @@ package com.nucleus.geometry;
 
 import java.io.IOException;
 
-import com.nucleus.BackendException;
 import com.nucleus.Backend.DrawMode;
+import com.nucleus.BackendException;
+import com.nucleus.GraphicsPipeline;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.component.ComponentException;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.texturing.Texture2D;
@@ -77,13 +77,13 @@ public interface MeshBuilder<T> {
     public T create() throws IOException, BackendException;
 
     /**
-     * Returns the shader program that can be used to draw the mesh. This is normally only used when program to use
+     * Returns the graphics pipeline that can be used to draw the mesh. This is normally only used when program to use
      * is not known.
-     * For instance when loading nodes, or other scenarios where mesh type is known (but not program)
+     * For instance when loading nodes
      * 
-     * @return Shader program to use for drawing mesh.
+     * @return Graphics pipline to use for drawing mesh.
      */
-    public GLShaderProgram createProgram();
+    public GraphicsPipeline createPipeline();
 
     /**
      * Calculates the bounds covering this mesh - this may return null.

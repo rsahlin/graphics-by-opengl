@@ -276,8 +276,8 @@ public class NodeBuilder<T extends Node> {
                     }
                 }
             }
-            if (rNode.getProgram() == null) {
-                rNode.setProgram(meshBuilder.createProgram());
+            if (rNode.getPipeline() == null) {
+                rNode.setPipeline(meshBuilder.createPipeline());
             }
         }
     }

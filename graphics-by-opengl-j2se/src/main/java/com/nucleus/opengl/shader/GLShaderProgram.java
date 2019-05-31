@@ -13,7 +13,6 @@ import java.util.List;
 
 import com.nucleus.BackendException;
 import com.nucleus.SimpleLogger;
-import com.nucleus.assets.AssetManager;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.common.Constants;
 import com.nucleus.common.StringUtils;
@@ -1023,12 +1022,10 @@ public abstract class GLShaderProgram {
 
     /**
      * Returns the active shader attribute by name, or null if not found
-     * Avoid using this in favour of {@link #getAttribute(com.nucleus.opengl.shader.VariableIndexer.Property)}
      * 
      * @param attrib Name of attribute to return
      * @return
      */
-    @Deprecated
     public ShaderVariable getAttributeByName(String attrib) {
         return getVariableByName(attrib, activeAttributes);
     }
@@ -1610,7 +1607,6 @@ public abstract class GLShaderProgram {
 
     /**
      * Returns the key value for this shader program, this is the classname and possible name of shader used.
-     * This method is used by {@link AssetManager} when programs are compiled and stored.
      * 
      * @return Key value for this shader program.
      */

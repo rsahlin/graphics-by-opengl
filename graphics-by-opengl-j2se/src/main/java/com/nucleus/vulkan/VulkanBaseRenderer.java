@@ -5,11 +5,10 @@ import java.util.ArrayList;
 
 import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
+import com.nucleus.GraphicsPipeline;
 import com.nucleus.assets.Assets;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.shader.GLShaderProgram;
-import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.renderer.BufferFactory;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderState;
@@ -77,26 +76,6 @@ public class VulkanBaseRenderer implements NucleusRenderer {
 
     @Override
     public void render(RenderableNode<?> node) throws BackendException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void renderMesh(GLShaderProgram program, Mesh mesh, float[][] matrices) throws BackendException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void renderPrimitive(GLTFShaderProgram program, GLTF glTF, Primitive primitive, float[][] matrices)
-            throws BackendException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void drawVertices(GLShaderProgram program, Accessor indices, int vertexCount, ArrayList<Attributes> attribs,
-            ArrayList<Accessor> accessors, DrawMode mode) throws BackendException {
         // TODO Auto-generated method stub
 
     }
@@ -186,12 +165,6 @@ public class VulkanBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public boolean useProgram(GLShaderProgram program) throws BackendException {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
     public void createTexture(Texture2D texture, int target) throws BackendException {
         // TODO Auto-generated method stub
 
@@ -219,6 +192,32 @@ public class VulkanBaseRenderer implements NucleusRenderer {
     public Assets getAssets() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public void renderMesh(GraphicsPipeline pipeline, Mesh mesh, float[][] matrices) throws BackendException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void renderPrimitive(GraphicsPipeline pipeline, GLTF glTF, Primitive primitive, float[][] matrices)
+            throws BackendException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void drawVertices(GraphicsPipeline pipeline, Accessor indices, int vertexCount,
+            ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, DrawMode mode) throws BackendException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public boolean usePipeline(GraphicsPipeline pipeline) throws BackendException {
+        // TODO Auto-generated method stub
+        return false;
     }
 
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
+import com.nucleus.GraphicsPipeline;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.ElementBuffer.Type;
@@ -12,6 +13,7 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
+import com.nucleus.opengl.GLPipeline;
 import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.TranslateProgram;
 import com.nucleus.renderer.NucleusRenderer;
@@ -121,11 +123,12 @@ public class GLMesh extends Mesh {
         }
 
         @Override
-        public GLShaderProgram createProgram() {
+        public GraphicsPipeline createPipeline() {
             // Default is to create a translate program, this will use an indexer so that creating 2D objects is
             // possible.
             // this is used mainly for ui elements
-            return renderer.getAssets().getProgram(renderer, new TranslateProgram(texture));
+            GLShaderProgram shader = renderer.getAssets().getProgram(renderer, new TranslateProgram(texture));
+            return new GLPipeline(renderer, shader, material, renderer.getRenderState());
         }
 
         @Override

@@ -10,20 +10,17 @@ import java.util.Set;
 import com.nucleus.Backend;
 import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
+import com.nucleus.GraphicsPipeline;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.Assets;
 import com.nucleus.common.Constants;
-import com.nucleus.common.Environment;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.geometry.ElementBuffer;
-import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES_EXTENSION_TOKENS;
 import com.nucleus.opengl.assets.GLAssetManager;
-import com.nucleus.opengl.shader.GLShaderProgram;
-import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.opengl.shader.ShadowPass1Program;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.BufferFactory;
@@ -49,8 +46,6 @@ import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.BufferView;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Image;
-import com.nucleus.scene.gltf.Material.AlphaMode;
-import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Texture;
@@ -111,7 +106,7 @@ public class GLESBaseRenderer implements NucleusRenderer {
     protected Assets assetManager;
     private Set<RenderContextListener> contextListeners = new HashSet<RenderContextListener>();
     private Set<FrameListener> frameListeners = new HashSet<GLESBaseRenderer.FrameListener>();
-    protected int currentProgram = -1;
+    protected GraphicsPipeline currentPipeline = null;
     protected Cullface cullFace;
     protected DrawMode forceMode = null;
 
@@ -778,30 +773,18 @@ public class GLESBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public boolean useProgram(GLShaderProgram program) throws BackendException {
-        if (currentProgram != program.getProgram()) {
-            currentProgram = program.getProgram();
-            gles.glUseProgram(currentProgram);
-            GLUtils.handleError(gles, "glUseProgram " + currentProgram);
-            // TODO - is this the best place for this check - remember, this should only be done in debug cases.
-            if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
-                program.validateProgram(gles);
-            }
+    public boolean usePipeline(GraphicsPipeline pipeline) throws BackendException {
+        if (currentPipeline != pipeline) {
+            currentPipeline = pipeline;
+            pipeline.enable(this);
             return true;
         }
         return false;
     }
 
     @Override
-    public void renderMesh(GLShaderProgram program, Mesh mesh, float[][] matrices) throws BackendException {
-        Material material = mesh.getMaterial();
-        program.setUniformMatrices(matrices);
-        program.updateUniformData(program.getUniformData());
-
-        program.updateAttributes(gles, mesh);
-        program.uploadUniforms(gles);
-        program.prepareTexture(this, mesh.getTexture(Texture2D.TEXTURE_0));
-        material.setBlendModeSeparate(gles);
+    public void renderMesh(GraphicsPipeline pipeline, Mesh mesh, float[][] matrices) throws BackendException {
+        pipeline.update(this, mesh, matrices);
         int mode = gles.getDrawMode(mesh.getMode());
         ElementBuffer indices = mesh.getElementBuffer();
         if (indices == null) {
@@ -830,35 +813,17 @@ public class GLESBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void renderPrimitive(GLTFShaderProgram program, GLTF glTF, Primitive primitive, float[][] matrices)
+    public void renderPrimitive(GraphicsPipeline pipeline, GLTF glTF, Primitive primitive, float[][] matrices)
             throws BackendException {
-        if (useProgram(program)) {
-            program.updateEnvironmentUniforms(gles, glTF.getDefaultScene());
+        if (usePipeline(pipeline)) {
+            // program.updateEnvironmentUniforms(gles, glTF.getDefaultScene());
         }
-        // Can be optimized to update uniforms under the following conditions:
-        // The program has changed OR the matrices have changed, ie another parent node.
-        program.setUniformMatrices(matrices);
-        program.updateUniformData(program.getUniformData());
-        program.uploadUniforms(gles);
-        com.nucleus.scene.gltf.Material material = primitive.getMaterial();
-        if (material != null) {
-            PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
-            // Check for doublesided.
-            if (material.isDoubleSided() && renderState.getCullFace() != Cullface.NONE) {
-                cullFace = renderState.getCullFace();
-                gles.glDisable(GLES20.GL_CULL_FACE);
-            }
-            program.prepareTextures(this, glTF, primitive, material);
-            if (material.getAlphaMode() == AlphaMode.OPAQUE) {
-                gles.glDisable(GLES20.GL_BLEND);
-            } else {
-                gles.glEnable(GLES20.GL_BLEND);
-            }
+        if (renderState.getCullFace() != Cullface.NONE) {
+            cullFace = renderState.getCullFace();
         }
         Accessor indices = primitive.getIndices();
         Accessor position = primitive.getAccessor(Attributes.POSITION);
-        program.updatePBRUniforms(gles, primitive);
-        drawVertices(program, indices, position.getCount(), primitive.getAttributesArray(),
+        drawVertices(pipeline, indices, position.getCount(), primitive.getAttributesArray(),
                 primitive.getAccessorArray(), forceMode == null ? primitive.getMode() : forceMode);
         // Restore cullface if changed.
         if (cullFace != null) {
@@ -869,10 +834,9 @@ public class GLESBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void drawVertices(GLShaderProgram program, Accessor indices, int vertexCount,
+    public void drawVertices(GraphicsPipeline pipeline, Accessor indices, int vertexCount,
             ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, DrawMode mode) throws BackendException {
-        gles.glVertexAttribPointer(program, attribs, accessors);
-        GLUtils.handleError(gles, "glVertexAttribPointer");
+        pipeline.glVertexAttribPointer(attribs, accessors);
         int modeValue = gles.getDrawMode(mode);
         if (indices != null) {
             // Indexed mode - use glDrawElements

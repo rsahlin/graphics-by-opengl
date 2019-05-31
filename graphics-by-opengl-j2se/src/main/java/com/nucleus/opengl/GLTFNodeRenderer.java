@@ -3,10 +3,10 @@ package com.nucleus.opengl;
 import java.nio.FloatBuffer;
 import java.util.ArrayDeque;
 
-import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
+import com.nucleus.GraphicsPipeline;
+import com.nucleus.SimpleLogger;
 import com.nucleus.opengl.shader.GLShaderProgram;
-import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.opengl.shader.ShaderVariable;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NodeRenderer;
@@ -160,15 +160,15 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * 
      * @param renderer
      * @param glTF
-     * @param program
      * @param primitive
      * @param matrices
      * @throws BackendException
      */
     protected void renderPrimitive(NucleusRenderer renderer, GLTF glTF, Primitive primitive, float[][] matrices)
             throws BackendException {
-        GLTFShaderProgram program = (GLTFShaderProgram) getProgram(renderer, primitive, currentPass);
-        renderer.renderPrimitive(program, glTF, primitive, matrices);
+        GraphicsPipeline pipeline = getPipeline(renderer, primitive, currentPass);
+        pipeline.update(renderer, glTF, primitive, matrices);
+        renderer.renderPrimitive(pipeline, glTF, primitive, matrices);
     }
 
     private void debugTBN(NucleusRenderer renderer, GLTF gltf, Mesh mesh, float[][] matrices)
@@ -199,8 +199,9 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             for (Primitive p : primitives) {
                 gles.disableAttribPointers();
                 Accessor position = p.getAccessor(Attributes.POSITION);
-                renderer.drawVertices(debugProgram, null, position.getCount(),
-                        p.getAttributesArray(), p.getAccessorArray(), DrawMode.POINTS);
+                throw new IllegalArgumentException("Not implemented");
+                // renderer.drawVertices(debugProgram, null, position.getCount(),
+                // p.getAttributesArray(), p.getAccessorArray(), DrawMode.POINTS);
             }
         }
 
@@ -231,12 +232,13 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param pass The currently defined pass
      * @return
      */
-    protected GLShaderProgram getProgram(NucleusRenderer renderer, Primitive primitive, Pass pass) {
-        GLShaderProgram program = primitive.getProgram();
-        if (program == null) {
-            throw new IllegalArgumentException("No program for primitive ");
+    protected GraphicsPipeline getPipeline(NucleusRenderer renderer, Primitive primitive, Pass pass) {
+        GraphicsPipeline pipeline = primitive.getPipeline();
+        if (pipeline == null) {
+            throw new IllegalArgumentException("No pipeline for primitive ");
         }
-        return program.getProgram(renderer, pass, program.getShading());
+        SimpleLogger.d(getClass(), "Not solved how to get pipeline for pass");
+        return pipeline;
     }
 
 }

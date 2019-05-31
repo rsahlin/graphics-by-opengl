@@ -16,7 +16,6 @@ import com.google.gson.GsonBuilder;
 import com.nucleus.Backend;
 import com.nucleus.BackendException;
 import com.nucleus.SimpleLogger;
-import com.nucleus.assets.AssetManager;
 import com.nucleus.assets.Assets;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.io.gson.TextureDeserializer;
@@ -91,7 +90,6 @@ public class GLAssetManager implements Assets {
 
     /**
      * Internal constructor - do not use directly
-     * Use {@link AssetManager}
      */
     public GLAssetManager(Backend backend) {
     }
@@ -676,7 +674,7 @@ public class GLAssetManager implements Assets {
     /**
      * Internal method to create a texture based on the texture setup source, the texture will be set with data from
      * texture setup and uploaded to GL.
-     * If the texture source is an external reference the texture image is fetched from {@link AssetManager}
+     * If the texture source is an external reference the texture image is fetched from {@link Assets}
      * If the texture source is a dynamic id reference it is looked for and setup if found.
      * Texture parameters are uploaded.
      * When this method returns the texture is ready to be used.

@@ -14,7 +14,6 @@ import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.geometry.shape.ShapeBuilderFactory;
 import com.nucleus.opengl.geometry.GLMesh;
-import com.nucleus.opengl.shader.VariableIndexer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
@@ -62,7 +61,7 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
         builder.setTexture(tex);
         if (shapeBuilder == null) {
             // We may need program when creating shapeBuilder
-            setProgram(builder.createProgram());
+            setPipeline(builder.createPipeline());
             builder.setArrayMode(DrawMode.TRIANGLE_FAN, 4, 0);
             if (shape == null) {
                 LayerNode layer = getRootNode().getNodeByType(NodeTypes.layernode.name(), LayerNode.class);
@@ -70,10 +69,6 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
                 shapeBuilder = new RectangleShapeBuilder(
                         new RectangleConfiguration(view.getWidth(), view.getHeight(), 0f, 1, 0));
             } else {
-                VariableIndexer indexer = program.getIndexer();
-                if (indexer == null) {
-                    indexer = program.createIndexer();
-                }
                 shapeBuilder = ShapeBuilderFactory.getInstance().createBuilder(shape, count, 0);
             }
         }
