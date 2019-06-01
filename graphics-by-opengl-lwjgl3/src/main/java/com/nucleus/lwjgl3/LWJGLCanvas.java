@@ -10,7 +10,6 @@ import static org.lwjgl.system.jawt.JAWTFunctions.JAWT_DrawingSurface_FreeDrawin
 import static org.lwjgl.system.jawt.JAWTFunctions.JAWT_DrawingSurface_GetDrawingSurfaceInfo;
 import static org.lwjgl.system.jawt.JAWTFunctions.JAWT_DrawingSurface_Lock;
 import static org.lwjgl.system.jawt.JAWTFunctions.JAWT_DrawingSurface_Unlock;
-import static org.lwjgl.system.jawt.JAWTFunctions.JAWT_FreeDrawingSurface;
 import static org.lwjgl.system.jawt.JAWTFunctions.JAWT_GetAWT;
 import static org.lwjgl.system.jawt.JAWTFunctions.JAWT_GetDrawingSurface;
 import static org.lwjgl.system.jawt.JAWTFunctions.JAWT_LOCK_ERROR;
@@ -84,68 +83,68 @@ public abstract class LWJGLCanvas extends Canvas {
     public void paint(Graphics g) {
         // Get the drawing surface
         JAWTDrawingSurface ds = JAWT_GetDrawingSurface(awt.GetDrawingSurface(), this);
+        // JAWTDrawingSurface ds = JAWT_GetDrawingSurface(this, awt.GetDrawingSurface());
         if (ds == null) {
             throw new RuntimeException("awt->GetDrawingSurface() failed");
         }
-        try {
-            // Lock the drawing surface
-            int lock = JAWT_DrawingSurface_Lock(ds.Lock(), ds);
-            if ((lock & JAWT_LOCK_ERROR) != 0) {
-                throw new RuntimeException("ds->Lock() failed");
-            }
+        // Lock the drawing surface
+        int lock = JAWT_DrawingSurface_Lock(ds.Lock(), ds);
+        // int lock = JAWT_DrawingSurface_Lock(ds, ds.Lock());
+        if ((lock & JAWT_LOCK_ERROR) != 0) {
+            throw new RuntimeException("ds->Lock() failed");
+        }
 
+        try {
+            // Get the drawing surface info
+            JAWTDrawingSurfaceInfo dsi = JAWT_DrawingSurface_GetDrawingSurfaceInfo(ds.GetDrawingSurfaceInfo(), ds);
+            // JAWTDrawingSurfaceInfo dsi = JAWT_DrawingSurface_GetDrawingSurfaceInfo(ds, ds.GetDrawingSurfaceInfo());
             try {
-                // Get the drawing surface info
-                JAWTDrawingSurfaceInfo dsi = JAWT_DrawingSurface_GetDrawingSurfaceInfo(ds.GetDrawingSurfaceInfo(), ds);
-                try {
-                    long hdc = getHDC(dsi);
-                    if (hdc != NULL) {
-                        if (context == NULL) {
-                            try {
-                                createContext(hdc);
-                                if (context == NULL) {
-                                    throw new IllegalStateException("createContext() failed");
-                                }
-                                if (!makeCurrent(hdc)) {
-                                    throw new IllegalStateException("makeCurrent() failed");
-                                }
-                                if (caps == null) {
-                                    // Bypasses the default create() method.
-                                    Configuration.OPENGLES_EXPLICIT_INIT.set(true);
-                                    GLES.create(GL.getFunctionProvider());
-                                    caps = GLES.createCapabilities();
-                                    window.internalCreateCoreApp(width, height);
-                                    swapBuffers(hdc);
-                                    window.internalContextCreated(width, height);
-                                }
-                            } catch (Throwable t) {
-                                this.setVisible(false);
-                                throw new IllegalArgumentException("Could not create context:", t);
+                long hdc = getHDC(dsi);
+                if (hdc != NULL) {
+                    if (context == NULL) {
+                        try {
+                            createContext(hdc);
+                            if (context == NULL) {
+                                throw new IllegalStateException("createContext() failed");
                             }
-                        } else {
                             if (!makeCurrent(hdc)) {
                                 throw new IllegalStateException("makeCurrent() failed");
                             }
-                            GLES.setCapabilities(caps);
+                            if (caps == null) {
+                                // Bypasses the default create() method.
+                                Configuration.OPENGLES_EXPLICIT_INIT.set(true);
+                                GLES.create(GL.getFunctionProvider());
+                                caps = GLES.createCapabilities();
+                                window.internalCreateCoreApp(width, height);
+                                swapBuffers(hdc);
+                                window.internalContextCreated(width, height);
+                            }
+                        } catch (Throwable t) {
+                            this.setVisible(false);
+                            throw new IllegalArgumentException("Could not create context:", t);
                         }
-                        if (coreApp != null) {
-                            coreApp.renderFrame();
-                            swapBuffers(hdc);
-                        } else {
-                            SimpleLogger.d(getClass(), "CoreApp is null");
+                    } else {
+                        if (!makeCurrent(hdc)) {
+                            throw new IllegalStateException("makeCurrent() failed");
                         }
+                        GLES.setCapabilities(caps);
                     }
-                } finally {
-                    // Free the drawing surface info
-                    JAWT_DrawingSurface_FreeDrawingSurfaceInfo(ds.FreeDrawingSurfaceInfo(), dsi);
+                    if (coreApp != null) {
+                        coreApp.renderFrame();
+                        swapBuffers(hdc);
+                    } else {
+                        SimpleLogger.d(getClass(), "CoreApp is null");
+                    }
                 }
             } finally {
-                // Unlock the drawing surface
-                JAWT_DrawingSurface_Unlock(ds.Unlock(), ds);
+                // Free the drawing surface info
+                JAWT_DrawingSurface_FreeDrawingSurfaceInfo(ds.FreeDrawingSurfaceInfo(), dsi);
+                // JAWT_DrawingSurface_FreeDrawingSurfaceInfo(dsi, ds.FreeDrawingSurfaceInfo());
             }
         } finally {
-            // Free the drawing surface
-            JAWT_FreeDrawingSurface(awt.FreeDrawingSurface(), ds);
+            // Unlock the drawing surface
+            JAWT_DrawingSurface_Unlock(ds.Unlock(), ds);
+            // JAWT_DrawingSurface_Unlock(ds, ds.Unlock());
         }
         repaint();
     }
