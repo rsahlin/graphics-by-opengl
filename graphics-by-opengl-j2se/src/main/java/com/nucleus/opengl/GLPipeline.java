@@ -35,11 +35,11 @@ public class GLPipeline extends GraphicsPipeline {
     protected Material material;
     protected RenderState renderState;
 
-    public GLPipeline(NucleusRenderer renderer, GLShaderProgram shader, Material material, RenderState renderState) {
+    public GLPipeline(NucleusRenderer renderer, GLShaderProgram shader, Material material) {
         this.renderer = renderer;
         this.shader = shader;
         this.material = material;
-        this.renderState = renderState;
+        renderState = renderer.getRenderState();
     }
 
     @Override

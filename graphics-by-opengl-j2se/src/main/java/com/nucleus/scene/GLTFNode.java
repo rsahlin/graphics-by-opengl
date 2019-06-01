@@ -196,7 +196,7 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
                      */
                     GLTFShaderProgram program = createProgram(p);
                     GLShaderProgram shader = renderer.getAssets().getProgram(renderer, program);
-                    GraphicsPipeline gp = new GLPipeline(renderer, shader, material, renderer.getRenderState());
+                    GraphicsPipeline gp = new GLPipeline(renderer, shader, material);
                     p.setPipeline(gp);
                     SimpleLogger.d(getClass(),
                             "----WARNING---- NOT KEEPING TRACK OF PIPELINES--------------------------");

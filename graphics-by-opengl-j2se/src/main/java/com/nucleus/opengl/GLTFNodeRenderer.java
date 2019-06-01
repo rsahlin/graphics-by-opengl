@@ -167,6 +167,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     protected void renderPrimitive(NucleusRenderer renderer, GLTF glTF, Primitive primitive, float[][] matrices)
             throws BackendException {
         GraphicsPipeline pipeline = getPipeline(renderer, primitive, currentPass);
+        renderer.usePipeline(pipeline);
         pipeline.update(renderer, glTF, primitive, matrices);
         renderer.renderPrimitive(pipeline, glTF, primitive, matrices);
     }

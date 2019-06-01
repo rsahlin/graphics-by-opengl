@@ -82,7 +82,7 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
                     new GenericShaderProgram(new String[] { VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME }, null,
                             GLShaderProgram.Shading.flat, null,
                             ProgramType.VERTEX_FRAGMENT));
-            GraphicsPipeline pipeline = new GLPipeline(renderer, shader, material, renderer.getRenderState());
+            GraphicsPipeline pipeline = new GLPipeline(renderer, shader, material);
             setPipeline(pipeline);
         }
         return initMeshBuilder(renderer, count, builder.getShapeBuilder(), builder);

@@ -128,7 +128,7 @@ public class GLMesh extends Mesh {
             // possible.
             // this is used mainly for ui elements
             GLShaderProgram shader = renderer.getAssets().getProgram(renderer, new TranslateProgram(texture));
-            return new GLPipeline(renderer, shader, material, renderer.getRenderState());
+            return new GLPipeline(renderer, shader, material);
         }
 
         @Override
