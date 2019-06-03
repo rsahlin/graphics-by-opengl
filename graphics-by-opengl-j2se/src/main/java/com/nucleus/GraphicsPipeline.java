@@ -1,5 +1,6 @@
 package com.nucleus;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
@@ -55,5 +56,12 @@ public abstract class GraphicsPipeline extends Pipeline {
      */
     @Deprecated
     public abstract int getAttributesPerVertex(BufferIndex buffer);
+
+    /**
+     * Returns the uniform data, this shall be mapped to shader
+     * 
+     * @return The floatbuffer holding uniform data
+     */
+    public abstract FloatBuffer getUniformData();
 
 }

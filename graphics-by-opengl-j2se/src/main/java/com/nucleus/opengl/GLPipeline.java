@@ -1,5 +1,6 @@
 package com.nucleus.opengl;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import com.nucleus.BackendException;
@@ -134,6 +135,11 @@ public class GLPipeline extends GraphicsPipeline {
             renderer.getGLES().glDeleteProgram(shader.getProgram());
             shader = null;
         }
+    }
+
+    @Override
+    public FloatBuffer getUniformData() {
+        return shader.getUniformData();
     }
 
 }
