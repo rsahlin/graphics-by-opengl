@@ -2,6 +2,7 @@ package com.nucleus.renderer;
 
 import com.nucleus.Backend;
 import com.nucleus.opengl.GLESBaseRenderer;
+import com.nucleus.vulkan.VulkanBaseRenderer;
 
 /**
  * Creates an implementation of the nucleus renderer interface.
@@ -33,6 +34,7 @@ public class RendererFactory {
             case GLES32:
                 return new GLESBaseRenderer(backend);
             case VULKAN11:
+                return new VulkanBaseRenderer(backend);
             default:
                 throw new IllegalArgumentException("Not implemented for " + backend.getVersion());
         }

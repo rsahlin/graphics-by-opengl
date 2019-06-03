@@ -3,6 +3,7 @@ package com.nucleus.vulkan;
 import java.nio.Buffer;
 import java.util.ArrayList;
 
+import com.nucleus.Backend;
 import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
@@ -10,8 +11,8 @@ import com.nucleus.Pipeline;
 import com.nucleus.assets.Assets;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.renderer.BaseRenderer;
 import com.nucleus.renderer.BufferFactory;
-import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderState;
 import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.scene.RenderableNode;
@@ -25,7 +26,11 @@ import com.nucleus.scene.gltf.Texture;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.Texture2D;
 
-public class VulkanBaseRenderer implements NucleusRenderer {
+public class VulkanBaseRenderer extends BaseRenderer {
+
+    public VulkanBaseRenderer(Backend backend) {
+        super(backend);
+    }
 
     @Override
     public void contextCreated(int width, int height) {

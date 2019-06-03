@@ -12,6 +12,7 @@ import com.nucleus.Pipeline;
 import com.nucleus.assets.Assets;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.renderer.BaseRenderer.FrameListener;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
@@ -162,31 +163,6 @@ public interface NucleusRenderer {
          */
         public void surfaceLost();
 
-    }
-
-    /**
-     * Used to drive processing from the render, use this when you need the rendering to drive behavior or other
-     * calculations.
-     * 
-     * @author Richard Sahlin
-     *
-     */
-    @Deprecated
-    public interface FrameListener {
-        /**
-         * Called when a new frame shall be processed (by the logic)
-         * Update objects position, behavior, animation etc based on the deltaTime.
-         * Do not update any GL data to keep this thread-safe for GL.
-         * 
-         * @param deltaTime Time, in seconds, since last frame
-         */
-        public void processFrame(float deltaTime);
-
-        /**
-         * Called after {@link #processFrame(float)} and before rendering to GL.
-         * Implementations must update GL data that has changed during the call to {@link #processFrame(float)}
-         */
-        public void updateGLData();
     }
 
     /**

@@ -3,9 +3,7 @@ package com.nucleus.opengl;
 import java.nio.Buffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.nucleus.Backend;
 import com.nucleus.Backend.DrawMode;
@@ -24,10 +22,10 @@ import com.nucleus.opengl.GLESWrapper.GLES_EXTENSION_TOKENS;
 import com.nucleus.opengl.assets.GLAssetManager;
 import com.nucleus.opengl.shader.ShadowPass1Program;
 import com.nucleus.profiling.FrameSampler;
+import com.nucleus.renderer.BaseRenderer;
 import com.nucleus.renderer.BufferFactory;
 import com.nucleus.renderer.Configuration;
 import com.nucleus.renderer.NodeRenderer;
-import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
 import com.nucleus.renderer.RenderState;
@@ -65,70 +63,9 @@ import com.nucleus.vecmath.Matrix;
  * This class does not create thread to drive rendering, that shall be done separately.
  * 
  */
-public class GLESBaseRenderer implements NucleusRenderer {
-
-    public final static String NOT_INITIALIZED_ERROR = "Not initialized, must call init()";
-
-    protected final static String BASE_RENDERER_TAG = "BaseRenderer";
-
-    private final static String NULL_GLESWRAPPER_ERROR = "GLES wrapper is null";
-    private final static String INVALID_WRAPPER_ERROR = "Render backend wrapper is not instance of GLES";
-
-    private final static int FPS_SAMPLER_DELAY = 5;
-
-    protected SurfaceConfiguration surfaceConfig;
-
-    protected ArrayDeque<float[]> matrixStack = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
-    protected ArrayDeque<float[]> projection = new ArrayDeque<float[]>(MIN_STACKELEMENTS);
-    protected ArrayDeque<Pass> renderPassStack = new ArrayDeque<>();
-    // TODO - move this into a class together with render pass deque so that access of stack and current pass
-    // is handled consistently
-    private Pass currentPass;
-    /**
-     * Reference to the current modelmatrix, each Node has its own Matrix that is referenced.
-     */
-    protected float[] modelMatrix;
-    /**
-     * see {@link Matrices}
-     */
-    protected float[][] matrices = new float[Matrices.values().length][];
-    /**
-     * The view matrix
-     */
-    protected float[] viewMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
-
-    /**
-     * Temp matrix - not threadsafe
-     */
-    protected float[] tempMatrix = Matrix.createMatrix();
+public class GLESBaseRenderer extends BaseRenderer {
 
     protected GLES20Wrapper gles;
-    protected BufferFactory bufferFactory;
-    protected Assets assetManager;
-    private Set<RenderContextListener> contextListeners = new HashSet<RenderContextListener>();
-    private Set<FrameListener> frameListeners = new HashSet<GLESBaseRenderer.FrameListener>();
-    protected GraphicsPipeline currentPipeline = null;
-    protected Cullface cullFace;
-    protected DrawMode forceMode = null;
-
-    private FrameSampler timeKeeper = FrameSampler.getInstance();
-    private float deltaTime;
-
-    protected Window window = Window.getInstance();
-
-    /**
-     * Set to true when init is called
-     */
-    private boolean initialized = false;
-    /**
-     * Set to true when context is created, if set again it means context was
-     * lost and re-created.
-     */
-    protected boolean contextCreated = false;
-    /**
-     * Copy of applied renderstate
-     */
-    protected RenderState renderState = new RenderState();
 
     /**
      * Creates a new GLES based renderer
@@ -137,11 +74,9 @@ public class GLESBaseRenderer implements NucleusRenderer {
      * @throws IllegalArgumentException If gles is null or not instance of GLESWrapper
      */
     public GLESBaseRenderer(Backend backend) {
-        if (backend == null) {
-            throw new IllegalArgumentException(NULL_GLESWRAPPER_ERROR);
-        }
+        super(backend);
         if (!(backend instanceof GLESWrapper)) {
-            throw new IllegalArgumentException(INVALID_WRAPPER_ERROR);
+            throw new IllegalArgumentException(INVALID_WRAPPER_ERROR + " : " + backend);
         }
         gles = (GLES20Wrapper) backend;
         gles.createInfo();
