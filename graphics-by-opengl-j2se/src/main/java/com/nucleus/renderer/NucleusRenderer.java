@@ -8,6 +8,7 @@ import com.nucleus.BackendException;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.GraphicsPipeline;
+import com.nucleus.Pipeline;
 import com.nucleus.assets.Assets;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
@@ -472,7 +473,12 @@ public interface NucleusRenderer {
      */
     public void deleteTextures(int[] names);
 
-    public void deletePrograms(int[] names);
+    /**
+     * Deletes the shaders/program used for the pipeline
+     * 
+     * @param pipeline
+     */
+    public void deletePipeline(Pipeline pipeline);
 
     /**
      * Returns the factory that shall be used to create buffers

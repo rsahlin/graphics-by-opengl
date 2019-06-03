@@ -4,6 +4,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import com.nucleus.Backend.DrawMode;
+import com.nucleus.GraphicsPipeline;
 import com.nucleus.SimpleLogger;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.Material;
@@ -70,9 +71,9 @@ public class RootNodeBuilder {
         RootNode root = newInstance(NUCLEUS_SCENE, "splashroot");
         NodeBuilder<Node> builder = new NodeBuilder<>();
         builder.setRoot(root);
-        TranslateProgram vt = (TranslateProgram) renderer.getAssets().getProgram(renderer,
+        GraphicsPipeline pipeline = renderer.getAssets().getPipeline(renderer,
                 new TranslateProgram(GLShaderProgram.Shading.textured));
-        builder.setProgram(vt);
+        builder.setPipeline(pipeline);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
         Texture2D texture = renderer.getAssets().getTexture(renderer,
                 BaseImageFactory.getInstance(), "texture",
@@ -82,7 +83,7 @@ public class RootNodeBuilder {
         meshBuilder.setTexture(texture);
         Material material = new Material();
         Rectangle rect = texture.calculateRectangle(0);
-        meshBuilder.setMaterial(material).setAttributesPerVertex(vt.getAttributeSizes())
+        meshBuilder.setMaterial(material).setAttributesPerVertex(pipeline.getAttributeSizes())
                 .setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(rect, 1f, 1, 0)));
         builder.setType(NodeTypes.meshnode).setMeshBuilder(meshBuilder).setMeshCount(1);
         RenderPass pass = new RenderPass("RenderPass", new RenderTarget(Target.FRAMEBUFFER, null), new RenderState(),

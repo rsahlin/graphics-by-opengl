@@ -15,6 +15,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nucleus.Backend;
 import com.nucleus.BackendException;
+import com.nucleus.GraphicsPipeline;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.Assets;
 import com.nucleus.io.ExternalReference;
@@ -22,6 +23,7 @@ import com.nucleus.io.gson.TextureDeserializer;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
+import com.nucleus.opengl.GLPipeline;
 import com.nucleus.opengl.TextureUtils;
 import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.profiling.FrameSampler;
@@ -79,7 +81,7 @@ public class GLAssetManager implements Assets {
      */
     private HashMap<String, BufferImage> images = new HashMap<>();
 
-    private HashMap<String, GLShaderProgram> programs = new HashMap<>();
+    private HashMap<String, GraphicsPipeline> graphicPipelines = new HashMap<>();
 
     private HashMap<String, GLTF> gltfAssets = new HashMap<>();
 
@@ -235,9 +237,9 @@ public class GLAssetManager implements Assets {
     }
 
     @Override
-    public GLShaderProgram getProgram(NucleusRenderer renderer, GLShaderProgram program) {
+    public GraphicsPipeline getPipeline(NucleusRenderer renderer, GLShaderProgram program) {
         String key = program.getKey();
-        GLShaderProgram compiled = programs.get(key);
+        GraphicsPipeline compiled = graphicPipelines.get(key);
         if (compiled != null) {
             return compiled;
         }
@@ -247,9 +249,10 @@ public class GLAssetManager implements Assets {
             FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, program.getClass().getSimpleName(),
                     start,
                     System.currentTimeMillis());
-            programs.put(key, program);
-            SimpleLogger.d(getClass(), "Stored shaderprogram with key: " + key);
-            return program;
+            compiled = new GLPipeline(renderer, program);
+            graphicPipelines.put(key, compiled);
+            SimpleLogger.d(getClass(), "Stored graphics pipeline with key: " + key);
+            return compiled;
         } catch (BackendException e) {
             throw new RuntimeException(e);
         }
@@ -281,10 +284,10 @@ public class GLAssetManager implements Assets {
     }
 
     private void deletePrograms(NucleusRenderer renderer) {
-        for (GLShaderProgram program : programs.values()) {
-            renderer.deletePrograms(new int[] { program.getProgram() });
+        for (GraphicsPipeline pipeline : graphicPipelines.values()) {
+            renderer.deletePipeline(pipeline);
         }
-        programs.clear();
+        graphicPipelines.clear();
     }
 
     @Override

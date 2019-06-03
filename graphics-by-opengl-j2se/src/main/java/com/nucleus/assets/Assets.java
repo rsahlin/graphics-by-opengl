@@ -3,6 +3,7 @@ package com.nucleus.assets;
 import java.io.IOException;
 
 import com.nucleus.BackendException;
+import com.nucleus.GraphicsPipeline;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
@@ -116,17 +117,17 @@ public interface Assets {
     public void getIdReference(Texture2D reference);
 
     /**
-     * Returns a loaded and compiled shader program, if the program has not already been loaded and compiled it will be
+     * Returns a loaded and compiled pipeline, if the pipeline has not already been loaded and compiled it will be
      * added to AssetManager using shader program and function.
-     * Next time this method is called with the same shaderprogram and function the existing instance is returned.
+     * Next time this method is called with the same shaderprogram and function the existing instance of the pipeline is
+     * returned.
      * 
      * @param renderer
      * @param program
-     * @return An instance of the ShaderProgram that is loaded and compiled
-     * or linking the program.
-     * @throws RuntimeException If the program could not be compiled or linked
+     * @return An instance of the pipeline that is loaded and compiled
+     * @throws RuntimeException If the pipeline could not be compiled or linked
      */
-    public GLShaderProgram getProgram(NucleusRenderer renderer, GLShaderProgram program);
+    public GraphicsPipeline getPipeline(NucleusRenderer renderer, GLShaderProgram program);
 
     /**
      * Deletes loaded gltf assets. This will delete binary buffers and texture images and then remove

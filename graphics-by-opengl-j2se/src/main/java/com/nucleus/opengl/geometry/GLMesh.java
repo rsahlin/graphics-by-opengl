@@ -13,7 +13,6 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.GLPipeline;
 import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.TranslateProgram;
 import com.nucleus.renderer.NucleusRenderer;
@@ -125,10 +124,8 @@ public class GLMesh extends Mesh {
         @Override
         public GraphicsPipeline createPipeline() {
             // Default is to create a translate program, this will use an indexer so that creating 2D objects is
-            // possible.
-            // this is used mainly for ui elements
-            GLShaderProgram shader = renderer.getAssets().getProgram(renderer, new TranslateProgram(texture));
-            return new GLPipeline(renderer, shader, material);
+            // possible. This is used mainly for ui elements
+            return renderer.getAssets().getPipeline(renderer, new TranslateProgram(texture));
         }
 
         @Override

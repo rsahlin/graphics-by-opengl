@@ -1,13 +1,10 @@
 package com.nucleus.opengl;
 
-import java.nio.FloatBuffer;
 import java.util.ArrayDeque;
 
 import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
 import com.nucleus.SimpleLogger;
-import com.nucleus.opengl.shader.GLShaderProgram;
-import com.nucleus.opengl.shader.ShaderVariable;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
@@ -15,12 +12,10 @@ import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderState;
 import com.nucleus.scene.GLTFNode;
-import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Node;
 import com.nucleus.scene.gltf.Primitive;
-import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Scene;
 import com.nucleus.vecmath.Matrix.MatrixStack;
 
@@ -180,30 +175,31 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             if (primitives == null) {
                 primitives = mesh.createDebugTBNPrimitives(gles, mesh.getPrimitives());
             }
-            GLShaderProgram debugProgram = renderer.getAssets().getProgram(renderer, mesh.getDebugTBNProgram());
-            gles.glUseProgram(debugProgram.getProgram());
-            // Set uniforms.
-            ShaderVariable var = debugProgram.getUniformByName(Attributes._EMISSIVE.name());
-            FloatBuffer uniformData = debugProgram.getUniformData();
-            if (var != null && uniformData != null) {
-                uniformData.position(var.getOffset());
-                float[] debugColors = new float[] { 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1 };
-                uniformData.put(debugColors);
-            }
-            debugProgram.uploadUniform(gles, debugProgram.getUniformData(),
-                    debugProgram.getUniformByName(Attributes._EMISSIVE.name()));
-
-            gles.glUseProgram(debugProgram.getProgram());
-            debugProgram.setUniformMatrices(matrices);
-            debugProgram.updateUniformData(debugProgram.getUniformData());
-            debugProgram.uploadUniforms(gles);
-            for (Primitive p : primitives) {
-                gles.disableAttribPointers();
-                Accessor position = p.getAccessor(Attributes.POSITION);
-                throw new IllegalArgumentException("Not implemented");
-                // renderer.drawVertices(debugProgram, null, position.getCount(),
-                // p.getAttributesArray(), p.getAccessorArray(), DrawMode.POINTS);
-            }
+            GraphicsPipeline debugPipeline = renderer.getAssets().getPipeline(renderer, mesh.getDebugTBNProgram());
+            /*
+             * // Set uniforms.
+             * ShaderVariable var = debugProgram.getUniformByName(Attributes._EMISSIVE.name());
+             * FloatBuffer uniformData = debugProgram.getUniformData();
+             * if (var != null && uniformData != null) {
+             * uniformData.position(var.getOffset());
+             * float[] debugColors = new float[] { 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1 };
+             * uniformData.put(debugColors);
+             * }
+             * debugProgram.uploadUniform(gles, debugProgram.getUniformData(),
+             * debugProgram.getUniformByName(Attributes._EMISSIVE.name()));
+             * 
+             * gles.glUseProgram(debugProgram.getProgram());
+             * debugProgram.setUniformMatrices(matrices);
+             * debugProgram.updateUniformData(debugProgram.getUniformData());
+             * debugProgram.uploadUniforms(gles);
+             * for (Primitive p : primitives) {
+             * gles.disableAttribPointers();
+             * Accessor position = p.getAccessor(Attributes.POSITION);
+             * throw new IllegalArgumentException("Not implemented");
+             * // renderer.drawVertices(debugProgram, null, position.getCount(),
+             * // p.getAttributesArray(), p.getAccessorArray(), DrawMode.POINTS);
+             * }
+             */
         }
 
     }

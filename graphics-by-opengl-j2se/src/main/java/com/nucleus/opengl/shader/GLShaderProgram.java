@@ -34,7 +34,6 @@ import com.nucleus.opengl.GLUtils;
 import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
 import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.opengl.shader.ShaderVariable.VariableType;
-import com.nucleus.opengl.shader.ShadowPass1Program.Shadow1Categorizer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
@@ -375,15 +374,15 @@ public abstract class GLShaderProgram {
                 return this;
             case SHADOW1:
                 if (shadowPass1 == null) {
-                    shadowPass1 = renderer.getAssets().getProgram(renderer,
-                            new ShadowPass1Program(this, new Shadow1Categorizer(Pass.SHADOW1, shading,
-                                    function.getCategory()), shaders));
+                    // shadowPass1 = renderer.getAssets().getProgram(renderer,
+                    // new ShadowPass1Program(this, new Shadow1Categorizer(Pass.SHADOW1, shading,
+                    // function.getCategory()), shaders));
                 }
                 return shadowPass1;
             case SHADOW2:
                 if (shadowPass2 == null) {
-                    shadowPass2 = renderer.getAssets().getProgram(renderer,
-                            new ShadowPass2Program(this, pass, function.getCategory(), shading, shaders));
+                    // shadowPass2 = renderer.getAssets().getProgram(renderer,
+                    // new ShadowPass2Program(this, pass, function.getCategory(), shading, shaders));
                 }
                 return shadowPass2;
             default:

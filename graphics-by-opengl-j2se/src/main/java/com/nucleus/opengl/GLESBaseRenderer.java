@@ -11,6 +11,7 @@ import com.nucleus.Backend;
 import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
+import com.nucleus.Pipeline;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.Assets;
 import com.nucleus.common.Constants;
@@ -876,13 +877,6 @@ public class GLESBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void deletePrograms(int[] names) {
-        for (int i : names) {
-            getGLES().glDeleteProgram(i);
-        }
-    }
-
-    @Override
     public BufferFactory getBufferFactory() {
         return bufferFactory;
     }
@@ -890,6 +884,11 @@ public class GLESBaseRenderer implements NucleusRenderer {
     @Override
     public Assets getAssets() {
         return assetManager;
+    }
+
+    @Override
+    public void deletePipeline(Pipeline pipeline) {
+        pipeline.destroy(this);
     }
 
 }

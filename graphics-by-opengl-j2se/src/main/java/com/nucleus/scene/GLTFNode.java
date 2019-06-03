@@ -15,9 +15,7 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.GLPipeline;
 import com.nucleus.opengl.GLTFNodeRenderer;
-import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
@@ -191,15 +189,9 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
         if (glTF.getMeshes() != null) {
             for (Mesh m : glTF.getMeshes()) {
                 for (Primitive p : m.getPrimitives()) {
-                    /**
-                     * TODO dont just create new pipelines, fetch from Assets
-                     */
                     GLTFShaderProgram program = createProgram(p);
-                    GLShaderProgram shader = renderer.getAssets().getProgram(renderer, program);
-                    GraphicsPipeline gp = new GLPipeline(renderer, shader, material);
+                    GraphicsPipeline gp = renderer.getAssets().getPipeline(renderer, program);
                     p.setPipeline(gp);
-                    SimpleLogger.d(getClass(),
-                            "----WARNING---- NOT KEEPING TRACK OF PIPELINES--------------------------");
                 }
             }
         }

@@ -6,7 +6,6 @@ import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
 import com.nucleus.common.Environment;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
-import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.shader.GLShaderProgram;
@@ -32,13 +31,11 @@ public class GLPipeline extends GraphicsPipeline {
 
     protected NucleusRenderer renderer;
     protected GLShaderProgram shader;
-    protected Material material;
     protected RenderState renderState;
 
-    public GLPipeline(NucleusRenderer renderer, GLShaderProgram shader, Material material) {
+    public GLPipeline(NucleusRenderer renderer, GLShaderProgram shader) {
         this.renderer = renderer;
         this.shader = shader;
-        this.material = material;
         renderState = renderer.getRenderState();
     }
 
@@ -64,7 +61,7 @@ public class GLPipeline extends GraphicsPipeline {
         shader.updateAttributes(gles, mesh);
         shader.uploadUniforms(gles);
         shader.prepareTexture(renderer, mesh.getTexture(Texture2D.TEXTURE_0));
-        material.setBlendModeSeparate(gles);
+        mesh.getMaterial().setBlendModeSeparate(gles);
 
     }
 
@@ -129,6 +126,14 @@ public class GLPipeline extends GraphicsPipeline {
     @Override
     public int getAttributesPerVertex(BufferIndex buffer) {
         return shader.getAttributesPerVertex(buffer);
+    }
+
+    @Override
+    public void destroy(NucleusRenderer renderer) {
+        if (shader != null) {
+            renderer.getGLES().glDeleteProgram(shader.getProgram());
+            shader = null;
+        }
     }
 
 }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
+import com.nucleus.Pipeline;
 import com.nucleus.assets.Assets;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
@@ -177,12 +178,6 @@ public class VulkanBaseRenderer implements NucleusRenderer {
     }
 
     @Override
-    public void deletePrograms(int[] names) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     public BufferFactory getBufferFactory() {
         // TODO Auto-generated method stub
         return null;
@@ -218,6 +213,12 @@ public class VulkanBaseRenderer implements NucleusRenderer {
     public boolean usePipeline(GraphicsPipeline pipeline) throws BackendException {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    @Override
+    public void deletePipeline(Pipeline pipeline) {
+        // TODO Auto-generated method stub
+
     }
 
 }
