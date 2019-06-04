@@ -68,6 +68,22 @@ public class GLESBufferFactory implements BufferFactory {
     }
 
     @Override
+    public void destroyVBOs(Mesh mesh) {
+        ElementBuffer indices = mesh.getElementBuffer();
+        if (indices != null && indices.getBufferName() > 0) {
+            gles.glDeleteBuffers(1, new int[] { indices.getBufferName() }, 0);
+        }
+        AttributeBuffer[] attributes = mesh.getAttributeBuffers();
+        if (attributes != null) {
+            for (AttributeBuffer buffer : attributes) {
+                if (buffer.getBufferName() > 0) {
+                    gles.glDeleteBuffers(1, new int[] { buffer.getBufferName() }, 0);
+                }
+            }
+        }
+    }
+
+    @Override
     public void createUBOs(BlockBuffer[] uniformBlocks) throws BackendException {
         if (uniformBlocks == null) {
             return;

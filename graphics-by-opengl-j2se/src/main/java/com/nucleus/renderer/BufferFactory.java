@@ -25,6 +25,15 @@ public interface BufferFactory {
     public void createVBOs(Mesh mesh) throws BackendException;
 
     /**
+     * Destroys the vbos for the mesh, if previously allocated with a call to {@link #createVBOs(Mesh)}, otherwise
+     * this method does nothing.
+     * After calling this method the VBOs are not available.
+     * 
+     * @param mesh
+     */
+    public void destroyVBOs(Mesh mesh);
+
+    /**
      * Creates buffer objects for the uniform blocks, buffers are allocated and names stored in uniformBlocks
      * 
      * @param uniformBlocks uniform block buffers to create buffer objects for, or null

@@ -235,6 +235,20 @@ public abstract class Mesh extends BaseReference implements AttributeUpdater {
     }
 
     /**
+     * Clears VBO buffer names - call this when VBO buffers are destroyed
+     */
+    public void clearBufferNames() {
+        if (indices != null) {
+            indices.setBufferName(0);
+        }
+        for (AttributeBuffer b : attributes) {
+            if (b != null) {
+                b.setBufferName(0);
+            }
+        }
+    }
+
+    /**
      * Returns the number of buffer object names that are needed for this mesh.
      * Usage of buffer objects is recommended over passing java.nio.Buffers directly
      * 
@@ -281,16 +295,7 @@ public abstract class Mesh extends BaseReference implements AttributeUpdater {
     }
 
     private void deleteVBO(NucleusRenderer renderer) {
-        if (indices != null && indices.getBufferName() > 0) {
-            renderer.deleteBuffers(1, new int[] { indices.getBufferName() }, 0);
-        }
-        if (attributes != null) {
-            for (AttributeBuffer buffer : attributes) {
-                if (buffer.getBufferName() > 0) {
-                    renderer.deleteBuffers(1, new int[] { buffer.getBufferName() }, 0);
-                }
-            }
-        }
+        renderer.getBufferFactory().destroyVBOs(this);
     }
 
     /**

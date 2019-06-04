@@ -1,6 +1,5 @@
 package com.nucleus.renderer;
 
-import java.nio.Buffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 
@@ -328,39 +327,12 @@ public interface NucleusRenderer {
     @Deprecated
     public GLES20Wrapper getGLES();
 
+    /**
+     * Returns the api backend
+     * 
+     * @return
+     */
     public Backend getBackend();
-
-    /**
-     * Deletes the named object buffers generated with a call to {@link #genBuffers(int, int[], int)}
-     * 
-     * @param count Number of buffer names to delete
-     * @param names Named buffers to delete
-     * @param offset Offset into names
-     */
-    public void deleteBuffers(int count, int[] names, int offset);
-
-    /**
-     * Binds the named buffer to the specified target.
-     * see OpenGL.glBindBuffer()
-     * 
-     * @param target
-     * @param buffer
-     */
-    public void bindBuffer(int target, int buffer);
-
-    /**
-     * create and initialize a buffer object's data store, from OpenGL.glBufferData()
-     * 
-     * @param target Specifies the target buffer object. The symbolic constant must be GL_ARRAY_BUFFER or
-     * GL_ELEMENT_ARRAY_BUFFER, or any of the targets allowed for the current GL implementation
-     * @param size Specifies the size in bytes of the buffer object's new data store.
-     * @param data Specifies a pointer to data that will be copied into the data store for initialization, or NULL
-     * if no
-     * data is to be copied.
-     * @param usage Specifies the expected usage pattern of the data store. The symbolic constant must be
-     * GL_STREAM_DRAW, GL_STATIC_DRAW, or GL_DYNAMIC_DRAW.
-     */
-    public void bufferData(int target, int size, Buffer data, int usage);
 
     /**
      * Sets the projection matrix, this will copy the values from the source matrix.
@@ -381,11 +353,6 @@ public interface NucleusRenderer {
      * @return
      */
     public RenderState getRenderState();
-
-    /**
-     * Creates a texture object name
-     */
-    public int[] createTextureName();
 
     /**
      * Uploads the image(s) to the texture, checks if mipmaps should be created.

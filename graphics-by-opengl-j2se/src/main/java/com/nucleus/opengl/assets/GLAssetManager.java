@@ -577,7 +577,7 @@ public class GLAssetManager implements Assets {
      * @throws BackendException
      */
     private void internalCreateTexture(NucleusRenderer renderer, Image image) throws BackendException {
-        int[] name = renderer.createTextureName();
+        int[] name = createTextureName();
         image.setTextureName(name[0]);
         renderer.uploadTextures(image, true);
     }
@@ -697,6 +697,12 @@ public class GLAssetManager implements Assets {
         internalCreateTexture(renderer, textureImg, texture);
     }
 
+    private int[] createTextureName() {
+        int[] textureName = new int[1];
+        gles.glGenTextures(textureName);
+        return textureName;
+    }
+
     private void internalCreateTexture(NucleusRenderer renderer, BufferImage[] textureImg, Texture2D texture)
             throws BackendException {
         if (textureImg[0].getResolution() != null) {
@@ -705,7 +711,7 @@ public class GLAssetManager implements Assets {
             }
             texture.setResolution(textureImg[0].getResolution());
         }
-        int[] name = renderer.createTextureName();
+        int[] name = createTextureName();
         texture.setTextureName(name[0]);
         renderer.uploadTextures(texture, textureImg);
         SimpleLogger.d(getClass(), "Uploaded texture " + texture.toString());
@@ -727,7 +733,7 @@ public class GLAssetManager implements Assets {
      */
     protected Texture2D createTexture(NucleusRenderer renderer, TextureType type, String id, RESOLUTION resolution,
             int[] size, ImageFormat format, TextureParameter texParams, int target) throws BackendException {
-        int[] textureName = renderer.createTextureName();
+        int[] textureName = createTextureName();
         Texture2D result = TextureFactory.getInstance().createTexture(type, id, resolution, texParams, size, format,
                 textureName[0]);
         createTexture(result, target);

@@ -1,6 +1,5 @@
 package com.nucleus.vulkan;
 
-import java.nio.Buffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 
@@ -64,30 +63,6 @@ public class VulkanBaseRenderer extends BaseRenderer {
 
     @Override
     public GLES20Wrapper getGLES() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void deleteBuffers(int count, int[] names, int offset) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void bindBuffer(int target, int buffer) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void bufferData(int target, int size, Buffer data, int usage) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public int[] createTextureName() {
         // TODO Auto-generated method stub
         return null;
     }

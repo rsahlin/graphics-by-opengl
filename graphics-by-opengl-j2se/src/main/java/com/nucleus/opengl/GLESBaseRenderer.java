@@ -1,6 +1,5 @@
 package com.nucleus.opengl;
 
-import java.nio.Buffer;
 import java.nio.IntBuffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -495,21 +494,6 @@ public class GLESBaseRenderer extends BaseRenderer {
     }
 
     @Override
-    public void deleteBuffers(int count, int[] names, int offset) {
-        gles.glDeleteBuffers(count, names, offset);
-    }
-
-    @Override
-    public void bindBuffer(int target, int buffer) {
-        gles.glBindBuffer(target, buffer);
-    }
-
-    @Override
-    public void bufferData(int target, int size, Buffer data, int usage) {
-        gles.glBufferData(target, size, data, usage);
-    }
-
-    @Override
     public void uploadTextures(Texture2D texture, BufferImage[] textureImages)
             throws BackendException {
         if (texture.getName() <= 0) {
@@ -602,13 +586,6 @@ public class GLESBaseRenderer extends BaseRenderer {
             gles.glUniform1iv(texUniform.getLocation(), texUniform.getSize(), samplerUniformBuffer);
             GLUtils.handleError(gles, "glUniform1iv - " + attribute.getName());
         }
-    }
-
-    @Override
-    public int[] createTextureName() {
-        int[] textures = new int[1];
-        gles.glGenTextures(textures);
-        return textures;
     }
 
     @Override
