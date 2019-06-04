@@ -1,6 +1,7 @@
 package com.nucleus.opengl;
 
 import java.nio.Buffer;
+import java.nio.IntBuffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,7 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES_EXTENSION_TOKENS;
 import com.nucleus.opengl.assets.GLAssetManager;
+import com.nucleus.opengl.shader.ShaderVariable;
 import com.nucleus.opengl.shader.ShadowPass1Program;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.BaseRenderer;
@@ -35,8 +37,6 @@ import com.nucleus.renderer.RenderState.DepthFunc;
 import com.nucleus.renderer.RenderTarget;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RenderTarget.AttachementData;
-import com.nucleus.renderer.SurfaceConfiguration;
-import com.nucleus.renderer.Window;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.Node.State;
 import com.nucleus.scene.RenderableNode;
@@ -81,71 +81,10 @@ public class GLESBaseRenderer extends BaseRenderer {
         gles = (GLES20Wrapper) backend;
         gles.createInfo();
         bufferFactory = new GLESBufferFactory(gles);
-        assetManager = new GLAssetManager(backend);
+        assetManager = new GLAssetManager(gles);
         for (int i = 0; i < matrices.length; i++) {
             matrices[i] = Matrix.setIdentity(Matrix.createMatrix(), 0);
         }
-    }
-
-    @Override
-    public void contextCreated(int width, int height) {
-        SimpleLogger.d(getClass(), "contextCreated()");
-        if (width <= 0 || height <= 0) {
-            throw new IllegalArgumentException(RenderContextListener.INVALID_CONTEXT_DIMENSION);
-        }
-        resizeWindow(0, 0, width, height);
-        for (RenderContextListener listener : contextListeners) {
-            listener.contextCreated(width, height);
-        }
-    }
-
-    @Override
-    public void init(SurfaceConfiguration surfaceConfig, int width, int height) {
-        if (initialized) {
-            return;
-        }
-        resizeWindow(0, 0, width, height);
-        initialized = true;
-        this.surfaceConfig = surfaceConfig;
-    }
-
-    @Override
-    public float beginFrame() {
-        renderPassStack.clear();
-        pushPass(Pass.UNDEFINED);
-        deltaTime = timeKeeper.update();
-        if (timeKeeper.getSampleDuration() > FPS_SAMPLER_DELAY) {
-            SimpleLogger.d(getClass(), timeKeeper.sampleFPS());
-        }
-        for (FrameListener listener : frameListeners) {
-            listener.processFrame(timeKeeper.getDelta());
-            listener.updateGLData();
-        }
-        this.modelMatrix = null;
-
-        return deltaTime;
-    }
-
-    /**
-     * Pushes the current pass and sets {@link #currentPass}
-     * 
-     * @param pass New current pass
-     */
-    protected void pushPass(Pass pass) {
-        if (currentPass != null) {
-            renderPassStack.push(currentPass);
-        }
-        currentPass = pass;
-    }
-
-    /**
-     * Pops a pass from the stack to {@link #currentPass}
-     * 
-     * @return The popped pass (same as {@link #currentPass} or null if stack empty.
-     */
-    protected Pass popPass() {
-        currentPass = renderPassStack.pop();
-        return currentPass;
     }
 
     /**
@@ -516,27 +455,6 @@ public class GLESBaseRenderer extends BaseRenderer {
     }
 
     @Override
-    public boolean isInitialized() {
-        return initialized;
-    }
-
-    @Override
-    public void addContextListener(RenderContextListener listener) {
-        if (contextListeners.contains(listener)) {
-            return;
-        }
-        contextListeners.add(listener);
-    }
-
-    @Override
-    public void addFrameListener(FrameListener listener) {
-        if (frameListeners.contains(listener)) {
-            return;
-        }
-        frameListeners.add(listener);
-    }
-
-    @Override
     public GLES20Wrapper getGLES() {
         if (!initialized) {
             throw new IllegalStateException(NOT_INITIALIZED_ERROR);
@@ -589,26 +507,6 @@ public class GLESBaseRenderer extends BaseRenderer {
     @Override
     public void bufferData(int target, int size, Buffer data, int usage) {
         gles.glBufferData(target, size, data, usage);
-    }
-
-    @Override
-    public void resizeWindow(int x, int y, int width, int height) {
-        Window.getInstance().setSize(width, height);
-    }
-
-    @Override
-    public void setProjection(float[] matrix, int index) {
-        System.arraycopy(matrix, index, matrices[Matrices.PROJECTION.index], 0, 16);
-    }
-
-    @Override
-    public SurfaceConfiguration getSurfaceConfiguration() {
-        return surfaceConfig;
-    }
-
-    @Override
-    public RenderState getRenderState() {
-        return renderState;
     }
 
     @Override
@@ -691,13 +589,18 @@ public class GLESBaseRenderer extends BaseRenderer {
     }
 
     @Override
-    public void prepareTexture(Texture texture, int unit) throws BackendException {
+    public void prepareTexture(Texture texture, int unit, Accessor accessor, ShaderVariable attribute,
+            ShaderVariable texUniform, IntBuffer samplerUniformBuffer)
+            throws BackendException {
         if (texture != null) {
             gles.glActiveTexture(GLES20.GL_TEXTURE0 + unit);
             int textureID = texture.getImage().getTextureName();
             gles.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
             gles.uploadTexParameters(texture);
             GLUtils.handleError(gles, "glBindTexture()");
+            gles.glVertexAttribPointer(accessor, attribute);
+            gles.glUniform1iv(texUniform.getLocation(), texUniform.getSize(), samplerUniformBuffer);
+            GLUtils.handleError(gles, "glUniform1iv - " + attribute.getName());
         }
     }
 
@@ -797,18 +700,6 @@ public class GLESBaseRenderer extends BaseRenderer {
             timeKeeper.addDrawArrays(vertexCount);
         }
 
-    }
-
-    @Override
-    public void createTexture(Texture2D texture, int target) throws BackendException {
-        getGLES().glBindTexture(target, texture.getName());
-        getGLES().texImage(texture);
-        GLUtils.handleError(getGLES(), "glTexImage2D");
-    }
-
-    @Override
-    public void deleteTextures(int[] names) {
-        getGLES().glDeleteTextures(names);
     }
 
     @Override

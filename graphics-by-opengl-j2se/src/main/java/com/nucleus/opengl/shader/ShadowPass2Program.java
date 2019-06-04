@@ -5,6 +5,7 @@ import java.nio.FloatBuffer;
 import com.nucleus.BackendException;
 import com.nucleus.common.Constants;
 import com.nucleus.io.ExternalReference;
+import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.renderer.NucleusRenderer;
@@ -105,10 +106,11 @@ public class ShadowPass2Program extends ShadowPassProgram {
          * TODO - make texture names into enums
          */
         int unit = samplers.get(getUniformByName("uShadowTexture").getOffset());
+        GLES20Wrapper gles = (GLES20Wrapper) renderer.getBackend();
         renderer.prepareTexture(shadow, unit);
-        renderer.getGLES().glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_COMPARE_MODE,
+        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_COMPARE_MODE,
                 GLES30.GL_COMPARE_REF_TO_TEXTURE);
-        renderer.getGLES().glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_COMPARE_FUNC, GLES20.GL_LESS);
+        gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_COMPARE_FUNC, GLES20.GL_LESS);
         if (texture != null && texture.textureType != TextureType.Untextured) {
             /**
              * TODO - make texture names into enums

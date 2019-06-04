@@ -1,8 +1,10 @@
 package com.nucleus.renderer;
 
 import java.nio.Buffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 
+import com.nucleus.Backend;
 import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
 import com.nucleus.CoreApp;
@@ -12,6 +14,7 @@ import com.nucleus.Pipeline;
 import com.nucleus.assets.Assets;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.shader.ShaderVariable;
 import com.nucleus.renderer.BaseRenderer.FrameListener;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RenderableNode;
@@ -325,6 +328,8 @@ public interface NucleusRenderer {
     @Deprecated
     public GLES20Wrapper getGLES();
 
+    public Backend getBackend();
+
     /**
      * Deletes the named object buffers generated with a call to {@link #genBuffers(int, int[], int)}
      * 
@@ -422,8 +427,13 @@ public interface NucleusRenderer {
      * 
      * @param texture Texture to prepare or null
      * @param unit The texture unit number to use, 0 and up
+     * @param accessor
+     * @param attribute
+     * @param texUniform
+     * @param samplerUniformBuffer
      */
-    public void prepareTexture(Texture texture, int unit) throws BackendException;
+    public void prepareTexture(Texture texture, int unit, Accessor accessor, ShaderVariable attribute,
+            ShaderVariable texUniform, IntBuffer samplerUniformBuffer) throws BackendException;
 
     /**
      * Enable the pipeline
@@ -432,22 +442,6 @@ public interface NucleusRenderer {
      * @return true if pipeline was changed, ie previously used a different pipeline
      */
     public boolean usePipeline(GraphicsPipeline pipeline) throws BackendException;
-
-    /**
-     * Creates storage for an (empty) texture
-     * 
-     * @param texture The texture to create storage for
-     * @param target
-     * @throws BackendException
-     */
-    public void createTexture(Texture2D texture, int target) throws BackendException;
-
-    /**
-     * Deletes the textures
-     * 
-     * @param names
-     */
-    public void deleteTextures(int[] names);
 
     /**
      * Deletes the shaders/program used for the pipeline

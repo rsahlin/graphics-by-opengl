@@ -726,8 +726,9 @@ public abstract class GLShaderProgram {
             return null;
         }
         for (InterfaceBlock block : uniformInterfaceBlocks) {
+            GLES30Wrapper gles = (GLES30Wrapper) renderer.getBackend();
             // Here the binding point and block index is the same.
-            ((GLES30Wrapper) renderer.getGLES()).glUniformBlockBinding(program, block.blockIndex, block.blockIndex);
+            gles.glUniformBlockBinding(program, block.blockIndex, block.blockIndex);
         }
         BlockBuffer[] buffers = BlockBuffer.createBlockBuffers(uniformInterfaceBlocks);
         renderer.getBufferFactory().createUBOs(buffers);
@@ -1268,7 +1269,7 @@ public abstract class GLShaderProgram {
         for (ShaderSource ss : sources) {
             SimpleLogger.d(getClass(), ss.getFullSourceName());
         }
-        GLES20Wrapper gles = renderer.getGLES();
+        GLES20Wrapper gles = (GLES20Wrapper) renderer.getBackend();
         try {
             loadShaderSources(gles, sources);
             createCommonShaders(gles, sources);

@@ -1,6 +1,7 @@
 package com.nucleus.vulkan;
 
 import java.nio.Buffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 import com.nucleus.Backend;
@@ -11,10 +12,9 @@ import com.nucleus.Pipeline;
 import com.nucleus.assets.Assets;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLES20Wrapper;
+import com.nucleus.opengl.shader.ShaderVariable;
 import com.nucleus.renderer.BaseRenderer;
 import com.nucleus.renderer.BufferFactory;
-import com.nucleus.renderer.RenderState;
-import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.scene.RenderableNode;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.gltf.Accessor;
@@ -28,38 +28,14 @@ import com.nucleus.texturing.Texture2D;
 
 public class VulkanBaseRenderer extends BaseRenderer {
 
+    protected Vulkan10Wrapper vulkan;
+
     public VulkanBaseRenderer(Backend backend) {
         super(backend);
-    }
-
-    @Override
-    public void contextCreated(int width, int height) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void resizeWindow(int x, int y, int width, int height) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void init(SurfaceConfiguration surfaceConfig, int width, int height) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public SurfaceConfiguration getSurfaceConfiguration() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public float beginFrame() {
-        // TODO Auto-generated method stub
-        return 0;
+        if (!(backend instanceof Vulkan10Wrapper)) {
+            throw new IllegalArgumentException(INVALID_WRAPPER_ERROR + " : " + backend);
+        }
+        vulkan = (Vulkan10Wrapper) backend;
     }
 
     @Override
@@ -82,24 +58,6 @@ public class VulkanBaseRenderer extends BaseRenderer {
 
     @Override
     public void render(RenderableNode<?> node) throws BackendException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public boolean isInitialized() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public void addContextListener(RenderContextListener listener) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void addFrameListener(FrameListener listener) {
         // TODO Auto-generated method stub
 
     }
@@ -129,18 +87,6 @@ public class VulkanBaseRenderer extends BaseRenderer {
     }
 
     @Override
-    public void setProjection(float[] matrix, int index) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public RenderState getRenderState() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public int[] createTextureName() {
         // TODO Auto-generated method stub
         return null;
@@ -165,19 +111,8 @@ public class VulkanBaseRenderer extends BaseRenderer {
     }
 
     @Override
-    public void prepareTexture(Texture texture, int unit) throws BackendException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void createTexture(Texture2D texture, int target) throws BackendException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void deleteTextures(int[] names) {
+    public void prepareTexture(Texture texture, int unit, Accessor accessor, ShaderVariable attribute,
+            ShaderVariable texUniform, IntBuffer samplerUniformBuffer) throws BackendException {
         // TODO Auto-generated method stub
 
     }

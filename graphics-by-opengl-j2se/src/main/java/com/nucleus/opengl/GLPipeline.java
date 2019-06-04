@@ -101,7 +101,7 @@ public class GLPipeline extends GraphicsPipeline {
             Accessor accessor = accessors.get(i);
             ShaderVariable v = shader.getAttributeByName(attribs.get(i).name());
             if (v != null) {
-                gles.glVertexAttribPointer(shader, accessor, v);
+                gles.glVertexAttribPointer(accessor, v);
             } else {
                 // TODO - when fully implemented this should not happen.
             }

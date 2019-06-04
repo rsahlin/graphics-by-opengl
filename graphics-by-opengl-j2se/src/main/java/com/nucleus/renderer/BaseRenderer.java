@@ -7,6 +7,7 @@ import java.util.Set;
 import com.nucleus.Backend;
 import com.nucleus.Backend.DrawMode;
 import com.nucleus.GraphicsPipeline;
+import com.nucleus.SimpleLogger;
 import com.nucleus.assets.Assets;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.RenderState.Cullface;
@@ -79,6 +80,7 @@ public abstract class BaseRenderer implements NucleusRenderer {
      */
     protected RenderState renderState = new RenderState();
     protected Set<FrameListener> frameListeners = new HashSet<FrameListener>();
+    protected Backend backend;
 
     /**
      * Used to drive processing from the render, use this when you need the rendering to drive behavior or other
@@ -114,6 +116,114 @@ public abstract class BaseRenderer implements NucleusRenderer {
         if (backend == null) {
             throw new IllegalArgumentException(NULL_APIWRAPPER_ERROR);
         }
+        this.backend = backend;
+    }
+
+    @Override
+    public SurfaceConfiguration getSurfaceConfiguration() {
+        return surfaceConfig;
+    }
+
+    @Override
+    public RenderState getRenderState() {
+        return renderState;
+    }
+
+    @Override
+    public void init(SurfaceConfiguration surfaceConfig, int width, int height) {
+        if (initialized) {
+            return;
+        }
+        resizeWindow(0, 0, width, height);
+        initialized = true;
+        this.surfaceConfig = surfaceConfig;
+    }
+
+    @Override
+    public void contextCreated(int width, int height) {
+        SimpleLogger.d(getClass(), "contextCreated()");
+        if (width <= 0 || height <= 0) {
+            throw new IllegalArgumentException(RenderContextListener.INVALID_CONTEXT_DIMENSION);
+        }
+        resizeWindow(0, 0, width, height);
+        for (RenderContextListener listener : contextListeners) {
+            listener.contextCreated(width, height);
+        }
+    }
+
+    @Override
+    public void resizeWindow(int x, int y, int width, int height) {
+        Window.getInstance().setSize(width, height);
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    @Override
+    public void addContextListener(RenderContextListener listener) {
+        if (contextListeners.contains(listener)) {
+            return;
+        }
+        contextListeners.add(listener);
+    }
+
+    @Override
+    public void addFrameListener(FrameListener listener) {
+        if (frameListeners.contains(listener)) {
+            return;
+        }
+        frameListeners.add(listener);
+    }
+
+    @Override
+    public void setProjection(float[] matrix, int index) {
+        System.arraycopy(matrix, index, matrices[Matrices.PROJECTION.index], 0, 16);
+    }
+
+    @Override
+    public float beginFrame() {
+        renderPassStack.clear();
+        pushPass(Pass.UNDEFINED);
+        deltaTime = timeKeeper.update();
+        if (timeKeeper.getSampleDuration() > FPS_SAMPLER_DELAY) {
+            SimpleLogger.d(getClass(), timeKeeper.sampleFPS());
+        }
+        for (FrameListener listener : frameListeners) {
+            listener.processFrame(timeKeeper.getDelta());
+            listener.updateGLData();
+        }
+        this.modelMatrix = null;
+
+        return deltaTime;
+    }
+
+    /**
+     * Pushes the current pass and sets {@link #currentPass}
+     * 
+     * @param pass New current pass
+     */
+    protected void pushPass(Pass pass) {
+        if (currentPass != null) {
+            renderPassStack.push(currentPass);
+        }
+        currentPass = pass;
+    }
+
+    /**
+     * Pops a pass from the stack to {@link #currentPass}
+     * 
+     * @return The popped pass (same as {@link #currentPass} or null if stack empty.
+     */
+    protected Pass popPass() {
+        currentPass = renderPassStack.pop();
+        return currentPass;
+    }
+
+    @Override
+    public Backend getBackend() {
+        return backend;
     }
 
 }

@@ -13,7 +13,6 @@ import com.nucleus.environment.Lights;
 import com.nucleus.light.Light;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.GLUtils;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.AccessorDictionary;
@@ -50,6 +49,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     /**
      * Creates a new GLTF shaderprogram with the specified pbr shading parameters
      * 
+     * @gles
      * @param pbrShading
      */
     public GLTFShaderProgram(ShadingMaps pbrShading) {
@@ -226,13 +226,11 @@ public class GLTFShaderProgram extends GenericShaderProgram {
         if (texInfo == null || attribute == null || texUniform == null) {
             return;
         }
-        renderer.prepareTexture(gltf.getTexture(texInfo), texInfo.getIndex());
-        Accessor accessor = primitive.getAccessor(Attributes.getTextureCoord(texInfo.getTexCoord()));
-        renderer.getGLES().glVertexAttribPointer(this, accessor, attribute);
         samplerUniformBuffer.put(texInfo.getIndex());
         samplerUniformBuffer.rewind();
-        renderer.getGLES().glUniform1iv(texUniform.getLocation(), texUniform.getSize(), samplerUniformBuffer);
-        GLUtils.handleError(renderer.getGLES(), "glUniform1iv - " + attribute.getName());
+        Accessor accessor = primitive.getAccessor(Attributes.getTextureCoord(texInfo.getTexCoord()));
+        renderer.prepareTexture(gltf.getTexture(texInfo), texInfo.getIndex(), accessor, attribute, texUniform,
+                samplerUniformBuffer);
 
     }
 

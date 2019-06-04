@@ -13,7 +13,6 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.nucleus.Backend;
 import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
 import com.nucleus.SimpleLogger;
@@ -24,6 +23,7 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLPipeline;
+import com.nucleus.opengl.GLUtils;
 import com.nucleus.opengl.TextureUtils;
 import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.profiling.FrameSampler;
@@ -90,10 +90,13 @@ public class GLAssetManager implements Assets {
      */
     private static final Map<String, Texture2D> loadedTextures = new HashMap<>();
 
+    protected GLES20Wrapper gles;
+
     /**
      * Internal constructor - do not use directly
      */
-    public GLAssetManager(Backend backend) {
+    public GLAssetManager(GLES20Wrapper gles) {
+        this.gles = gles;
     }
 
     @Override
@@ -274,12 +277,12 @@ public class GLAssetManager implements Assets {
         if (textures.size() == 0) {
             return;
         }
-        int[] texNames = new int[textures.size()];
+        Texture2D[] t = new Texture2D[textures.size()];
         int i = 0;
         for (Texture2D texture : textures.values()) {
-            texNames[i++] = texture.getName();
+            t[i++] = texture;
         }
-        renderer.deleteTextures(texNames);
+        deleteTextures(t);
         textures.clear();
     }
 
@@ -354,14 +357,10 @@ public class GLAssetManager implements Assets {
     protected void deleteTextures(NucleusRenderer renderer, GLTF gltf, Image[] images) {
         int deleted = 0;
         if (images != null) {
-            int[] names = new int[1];
             for (Image image : images) {
-                names[0] = image.getTextureName();
-                if (names[0] > 0) {
-                    renderer.deleteTextures(names);
-                    image.setTextureName(0);
-                    deleted++;
-                }
+                deleteTexture(image);
+                image.setTextureName(0);
+                deleted++;
                 if (image.getBufferImage() != null) {
                     destroyBufferImage(gltf, image);
                 }
@@ -478,15 +477,17 @@ public class GLAssetManager implements Assets {
         TextureInfo occlInfo = material.getOcclusionTexture();
         if (mrInfo != null && occlInfo != null && mrInfo.getIndex() == occlInfo.getIndex()) {
             // Material has both metallicroughness and occlusion in the same texture
-            loadTexture(renderer, gltf, pbr.getMetallicRoughnessTexture(), ImageFormat.RGB, ColorModel.LINEAR);
+            loadTexture(renderer, gltf, mrInfo, ImageFormat.RGB, ColorModel.LINEAR);
         } else {
-            Texture mr = loadTexture(renderer, gltf, pbr.getMetallicRoughnessTexture(), ImageFormat.RG,
+            Texture mr = loadTexture(renderer, gltf, mrInfo, ImageFormat.RG,
                     ColorModel.LINEAR);
             if (mr != null) {
                 // Need to set texture swizzle so that RG is mapped to GB
                 mr.setSwizzle(Component.RED, Component.RED, Component.GREEN, Component.ALPHA);
+                loadTexture(renderer, gltf, mrInfo, ImageFormat.RG, ColorModel.LINEAR);
+            } else if (occlInfo != null) {
+                loadTexture(renderer, gltf, occlInfo, ImageFormat.R, ColorModel.LINEAR);
             }
-            loadTexture(renderer, gltf, material.getOcclusionTexture(), ImageFormat.R, ColorModel.LINEAR);
         }
     }
 
@@ -729,8 +730,29 @@ public class GLAssetManager implements Assets {
         int[] textureName = renderer.createTextureName();
         Texture2D result = TextureFactory.getInstance().createTexture(type, id, resolution, texParams, size, format,
                 textureName[0]);
-        renderer.createTexture(result, target);
+        createTexture(result, target);
         return result;
+    }
+
+    @Override
+    public void createTexture(Texture2D texture, int target) throws BackendException {
+        gles.glBindTexture(target, texture.getName());
+        gles.texImage(texture);
+        GLUtils.handleError(gles, "glTexImage2D");
+    }
+
+    @Override
+    public void deleteTextures(Texture2D[] textures) {
+        int[] names = new int[textures.length];
+        for (int i = 0; i < textures.length; i++) {
+            names[i] = textures[i].getName();
+        }
+        gles.glDeleteTextures(names);
+    }
+
+    @Override
+    public void deleteTexture(Image image) {
+        gles.glDeleteTextures(new int[] { image.getTextureName() });
     }
 
 }

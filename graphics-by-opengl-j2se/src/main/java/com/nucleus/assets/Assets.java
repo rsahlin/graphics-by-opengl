@@ -12,13 +12,14 @@ import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
+import com.nucleus.scene.gltf.Image;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureParameter;
 
 /**
- * Handles assets such as buffers, textures and programs.
+ * Handles assets such as textures and programs.
  *
  */
 public interface Assets {
@@ -148,5 +149,28 @@ public interface Assets {
      * @param renderer
      */
     public void destroy(NucleusRenderer renderer);
+
+    /**
+     * Creates storage for an (empty) texture
+     * 
+     * @param texture The texture to create storage for
+     * @param target
+     * @throws BackendException
+     */
+    public void createTexture(Texture2D texture, int target) throws BackendException;
+
+    /**
+     * Deletes the texture Image
+     * 
+     * @param texture The texture image to delete, after calling this the image is not valid anymore
+     */
+    public void deleteTexture(Image image);
+
+    /**
+     * Deletes the textures
+     * 
+     * @param textures The texture images to delete, after calling this the textures are not valid anymore
+     */
+    public void deleteTextures(Texture2D[] textures);
 
 }
