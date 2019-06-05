@@ -10,7 +10,6 @@ import com.nucleus.GraphicsPipeline;
 import com.nucleus.Pipeline;
 import com.nucleus.assets.Assets;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.shader.ShaderVariable;
 import com.nucleus.renderer.BaseRenderer;
 import com.nucleus.renderer.BufferFactory;
@@ -59,12 +58,6 @@ public class VulkanBaseRenderer extends BaseRenderer {
     public void render(RenderableNode<?> node) throws BackendException {
         // TODO Auto-generated method stub
 
-    }
-
-    @Override
-    public GLES20Wrapper getGLES() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override

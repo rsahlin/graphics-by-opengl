@@ -12,7 +12,6 @@ import com.nucleus.GraphicsPipeline;
 import com.nucleus.Pipeline;
 import com.nucleus.assets.Assets;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.shader.ShaderVariable;
 import com.nucleus.renderer.BaseRenderer.FrameListener;
 import com.nucleus.scene.Node;
@@ -316,16 +315,6 @@ public interface NucleusRenderer {
      */
     @Deprecated
     public void addFrameListener(FrameListener listener);
-
-    /**
-     * Returns the GLES20Wrapper.
-     * BEWARE - do not use unless you really know what you are doing!!!!
-     * 
-     * @return The GLES wrapper for GLES functions.
-     * @throws IllegalStateException If init() has not been called.
-     */
-    @Deprecated
-    public GLES20Wrapper getGLES();
 
     /**
      * Returns the api backend

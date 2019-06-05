@@ -453,14 +453,6 @@ public class GLESBaseRenderer extends BaseRenderer {
         }
     }
 
-    @Override
-    public GLES20Wrapper getGLES() {
-        if (!initialized) {
-            throw new IllegalStateException(NOT_INITIALIZED_ERROR);
-        }
-        return gles;
-    }
-
     /**
      * Internal method to handle matrix stack, push a matrix on the stack
      * 

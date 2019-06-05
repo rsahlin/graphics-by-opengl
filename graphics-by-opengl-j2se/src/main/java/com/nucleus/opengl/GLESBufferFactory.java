@@ -2,6 +2,7 @@ package com.nucleus.opengl;
 
 import java.util.ArrayList;
 
+import com.nucleus.Backend;
 import com.nucleus.BackendException;
 import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.AttributeBuffer;
@@ -147,11 +148,12 @@ public class GLESBufferFactory implements BufferFactory {
         int[] names = new int[1];
         int deleted = 0;
         StringBuffer bufferStr = new StringBuffer();
+        Backend backend = renderer.getBackend();
         for (Buffer buffer : buffers) {
             names[0] = buffer.getBufferName();
             if (names[0] > 0) {
                 bufferStr.append("[" + (buffer.getUri() != null ? buffer.getUri() : buffer.getName()) + "]");
-                renderer.getGLES().glDeleteBuffers(1, names, 0);
+                gles.glDeleteBuffers(1, names, 0);
                 deleted++;
                 buffer.setBufferName(0);
             }

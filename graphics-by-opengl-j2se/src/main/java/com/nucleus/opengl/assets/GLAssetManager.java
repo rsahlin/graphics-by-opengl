@@ -253,7 +253,7 @@ public class GLAssetManager implements Assets {
             FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, program.getClass().getSimpleName(),
                     start,
                     System.currentTimeMillis());
-            compiled = new GLPipeline(renderer, program);
+            compiled = new GLPipeline(gles, program);
             graphicPipelines.put(key, compiled);
             SimpleLogger.d(getClass(), "Stored graphics pipeline with key: " + key);
             return compiled;

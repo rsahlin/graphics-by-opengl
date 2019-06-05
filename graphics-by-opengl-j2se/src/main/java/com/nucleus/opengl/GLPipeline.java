@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
+import com.nucleus.assets.Assets;
 import com.nucleus.common.Environment;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.geometry.Mesh;
@@ -13,8 +14,6 @@ import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.opengl.shader.ShaderVariable;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.RenderState;
-import com.nucleus.renderer.RenderState.Cullface;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Material.AlphaMode;
@@ -30,19 +29,22 @@ import com.nucleus.texturing.Texture2D;
  */
 public class GLPipeline extends GraphicsPipeline {
 
-    protected NucleusRenderer renderer;
     protected GLShaderProgram shader;
-    protected RenderState renderState;
+    protected GLES20Wrapper gles;
 
-    public GLPipeline(NucleusRenderer renderer, GLShaderProgram shader) {
-        this.renderer = renderer;
+    /**
+     * Internal constructor - do not call directly, use {@link Assets#getPipeline(NucleusRenderer, GLShaderProgram)}
+     * 
+     * @param gles
+     * @param shader
+     */
+    public GLPipeline(GLES20Wrapper gles, GLShaderProgram shader) {
         this.shader = shader;
-        renderState = renderer.getRenderState();
+        this.gles = gles;
     }
 
     @Override
     public void enable(NucleusRenderer renderer) throws BackendException {
-        GLES20Wrapper gles = renderer.getGLES();
         int program = shader.getProgram();
         gles.glUseProgram(program);
         GLUtils.handleError(gles, "glUseProgram " + program);
@@ -55,7 +57,6 @@ public class GLPipeline extends GraphicsPipeline {
 
     @Override
     public void update(NucleusRenderer renderer, Mesh mesh, float[][] matrices) throws BackendException {
-        GLES20Wrapper gles = renderer.getGLES();
         shader.setUniformMatrices(matrices);
         shader.updateUniformData(shader.getUniformData());
 
@@ -72,7 +73,6 @@ public class GLPipeline extends GraphicsPipeline {
         ((GLTFShaderProgram) shader).updateEnvironmentUniforms(renderer, gltf.getDefaultScene());
         // Can be optimized to update uniforms under the following conditions:
         // The program has changed OR the matrices have changed, ie another parent node.
-        GLES20Wrapper gles = renderer.getGLES();
         shader.setUniformMatrices(matrices);
         shader.updateUniformData(shader.getUniformData());
         shader.uploadUniforms(gles);
@@ -80,7 +80,7 @@ public class GLPipeline extends GraphicsPipeline {
         if (material != null) {
             PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
             // Check for doublesided.
-            if (material.isDoubleSided() && renderState.getCullFace() != Cullface.NONE) {
+            if (material.isDoubleSided()) {
                 gles.glDisable(GLES20.GL_CULL_FACE);
             }
             ((GLTFShaderProgram) shader).prepareTextures(renderer, gltf, primitive, material);
@@ -96,7 +96,6 @@ public class GLPipeline extends GraphicsPipeline {
     @Override
     public void glVertexAttribPointer(ArrayList<Attributes> attribs, ArrayList<Accessor> accessors)
             throws BackendException {
-        GLES20Wrapper gles = renderer.getGLES();
         for (int i = 0; i < attribs.size(); i++) {
             Accessor accessor = accessors.get(i);
             ShaderVariable v = shader.getAttributeByName(attribs.get(i).name());
@@ -132,7 +131,7 @@ public class GLPipeline extends GraphicsPipeline {
     @Override
     public void destroy(NucleusRenderer renderer) {
         if (shader != null) {
-            renderer.getGLES().glDeleteProgram(shader.getProgram());
+            gles.glDeleteProgram(shader.getProgram());
             shader = null;
         }
     }

@@ -170,10 +170,9 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     private void debugTBN(NucleusRenderer renderer, GLTF gltf, Mesh mesh, float[][] matrices)
             throws BackendException {
         if (mesh != null) {
-            GLES20Wrapper gles = renderer.getGLES();
             Primitive[] primitives = mesh.getDebugTBNPrimitives();
             if (primitives == null) {
-                primitives = mesh.createDebugTBNPrimitives(gles, mesh.getPrimitives());
+                // primitives = mesh.createDebugTBNPrimitives(gles, mesh.getPrimitives());
             }
             GraphicsPipeline debugPipeline = renderer.getAssets().getPipeline(renderer, mesh.getDebugTBNProgram());
             /*
