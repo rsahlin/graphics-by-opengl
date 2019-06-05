@@ -735,4 +735,9 @@ public class JOGLGLES31Wrapper extends GLES31Wrapper {
         gles.glVertexBindingDivisor(bindingindex, divisor);
     }
 
+    @Override
+    public void glPixelStorei(int pname, int param) {
+        gles.glPixelStorei(pname, param);
+    }
+
 }

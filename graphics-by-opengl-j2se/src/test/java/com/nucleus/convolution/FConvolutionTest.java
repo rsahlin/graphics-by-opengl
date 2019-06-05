@@ -18,18 +18,18 @@ import org.junit.Test;
 
 import com.nucleus.BaseTestCase;
 import com.nucleus.SimpleLogger;
+import com.nucleus.texturing.AWTImageFactory;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.BufferImage.SourceFormat;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.Convolution.Kernel;
-import com.nucleus.texturing.AWTImageFactory;
 
 public class FConvolutionTest extends BaseTestCase implements WindowListener {
 
     public static final String WAIT_FOR_USER = "com.nucleus.convolution.waitforuser";
 
-    private static volatile boolean wait = false;
+    private static volatile boolean wait = true;
     AWTImageFactory imageFactory = new AWTImageFactory();
     private final static int ITERATIONS = 10;
     private final static String IMAGE_NAME = "assets/atari.png";

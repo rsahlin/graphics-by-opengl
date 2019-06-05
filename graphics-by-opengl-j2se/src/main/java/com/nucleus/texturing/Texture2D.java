@@ -33,27 +33,33 @@ public class Texture2D extends BaseReference {
     /**
      * The GL texture formats
      * 
-     * @author Richard Sahlin
-     *
      */
     public enum Format {
-        ALPHA(0x1906, 0x1906),
-        RGB(0x1907, 0x1907),
-        RGBA(0x1908, 0x1908),
-        RG(0x8227, 0x822B),
-        R(0x1903, 0x8229),
-        SRGB(0x1907, 0x8C41),
-        SRGBA(0x1908, 0x8C43),
-        LUMINANCE(0x1909, 0x1909),
-        LUMINANCE_ALPHA(0x190A, 0x190A),
-        DEPTH_COMPONENT(0x1902, 0x1902);
+        ALPHA(0x1906, 0x1906, 1),
+        RGB(0x1907, 0x1907, 1),
+        RGBA(0x1908, 0x1908, 4),
+        RG(0x8227, 0x822B, 2),
+        R(0x1903, 0x8229, 1),
+        SRGB(0x1907, 0x8C41, 1),
+        SRGBA(0x1908, 0x8C43, 4),
+        LUMINANCE(0x1909, 0x1909, 1),
+        LUMINANCE_ALPHA(0x190A, 0x190A, 2),
+        /**
+         * Depends on what the depth format is
+         */
+        DEPTH_COMPONENT(0x1902, 0x1902, 1);
 
         public final int format;
         public final int internalFormat;
+        /**
+         * Pixel row alignment in bytes
+         */
+        public final int rowAlignment;
 
-        private Format(int format, int internalFormat) {
+        private Format(int format, int internalFormat, int rowAlignment) {
             this.format = format;
             this.internalFormat = internalFormat;
+            this.rowAlignment = rowAlignment;
         }
     }
 

@@ -467,4 +467,9 @@ public class LWJGL3GLES30Wrapper extends GLES30Wrapper {
         org.lwjgl.opengles.GLES30.glTexStorage2D(target, levels, internalformat, width, height);
     }
 
+    @Override
+    public void glPixelStorei(int pname, int param) {
+        org.lwjgl.opengles.GLES20.glPixelStorei(pname, param);
+    }
+
 }

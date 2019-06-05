@@ -413,4 +413,9 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
         bufferSource.get(source, 0, length[0]);
     }
 
+    @Override
+    public void glPixelStorei(int pname, int param) {
+        org.lwjgl.opengles.GLES20.glPixelStorei(pname, param);
+    }
+
 }

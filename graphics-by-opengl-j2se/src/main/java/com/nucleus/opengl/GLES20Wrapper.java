@@ -753,6 +753,14 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             int format, int type, Buffer pixels);
 
     /**
+     * Abstraction for glPixelStorei
+     * 
+     * @param pname
+     * @param param
+     */
+    public abstract void glPixelStorei(int pname, int param);
+
+    /**
      * Abstraction for glDeleteTextures()
      * 
      * @param textures
@@ -893,9 +901,11 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param texture
      */
     public void texImage(Texture2D texture) {
+        Format format = texture.getFormat();
         glTexImage2D(GLES20.GL_TEXTURE_2D, 0, TextureUtils.getInternalFormat(texture), texture.getWidth(),
-                texture.getHeight(), 0, texture.getFormat().format,
+                texture.getHeight(), 0, format.format,
                 texture.getType().type, null);
+        glPixelStorei(GLES20.GL_UNPACK_ALIGNMENT, format.rowAlignment);
     }
 
     /**
@@ -908,9 +918,11 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param level
      */
     public void texImage(Texture2D texture, BufferImage image, int level) {
+        Format format = texture.getFormat();
         glTexImage2D(GLES20.GL_TEXTURE_2D, level, TextureUtils.getInternalFormat(texture), texture.getWidth(),
-                texture.getHeight(), 0, texture.getFormat().format,
+                texture.getHeight(), 0, format.format,
                 texture.getType().type, image.getBuffer().position(0));
+        glPixelStorei(GLES20.GL_UNPACK_ALIGNMENT, format.rowAlignment);
     }
 
     /**
@@ -930,6 +942,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         glTexImage2D(GLES20.GL_TEXTURE_2D, level, format.internalFormat, bufferImage.getWidth(),
                 bufferImage.getHeight(), 0, format.format, type.type,
                 bufferImage.getBuffer().position(0));
+        glPixelStorei(GLES20.GL_UNPACK_ALIGNMENT, format.rowAlignment);
         return format;
     }
 

@@ -217,7 +217,8 @@ public class GLAssetManager implements Assets {
                 // Texture not loaded
                 texture = createTexture(renderer, imageFactory, source);
                 textures.put(refSource, texture);
-                FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_TEXTURE, " " + texture.getName(), start,
+                FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_TEXTURE,
+                        " " + texture.getName() + " : " + refSource, start,
                         System.currentTimeMillis());
             }
             return texture;

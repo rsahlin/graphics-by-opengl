@@ -968,4 +968,9 @@ public class JOGLGLES32Wrapper extends GLES32Wrapper {
         gles.glTexStorage2D(target, levels, internalformat, width, height);
     }
 
+    @Override
+    public void glPixelStorei(int pname, int param) {
+        gles.glPixelStorei(pname, param);
+    }
+
 }

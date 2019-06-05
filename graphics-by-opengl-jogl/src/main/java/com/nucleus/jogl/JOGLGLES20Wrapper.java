@@ -448,4 +448,9 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
         gles.glGetShaderSource(shader, bufsize, length, 0, source, 0);
     }
 
+    @Override
+    public void glPixelStorei(int pname, int param) {
+        gles.glPixelStorei(pname, param);
+    }
+
 }

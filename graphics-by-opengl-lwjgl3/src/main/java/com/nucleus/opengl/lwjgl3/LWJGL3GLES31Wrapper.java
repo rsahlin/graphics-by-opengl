@@ -699,4 +699,9 @@ public class LWJGL3GLES31Wrapper extends GLES31Wrapper {
         org.lwjgl.opengles.GLES31.glVertexBindingDivisor(bindingindex, divisor);
     }
 
+    @Override
+    public void glPixelStorei(int pname, int param) {
+        org.lwjgl.opengles.GLES20.glPixelStorei(pname, param);
+    }
+
 }

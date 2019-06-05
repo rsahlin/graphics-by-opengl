@@ -968,4 +968,9 @@ public class LWJGL3GLES32Wrapper extends GLES32Wrapper {
 
     }
 
+    @Override
+    public void glPixelStorei(int pname, int param) {
+        org.lwjgl.opengles.GLES20.glPixelStorei(pname, param);
+    }
+
 }

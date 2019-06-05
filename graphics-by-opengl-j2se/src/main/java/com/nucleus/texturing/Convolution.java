@@ -226,7 +226,6 @@ public class Convolution {
         int height = destination.getHeight();
         int sourceWidth = source.getWidth();
         int sourceHeight = source.getHeight();
-        int sizeInBytes = destination.getFormat().size;
         ImageFormat format = destination.getFormat();
         switch (kernel) {
             case SIZE_2X2:
@@ -356,13 +355,17 @@ public class Convolution {
         float yScale = sourceHeight / height;
         float xScale = sourceWidth / width;
         float acc[] = new float[4];
-        for (int y = 0; y < height - 1; y++) {
+        for (int y = 0; y < height; y++) {
             index = (y * width) * 3;
-            for (int x = 0; x < width - 1; x++) {
+            for (int x = 0; x < width; x++) {
                 clearAcc(acc);
                 sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * 3));
-                fetchPixelRow2RGB(pixels, sourceIndex, 0, acc);
-                fetchPixelRow2RGB(pixels, sourceIndex + widthInBytes, 2, acc);
+                if (sourceIndex + 6 < pixels.length) {
+                    fetchPixelRow2RGB(pixels, sourceIndex, 0, acc);
+                }
+                if (sourceIndex + widthInBytes + 6 < pixels.length) {
+                    fetchPixelRow2RGB(pixels, sourceIndex + widthInBytes, 2, acc);
+                }
                 destPixels[index++] = (byte) (acc[0]);
                 destPixels[index++] = (byte) (acc[1]);
                 destPixels[index++] = (byte) (acc[2]);
@@ -457,13 +460,13 @@ public class Convolution {
                 if (sourceIndex < pixels.length) {
                     fetchPixelRow4RGBA(pixels, sourceIndex, 0, acc);
                 }
-                if (sourceIndex < pixels.length) {
+                if (sourceIndex + widthInBytes < pixels.length) {
                     fetchPixelRow4RGBA(pixels, sourceIndex + widthInBytes, 4, acc);
                 }
-                if (sourceIndex < pixels.length) {
+                if (sourceIndex + widthInBytes * 2 < pixels.length) {
                     fetchPixelRow4RGBA(pixels, sourceIndex + widthInBytes * 2, 8, acc);
                 }
-                if (sourceIndex < pixels.length) {
+                if (sourceIndex + widthInBytes * 3 < pixels.length) {
                     fetchPixelRow4RGBA(pixels, sourceIndex + widthInBytes * 3, 12, acc);
                 }
                 destPixels[index++] = (byte) (acc[0]);
