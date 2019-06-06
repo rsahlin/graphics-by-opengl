@@ -26,7 +26,6 @@ public class RendererFactory {
         if (backend == null) {
             throw new IllegalArgumentException("GLESWrapper is null");
         }
-        NucleusRenderer renderer = null;
         switch (backend.getVersion()) {
             case GLES20:
             case GLES30:

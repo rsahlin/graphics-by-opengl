@@ -14,5 +14,4 @@ public abstract class VulkanWrapper extends Backend {
     protected VulkanWrapper(Renderers version) {
         super(version);
     }
-
 }

@@ -12,7 +12,7 @@ import com.nucleus.renderer.NucleusRenderer.Renderers;
 public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
 
     /**
-     * Implementaiton constructor - DO NOT USE
+     * Implementation constructor - DO NOT USE
      * 
      * @param renderVersion If higher than GLES30, otherwise null
      */
