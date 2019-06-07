@@ -17,6 +17,7 @@ import javax.swing.WindowConstants;
 import org.lwjgl.opengles.GLES;
 import org.lwjgl.system.Platform;
 
+import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
@@ -37,15 +38,18 @@ public class JAWTWindow extends J2SEWindow
 
     LWJGLCanvas canvas;
     JFrame frame;
+    BackendFactory factory;
 
-    public JAWTWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, SurfaceConfiguration config, int width,
+    public JAWTWindow(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter,
+            SurfaceConfiguration config, int width,
             int height) {
-        super(coreAppStarter, width, height, config);
-        init(version, coreAppStarter, config, width, height);
+        super(version, factory, coreAppStarter, width, height, config);
     }
 
-    private void init(Renderers version, CoreApp.CoreAppStarter coreAppStarter, SurfaceConfiguration config, int width,
+    @Override
+    protected void init(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, int width,
             int height) {
+        this.factory = factory;
         Platform platform = Platform.get();
         SimpleLogger.d(getClass(), "Init windows for platform " + platform);
         switch (platform) {
@@ -91,7 +95,7 @@ public class JAWTWindow extends J2SEWindow
     @Override
     public void internalCreateCoreApp(int width, int height) {
         Renderers v = LWJGLWrapperFactory.getGLESVersion(GLES.createCapabilities());
-        backend = LWJGLWrapperFactory.createGLESWrapper(v);
+        backend = factory.createBackend(v, null, null);
         super.internalCreateCoreApp(width, height);
     }
 

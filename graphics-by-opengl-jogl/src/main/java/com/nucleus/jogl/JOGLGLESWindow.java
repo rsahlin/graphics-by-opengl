@@ -1,6 +1,7 @@
 package com.nucleus.jogl;
 
 import com.jogamp.opengl.GLAutoDrawable;
+import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.SimpleLogger;
 import com.nucleus.opengl.GLESWrapper;
@@ -15,20 +16,10 @@ import com.nucleus.renderer.SurfaceConfiguration;
  */
 public class JOGLGLESWindow extends JOGLGLWindow {
 
-    /**
-     * 
-     * @param version
-     * @param coreAppStarter
-     * @param config
-     * @param width
-     * @param height
-     * @param undecorated
-     * @param fullscreen
-     * @param swapInterval
-     */
-    public JOGLGLESWindow(Renderers version, CoreAppStarter coreAppStarter, SurfaceConfiguration config, int width,
+    public JOGLGLESWindow(Renderers version, BackendFactory factory, CoreAppStarter coreAppStarter,
+            SurfaceConfiguration config, int width,
             int height, boolean undecorated, boolean fullscreen, int swapInterval) {
-        super(version, coreAppStarter, config, width, height, undecorated, fullscreen, swapInterval);
+        super(version, factory, coreAppStarter, config, width, height, undecorated, fullscreen, swapInterval);
     }
 
     @Override
@@ -49,7 +40,8 @@ public class JOGLGLESWindow extends JOGLGLWindow {
     public void init(GLAutoDrawable drawable) {
         SimpleLogger.d(getClass(), "init()");
         if (backend == null) {
-            backend = JOGLWrapperFactory.createWrapper(version, drawable.getContext());
+
+            backend = factory.createBackend(version, null, drawable.getContext());
         }
         super.init(drawable);
     }

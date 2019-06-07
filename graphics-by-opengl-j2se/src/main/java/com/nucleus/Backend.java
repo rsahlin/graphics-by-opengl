@@ -8,6 +8,22 @@ import com.nucleus.renderer.NucleusRenderer.Renderers;
  */
 public abstract class Backend {
 
+    /**
+     * Creates backend implementations, this is used to create the render api implementation.
+     *
+     */
+    public interface BackendFactory {
+        /**
+         * Creates the backend instance
+         * 
+         * @param version
+         * @param window Optional window
+         * @param context Optional context
+         * @return
+         */
+        public Backend createBackend(Renderers version, Object windoe, Object context);
+    }
+
     protected static Backend backend;
 
     public Backend(Renderers version) {
@@ -85,5 +101,12 @@ public abstract class Backend {
     public Renderers getVersion() {
         return version;
     }
+
+    /**
+     * Destroys the backend instance - call this when application exits to release render API instance.
+     * If not initialized or already destroyed then this method does nothing.
+     * - Do NOT make calls to backend after calling this method.
+     */
+    public abstract void destroy();
 
 }

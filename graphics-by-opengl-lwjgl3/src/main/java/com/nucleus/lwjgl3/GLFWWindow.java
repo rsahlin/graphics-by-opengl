@@ -11,6 +11,8 @@ import org.lwjgl.glfw.GLFWScrollCallbackI;
 import org.lwjgl.glfw.GLFWWindowCloseCallbackI;
 import org.lwjgl.system.MemoryUtil;
 
+import com.nucleus.Backend;
+import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
@@ -29,6 +31,7 @@ public abstract class GLFWWindow extends J2SEWindow {
 
     protected static final int MAX_MOUSE_BUTTONS = 3;
     // The window handle
+    protected BackendFactory factory;
     protected long window;
     protected int[] buttonActions = new int[MAX_MOUSE_BUTTONS];
     protected int[] cursorPosition = new int[2];
@@ -40,13 +43,16 @@ public abstract class GLFWWindow extends J2SEWindow {
      * @param width
      * @param height
      */
-    public GLFWWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, SurfaceConfiguration config, int width,
+    public GLFWWindow(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter,
+            SurfaceConfiguration config, int width,
             int height) {
-        super(coreAppStarter, width, height, config);
-        init(version, coreAppStarter, width, height);
+        super(version, factory, coreAppStarter, width, height, config);
     }
 
-    protected void init(Renderers version, CoreApp.CoreAppStarter coreAppStarter, int width, int height) {
+    @Override
+    protected void init(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, int width,
+            int height) {
+        this.factory = factory;
         GLFWErrorCallback.createPrint().set();
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize glfw");
@@ -67,9 +73,8 @@ public abstract class GLFWWindow extends J2SEWindow {
             throw new RuntimeException("Failed to create the GLFW window");
         }
 
-        initFW(window);
+        backend = initFW(window);
         initInput();
-
     }
 
     /**
@@ -78,7 +83,7 @@ public abstract class GLFWWindow extends J2SEWindow {
      * 
      * @param GLFWWindow
      */
-    protected abstract void initFW(long GLFWWindow);
+    protected abstract Backend initFW(long GLFWWindow);
 
     protected void initInput() {
         /**

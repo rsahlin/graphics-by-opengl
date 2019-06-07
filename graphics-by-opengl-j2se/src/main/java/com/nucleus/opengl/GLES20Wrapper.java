@@ -965,4 +965,9 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         source.setSource(StreamUtils.readStringFromStream(shaderStream));
     }
 
+    @Override
+    public void destroy() {
+        // Override in subclass to do implementation specific GL teardown.
+    }
+
 }

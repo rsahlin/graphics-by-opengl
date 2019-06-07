@@ -6,22 +6,73 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.EXTDebugReport;
+import org.lwjgl.vulkan.KHRSurface;
 import org.lwjgl.vulkan.VK10;
+import org.lwjgl.vulkan.VKCapabilitiesInstance;
 import org.lwjgl.vulkan.VkApplicationInfo;
 import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
+import org.lwjgl.vulkan.VkPhysicalDevice;
+import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
+import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
+import org.lwjgl.vulkan.VkQueueFamilyProperties;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.vulkan.Vulkan11Wrapper;
 
 public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
 
-    protected LWJGL3Vulkan11Wrapper(Renderers version) {
-        super(version);
-        init();
+    public class Device {
+        private Device(long deviceAdress) {
+            device = new VkPhysicalDevice(deviceAdress, instance);
+            deviceFeatures = VkPhysicalDeviceFeatures.malloc();
+            deviceProperties = VkPhysicalDeviceProperties.malloc();
+            VK10.vkGetPhysicalDeviceProperties(device, deviceProperties);
+            VK10.vkGetPhysicalDeviceFeatures(device, deviceFeatures);
+            int[] queueCount = new int[1];
+            VK10.vkGetPhysicalDeviceQueueFamilyProperties(device, queueCount, null);
+            queueProperties = VkQueueFamilyProperties.malloc(queueCount[0]);
+            surfaceSupportPresent = new int[queueCount[0]];
+            VK10.vkGetPhysicalDeviceQueueFamilyProperties(device, queueCount, queueProperties);
+            int[] supported = new int[1];
+            for (int i = 0; i < surfaceSupportPresent.length; i++) {
+                KHRSurface.vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, supported);
+            }
+        }
+
+        private VkPhysicalDevice device;
+        private VkPhysicalDeviceProperties deviceProperties;
+        private VkPhysicalDeviceFeatures deviceFeatures;
+        private VkQueueFamilyProperties.Buffer queueProperties;
+        private int[] surfaceSupportPresent;
+
+        @Override
+        public String toString() {
+            String result = deviceProperties.deviceNameString() + ", "
+                    + VkPhysicalDeviceType.get(deviceProperties.deviceType()) + "\n";
+            queueProperties.rewind();
+            result += "Queue support: \n";
+            int index = 0;
+            while (queueProperties.hasRemaining()) {
+                result += VkQueueFlagBits.toString(queueProperties.get().queueFlags()) + " - surface present: " +
+                        (surfaceSupportPresent[index] == VK10.VK_TRUE) + "\n";
+                index++;
+            }
+            return result;
+        }
     }
 
-    protected void init() {
+    private VkInstance instance;
+    private Device[] devices;
+    private long surface;
+
+    protected LWJGL3Vulkan11Wrapper(Renderers version, long window) {
+        super(version);
+        init(window);
+    }
+
+    protected void init(long window) {
         if (!GLFWVulkan.glfwVulkanSupported()) {
             throw new AssertionError("GLFW failed to find the Vulkan loader");
         }
@@ -31,7 +82,41 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
         if (requiredExtensions == null) {
             throw new AssertionError("Failed to find list of required Vulkan extensions");
         }
-        VkInstance instance = createInstance(requiredExtensions);
+        instance = createInstance(requiredExtensions);
+        VKCapabilitiesInstance caps = instance.getCapabilities();
+        SimpleLogger.d(getClass(), "Created Vulkan");
+
+        long[] s = new long[1];
+        GLFWVulkan.glfwCreateWindowSurface(instance, window, null, s);
+        surface = s[0];
+        selectDevice();
+    }
+
+    private void selectDevice() {
+        int[] deviceCount = new int[1];
+        if (VK10.vkEnumeratePhysicalDevices(instance, deviceCount, null) == VK10.VK_SUCCESS) {
+            devices = new Device[deviceCount[0]];
+            PointerBuffer pb = MemoryUtil.memAllocPointer(deviceCount[0]);
+            if (VK10.vkEnumeratePhysicalDevices(instance, deviceCount, pb) == VK10.VK_SUCCESS) {
+                Device device = selectDevice(pb);
+            }
+        }
+    }
+
+    private Device selectDevice(PointerBuffer pb) {
+        fetchDevices(pb);
+        return devices[0];
+    }
+
+    private void fetchDevices(PointerBuffer pb) {
+        pb.rewind();
+        int index = 0;
+        while (pb.remaining() > 0) {
+            devices[index] = new Device(pb.get());
+            SimpleLogger.d(getClass(), "Found device: " + devices[index]);
+            index++;
+        }
+
     }
 
     private VkInstance createInstance(PointerBuffer requiredExtensions) {
@@ -83,6 +168,14 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
         MemoryUtil.memFree(appInfo.pEngineName());
         appInfo.free();
         return ret;
+    }
+
+    @Override
+    public void destroy() {
+        if (instance != null) {
+            VK10.vkDestroyInstance(instance, null);
+            instance = null;
+        }
     }
 
 }
