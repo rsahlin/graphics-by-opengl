@@ -32,7 +32,9 @@ public class GLFWVulkanWindow extends GLFWWindow {
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize glfw");
         }
+        GLFW.glfwDefaultWindowHints();
         GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_NO_API);
+        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
         window = GLFW.glfwCreateWindow(width, height, "", MemoryUtil.NULL, MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create the GLFW window");

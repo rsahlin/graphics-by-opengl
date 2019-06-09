@@ -6,61 +6,88 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.EXTDebugReport;
-import org.lwjgl.vulkan.KHRSurface;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VKCapabilitiesInstance;
 import org.lwjgl.vulkan.VkApplicationInfo;
 import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
 import org.lwjgl.vulkan.VkPhysicalDevice;
-import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
-import org.lwjgl.vulkan.VkQueueFamilyProperties;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
+import com.nucleus.vulkan.LWJGLVulkanDeviceFeatures;
+import com.nucleus.vulkan.LWJGLVulkanLimits;
 import com.nucleus.vulkan.Vulkan11Wrapper;
 
 public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
 
-    public class Device {
-        private Device(long deviceAdress) {
+    public class Device implements PhysicalDevice {
+
+        private Device(long deviceAdress, long surface) {
+
             device = new VkPhysicalDevice(deviceAdress, instance);
-            deviceFeatures = VkPhysicalDeviceFeatures.malloc();
-            deviceProperties = VkPhysicalDeviceProperties.malloc();
-            VK10.vkGetPhysicalDeviceProperties(device, deviceProperties);
-            VK10.vkGetPhysicalDeviceFeatures(device, deviceFeatures);
-            int[] queueCount = new int[1];
-            VK10.vkGetPhysicalDeviceQueueFamilyProperties(device, queueCount, null);
-            queueProperties = VkQueueFamilyProperties.malloc(queueCount[0]);
-            surfaceSupportPresent = new int[queueCount[0]];
-            VK10.vkGetPhysicalDeviceQueueFamilyProperties(device, queueCount, queueProperties);
-            int[] supported = new int[1];
-            for (int i = 0; i < surfaceSupportPresent.length; i++) {
-                KHRSurface.vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, supported);
-            }
+            deviceProperties = new DeviceProperties(device);
+            deviceFeatures = new LWJGLVulkanDeviceFeatures(device, surface);
+
         }
 
         private VkPhysicalDevice device;
-        private VkPhysicalDeviceProperties deviceProperties;
-        private VkPhysicalDeviceFeatures deviceFeatures;
-        private VkQueueFamilyProperties.Buffer queueProperties;
-        private int[] surfaceSupportPresent;
+        private DeviceProperties deviceProperties;
+        private com.nucleus.vulkan.LWJGLVulkanDeviceFeatures deviceFeatures;
 
         @Override
         public String toString() {
-            String result = deviceProperties.deviceNameString() + ", "
-                    + VkPhysicalDeviceType.get(deviceProperties.deviceType()) + "\n";
-            queueProperties.rewind();
-            result += "Queue support: \n";
-            int index = 0;
-            while (queueProperties.hasRemaining()) {
-                result += VkQueueFlagBits.toString(queueProperties.get().queueFlags()) + " - surface present: " +
-                        (surfaceSupportPresent[index] == VK10.VK_TRUE) + "\n";
-                index++;
-            }
+            String result = deviceProperties.getDeviceName() + ", " + deviceProperties.getAPIVersion() + ", "
+                    + deviceProperties.getDeviceType() + "\n";
+            result += deviceFeatures.toString();
             return result;
         }
+
+        @Override
+        public PhysicalDeviceProperties getProperties() {
+            return deviceProperties;
+        }
+
+        @Override
+        public PhysicalDeviceFeatures getFeatures() {
+            return deviceFeatures;
+        }
+    }
+
+    public class DeviceProperties implements PhysicalDeviceProperties {
+
+        private VkPhysicalDeviceProperties deviceProperties;
+        private APIVersion apiVersion;
+        private LWJGLVulkanLimits limits;
+
+        public DeviceProperties(VkPhysicalDevice device) {
+            deviceProperties = VkPhysicalDeviceProperties.malloc();
+            VK10.vkGetPhysicalDeviceProperties(device, deviceProperties);
+            apiVersion = new APIVersion(deviceProperties.apiVersion());
+            limits = new LWJGLVulkanLimits(deviceProperties.limits());
+        }
+
+        @Override
+        public VkPhysicalDeviceType getDeviceType() {
+            return VkPhysicalDeviceType.get(deviceProperties.deviceType());
+        }
+
+        @Override
+        public String getDeviceName() {
+            return deviceProperties.deviceNameString();
+        }
+
+        @Override
+        public APIVersion getAPIVersion() {
+            return apiVersion;
+        }
+
+        @Override
+        public DeviceLimits getLimits() {
+            return limits;
+        }
+
     }
 
     private VkInstance instance;
@@ -87,7 +114,9 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
         SimpleLogger.d(getClass(), "Created Vulkan");
 
         long[] s = new long[1];
-        GLFWVulkan.glfwCreateWindowSurface(instance, window, null, s);
+        if (GLFWVulkan.glfwCreateWindowSurface(instance, window, null, s) != VK10.VK_SUCCESS) {
+            throw new IllegalArgumentException("Could not create GLFW window surface");
+        }
         surface = s[0];
         selectDevice();
     }
@@ -105,6 +134,7 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
 
     private Device selectDevice(PointerBuffer pb) {
         fetchDevices(pb);
+
         return devices[0];
     }
 
@@ -112,7 +142,7 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
         pb.rewind();
         int index = 0;
         while (pb.remaining() > 0) {
-            devices[index] = new Device(pb.get());
+            devices[index] = new Device(pb.get(), surface);
             SimpleLogger.d(getClass(), "Found device: " + devices[index]);
             index++;
         }
