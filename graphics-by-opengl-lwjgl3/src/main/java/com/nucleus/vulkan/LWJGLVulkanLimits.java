@@ -26,6 +26,16 @@ public class LWJGLVulkanLimits extends DeviceLimits {
         maxComputeWorkGroupInvocations = limits.maxComputeWorkGroupInvocations();
         limits.maxComputeWorkGroupSize().get(maxComputeWorkGroupSize);
 
+        maxFramebufferWidth = limits.maxFramebufferWidth();
+        maxFramebufferHeight = limits.maxFramebufferHeight();
+        maxColorAttachments = limits.maxColorAttachments();
+
+    }
+
+    @Override
+    public String toString() {
+        return "Max image 2D " + maxImageDimension2D + ", max framebuffer " + maxFramebufferWidth + ","
+                + maxFramebufferHeight + ", max color attachements " + maxColorAttachments;
     }
 
 }

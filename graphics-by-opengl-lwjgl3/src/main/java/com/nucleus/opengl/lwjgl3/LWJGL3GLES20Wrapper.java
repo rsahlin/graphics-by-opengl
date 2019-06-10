@@ -16,7 +16,7 @@ public class LWJGL3GLES20Wrapper extends GLES20Wrapper {
      * 
      * @param renderVersion If higher than GLES30, otherwise null
      */
-    protected LWJGL3GLES20Wrapper(Renderers version) {
+    public LWJGL3GLES20Wrapper(Renderers version) {
         super(Platform.GL, version);
     }
 

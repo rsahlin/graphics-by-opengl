@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import com.nucleus.lwjgl3.LWJGLWrapperFactory;
 import com.nucleus.opengl.GLES32Wrapper;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 
@@ -19,7 +20,7 @@ public class LWJGL3GLES32Wrapper extends GLES32Wrapper {
      * @param renderVersion If higher than GLES30, otherwise null
      * 
      */
-    protected LWJGL3GLES32Wrapper(Renderers version) {
+    public LWJGL3GLES32Wrapper(Renderers version) {
         super(Platform.GL, version);
         gles20 = new LWJGL3GLES20Wrapper(version);
         gles30 = new LWJGL3GLES30Wrapper(version);

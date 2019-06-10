@@ -6,7 +6,6 @@ import com.nucleus.J2SEWindowApplication;
 import com.nucleus.common.Type;
 import com.nucleus.opengl.lwjgl3.GLFWGLESWindow;
 import com.nucleus.opengl.lwjgl3.LWJGLEGLWindow;
-import com.nucleus.opengl.lwjgl3.LWJGLWrapperFactory;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.vulkan.lwjgl3.GLFWVulkanWindow;
 

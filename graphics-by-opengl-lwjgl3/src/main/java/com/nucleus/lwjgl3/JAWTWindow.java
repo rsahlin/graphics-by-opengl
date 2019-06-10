@@ -23,7 +23,6 @@ import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.Pointer.PointerAction;
 import com.nucleus.mmi.Pointer.Type;
-import com.nucleus.opengl.lwjgl3.LWJGLWrapperFactory;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;

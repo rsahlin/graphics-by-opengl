@@ -1,10 +1,15 @@
-package com.nucleus.opengl.lwjgl3;
+package com.nucleus.lwjgl3;
 
 import org.lwjgl.opengles.GLESCapabilities;
 
 import com.nucleus.Backend;
 import com.nucleus.Backend.BackendFactory;
+import com.nucleus.opengl.lwjgl3.LWJGL3GLES20Wrapper;
+import com.nucleus.opengl.lwjgl3.LWJGL3GLES30Wrapper;
+import com.nucleus.opengl.lwjgl3.LWJGL3GLES31Wrapper;
+import com.nucleus.opengl.lwjgl3.LWJGL3GLES32Wrapper;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
+import com.nucleus.vulkan.lwjgl3.LWJGL3Vulkan11Wrapper;
 
 public class LWJGLWrapperFactory implements BackendFactory {
 

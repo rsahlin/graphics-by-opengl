@@ -11,6 +11,27 @@ import com.nucleus.renderer.NucleusRenderer.Renderers;
  */
 public abstract class VulkanWrapper extends Backend {
 
+    public interface VulkanDeviceSelector {
+        /**
+         * Vulkan implementation agnostic method to select the device to use
+         * 
+         * @param devices
+         * @return The device to use or null if no device that can be used
+         */
+        public PhysicalDevice selectDevice(PhysicalDevice[] devices);
+    }
+
+    protected static VulkanDeviceSelector deviceSelector;
+
+    /**
+     * Sets the vulkan device selector - use this to override the default selector behavior
+     * 
+     * @param deviceSelector The device selector to be called when Vulkan wrapper is created, or null to remove.
+     */
+    public static void setVulkanDeviceSelector(VulkanDeviceSelector deviceSelector) {
+        VulkanWrapper.deviceSelector = deviceSelector;
+    }
+
     /**
      * The Vulkan API version
      * #define VK_VERSION_MAJOR(version) ((int)(version) >> 22)
@@ -55,6 +76,13 @@ public abstract class VulkanWrapper extends Backend {
          */
         public PhysicalDeviceFeatures getFeatures();
 
+        /**
+         * Returns the supported queue families of the device
+         * 
+         * @return
+         */
+        public QueueFamilyProperties[] getQueueFamilyProperties();
+
     }
 
     /**
@@ -68,7 +96,7 @@ public abstract class VulkanWrapper extends Backend {
          * 
          * @return The VkPhysicalDeviceType of the device
          */
-        public VkPhysicalDeviceType getDeviceType();
+        public PhysicalDeviceType getDeviceType();
 
         /**
          * Returns the name of the device
@@ -154,6 +182,15 @@ public abstract class VulkanWrapper extends Backend {
         boolean sparseResidencyAliased;
         boolean variableMultisampleRate;
         boolean inheritedQueries;
+
+        @Override
+        public String toString() {
+            String result = (geometryShader ? "Has " : "No ") + "geometry shader, " +
+                    (tessellationShader ? "Has " : "No ") + "tesseleation shader" +
+                    "\n";
+            return result;
+        }
+
     }
 
     public static class SampleCountFlags {
@@ -162,7 +199,7 @@ public abstract class VulkanWrapper extends Backend {
             this.bits = bits;
         }
 
-        public enum VkSampleCountFlagBits {
+        public enum SampleCountFlagBits {
             VK_SAMPLE_COUNT_1_BIT(1),
             VK_SAMPLE_COUNT_2_BIT(2),
             VK_SAMPLE_COUNT_4_BIT(4),
@@ -173,7 +210,7 @@ public abstract class VulkanWrapper extends Backend {
 
             public final int samples;
 
-            private VkSampleCountFlagBits(int samples) {
+            private SampleCountFlagBits(int samples) {
                 this.samples = samples;
             }
         };
@@ -295,7 +332,46 @@ public abstract class VulkanWrapper extends Backend {
         long nonCoherentAtomSize;
     }
 
-    public enum VkPhysicalDeviceType {
+    public static class Extent3D {
+        final int[] values = new int[3];
+
+        public Extent3D(int width, int height, int depth) {
+            values[0] = width;
+            values[1] = height;
+            values[2] = depth;
+        }
+    }
+
+    public static abstract class QueueFamilyProperties {
+
+        protected int queueIndex;
+        protected int queueFlags;
+        protected int queueCount;
+        protected int timestampValidBits;
+        protected Extent3D minImageTransferGranularity;
+        protected boolean surfaceSupportsPresent;
+
+        public int getQueueFlags() {
+            return queueFlags;
+        }
+
+        public boolean isSurfaceSupportsPresent() {
+            return surfaceSupportsPresent;
+        }
+
+        public int getQueueIndex() {
+            return queueIndex;
+        }
+
+        @Override
+        public String toString() {
+            return QueueFlagBits.toString(getQueueFlags()) + " - surface present: " +
+                    isSurfaceSupportsPresent() + "\n";
+        }
+
+    };
+
+    public enum PhysicalDeviceType {
         VK_PHYSICAL_DEVICE_TYPE_OTHER(0),
         VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU(1),
         VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU(2),
@@ -304,12 +380,12 @@ public abstract class VulkanWrapper extends Backend {
 
         public final int value;
 
-        private VkPhysicalDeviceType(int value) {
+        private PhysicalDeviceType(int value) {
             this.value = value;
         }
 
-        public static VkPhysicalDeviceType get(int value) {
-            for (VkPhysicalDeviceType type : VkPhysicalDeviceType.values()) {
+        public static PhysicalDeviceType get(int value) {
+            for (PhysicalDeviceType type : PhysicalDeviceType.values()) {
                 if (type.value == value) {
                     return type;
                 }
@@ -319,7 +395,7 @@ public abstract class VulkanWrapper extends Backend {
 
     };
 
-    public enum VkQueueFlagBits {
+    public enum QueueFlagBits {
         VK_QUEUE_GRAPHICS_BIT(1),
         VK_QUEUE_COMPUTE_BIT(2),
         VK_QUEUE_TRANSFER_BIT(4),
@@ -328,13 +404,13 @@ public abstract class VulkanWrapper extends Backend {
 
         public final int mask;
 
-        private VkQueueFlagBits(int mask) {
+        private QueueFlagBits(int mask) {
             this.mask = mask;
         }
 
         public static String toString(int flags) {
             StringBuffer result = new StringBuffer();
-            for (VkQueueFlagBits bits : VkQueueFlagBits.values()) {
+            for (QueueFlagBits bits : QueueFlagBits.values()) {
                 if ((flags & bits.mask) != 0) {
                     result.append(result.length() > 0 ? " | " + bits.name() : bits.name());
                 }

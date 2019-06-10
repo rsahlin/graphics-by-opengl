@@ -20,6 +20,7 @@ import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.SimpleLogger;
 import com.nucleus.lwjgl3.GLFWWindow;
+import com.nucleus.lwjgl3.LWJGLWrapperFactory;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 
