@@ -1,6 +1,8 @@
 package com.nucleus.vulkan.lwjgl3;
 
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
@@ -8,12 +10,15 @@ import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.EXTDebugReport;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkApplicationInfo;
+import org.lwjgl.vulkan.VkDeviceQueueCreateInfo;
+import org.lwjgl.vulkan.VkExtensionProperties;
 import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
 import org.lwjgl.vulkan.VkPhysicalDevice;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.BufferUtils;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.vulkan.LWJGLVkQueueFamilyProperties;
 import com.nucleus.vulkan.LWJGLVulkanDeviceFeatures;
@@ -25,8 +30,8 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
     public class Device implements PhysicalDevice {
 
         private Device(long deviceAdress, long surface) {
-
             device = new VkPhysicalDevice(deviceAdress, instance);
+            readExtensions(device);
             deviceProperties = new DeviceProperties(device);
             deviceFeatures = new LWJGLVulkanDeviceFeatures(device, surface);
             readQueueProperties(device, surface);
@@ -46,10 +51,27 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
             }
         }
 
+        protected void readExtensions(VkPhysicalDevice device) {
+            IntBuffer ib = BufferUtils.createIntBuffer(1);
+            VK10.vkEnumerateDeviceExtensionProperties(device, (String) null, ib, null);
+            if (ib.get(0) > 0) {
+                int count = ib.get(0);
+                extensionProperties = new ExtensionProperties[count];
+                VkExtensionProperties.Buffer extensions = VkExtensionProperties.mallocStack(count);
+                VK10.vkEnumerateDeviceExtensionProperties(device, (String) null, ib, extensions);
+                for (int i = 0; i < count; i++) {
+                    extensions.position(i);
+                    extensionProperties[i] = new ExtensionProperties(extensions.extensionNameString(),
+                            extensions.specVersion());
+                }
+            }
+        }
+
         private VkPhysicalDevice device;
         private DeviceProperties deviceProperties;
         private com.nucleus.vulkan.LWJGLVulkanDeviceFeatures deviceFeatures;
         private QueueFamilyProperties[] queueFamilyProperties;
+        private ExtensionProperties[] extensionProperties;
 
         @Override
         public String toString() {
@@ -59,7 +81,13 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
             for (int i = 0; i < queueFamilyProperties.length; i++) {
                 result += queueFamilyProperties[i].toString();
             }
-
+            ExtensionProperties[] extensions = getExtensions();
+            if (extensions != null) {
+                result += "Extension support: \n";
+                for (ExtensionProperties ep : extensions) {
+                    result += ep.getName() + "\n";
+                }
+            }
             return result;
         }
 
@@ -76,6 +104,23 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
         @Override
         public QueueFamilyProperties[] getQueueFamilyProperties() {
             return queueFamilyProperties;
+        }
+
+        @Override
+        public ExtensionProperties[] getExtensions() {
+            return extensionProperties;
+        }
+
+        @Override
+        public ExtensionProperties getExtension(String extensionName) {
+            if (extensionProperties != null) {
+                for (ExtensionProperties ep : extensionProperties) {
+                    if (extensionName.equalsIgnoreCase(ep.getName())) {
+                        return ep;
+                    }
+                }
+            }
+            return null;
         }
     }
 
@@ -241,6 +286,31 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
             VK10.vkDestroyInstance(instance, null);
             instance = null;
         }
+    }
+
+    protected void createLogicalDevice(PhysicalDevice device, QueueFamilyProperties selectedQueue) {
+        FloatBuffer prios = BufferUtils.createFloatBuffer(selectedQueue.getQueueCount());
+        VkDeviceQueueCreateInfo.Buffer queue = VkDeviceQueueCreateInfo.mallocStack(1)
+                .sType(VK10.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO)
+                .pNext(MemoryUtil.NULL)
+                .flags(0)
+                .queueFamilyIndex(selectedQueue.getQueueIndex())
+                .pQueuePriorities(prios);
+        /*
+         * VkDeviceCreateInfo deviceInfo = VkDeviceCreateInfo.mallocStack(1)
+         * .sType(VK10.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO)
+         * .pNext(MemoryUtil.NULL)
+         * .flags(0)
+         * .pQueueCreateInfos(queue)
+         * .ppEnabledLayerNames(null)
+         * .ppEnabledExtensionNames()
+         * .pEnabledFeatures(features);
+         * 
+         * check(vkCreateDevice(gpu, device, null, pp));
+         * 
+         * this.device = new VkDevice(pp.get(0), gpu, device);
+         * 
+         */
     }
 
 }

@@ -2,6 +2,7 @@ package com.nucleus.vulkan;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
+import com.nucleus.vulkan.Vulkan10.Extensions;
 import com.nucleus.vulkan.VulkanWrapper.VulkanDeviceSelector;
 
 /**
@@ -36,6 +37,9 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
         }
 
         PhysicalDevice selected = selectDevice(devices);
+        if (selected == null) {
+            throw new IllegalArgumentException("No suitable Vulkan physical device");
+        }
     }
 
     /**
@@ -47,7 +51,21 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
 
     @Override
     public PhysicalDevice selectDevice(PhysicalDevice[] devices) {
-        return devices[0];
+        for (PhysicalDevice d : devices) {
+            if (d.getExtension(Extensions.VK_KHR_swapchain.name()) != null) {
+                for (QueueFamilyProperties qp : d.getQueueFamilyProperties()) {
+                    if (qp.isSurfaceSupportsPresent()) {
+                        return d;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public QueueFamilyProperties selectQueueInstance(PhysicalDevice device) {
+        return device.getQueueFamilyProperties()[0];
     }
 
 }

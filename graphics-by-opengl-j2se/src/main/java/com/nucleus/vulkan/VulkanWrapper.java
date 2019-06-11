@@ -19,6 +19,14 @@ public abstract class VulkanWrapper extends Backend {
          * @return The device to use or null if no device that can be used
          */
         public PhysicalDevice selectDevice(PhysicalDevice[] devices);
+
+        /**
+         * Used to select the queue instance of the device
+         * 
+         * @param device
+         */
+        public QueueFamilyProperties selectQueueInstance(PhysicalDevice device);
+
     }
 
     protected static VulkanDeviceSelector deviceSelector;
@@ -82,6 +90,21 @@ public abstract class VulkanWrapper extends Backend {
          * @return
          */
         public QueueFamilyProperties[] getQueueFamilyProperties();
+
+        /**
+         * Returns the supported extensions
+         * 
+         * @return
+         */
+        public ExtensionProperties[] getExtensions();
+
+        /**
+         * Returns the extension property if this device supportes the named extension
+         * 
+         * @param extensionName
+         * @return The extension property, or null if not supported
+         */
+        public ExtensionProperties getExtension(String extensionName);
 
     }
 
@@ -332,6 +355,21 @@ public abstract class VulkanWrapper extends Backend {
         long nonCoherentAtomSize;
     }
 
+    public static class ExtensionProperties {
+        public ExtensionProperties(String name, int specVersion) {
+            this.name = name;
+            this.specVersion = specVersion;
+        }
+
+        String name;
+        int specVersion;
+
+        public String getName() {
+            return name;
+        }
+
+    }
+
     public static class Extent3D {
         final int[] values = new int[3];
 
@@ -361,6 +399,10 @@ public abstract class VulkanWrapper extends Backend {
 
         public int getQueueIndex() {
             return queueIndex;
+        }
+
+        public int getQueueCount() {
+            return queueCount;
         }
 
         @Override
