@@ -2,6 +2,7 @@ package com.nucleus.vulkan;
 
 import com.nucleus.Backend;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
+import com.nucleus.vulkan.Vulkan10.Result;
 
 /**
  * The Vulkan wrapper -all things related to Vulkan functionality that is shared independently of version
@@ -149,62 +150,69 @@ public abstract class VulkanWrapper extends Backend {
      * Abstraction of VkPhysicalDeviceFeatures for physical device features
      *
      */
-    public static class PhysicalDeviceFeatures {
-        boolean robustBufferAccess;
-        boolean fullDrawIndexUint32;
-        boolean imageCubeArray;
-        boolean independentBlend;
-        boolean geometryShader;
-        boolean tessellationShader;
-        boolean sampleRateShading;
-        boolean dualSrcBlend;
-        boolean logicOp;
-        boolean multiDrawIndirect;
-        boolean drawIndirectFirstInstance;
-        boolean depthClamp;
-        boolean depthBiasClamp;
-        boolean fillModeNonSolid;
-        boolean depthBounds;
-        boolean wideLines;
-        boolean largePoints;
-        boolean alphaToOne;
-        boolean multiViewport;
-        boolean samplerAnisotropy;
-        boolean textureCompressionETC2;
-        boolean textureCompressionASTC_LDR;
-        boolean textureCompressionBC;
-        boolean occlusionQueryPrecise;
-        boolean pipelineStatisticsQuery;
-        boolean vertexPipelineStoresAndAtomics;
-        boolean fragmentStoresAndAtomics;
-        boolean shaderTessellationAndGeometryPointSize;
-        boolean shaderImageGatherExtended;
-        boolean shaderStorageImageExtendedFormats;
-        boolean shaderStorageImageMultisample;
-        boolean shaderStorageImageReadWithoutFormat;
-        boolean shaderStorageImageWriteWithoutFormat;
-        boolean shaderUniformBufferArrayDynamicIndexing;
-        boolean shaderSampledImageArrayDynamicIndexing;
-        boolean shaderStorageBufferArrayDynamicIndexing;
-        boolean shaderStorageImageArrayDynamicIndexing;
-        boolean shaderClipDistance;
-        boolean shaderCullDistance;
-        boolean shaderFloat64;
-        boolean shaderInt64;
-        boolean shaderInt16;
-        boolean shaderResourceResidency;
-        boolean shaderResourceMinLod;
-        boolean sparseBinding;
-        boolean sparseResidencyBuffer;
-        boolean sparseResidencyImage2D;
-        boolean sparseResidencyImage3D;
-        boolean sparseResidency2Samples;
-        boolean sparseResidency4Samples;
-        boolean sparseResidency8Samples;
-        boolean sparseResidency16Samples;
-        boolean sparseResidencyAliased;
-        boolean variableMultisampleRate;
-        boolean inheritedQueries;
+    public abstract static class PhysicalDeviceFeatures {
+        public boolean robustBufferAccess;
+        public boolean fullDrawIndexUint32;
+        public boolean imageCubeArray;
+        public boolean independentBlend;
+        public boolean geometryShader;
+        public boolean tessellationShader;
+        public boolean sampleRateShading;
+        public boolean dualSrcBlend;
+        public boolean logicOp;
+        public boolean multiDrawIndirect;
+        public boolean drawIndirectFirstInstance;
+        public boolean depthClamp;
+        public boolean depthBiasClamp;
+        public boolean fillModeNonSolid;
+        public boolean depthBounds;
+        public boolean wideLines;
+        public boolean largePoints;
+        public boolean alphaToOne;
+        public boolean multiViewport;
+        public boolean samplerAnisotropy;
+        public boolean textureCompressionETC2;
+        public boolean textureCompressionASTC_LDR;
+        public boolean textureCompressionBC;
+        public boolean occlusionQueryPrecise;
+        public boolean pipelineStatisticsQuery;
+        public boolean vertexPipelineStoresAndAtomics;
+        public boolean fragmentStoresAndAtomics;
+        public boolean shaderTessellationAndGeometryPointSize;
+        public boolean shaderImageGatherExtended;
+        public boolean shaderStorageImageExtendedFormats;
+        public boolean shaderStorageImageMultisample;
+        public boolean shaderStorageImageReadWithoutFormat;
+        public boolean shaderStorageImageWriteWithoutFormat;
+        public boolean shaderUniformBufferArrayDynamicIndexing;
+        public boolean shaderSampledImageArrayDynamicIndexing;
+        public boolean shaderStorageBufferArrayDynamicIndexing;
+        public boolean shaderStorageImageArrayDynamicIndexing;
+        public boolean shaderClipDistance;
+        public boolean shaderCullDistance;
+        public boolean shaderFloat64;
+        public boolean shaderInt64;
+        public boolean shaderInt16;
+        public boolean shaderResourceResidency;
+        public boolean shaderResourceMinLod;
+        public boolean sparseBinding;
+        public boolean sparseResidencyBuffer;
+        public boolean sparseResidencyImage2D;
+        public boolean sparseResidencyImage3D;
+        public boolean sparseResidency2Samples;
+        public boolean sparseResidency4Samples;
+        public boolean sparseResidency8Samples;
+        public boolean sparseResidency16Samples;
+        public boolean sparseResidencyAliased;
+        public boolean variableMultisampleRate;
+        public boolean inheritedQueries;
+
+        /**
+         * Copy the the features into destination
+         * 
+         * @param destination Implementation specific destination
+         */
+        public abstract void copy(Object destination);
 
         @Override
         public String toString() {
@@ -389,8 +397,23 @@ public abstract class VulkanWrapper extends Backend {
         protected Extent3D minImageTransferGranularity;
         protected boolean surfaceSupportsPresent;
 
+        /**
+         * Returns the queue support flags
+         * 
+         * @return
+         */
         public int getQueueFlags() {
             return queueFlags;
+        }
+
+        /**
+         * Returns true if queue has support for the queueFlag
+         * 
+         * @param queueFlag
+         * @return
+         */
+        public boolean hasSupport(QueueFlagBits queueFlag) {
+            return (queueFlag.mask & getQueueFlags()) != 0;
         }
 
         public boolean isSurfaceSupportsPresent() {
@@ -465,4 +488,19 @@ public abstract class VulkanWrapper extends Backend {
     protected VulkanWrapper(Renderers version) {
         super(version);
     }
+
+    /**
+     * Checks that the resultcode is VK_SUCCESS, if not RuntimeException is thrown.
+     * 
+     * @param value
+     */
+    public void assertResult(int value) {
+        Result r = Result.getResult(value);
+        {
+            if (r == null || r != Result.VK_SUCCESS) {
+                throw new RuntimeException("Failed with error: " + r);
+            }
+        }
+    }
+
 }

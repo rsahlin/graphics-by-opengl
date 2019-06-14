@@ -40,6 +40,10 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
         if (selected == null) {
             throw new IllegalArgumentException("No suitable Vulkan physical device");
         }
+        QueueFamilyProperties queueFamily = selectQueueInstance(selected);
+
+        createLogicalDevice(selected, queueFamily);
+
     }
 
     /**
@@ -48,6 +52,15 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
      * @return
      */
     protected abstract PhysicalDevice[] fetchDevices();
+
+    /**
+     * Creates the logical device using the selected queue, this method is with the result of
+     * {@link #selectDevice(PhysicalDevice[])} {@link #selectQueueInstance(PhysicalDevice)} has b
+     * 
+     * @param device The device returned by {@link #selectDevice(PhysicalDevice[])}
+     * @param selectedQueue The queue family returned by {@link #selectQueueInstance(PhysicalDevice)}
+     */
+    protected abstract void createLogicalDevice(PhysicalDevice device, QueueFamilyProperties selectedQueue);
 
     @Override
     public PhysicalDevice selectDevice(PhysicalDevice[] devices) {
@@ -65,7 +78,12 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
 
     @Override
     public QueueFamilyProperties selectQueueInstance(PhysicalDevice device) {
-        return device.getQueueFamilyProperties()[0];
+        for (QueueFamilyProperties qp : device.getQueueFamilyProperties()) {
+            if ((qp.surfaceSupportsPresent) && qp.hasSupport(QueueFlagBits.VK_QUEUE_GRAPHICS_BIT)) {
+                return qp;
+            }
+        }
+        return null;
     }
 
 }

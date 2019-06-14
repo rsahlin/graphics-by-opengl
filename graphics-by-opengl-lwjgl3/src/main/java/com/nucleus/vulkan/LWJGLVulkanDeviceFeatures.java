@@ -19,4 +19,14 @@ public class LWJGLVulkanDeviceFeatures extends PhysicalDeviceFeatures {
         textureCompressionETC2 = deviceFeatures.textureCompressionETC2();
     }
 
+    @Override
+    public void copy(Object destination) {
+        VkPhysicalDeviceFeatures dest = (VkPhysicalDeviceFeatures) destination;
+        dest.tessellationShader(tessellationShader);
+        dest.geometryShader(geometryShader);
+        dest.textureCompressionASTC_LDR(textureCompressionASTC_LDR);
+        dest.textureCompressionBC(textureCompressionBC);
+        dest.textureCompressionETC2(textureCompressionETC2);
+    }
+
 }
