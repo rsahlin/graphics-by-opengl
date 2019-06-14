@@ -1,9 +1,12 @@
 package com.nucleus.vulkan;
 
+import java.util.ArrayList;
+
 import com.nucleus.SimpleLogger;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.vulkan.QueueFamilyProperties.QueueFlagBits;
 import com.nucleus.vulkan.Vulkan10.Extensions;
+import com.nucleus.vulkan.Vulkan10.SurfaceFormat;
 import com.nucleus.vulkan.VulkanWrapper.VulkanDeviceSelector;
 
 /**
@@ -13,6 +16,7 @@ import com.nucleus.vulkan.VulkanWrapper.VulkanDeviceSelector;
 public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDeviceSelector {
 
     private PhysicalDevice[] devices;
+    private Queue queue;
 
     /**
      * Will call {@link #fetchDevices()} and then {@link #selectDevice(PhysicalDevice[])}
@@ -44,8 +48,8 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
         QueueFamilyProperties queueFamily = selectQueueInstance(selected);
 
         createLogicalDevice(selected, queueFamily);
-
-        createQueues(queueFamily);
+        queue = createQueue(queueFamily);
+        selectSurfaceFormat(getSurfaceFormats(selected));
 
     }
 
@@ -65,7 +69,29 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
      */
     protected abstract void createLogicalDevice(PhysicalDevice device, QueueFamilyProperties selectedQueue);
 
-    protected abstract void createQueues(QueueFamilyProperties selectedQueue);
+    /**
+     * Create the queue instance for the selected queue
+     * 
+     * @param selectedQueue
+     * @return
+     */
+    protected abstract Queue createQueue(QueueFamilyProperties selectedQueue);
+
+    /**
+     * Returns an array of available surface formats
+     * 
+     * @param device
+     * @return
+     */
+    protected abstract ArrayList<SurfaceFormat> getSurfaceFormats(PhysicalDevice device);
+
+    /**
+     * Selects the surface format to be used
+     * 
+     * @param formats
+     * @return
+     */
+    protected abstract SurfaceFormat selectSurfaceFormat(ArrayList<SurfaceFormat> formats);
 
     @Override
     public PhysicalDevice selectDevice(PhysicalDevice[] devices) {

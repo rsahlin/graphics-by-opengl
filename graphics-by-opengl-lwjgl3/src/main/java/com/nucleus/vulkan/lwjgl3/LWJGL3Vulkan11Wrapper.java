@@ -3,10 +3,12 @@ package com.nucleus.vulkan.lwjgl3;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.vulkan.KHRSurface;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkApplicationInfo;
 import org.lwjgl.vulkan.VkDevice;
@@ -19,20 +21,26 @@ import org.lwjgl.vulkan.VkPhysicalDevice;
 import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 import org.lwjgl.vulkan.VkQueue;
+import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.vulkan.DeviceLimits;
 import com.nucleus.vulkan.ExtensionProperties;
+import com.nucleus.vulkan.LWJGLQueue;
 import com.nucleus.vulkan.LWJGLVkQueueFamilyProperties;
 import com.nucleus.vulkan.LWJGLVulkanDeviceFeatures;
 import com.nucleus.vulkan.LWJGLVulkanLimits;
 import com.nucleus.vulkan.PhysicalDevice;
 import com.nucleus.vulkan.PhysicalDeviceFeatures;
 import com.nucleus.vulkan.PhysicalDeviceProperties;
+import com.nucleus.vulkan.Queue;
 import com.nucleus.vulkan.QueueFamilyProperties;
 import com.nucleus.vulkan.Vulkan10;
+import com.nucleus.vulkan.Vulkan10.ColorSpaceKHR;
+import com.nucleus.vulkan.Vulkan10.Format;
+import com.nucleus.vulkan.Vulkan10.SurfaceFormat;
 import com.nucleus.vulkan.Vulkan11Wrapper;
 
 public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
@@ -43,6 +51,7 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
 
     private PointerBuffer extension_names = MemoryUtil.memAllocPointer(64);
     private PointerBuffer pointer = MemoryUtil.memAllocPointer(1);
+    IntBuffer ib = BufferUtils.createIntBuffer(1);
 
     public class Device implements PhysicalDevice {
 
@@ -69,7 +78,6 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
         }
 
         protected void readExtensions(VkPhysicalDevice device) {
-            IntBuffer ib = BufferUtils.createIntBuffer(1);
             VK10.vkEnumerateDeviceExtensionProperties(device, (String) null, ib, null);
             if (ib.get(0) > 0) {
                 int count = ib.get(0);
@@ -342,10 +350,39 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
     }
 
     @Override
-    protected void createQueues(QueueFamilyProperties selectedQueue) {
+    protected Queue createQueue(QueueFamilyProperties selectedQueue) {
         VK10.vkGetDeviceQueue(deviceInstance, selectedQueue.getQueueIndex(), 0, pointer);
         VkQueue queue = new VkQueue(pointer.get(0), deviceInstance);
-        // VK10.vkQ
+        return new LWJGLQueue(queue);
+    }
+
+    @Override
+    protected ArrayList<SurfaceFormat> getSurfaceFormats(PhysicalDevice device) {
+        VkPhysicalDevice vkDevice = ((Device) device).getVkPhysicalDevice();
+        assertResult(KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR(vkDevice, surface, ib, null));
+        VkSurfaceFormatKHR.Buffer surfaceFormats = VkSurfaceFormatKHR.malloc(ib.get(0));
+        assertResult(KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR(vkDevice, surface, ib, surfaceFormats));
+
+        ArrayList<SurfaceFormat> result = new ArrayList<SurfaceFormat>();
+
+        surfaceFormats.rewind();
+        while (surfaceFormats.hasRemaining()) {
+            VkSurfaceFormatKHR vkSF = surfaceFormats.get();
+            Format format = Format.get(vkSF.format());
+            ColorSpaceKHR space = ColorSpaceKHR.get(vkSF.colorSpace());
+            if (format != null && space != null) {
+                SimpleLogger.d(getClass(), "Added surfaceformat: " + format + ", colorspace: " + space);
+                result.add(new SurfaceFormat(format, space));
+            } else {
+                SimpleLogger.d(getClass(), "Error - could not find surfaceformat or colorspace");
+            }
+        }
+        return result;
+    }
+
+    @Override
+    protected SurfaceFormat selectSurfaceFormat(ArrayList<SurfaceFormat> formats) {
+        return formats.get(0);
     }
 
 }
