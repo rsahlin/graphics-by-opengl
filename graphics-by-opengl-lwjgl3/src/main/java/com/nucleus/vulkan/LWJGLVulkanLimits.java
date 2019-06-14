@@ -2,9 +2,6 @@ package com.nucleus.vulkan;
 
 import org.lwjgl.vulkan.VkPhysicalDeviceLimits;
 
-import com.nucleus.vulkan.VulkanWrapper.DeviceLimits;
-import com.nucleus.vulkan.VulkanWrapper.SampleCountFlags;
-
 public class LWJGLVulkanLimits extends DeviceLimits {
 
     public LWJGLVulkanLimits(VkPhysicalDeviceLimits limits) {

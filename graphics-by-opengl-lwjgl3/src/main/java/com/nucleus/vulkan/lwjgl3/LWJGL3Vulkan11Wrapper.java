@@ -23,9 +23,15 @@ import org.lwjgl.vulkan.VkQueue;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
+import com.nucleus.vulkan.DeviceLimits;
+import com.nucleus.vulkan.ExtensionProperties;
 import com.nucleus.vulkan.LWJGLVkQueueFamilyProperties;
 import com.nucleus.vulkan.LWJGLVulkanDeviceFeatures;
 import com.nucleus.vulkan.LWJGLVulkanLimits;
+import com.nucleus.vulkan.PhysicalDevice;
+import com.nucleus.vulkan.PhysicalDeviceFeatures;
+import com.nucleus.vulkan.PhysicalDeviceProperties;
+import com.nucleus.vulkan.QueueFamilyProperties;
 import com.nucleus.vulkan.Vulkan10;
 import com.nucleus.vulkan.Vulkan11Wrapper;
 

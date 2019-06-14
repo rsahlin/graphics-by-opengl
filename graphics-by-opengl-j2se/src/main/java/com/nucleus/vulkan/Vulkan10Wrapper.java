@@ -2,6 +2,7 @@ package com.nucleus.vulkan;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
+import com.nucleus.vulkan.QueueFamilyProperties.QueueFlagBits;
 import com.nucleus.vulkan.Vulkan10.Extensions;
 import com.nucleus.vulkan.VulkanWrapper.VulkanDeviceSelector;
 

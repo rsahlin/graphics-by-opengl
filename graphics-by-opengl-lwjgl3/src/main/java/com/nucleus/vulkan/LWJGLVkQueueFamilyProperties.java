@@ -5,7 +5,7 @@ import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkExtent3D;
 import org.lwjgl.vulkan.VkPhysicalDevice;
 
-public class LWJGLVkQueueFamilyProperties extends com.nucleus.vulkan.VulkanWrapper.QueueFamilyProperties {
+public class LWJGLVkQueueFamilyProperties extends com.nucleus.vulkan.QueueFamilyProperties {
 
     public LWJGLVkQueueFamilyProperties(org.lwjgl.vulkan.VkQueueFamilyProperties queueProperties, int index,
             VkPhysicalDevice device, long surface) {
@@ -13,7 +13,7 @@ public class LWJGLVkQueueFamilyProperties extends com.nucleus.vulkan.VulkanWrapp
         queueFlags = queueProperties.queueFlags();
         queueCount = queueProperties.queueCount();
         VkExtent3D minImage = queueProperties.minImageTransferGranularity();
-        minImageTransferGranularity = new com.nucleus.vulkan.VulkanWrapper.Extent3D(minImage.width(),
+        minImageTransferGranularity = new com.nucleus.vulkan.Extent3D(minImage.width(),
                 minImage.height(), minImage.depth());
         timestampValidBits = queueProperties.timestampValidBits();
         int[] supported = new int[1];
