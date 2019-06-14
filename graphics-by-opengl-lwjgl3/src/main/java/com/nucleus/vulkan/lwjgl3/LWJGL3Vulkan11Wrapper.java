@@ -18,6 +18,7 @@ import org.lwjgl.vulkan.VkInstanceCreateInfo;
 import org.lwjgl.vulkan.VkPhysicalDevice;
 import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
+import org.lwjgl.vulkan.VkQueue;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
@@ -35,6 +36,7 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
             .memASCII(Vulkan10.Extensions.VK_EXT_debug_report.name());
 
     private PointerBuffer extension_names = MemoryUtil.memAllocPointer(64);
+    private PointerBuffer pointer = MemoryUtil.memAllocPointer(1);
 
     public class Device implements PhysicalDevice {
 
@@ -232,13 +234,18 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
         int[] deviceCount = new int[1];
         if (VK10.vkEnumeratePhysicalDevices(instance, deviceCount, null) == VK10.VK_SUCCESS) {
             Device[] devices = new Device[deviceCount[0]];
-            PointerBuffer pb = MemoryUtil.memAllocPointer(deviceCount[0]);
-            if (VK10.vkEnumeratePhysicalDevices(instance, deviceCount, pb) == VK10.VK_SUCCESS) {
-                fetchDevices(pb, devices);
-            } else {
-                throw new IllegalArgumentException("Failed to enumerate physical devices");
+            PointerBuffer pb = null;
+            try {
+                pb = MemoryUtil.memAllocPointer(deviceCount[0]);
+                if (VK10.vkEnumeratePhysicalDevices(instance, deviceCount, pb) == VK10.VK_SUCCESS) {
+                    fetchDevices(pb, devices);
+                } else {
+                    throw new IllegalArgumentException("Failed to enumerate physical devices");
+                }
+                return devices;
+            } finally {
+                MemoryUtil.memFree(pb);
             }
-            return devices;
         } else {
             throw new IllegalArgumentException("Failed to enumerate number of physical devices in system.");
         }
@@ -267,12 +274,9 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
                 .pNext(MemoryUtil.NULL) // <- must always be NULL until any next Vulkan version tells otherwise
                 .pApplicationInfo(appInfo) // <- the application info we created above
                 .ppEnabledExtensionNames(extension_names); // <- and the extension names themselves
-        PointerBuffer pInstance = MemoryUtil.memAllocPointer(1); // <- create a PointerBuffer which will hold the handle
-                                                                 // to the
         // created VkInstance
-        int err = VK10.vkCreateInstance(pCreateInfo, null, pInstance); // <- actually create the VkInstance now!
-        long instance = pInstance.get(0); // <- get the VkInstance handle
-        MemoryUtil.memFree(pInstance); // <- free the PointerBuffer
+        int err = VK10.vkCreateInstance(pCreateInfo, null, pointer);
+        long instance = pointer.get(0); // <- get the VkInstance handle
         // Check whether we succeeded in creating the VkInstance
         if (err != VK10.VK_SUCCESS) {
             throw new AssertionError("Failed to create VkInstance: " + err);
@@ -325,11 +329,17 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
 
         VkPhysicalDevice physicalDevice = ((Device) device).getVkPhysicalDevice();
 
-        PointerBuffer pb = MemoryUtil.memAllocPointer(1);
-        assertResult(VK10.vkCreateDevice(physicalDevice, deviceInfo, null, pb));
+        assertResult(VK10.vkCreateDevice(physicalDevice, deviceInfo, null, pointer));
 
-        deviceInstance = new VkDevice(pb.get(0), physicalDevice, deviceInfo);
+        deviceInstance = new VkDevice(pointer.get(0), physicalDevice, deviceInfo);
+        SimpleLogger.d(getClass(), "Created Vulkan instance");
+    }
 
+    @Override
+    protected void createQueues(QueueFamilyProperties selectedQueue) {
+        VK10.vkGetDeviceQueue(deviceInstance, selectedQueue.getQueueIndex(), 0, pointer);
+        VkQueue queue = new VkQueue(pointer.get(0), deviceInstance);
+        // VK10.vkQ
     }
 
 }

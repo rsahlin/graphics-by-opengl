@@ -44,6 +44,8 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
 
         createLogicalDevice(selected, queueFamily);
 
+        createQueues(queueFamily);
+
     }
 
     /**
@@ -61,6 +63,8 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
      * @param selectedQueue The queue family returned by {@link #selectQueueInstance(PhysicalDevice)}
      */
     protected abstract void createLogicalDevice(PhysicalDevice device, QueueFamilyProperties selectedQueue);
+
+    protected abstract void createQueues(QueueFamilyProperties selectedQueue);
 
     @Override
     public PhysicalDevice selectDevice(PhysicalDevice[] devices) {
