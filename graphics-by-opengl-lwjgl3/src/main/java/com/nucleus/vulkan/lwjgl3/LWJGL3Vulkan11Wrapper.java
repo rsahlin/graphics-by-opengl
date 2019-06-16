@@ -3,31 +3,37 @@ package com.nucleus.vulkan.lwjgl3;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 import java.util.ArrayList;
 
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.KHRSurface;
+import org.lwjgl.vulkan.KHRSwapchain;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkApplicationInfo;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkDeviceCreateInfo;
 import org.lwjgl.vulkan.VkDeviceQueueCreateInfo;
 import org.lwjgl.vulkan.VkExtensionProperties;
+import org.lwjgl.vulkan.VkExtent2D;
 import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
 import org.lwjgl.vulkan.VkPhysicalDevice;
 import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 import org.lwjgl.vulkan.VkQueue;
+import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
 import org.lwjgl.vulkan.VkSurfaceFormatKHR;
+import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.vulkan.DeviceLimits;
 import com.nucleus.vulkan.ExtensionProperties;
+import com.nucleus.vulkan.Extent2D;
 import com.nucleus.vulkan.LWJGLQueue;
 import com.nucleus.vulkan.LWJGLVkQueueFamilyProperties;
 import com.nucleus.vulkan.LWJGLVulkanDeviceFeatures;
@@ -40,6 +46,7 @@ import com.nucleus.vulkan.QueueFamilyProperties;
 import com.nucleus.vulkan.Vulkan10;
 import com.nucleus.vulkan.Vulkan10.ColorSpaceKHR;
 import com.nucleus.vulkan.Vulkan10.Format;
+import com.nucleus.vulkan.Vulkan10.PresentModeKHR;
 import com.nucleus.vulkan.Vulkan10.SurfaceFormat;
 import com.nucleus.vulkan.Vulkan11Wrapper;
 
@@ -52,6 +59,7 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
     private PointerBuffer extension_names = MemoryUtil.memAllocPointer(64);
     private PointerBuffer pointer = MemoryUtil.memAllocPointer(1);
     IntBuffer ib = BufferUtils.createIntBuffer(1);
+    LongBuffer lb = BufferUtils.createLongBuffer(1);
 
     public class Device implements PhysicalDevice {
 
@@ -200,6 +208,8 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
     private VkInstance instance;
     private long surface;
     private VkDevice deviceInstance;
+    private long swapChain;
+    private int swapChainImageCount;
 
     /**
      * Internal constructor - DO NOT USE
@@ -371,8 +381,9 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
             Format format = Format.get(vkSF.format());
             ColorSpaceKHR space = ColorSpaceKHR.get(vkSF.colorSpace());
             if (format != null && space != null) {
-                SimpleLogger.d(getClass(), "Added surfaceformat: " + format + ", colorspace: " + space);
-                result.add(new SurfaceFormat(format, space));
+                SurfaceFormat sf = new SurfaceFormat(format, space);
+                result.add(sf);
+                SimpleLogger.d(getClass(), "Added surfaceformat: " + sf);
             } else {
                 SimpleLogger.d(getClass(), "Error - could not find surfaceformat or colorspace");
             }
@@ -381,8 +392,88 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
     }
 
     @Override
-    protected SurfaceFormat selectSurfaceFormat(ArrayList<SurfaceFormat> formats) {
-        return formats.get(0);
+    protected ArrayList<PresentModeKHR> getPresentModes(PhysicalDevice device) {
+        ArrayList<PresentModeKHR> result = new ArrayList<>();
+        VkPhysicalDevice vkDevice = ((Device) device).getVkPhysicalDevice();
+        assertResult(KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR(vkDevice, surface, ib, null));
+        IntBuffer presentModes = BufferUtils.createIntBuffer(ib.get(0));
+        assertResult(KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR(vkDevice, surface, ib, presentModes));
+
+        presentModes.rewind();
+        while (presentModes.hasRemaining()) {
+            int v = presentModes.get();
+            PresentModeKHR mode = PresentModeKHR.get(v);
+            if (mode != null) {
+                SimpleLogger.d(getClass(), "Added presentmode " + mode);
+                result.add(mode);
+            } else {
+                SimpleLogger.d(getClass(), "Error - no presentmode for: " + v);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    protected Extent2D selectSwapExtent(PhysicalDevice device) {
+        VkPhysicalDevice vkDevice = ((Device) device).getVkPhysicalDevice();
+        VkSurfaceCapabilitiesKHR surfaceCaps = VkSurfaceCapabilitiesKHR.malloc();
+        assertResult(KHRSurface.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkDevice, surface, surfaceCaps));
+
+        Extent2D result = new Extent2D(surfaceCaps.currentExtent().width(), surfaceCaps.currentExtent().height());
+
+        if (surfaceCaps.currentExtent().width() == 0xFFFFFFFF) {
+            // If the surface size is undefined, the size is set to the size
+            // of the images requested, which must fit within the minimum and
+            // maximum values.
+            if (result.getWidth() < surfaceCaps.minImageExtent().width()) {
+                result.setWidth(surfaceCaps.minImageExtent().width());
+            } else if (result.getWidth() > surfaceCaps.maxImageExtent().width()) {
+                result.setWidth(surfaceCaps.maxImageExtent().width());
+            }
+
+            if (result.getHeight() < surfaceCaps.minImageExtent().height()) {
+                result.setHeight(surfaceCaps.minImageExtent().height());
+            } else if (result.getHeight() > surfaceCaps.maxImageExtent().height()) {
+                result.setHeight(surfaceCaps.maxImageExtent().height());
+            }
+        }
+        return result;
+    }
+
+    @Override
+    protected int createSwapChain(PhysicalDevice device, SurfaceFormat surfaceFormat, Extent2D swapChainExtent,
+            PresentModeKHR presentMode) {
+
+        VkExtent2D scExtent = VkExtent2D.malloc();
+        scExtent.set(swapChainExtent.getWidth(), swapChainExtent.getHeight());
+        VkSwapchainCreateInfoKHR swapchainInfo = VkSwapchainCreateInfoKHR.calloc()
+                .sType(KHRSwapchain.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR)
+                .surface(surface)
+                .minImageCount(1)
+                .imageFormat(surfaceFormat.getFormat().value)
+                .imageColorSpace(surfaceFormat.getColorSpace().value)
+                .imageExtent(scExtent)
+                .imageArrayLayers(1)
+                .imageUsage(VK10.VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+                .imageSharingMode(VK10.VK_SHARING_MODE_EXCLUSIVE)
+                .compositeAlpha(KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR)
+                .presentMode(presentMode.value)
+                .clipped(true);
+
+        assertResult(KHRSwapchain.vkCreateSwapchainKHR(deviceInstance, swapchainInfo, null, lb));
+        swapChain = lb.get(0);
+
+        // If we just re-created an existing swapchain, we should destroy the old
+        // swapchain at this point.
+        // Note: destroying the swapchain also cleans up all its associated
+        // presentable images once the platform is done with them.
+        // if (oldSwapchain != VK_NULL_HANDLE) {
+        // vkDestroySwapchainKHR(device, oldSwapchain, null);
+        // }
+
+        assertResult(KHRSwapchain.vkGetSwapchainImagesKHR(deviceInstance, swapChain, ib, null));
+        swapChainImageCount = ib.get(0);
+        return swapChainImageCount;
     }
 
 }

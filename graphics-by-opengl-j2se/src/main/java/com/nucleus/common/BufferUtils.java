@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 
 import com.nucleus.SimpleLogger;
@@ -107,7 +108,7 @@ public class BufferUtils {
     }
 
     /**
-     * Allocates a direct byte buffer with the specified number of bytes. 
+     * Allocates a direct byte buffer with the specified number of bytes.
      * Ordering will be nativeOrder
      * Use this method to allocate byte buffers instead of calling java.nio.ByteBuffer direct
      * 
@@ -118,9 +119,9 @@ public class BufferUtils {
         SimpleLogger.d(BufferUtils.class, "Creating byte buffer with byte size: " + bytes);
         return ByteBuffer.allocateDirect(bytes).order(ByteOrder.nativeOrder());
     }
-    
+
     /**
-     * Allocates a direct float buffer with the specified number of floats. 
+     * Allocates a direct float buffer with the specified number of floats.
      * Ordering will be nativeOrder.
      * Use this method to allocate float buffers instead of calling java.nio.ByteBuffer direct
      * 
@@ -131,11 +132,11 @@ public class BufferUtils {
         SimpleLogger.d(BufferUtils.class, "Creating float buffer with float size: " + floats);
         return ByteBuffer.allocateDirect(floats * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
     }
-    
+
     /**
-     * Allocates a direct int buffer with the specified number of ints. 
+     * Allocates a direct int buffer with the specified number of ints.
      * Ordering will be nativeOrder.
-     * Use this method to allocate float buffers instead of calling java.nio.ByteBuffer direct
+     * Use this method to allocate int buffers instead of calling java.nio.ByteBuffer direct
      * 
      * @param ints
      * @return
@@ -144,6 +145,19 @@ public class BufferUtils {
         SimpleLogger.d(BufferUtils.class, "Creating int buffer with int size: " + ints);
         return ByteBuffer.allocateDirect(ints * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
     }
-    
-    
+
+    /**
+     * Allocates a direct long buffer with the specifried number of longs
+     * Ordering will be nativeorder.
+     * Use this method to allocate long buffers instead of calling java.nio.LongBUffer direct
+     * 
+     * @param longs
+     * @return
+     */
+    public static LongBuffer createLongBuffer(int longs) {
+        SimpleLogger.d(BufferUtils.class, "Creating long buffer with int size: " + longs);
+        return ByteBuffer.allocateDirect(longs * 8).order(ByteOrder.nativeOrder()).asLongBuffer();
+
+    }
+
 }

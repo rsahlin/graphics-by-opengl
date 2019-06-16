@@ -5,7 +5,10 @@ import java.util.ArrayList;
 import com.nucleus.SimpleLogger;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.vulkan.QueueFamilyProperties.QueueFlagBits;
+import com.nucleus.vulkan.Vulkan10.ColorSpaceKHR;
 import com.nucleus.vulkan.Vulkan10.Extensions;
+import com.nucleus.vulkan.Vulkan10.Format;
+import com.nucleus.vulkan.Vulkan10.PresentModeKHR;
 import com.nucleus.vulkan.Vulkan10.SurfaceFormat;
 import com.nucleus.vulkan.VulkanWrapper.VulkanDeviceSelector;
 
@@ -17,6 +20,8 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
 
     private PhysicalDevice[] devices;
     private Queue queue;
+    private SurfaceFormat surfaceFormat;
+    private PresentModeKHR presentMode;
 
     /**
      * Will call {@link #fetchDevices()} and then {@link #selectDevice(PhysicalDevice[])}
@@ -49,7 +54,14 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
 
         createLogicalDevice(selected, queueFamily);
         queue = createQueue(queueFamily);
-        selectSurfaceFormat(getSurfaceFormats(selected));
+        surfaceFormat = selectSurfaceFormat(getSurfaceFormats(selected));
+        SimpleLogger.d(getClass(), "Selected surface format:" + surfaceFormat);
+        presentMode = selectPresentMode(surfaceFormat, getPresentModes(selected));
+        SimpleLogger.d(getClass(), "Selected present mode :" + presentMode);
+        Extent2D swapExtent = selectSwapExtent(selected);
+        SimpleLogger.d(getClass(), "Swapchain extent selected: " + swapExtent);
+        int images = createSwapChain(selected, surfaceFormat, swapExtent, presentMode);
+        SimpleLogger.d(getClass(), "Created swapchain with " + images + " images.");
 
     }
 
@@ -86,12 +98,33 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
     protected abstract ArrayList<SurfaceFormat> getSurfaceFormats(PhysicalDevice device);
 
     /**
-     * Selects the surface format to be used
+     * Returns an array with the available present modes
      * 
-     * @param formats
+     * @param device
      * @return
      */
-    protected abstract SurfaceFormat selectSurfaceFormat(ArrayList<SurfaceFormat> formats);
+    protected abstract ArrayList<PresentModeKHR> getPresentModes(PhysicalDevice device);
+
+    /**
+     * Select the swapchain extent
+     * 
+     * @param device
+     * @return
+     */
+    protected abstract Extent2D selectSwapExtent(PhysicalDevice device);
+
+    /**
+     * Creates the swapchain - but not the images needed for the swapchain
+     * 
+     * @param device
+     * @param surfaceFormat
+     * @param swapChainExtent
+     * @param presentMode
+     * @return The number of images in the swapchain - these image must be created
+     */
+    protected abstract int createSwapChain(PhysicalDevice device, SurfaceFormat surfaceFormat,
+            Extent2D swapChainExtent,
+            PresentModeKHR presentMode);
 
     @Override
     public PhysicalDevice selectDevice(PhysicalDevice[] devices) {
@@ -115,6 +148,69 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
             }
         }
         return null;
+    }
+
+    protected ArrayList<SurfaceFormat> filterByColorspace(ArrayList<SurfaceFormat> formats,
+            ColorSpaceKHR[] colorSpace) {
+        ArrayList<SurfaceFormat> result = new ArrayList<>();
+        for (SurfaceFormat sf : formats) {
+            for (ColorSpaceKHR c : colorSpace) {
+                if (sf.space == c) {
+                    result.add(sf);
+                }
+            }
+        }
+        return result;
+    }
+
+    protected SurfaceFormat getByFormat(ArrayList<SurfaceFormat> formats, Format format) {
+        for (SurfaceFormat sf : formats) {
+            if (sf.format == format) {
+                return sf;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Selects the display chain surfaceformat
+     * 
+     * @param formats
+     * @return
+     * @throws IllegalArgumentException If no suitable surfaceformat could be found
+     */
+    protected SurfaceFormat selectSurfaceFormat(ArrayList<SurfaceFormat> formats) {
+        ArrayList<SurfaceFormat> srgb = filterByColorspace(formats, new ColorSpaceKHR[] {
+                ColorSpaceKHR.VK_COLOR_SPACE_SRGB_NONLINEAR_KHR, ColorSpaceKHR.VK_COLORSPACE_SRGB_NONLINEAR_KHR });
+        SurfaceFormat selected = getByFormat(srgb, Format.VK_FORMAT_R8G8B8A8_UNORM);
+        if (selected == null) {
+            throw new IllegalArgumentException("No surfaceformat");
+        }
+        return selected;
+    }
+
+    protected boolean hasPresentMode(ArrayList<PresentModeKHR> presentModes, PresentModeKHR mode) {
+        for (PresentModeKHR m : presentModes) {
+            if (m == mode) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the desired present mode
+     * 
+     * @param surfaceFormat
+     * @param presentModes
+     * @return
+     */
+    protected PresentModeKHR selectPresentMode(SurfaceFormat surfaceFormat, ArrayList<PresentModeKHR> presentModes) {
+        if (hasPresentMode(presentModes, PresentModeKHR.VK_PRESENT_MODE_FIFO_RELAXED_KHR)) {
+            return PresentModeKHR.VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+        }
+        // Fallback to required presentmode
+        return PresentModeKHR.VK_PRESENT_MODE_FIFO_KHR;
     }
 
 }

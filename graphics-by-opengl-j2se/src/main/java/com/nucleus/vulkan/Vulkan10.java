@@ -2,6 +2,31 @@ package com.nucleus.vulkan;
 
 public interface Vulkan10 {
 
+    public enum PresentModeKHR {
+        VK_PRESENT_MODE_IMMEDIATE_KHR(0),
+        VK_PRESENT_MODE_MAILBOX_KHR(1),
+        VK_PRESENT_MODE_FIFO_KHR(2),
+        VK_PRESENT_MODE_FIFO_RELAXED_KHR(3),
+        VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR(1000111000),
+        VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR(1000111001);
+
+        public final int value;
+
+        private PresentModeKHR(int value) {
+            this.value = value;
+        }
+
+        public static PresentModeKHR get(int value) {
+            for (PresentModeKHR p : values()) {
+                if (value == p.value) {
+                    return p;
+                }
+            }
+            return null;
+        }
+
+    };
+
     public enum Result {
         VK_SUCCESS(0),
         VK_NOT_READY(1),
@@ -46,6 +71,19 @@ public interface Vulkan10 {
         public SurfaceFormat(Format format, ColorSpaceKHR space) {
             this.format = format;
             this.space = space;
+        }
+
+        @Override
+        public String toString() {
+            return format + ", " + space;
+        }
+
+        public Format getFormat() {
+            return format;
+        }
+
+        public ColorSpaceKHR getColorSpace() {
+            return space;
         }
 
     }

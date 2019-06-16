@@ -55,6 +55,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
             case GLES32:
                 createGLESWindow(version);
                 break;
+            case VULKAN10:
             case VULKAN11:
                 createVulkanWindow(version);
                 break;
