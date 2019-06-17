@@ -64,6 +64,8 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
         SimpleLogger.d(getClass(), "Swapchain extent selected: " + swapExtent);
         int images = createSwapChain(selected, surfaceFormat, swapExtent, presentMode);
         SimpleLogger.d(getClass(), "Created swapchain with " + images + " images.");
+        createSwapBuffers(images, surfaceFormat);
+        SimpleLogger.d(getClass(), "Created " + images + " image views.");
 
     }
 
@@ -127,6 +129,14 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
     protected abstract int createSwapChain(PhysicalDevice device, SurfaceFormat surfaceFormat,
             Extent2D swapChainExtent,
             PresentModeKHR presentMode);
+
+    /**
+     * Creates the swapbuffer image views
+     * 
+     * @param bufferCount
+     * @param surfaceFormat
+     */
+    protected abstract void createSwapBuffers(int bufferCount, SurfaceFormat surfaceFormat);
 
     @Override
     public PhysicalDevice selectDevice(PhysicalDevice[] devices) {

@@ -18,6 +18,7 @@ import org.lwjgl.vulkan.VkDeviceCreateInfo;
 import org.lwjgl.vulkan.VkDeviceQueueCreateInfo;
 import org.lwjgl.vulkan.VkExtensionProperties;
 import org.lwjgl.vulkan.VkExtent2D;
+import org.lwjgl.vulkan.VkImageViewCreateInfo;
 import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
 import org.lwjgl.vulkan.VkPhysicalDevice;
@@ -43,6 +44,7 @@ import com.nucleus.vulkan.PhysicalDeviceFeatures;
 import com.nucleus.vulkan.PhysicalDeviceProperties;
 import com.nucleus.vulkan.Queue;
 import com.nucleus.vulkan.QueueFamilyProperties;
+import com.nucleus.vulkan.SwapChainBuffer;
 import com.nucleus.vulkan.Vulkan10;
 import com.nucleus.vulkan.Vulkan10.ColorSpaceKHR;
 import com.nucleus.vulkan.Vulkan10.Extensions;
@@ -60,6 +62,7 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
     private final PointerBuffer logicalDeviceExtensions = MemoryUtil.memAllocPointer(8);
     private final PointerBuffer pointer = MemoryUtil.memAllocPointer(1);
     private final PointerBuffer instanceExtensions = MemoryUtil.memAllocPointer(64);
+    private SwapChainBuffer[] buffers;
 
     IntBuffer ib = BufferUtils.createIntBuffer(1);
     LongBuffer lb = BufferUtils.createLongBuffer(1);
@@ -474,15 +477,48 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
 
         // If we just re-created an existing swapchain, we should destroy the old
         // swapchain at this point.
-        // Note: destroying the swapchain also cleans up all its associated
-        // presentable images once the platform is done with them.
-        // if (oldSwapchain != VK_NULL_HANDLE) {
-        // vkDestroySwapchainKHR(device, oldSwapchain, null);
-        // }
 
         assertResult(KHRSwapchain.vkGetSwapchainImagesKHR(deviceInstance, swapChain, ib, null));
         swapChainImageCount = ib.get(0);
         return swapChainImageCount;
+    }
+
+    @Override
+    protected void createSwapBuffers(int bufferCount, SurfaceFormat surfaceFormat) {
+        ib.rewind();
+        ib.put(bufferCount);
+        ib.rewind();
+        LongBuffer swapchainImages = BufferUtils.createLongBuffer(bufferCount);
+        assertResult(KHRSwapchain.vkGetSwapchainImagesKHR(deviceInstance, swapChain, ib, swapchainImages));
+
+        buffers = new SwapChainBuffer[bufferCount];
+
+        for (int i = 0; i < bufferCount; i++) {
+            long image = swapchainImages.get(i);
+
+            VkImageViewCreateInfo color_attachment_view = VkImageViewCreateInfo.malloc()
+                    .sType(VK10.VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO)
+                    .pNext(MemoryUtil.NULL)
+                    .flags(0)
+                    .image(image)
+                    .viewType(VK10.VK_IMAGE_VIEW_TYPE_2D)
+                    .format(surfaceFormat.getFormat().value)
+                    .components(it -> it
+                            .r(VK10.VK_COMPONENT_SWIZZLE_R)
+                            .g(VK10.VK_COMPONENT_SWIZZLE_G)
+                            .b(VK10.VK_COMPONENT_SWIZZLE_B)
+                            .a(VK10.VK_COMPONENT_SWIZZLE_A))
+                    .subresourceRange(it -> it
+                            .aspectMask(VK10.VK_IMAGE_ASPECT_COLOR_BIT)
+                            .baseMipLevel(0)
+                            .levelCount(1)
+                            .baseArrayLayer(0)
+                            .layerCount(1));
+
+            assertResult(VK10.vkCreateImageView(deviceInstance, color_attachment_view, null, lb));
+            long view = lb.get(0);
+            buffers[i] = new SwapChainBuffer(image, view);
+        }
     }
 
 }
