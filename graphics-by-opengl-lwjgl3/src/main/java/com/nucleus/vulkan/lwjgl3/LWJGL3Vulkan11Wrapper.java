@@ -45,6 +45,7 @@ import com.nucleus.vulkan.Queue;
 import com.nucleus.vulkan.QueueFamilyProperties;
 import com.nucleus.vulkan.Vulkan10;
 import com.nucleus.vulkan.Vulkan10.ColorSpaceKHR;
+import com.nucleus.vulkan.Vulkan10.Extensions;
 import com.nucleus.vulkan.Vulkan10.Format;
 import com.nucleus.vulkan.Vulkan10.PresentModeKHR;
 import com.nucleus.vulkan.Vulkan10.SurfaceFormat;
@@ -56,8 +57,10 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
     private static final ByteBuffer EXT_debug_report = MemoryUtil
             .memASCII(Vulkan10.Extensions.VK_EXT_debug_report.name());
 
-    private PointerBuffer extension_names = MemoryUtil.memAllocPointer(64);
-    private PointerBuffer pointer = MemoryUtil.memAllocPointer(1);
+    private final PointerBuffer logicalDeviceExtensions = MemoryUtil.memAllocPointer(8);
+    private final PointerBuffer pointer = MemoryUtil.memAllocPointer(1);
+    private final PointerBuffer instanceExtensions = MemoryUtil.memAllocPointer(64);
+
     IntBuffer ib = BufferUtils.createIntBuffer(1);
     LongBuffer lb = BufferUtils.createLongBuffer(1);
 
@@ -234,10 +237,13 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
             throw new AssertionError("Failed to find list of required Vulkan extensions");
         }
 
-        addExtensions(extension_names, requiredExtensions);
+        addExtensions(instanceExtensions, requiredExtensions);
+        instanceExtensions.put(EXT_debug_report);
 
-        instance = createInstance();
+        instanceExtensions.flip();
+        instance = createInstance(instanceExtensions);
         SimpleLogger.d(getClass(), "Created Vulkan");
+        MemoryUtil.memFree(instanceExtensions);
 
         long[] s = new long[1];
         if (GLFWVulkan.glfwCreateWindowSurface(instance, window, null, s) != VK10.VK_SUCCESS) {
@@ -250,7 +256,6 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
         for (int i = 0; i < requiredExtensions.capacity(); i++) {
             extensionNames.put(requiredExtensions.get(i));
         }
-        extensionNames.flip();
     }
 
     @Override
@@ -284,7 +289,7 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
         }
     }
 
-    private VkInstance createInstance() {
+    private VkInstance createInstance(PointerBuffer extensions) {
         VkApplicationInfo appInfo = VkApplicationInfo.calloc()
                 .sType(VK10.VK_STRUCTURE_TYPE_APPLICATION_INFO)
                 .pApplicationName(MemoryUtil.memUTF8("LWJGL Vulkan Demo"))
@@ -297,7 +302,7 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
                 // useful for extending the struct type later)
                 .pNext(MemoryUtil.NULL) // <- must always be NULL until any next Vulkan version tells otherwise
                 .pApplicationInfo(appInfo) // <- the application info we created above
-                .ppEnabledExtensionNames(extension_names); // <- and the extension names themselves
+                .ppEnabledExtensionNames(extensions); // <- and the extension names themselves
         // created VkInstance
         int err = VK10.vkCreateInstance(pCreateInfo, null, pointer);
         long instance = pointer.get(0); // <- get the VkInstance handle
@@ -340,15 +345,15 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
                 .queueFamilyIndex(selectedQueue.getQueueIndex())
                 .pQueuePriorities(prios);
 
-        // Clears the extension names - don't use any for the queue
-        extension_names.flip();
+        logicalDeviceExtensions.put(KHR_swapchain);
+        logicalDeviceExtensions.flip();
         VkDeviceCreateInfo deviceInfo = VkDeviceCreateInfo.malloc();
         deviceInfo.sType(VK10.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO)
                 .pNext(MemoryUtil.NULL)
                 .flags(0)
                 .pQueueCreateInfos(queue)
                 .ppEnabledLayerNames(null)
-                .ppEnabledExtensionNames(extension_names)
+                .ppEnabledExtensionNames(logicalDeviceExtensions)
                 .pEnabledFeatures(features);
 
         VkPhysicalDevice physicalDevice = ((Device) device).getVkPhysicalDevice();
@@ -443,6 +448,10 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
     @Override
     protected int createSwapChain(PhysicalDevice device, SurfaceFormat surfaceFormat, Extent2D swapChainExtent,
             PresentModeKHR presentMode) {
+
+        if (device.getExtension(Extensions.VK_KHR_swapchain.name()) == null) {
+            throw new IllegalArgumentException("Device has no support for " + Extensions.VK_KHR_swapchain);
+        }
 
         VkExtent2D scExtent = VkExtent2D.malloc();
         scExtent.set(swapChainExtent.getWidth(), swapChainExtent.getHeight());
