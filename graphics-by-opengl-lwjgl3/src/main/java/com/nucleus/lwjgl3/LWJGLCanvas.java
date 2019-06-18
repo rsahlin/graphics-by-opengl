@@ -82,22 +82,22 @@ public abstract class LWJGLCanvas extends Canvas {
     @Override
     public void paint(Graphics g) {
         // Get the drawing surface
-        JAWTDrawingSurface ds = JAWT_GetDrawingSurface(awt.GetDrawingSurface(), this);
-        // JAWTDrawingSurface ds = JAWT_GetDrawingSurface(this, awt.GetDrawingSurface());
+        // JAWTDrawingSurface ds = JAWT_GetDrawingSurface(awt.GetDrawingSurface(), this);
+        JAWTDrawingSurface ds = JAWT_GetDrawingSurface(this, awt.GetDrawingSurface());
         if (ds == null) {
             throw new RuntimeException("awt->GetDrawingSurface() failed");
         }
         // Lock the drawing surface
-        int lock = JAWT_DrawingSurface_Lock(ds.Lock(), ds);
-        // int lock = JAWT_DrawingSurface_Lock(ds, ds.Lock());
+        // int lock = JAWT_DrawingSurface_Lock(ds.Lock(), ds);
+        int lock = JAWT_DrawingSurface_Lock(ds, ds.Lock());
         if ((lock & JAWT_LOCK_ERROR) != 0) {
             throw new RuntimeException("ds->Lock() failed");
         }
 
         try {
             // Get the drawing surface info
-            JAWTDrawingSurfaceInfo dsi = JAWT_DrawingSurface_GetDrawingSurfaceInfo(ds.GetDrawingSurfaceInfo(), ds);
-            // JAWTDrawingSurfaceInfo dsi = JAWT_DrawingSurface_GetDrawingSurfaceInfo(ds, ds.GetDrawingSurfaceInfo());
+            // JAWTDrawingSurfaceInfo dsi = JAWT_DrawingSurface_GetDrawingSurfaceInfo(ds.GetDrawingSurfaceInfo(), ds);
+            JAWTDrawingSurfaceInfo dsi = JAWT_DrawingSurface_GetDrawingSurfaceInfo(ds, ds.GetDrawingSurfaceInfo());
             try {
                 long hdc = getHDC(dsi);
                 if (hdc != NULL) {
@@ -138,13 +138,13 @@ public abstract class LWJGLCanvas extends Canvas {
                 }
             } finally {
                 // Free the drawing surface info
-                JAWT_DrawingSurface_FreeDrawingSurfaceInfo(ds.FreeDrawingSurfaceInfo(), dsi);
-                // JAWT_DrawingSurface_FreeDrawingSurfaceInfo(dsi, ds.FreeDrawingSurfaceInfo());
+                // JAWT_DrawingSurface_FreeDrawingSurfaceInfo(ds.FreeDrawingSurfaceInfo(), dsi);
+                JAWT_DrawingSurface_FreeDrawingSurfaceInfo(dsi, ds.FreeDrawingSurfaceInfo());
             }
         } finally {
             // Unlock the drawing surface
-            JAWT_DrawingSurface_Unlock(ds.Unlock(), ds);
-            // JAWT_DrawingSurface_Unlock(ds, ds.Unlock());
+            // JAWT_DrawingSurface_Unlock(ds.Unlock(), ds);
+            JAWT_DrawingSurface_Unlock(ds, ds.Unlock());
         }
         repaint();
     }
