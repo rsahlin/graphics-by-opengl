@@ -18,12 +18,14 @@ import com.nucleus.vulkan.VulkanWrapper.VulkanDeviceSelector;
  */
 public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDeviceSelector {
 
+    private Format[] defaultFormats = new Format[] { Format.VK_FORMAT_R8G8B8A8_UNORM, Format.VK_FORMAT_B8G8R8A8_UNORM,
+            Format.VK_FORMAT_R8G8B8_UNORM, Format.VK_FORMAT_B8G8R8_UNORM, Format.VK_FORMAT_A8B8G8R8_UNORM_PACK32 };
+
     private PhysicalDevice[] devices;
     private Queue queue;
     private SurfaceFormat surfaceFormat;
     private PresentModeKHR presentMode;
-    private Format[] defaultFormats = new Format[] { Format.VK_FORMAT_R8G8B8A8_UNORM, Format.VK_FORMAT_B8G8R8A8_UNORM,
-            Format.VK_FORMAT_R8G8B8_UNORM, Format.VK_FORMAT_B8G8R8_UNORM, Format.VK_FORMAT_A8B8G8R8_UNORM_PACK32 };
+    private PhysicalDeviceMemoryProperties memoryProperties;
 
     /**
      * Will call {@link #fetchDevices()} and then {@link #selectDevice(PhysicalDevice[])}
@@ -66,6 +68,7 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
         SimpleLogger.d(getClass(), "Created swapchain with " + images + " images.");
         createSwapBuffers(images, surfaceFormat);
         SimpleLogger.d(getClass(), "Created " + images + " image views.");
+        memoryProperties = getMemoryProperties(selected);
 
     }
 
@@ -137,6 +140,14 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
      * @param surfaceFormat
      */
     protected abstract void createSwapBuffers(int bufferCount, SurfaceFormat surfaceFormat);
+
+    /**
+     * Creates the memory properties
+     * 
+     * @param device
+     * @return
+     */
+    protected abstract PhysicalDeviceMemoryProperties getMemoryProperties(PhysicalDevice device);
 
     @Override
     public PhysicalDevice selectDevice(PhysicalDevice[] devices) {

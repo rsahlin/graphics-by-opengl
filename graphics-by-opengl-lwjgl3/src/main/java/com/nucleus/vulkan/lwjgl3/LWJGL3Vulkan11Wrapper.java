@@ -23,6 +23,7 @@ import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
 import org.lwjgl.vulkan.VkPhysicalDevice;
 import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
+import org.lwjgl.vulkan.VkPhysicalDeviceMemoryProperties;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 import org.lwjgl.vulkan.VkQueue;
 import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
@@ -35,12 +36,14 @@ import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.vulkan.DeviceLimits;
 import com.nucleus.vulkan.ExtensionProperties;
 import com.nucleus.vulkan.Extent2D;
+import com.nucleus.vulkan.LWJGLPhysicalDeviceMemoryProperties;
 import com.nucleus.vulkan.LWJGLQueue;
 import com.nucleus.vulkan.LWJGLVkQueueFamilyProperties;
 import com.nucleus.vulkan.LWJGLVulkanDeviceFeatures;
 import com.nucleus.vulkan.LWJGLVulkanLimits;
 import com.nucleus.vulkan.PhysicalDevice;
 import com.nucleus.vulkan.PhysicalDeviceFeatures;
+import com.nucleus.vulkan.PhysicalDeviceMemoryProperties;
 import com.nucleus.vulkan.PhysicalDeviceProperties;
 import com.nucleus.vulkan.Queue;
 import com.nucleus.vulkan.QueueFamilyProperties;
@@ -519,6 +522,18 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
             long view = lb.get(0);
             buffers[i] = new SwapChainBuffer(image, view);
         }
+    }
+
+    @Override
+    protected PhysicalDeviceMemoryProperties getMemoryProperties(PhysicalDevice device) {
+        VkPhysicalDevice vkDevice = ((Device) device).getVkPhysicalDevice();
+
+        VkPhysicalDeviceMemoryProperties p = VkPhysicalDeviceMemoryProperties.malloc();
+        VK10.vkGetPhysicalDeviceMemoryProperties(vkDevice, p);
+        PhysicalDeviceMemoryProperties memoryProperties = new LWJGLPhysicalDeviceMemoryProperties(p);
+
+        return memoryProperties;
+
     }
 
 }
