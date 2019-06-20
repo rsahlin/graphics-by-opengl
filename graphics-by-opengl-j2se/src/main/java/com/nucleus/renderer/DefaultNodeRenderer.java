@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
-import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.profiling.FrameSampler;
@@ -61,7 +60,7 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
         if (pipeline == null) {
             throw new IllegalArgumentException("No pipeline for node " + node.getId());
         }
-        SimpleLogger.d(getClass(), "Not solved how to get pipeline for pass");
+        // TODO Not implemented yet
         return pipeline;
     }
 
