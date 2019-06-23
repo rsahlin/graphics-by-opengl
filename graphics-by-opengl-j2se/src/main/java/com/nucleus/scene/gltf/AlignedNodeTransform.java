@@ -18,7 +18,11 @@ public class AlignedNodeTransform {
      * The result of axis rotation from input - only store rotation here
      */
     private float[] rotationMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
-    private float[] resultMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
+    /**
+     * Translate and scale matrix
+     */
+    private float[] transformMatrix = Matrix.setIdentity(Matrix.createMatrix(), 0);
+    private float[] resultMatrix = Matrix.createMatrix();
     private float[] scale = new float[] { 1, 1, 1 };
     private float[] translate = new float[3];
     private float[] moveScale;
@@ -68,7 +72,7 @@ public class AlignedNodeTransform {
      * Result is stored in the scene's target matrix, if set
      * 
      * @param move
-     * @return The result matrix, previous rotation plus added rotation
+     * @return The resulting matrix with rotate, translate and scale
      */
     public float[] rotate(float[] move) {
         axisAngle[1][3] = -(move[0] * moveScale[0]) * 3.14f;
@@ -84,6 +88,7 @@ public class AlignedNodeTransform {
      * Scales the scene
      * 
      * @param zoom
+     * @return The resulting matrix with rotate, translate and scale
      */
     public float[] scale(Vec2 zoom) {
         float z = 1 + (zoom.vector[Vec2.MAGNITUDE] * zoom.vector[Vec2.X])
@@ -99,7 +104,7 @@ public class AlignedNodeTransform {
      * target matrix if target is set.
      * 
      * @param move
-     * @return The result matrix
+     * @return The resulting matrix with rotate, translate and scale
      */
     public float[] translate(float[] move) {
         if (target != null) {
@@ -127,12 +132,23 @@ public class AlignedNodeTransform {
     }
 
     private float[] composeMatrix() {
-        float[] result = target != null ? target.getSceneTransform().getMatrix() : matrix[0];
-        Matrix.setIdentity(resultMatrix, 0);
-        Matrix.scaleM(resultMatrix, 0, scale);
-        Matrix.translate(resultMatrix, translate);
-        Matrix.mul4(resultMatrix, rotationMatrix, result);
-        return result;
+        Matrix.setIdentity(transformMatrix, 0);
+        Matrix.scaleM(transformMatrix, 0, scale);
+        Matrix.translate(transformMatrix, translate);
+        Matrix.mul4(transformMatrix, rotationMatrix, resultMatrix);
+        if (target != null) {
+            Matrix.copy(resultMatrix, 0, target.getSceneTransform().getMatrix(), 0);
+        }
+        return resultMatrix;
+    }
+
+    /**
+     * Returns the matrix with the current resulting scale, rotate and translate info
+     * 
+     * @return Reference to current result matrix
+     */
+    public float[] getResultMatrix() {
+        return resultMatrix;
     }
 
 }
