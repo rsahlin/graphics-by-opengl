@@ -98,31 +98,7 @@ public class Camera extends GLTFNamedValue {
          * @return A new matrix with the perspective projection set
          */
         public float[] createMatrix() {
-            float[] projection = Matrix.setIdentity(Matrix.createMatrix(), 0);
-            if (zfar == -1) {
-                return calculateMatrixInfinite(projection);
-            }
-            return calculateMatrixFinite(projection);
-        }
-
-        protected float[] calculateMatrixInfinite(float[] projection) {
-            projection[0] = (float) (1 / (aspectRatio * Math.tan((0.5f * yfov))));
-            projection[5] = (float) (1 / (Math.tan(0.5f * yfov)));
-            projection[10] = -1f;
-            projection[11] = -2 * znear;
-            projection[14] = -1f;
-            projection[15] = 0;
-            return projection;
-        }
-
-        protected float[] calculateMatrixFinite(float[] projection) {
-            projection[0] = (float) (1 / (aspectRatio * Math.tan((0.5f * yfov))));
-            projection[5] = (float) (1 / (Math.tan(0.5f * yfov)));
-            projection[10] = (zfar + znear) / (znear - zfar);
-            projection[11] = (2 * zfar * znear) / (znear - zfar);
-            projection[14] = -1f;
-            projection[15] = 0;
-            return projection;
+            return Matrix.createProjectionMatrix(aspectRatio, yfov, zfar, znear);
         }
 
     }

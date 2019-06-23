@@ -596,6 +596,10 @@ public class GLESBaseRenderer extends BaseRenderer {
         int mode = gles.getDrawMode(mesh.getMode());
         ElementBuffer indices = mesh.getElementBuffer();
         if (indices == null) {
+            AttributeBuffer ab = mesh.getAttributeBuffer(0);
+            if (ab.getBufferName() > 0) {
+                gles.glBindBuffer(GLES20.GL_ARRAY_BUFFER, ab.getBufferName());
+            }
             gles.glDrawArrays(mode, mesh.getOffset(), mesh.getDrawCount());
             GLUtils.handleError(gles, "glDrawArrays ");
             timeKeeper.addDrawArrays(mesh.getDrawCount());

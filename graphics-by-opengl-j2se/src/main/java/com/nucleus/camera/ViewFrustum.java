@@ -88,26 +88,6 @@ public class ViewFrustum {
     }
 
     /**
-     * Sets the projection to perspective
-     * 
-     * @param left
-     * @param right
-     * @param bottom
-     * @param top
-     * @param near
-     * @param far
-     */
-    public void setPerspectiveProjection(float left, float right, float bottom, float top, float near, float far) {
-        values[LEFT_INDEX] = left;
-        values[RIGHT_INDEX] = right;
-        values[BOTTOM_INDEX] = bottom;
-        values[TOP_INDEX] = top;
-        values[NEAR_INDEX] = near;
-        values[FAR_INDEX] = far;
-        projection = Projection.PERSPECTIVE;
-    }
-
-    /**
      * Sets the projection to PERSPECTIVE or ORTHOGONAL and sets left,right,bottom,top,near and far values.
      * 
      * @param projection
@@ -179,7 +159,7 @@ public class ViewFrustum {
      * 
      * @param matrix The matrix to set the view projection in
      * @param projection The projection type, PERSPECTIVE, ORTHOGONAL
-     * @param values The projection (frustum) values. left,right, bottom,top, near and far
+     * @param values The projection (frustum) values.
      */
     public static void setProjectionMatrix(float[] matrix, Projection projection, float[] values) {
         switch (projection) {
@@ -190,10 +170,8 @@ public class ViewFrustum {
                         values[ViewFrustum.FAR_INDEX]);
                 break;
             case PERSPECTIVE:
-                Matrix.frustumM(matrix, 0, values[ViewFrustum.LEFT_INDEX],
-                        values[ViewFrustum.RIGHT_INDEX], values[ViewFrustum.BOTTOM_INDEX],
-                        values[ViewFrustum.TOP_INDEX], values[ViewFrustum.NEAR_INDEX],
-                        values[ViewFrustum.FAR_INDEX]);
+                float[] perspective = Matrix.createProjectionMatrix(values[0], values[1], values[2], values[3]);
+                Matrix.copy(perspective, 0, matrix, 0);
                 break;
             default:
                 System.err.println("Illegal projection: " + projection);
