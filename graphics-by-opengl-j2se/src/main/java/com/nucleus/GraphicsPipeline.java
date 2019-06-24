@@ -10,6 +10,7 @@ import com.nucleus.scene.gltf.Primitive.Attributes;
 
 /**
  * Instance of a programmable graphics pipeline
+ * TODO - remove references to opengl
  *
  */
 public abstract class GraphicsPipeline extends Pipeline {
@@ -47,6 +48,15 @@ public abstract class GraphicsPipeline extends Pipeline {
      * @return Shader variable for attribute, or null if not defined in shader
      */
     public abstract ShaderVariable getAttributeByName(String attribute);
+
+    /**
+     * Sets the float values from data at the offset from variable, use this to set more than one value.
+     * 
+     * @param variable The shader variable to set uniform data to
+     * @param data The uniform data to set
+     * @param sourceOffset Offset into data where values are read
+     */
+    public abstract void setUniformData(ShaderVariable variable, float[] data, int sourceOffset);
 
     /**
      * Returns the number of attributes per vertex that are used by the program.
