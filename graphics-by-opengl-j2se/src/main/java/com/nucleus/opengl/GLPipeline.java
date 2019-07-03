@@ -141,4 +141,9 @@ public class GLPipeline extends GraphicsPipeline {
         return shader.getUniformData();
     }
 
+    @Override
+    public void setUniformData(ShaderVariable variable, float[] data, int sourceOffset) {
+        shader.setUniformData(variable, data, sourceOffset);
+    }
+
 }

@@ -18,11 +18,14 @@ import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
+import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp;
+import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Environment;
 import com.nucleus.egl.EGLUtils;
+import com.nucleus.lwjgl3.LWJGLWrapperFactory;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
@@ -33,7 +36,6 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
 
     Thread thread;
 
-    protected Renderers version;
     protected SurfaceConfiguration surfaceConfig;
     protected RenderContextListener renderListener;
     protected long window;
@@ -49,13 +51,19 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
      */
     protected int[] surfaceAttribs;
 
-    public LWJGLEGLWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, SurfaceConfiguration config,
+    public LWJGLEGLWindow(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter,
+            SurfaceConfiguration config,
             int width, int height) {
-        super(coreAppStarter, width, height, config);
+        super(version, factory, coreAppStarter, width, height, config);
         env = Environment.getInstance();
-        this.version = version;
         Thread t = new Thread(this);
         t.start();
+    }
+
+    @Override
+    protected void init(Renderers version, BackendFactory factory, CoreAppStarter coreAppStarter, int width,
+            int height) {
+        backend = factory.createBackend(LWJGLWrapperFactory.getGLESVersion(gles), window, null);
     }
 
     /**
@@ -273,7 +281,6 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
 
     @Override
     public void internalCreateCoreApp(int width, int height) {
-        backend = LWJGLWrapperFactory.createGLESWrapper(LWJGLWrapperFactory.getGLESVersion(gles));
         super.internalCreateCoreApp(width, height);
     }
 

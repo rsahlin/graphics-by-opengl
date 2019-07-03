@@ -4,7 +4,6 @@ import java.util.ArrayDeque;
 
 import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
-import com.nucleus.SimpleLogger;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
@@ -233,7 +232,6 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
         if (pipeline == null) {
             throw new IllegalArgumentException("No pipeline for primitive ");
         }
-        SimpleLogger.d(getClass(), "Not solved how to get pipeline for pass");
         return pipeline;
     }
 

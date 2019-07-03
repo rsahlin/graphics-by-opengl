@@ -22,6 +22,7 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.Animator;
+import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.J2SEWindow;
@@ -43,6 +44,7 @@ import com.nucleus.renderer.SurfaceConfiguration;
 public abstract class JOGLGLWindow extends J2SEWindow
         implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener, KeyListener, WindowListener {
 
+    protected BackendFactory factory;
     private Dimension windowSize;
     private boolean undecorated = false;
     private boolean alwaysOnTop = false;
@@ -54,7 +56,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
     protected GLCanvas canvas;
     protected Frame frame;
     protected GLWindow glWindow;
-    protected Renderers version;
     Animator animator;
     private Hashtable<Integer, Integer> AWTKeycodes;
 
@@ -62,6 +63,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
      * Creates a new JOGL window with the specified {@link CoreAppStarter} and swapinterval
      * 
      * @param version
+     * @param factory
      * @param coreAppStarter
      * @param config Surface configuration
      * @param width
@@ -71,21 +73,21 @@ public abstract class JOGLGLWindow extends J2SEWindow
      * @param swapInterval
      * @throws IllegalArgumentException If coreAppStarter is null
      */
-    public JOGLGLWindow(Renderers version, CoreAppStarter coreAppStarter, SurfaceConfiguration config, int width,
-            int height, boolean undecorated,
+    public JOGLGLWindow(Renderers version, BackendFactory factory, CoreAppStarter coreAppStarter,
+            SurfaceConfiguration config, int width, int height, boolean undecorated,
             boolean fullscreen, int swapInterval) {
-        super(coreAppStarter, width, height, config);
+        super(version, factory, coreAppStarter, width, height, config);
         this.swapInterval = swapInterval;
         this.undecorated = undecorated;
         this.fullscreen = fullscreen;
-        this.version = version;
-        create(version, coreAppStarter, width, height);
     }
 
-    private void create(Renderers version, CoreAppStarter coreAppStarter, int width, int height) {
+    @Override
+    public void init(Renderers version, BackendFactory factory, CoreAppStarter coreAppStarter, int width, int height) {
         if (coreAppStarter == null) {
             throw new IllegalArgumentException("CoreAppStarter is null");
         }
+        this.factory = factory;
         this.coreAppStarter = coreAppStarter;
         windowSize = new Dimension(width, height);
         GLProfile profile = getProfile(version);

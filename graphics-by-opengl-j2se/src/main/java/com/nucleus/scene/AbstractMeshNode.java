@@ -477,7 +477,7 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
 
     @Override
     public String toString() {
-        return super.toString() + (renderPass != null ? ", has renderpass" : "");
+        return super.toString() + ", " + meshes.size() + " meshes" + (renderPass != null ? ", has renderpass" : "");
     }
 
 }

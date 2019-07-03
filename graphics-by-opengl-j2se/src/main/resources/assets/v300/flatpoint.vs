@@ -9,7 +9,6 @@ precision highp float;
 uniform mat4 uModelMatrix[3];
 
 in vec3 aVertex; //Contains xyz
-in vec4 aColor;
 
 out vec4 color;
 
@@ -17,7 +16,7 @@ out vec4 color;
  * Used for objects that uses only position - processed as points
  */
 void main() {
-    vec4 pos = vec4(aVertex + aTranslate, 1.0) * uModelMatrix[0] * uModelMatrix[1];
+    vec4 pos = vec4(aVertex, 1.0) * uModelMatrix[0] * uModelMatrix[1];
     gl_Position = pos * uModelMatrix[2];
-    color = aColor;
+    color = vec4(1.0,1.0,1.0,1.0);
 }

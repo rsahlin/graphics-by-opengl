@@ -14,7 +14,9 @@ import com.jogamp.opengl.GLCapabilitiesChooser;
 import com.jogamp.opengl.GLContext;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.egl.EGL;
+import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp;
+import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
@@ -32,7 +34,7 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
 
     Thread thread;
 
-    protected Renderers version;
+    protected BackendFactory factory;
     protected long EGLContext = Constants.NO_VALUE;
     protected long EglDisplay = Constants.NO_VALUE;
     protected long EglConfig = Constants.NO_VALUE;
@@ -45,13 +47,21 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
     protected GLContext glContext;
     protected GLWindow nativeWindow;
 
-    public JOGLEGLWindow(Renderers version, CoreApp.CoreAppStarter coreAppStarter, SurfaceConfiguration config,
+    public JOGLEGLWindow(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter,
+            SurfaceConfiguration config,
             int width, int height) {
-        super(coreAppStarter, width, height, config);
-        this.version = version;
+        super(version, factory, coreAppStarter, width, height, config);
+    }
+
+    @Override
+    protected void init(Renderers version, BackendFactory factory, CoreAppStarter coreAppStarter, int width,
+            int height) {
+        this.factory = factory;
+        /**
+         * Start a thread to rendering using EGL and GL
+         */
         Thread t = new Thread(this);
         t.start();
-
     }
 
     protected void createEglContext() {
@@ -106,7 +116,7 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
 
             // EGL.eglCreateContext(eglDevice.getNativeDisplayID(), eglC, share_context, attrib_list)
 
-            backend = JOGLWrapperFactory.createWrapper(version, glContext);
+            backend = factory.createBackend(version, null, glContext);
         }
 
     }

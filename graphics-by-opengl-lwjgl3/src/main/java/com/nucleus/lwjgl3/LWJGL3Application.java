@@ -55,6 +55,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
             case GLES32:
                 createGLESWindow(version);
                 break;
+            case VULKAN10:
             case VULKAN11:
                 createVulkanWindow(version);
                 break;
@@ -68,13 +69,16 @@ public class LWJGL3Application extends J2SEWindowApplication {
     protected void createGLESWindow(Renderers version) {
         switch (windowType) {
             case GLFW:
-                j2seWindow = new GLFWGLESWindow(version, this, getConfiguration(), windowWidth, windowHeight);
+                j2seWindow = new GLFWGLESWindow(version, new LWJGLWrapperFactory(), this, getConfiguration(),
+                        windowWidth, windowHeight);
                 break;
             case JAWT:
-                j2seWindow = new JAWTWindow(version, this, getConfiguration(), windowWidth, windowHeight);
+                j2seWindow = new JAWTWindow(version, new LWJGLWrapperFactory(), this, getConfiguration(), windowWidth,
+                        windowHeight);
                 break;
             case EGL:
-                j2seWindow = new LWJGLEGLWindow(version, this, getConfiguration(), windowWidth, windowHeight);
+                j2seWindow = new LWJGLEGLWindow(version, new LWJGLWrapperFactory(), this, getConfiguration(),
+                        windowWidth, windowHeight);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + windowType);
@@ -84,7 +88,9 @@ public class LWJGL3Application extends J2SEWindowApplication {
     protected void createVulkanWindow(Renderers version) {
         switch (windowType) {
             case GLFW:
-                j2seWindow = new GLFWVulkanWindow(version, this, getConfiguration(), windowWidth, windowHeight);
+                j2seWindow = new GLFWVulkanWindow(version, new LWJGLWrapperFactory(), this, getConfiguration(),
+                        windowWidth,
+                        windowHeight);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + windowType);

@@ -13,7 +13,6 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.TranslateProgram;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RenderableNode;
@@ -224,28 +223,6 @@ public class GLMesh extends Mesh {
     protected GLMesh(Mesh source) {
         setId(source.getId());
         textureRef = source.getTextureRef();
-    }
-
-    /**
-     * Creates a Builder to create a mesh that can be rendered in a Node
-     * 
-     * @param renderer
-     * @param maxVerticeCount
-     * @param material
-     * @param program
-     * @param texture
-     * @param shapeBuilder
-     * @param mode
-     * @return
-     */
-    public static Builder<Mesh> createBuilder(NucleusRenderer renderer, int maxVerticeCount, Material material,
-            GLShaderProgram program, Texture2D texture, ShapeBuilder shapeBuilder, DrawMode mode) {
-        GLMesh.Builder<Mesh> builder = new GLMesh.Builder<Mesh>(renderer);
-        builder.setTexture(texture);
-        builder.setMaterial(material);
-        builder.setArrayMode(mode, maxVerticeCount, 0);
-        builder.setShapeBuilder(shapeBuilder).setAttributesPerVertex(program.getAttributeSizes());
-        return builder;
     }
 
 }

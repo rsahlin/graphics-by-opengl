@@ -255,6 +255,11 @@ public class RectangleShapeBuilder extends ElementBuilder<Mesh> {
         switch (mode) {
             case TRIANGLES:
             case TRIANGLE_FAN:
+            case LINES:
+            case LINE_LOOP:
+            case LINE_STRIP:
+            case POINTS:
+            case TRIANGLE_STRIP:
                 setPositionUV(0, values[INDEX_X], values[INDEX_Y], uv, destination, 0);
                 setPositionUV(1, values[INDEX_X] + values[INDEX_WIDTH], values[INDEX_Y], uv, destination, vertexStride);
                 setPositionUV(2, values[INDEX_X] + values[INDEX_WIDTH], values[INDEX_Y] - values[INDEX_HEIGHT], uv,

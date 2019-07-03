@@ -47,6 +47,7 @@ public interface NucleusRenderer {
         GLES30(3, 0),
         GLES31(3, 1),
         GLES32(3, 2),
+        VULKAN10(1, 0),
         VULKAN11(1, 1);
 
         public final int major;

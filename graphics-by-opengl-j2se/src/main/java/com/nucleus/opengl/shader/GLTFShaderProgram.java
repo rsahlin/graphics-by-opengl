@@ -14,6 +14,7 @@ import com.nucleus.light.Light;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.AccessorDictionary;
 import com.nucleus.scene.gltf.GLTF;
@@ -29,8 +30,8 @@ import com.nucleus.vecmath.Matrix;
 
 public class GLTFShaderProgram extends GenericShaderProgram {
 
-    transient protected String[][] commonSourceNames = new String[][] { { "common_structs.essl", "pbr_v300" },
-            { "common_structs.essl", "pbr_v300" } };
+    transient protected String[][] commonSourceNames = new String[][] { { "common_structs.essl", "pbr" },
+            { "common_structs.essl", "pbr" } };
     transient protected ShadingMaps pbrShading;
 
     transient protected ShaderVariable pbrDataUniform;
@@ -91,13 +92,15 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     }
 
     @Override
-    protected String[] getCommonShaderName(ShaderType type) {
+    protected String[] getCommonShaderName(Renderers version, ShaderType type) {
         switch (type) {
             case VERTEX:
                 if (commonSourceNames[ShaderType.VERTEX.index] != null) {
                     String[] result = new String[commonSourceNames[ShaderType.VERTEX.index].length];
                     for (int i = 0; i < result.length; i++) {
-                        result[i] = PROGRAM_DIRECTORY + function.getCategory() + File.separatorChar
+                        result[i] = PROGRAM_DIRECTORY + getSourceNameVersion(version, type.value)
+                                + function.getCategory()
+                                + File.separatorChar
                                 + commonSourceNames[ShaderType.VERTEX.index][i];
                     }
                     return result;
@@ -107,7 +110,8 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                 if (commonSourceNames[ShaderType.FRAGMENT.index] != null) {
                     String[] result = new String[commonSourceNames[ShaderType.FRAGMENT.index].length];
                     for (int i = 0; i < result.length; i++) {
-                        result[i] = PROGRAM_DIRECTORY + function.getCategory() + File.separatorChar
+                        result[i] = PROGRAM_DIRECTORY + getSourceNameVersion(version, type.value)
+                                + function.getCategory() + File.separatorChar
                                 + commonSourceNames[ShaderType.FRAGMENT.index][i];
                     }
                     return result;
@@ -125,7 +129,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     }
 
     @Override
-    protected ShaderSource createCommonSource(String sourceName, String sourceNameVersion, ShaderType type) {
+    protected ShaderSource createCommonSource(String sourceName, ShaderType type) {
         return new ShaderSource(sourceName, type);
     }
 
