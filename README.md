@@ -1,5 +1,5 @@
 ﻿#graphics-by-opengl
-PBR based renderer in Java using OpenGLES (Vulkan support is planned)
+PBR based renderer in Java using OpenGLES (Vulkan support is being worked on)
 
 A forward renderer using node hierarchy to render meshes.
 Limits number of passes in order to reach high fps in 4-8K resolution and on mobile devices.
