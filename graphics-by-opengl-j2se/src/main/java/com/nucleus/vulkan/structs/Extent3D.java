@@ -1,4 +1,4 @@
-package com.nucleus.vulkan;
+package com.nucleus.vulkan.structs;
 
 public class Extent3D {
     final int[] values = new int[3];

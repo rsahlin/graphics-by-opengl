@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
+import com.nucleus.vulkan.PhysicalDeviceProperties.PhysicalDeviceType;
 import com.nucleus.vulkan.QueueFamilyProperties.QueueFlagBits;
 import com.nucleus.vulkan.Vulkan10.ColorSpaceKHR;
 import com.nucleus.vulkan.Vulkan10.Extensions;
@@ -11,6 +12,10 @@ import com.nucleus.vulkan.Vulkan10.Format;
 import com.nucleus.vulkan.Vulkan10.PresentModeKHR;
 import com.nucleus.vulkan.Vulkan10.SurfaceFormat;
 import com.nucleus.vulkan.VulkanWrapper.VulkanDeviceSelector;
+import com.nucleus.vulkan.structs.Extent2D;
+import com.nucleus.vulkan.structs.ImageView;
+import com.nucleus.vulkan.structs.ImageViewCreateInfo;
+import com.nucleus.vulkan.structs.SwapChain;
 
 /**
  * Wrapper for Vulkan version 1.0 funtionality
@@ -26,6 +31,8 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
     private SurfaceFormat surfaceFormat;
     private PresentModeKHR presentMode;
     private PhysicalDeviceMemoryProperties memoryProperties;
+    protected ImageView[] imageViews;
+    protected SwapChain swapChain;
 
     /**
      * Will call {@link #fetchDevices()} and then {@link #selectDevice(PhysicalDevice[])}
@@ -54,6 +61,7 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
         if (selected == null) {
             throw new IllegalArgumentException("No suitable Vulkan physical device");
         }
+        SimpleLogger.d(getClass(), "Selected device: " + selected.getProperties().getDeviceName());
         QueueFamilyProperties queueFamily = selectQueueInstance(selected);
 
         createLogicalDevice(selected, queueFamily);
@@ -64,10 +72,10 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
         SimpleLogger.d(getClass(), "Selected present mode :" + presentMode);
         Extent2D swapExtent = selectSwapExtent(selected);
         SimpleLogger.d(getClass(), "Swapchain extent selected: " + swapExtent);
-        int images = createSwapChain(selected, surfaceFormat, swapExtent, presentMode);
-        SimpleLogger.d(getClass(), "Created swapchain with " + images + " images.");
-        createSwapBuffers(images, surfaceFormat);
-        SimpleLogger.d(getClass(), "Created " + images + " image views.");
+        swapChain = createSwapChain(selected, surfaceFormat, swapExtent, presentMode);
+        SimpleLogger.d(getClass(), "Created swapchain with " + swapChain.imageCount + " images.");
+        imageViews = createImageViews(swapChain, surfaceFormat);
+        SimpleLogger.d(getClass(), "Created " + imageViews.length + " image views.");
         memoryProperties = getMemoryProperties(selected);
 
     }
@@ -127,19 +135,28 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
      * @param surfaceFormat
      * @param swapChainExtent
      * @param presentMode
-     * @return The number of images in the swapchain - these image must be created
+     * @return The SwapChain wrapper, the images in swapchain are not created yet.
      */
-    protected abstract int createSwapChain(PhysicalDevice device, SurfaceFormat surfaceFormat,
+    protected abstract SwapChain createSwapChain(PhysicalDevice device, SurfaceFormat surfaceFormat,
             Extent2D swapChainExtent,
             PresentModeKHR presentMode);
 
     /**
-     * Creates the swapbuffer image views
+     * Creates the swapchain image views
      * 
-     * @param bufferCount
+     * @param swapChain
      * @param surfaceFormat
+     * @return The image views for the swapchain
      */
-    protected abstract void createSwapBuffers(int bufferCount, SurfaceFormat surfaceFormat);
+    protected abstract ImageView[] createImageViews(SwapChain swapChain, SurfaceFormat surfaceFormat);
+
+    /**
+     * Creates an ImageView based on the createinfo
+     * 
+     * @param createInfo
+     * @return
+     */
+    protected abstract ImageView createImageView(ImageViewCreateInfo createInfo);
 
     /**
      * Creates the memory properties
@@ -151,16 +168,32 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
 
     @Override
     public PhysicalDevice selectDevice(PhysicalDevice[] devices) {
+        ArrayList<PhysicalDevice> validDevices = new ArrayList<>();
         for (PhysicalDevice d : devices) {
             if (d.getExtension(Extensions.VK_KHR_swapchain.name()) != null) {
                 for (QueueFamilyProperties qp : d.getQueueFamilyProperties()) {
                     if (qp.isSurfaceSupportsPresent()) {
-                        return d;
+                        validDevices.add(d);
                     }
                 }
             }
         }
-        return null;
+        if (validDevices.size() == 0) {
+            return null;
+        }
+        // Try to find discreet device.
+        for (PhysicalDevice d : validDevices) {
+            if (d.getProperties().getDeviceType() == PhysicalDeviceType.VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+                return d;
+            }
+        }
+        // Try to find integrated device.
+        for (PhysicalDevice d : validDevices) {
+            if (d.getProperties().getDeviceType() == PhysicalDeviceType.VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+                return d;
+            }
+        }
+        return validDevices.get(0);
     }
 
     @Override

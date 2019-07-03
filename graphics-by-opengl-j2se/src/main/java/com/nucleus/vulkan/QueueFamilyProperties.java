@@ -1,5 +1,7 @@
 package com.nucleus.vulkan;
 
+import com.nucleus.vulkan.structs.Extent3D;
+
 public abstract class QueueFamilyProperties {
 
     public enum QueueFlagBits {

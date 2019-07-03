@@ -35,7 +35,6 @@ import com.nucleus.common.BufferUtils;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.vulkan.DeviceLimits;
 import com.nucleus.vulkan.ExtensionProperties;
-import com.nucleus.vulkan.Extent2D;
 import com.nucleus.vulkan.LWJGLPhysicalDeviceMemoryProperties;
 import com.nucleus.vulkan.LWJGLQueue;
 import com.nucleus.vulkan.LWJGLVkQueueFamilyProperties;
@@ -47,14 +46,21 @@ import com.nucleus.vulkan.PhysicalDeviceMemoryProperties;
 import com.nucleus.vulkan.PhysicalDeviceProperties;
 import com.nucleus.vulkan.Queue;
 import com.nucleus.vulkan.QueueFamilyProperties;
-import com.nucleus.vulkan.SwapChainBuffer;
 import com.nucleus.vulkan.Vulkan10;
 import com.nucleus.vulkan.Vulkan10.ColorSpaceKHR;
+import com.nucleus.vulkan.Vulkan10.ComponentMapping;
 import com.nucleus.vulkan.Vulkan10.Extensions;
 import com.nucleus.vulkan.Vulkan10.Format;
+import com.nucleus.vulkan.Vulkan10.ImageSubresourceRange;
+import com.nucleus.vulkan.Vulkan10.ImageViewType;
 import com.nucleus.vulkan.Vulkan10.PresentModeKHR;
 import com.nucleus.vulkan.Vulkan10.SurfaceFormat;
 import com.nucleus.vulkan.Vulkan11Wrapper;
+import com.nucleus.vulkan.structs.Extent2D;
+import com.nucleus.vulkan.structs.Image;
+import com.nucleus.vulkan.structs.ImageView;
+import com.nucleus.vulkan.structs.ImageViewCreateInfo;
+import com.nucleus.vulkan.structs.SwapChain;
 
 public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
 
@@ -65,7 +71,6 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
     private final PointerBuffer logicalDeviceExtensions = MemoryUtil.memAllocPointer(8);
     private final PointerBuffer pointer = MemoryUtil.memAllocPointer(1);
     private final PointerBuffer instanceExtensions = MemoryUtil.memAllocPointer(64);
-    private SwapChainBuffer[] buffers;
 
     IntBuffer ib = BufferUtils.createIntBuffer(1);
     LongBuffer lb = BufferUtils.createLongBuffer(1);
@@ -217,8 +222,6 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
     private VkInstance instance;
     private long surface;
     private VkDevice deviceInstance;
-    private long swapChain;
-    private int swapChainImageCount;
 
     /**
      * Internal constructor - DO NOT USE
@@ -452,7 +455,7 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
     }
 
     @Override
-    protected int createSwapChain(PhysicalDevice device, SurfaceFormat surfaceFormat, Extent2D swapChainExtent,
+    protected SwapChain createSwapChain(PhysicalDevice device, SurfaceFormat surfaceFormat, Extent2D swapChainExtent,
             PresentModeKHR presentMode) {
 
         if (device.getExtension(Extensions.VK_KHR_swapchain.name()) == null) {
@@ -476,52 +479,35 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
                 .clipped(true);
 
         assertResult(KHRSwapchain.vkCreateSwapchainKHR(deviceInstance, swapchainInfo, null, lb));
-        swapChain = lb.get(0);
 
         // If we just re-created an existing swapchain, we should destroy the old
         // swapchain at this point.
 
-        assertResult(KHRSwapchain.vkGetSwapchainImagesKHR(deviceInstance, swapChain, ib, null));
-        swapChainImageCount = ib.get(0);
-        return swapChainImageCount;
+        assertResult(KHRSwapchain.vkGetSwapchainImagesKHR(deviceInstance, lb.get(0), ib, null));
+        return new SwapChain(lb.get(0), ib.get(0));
     }
 
     @Override
-    protected void createSwapBuffers(int bufferCount, SurfaceFormat surfaceFormat) {
+    protected ImageView[] createImageViews(SwapChain swapChain, SurfaceFormat surfaceFormat) {
+        int bufferCount = swapChain.imageCount;
         ib.rewind();
         ib.put(bufferCount);
         ib.rewind();
         LongBuffer swapchainImages = BufferUtils.createLongBuffer(bufferCount);
-        assertResult(KHRSwapchain.vkGetSwapchainImagesKHR(deviceInstance, swapChain, ib, swapchainImages));
+        assertResult(KHRSwapchain.vkGetSwapchainImagesKHR(deviceInstance, swapChain.swapChain, ib, swapchainImages));
 
-        buffers = new SwapChainBuffer[bufferCount];
+        ImageView[] result = new ImageView[bufferCount];
 
+        ImageViewType type = ImageViewType.VK_IMAGE_VIEW_TYPE_2D;
+        Format format = surfaceFormat.getFormat();
+        ComponentMapping components = new ComponentMapping();
+        ImageSubresourceRange range = new ImageSubresourceRange(VK10.VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1);
         for (int i = 0; i < bufferCount; i++) {
-            long image = swapchainImages.get(i);
-
-            VkImageViewCreateInfo color_attachment_view = VkImageViewCreateInfo.malloc()
-                    .sType(VK10.VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO)
-                    .pNext(MemoryUtil.NULL)
-                    .flags(0)
-                    .image(image)
-                    .viewType(VK10.VK_IMAGE_VIEW_TYPE_2D)
-                    .format(surfaceFormat.getFormat().value)
-                    .components(it -> it
-                            .r(VK10.VK_COMPONENT_SWIZZLE_R)
-                            .g(VK10.VK_COMPONENT_SWIZZLE_G)
-                            .b(VK10.VK_COMPONENT_SWIZZLE_B)
-                            .a(VK10.VK_COMPONENT_SWIZZLE_A))
-                    .subresourceRange(it -> it
-                            .aspectMask(VK10.VK_IMAGE_ASPECT_COLOR_BIT)
-                            .baseMipLevel(0)
-                            .levelCount(1)
-                            .baseArrayLayer(0)
-                            .layerCount(1));
-
-            assertResult(VK10.vkCreateImageView(deviceInstance, color_attachment_view, null, lb));
-            long view = lb.get(0);
-            buffers[i] = new SwapChainBuffer(image, view);
+            Image image = new Image(swapchainImages.get(i));
+            ImageViewCreateInfo createInfo = new ImageViewCreateInfo(image, type, format, components, range);
+            result[i] = createImageView(createInfo);
         }
+        return result;
     }
 
     @Override
@@ -534,6 +520,33 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
 
         return memoryProperties;
 
+    }
+
+    @Override
+    protected ImageView createImageView(ImageViewCreateInfo createInfo) {
+
+        VkImageViewCreateInfo color_attachment_view = VkImageViewCreateInfo.malloc()
+                .sType(VK10.VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO)
+                .pNext(MemoryUtil.NULL)
+                .flags(0)
+                .image(createInfo.image.image)
+                .viewType(VK10.VK_IMAGE_VIEW_TYPE_2D)
+                .format(createInfo.format.value)
+                .components(it -> it
+                        .r(createInfo.components.r.value)
+                        .g(createInfo.components.g.value)
+                        .b(createInfo.components.r.value)
+                        .a(createInfo.components.r.value))
+                .subresourceRange(it -> it
+                        .aspectMask(createInfo.subresourceRange.aspectMask)
+                        .baseMipLevel(createInfo.subresourceRange.baseMipLevel)
+                        .levelCount(createInfo.subresourceRange.layerCount)
+                        .baseArrayLayer(createInfo.subresourceRange.baseArrayLayer)
+                        .layerCount(createInfo.subresourceRange.layerCount));
+
+        assertResult(VK10.vkCreateImageView(deviceInstance, color_attachment_view, null, lb));
+        long view = lb.get(0);
+        return new ImageView(createInfo.image, view);
     }
 
 }

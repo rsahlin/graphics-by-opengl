@@ -2,6 +2,97 @@ package com.nucleus.vulkan;
 
 public interface Vulkan10 {
 
+    public static class ComponentMapping {
+        public ComponentSwizzle r = ComponentSwizzle.VK_COMPONENT_SWIZZLE_R;
+        public ComponentSwizzle g = ComponentSwizzle.VK_COMPONENT_SWIZZLE_G;
+        public ComponentSwizzle b = ComponentSwizzle.VK_COMPONENT_SWIZZLE_B;
+        public ComponentSwizzle a = ComponentSwizzle.VK_COMPONENT_SWIZZLE_A;
+    };
+
+    public static class ImageSubresourceRange {
+        public int aspectMask;
+        public int baseMipLevel;
+        public int levelCount;
+        public int baseArrayLayer;
+        public int layerCount;
+
+        public ImageSubresourceRange(int aspectMask, int baseMipLevel, int levelCount, int baseArrayLayer,
+                int layerCount) {
+            this.aspectMask = aspectMask;
+            this.baseMipLevel = baseMipLevel;
+            this.levelCount = levelCount;
+            this.baseArrayLayer = baseArrayLayer;
+            this.layerCount = layerCount;
+        }
+    };
+
+    public enum ImageAspectFlagBits {
+        VK_IMAGE_ASPECT_COLOR_BIT(1),
+        VK_IMAGE_ASPECT_DEPTH_BIT(2),
+        VK_IMAGE_ASPECT_STENCIL_BIT(4),
+        VK_IMAGE_ASPECT_METADATA_BIT(0x00000008),
+        VK_IMAGE_ASPECT_PLANE_0_BIT(0x00000010),
+        VK_IMAGE_ASPECT_PLANE_1_BIT(0x00000020),
+        VK_IMAGE_ASPECT_PLANE_2_BIT(0x00000040),
+        VK_IMAGE_ASPECT_MEMORY_PLANE_0_BIT_EXT(0x00000080),
+        VK_IMAGE_ASPECT_MEMORY_PLANE_1_BIT_EXT(0x00000100),
+        VK_IMAGE_ASPECT_MEMORY_PLANE_2_BIT_EXT(0x00000200),
+        VK_IMAGE_ASPECT_MEMORY_PLANE_3_BIT_EXT(0x00000400),
+        VK_IMAGE_ASPECT_PLANE_0_BIT_KHR(VK_IMAGE_ASPECT_PLANE_0_BIT.mask),
+        VK_IMAGE_ASPECT_PLANE_1_BIT_KHR(VK_IMAGE_ASPECT_PLANE_1_BIT.mask),
+        VK_IMAGE_ASPECT_PLANE_2_BIT_KHR(VK_IMAGE_ASPECT_PLANE_2_BIT.mask);
+
+        public final int mask;
+
+        private ImageAspectFlagBits(int mask) {
+            this.mask = mask;
+        }
+
+    };
+
+    public enum ComponentSwizzle {
+        VK_COMPONENT_SWIZZLE_IDENTITY(0),
+        VK_COMPONENT_SWIZZLE_ZERO(1),
+        VK_COMPONENT_SWIZZLE_ONE(2),
+        VK_COMPONENT_SWIZZLE_R(3),
+        VK_COMPONENT_SWIZZLE_G(4),
+        VK_COMPONENT_SWIZZLE_B(5),
+        VK_COMPONENT_SWIZZLE_A(6);
+
+        public final int value;
+
+        private ComponentSwizzle(int value) {
+            this.value = value;
+        }
+
+    };
+
+    public enum ImageViewType {
+        VK_IMAGE_VIEW_TYPE_1D(0),
+        VK_IMAGE_VIEW_TYPE_2D(1),
+        VK_IMAGE_VIEW_TYPE_3D(2),
+        VK_IMAGE_VIEW_TYPE_CUBE(3),
+        VK_IMAGE_VIEW_TYPE_1D_ARRAY(4),
+        VK_IMAGE_VIEW_TYPE_2D_ARRAY(5),
+        VK_IMAGE_VIEW_TYPE_CUBE_ARRAY(6);
+
+        public final int value;
+
+        private ImageViewType(int value) {
+            this.value = value;
+        }
+
+        public static ImageViewType get(int value) {
+            for (ImageViewType ivt : values()) {
+                if (value == ivt.value) {
+                    return ivt;
+                }
+            }
+            return null;
+        }
+
+    };
+
     public enum PresentModeKHR {
         VK_PRESENT_MODE_IMMEDIATE_KHR(0),
         VK_PRESENT_MODE_MAILBOX_KHR(1),
