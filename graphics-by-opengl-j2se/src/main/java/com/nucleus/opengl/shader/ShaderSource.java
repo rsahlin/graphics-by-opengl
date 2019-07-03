@@ -77,24 +77,20 @@ public class ShaderSource {
     /**
      * Use for shader source names that are versioned 300
      */
-    public static final String V300 = "_v300";
+    public static final String V300 = "v300";
     /**
      * Use for shader source names that are versioned 310
      */
-    public static final String V310 = "_v310";
+    public static final String V310 = "v310";
     /**
      * Use for shader source names that are versioned 320
      */
-    public static final String V320 = "_v320";
+    public static final String V320 = "v320";
 
     /**
      * The sourcename - excluding source name version
      */
     private String sourceName;
-    /**
-     * If source is versioned, eg using _v300
-     */
-    private String sourceNameVersion;
 
     /**
      * Shader source without #version
@@ -129,30 +125,11 @@ public class ShaderSource {
             suffix = type.suffix;
             this.sourceName = sourcename;
         }
-        this.sourceNameVersion = "";
         this.type = type;
-    }
-
-    /**
-     * Creates shader source with name of source, including source name version
-     * 
-     * @param sourceName Name of source - excluding source name version
-     * @param sourceNameVersion
-     * @param type
-     */
-    public ShaderSource(String sourceName, String sourceNameVersion, ShaderType type) {
-        this.sourceName = sourceName;
-        this.sourceNameVersion = sourceNameVersion;
-        this.type = type;
-        this.suffix = type.suffix;
-    }
-
-    public String getSourceNameVersion() {
-        return sourceNameVersion;
     }
 
     public String getFullSourceName() {
-        return sourceName + sourceNameVersion + suffix;
+        return sourceName + suffix;
     }
 
     /**

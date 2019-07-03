@@ -5,7 +5,6 @@ import java.nio.FloatBuffer;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.Pass;
 import com.nucleus.shader.Indexer;
 
@@ -37,14 +36,6 @@ public class LineProgram extends GLShaderProgram {
     public LineProgram(GLShaderProgram.Shading shading) {
         super(null, shading, CATEGORY, GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new LineProgramIndexer());
-    }
-
-    @Override
-    protected String getSourceNameVersion(Renderers version, int type) {
-        if (version.major >= 3) {
-            return ShaderSource.V300;
-        }
-        return super.getSourceNameVersion(version, type);
     }
 
     @Override

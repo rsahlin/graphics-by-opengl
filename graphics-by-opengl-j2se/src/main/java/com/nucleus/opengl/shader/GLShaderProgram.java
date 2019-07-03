@@ -542,19 +542,20 @@ public abstract class GLShaderProgram {
      */
     protected ShaderSource getShaderSource(Renderers version, ShaderType type) {
 
+        String sourceNameVersion = getSourceNameVersion(version, type.value);
         switch (type) {
             case VERTEX:
-                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type),
-                        getSourceNameVersion(version, type.value), type);
+                return new ShaderSource(PROGRAM_DIRECTORY + sourceNameVersion + getShaderSourceName(type),
+                        type);
             case FRAGMENT:
-                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type),
-                        getSourceNameVersion(version, type.value), type);
+                return new ShaderSource(PROGRAM_DIRECTORY + sourceNameVersion + getShaderSourceName(type),
+                        type);
             case COMPUTE:
-                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type),
-                        getSourceNameVersion(version, type.value), type);
+                return new ShaderSource(PROGRAM_DIRECTORY + sourceNameVersion + getShaderSourceName(type),
+                        type);
             case GEOMETRY:
-                return new ShaderSource(PROGRAM_DIRECTORY + getShaderSourceName(type),
-                        getSourceNameVersion(version, type.value), type);
+                return new ShaderSource(PROGRAM_DIRECTORY + sourceNameVersion + getShaderSourceName(type),
+                        type);
             default:
                 throw new IllegalArgumentException("Not implemented for type: " + type);
 
@@ -574,7 +575,7 @@ public abstract class GLShaderProgram {
      */
     protected String getSourceNameVersion(Renderers version, int type) {
         if (version.major >= 3) {
-            return ShaderSource.V300;
+            return ShaderSource.V300 + "/";
         }
         return "";
     }
@@ -1675,16 +1676,16 @@ public abstract class GLShaderProgram {
     private void createCommonShaders(GLES20Wrapper gles, ShaderSource[] sources) throws GLException, IOException {
         switch (shaders) {
             case COMPUTE:
-                createCommonShaders(gles, ShaderType.COMPUTE, sources[0].getSourceNameVersion());
+                createCommonShaders(gles, ShaderType.COMPUTE);
                 break;
             case VERTEX_FRAGMENT:
-                createCommonShaders(gles, ShaderType.VERTEX, sources[0].getSourceNameVersion());
-                createCommonShaders(gles, ShaderType.FRAGMENT, sources[0].getSourceNameVersion());
+                createCommonShaders(gles, ShaderType.VERTEX);
+                createCommonShaders(gles, ShaderType.FRAGMENT);
                 break;
             case VERTEX_GEOMETRY_FRAGMENT:
-                createCommonShaders(gles, ShaderType.VERTEX, sources[0].getSourceNameVersion());
-                createCommonShaders(gles, ShaderType.GEOMETRY, sources[0].getSourceNameVersion());
-                createCommonShaders(gles, ShaderType.FRAGMENT, sources[0].getSourceNameVersion());
+                createCommonShaders(gles, ShaderType.VERTEX);
+                createCommonShaders(gles, ShaderType.GEOMETRY);
+                createCommonShaders(gles, ShaderType.FRAGMENT);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + shaders);
@@ -1697,16 +1698,15 @@ public abstract class GLShaderProgram {
      * 
      * @param gles
      * @param type
-     * @param sourceNameVersion
      * @throws GLException
      */
-    private void createCommonShaders(GLES20Wrapper gles, ShaderType type, String sourceNameVersion)
+    private void createCommonShaders(GLES20Wrapper gles, ShaderType type)
             throws GLException, IOException {
-        String[] common = getCommonShaderName(type);
+        String[] common = getCommonShaderName(gles.getVersion(), type);
         if (common != null) {
             ShaderSource[] commonSources = new ShaderSource[common.length];
             for (int i = 0; i < commonSources.length; i++) {
-                commonSources[i] = createCommonSource(common[i], sourceNameVersion, type);
+                commonSources[i] = createCommonSource(common[i], type);
             }
             loadShaderSources(gles, commonSources);
             SimpleLogger.d(getClass(), "Adding common sources : " + StringUtils.getString(common));
@@ -1715,25 +1715,25 @@ public abstract class GLShaderProgram {
     }
 
     /**
-     * Internal method to create common ShaderSource for a given source name, version and type
+     * Internal method to create common ShaderSource for a given source name and type
      * 
      * @param sourceName
-     * @param sourceNameVersion
      * @param type
      * @return
      */
-    protected ShaderSource createCommonSource(String sourceName, String sourceNameVersion, ShaderType type) {
-        return new ShaderSource(sourceName, sourceNameVersion, type);
+    protected ShaderSource createCommonSource(String sourceName, ShaderType type) {
+        return new ShaderSource(sourceName, type);
     }
 
     /**
      * Returns the common (library) shader name for the specified type.
      * Override to include needed files.
      * 
+     * @param version
      * @param type
      * @return
      */
-    protected String[] getCommonShaderName(ShaderType type) {
+    protected String[] getCommonShaderName(Renderers version, ShaderType type) {
         // Default is to not use common library
         return null;
     }
