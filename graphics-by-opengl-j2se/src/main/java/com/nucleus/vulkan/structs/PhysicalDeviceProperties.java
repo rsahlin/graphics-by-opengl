@@ -1,5 +1,6 @@
-package com.nucleus.vulkan;
+package com.nucleus.vulkan.structs;
 
+import com.nucleus.vulkan.VulkanWrapper;
 import com.nucleus.vulkan.VulkanWrapper.APIVersion;
 
 /**

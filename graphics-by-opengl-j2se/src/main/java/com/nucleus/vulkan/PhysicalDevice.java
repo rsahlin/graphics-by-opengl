@@ -1,5 +1,10 @@
 package com.nucleus.vulkan;
 
+import com.nucleus.vulkan.structs.ExtensionProperties;
+import com.nucleus.vulkan.structs.PhysicalDeviceFeatures;
+import com.nucleus.vulkan.structs.PhysicalDeviceProperties;
+import com.nucleus.vulkan.structs.QueueFamilyProperties;
+
 /**
  * Abstraction VkPhysicalDevice for Khronos Vulkan physical device
  *

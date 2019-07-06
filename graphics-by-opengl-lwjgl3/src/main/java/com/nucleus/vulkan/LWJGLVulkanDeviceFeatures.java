@@ -4,6 +4,8 @@ import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkPhysicalDevice;
 import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
 
+import com.nucleus.vulkan.structs.PhysicalDeviceFeatures;
+
 public class LWJGLVulkanDeviceFeatures extends PhysicalDeviceFeatures {
 
     public LWJGLVulkanDeviceFeatures(VkPhysicalDevice device, long surface) {

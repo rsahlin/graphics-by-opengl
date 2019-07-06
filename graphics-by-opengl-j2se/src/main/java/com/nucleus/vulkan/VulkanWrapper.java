@@ -3,6 +3,7 @@ package com.nucleus.vulkan;
 import com.nucleus.Backend;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.vulkan.Vulkan10.Result;
+import com.nucleus.vulkan.structs.QueueFamilyProperties;
 
 /**
  * The Vulkan wrapper -all things related to Vulkan functionality that is shared independently of version

@@ -1,4 +1,4 @@
-package com.nucleus.vulkan;
+package com.nucleus.vulkan.structs;
 
 public class ExtensionProperties {
     public ExtensionProperties(String name, int specVersion) {

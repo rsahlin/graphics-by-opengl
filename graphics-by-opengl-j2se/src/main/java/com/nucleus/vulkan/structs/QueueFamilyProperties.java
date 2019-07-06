@@ -1,6 +1,4 @@
-package com.nucleus.vulkan;
-
-import com.nucleus.vulkan.structs.Extent3D;
+package com.nucleus.vulkan.structs;
 
 public abstract class QueueFamilyProperties {
 

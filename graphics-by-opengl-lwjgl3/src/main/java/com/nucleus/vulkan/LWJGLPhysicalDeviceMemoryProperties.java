@@ -4,6 +4,8 @@ import org.lwjgl.vulkan.VkMemoryHeap;
 import org.lwjgl.vulkan.VkMemoryType;
 import org.lwjgl.vulkan.VkPhysicalDeviceMemoryProperties;
 
+import com.nucleus.vulkan.structs.PhysicalDeviceMemoryProperties;
+
 public class LWJGLPhysicalDeviceMemoryProperties extends PhysicalDeviceMemoryProperties {
 
     public LWJGLPhysicalDeviceMemoryProperties(VkPhysicalDeviceMemoryProperties vkProperties) {

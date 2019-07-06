@@ -4,8 +4,6 @@ import java.util.ArrayList;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
-import com.nucleus.vulkan.PhysicalDeviceProperties.PhysicalDeviceType;
-import com.nucleus.vulkan.QueueFamilyProperties.QueueFlagBits;
 import com.nucleus.vulkan.Vulkan10.ColorSpaceKHR;
 import com.nucleus.vulkan.Vulkan10.Extensions;
 import com.nucleus.vulkan.Vulkan10.Format;
@@ -15,7 +13,11 @@ import com.nucleus.vulkan.VulkanWrapper.VulkanDeviceSelector;
 import com.nucleus.vulkan.structs.Extent2D;
 import com.nucleus.vulkan.structs.ImageView;
 import com.nucleus.vulkan.structs.ImageViewCreateInfo;
+import com.nucleus.vulkan.structs.PhysicalDeviceMemoryProperties;
+import com.nucleus.vulkan.structs.QueueFamilyProperties;
+import com.nucleus.vulkan.structs.QueueFamilyProperties.QueueFlagBits;
 import com.nucleus.vulkan.structs.SwapChain;
+import com.nucleus.vulkan.structs.PhysicalDeviceProperties.PhysicalDeviceType;
 
 /**
  * Wrapper for Vulkan version 1.0 funtionality
@@ -199,7 +201,7 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
     @Override
     public QueueFamilyProperties selectQueueInstance(PhysicalDevice device) {
         for (QueueFamilyProperties qp : device.getQueueFamilyProperties()) {
-            if ((qp.surfaceSupportsPresent) && qp.hasSupport(QueueFlagBits.VK_QUEUE_GRAPHICS_BIT)) {
+            if ((qp.isSurfaceSupportsPresent()) && qp.hasSupport(QueueFlagBits.VK_QUEUE_GRAPHICS_BIT)) {
                 return qp;
             }
         }
