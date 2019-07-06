@@ -20,7 +20,7 @@ import com.nucleus.mmi.MMIPointerInput;
 import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.geometry.GLMesh;
-import com.nucleus.opengl.shader.ShaderVariable;
+import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.renderer.BaseRenderer.FrameListener;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
@@ -108,7 +108,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
     private int kernelIndex = 2;
     int counter = 0;
     long start = 0;
-    private ShaderVariable uKernel;
+    private NamedShaderVariable uKernel;
     private GraphicsPipeline pipeline;
 
     public FGLConvolutionTest() {

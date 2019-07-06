@@ -2,7 +2,7 @@ package com.nucleus.texturing;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.io.gson.PostDeserializable;
-import com.nucleus.opengl.shader.FloatBlockBuffer;
+import com.nucleus.shader.FloatBlockBuffer;
 
 /**
  * A texture that has an array of UV coordinates + width/height,so that it can hold data for a number of sprite frames.

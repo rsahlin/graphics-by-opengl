@@ -1,8 +1,7 @@
-package com.nucleus.shader;
+package com.nucleus.opengl.shader;
 
 import com.nucleus.GraphicsPipeline;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
-import com.nucleus.opengl.shader.ShaderVariable;
 
 /**
  * Holds the runtime offset into attribute/uniform in shader programs.
@@ -65,7 +64,7 @@ public class Indexer {
         attributesPerVertex = pipeline.getAttributesPerVertex(BufferIndex.ATTRIBUTES);
     }
 
-    private int getOffset(ShaderVariable variable) {
+    private int getOffset(NamedShaderVariable variable) {
         return variable != null ? variable.getOffset() : -1;
     }
 

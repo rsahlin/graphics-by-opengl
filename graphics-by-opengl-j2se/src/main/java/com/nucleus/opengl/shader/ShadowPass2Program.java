@@ -29,7 +29,7 @@ import com.nucleus.vecmath.Matrix;
  */
 public class ShadowPass2Program extends ShadowPassProgram {
 
-    protected ShaderVariable lightUniform;
+    protected NamedShaderVariable lightUniform;
 
     static class Shadow2Categorizer extends Categorizer {
 

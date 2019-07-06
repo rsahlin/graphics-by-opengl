@@ -4,8 +4,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.shader.ShaderVariable;
-import com.nucleus.opengl.shader.ShaderVariable.VariableType;
+import com.nucleus.opengl.shader.NamedShaderVariable;
+import com.nucleus.shader.ShaderVariable.VariableType;
 
 public class FShaderVariableTest {
 
@@ -20,8 +20,9 @@ public class FShaderVariableTest {
     @Test
     public void testCreate() {
 
-        ShaderVariable variable = new ShaderVariable(VariableType.ATTRIBUTE, VARIABLE_NAME, variableData,
-                ShaderVariable.SIZE_OFFSET);
+        NamedShaderVariable variable = new NamedShaderVariable(VariableType.ATTRIBUTE,
+                VARIABLE_NAME, VARIABLE_ACTIVE_INDEX,
+                variableData, NamedShaderVariable.SIZE_OFFSET);
         Assert.assertTrue(VARIABLE_NAME == variable.getName());
         Assert.assertTrue(VARIABLE_SIZE == variable.getSize());
         Assert.assertTrue(VARIABLE_TYPE == variable.getDataType());
@@ -31,8 +32,9 @@ public class FShaderVariableTest {
     @Test
     public void testSetLocation() {
 
-        ShaderVariable variable = new ShaderVariable(VariableType.ATTRIBUTE, VARIABLE_NAME, variableData,
-                ShaderVariable.SIZE_OFFSET);
+        NamedShaderVariable variable = new NamedShaderVariable(VariableType.ATTRIBUTE, VARIABLE_NAME,
+                VARIABLE_ACTIVE_INDEX,
+                variableData, NamedShaderVariable.SIZE_OFFSET);
         variable.setLocation(VARIABLE_LOCATION);
         Assert.assertTrue(VARIABLE_LOCATION == variable.getLocation());
 

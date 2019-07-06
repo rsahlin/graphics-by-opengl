@@ -4,7 +4,7 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
-import com.nucleus.opengl.shader.ShaderVariable;
+import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 
@@ -39,7 +39,7 @@ public abstract class GraphicsPipeline extends Pipeline {
      * @param uniform Name of uniform to return
      * @return The shader variable for the uniform, or null if not found
      */
-    public abstract ShaderVariable getUniformByName(String uniform);
+    public abstract NamedShaderVariable getUniformByName(String uniform);
 
     /**
      * Returns the attribute if defined in shader program.
@@ -47,7 +47,7 @@ public abstract class GraphicsPipeline extends Pipeline {
      * @param attribute
      * @return Shader variable for attribute, or null if not defined in shader
      */
-    public abstract ShaderVariable getAttributeByName(String attribute);
+    public abstract NamedShaderVariable getAttributeByName(String attribute);
 
     /**
      * Sets the float values from data at the offset from variable, use this to set more than one value.
@@ -56,7 +56,7 @@ public abstract class GraphicsPipeline extends Pipeline {
      * @param data The uniform data to set
      * @param sourceOffset Offset into data where values are read
      */
-    public abstract void setUniformData(ShaderVariable variable, float[] data, int sourceOffset);
+    public abstract void setUniformData(NamedShaderVariable variable, float[] data, int sourceOffset);
 
     /**
      * Returns the number of attributes per vertex that are used by the program.

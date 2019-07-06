@@ -10,7 +10,7 @@ import com.nucleus.GraphicsPipeline;
 import com.nucleus.Pipeline;
 import com.nucleus.assets.Assets;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.opengl.shader.ShaderVariable;
+import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.renderer.BaseRenderer;
 import com.nucleus.renderer.BufferFactory;
 import com.nucleus.scene.RenderableNode;
@@ -79,8 +79,8 @@ public class VulkanBaseRenderer extends BaseRenderer {
     }
 
     @Override
-    public void prepareTexture(Texture texture, int unit, Accessor accessor, ShaderVariable attribute,
-            ShaderVariable texUniform, IntBuffer samplerUniformBuffer) throws BackendException {
+    public void prepareTexture(Texture texture, int unit, Accessor accessor, NamedShaderVariable attribute,
+            NamedShaderVariable texUniform, IntBuffer samplerUniformBuffer) throws BackendException {
         // TODO Auto-generated method stub
 
     }

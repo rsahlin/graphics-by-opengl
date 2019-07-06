@@ -35,9 +35,9 @@ public class GLTFShaderProgram extends GenericShaderProgram {
             { "common_structs.essl", "pbr" } };
     transient protected ShadingMaps pbrShading;
 
-    transient protected ShaderVariable pbrDataUniform;
-    transient protected ShaderVariable light0Uniform;
-    transient protected ShaderVariable viewPosUniform;
+    transient protected NamedShaderVariable pbrDataUniform;
+    transient protected NamedShaderVariable light0Uniform;
+    transient protected NamedShaderVariable viewPosUniform;
     transient protected float[] pbrData;
     transient protected IntBuffer samplerUniformBuffer = BufferUtils.createIntBuffer(1);
     transient private boolean renderNormalMap = false;
@@ -199,7 +199,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * @throws GLException
      */
     @Override
-    protected void uploadUniforms(GLES20Wrapper gles, FloatBuffer uniformData, ShaderVariable[] activeUniforms)
+    protected void uploadUniforms(GLES20Wrapper gles, FloatBuffer uniformData, NamedShaderVariable[] activeUniforms)
             throws GLException {
         uploadUniform(gles, uniformData, modelUniform);
         uploadUniform(gles, uniformData, light0Uniform);
@@ -210,7 +210,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
 
     @Override
     public void setSamplers() {
-        ArrayList<ShaderVariable> samplersList = getSamplers(activeUniforms);
+        ArrayList<NamedShaderVariable> samplersList = getSamplers(activeUniforms);
         if (samplersList.size() > 0) {
             for (int i = 0; i < samplersList.size(); i++) {
 
@@ -226,8 +226,8 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * @param texture
      * @throws BackendException
      */
-    public void prepareTexture(NucleusRenderer renderer, GLTF gltf, Primitive primitive, ShaderVariable attribute,
-            ShaderVariable texUniform, TextureInfo texInfo) throws BackendException {
+    public void prepareTexture(NucleusRenderer renderer, GLTF gltf, Primitive primitive, NamedShaderVariable attribute,
+            NamedShaderVariable texUniform, TextureInfo texInfo) throws BackendException {
         if (texInfo == null || attribute == null || texUniform == null) {
             return;
         }

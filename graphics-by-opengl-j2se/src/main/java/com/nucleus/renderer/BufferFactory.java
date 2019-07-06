@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 import com.nucleus.BackendException;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.opengl.shader.BlockBuffer;
 import com.nucleus.scene.gltf.Buffer;
 import com.nucleus.scene.gltf.Primitive;
+import com.nucleus.shader.BlockBuffer;
 
 /**
  * Creates VertexBufferObjects and UniformBufferObjects

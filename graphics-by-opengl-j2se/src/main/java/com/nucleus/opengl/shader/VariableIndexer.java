@@ -4,13 +4,14 @@ import java.util.ArrayList;
 
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
-import com.nucleus.opengl.shader.ShaderVariable.VariableType;
+import com.nucleus.shader.ShaderVariable.VariableType;
 
 /**
  * Connecting variables in shader programs with offsets so that data can be written into buffer that stores the
  * attributes. This can be seen as a type of layout where the purpose is to connect the fields defined in a shader
  * with the usage.
- * Case be set to {@link GLShaderProgram} by calling {@link GLShaderProgram#setIndexer(VariableIndexer)} to set attribute
+ * Case be set to {@link GLShaderProgram} by calling {@link GLShaderProgram#setIndexer(VariableIndexer)} to set
+ * attribute
  * offsets.
  *
  */
@@ -85,15 +86,15 @@ public class VariableIndexer {
      * @param index
      * @return
      */
-    public ShaderVariable[] sortByBuffer(ShaderVariable[] activeVariables, int index) {
-        ArrayList<ShaderVariable> result = new ArrayList<>();
-        for (ShaderVariable v : activeVariables) {
+    public NamedShaderVariable[] sortByBuffer(NamedShaderVariable[] activeVariables, int index) {
+        ArrayList<NamedShaderVariable> result = new ArrayList<>();
+        for (NamedShaderVariable v : activeVariables) {
             BufferIndex bi = getBufferIndex(getIndexByName(v.getName()));
             if (bi != null && bi.index == index) {
                 result.add(v);
             }
         }
-        ShaderVariable[] array = new ShaderVariable[result.size()];
+        NamedShaderVariable[] array = new NamedShaderVariable[result.size()];
         return result.toArray(array);
     }
 

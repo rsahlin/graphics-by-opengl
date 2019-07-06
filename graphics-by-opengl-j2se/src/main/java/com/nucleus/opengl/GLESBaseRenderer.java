@@ -20,7 +20,7 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES_EXTENSION_TOKENS;
 import com.nucleus.opengl.assets.GLAssetManager;
-import com.nucleus.opengl.shader.ShaderVariable;
+import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.opengl.shader.ShadowPass1Program;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.BaseRenderer;
@@ -565,8 +565,8 @@ public class GLESBaseRenderer extends BaseRenderer {
     }
 
     @Override
-    public void prepareTexture(Texture texture, int unit, Accessor accessor, ShaderVariable attribute,
-            ShaderVariable texUniform, IntBuffer samplerUniformBuffer)
+    public void prepareTexture(Texture texture, int unit, Accessor accessor, NamedShaderVariable attribute,
+            NamedShaderVariable texUniform, IntBuffer samplerUniformBuffer)
             throws BackendException {
         if (texture != null) {
             gles.glActiveTexture(GLES20.GL_TEXTURE0 + unit);

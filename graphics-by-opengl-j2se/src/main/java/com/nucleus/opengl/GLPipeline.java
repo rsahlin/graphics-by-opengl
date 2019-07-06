@@ -12,7 +12,7 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
-import com.nucleus.opengl.shader.ShaderVariable;
+import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.GLTF;
@@ -98,7 +98,7 @@ public class GLPipeline extends GraphicsPipeline {
             throws BackendException {
         for (int i = 0; i < attribs.size(); i++) {
             Accessor accessor = accessors.get(i);
-            ShaderVariable v = shader.getAttributeByName(attribs.get(i).name());
+            NamedShaderVariable v = shader.getAttributeByName(attribs.get(i).name());
             if (v != null) {
                 gles.glVertexAttribPointer(accessor, v);
             } else {
@@ -114,12 +114,12 @@ public class GLPipeline extends GraphicsPipeline {
     }
 
     @Override
-    public ShaderVariable getUniformByName(String uniform) {
+    public NamedShaderVariable getUniformByName(String uniform) {
         return shader.getUniformByName(uniform);
     }
 
     @Override
-    public ShaderVariable getAttributeByName(String attribute) {
+    public NamedShaderVariable getAttributeByName(String attribute) {
         return shader.getAttributeByName(attribute);
     }
 
@@ -142,7 +142,7 @@ public class GLPipeline extends GraphicsPipeline {
     }
 
     @Override
-    public void setUniformData(ShaderVariable variable, float[] data, int sourceOffset) {
+    public void setUniformData(NamedShaderVariable variable, float[] data, int sourceOffset) {
         shader.setUniformData(variable, data, sourceOffset);
     }
 

@@ -4,11 +4,11 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.common.BufferUtils;
-import com.nucleus.opengl.shader.ShaderVariable;
+import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
-import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
-import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
+import com.nucleus.shader.ShaderVariable.InterfaceBlock;
+import com.nucleus.shader.ShaderVariable.VariableType;
 
 /**
  * Wrapper for GLES30
@@ -74,7 +74,7 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public ShaderVariable getActiveVariable(int program, VariableType type, int index, byte[] nameBuffer)
+    public NamedShaderVariable getActiveVariable(int program, VariableType type, int index, byte[] nameBuffer)
             throws GLException {
 
         int[] params = null;
@@ -84,28 +84,26 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
                 return super.getActiveVariable(program, type, index, nameBuffer);
             case UNIFORM:
                 GLUtils.handleError(this, "UNIFORM_BLOCK clear error");
-                params = new int[ShaderVariable.DATA_OFFSET + 1];
-                params[ShaderVariable.ACTIVE_INDEX_OFFSET] = index;
-                glGetActiveUniform(program, index, params, ShaderVariable.NAME_LENGTH_OFFSET, params,
-                        ShaderVariable.SIZE_OFFSET, params, ShaderVariable.TYPE_OFFSET, nameBuffer);
+                params = new int[NamedShaderVariable.DATA_OFFSET + 1];
+                glGetActiveUniform(program, index, params, NamedShaderVariable.NAME_LENGTH_OFFSET, params,
+                        NamedShaderVariable.SIZE_OFFSET, params, NamedShaderVariable.TYPE_OFFSET, nameBuffer);
                 GLUtils.handleError(this, "UNIFORM glGetActiveUniform for " + new String(nameBuffer));
-                return new ShaderVariable(type,
-                        getVariableName(nameBuffer, params[ShaderVariable.NAME_LENGTH_OFFSET]),
+                return new NamedShaderVariable(type,
+                        getVariableName(nameBuffer, params[NamedShaderVariable.NAME_LENGTH_OFFSET]), index,
                         params, 0);
             case UNIFORM_BLOCK:
                 params = new int[10];
-                params[ShaderVariable.ACTIVE_INDEX_OFFSET] = index;
-                glGetActiveUniform(program, index, params, ShaderVariable.NAME_LENGTH_OFFSET, params,
-                        ShaderVariable.SIZE_OFFSET, params, ShaderVariable.TYPE_OFFSET, nameBuffer);
+                glGetActiveUniform(program, index, params, NamedShaderVariable.NAME_LENGTH_OFFSET, params,
+                        NamedShaderVariable.SIZE_OFFSET, params, NamedShaderVariable.TYPE_OFFSET, nameBuffer);
                 GLUtils.handleError(this, "UNIFORM_BLOCK glGetActiveUniforms for " + new String(nameBuffer));
                 glGetActiveUniformsiv(program, 1, indices, 0, GLES30.GL_UNIFORM_BLOCK_INDEX, params,
-                        ShaderVariable.BLOCK_INDEX_OFFSET);
+                        NamedShaderVariable.BLOCK_INDEX_OFFSET);
                 glGetActiveUniformsiv(program, 1, indices, 0, GLES30.GL_UNIFORM_OFFSET, params,
-                        ShaderVariable.DATA_OFFSET);
+                        NamedShaderVariable.DATA_OFFSET);
                 GLUtils.handleError(this, "UNIFORM_BLOCK glGetActiveUniformsiv for " + new String(nameBuffer));
                 // Create shader variable using name excluding [] and .
-                return new ShaderVariable(type,
-                        getVariableName(nameBuffer, params[ShaderVariable.NAME_LENGTH_OFFSET]),
+                return new NamedShaderVariable(type,
+                        getVariableName(nameBuffer, params[NamedShaderVariable.NAME_LENGTH_OFFSET]), index,
                         params, 0);
             default:
                 throw new IllegalArgumentException("Invalid variable type " + type);

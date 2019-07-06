@@ -13,11 +13,9 @@ import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
+import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.opengl.shader.ShaderSource;
 import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
-import com.nucleus.opengl.shader.ShaderVariable;
-import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
-import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.scene.gltf.Accessor;
@@ -30,6 +28,8 @@ import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Sampler;
 import com.nucleus.scene.gltf.Texture;
+import com.nucleus.shader.ShaderVariable.InterfaceBlock;
+import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.ParameterData;
@@ -89,19 +89,18 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     }
 
     @Override
-    public ShaderVariable getActiveVariable(int program, VariableType type, int index, byte[] nameBuffer)
+    public NamedShaderVariable getActiveVariable(int program, VariableType type, int index, byte[] nameBuffer)
             throws GLException {
         // DO NOT CREATE ARRAY LARGER THAN THIS - otherwise created uniform will indicate it belongs to a block.
-        int[] written = new int[ShaderVariable.ACTIVE_INDEX_OFFSET + 1];
-        written[ShaderVariable.ACTIVE_INDEX_OFFSET] = index;
+        int[] written = new int[NamedShaderVariable.DATA_OFFSET];
         switch (type) {
             case ATTRIBUTE:
-                glGetActiveAttrib(program, index, written, ShaderVariable.NAME_LENGTH_OFFSET, written,
-                        ShaderVariable.SIZE_OFFSET, written, ShaderVariable.TYPE_OFFSET, nameBuffer);
+                glGetActiveAttrib(program, index, written, NamedShaderVariable.NAME_LENGTH_OFFSET, written,
+                        NamedShaderVariable.SIZE_OFFSET, written, NamedShaderVariable.TYPE_OFFSET, nameBuffer);
                 break;
             case UNIFORM:
-                glGetActiveUniform(program, index, written, ShaderVariable.NAME_LENGTH_OFFSET, written,
-                        ShaderVariable.SIZE_OFFSET, written, ShaderVariable.TYPE_OFFSET, nameBuffer);
+                glGetActiveUniform(program, index, written, NamedShaderVariable.NAME_LENGTH_OFFSET, written,
+                        NamedShaderVariable.SIZE_OFFSET, written, NamedShaderVariable.TYPE_OFFSET, nameBuffer);
                 break;
             default:
                 throw new IllegalArgumentException("Invalid varible type: " + type);
@@ -109,7 +108,8 @@ public abstract class GLES20Wrapper extends GLESWrapper {
         }
         GLUtils.handleError(this, "glGetActive : " + type);
         // Create shader variable using name excluding [] and .
-        return new ShaderVariable(type, getVariableName(nameBuffer, written[ShaderVariable.NAME_LENGTH_OFFSET]),
+        return new NamedShaderVariable(type,
+                getVariableName(nameBuffer, written[NamedShaderVariable.NAME_LENGTH_OFFSET]), index,
                 written, 0);
     }
 
@@ -358,7 +358,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param position Position in buffer where the data for this attribute is.
      * @param attrib Array of attributes to set
      */
-    public void glVertexAttribPointer(AttributeBuffer buffer, int target, ShaderVariable[] attribs) {
+    public void glVertexAttribPointer(AttributeBuffer buffer, int target, NamedShaderVariable[] attribs) {
         int location = 0;
         if (buffer.getBufferName() > 0) {
             glBindBuffer(target, buffer.getBufferName());
@@ -367,7 +367,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                         GLES20.GL_STATIC_DRAW);
                 buffer.setDirty(false);
             }
-            for (ShaderVariable a : attribs) {
+            for (NamedShaderVariable a : attribs) {
                 if (a != null) {
                     location = a.getLocation();
                     if (!enabledVertexArrays[location]) {
@@ -379,7 +379,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                 }
             }
         } else {
-            for (ShaderVariable a : attribs) {
+            for (NamedShaderVariable a : attribs) {
                 if (a != null) {
                     FloatBuffer fb = buffer.getBuffer();
                     fb.position(a.getOffset());
@@ -398,7 +398,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     /**
      * Disables attrib pointers after
      * TODO - keep track of needed and already enabled vertex arrays in
-     * {@link #glVertexAttribPointer(AttributeBuffer, int, ShaderVariable[])}
+     * {@link #glVertexAttribPointer(AttributeBuffer, int, NamedShaderVariable[])}
      * and
      * {@link #glVertexAttribPointer(GLTF, GLTFShaderProgram, Primitive)}
      * 
@@ -423,7 +423,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             ArrayList<Accessor> accessors) throws GLException {
         for (int i = 0; i < attribs.size(); i++) {
             Accessor accessor = accessors.get(i);
-            ShaderVariable v = program.getAttributeByName(attribs.get(i).name());
+            NamedShaderVariable v = program.getAttributeByName(attribs.get(i).name());
             if (v != null) {
                 glVertexAttribPointer(accessor, v);
             } else {
@@ -439,7 +439,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param attribute
      * @throws GLException
      */
-    public void glVertexAttribPointer(Accessor accessor, ShaderVariable attribute)
+    public void glVertexAttribPointer(Accessor accessor, NamedShaderVariable attribute)
             throws GLException {
         int location = attribute.getLocation();
         if (!enabledVertexArrays[location]) {

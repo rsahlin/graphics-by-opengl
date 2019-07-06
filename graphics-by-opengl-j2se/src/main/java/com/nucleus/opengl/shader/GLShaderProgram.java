@@ -32,15 +32,17 @@ import com.nucleus.opengl.GLESWrapper.ProgramInfo;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
-import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
-import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
-import com.nucleus.shader.Indexer;
+import com.nucleus.shader.BlockBuffer;
+import com.nucleus.shader.FloatBlockBuffer;
 import com.nucleus.shader.Shader.Shading;
+import com.nucleus.shader.ShaderVariable;
+import com.nucleus.shader.ShaderVariable.InterfaceBlock;
+import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.TiledTexture2D;
@@ -74,7 +76,7 @@ public abstract class GLShaderProgram {
     protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
     protected final static String NO_ACTIVE_UNIFORMS = "No active uniforms, forgot to call createProgram()?";
 
-    protected ShaderVariable modelUniform;
+    protected NamedShaderVariable modelUniform;
 
     /**
      * The different type of programs that can be linked from different type of shaders.
@@ -286,16 +288,16 @@ public abstract class GLShaderProgram {
     /**
      * active attributes
      */
-    protected ShaderVariable[] activeAttributes;
+    protected NamedShaderVariable[] activeAttributes;
     /**
      * active uniforms
      */
-    protected ShaderVariable[] activeUniforms;
+    protected NamedShaderVariable[] activeUniforms;
     /**
      * Calculated in create program, created using {@link #attributeBufferCount}
      * If attributes are dynamically mapped (not using indexer) then only one buffer is used.
      */
-    protected ShaderVariable[][] attributeVariables;
+    protected NamedShaderVariable[][] attributeVariables;
 
     protected BufferIndex defaultDynamicAttribBuffer = BufferIndex.ATTRIBUTES_STATIC;
 
@@ -316,8 +318,9 @@ public abstract class GLShaderProgram {
      */
     protected VariableIndexer variableIndexer;
 
-    protected HashMap<Integer, ShaderVariable> blockVariables = new HashMap<>(); // Active block uniforms, index is the
-                                                                                 // uniform index from GL
+    protected HashMap<Integer, NamedShaderVariable> blockVariables = new HashMap<>(); // Active block uniforms, index is
+                                                                                      // the
+    // uniform index from GL
     protected ArrayList<String>[] commonSources = new ArrayList[ShaderType.values().length];
 
     /**
@@ -388,7 +391,7 @@ public abstract class GLShaderProgram {
      */
     @Deprecated
     public int getAttributeOffset(String name) {
-        ShaderVariable v = getAttributeByName(name);
+        NamedShaderVariable v = getAttributeByName(name);
         if (v != null) {
             return v.getOffset();
         }
@@ -594,7 +597,7 @@ public abstract class GLShaderProgram {
      * result array.
      * Finds the shader attribute variables per buffer using VariableMapping, iterate through defined (by subclasses)
      * attribute variable mapping.
-     * Put the result in the result array and set the {@linkplain ShaderVariable} offset based on used attributes.
+     * Put the result in the result array and set the {@linkplain NamedShaderVariable} offset based on used attributes.
      * 
      * TODO Add check for mismatch of size, ie if ShaderVariables has one variable as float3 and it is defined is
      * program as float4 then raise error.
@@ -602,10 +605,10 @@ public abstract class GLShaderProgram {
      * @param resultArray Array to store shader variables for each attribute buffer in, attributes for buffer 1 will go
      * at index 0.
      */
-    private void sortAttributeVariablePerBuffer(ShaderVariable[][] resultArray) {
+    private void sortAttributeVariablePerBuffer(NamedShaderVariable[][] resultArray) {
         if (variableIndexer == null) {
             // If indexer not specified then use one buffer.
-            resultArray[defaultDynamicAttribBuffer.index] = new ShaderVariable[info
+            resultArray[defaultDynamicAttribBuffer.index] = new NamedShaderVariable[info
                     .getActiveVariables(VariableType.ATTRIBUTE)];
             if (resultArray[defaultDynamicAttribBuffer.index].length != activeAttributes.length) {
                 throw new IllegalArgumentException("Active variable array size mismatch - active count from info "
@@ -620,10 +623,10 @@ public abstract class GLShaderProgram {
         }
     }
 
-    private void dynamicMapShaderOffset(ShaderVariable[] variables, VariableType type) {
+    private void dynamicMapShaderOffset(NamedShaderVariable[] variables, VariableType type) {
         int offset = 0;
         int samplerOffset = 0;
-        for (ShaderVariable v : variables) {
+        for (NamedShaderVariable v : variables) {
             if (v != null && v.getType() == type) {
                 switch (v.getDataType()) {
                     case GLES20.GL_SAMPLER_2D:
@@ -755,7 +758,7 @@ public abstract class GLShaderProgram {
      * @param data The uniform data to set
      * @param sourceOffset Offset into data where values are read
      */
-    public void setUniformData(ShaderVariable variable, float[] data, int sourceOffset) {
+    public void setUniformData(NamedShaderVariable variable, float[] data, int sourceOffset) {
         uniforms.position(variable.getOffset());
         uniforms.put(data, sourceOffset, variable.getSizeInFloats());
     }
@@ -782,10 +785,10 @@ public abstract class GLShaderProgram {
      * @param activeUniforms
      * @throws GLException
      */
-    protected void uploadUniforms(GLES20Wrapper gles, FloatBuffer uniformData, ShaderVariable[] activeUniforms)
+    protected void uploadUniforms(GLES20Wrapper gles, FloatBuffer uniformData, NamedShaderVariable[] activeUniforms)
             throws GLException {
 
-        for (ShaderVariable v : activeUniforms) {
+        for (NamedShaderVariable v : activeUniforms) {
             // If null then declared in program but not used, silently ignore
             if (v != null) {
                 if (v.getBlockIndex() != Constants.NO_VALUE) {
@@ -828,8 +831,8 @@ public abstract class GLShaderProgram {
     protected void fetchProgramInfo(GLES20Wrapper gles) throws GLException {
         info = gles.getProgramInfo(program);
         GLUtils.handleError(gles, GET_PROGRAM_INFO_ERROR);
-        activeAttributes = new ShaderVariable[info.getActiveVariables(VariableType.ATTRIBUTE)];
-        activeUniforms = new ShaderVariable[info.getActiveVariables(VariableType.UNIFORM)];
+        activeAttributes = new NamedShaderVariable[info.getActiveVariables(VariableType.ATTRIBUTE)];
+        activeUniforms = new NamedShaderVariable[info.getActiveVariables(VariableType.UNIFORM)];
         int uniformBlockCount = info.getActiveVariables(VariableType.UNIFORM_BLOCK);
         if (uniformBlockCount > 0) {
             uniformInterfaceBlocks = gles.getUniformBlocks(info);
@@ -839,7 +842,7 @@ public abstract class GLShaderProgram {
         }
         fetchActiveVariables(gles, VariableType.ATTRIBUTE, info, null);
         fetchActiveVariables(gles, VariableType.UNIFORM, info, null);
-        attributeVariables = new ShaderVariable[attributeBufferCount][];
+        attributeVariables = new NamedShaderVariable[attributeBufferCount][];
         attributesPerVertex = new int[attributeBufferCount];
         paddingPerVertex = new int[attributeBufferCount];
         sortAttributeVariablePerBuffer(attributeVariables);
@@ -872,8 +875,8 @@ public abstract class GLShaderProgram {
      * @param gles
      * @param indexer
      */
-    protected void setVariableOffsets(GLES20Wrapper gles, ShaderVariable[] variables, VariableIndexer indexer) {
-        for (ShaderVariable v : variables) {
+    protected void setVariableOffsets(GLES20Wrapper gles, NamedShaderVariable[] variables, VariableIndexer indexer) {
+        for (NamedShaderVariable v : variables) {
             int index = indexer.getIndexByName(v.getName());
             // For now we cannot recover if variable not defined in indexer
             if (index == -1) {
@@ -888,7 +891,7 @@ public abstract class GLShaderProgram {
      * The offset will be tightly packed based on used variable size, the order of used variables will be the same.
      */
     private void dynamicMapOffsets() {
-        for (ShaderVariable[] sv : attributeVariables) {
+        for (NamedShaderVariable[] sv : attributeVariables) {
             // In case only attribute buffer is used the first index will be null.
             if (sv != null) {
                 dynamicMapShaderOffset(sv, VariableType.ATTRIBUTE);
@@ -918,9 +921,10 @@ public abstract class GLShaderProgram {
             return;
         }
         // If type is uniform block then query max length of uniform name
-        VariableType infoType = type != VariableType.UNIFORM_BLOCK ? type : VariableType.UNIFORM;
+        VariableType infoType = type != ShaderVariable.VariableType.UNIFORM_BLOCK ? type
+                : VariableType.UNIFORM;
         byte[] nameBuffer = new byte[info.getMaxNameLength(infoType)];
-        ShaderVariable variable = null;
+        NamedShaderVariable variable = null;
         for (int i = 0; i < count; i++) {
             variable = null;
             if (block != null) {
@@ -951,8 +955,8 @@ public abstract class GLShaderProgram {
      * @param index
      * @return
      */
-    protected ShaderVariable getBlockVariable(VariableType type, int index) {
-        ShaderVariable var = blockVariables.get(index);
+    protected NamedShaderVariable getBlockVariable(VariableType type, int index) {
+        NamedShaderVariable var = blockVariables.get(index);
         if (var != null) {
             InterfaceBlock block = uniformInterfaceBlocks[var.getBlockIndex()];
             switch (block.usage) {
@@ -976,7 +980,7 @@ public abstract class GLShaderProgram {
      * @param variable
      * @throws GLException
      */
-    protected void setVariableLocation(GLES20Wrapper gles, int program, ShaderVariable variable)
+    protected void setVariableLocation(GLES20Wrapper gles, int program, NamedShaderVariable variable)
             throws GLException {
         switch (variable.getType()) {
             case ATTRIBUTE:
@@ -1000,7 +1004,7 @@ public abstract class GLShaderProgram {
      * @param uniform Name of uniform to return
      * @return
      */
-    public ShaderVariable getUniformByName(String uniform) {
+    public NamedShaderVariable getUniformByName(String uniform) {
         return getVariableByName(uniform, activeUniforms);
     }
 
@@ -1010,7 +1014,7 @@ public abstract class GLShaderProgram {
      * @param attribute
      * @return Shader variable for attribute, or null if not defined in shader
      */
-    public ShaderVariable getAttribute(Indexer.Property attribute) {
+    public NamedShaderVariable getAttribute(Indexer.Property attribute) {
         return getAttributeByName(attribute.name);
     }
 
@@ -1020,12 +1024,12 @@ public abstract class GLShaderProgram {
      * @param attrib Name of attribute to return
      * @return
      */
-    public ShaderVariable getAttributeByName(String attrib) {
+    public NamedShaderVariable getAttributeByName(String attrib) {
         return getVariableByName(attrib, activeAttributes);
     }
 
-    protected ShaderVariable getVariableByName(String name, ShaderVariable[] variables) {
-        for (ShaderVariable v : variables) {
+    protected NamedShaderVariable getVariableByName(String name, NamedShaderVariable[] variables) {
+        for (NamedShaderVariable v : variables) {
             if (v != null && v.getName().contentEquals(name)) {
                 return v;
             }
@@ -1211,7 +1215,7 @@ public abstract class GLShaderProgram {
      * @throws IllegalArgumentException If shader variables are null, the program has probably not been created,
      * or if a variable has no mapping in the code.
      */
-    protected void addShaderVariable(ShaderVariable variable) {
+    protected void addShaderVariable(NamedShaderVariable variable) {
         // If variable type is is unMappedTypes then skip, for instance texture
         if (unMappedTypes.contains(variable.getDataType())) {
             return;
@@ -1220,11 +1224,12 @@ public abstract class GLShaderProgram {
     }
 
     /**
-     * Sets the active shader variable into {@link ShaderVariable} array - call this when variable has been validated.
+     * Sets the active shader variable into {@link NamedShaderVariable} array - call this when variable has been
+     * validated.
      * 
      * @param variable
      */
-    protected void setShaderVariable(ShaderVariable variable) {
+    protected void setShaderVariable(NamedShaderVariable variable) {
         switch (variable.getType()) {
             case ATTRIBUTE:
                 activeAttributes[variable.getActiveIndex()] = variable;
@@ -1332,7 +1337,7 @@ public abstract class GLShaderProgram {
      * @param offset
      * @throws GLException
      */
-    protected void setUniformBlock(GLES30Wrapper gles, BlockBuffer blockBuffer, ShaderVariable variable)
+    protected void setUniformBlock(GLES30Wrapper gles, BlockBuffer blockBuffer, NamedShaderVariable variable)
             throws GLException {
         if (blockBuffer.isDirty()) {
             gles.glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, variable.getBlockIndex(), blockBuffer.getBufferName());
@@ -1366,7 +1371,7 @@ public abstract class GLShaderProgram {
      * @param offset Offset into uniform array where data starts.
      * @throws GLException If there is an error setting a uniform to GL
      */
-    public final void uploadUniform(GLES20Wrapper gles, FloatBuffer uniforms, ShaderVariable variable)
+    public final void uploadUniform(GLES20Wrapper gles, FloatBuffer uniforms, NamedShaderVariable variable)
             throws GLException {
         if (variable == null) {
             return;
@@ -1431,9 +1436,9 @@ public abstract class GLShaderProgram {
      * @param index BufferIndex to the buffer that the variables belong to, or null
      * @return Total size, in floats, of all defined shader variables of the specified type
      */
-    protected int getVariableSize(ShaderVariable[] variables, VariableType type) {
+    protected int getVariableSize(NamedShaderVariable[] variables, VariableType type) {
         int size = 0;
-        for (ShaderVariable v : variables) {
+        for (NamedShaderVariable v : variables) {
             if (v != null && v.getType() == type && v.getDataType() != GLES20.GL_SAMPLER_2D) {
                 size += v.getSizeInFloats();
             }
@@ -1450,7 +1455,7 @@ public abstract class GLShaderProgram {
     protected int getVariableSize(InterfaceBlock block) {
         int size = 0;
         for (int index : block.indices) {
-            ShaderVariable variable = this.blockVariables.get(index);
+            NamedShaderVariable variable = this.blockVariables.get(index);
             size += variable.getSizeInBytes();
         }
         return size;
@@ -1475,9 +1480,9 @@ public abstract class GLShaderProgram {
      * @param variables
      * @return
      */
-    protected int getSamplerSize(ShaderVariable[] variables) {
+    protected int getSamplerSize(NamedShaderVariable[] variables) {
         int size = 0;
-        for (ShaderVariable v : variables) {
+        for (NamedShaderVariable v : variables) {
             if (v != null && v.getType() == VariableType.UNIFORM)
                 switch (v.getDataType()) {
                     case GLES20.GL_SAMPLER_2D:
@@ -1500,9 +1505,9 @@ public abstract class GLShaderProgram {
      * @param variables
      * @return
      */
-    protected ArrayList<ShaderVariable> getSamplers(ShaderVariable[] variables) {
-        ArrayList<ShaderVariable> samplers = new ArrayList<>();
-        for (ShaderVariable v : variables) {
+    protected ArrayList<NamedShaderVariable> getSamplers(NamedShaderVariable[] variables) {
+        ArrayList<NamedShaderVariable> samplers = new ArrayList<>();
+        for (NamedShaderVariable v : variables) {
             if (v != null && v.getType() == VariableType.UNIFORM)
                 switch (v.getDataType()) {
                     case GLES20.GL_SAMPLER_2D:
@@ -1563,7 +1568,7 @@ public abstract class GLShaderProgram {
      * @param variable The shader variable
      * @param offset Offset into destination where fraction is set
      */
-    protected void setTextureUniforms(TiledTexture2D texture, FloatBuffer uniforms, ShaderVariable variable) {
+    protected void setTextureUniforms(TiledTexture2D texture, FloatBuffer uniforms, NamedShaderVariable variable) {
         if (texture.getWidth() == 0 || texture.getHeight() == 0) {
             SimpleLogger.d(getClass(), "ERROR! Texture size is 0: " + texture.getWidth() + ", " + texture.getHeight());
         }
@@ -1579,7 +1584,7 @@ public abstract class GLShaderProgram {
      * @param uniforms
      * @param uniformScreenSize
      */
-    protected void setScreenSize(FloatBuffer uniforms, ShaderVariable uniformScreenSize) {
+    protected void setScreenSize(FloatBuffer uniforms, NamedShaderVariable uniformScreenSize) {
         if (uniformScreenSize != null) {
             uniforms.position(uniformScreenSize.getOffset());
             uniforms.put(Window.getInstance().getWidth());
@@ -1594,7 +1599,7 @@ public abstract class GLShaderProgram {
      * @param uniformEmissive
      * @param material
      */
-    protected void setEmissive(FloatBuffer uniforms, ShaderVariable uniformEmissive, float[] emissive) {
+    protected void setEmissive(FloatBuffer uniforms, NamedShaderVariable uniformEmissive, float[] emissive) {
         uniforms.position(uniformEmissive.getOffset());
         uniforms.put(emissive, 0, 4);
     }
@@ -1647,10 +1652,10 @@ public abstract class GLShaderProgram {
      * will contain the texture unit to use
      */
     protected void setSamplers() {
-        ArrayList<ShaderVariable> samplersList = getSamplers(activeUniforms);
+        ArrayList<NamedShaderVariable> samplersList = getSamplers(activeUniforms);
         if (samplersList.size() > 0) {
             for (int i = 0; i < samplersList.size(); i++) {
-                ShaderVariable sampler = samplersList.get(i);
+                NamedShaderVariable sampler = samplersList.get(i);
                 samplers.position(sampler.getOffset());
                 samplers.put(i);
             }

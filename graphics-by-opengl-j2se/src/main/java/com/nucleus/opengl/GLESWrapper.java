@@ -6,17 +6,18 @@ import java.util.StringTokenizer;
 import com.nucleus.Backend;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.StringUtils;
+import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.opengl.shader.ShaderSource;
 import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
-import com.nucleus.opengl.shader.ShaderVariable;
-import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
-import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.RenderState.ClearFunc;
 import com.nucleus.renderer.RenderState.Cullface;
 import com.nucleus.renderer.RenderState.DepthFunc;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RendererInfo;
+import com.nucleus.shader.ShaderVariable;
+import com.nucleus.shader.ShaderVariable.InterfaceBlock;
+import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.TextureParameter.Name;
 import com.nucleus.texturing.TextureParameter.Parameter;
 import com.nucleus.texturing.TextureParameter.Target;
@@ -78,7 +79,7 @@ public abstract class GLESWrapper extends Backend {
             return type.index < activeVariables.length ? activeVariables[type.index] : 0;
         }
 
-        public int getMaxNameLength(VariableType type) {
+        public int getMaxNameLength(ShaderVariable.VariableType type) {
             return type.index < maxNameLength.length ? maxNameLength[type.index] : 0;
         }
 
@@ -1339,7 +1340,7 @@ public abstract class GLESWrapper extends Backend {
      * @return The active uniform or null if operation failed.
      * @throws If there is an error fetching info for active variable
      */
-    public abstract ShaderVariable getActiveVariable(int program, VariableType type, int index, byte[] nameBuffer)
+    public abstract NamedShaderVariable getActiveVariable(int program, VariableType type, int index, byte[] nameBuffer)
             throws GLException;
 
     /**

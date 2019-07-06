@@ -1,10 +1,10 @@
-package com.nucleus.opengl.shader;
+package com.nucleus.shader;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 import com.nucleus.geometry.BufferObject;
-import com.nucleus.opengl.shader.ShaderVariable.InterfaceBlock;
+import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 
 /**
  * Storage for a variable block, for instance a uniform block
@@ -17,7 +17,7 @@ public abstract class BlockBuffer extends BufferObject {
     /**
      * The block this buffer belongs to or null
      */
-    protected final InterfaceBlock interfaceBlock;
+    public final InterfaceBlock interfaceBlock;
 
     /**
      * Name of the block as defined in the source
