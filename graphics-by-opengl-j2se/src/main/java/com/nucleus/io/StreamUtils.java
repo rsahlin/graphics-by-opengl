@@ -3,6 +3,10 @@ package com.nucleus.io;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,4 +115,42 @@ public class StreamUtils {
         }
         return data;
     }
+
+    /**
+     * Loads data from the filename, using ClassLoader and #getResourceAsStream(name)
+     * 
+     * @param name
+     * @param buffer Reads into buffer at current position
+     * @return Number of bytes read
+     * @throws IOException
+     * @throws URISyntaxException
+     */
+    public static int readFromName(String name, ByteBuffer buffer) throws IOException, URISyntaxException {
+        ClassLoader loader = StreamUtils.class.getClassLoader();
+        InputStream is = loader.getResourceAsStream(name);
+        int loaded = readFromStream(is, buffer);
+        is.close();
+        return loaded;
+    }
+
+    /**
+     * Loads data from the inputstream into the buffer - at the current position
+     * 
+     * @param is
+     * @param buffer
+     * @return The total number of bytes read
+     * @throws IOException
+     * @throws URISyntaxException
+     */
+    public static int readFromStream(InputStream is, ByteBuffer buffer) throws IOException, URISyntaxException {
+        ReadableByteChannel byteChannel = Channels.newChannel(is);
+        int read = 0;
+        int total = 0;
+        while ((read = byteChannel.read(buffer)) > 0) {
+            total += read;
+        }
+        byteChannel.close();
+        return total;
+    }
+
 }

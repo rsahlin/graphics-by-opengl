@@ -1,16 +1,14 @@
 package com.nucleus.scene.gltf;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
+import com.nucleus.io.StreamUtils;
 
 /**
  * The Buffer as it is loaded using the glTF format.
@@ -170,35 +168,13 @@ public class Buffer extends GLTFNamedValue {
         if (buffer == null) {
             throw new IllegalArgumentException("Buffer storage has not bee created, must call createBuffer()");
         }
-        ClassLoader loader = getClass().getClassLoader();
-        InputStream is = loader.getResourceAsStream(glTF.getPath(uri));
         SimpleLogger.d(getClass(),
                 "Loading into buffer with size " + buffer.capacity() + " from " + glTF.getPath(uri));
-        int total = load(is);
-        is.close();
+        buffer.rewind();
+        int total = StreamUtils.readFromName(glTF.getPath(uri), buffer);
         if (total != byteLength) {
             SimpleLogger.d(getClass(), "Loaded " + total + " bytes into buffer with capacity " + byteLength);
         }
-    }
-
-    /**
-     * Loads data from the inputstream into this buffer - at position 0
-     * 
-     * @param is
-     * @return
-     * @throws IOException
-     * @throws URISyntaxException
-     */
-    public int load(InputStream is) throws IOException, URISyntaxException {
-        ReadableByteChannel byteChannel = Channels.newChannel(is);
-        buffer.rewind();
-        int read = 0;
-        int total = 0;
-        while ((read = byteChannel.read(buffer)) > 0) {
-            total += read;
-        }
-        byteChannel.close();
-        return total;
     }
 
     @Override
