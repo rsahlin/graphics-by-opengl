@@ -5,6 +5,7 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
+import com.nucleus.shader.Shader.Shading;
 
 public abstract class ShadowPassProgram extends GLShaderProgram {
 
@@ -20,14 +21,15 @@ public abstract class ShadowPassProgram extends GLShaderProgram {
      * @param categorizer
      * @param shaders
      */
-    public ShadowPassProgram(GLShaderProgram objectProgram, Categorizer categorizer, GLShaderProgram.ProgramType shaders) {
+    public ShadowPassProgram(GLShaderProgram objectProgram, Categorizer categorizer,
+            GLShaderProgram.ProgramType shaders) {
         super(categorizer, shaders);
         setIndexer(objectProgram.variableIndexer);
         this.objectProgram = objectProgram;
     }
 
     @Override
-    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, GLShaderProgram.Shading shading) {
+    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Shading shading) {
         throw new IllegalArgumentException("Not valid");
     }
 

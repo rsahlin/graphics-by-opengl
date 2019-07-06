@@ -15,7 +15,6 @@ import com.nucleus.geometry.shape.RectangleShapeBuilder.RectangleConfiguration;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.geometry.GLMesh;
-import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.TranslateProgram;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
@@ -26,6 +25,7 @@ import com.nucleus.renderer.RenderTarget.Target;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.AbstractNode.NodeTypes;
 import com.nucleus.scene.gltf.GLTFRootNode;
+import com.nucleus.shader.Shader.Shading;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureParameter;
@@ -72,7 +72,7 @@ public class RootNodeBuilder {
         NodeBuilder<Node> builder = new NodeBuilder<>();
         builder.setRoot(root);
         GraphicsPipeline pipeline = renderer.getAssets().getPipeline(renderer,
-                new TranslateProgram(GLShaderProgram.Shading.textured));
+                new TranslateProgram(Shading.textured));
         builder.setPipeline(pipeline);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
         Texture2D texture = renderer.getAssets().getTexture(renderer,

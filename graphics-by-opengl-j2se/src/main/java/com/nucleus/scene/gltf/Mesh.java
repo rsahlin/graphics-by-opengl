@@ -8,13 +8,14 @@ import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.shader.GenericShaderProgram;
 import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.GLShaderProgram.ProgramType;
+import com.nucleus.opengl.shader.GenericShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
 import com.nucleus.scene.gltf.Primitive.Attributes;
+import com.nucleus.shader.Shader.Shading;
 
 /**
  * 
@@ -52,7 +53,7 @@ public class Mesh extends GLTFNamedValue implements AttributeUpdater, RuntimeRes
      * The unresolved shader program that can be used with AssetManager to get compiled program
      */
     transient static private GLShaderProgram debugTBNProgram = new GenericShaderProgram(
-            new String[] { "vecline", "vecline", "vecline" }, null, GLShaderProgram.Shading.flat,
+            new String[] { "vecline", "vecline", "vecline" }, null, Shading.flat,
             "ui", ProgramType.VERTEX_GEOMETRY_FRAGMENT);
 
     /**

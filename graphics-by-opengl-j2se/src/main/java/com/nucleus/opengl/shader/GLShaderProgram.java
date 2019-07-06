@@ -40,6 +40,7 @@ import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
 import com.nucleus.shader.Indexer;
+import com.nucleus.shader.Shader.Shading;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.TiledTexture2D;
@@ -74,20 +75,6 @@ public abstract class GLShaderProgram {
     protected final static String NO_ACTIVE_UNIFORMS = "No active uniforms, forgot to call createProgram()?";
 
     protected ShaderVariable modelUniform;
-
-    /**
-     * Different type of shadings that needs to be supported in shaders
-     *
-     */
-    public enum Shading {
-        flat(),
-        parametric(),
-        textured(),
-        pbr(),
-        colorize(),
-        shadow1(),
-        shadow2();
-    }
 
     /**
      * The different type of programs that can be linked from different type of shaders.
@@ -174,10 +161,10 @@ public abstract class GLShaderProgram {
      */
     public static class Categorizer {
         protected Pass pass;
-        protected GLShaderProgram.Shading shading;
+        protected Shading shading;
         protected String category;
 
-        public Categorizer(Pass pass, GLShaderProgram.Shading shading, String category) {
+        public Categorizer(Pass pass, Shading shading, String category) {
             this.pass = pass;
             this.shading = shading;
             this.category = category;
@@ -188,7 +175,7 @@ public abstract class GLShaderProgram {
          * 
          * @return
          */
-        public GLShaderProgram.Shading getShading() {
+        public Shading getShading() {
             return shading;
         }
 
@@ -264,7 +251,7 @@ public abstract class GLShaderProgram {
      */
     public static class SharedfragmentCategorizer extends Categorizer {
 
-        public SharedfragmentCategorizer(Pass pass, GLShaderProgram.Shading shading, String category) {
+        public SharedfragmentCategorizer(Pass pass, Shading shading, String category) {
             super(pass, shading, category);
         }
 
@@ -366,7 +353,7 @@ public abstract class GLShaderProgram {
      * @param pass
      * @param shading
      */
-    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, GLShaderProgram.Shading shading) {
+    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Shading shading) {
         switch (pass) {
             case UNDEFINED:
             case ALL:
@@ -422,7 +409,7 @@ public abstract class GLShaderProgram {
         return function.getShaderSourceName(type);
     }
 
-    protected GLShaderProgram(Pass pass, GLShaderProgram.Shading shading, String category,
+    protected GLShaderProgram(Pass pass, Shading shading, String category,
             GLShaderProgram.ProgramType shaders) {
         function = new Categorizer(pass, shading, category);
         this.shaders = shaders;
@@ -574,10 +561,16 @@ public abstract class GLShaderProgram {
      * a specific shader version.
      */
     protected String getSourceNameVersion(Renderers version, int type) {
-        if (version.major >= 3) {
-            return ShaderSource.V300 + "/";
+        switch (version) {
+            case GLES20:
+                return ShaderSource.V200 + "/";
+            case GLES30:
+            case GLES31:
+            case GLES32:
+                return ShaderSource.V300 + "/";
+            default:
+                throw new IllegalArgumentException("Not implemented for " + version);
         }
-        return "";
     }
 
     /**
@@ -1620,7 +1613,7 @@ public abstract class GLShaderProgram {
      * 
      * @return
      */
-    public GLShaderProgram.Shading getShading() {
+    public Shading getShading() {
         return function.shading;
     }
 

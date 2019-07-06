@@ -7,6 +7,7 @@ import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.shader.Indexer;
+import com.nucleus.shader.Shader.Shading;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 
@@ -35,19 +36,19 @@ public class TranslateProgram extends GLShaderProgram {
 
     public TranslateProgram(Texture2D texture) {
         super(new SharedfragmentCategorizer(null,
-                (texture == null || texture.textureType == TextureType.Untextured) ? GLShaderProgram.Shading.flat
-                        : GLShaderProgram.Shading.textured,
+                (texture == null || texture.textureType == TextureType.Untextured) ? Shading.flat
+                        : Shading.textured,
                 "translate"), GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
     }
 
-    public TranslateProgram(GLShaderProgram.Shading shading) {
+    public TranslateProgram(Shading shading) {
         super(new SharedfragmentCategorizer(null, shading, "translate"), GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
     }
 
     @Override
-    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, GLShaderProgram.Shading shading) {
+    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Shading shading) {
         switch (pass) {
             case UNDEFINED:
             case ALL:

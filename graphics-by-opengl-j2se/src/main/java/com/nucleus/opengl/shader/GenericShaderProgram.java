@@ -3,6 +3,7 @@ package com.nucleus.opengl.shader;
 import java.nio.FloatBuffer;
 
 import com.nucleus.renderer.Pass;
+import com.nucleus.shader.Shader.Shading;
 
 /**
  * Generic shader program - use this when a specific shader source shall be specified.
@@ -24,13 +25,13 @@ public class GenericShaderProgram extends GLShaderProgram {
      * {@link ProgramType#VERTEX_FRAGMENT} then this must contain 2 values.
      * @param shaders
      */
-    public GenericShaderProgram(String[] source, Pass pass, GLShaderProgram.Shading shading, String category,
+    public GenericShaderProgram(String[] source, Pass pass, Shading shading, String category,
             GLShaderProgram.ProgramType shaders) {
         super(pass, shading, category, shaders);
         this.source = source;
     }
 
-    public GenericShaderProgram(Pass pass, GLShaderProgram.Shading shading, String category,
+    public GenericShaderProgram(Pass pass, Shading shading, String category,
             GLShaderProgram.ProgramType shaders) {
         super(pass, shading, category, shaders);
     }

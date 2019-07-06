@@ -26,6 +26,7 @@ import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Scene;
 import com.nucleus.scene.gltf.Texture.TextureInfo;
+import com.nucleus.shader.Shader.Shading;
 import com.nucleus.vecmath.Matrix;
 
 public class GLTFShaderProgram extends GenericShaderProgram {

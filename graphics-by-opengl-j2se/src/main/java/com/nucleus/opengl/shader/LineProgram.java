@@ -7,6 +7,7 @@ import com.nucleus.opengl.shader.ShaderVariable.VariableType;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.shader.Indexer;
+import com.nucleus.shader.Shader.Shading;
 
 /**
  * Program for rendering lines and similar.
@@ -33,13 +34,13 @@ public class LineProgram extends GLShaderProgram {
 
     public static final String CATEGORY = "line";
 
-    public LineProgram(GLShaderProgram.Shading shading) {
+    public LineProgram(Shading shading) {
         super(null, shading, CATEGORY, GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new LineProgramIndexer());
     }
 
     @Override
-    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, GLShaderProgram.Shading shading) {
+    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Shading shading) {
         switch (pass) {
             case UNDEFINED:
             case ALL:

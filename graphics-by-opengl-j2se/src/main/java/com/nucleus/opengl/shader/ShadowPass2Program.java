@@ -11,6 +11,7 @@ import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
+import com.nucleus.shader.Shader.Shading;
 import com.nucleus.texturing.ParameterData;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -32,7 +33,7 @@ public class ShadowPass2Program extends ShadowPassProgram {
 
     static class Shadow2Categorizer extends Categorizer {
 
-        public Shadow2Categorizer(Pass pass, GLShaderProgram.Shading shading, String category) {
+        public Shadow2Categorizer(Pass pass, Shading shading, String category) {
             super(pass, shading, category);
         }
 
@@ -62,7 +63,7 @@ public class ShadowPass2Program extends ShadowPassProgram {
      * @param shaders
      */
     public ShadowPass2Program(GLShaderProgram objectProgram, Pass pass, String category,
-            GLShaderProgram.Shading shading,
+            Shading shading,
             GLShaderProgram.ProgramType shaders) {
         super(objectProgram, new Shadow2Categorizer(Pass.SHADOW2, shading, category), shaders);
         setIndexer(

@@ -75,6 +75,10 @@ public class ShaderSource {
     public static String UNDEF = "#undef";
 
     /**
+     * Use for shader source names that are versioned 200
+     */
+    public static final String V200 = "v200";
+    /**
      * Use for shader source names that are versioned 300
      */
     public static final String V300 = "v300";
