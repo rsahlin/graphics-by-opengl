@@ -39,7 +39,7 @@ import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.Window;
 import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.FloatBlockBuffer;
-import com.nucleus.shader.Shader.Shading;
+import com.nucleus.shader.Shader;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -59,10 +59,9 @@ import com.nucleus.vecmath.Matrix;
  * If a {@link VariableIndexer} is set before compile, the offsets are set to the ShaderVariables - this can be used to
  * share attribute buffers between shaders (that have different number of attributes)
  * 
- * @author Richard Sahlin
  *
  */
-public abstract class GLShaderProgram {
+public abstract class GLShaderProgram implements Shader {
 
     public static final String PROGRAM_DIRECTORY = "assets/";
     /**
@@ -576,14 +575,7 @@ public abstract class GLShaderProgram {
         }
     }
 
-    /**
-     * Create the programs for the shader program implementation.
-     * This method must be called before the program is used, or the other methods are called.
-     * It will create the {@link #shaderSources} field, compile and link the shader sources specified.
-     * 
-     * @param renderer The render backend to use when compiling and linking program.
-     * @throws BackendException If program could not be compiled and linked, possibly due to IOException
-     */
+    @Override
     public void createProgram(NucleusRenderer renderer) throws BackendException {
         shaderSources = createShaderSource(GLES20Wrapper.getInfo().getRenderVersion());
         if (shaderSources == null) {
@@ -1604,11 +1596,7 @@ public abstract class GLShaderProgram {
         uniforms.put(emissive, 0, 4);
     }
 
-    /**
-     * Returns the key value for this shader program, this is the classname and possible name of shader used.
-     * 
-     * @return Key value for this shader program.
-     */
+    @Override
     public String getKey() {
         return getClass().getSimpleName() + function.getShadingString() + function.getCategoryString();
     }

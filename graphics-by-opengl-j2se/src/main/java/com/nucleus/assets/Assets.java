@@ -5,7 +5,6 @@ import java.io.IOException;
 import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderTarget;
 import com.nucleus.renderer.RenderTarget.AttachementData;
@@ -13,13 +12,16 @@ import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.Image;
+import com.nucleus.shader.Shader;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureParameter;
 
 /**
- * Handles assets such as textures and programs.
+ * Handles assets such as textures and programs/pipelines.
+ * Clients shall only use this interface to handle assets - do not create textures/assets/programs by using
+ * implementation classes.
  *
  */
 public interface Assets {
@@ -124,11 +126,11 @@ public interface Assets {
      * returned.
      * 
      * @param renderer
-     * @param program
+     * @param shader
      * @return An instance of the pipeline that is loaded and compiled
      * @throws RuntimeException If the pipeline could not be compiled or linked
      */
-    public GraphicsPipeline getPipeline(NucleusRenderer renderer, GLShaderProgram program);
+    public GraphicsPipeline getPipeline(NucleusRenderer renderer, Shader shader);
 
     /**
      * Deletes loaded gltf assets. This will delete binary buffers and texture images and then remove

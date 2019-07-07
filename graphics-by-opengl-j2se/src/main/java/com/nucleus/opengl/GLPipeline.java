@@ -20,6 +20,7 @@ import com.nucleus.scene.gltf.Material.AlphaMode;
 import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
+import com.nucleus.shader.Shader;
 import com.nucleus.texturing.Texture2D;
 
 /**
@@ -38,8 +39,11 @@ public class GLPipeline extends GraphicsPipeline {
      * @param gles
      * @param shader
      */
-    public GLPipeline(GLES20Wrapper gles, GLShaderProgram shader) {
-        this.shader = shader;
+    public GLPipeline(GLES20Wrapper gles, Shader shader) {
+        if (!(shader instanceof GLShaderProgram)) {
+            throw new IllegalArgumentException("Shader must be instance of " + GLShaderProgram.class.getSimpleName());
+        }
+        this.shader = (GLShaderProgram) shader;
         this.gles = gles;
     }
 
