@@ -869,7 +869,7 @@ public abstract class GLShaderProgram implements Shader {
      */
     protected void setVariableOffsets(GLES20Wrapper gles, NamedShaderVariable[] variables, VariableIndexer indexer) {
         for (NamedShaderVariable v : variables) {
-            int index = indexer.getIndexByName(v.getName());
+            int index = indexer.getLocationByName(v.getName());
             // For now we cannot recover if variable not defined in indexer
             if (index == -1) {
                 throw new IllegalArgumentException("Indexer must define offset for shader variable " + v.getName());

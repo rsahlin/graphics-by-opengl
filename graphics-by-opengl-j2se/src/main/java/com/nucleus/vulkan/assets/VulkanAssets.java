@@ -42,7 +42,7 @@ public class VulkanAssets extends BaseAssets {
     }
 
     @Override
-    public GraphicsPipeline getPipeline(NucleusRenderer renderer, Shader shader) {
+    public GraphicsPipeline getGraphicsPipeline(NucleusRenderer renderer, Shader shader) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -79,6 +79,12 @@ public class VulkanAssets extends BaseAssets {
 
     @Override
     protected int[] createTextureName() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    protected GraphicsPipeline createGraphicsPipeline(Shader shader) {
         // TODO Auto-generated method stub
         return null;
     }

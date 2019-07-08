@@ -34,7 +34,7 @@ public class GLPipeline extends GraphicsPipeline {
     protected GLES20Wrapper gles;
 
     /**
-     * Internal constructor - do not call directly, use {@link Assets#getPipeline(NucleusRenderer, GLShaderProgram)}
+     * Internal constructor - do not call directly, use {@link Assets#getGraphicsPipeline(NucleusRenderer, GLShaderProgram)}
      * 
      * @param gles
      * @param shader

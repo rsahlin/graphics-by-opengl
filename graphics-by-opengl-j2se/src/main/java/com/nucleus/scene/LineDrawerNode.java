@@ -16,7 +16,8 @@ import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.geometry.GLMesh;
 import com.nucleus.opengl.shader.GLShaderProgram.ProgramType;
 import com.nucleus.opengl.shader.GenericShaderProgram;
-import com.nucleus.opengl.shader.Indexer;
+import com.nucleus.opengl.shader.LineProgram.LineProgramIndexer;
+import com.nucleus.opengl.shader.VariableIndexer.Property;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.Shader.Shading;
 import com.nucleus.texturing.Texture2D;
@@ -50,7 +51,7 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
      */
     transient int drawCount = Constants.NO_VALUE;
     transient int drawOffset = Constants.NO_VALUE;
-    transient Indexer indexer;
+    transient LineProgramIndexer indexer;
 
     @Override
     public MeshBuilder<Mesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
@@ -77,10 +78,11 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
         Texture2D tex = TextureFactory.getInstance().createTexture(TextureType.Untextured);
         builder.setTexture(tex);
         if (getPipeline() == null) {
-            GraphicsPipeline pipeline = renderer.getAssets().getPipeline(renderer,
-                    new GenericShaderProgram(new String[] { VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME }, null,
-                            Shading.flat, null,
-                            ProgramType.VERTEX_FRAGMENT));
+            GenericShaderProgram shader = new GenericShaderProgram(
+                    new String[] { VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME }, null,
+                    Shading.flat, null, ProgramType.VERTEX_FRAGMENT);
+            shader.setIndexer(new LineProgramIndexer());
+            GraphicsPipeline pipeline = renderer.getAssets().getGraphicsPipeline(renderer, shader);
             setPipeline(pipeline);
         }
         return initMeshBuilder(renderer, count, builder.getShapeBuilder(), builder);
@@ -138,8 +140,7 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
         Mesh mesh = getMesh(MeshIndex.MAIN);
         mesh.setAttributeUpdater(this);
         bindAttributeBuffer(mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES));
-        // indexer = new Indexer(this.p);
-        throw new IllegalArgumentException("Not implemented");
+        indexer = new LineProgramIndexer();
     }
 
     public void set(LineDrawerNode source) {
@@ -148,7 +149,7 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
         lineMode = source.lineMode;
     }
 
-    private ShapeBuilder createShapeBuilder(MeshBuilder<Mesh> meshBuilder) {
+    private ShapeBuilder<Mesh> createShapeBuilder(MeshBuilder<Mesh> meshBuilder) {
         switch (lineMode) {
             case LINES:
             case LINE_STRIP:
@@ -169,8 +170,8 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
      */
     public void setRectangle(int vertice, float[] values, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = indexer.vertex;
-        int color = indexer.emissive;
+        int translate = indexer.getOffset(Property.TRANSLATE.location);
+        int color = indexer.getOffset(Property.EMISSIVE.location);
         float[] pos = new float[2];
         internalSetVertex(offset + translate, offset + color, copy(values, 0, pos), z, rgba);
         internalSetVertex(offset + translate, offset + color, copy(values, 1, pos), z, rgba);
@@ -215,7 +216,9 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
      */
     public void addVertex(int vertice, float[] next, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        internalSetVertex(offset + indexer.vertex, offset + indexer.albedo, next, z, rgba);
+        internalSetVertex(offset + indexer.getOffset(Property.TRANSLATE.location), offset +
+                indexer.getOffset(Property.EMISSIVE.location), next, z,
+                rgba);
     }
 
     private void internalSetVertex(int translate, int color, float[] pos, float z, float[] rgba) {

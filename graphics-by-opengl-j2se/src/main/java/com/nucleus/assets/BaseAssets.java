@@ -25,6 +25,7 @@ import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Image;
+import com.nucleus.shader.Shader;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.ImageFactory;
@@ -64,6 +65,14 @@ public abstract class BaseAssets implements Assets {
      * @return
      */
     protected abstract int[] createTextureName();
+
+    /**
+     * Creates a graphics pipeline from the renderer and shader
+     * 
+     * @param shader
+     * @return The pipeline
+     */
+    protected abstract GraphicsPipeline createGraphicsPipeline(Shader shader);
 
     @Override
     public Texture2D getTexture(NucleusRenderer renderer, ImageFactory imageFactory, ExternalReference ref)
@@ -342,6 +351,28 @@ public abstract class BaseAssets implements Assets {
         renderer.uploadTextures(texture, textureImg);
         SimpleLogger.d(getClass(), "Uploaded texture " + texture.toString());
         BufferImage.destroyImages(textureImg);
+    }
+
+    @Override
+    public GraphicsPipeline getGraphicsPipeline(NucleusRenderer renderer, Shader shader) {
+        String key = shader.getKey();
+        GraphicsPipeline compiled = graphicPipelines.get(key);
+        if (compiled != null) {
+            return compiled;
+        }
+        try {
+            long start = System.currentTimeMillis();
+            shader.createProgram(renderer);
+            FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, shader.getClass().getSimpleName(),
+                    start,
+                    System.currentTimeMillis());
+            compiled = createGraphicsPipeline(shader);
+            graphicPipelines.put(key, compiled);
+            SimpleLogger.d(getClass(), "Stored graphics pipeline with key: " + key);
+            return compiled;
+        } catch (BackendException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

@@ -62,28 +62,6 @@ public class GLAssetManager extends BaseAssets {
         this.gles = gles;
     }
 
-    @Override
-    public GraphicsPipeline getPipeline(NucleusRenderer renderer, Shader shader) {
-        String key = shader.getKey();
-        GraphicsPipeline compiled = graphicPipelines.get(key);
-        if (compiled != null) {
-            return compiled;
-        }
-        try {
-            long start = System.currentTimeMillis();
-            shader.createProgram(renderer);
-            FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, shader.getClass().getSimpleName(),
-                    start,
-                    System.currentTimeMillis());
-            compiled = new GLPipeline(gles, shader);
-            graphicPipelines.put(key, compiled);
-            SimpleLogger.d(getClass(), "Stored graphics pipeline with key: " + key);
-            return compiled;
-        } catch (BackendException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     /**
      * Removes all references and resources.
      * 
@@ -445,6 +423,11 @@ public class GLAssetManager extends BaseAssets {
     @Override
     public void deleteTexture(Image image) {
         gles.glDeleteTextures(new int[] { image.getTextureName() });
+    }
+
+    @Override
+    protected GraphicsPipeline createGraphicsPipeline(Shader shader) {
+        return new GLPipeline(gles, shader);
     }
 
 }

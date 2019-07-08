@@ -5,7 +5,6 @@ import java.nio.FloatBuffer;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
-import com.nucleus.shader.Shader.Shading;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
@@ -18,9 +17,9 @@ import com.nucleus.texturing.TextureType;
 public class TranslateProgram extends GLShaderProgram {
 
     public static class TranslateProgramIndexer extends VariableIndexer {
-        protected final static String[] NAMES = new String[] { Indexer.Property.VERTEX.name,
-                Indexer.Property.UV.name, Indexer.Property.TRANSLATE.name,
-                Indexer.Property.ALBEDO.name };
+        protected final static String[] NAMES = new String[] { Property.VERTEX.name,
+                Property.UV.name, Property.TRANSLATE.name,
+                Property.ALBEDO.name };
         protected final static int[] OFFSETS = new int[] { 0, 3, 0, 6 };
         protected final static VariableType[] TYPES = new VariableType[] { VariableType.ATTRIBUTE,
                 VariableType.ATTRIBUTE, VariableType.ATTRIBUTE, VariableType.ATTRIBUTE };

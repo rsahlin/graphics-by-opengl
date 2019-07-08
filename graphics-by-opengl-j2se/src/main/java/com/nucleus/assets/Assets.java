@@ -120,9 +120,9 @@ public interface Assets {
     public void getIdReference(Texture2D reference);
 
     /**
-     * Returns a loaded and compiled pipeline, if the pipeline has not already been loaded and compiled it will be
-     * added to AssetManager using shader program and function.
-     * Next time this method is called with the same shaderprogram and function the existing instance of the pipeline is
+     * Returns a loaded and compiled graphics pipeline, if the pipeline has not already been loaded and compiled it will
+     * be added to Assets using shader program.
+     * Next time this method is called with the same shader the existing instance of the pipeline is
      * returned.
      * 
      * @param renderer
@@ -130,7 +130,7 @@ public interface Assets {
      * @return An instance of the pipeline that is loaded and compiled
      * @throws RuntimeException If the pipeline could not be compiled or linked
      */
-    public GraphicsPipeline getPipeline(NucleusRenderer renderer, Shader shader);
+    public GraphicsPipeline getGraphicsPipeline(NucleusRenderer renderer, Shader shader);
 
     /**
      * Deletes loaded gltf assets. This will delete binary buffers and texture images and then remove
