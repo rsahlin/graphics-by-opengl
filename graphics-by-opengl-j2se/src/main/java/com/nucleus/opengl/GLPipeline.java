@@ -21,6 +21,7 @@ import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.shader.Shader;
+import com.nucleus.shader.VariableIndexer;
 import com.nucleus.texturing.Texture2D;
 
 /**
@@ -34,7 +35,8 @@ public class GLPipeline extends GraphicsPipeline {
     protected GLES20Wrapper gles;
 
     /**
-     * Internal constructor - do not call directly, use {@link Assets#getGraphicsPipeline(NucleusRenderer, GLShaderProgram)}
+     * Internal constructor - do not call directly, use
+     * {@link Assets#getGraphicsPipeline(NucleusRenderer, GLShaderProgram)}
      * 
      * @param gles
      * @param shader
@@ -148,6 +150,11 @@ public class GLPipeline extends GraphicsPipeline {
     @Override
     public void setUniformData(NamedShaderVariable variable, float[] data, int sourceOffset) {
         shader.setUniformData(variable, data, sourceOffset);
+    }
+
+    @Override
+    public VariableIndexer getLocationMapping() {
+        return shader.getIndexer();
     }
 
 }

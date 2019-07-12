@@ -17,9 +17,9 @@ import com.nucleus.opengl.geometry.GLMesh;
 import com.nucleus.opengl.shader.GLShaderProgram.ProgramType;
 import com.nucleus.opengl.shader.GenericShaderProgram;
 import com.nucleus.opengl.shader.LineProgram.LineProgramIndexer;
-import com.nucleus.opengl.shader.VariableIndexer.Property;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.Shader.Shading;
+import com.nucleus.shader.VariableIndexer.Property;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
 import com.nucleus.texturing.TextureType;
@@ -170,8 +170,8 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
      */
     public void setRectangle(int vertice, float[] values, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        int translate = indexer.getOffset(Property.TRANSLATE.location);
-        int color = indexer.getOffset(Property.EMISSIVE.location);
+        int translate = indexer.getOffset(Property.TRANSLATE.getLocation());
+        int color = indexer.getOffset(Property.EMISSIVE.getLocation());
         float[] pos = new float[2];
         internalSetVertex(offset + translate, offset + color, copy(values, 0, pos), z, rgba);
         internalSetVertex(offset + translate, offset + color, copy(values, 1, pos), z, rgba);
@@ -216,8 +216,8 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
      */
     public void addVertex(int vertice, float[] next, float z, float[] rgba) {
         int offset = buffer.getFloatStride() * vertice;
-        internalSetVertex(offset + indexer.getOffset(Property.TRANSLATE.location), offset +
-                indexer.getOffset(Property.EMISSIVE.location), next, z,
+        internalSetVertex(offset + indexer.getOffset(Property.TRANSLATE.getLocation()), offset +
+                indexer.getOffset(Property.EMISSIVE.getLocation()), next, z,
                 rgba);
     }
 

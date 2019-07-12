@@ -16,19 +16,19 @@ import com.nucleus.texturing.TextureType;
  */
 public class TranslateProgram extends GLShaderProgram {
 
-    public static class TranslateProgramIndexer extends VariableIndexer {
-        protected final static String[] NAMES = new String[] { Property.VERTEX.name,
-                Property.UV.name, Property.TRANSLATE.name,
-                Property.ALBEDO.name };
+    public static class TranslateProgramIndexer extends NamedVariableIndexer {
+        protected final static Property[] PROPERTY = new Property[] { Property.VERTEX,
+                Property.UV, Property.TRANSLATE,
+                Property.ALBEDO };
         protected final static int[] OFFSETS = new int[] { 0, 3, 0, 6 };
         protected final static VariableType[] TYPES = new VariableType[] { VariableType.ATTRIBUTE,
                 VariableType.ATTRIBUTE, VariableType.ATTRIBUTE, VariableType.ATTRIBUTE };
         protected final static BufferIndex[] BUFFERINDEXES = new BufferIndex[] { BufferIndex.ATTRIBUTES_STATIC,
                 BufferIndex.ATTRIBUTES_STATIC, BufferIndex.ATTRIBUTES, BufferIndex.ATTRIBUTES };
-        protected final static int[] SIZEPERVERTEX = new int[] { 7, 5 };
 
-        public TranslateProgramIndexer() {
-            super(NAMES, OFFSETS, TYPES, BUFFERINDEXES, SIZEPERVERTEX);
+        private TranslateProgramIndexer() {
+            super();
+            createArrays(PROPERTY, OFFSETS, TYPES, new int[] { 7, 5 }, BUFFERINDEXES);
         }
     }
 

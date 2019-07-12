@@ -43,6 +43,7 @@ import com.nucleus.shader.Shader;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
+import com.nucleus.shader.VariableIndexer;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
 import com.nucleus.texturing.TiledTexture2D;
@@ -296,7 +297,7 @@ public abstract class GLShaderProgram implements Shader {
      * Calculated in create program, created using {@link #attributeBufferCount}
      * If attributes are dynamically mapped (not using indexer) then only one buffer is used.
      */
-    protected NamedShaderVariable[][] attributeVariables;
+    protected ShaderVariable[][] attributeVariables;
 
     protected BufferIndex defaultDynamicAttribBuffer = BufferIndex.ATTRIBUTES_STATIC;
 
@@ -315,7 +316,7 @@ public abstract class GLShaderProgram implements Shader {
     /**
      * If specified then variable offsets will be taken from this.
      */
-    protected VariableIndexer variableIndexer;
+    protected NamedVariableIndexer variableIndexer;
 
     protected HashMap<Integer, NamedShaderVariable> blockVariables = new HashMap<>(); // Active block uniforms, index is
                                                                                       // the
@@ -422,14 +423,9 @@ public abstract class GLShaderProgram implements Shader {
         this.shaders = shaders;
     }
 
-    /**
-     * If set then variable offsets, in the program ShaderVariables will be set from this indexer.
-     * If null then offsets will set based on found variable sizes.
-     * 
-     * @param variableIndexer
-     */
+    @Override
     public void setIndexer(VariableIndexer variableIndexer) {
-        this.variableIndexer = variableIndexer;
+        this.variableIndexer = (NamedVariableIndexer) variableIndexer;
     }
 
     /**
@@ -464,7 +460,7 @@ public abstract class GLShaderProgram implements Shader {
             // TODO - currently only supports using one buffer
             bufferIndexes[i] = bufferIndex;
         }
-        return new VariableIndexer(names, offsets, types, bufferIndexes,
+        return new NamedVariableIndexer(names, offsets, types, bufferIndexes,
                 new int[] { getAttributesPerVertex(bufferIndex) });
     }
 
@@ -597,7 +593,7 @@ public abstract class GLShaderProgram implements Shader {
      * @param resultArray Array to store shader variables for each attribute buffer in, attributes for buffer 1 will go
      * at index 0.
      */
-    private void sortAttributeVariablePerBuffer(NamedShaderVariable[][] resultArray) {
+    private void sortAttributeVariablePerBuffer(ShaderVariable[][] resultArray) {
         if (variableIndexer == null) {
             // If indexer not specified then use one buffer.
             resultArray[defaultDynamicAttribBuffer.index] = new NamedShaderVariable[info
@@ -610,15 +606,36 @@ public abstract class GLShaderProgram implements Shader {
             resultArray[BufferIndex.ATTRIBUTES.index] = activeAttributes;
         } else {
             for (int index = 0; index < resultArray.length; index++) {
-                resultArray[index] = variableIndexer.sortByBuffer(activeAttributes, index);
+                resultArray[index] = sortByBuffer(variableIndexer, activeAttributes, index);
             }
         }
     }
 
-    private void dynamicMapShaderOffset(NamedShaderVariable[] variables, VariableType type) {
+    /**
+     * Sort the variables belonging to the specified buffer index. Returning an array with the variables.
+     * 
+     * @param mapper
+     * @param activeVariables
+     * @param index Index of the buffer
+     * @return
+     */
+    protected NamedShaderVariable[] sortByBuffer(VariableIndexer mapper, NamedShaderVariable[] activeVariables,
+            int index) {
+        ArrayList<NamedShaderVariable> result = new ArrayList<>();
+        for (NamedShaderVariable v : activeVariables) {
+            BufferIndex bi = variableIndexer.getBufferIndex(variableIndexer.getIndexByName(v.getName()));
+            if (bi != null && bi.index == index) {
+                result.add(v);
+            }
+        }
+        NamedShaderVariable[] array = new NamedShaderVariable[result.size()];
+        return result.toArray(array);
+    }
+
+    private void dynamicMapShaderOffset(ShaderVariable[] variables, VariableType type) {
         int offset = 0;
         int samplerOffset = 0;
-        for (NamedShaderVariable v : variables) {
+        for (ShaderVariable v : variables) {
             if (v != null && v.getType() == type) {
                 switch (v.getDataType()) {
                     case GLES20.GL_SAMPLER_2D:
@@ -834,7 +851,7 @@ public abstract class GLShaderProgram implements Shader {
         }
         fetchActiveVariables(gles, VariableType.ATTRIBUTE, info, null);
         fetchActiveVariables(gles, VariableType.UNIFORM, info, null);
-        attributeVariables = new NamedShaderVariable[attributeBufferCount][];
+        attributeVariables = new ShaderVariable[attributeBufferCount][];
         attributesPerVertex = new int[attributeBufferCount];
         paddingPerVertex = new int[attributeBufferCount];
         sortAttributeVariablePerBuffer(attributeVariables);
@@ -850,7 +867,7 @@ public abstract class GLShaderProgram implements Shader {
      * packed.
      * @throws GLException
      */
-    protected void mapAttributeOffsets(GLES20Wrapper gles, VariableIndexer indexer) throws GLException {
+    protected void mapAttributeOffsets(GLES20Wrapper gles, NamedVariableIndexer indexer) throws GLException {
         if (indexer == null) {
             dynamicMapOffsets();
         } else {
@@ -867,9 +884,10 @@ public abstract class GLShaderProgram implements Shader {
      * @param gles
      * @param indexer
      */
-    protected void setVariableOffsets(GLES20Wrapper gles, NamedShaderVariable[] variables, VariableIndexer indexer) {
+    protected void setVariableOffsets(GLES20Wrapper gles, NamedShaderVariable[] variables,
+            NamedVariableIndexer indexer) {
         for (NamedShaderVariable v : variables) {
-            int index = indexer.getLocationByName(v.getName());
+            int index = indexer.getIndexByName(v.getName());
             // For now we cannot recover if variable not defined in indexer
             if (index == -1) {
                 throw new IllegalArgumentException("Indexer must define offset for shader variable " + v.getName());
@@ -883,7 +901,7 @@ public abstract class GLShaderProgram implements Shader {
      * The offset will be tightly packed based on used variable size, the order of used variables will be the same.
      */
     private void dynamicMapOffsets() {
-        for (NamedShaderVariable[] sv : attributeVariables) {
+        for (ShaderVariable[] sv : attributeVariables) {
             // In case only attribute buffer is used the first index will be null.
             if (sv != null) {
                 dynamicMapShaderOffset(sv, VariableType.ATTRIBUTE);
@@ -998,16 +1016,6 @@ public abstract class GLShaderProgram implements Shader {
      */
     public NamedShaderVariable getUniformByName(String uniform) {
         return getVariableByName(uniform, activeUniforms);
-    }
-
-    /**
-     * Returns the attribute if defined in shader program.
-     * 
-     * @param attribute
-     * @return Shader variable for attribute, or null if not defined in shader
-     */
-    public NamedShaderVariable getAttribute(Indexer.Property attribute) {
-        return getAttributeByName(attribute.name);
     }
 
     /**
@@ -1313,7 +1321,7 @@ public abstract class GLShaderProgram implements Shader {
                 }
             }
         } else {
-            for (int i = 0; i < variableIndexer.sizePerVertex.length; i++) {
+            for (int i = 0; i < variableIndexer.getSizesPerVertex().length; i++) {
                 attributesPerVertex[i] = variableIndexer.getSizePerVertex(i);
             }
         }
@@ -1428,9 +1436,9 @@ public abstract class GLShaderProgram implements Shader {
      * @param index BufferIndex to the buffer that the variables belong to, or null
      * @return Total size, in floats, of all defined shader variables of the specified type
      */
-    protected int getVariableSize(NamedShaderVariable[] variables, VariableType type) {
+    protected int getVariableSize(ShaderVariable[] variables, VariableType type) {
         int size = 0;
-        for (NamedShaderVariable v : variables) {
+        for (ShaderVariable v : variables) {
             if (v != null && v.getType() == type && v.getDataType() != GLES20.GL_SAMPLER_2D) {
                 size += v.getSizeInFloats();
             }

@@ -1,5 +1,6 @@
 package com.nucleus.geometry.shape;
 
+import com.nucleus.GraphicsPipeline;
 import com.nucleus.geometry.Mesh;
 
 /**
@@ -16,7 +17,7 @@ public class LineShapeBuilder extends ShapeBuilder<Mesh> {
     private Configuration configuration;
 
     @Override
-    public void build(Mesh mesh) {
+    public void build(Mesh mesh, GraphicsPipeline pipeline) {
 
     }
 

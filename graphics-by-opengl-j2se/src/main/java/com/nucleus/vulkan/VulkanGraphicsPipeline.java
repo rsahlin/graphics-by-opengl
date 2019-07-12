@@ -13,6 +13,7 @@ import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
+import com.nucleus.shader.VariableIndexer;
 
 public class VulkanGraphicsPipeline extends GraphicsPipeline {
 
@@ -82,6 +83,12 @@ public class VulkanGraphicsPipeline extends GraphicsPipeline {
     public void destroy(NucleusRenderer renderer) {
         // TODO Auto-generated method stub
 
+    }
+
+    @Override
+    public VariableIndexer getLocationMapping() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

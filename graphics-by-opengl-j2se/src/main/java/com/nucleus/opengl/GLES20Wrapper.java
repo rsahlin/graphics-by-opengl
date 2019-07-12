@@ -28,6 +28,7 @@ import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Sampler;
 import com.nucleus.scene.gltf.Texture;
+import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.BufferImage;
@@ -358,7 +359,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param position Position in buffer where the data for this attribute is.
      * @param attrib Array of attributes to set
      */
-    public void glVertexAttribPointer(AttributeBuffer buffer, int target, NamedShaderVariable[] attribs) {
+    public void glVertexAttribPointer(AttributeBuffer buffer, int target, ShaderVariable[] attribs) {
         int location = 0;
         if (buffer.getBufferName() > 0) {
             glBindBuffer(target, buffer.getBufferName());
@@ -367,7 +368,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                         GLES20.GL_STATIC_DRAW);
                 buffer.setDirty(false);
             }
-            for (NamedShaderVariable a : attribs) {
+            for (ShaderVariable a : attribs) {
                 if (a != null) {
                     location = a.getLocation();
                     if (!enabledVertexArrays[location]) {
@@ -379,7 +380,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
                 }
             }
         } else {
-            for (NamedShaderVariable a : attribs) {
+            for (ShaderVariable a : attribs) {
                 if (a != null) {
                     FloatBuffer fb = buffer.getBuffer();
                     fb.position(a.getOffset());

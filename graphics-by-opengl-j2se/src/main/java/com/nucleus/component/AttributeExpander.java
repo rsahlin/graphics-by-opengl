@@ -2,7 +2,7 @@ package com.nucleus.component;
 
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.Consumer;
-import com.nucleus.opengl.shader.Indexer;
+import com.nucleus.shader.VariableIndexer;
 
 /**
  * Copy and expand attribute data from source to destination.
@@ -21,7 +21,7 @@ public abstract class AttributeExpander implements Consumer {
     protected int multiplier;
     protected int sourceOffset = 0;
     protected int destOffset = 0;
-    protected Indexer mapper;
+    protected VariableIndexer mapper;
     final float[] tempData;
 
     /**
@@ -30,7 +30,7 @@ public abstract class AttributeExpander implements Consumer {
      * @param data
      * @param multiplier
      */
-    public AttributeExpander(Indexer mapper, ComponentBuffer data, int multiplier) {
+    public AttributeExpander(VariableIndexer mapper, ComponentBuffer data, int multiplier) {
         this.mapper = mapper;
         this.multiplier = multiplier;
         tempData = new float[data.sizePerEntity];

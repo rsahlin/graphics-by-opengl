@@ -35,6 +35,7 @@ public class GLMesh extends Mesh {
         protected NucleusRenderer renderer;
         protected Texture2D texture;
         protected Material material;
+        protected GraphicsPipeline pipeline;
         protected int[] attributesPerVertex;
         protected int vertexCount = -1;
         protected int indiceCount = 0;
@@ -103,6 +104,7 @@ public class GLMesh extends Mesh {
             if (parent == null) {
                 throw new IllegalArgumentException("Parent node may not be null when creating mesh");
             }
+            this.pipeline = parent.getPipeline();
             parent.addMesh(create());
         }
 
@@ -112,7 +114,7 @@ public class GLMesh extends Mesh {
             T mesh = (T) createInstance();
             mesh.createMesh(texture, attributesPerVertex, material, vertexCount, indiceCount, mode);
             if (shapeBuilder != null) {
-                shapeBuilder.build(mesh);
+                shapeBuilder.build(mesh, pipeline);
             }
             if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
                 renderer.getBufferFactory().createVBOs(mesh);

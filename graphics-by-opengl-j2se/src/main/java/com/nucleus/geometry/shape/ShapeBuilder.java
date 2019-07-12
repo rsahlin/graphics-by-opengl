@@ -1,5 +1,6 @@
 package com.nucleus.geometry.shape;
 
+import com.nucleus.GraphicsPipeline;
 import com.nucleus.geometry.Mesh;
 
 /**
@@ -54,7 +55,8 @@ public abstract class ShapeBuilder<T> {
      * Builds the specified shape(s) on the mesh.
      * 
      * @param mesh
+     * @param pipeline
      */
-    public abstract void build(T mesh);
+    public abstract void build(T mesh, GraphicsPipeline pipeline);
 
 }

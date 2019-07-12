@@ -39,4 +39,12 @@ public interface Shader {
      */
     public String getKey();
 
+    /**
+     * If set then variable offsets, in the program ShaderVariables will be set from this indexer.
+     * If null then offsets will set based on found variable sizes.
+     * 
+     * @param variableIndexer
+     */
+    public void setIndexer(VariableIndexer variableIndexer);
+
 }

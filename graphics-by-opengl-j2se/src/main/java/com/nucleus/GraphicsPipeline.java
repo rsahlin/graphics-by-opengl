@@ -7,6 +7,7 @@ import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Primitive.Attributes;
+import com.nucleus.shader.VariableIndexer;
 
 /**
  * Instance of a programmable graphics pipeline
@@ -73,5 +74,13 @@ public abstract class GraphicsPipeline extends Pipeline {
      * @return The floatbuffer holding uniform data
      */
     public abstract FloatBuffer getUniformData();
+
+    /**
+     * 
+     * Returns the location mapping of the shader program being used
+     * 
+     * @return
+     */
+    public abstract VariableIndexer getLocationMapping();
 
 }

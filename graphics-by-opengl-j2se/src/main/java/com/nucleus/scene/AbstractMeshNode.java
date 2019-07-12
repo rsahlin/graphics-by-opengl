@@ -461,7 +461,7 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
                 if (vf == null) {
                     throw new IllegalArgumentException(
                             "Node " + getId()
-                                    + " defines pointer input but does not have bounds and ViewFrustum not defined in any parent");
+                                    + " defines pointer input but does not have bounds and ViewFrustum defined in any parent");
                 }
             }
             if (vf != null) {

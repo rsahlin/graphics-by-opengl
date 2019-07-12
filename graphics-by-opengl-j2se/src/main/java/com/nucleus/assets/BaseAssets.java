@@ -15,9 +15,7 @@ import com.nucleus.GraphicsPipeline;
 import com.nucleus.SimpleLogger;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.io.gson.TextureDeserializer;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.GLException;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderTarget;
@@ -145,7 +143,7 @@ public abstract class BaseAssets implements Assets {
                 texture.setId(renderTarget.getAttachementId(attachement));
                 textures.put(renderTarget.getAttachementId(attachement), texture);
                 SimpleLogger.d(getClass(), "Created texture: " + texture.toString());
-            } catch (GLException e) {
+            } catch (BackendException e) {
                 throw new BackendException(e.getMessage());
             }
         }
@@ -219,7 +217,7 @@ public abstract class BaseAssets implements Assets {
      * Creates an empty Texture object from the external reference, this is the main entrypoint for creating
      * Texture object from file (json)
      * Before calling this make sure the reference is not an id reference.
-     * Avoid calling this method directly - use {@link #getTexture(GLES20Wrapper, ImageFactory, ExternalReference)}
+     * Avoid calling this method directly - use {@link #getTexture(NucleusRenderer, ImageFactory, ExternalReference)}
      * 
      * @param ref Reference to JSON .tex file
      * @return

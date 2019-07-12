@@ -13,17 +13,19 @@ import com.nucleus.shader.ShaderVariable.VariableType;
  */
 public class LineProgram extends GLShaderProgram {
 
-    public static class LineProgramIndexer extends VariableIndexer {
+    public static class LineProgramIndexer extends NamedVariableIndexer {
 
         protected final static Property[] PROPERTY = new Property[] { Property.VERTEX,
                 Property.EMISSIVE };
         protected final static int[] OFFSETS = new int[] { 0, 3 };
         protected final static VariableType[] TYPES = new VariableType[] { VariableType.ATTRIBUTE,
                 VariableType.ATTRIBUTE };
+        protected final static BufferIndex[] BUFFERINDEXES = new BufferIndex[] { BufferIndex.ATTRIBUTES,
+                BufferIndex.ATTRIBUTES };
 
         public LineProgramIndexer() {
             super();
-            createArrays(PROPERTY, OFFSETS, TYPES, 7, BufferIndex.ATTRIBUTES);
+            createArrays(PROPERTY, OFFSETS, TYPES, new int[] { 7 }, BUFFERINDEXES);
         }
 
     }

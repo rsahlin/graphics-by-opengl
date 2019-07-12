@@ -37,13 +37,13 @@ public abstract class AbstractNode extends BaseReference implements Node {
      */
     public enum NodeTypes implements Type<Node> {
 
-        layernode(LayerNode.class),
-        switchnode(SwitchNode.class),
-        linedrawernode(LineDrawerNode.class),
-        componentnode(ComponentNode.class),
-        meshnode(MeshNode.class),
-        // rootnode(RootNodeImpl.class),
-        gltfnode(GLTFNode.class);
+    layernode(LayerNode.class),
+    switchnode(SwitchNode.class),
+    linedrawernode(LineDrawerNode.class),
+    componentnode(ComponentNode.class),
+    meshnode(MeshNode.class),
+    // rootnode(RootNodeImpl.class),
+    gltfnode(GLTFNode.class);
 
         public final Class<? extends Node> theClass;
 
@@ -176,7 +176,7 @@ public abstract class AbstractNode extends BaseReference implements Node {
             }
             return parent.getParentView();
         }
-        return null;
+        return parent != null ? parent.getParentView() : null;
     }
 
     /**
