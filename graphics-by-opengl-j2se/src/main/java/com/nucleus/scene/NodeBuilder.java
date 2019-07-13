@@ -12,7 +12,6 @@ import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.io.SceneSerializer.NodeInflaterListener;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderPass;
 
@@ -141,9 +140,8 @@ public class NodeBuilder<T extends Node> {
      * Creates a new instance of the source Node.
      * If node is RenderableNode and the meshbuilder is set then it is used to create mesh.
      * If RenderableNode but meshbuilder not set the
-     * {@link RenderableNode#createMeshBuilder(GLES20Wrapper, com.nucleus.geometry.shape.ShapeBuilder)}
-     * is called to create MeshBuilder.
-     * Node is added to parent.
+     * {@link RenderableNode#createMeshBuilder(NucleusRenderer, com.nucleus.geometry.shape.ShapeBuilder)}
+     * is called to create MeshBuilder. Node is added to parent.
      * 
      * @param renderer
      * @param source
@@ -240,7 +238,7 @@ public class NodeBuilder<T extends Node> {
 
     /**
      * Creates a new, empty, instance of the specified nodeType. The type will be set.
-     * Do not call this method directly, use {@link #create(String)} or {@link #create(GLES20Wrapper, Node, Node)}
+     * Internal method
      * 
      * @param nodeType
      * @paran root The root of the created instance

@@ -103,11 +103,12 @@ public interface Assets {
      * @param renderer
      * @param renderTarget The rendertarget that this texture is to be used for
      * @param attachement The attachement point for the texture
+     * @param target The texture target
      * @return The texture2D object
      * @throws BackendException If there is an error creating the texture
      */
-    public Texture2D createTexture(NucleusRenderer renderer, RenderTarget renderTarget, AttachementData attachement)
-            throws BackendException;
+    public Texture2D createTexture(NucleusRenderer renderer, RenderTarget renderTarget, AttachementData attachement,
+            int target) throws BackendException;
 
     /**
      * If the reference texture is id reference and the reference is registered then the texture data is copied into

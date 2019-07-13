@@ -14,7 +14,6 @@ import com.nucleus.geometry.Material;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLTFNodeRenderer;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.renderer.NodeRenderer;
@@ -26,6 +25,7 @@ import com.nucleus.scene.gltf.Material.ShadingMaps;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.RenderableMesh;
+import com.nucleus.shader.Shader;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.vecmath.Matrix;
 
@@ -88,10 +88,10 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
      * @param renderer
      * @paramn glTFName name of gltf asset to load (minus GLTF_PATH)
      * @throws IOException
-     * @throws GLException
+     * @throws BackendException
      */
     public void loadGLTFAsset(NucleusRenderer renderer, String glTFName)
-            throws IOException, GLException {
+            throws IOException, BackendException {
         if (glTFName != null) {
             try {
                 glTF = renderer.getAssets()
@@ -173,7 +173,7 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     }
 
     @Override
-    public void create(RenderableNode<RenderableMesh> parent) throws IOException, GLException {
+    public void create(RenderableNode<RenderableMesh> parent) throws IOException, BackendException {
         // Since this node implements MeshBuilder the parent will be this class
         if (glTFName != null) {
             loadGLTFAsset(renderer, glTFName);
@@ -209,7 +209,7 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     }
 
     @Override
-    public RenderableMesh create() throws IOException, GLException {
+    public RenderableMesh create() throws IOException, BackendException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -228,7 +228,17 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     }
 
     @Override
+    public void setShader(Shader shader) {
+        /**
+         * This does nothing - pipelines are created in #createPrograms(GLTF)
+         */
+    }
+
+    @Override
     public GraphicsPipeline createPipeline() {
+        /**
+         * This does nothing - pipelines are created in #createPrograms(GLTF)
+         */
         return null;
     }
 

@@ -12,7 +12,6 @@ import com.nucleus.GraphicsPipeline;
 import com.nucleus.Pipeline;
 import com.nucleus.assets.Assets;
 import com.nucleus.geometry.Mesh;
-import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.renderer.BaseRenderer.FrameListener;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.RenderableNode;
@@ -23,6 +22,7 @@ import com.nucleus.scene.gltf.Image;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Texture;
+import com.nucleus.shader.ShaderVariable;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.Texture2D;
 
@@ -43,12 +43,12 @@ public interface NucleusRenderer {
      * 
      */
     public enum Renderers {
-        GLES20(2, 0),
-        GLES30(3, 0),
-        GLES31(3, 1),
-        GLES32(3, 2),
-        VULKAN10(1, 0),
-        VULKAN11(1, 1);
+    GLES20(2, 0),
+    GLES30(3, 0),
+    GLES31(3, 1),
+    GLES32(3, 2),
+    VULKAN10(1, 0),
+    VULKAN11(1, 1);
 
         public final int major;
         public final int minor;
@@ -389,8 +389,8 @@ public interface NucleusRenderer {
      * @param texUniform
      * @param samplerUniformBuffer
      */
-    public void prepareTexture(Texture texture, int unit, Accessor accessor, NamedShaderVariable attribute,
-            NamedShaderVariable texUniform, IntBuffer samplerUniformBuffer) throws BackendException;
+    public void prepareTexture(Texture texture, int unit, Accessor accessor, ShaderVariable attribute,
+            ShaderVariable texUniform, IntBuffer samplerUniformBuffer) throws BackendException;
 
     /**
      * Enable the pipeline

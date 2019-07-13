@@ -1,7 +1,6 @@
 package com.nucleus.renderer;
 
 import com.nucleus.Backend.DrawMode;
-import com.nucleus.opengl.TextureUtils;
 
 /**
  * Renderer configuration, this is the runtime configuration parameters.
@@ -50,16 +49,6 @@ public class Configuration {
      */
     public boolean isUseVBO() {
         return useVBO;
-    }
-
-    /**
-     * Enables or disable force generation of texture mipmaps.
-     * Used by {@link TextureUtils}
-     * 
-     * @param generateMipMaps True to force generation of texture mipmaps
-     */
-    public void setForceMipMaps(boolean generateMipMaps) {
-        this.generateMipMaps = generateMipMaps;
     }
 
     /**

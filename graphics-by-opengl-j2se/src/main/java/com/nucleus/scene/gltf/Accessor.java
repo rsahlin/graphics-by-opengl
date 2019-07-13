@@ -7,8 +7,6 @@ import java.nio.ShortBuffer;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
-import com.nucleus.opengl.GLESWrapper;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 
 /**
@@ -47,12 +45,12 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
     private static final String MIN = "min";
 
     public enum ComponentType {
-        BYTE(GLESWrapper.GLES20.GL_BYTE, 1),
-        UNSIGNED_BYTE(GLESWrapper.GLES20.GL_UNSIGNED_BYTE, 1),
-        SHORT(GLESWrapper.GLES20.GL_SHORT, 2),
-        UNSIGNED_SHORT(GLESWrapper.GLES20.GL_UNSIGNED_SHORT, 2),
-        UNSIGNED_INT(GLESWrapper.GLES20.GL_UNSIGNED_INT, 4),
-        FLOAT(GLESWrapper.GLES20.GL_FLOAT, 4);
+        BYTE(5120, 1),
+        UNSIGNED_BYTE(5121, 1),
+        SHORT(5122, 2),
+        UNSIGNED_SHORT(5123, 2),
+        UNSIGNED_INT(5125, 4),
+        FLOAT(5126, 4);
 
         /**
          * The gl value
@@ -96,28 +94,6 @@ public class Accessor extends GLTFNamedValue implements GLTF.RuntimeResolver {
             sizeInBytes = size * 4;
 
         }
-
-        public static Type getFromDataType(int dataType) {
-            switch (dataType) {
-                case GLES20.GL_FLOAT:
-                    return SCALAR;
-                case GLES20.GL_FLOAT_MAT2:
-                    return MAT2;
-                case GLES20.GL_FLOAT_MAT3:
-                    return MAT3;
-                case GLES20.GL_FLOAT_MAT4:
-                    return MAT4;
-                case GLES20.GL_FLOAT_VEC2:
-                    return VEC2;
-                case GLES20.GL_FLOAT_VEC3:
-                    return VEC3;
-                case GLES20.GL_FLOAT_VEC4:
-                    return VEC4;
-                default:
-                    throw new IllegalArgumentException("Not implemented for " + dataType);
-            }
-        }
-
     }
 
     public static final int DEFAULT_BYTE_OFFSET = 0;

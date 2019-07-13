@@ -3,7 +3,6 @@ package com.nucleus.opengl.shader;
 import java.nio.FloatBuffer;
 
 import com.nucleus.renderer.Pass;
-import com.nucleus.shader.Shader.Shading;
 
 /**
  * Generic shader program - use this when a specific shader source shall be specified.

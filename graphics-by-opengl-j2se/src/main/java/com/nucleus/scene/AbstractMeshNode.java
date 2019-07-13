@@ -16,7 +16,6 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
-import com.nucleus.opengl.geometry.GLMesh;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.DefaultNodeRenderer;
 import com.nucleus.renderer.NodeRenderer;
@@ -212,14 +211,6 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
         if (mesh != null) {
             meshes.add(mesh);
         }
-    }
-
-    @Override
-    public MeshBuilder<T> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder<T> shapeBuilder)
-            throws IOException {
-
-        MeshBuilder<Mesh> builder = new GLMesh.Builder<>(renderer);
-        return initMeshBuilder(renderer, 1, shapeBuilder, builder);
     }
 
     /**

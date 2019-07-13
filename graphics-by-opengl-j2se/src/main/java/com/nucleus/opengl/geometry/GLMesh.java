@@ -16,6 +16,7 @@ import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.shader.TranslateProgram;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RenderableNode;
+import com.nucleus.shader.Shader;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
 
@@ -49,13 +50,14 @@ public class GLMesh extends Mesh {
         protected int objectCount = 1;
         protected ElementBuffer.Type indiceBufferType = Type.SHORT;
         protected DrawMode mode;
-        protected ShapeBuilder shapeBuilder;
+        protected ShapeBuilder<Mesh> shapeBuilder;
+        protected Shader shader;
 
         /**
          * Creates a new builder
          * 
          * @param renderer
-         * @throws IllegalArgumentException If gles is null
+         * @throws IllegalArgumentException If renderer is null
          */
         public Builder(NucleusRenderer renderer) {
             if (renderer == null) {
@@ -109,9 +111,9 @@ public class GLMesh extends Mesh {
         }
 
         @Override
-        public T create() throws IOException, BackendException {
+        public Mesh create() throws IOException, BackendException {
             validate();
-            T mesh = (T) createInstance();
+            Mesh mesh = createInstance();
             mesh.createMesh(texture, attributesPerVertex, material, vertexCount, indiceCount, mode);
             if (shapeBuilder != null) {
                 shapeBuilder.build(mesh, pipeline);
@@ -120,6 +122,11 @@ public class GLMesh extends Mesh {
                 renderer.getBufferFactory().createVBOs(mesh);
             }
             return mesh;
+        }
+
+        @Override
+        public void setShader(Shader shader) {
+            this.shader = shader;
         }
 
         @Override

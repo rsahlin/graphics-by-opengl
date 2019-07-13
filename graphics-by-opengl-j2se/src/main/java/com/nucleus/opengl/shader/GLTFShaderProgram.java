@@ -26,7 +26,7 @@ import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Scene;
 import com.nucleus.scene.gltf.Texture.TextureInfo;
-import com.nucleus.shader.Shader.Shading;
+import com.nucleus.shader.ShaderVariable;
 import com.nucleus.vecmath.Matrix;
 
 public class GLTFShaderProgram extends GenericShaderProgram {
@@ -199,7 +199,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * @throws GLException
      */
     @Override
-    protected void uploadUniforms(GLES20Wrapper gles, FloatBuffer uniformData, NamedShaderVariable[] activeUniforms)
+    protected void uploadUniforms(GLES20Wrapper gles, FloatBuffer uniformData, ShaderVariable[] activeUniforms)
             throws GLException {
         uploadUniform(gles, uniformData, modelUniform);
         uploadUniform(gles, uniformData, light0Uniform);
@@ -210,7 +210,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
 
     @Override
     public void setSamplers() {
-        ArrayList<NamedShaderVariable> samplersList = getSamplers(activeUniforms);
+        ArrayList<ShaderVariable> samplersList = getSamplers(activeUniforms);
         if (samplersList.size() > 0) {
             for (int i = 0; i < samplersList.size(); i++) {
 

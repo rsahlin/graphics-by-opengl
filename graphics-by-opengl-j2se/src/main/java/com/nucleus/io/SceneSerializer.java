@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import com.nucleus.common.Type;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.Node;
 import com.nucleus.scene.NodeException;
@@ -53,7 +52,7 @@ public interface SceneSerializer<T> {
     public void registerTypes(Type<?>[] types);
 
     /**
-     * Returns true if the serializer has been initialized by calling {@link #init(GLES20Wrapper, Type[])}
+     * Returns true if the serializer has been initialized by calling {@link #init(NucleusRenderer, Type[])}
      * 
      * @return
      */

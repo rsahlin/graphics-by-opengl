@@ -1,7 +1,6 @@
 package com.nucleus.opengl.shader;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.FloatBuffer;
@@ -16,7 +15,6 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.common.Constants;
 import com.nucleus.common.StringUtils;
-import com.nucleus.environment.Lights;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
@@ -40,6 +38,7 @@ import com.nucleus.renderer.Window;
 import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.FloatBlockBuffer;
 import com.nucleus.shader.Shader;
+import com.nucleus.shader.ShaderProgram;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -62,7 +61,7 @@ import com.nucleus.vecmath.Matrix;
  * 
  *
  */
-public abstract class GLShaderProgram implements Shader {
+public abstract class GLShaderProgram extends ShaderProgram implements Shader {
 
     public static final String PROGRAM_DIRECTORY = "assets/";
     /**
@@ -75,8 +74,6 @@ public abstract class GLShaderProgram implements Shader {
 
     protected final static String MUST_SET_FIELDS = "Must set attributesPerVertex,vertexShaderName and fragmentShaderName";
     protected final static String NO_ACTIVE_UNIFORMS = "No active uniforms, forgot to call createProgram()?";
-
-    protected NamedShaderVariable modelUniform;
 
     /**
      * The different type of programs that can be linked from different type of shaders.
@@ -134,144 +131,13 @@ public abstract class GLShaderProgram implements Shader {
     protected GLShaderProgram shadowPass1;
     protected GLShaderProgram shadowPass2;
 
-    /**
-     * Number of vertices per sprite - this is for a quad that is created using element buffer.
-     */
-    public final static int VERTICES_PER_SPRITE = 4;
-    /**
-     * Draw using an index list each quad is made up of 6 indices (2 triangles)
-     */
-    public final static int INDICES_PER_SPRITE = 6;
-    /**
-     * Default number of components 1
-     */
-    public final static int DEFAULT_COMPONENTS = 3;
-
     public final static String SHADER_SOURCE_ERROR = "Error setting shader source: ";
     public final static String COMPILE_SHADER_ERROR = "Error compiling shader: ";
-    public final static String COMPILE_STATUS_ERROR = "Failed compile status: ";
     public final static String CREATE_SHADER_ERROR = "Can not create shader object, context not active?";
     public final static String ATTACH_SOURCE_ERROR = "Error attaching shader source";
     public final static String LINK_PROGRAM_ERROR = "Error linking program: ";
-    public final static String BIND_ATTRIBUTE_ERROR = "Error binding attribute: ";
     public final static String VARIABLE_LOCATION_ERROR = "Could not get shader variable location: ";
-    public final static String NULL_VARIABLES_ERROR = " are null, program not created? Must call fetchProgramInfo()";
     public final static String GET_PROGRAM_INFO_ERROR = "Error fetching program info.";
-
-    /**
-     * Used to fetch the sources for the shaders
-     */
-    public static class Categorizer {
-        protected Pass pass;
-        protected Shading shading;
-        protected String category;
-
-        public Categorizer(Pass pass, Shading shading, String category) {
-            this.pass = pass;
-            this.shading = shading;
-            this.category = category;
-        }
-
-        /**
-         * Returns the shading used, or null if not relevant
-         * 
-         * @return
-         */
-        public Shading getShading() {
-            return shading;
-        }
-
-        /**
-         * Returns the name of the category of this shader function, for instance sprite, charmap
-         * 
-         * @return The category name of null if not relevant
-         */
-        public String getCategory() {
-            return category;
-        }
-
-        /**
-         * Returns the shader source name, excluding directory prefix and name of shader (vertex/fragment/compute)
-         * Default behavior is to return getPath() / getPassString() + getShadingString()
-         * 
-         * @param shaderType The shader type to return source for
-         * @return
-         */
-        public String getShaderSourceName(ShaderType type) {
-            return (getPath(type) + getPassString() + getShadingString());
-        }
-
-        /**
-         * Returns the shading as a lowercase string, or "" if not set.
-         * 
-         * @return
-         */
-        public String getShadingString() {
-            return (shading != null ? shading.name().toLowerCase() : "");
-        }
-
-        /**
-         * Returns the category as a lowercase string, or "" if not set
-         * 
-         * @return
-         */
-        public String getCategoryString() {
-            return (category != null ? category.toLowerCase() : "");
-        }
-
-        /**
-         * Returns the relative path - by default this is the category
-         * 
-         * @param shaderType The shader type to return source for
-         * @return The relative path, if defined it must end with the path separator char
-         */
-        public String getPath(ShaderType type) {
-            String path = getCategoryString();
-            return path.length() == 0 ? path : path + File.separator;
-        }
-
-        /**
-         * Returns the pass as a lowercase string, or "" if null.
-         * 
-         * @return
-         */
-        public String getPassString() {
-            return (pass != null ? pass.name().toLowerCase() : "");
-        }
-
-        @Override
-        public String toString() {
-            return (getCategoryString() + File.separatorChar + getPassString() + getShadingString());
-        }
-
-    }
-
-    /**
-     * Categorizer for programs that share fragment shaders - source for fragment shader is normally in
-     * assets folder (not using category folder)
-     *
-     */
-    public static class SharedfragmentCategorizer extends Categorizer {
-
-        public SharedfragmentCategorizer(Pass pass, Shading shading, String category) {
-            super(pass, shading, category);
-        }
-
-        @Override
-        public String getShaderSourceName(ShaderType type) {
-            switch (type) {
-                case FRAGMENT:
-                    // Fragment shaders are shared - skip category path
-                    return getPassString() + getShadingString();
-            }
-            return super.getShaderSourceName(type);
-        }
-    }
-
-    /**
-     * The basic function
-     */
-    protected Categorizer function;
 
     /**
      * The GL program object
@@ -303,7 +169,6 @@ public abstract class GLShaderProgram implements Shader {
 
     protected int attributeBufferCount = BufferIndex.values().length;
 
-    protected Lights globalLight = Lights.getInstance();
     /**
      * The size of each buffer for the attribute variables - as set either from indexer if this is used or taken
      * from defined attributes.
@@ -333,15 +198,6 @@ public abstract class GLShaderProgram implements Shader {
      * position. To fetch texture unit to use for a shadervariable do: samplers.position(shadervariable.position())
      */
     transient protected IntBuffer samplers;
-
-    /**
-     * Uniforms, used when rendering - uniforms array shall belong to program since uniforms are a property of the
-     * program. This data is quite small and the size depends on what program is used - and not the mesh.
-     * The same mesh may be rendered with different programs, for instance different shadow passes and will have
-     * different number of uniforms depending on the program.
-     * 
-     */
-    transient protected FloatBuffer uniforms;
 
     /**
      * Unmapped variable types
@@ -391,7 +247,7 @@ public abstract class GLShaderProgram implements Shader {
      */
     @Deprecated
     public int getAttributeOffset(String name) {
-        NamedShaderVariable v = getAttributeByName(name);
+        ShaderVariable v = getAttributeByName(name);
         if (v != null) {
             return v.getOffset();
         }
@@ -619,16 +475,16 @@ public abstract class GLShaderProgram implements Shader {
      * @param index Index of the buffer
      * @return
      */
-    protected NamedShaderVariable[] sortByBuffer(VariableIndexer mapper, NamedShaderVariable[] activeVariables,
+    protected ShaderVariable[] sortByBuffer(VariableIndexer mapper, NamedShaderVariable[] activeVariables,
             int index) {
-        ArrayList<NamedShaderVariable> result = new ArrayList<>();
+        ArrayList<ShaderVariable> result = new ArrayList<>();
         for (NamedShaderVariable v : activeVariables) {
             BufferIndex bi = variableIndexer.getBufferIndex(variableIndexer.getIndexByName(v.getName()));
             if (bi != null && bi.index == index) {
                 result.add(v);
             }
         }
-        NamedShaderVariable[] array = new NamedShaderVariable[result.size()];
+        ShaderVariable[] array = new ShaderVariable[result.size()];
         return result.toArray(array);
     }
 
@@ -761,18 +617,6 @@ public abstract class GLShaderProgram implements Shader {
     }
 
     /**
-     * Sets the float values from data at the offset from variable, use this to set more than one value.
-     * 
-     * @param variable The shader variable to set uniform data to
-     * @param data The uniform data to set
-     * @param sourceOffset Offset into data where values are read
-     */
-    public void setUniformData(NamedShaderVariable variable, float[] data, int sourceOffset) {
-        uniforms.position(variable.getOffset());
-        uniforms.put(data, sourceOffset, variable.getSizeInFloats());
-    }
-
-    /**
      * Uploads the uniforms to render backend
      * When this method returns the uniform data has been uploaded to GL and is ready.
      * 
@@ -794,10 +638,10 @@ public abstract class GLShaderProgram implements Shader {
      * @param activeUniforms
      * @throws GLException
      */
-    protected void uploadUniforms(GLES20Wrapper gles, FloatBuffer uniformData, NamedShaderVariable[] activeUniforms)
+    protected void uploadUniforms(GLES20Wrapper gles, FloatBuffer uniformData, ShaderVariable[] activeUniforms)
             throws GLException {
 
-        for (NamedShaderVariable v : activeUniforms) {
+        for (ShaderVariable v : activeUniforms) {
             // If null then declared in program but not used, silently ignore
             if (v != null) {
                 if (v.getBlockIndex() != Constants.NO_VALUE) {
@@ -1198,15 +1042,6 @@ public abstract class GLShaderProgram implements Shader {
     }
 
     /**
-     * Returns the uniform data, this shall be mapped to GL by the program.
-     * 
-     * @return
-     */
-    public FloatBuffer getUniformData() {
-        return uniforms;
-    }
-
-    /**
      * Stores the shader variable in this program, if variable is of unmapped type, for instance Sampler, then it is
      * skipped. Also skip variables that are defined in code but not used in shader.
      * Variables are stored in {@link #activeUniforms} or {@link #activeAttributes}
@@ -1337,7 +1172,7 @@ public abstract class GLShaderProgram implements Shader {
      * @param offset
      * @throws GLException
      */
-    protected void setUniformBlock(GLES30Wrapper gles, BlockBuffer blockBuffer, NamedShaderVariable variable)
+    protected void setUniformBlock(GLES30Wrapper gles, BlockBuffer blockBuffer, ShaderVariable variable)
             throws GLException {
         if (blockBuffer.isDirty()) {
             gles.glBindBufferBase(GLES30.GL_UNIFORM_BUFFER, variable.getBlockIndex(), blockBuffer.getBufferName());
@@ -1371,7 +1206,7 @@ public abstract class GLShaderProgram implements Shader {
      * @param offset Offset into uniform array where data starts.
      * @throws GLException If there is an error setting a uniform to GL
      */
-    public final void uploadUniform(GLES20Wrapper gles, FloatBuffer uniforms, NamedShaderVariable variable)
+    public final void uploadUniform(GLES20Wrapper gles, FloatBuffer uniforms, ShaderVariable variable)
             throws GLException {
         if (variable == null) {
             return;
@@ -1412,8 +1247,9 @@ public abstract class GLShaderProgram implements Shader {
             default:
                 throw new IllegalArgumentException("Not implemented for dataType: " + variable.getDataType());
         }
-        if (GLUtils.handleError(gles, "setUniform: " + variable.getName() + ", dataType: " + variable.getDataType() +
-                ", size " + variable.getSize())) {
+        if (GLUtils.handleError(gles,
+                "setUniform: " + variable.getLocation() + ", dataType: " + variable.getDataType() +
+                        ", size " + variable.getSize())) {
             // Log shader sourcenames
             StringBuffer strBuffer = new StringBuffer();
             for (ShaderSource s : shaderSources) {
@@ -1455,7 +1291,7 @@ public abstract class GLShaderProgram implements Shader {
     protected int getVariableSize(InterfaceBlock block) {
         int size = 0;
         for (int index : block.indices) {
-            NamedShaderVariable variable = this.blockVariables.get(index);
+            ShaderVariable variable = this.blockVariables.get(index);
             size += variable.getSizeInBytes();
         }
         return size;
@@ -1463,8 +1299,7 @@ public abstract class GLShaderProgram implements Shader {
 
     /**
      * Align the size of the variables (per vertex) of the type in the buffer with index, override in
-     * subclasses if for instance
-     * Attributes shall be aligned to a specific size, eg vec4
+     * subclasses if for instance Attributes shall be aligned to a specific size, eg vec4
      * 
      * @param size The packed size
      * @param type
@@ -1480,9 +1315,9 @@ public abstract class GLShaderProgram implements Shader {
      * @param variables
      * @return
      */
-    protected int getSamplerSize(NamedShaderVariable[] variables) {
+    protected int getSamplerSize(ShaderVariable[] variables) {
         int size = 0;
-        for (NamedShaderVariable v : variables) {
+        for (ShaderVariable v : variables) {
             if (v != null && v.getType() == VariableType.UNIFORM)
                 switch (v.getDataType()) {
                     case GLES20.GL_SAMPLER_2D:
@@ -1505,9 +1340,9 @@ public abstract class GLShaderProgram implements Shader {
      * @param variables
      * @return
      */
-    protected ArrayList<NamedShaderVariable> getSamplers(NamedShaderVariable[] variables) {
-        ArrayList<NamedShaderVariable> samplers = new ArrayList<>();
-        for (NamedShaderVariable v : variables) {
+    protected ArrayList<ShaderVariable> getSamplers(ShaderVariable[] variables) {
+        ArrayList<ShaderVariable> samplers = new ArrayList<>();
+        for (ShaderVariable v : variables) {
             if (v != null && v.getType() == VariableType.UNIFORM)
                 switch (v.getDataType()) {
                     case GLES20.GL_SAMPLER_2D:
@@ -1521,24 +1356,6 @@ public abstract class GLShaderProgram implements Shader {
                 }
         }
         return samplers;
-    }
-
-    /**
-     * 
-     * Sets the data for the uniform matrices needed by the program - the default implementation will set the modelview
-     * and projection matrices. Will NOT set uniforms to GL, only update the uniform array store
-     * 
-     * @param matrices Source matrices to set to uniform data array.
-     */
-    public void setUniformMatrices(float[][] matrices) {
-        // Refresh the uniform matrixes - default is model - view and projection
-        if (modelUniform == null) {
-            modelUniform = getUniformByName(Matrices.Name);
-        }
-        uniforms.position(modelUniform.getOffset());
-        uniforms.put(matrices[Matrices.MODEL.index], 0, Matrix.MATRIX_ELEMENTS);
-        uniforms.put(matrices[Matrices.VIEW.index], 0, Matrix.MATRIX_ELEMENTS);
-        uniforms.put(matrices[Matrices.PROJECTION.index], 0, Matrix.MATRIX_ELEMENTS);
     }
 
     /**
@@ -1568,7 +1385,7 @@ public abstract class GLShaderProgram implements Shader {
      * @param variable The shader variable
      * @param offset Offset into destination where fraction is set
      */
-    protected void setTextureUniforms(TiledTexture2D texture, FloatBuffer uniforms, NamedShaderVariable variable) {
+    protected void setTextureUniforms(TiledTexture2D texture, FloatBuffer uniforms, ShaderVariable variable) {
         if (texture.getWidth() == 0 || texture.getHeight() == 0) {
             SimpleLogger.d(getClass(), "ERROR! Texture size is 0: " + texture.getWidth() + ", " + texture.getHeight());
         }
@@ -1584,7 +1401,7 @@ public abstract class GLShaderProgram implements Shader {
      * @param uniforms
      * @param uniformScreenSize
      */
-    protected void setScreenSize(FloatBuffer uniforms, NamedShaderVariable uniformScreenSize) {
+    protected void setScreenSize(FloatBuffer uniforms, ShaderVariable uniformScreenSize) {
         if (uniformScreenSize != null) {
             uniforms.position(uniformScreenSize.getOffset());
             uniforms.put(Window.getInstance().getWidth());
@@ -1599,7 +1416,7 @@ public abstract class GLShaderProgram implements Shader {
      * @param uniformEmissive
      * @param material
      */
-    protected void setEmissive(FloatBuffer uniforms, NamedShaderVariable uniformEmissive, float[] emissive) {
+    protected void setEmissive(FloatBuffer uniforms, ShaderVariable uniformEmissive, float[] emissive) {
         uniforms.position(uniformEmissive.getOffset());
         uniforms.put(emissive, 0, 4);
     }
@@ -1615,7 +1432,7 @@ public abstract class GLShaderProgram implements Shader {
      * @return
      */
     public Shading getShading() {
-        return function.shading;
+        return function.getShading();
     }
 
     /**
@@ -1648,10 +1465,10 @@ public abstract class GLShaderProgram implements Shader {
      * will contain the texture unit to use
      */
     protected void setSamplers() {
-        ArrayList<NamedShaderVariable> samplersList = getSamplers(activeUniforms);
+        ArrayList<ShaderVariable> samplersList = getSamplers(activeUniforms);
         if (samplersList.size() > 0) {
             for (int i = 0; i < samplersList.size(); i++) {
-                NamedShaderVariable sampler = samplersList.get(i);
+                ShaderVariable sampler = samplersList.get(i);
                 samplers.position(sampler.getOffset());
                 samplers.put(i);
             }
@@ -1778,4 +1595,23 @@ public abstract class GLShaderProgram implements Shader {
         }
         return result;
     }
+
+    /**
+     * 
+     * Sets the data for the uniform matrices needed by the program - the default implementation will set the modelview
+     * and projection matrices. Will NOT set uniforms to GL, only update the uniform array store
+     * 
+     * @param matrices Source matrices to set to uniform data array.
+     */
+    public void setUniformMatrices(float[][] matrices) {
+        // Refresh the uniform matrixes - default is model - view and projection
+        if (modelUniform == null) {
+            modelUniform = getUniformByName(Matrices.Name);
+        }
+        uniforms.position(modelUniform.getOffset());
+        uniforms.put(matrices[Matrices.MODEL.index], 0, Matrix.MATRIX_ELEMENTS);
+        uniforms.put(matrices[Matrices.VIEW.index], 0, Matrix.MATRIX_ELEMENTS);
+        uniforms.put(matrices[Matrices.PROJECTION.index], 0, Matrix.MATRIX_ELEMENTS);
+    }
+
 }

@@ -11,6 +11,7 @@ import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RenderableNode;
+import com.nucleus.shader.Shader;
 import com.nucleus.texturing.Texture2D;
 
 /**
@@ -77,11 +78,19 @@ public interface MeshBuilder<T> {
     public T create() throws IOException, BackendException;
 
     /**
+     * Sets the shader to be used if {@link #createPipeline()} is called
+     * 
+     * @param shader
+     */
+    public void setShader(Shader shader);
+
+    /**
      * Returns the graphics pipeline that can be used to draw the mesh. This is normally only used when program to use
      * is not known.
-     * For instance when loading nodes
+     * For instance when loading nodes.
      * 
      * @return Graphics pipline to use for drawing mesh.
+     * @throws IllegalArgumentException If Shader has not been set by calling {@link #setShader(Shader)}
      */
     public GraphicsPipeline createPipeline();
 
@@ -177,7 +186,7 @@ public interface MeshBuilder<T> {
      * 
      * @return
      */
-    public ShapeBuilder getShapeBuilder();
+    public ShapeBuilder<T> getShapeBuilder();
 
     public Texture2D getTexture();
 

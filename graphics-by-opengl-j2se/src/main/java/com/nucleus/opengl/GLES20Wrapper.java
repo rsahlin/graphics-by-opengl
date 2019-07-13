@@ -440,7 +440,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param attribute
      * @throws GLException
      */
-    public void glVertexAttribPointer(Accessor accessor, NamedShaderVariable attribute)
+    public void glVertexAttribPointer(Accessor accessor, ShaderVariable attribute)
             throws GLException {
         int location = attribute.getLocation();
         if (!enabledVertexArrays[location]) {
@@ -461,7 +461,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             ByteBuffer bb = accessor.getBuffer();
             glVertexAttribPointer(location, t.size, ct.value, normalized, view.getByteStride(), bb);
         }
-        GLUtils.handleError(this, "VertexAttribPointer for attribute: " + attribute.getName());
+        GLUtils.handleError(this, "VertexAttribPointer for attribute location: " + attribute.getLocation());
     }
 
     /**

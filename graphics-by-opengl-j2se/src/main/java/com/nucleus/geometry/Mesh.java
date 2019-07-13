@@ -14,8 +14,6 @@ import com.nucleus.texturing.TiledTexture2D;
  * One mesh shall be possible to render with no more than one drawcall.
  * Before rendering is done the generic attribute buffers must be set/updated.
  * 
- * @author Richard Sahlin
- *
  */
 public abstract class Mesh extends BaseReference implements AttributeUpdater {
 

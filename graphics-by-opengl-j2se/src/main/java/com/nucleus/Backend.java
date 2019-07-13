@@ -21,7 +21,7 @@ public abstract class Backend {
          * @param context Optional context
          * @return
          */
-        public Backend createBackend(Renderers version, Object windoe, Object context);
+        public Backend createBackend(Renderers version, Object window, Object context);
     }
 
     protected static Backend backend;

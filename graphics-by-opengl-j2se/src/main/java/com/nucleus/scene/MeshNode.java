@@ -54,7 +54,6 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
         Texture2D tex = null;
         if (getTextureRef() == null) {
             tex = TextureFactory.getInstance().createTexture(TextureType.Untextured);
-
         } else {
             tex = renderer.getAssets().getTexture(renderer, BaseImageFactory.getInstance(), getTextureRef());
         }

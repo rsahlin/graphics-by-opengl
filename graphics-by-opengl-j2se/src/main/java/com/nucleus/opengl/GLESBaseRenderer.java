@@ -20,7 +20,6 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES_EXTENSION_TOKENS;
 import com.nucleus.opengl.assets.GLAssetManager;
-import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.opengl.shader.ShadowPass1Program;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.BaseRenderer;
@@ -47,6 +46,7 @@ import com.nucleus.scene.gltf.Image;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Texture;
+import com.nucleus.shader.ShaderVariable;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.Texture2D.Format;
@@ -416,7 +416,7 @@ public class GLESBaseRenderer extends BaseRenderer {
      */
     private Texture2D createTexture(RenderTarget renderTarget, AttachementData attachementData)
             throws BackendException {
-        return getAssets().createTexture(this, renderTarget, attachementData);
+        return getAssets().createTexture(this, renderTarget, attachementData, GLES20.GL_TEXTURE_2D);
     }
 
     private void setRenderPass(RenderPass renderPass) throws BackendException {
@@ -565,8 +565,8 @@ public class GLESBaseRenderer extends BaseRenderer {
     }
 
     @Override
-    public void prepareTexture(Texture texture, int unit, Accessor accessor, NamedShaderVariable attribute,
-            NamedShaderVariable texUniform, IntBuffer samplerUniformBuffer)
+    public void prepareTexture(Texture texture, int unit, Accessor accessor, ShaderVariable attribute,
+            ShaderVariable texUniform, IntBuffer samplerUniformBuffer)
             throws BackendException {
         if (texture != null) {
             gles.glActiveTexture(GLES20.GL_TEXTURE0 + unit);
@@ -576,7 +576,7 @@ public class GLESBaseRenderer extends BaseRenderer {
             GLUtils.handleError(gles, "glBindTexture()");
             gles.glVertexAttribPointer(accessor, attribute);
             gles.glUniform1iv(texUniform.getLocation(), texUniform.getSize(), samplerUniformBuffer);
-            GLUtils.handleError(gles, "glUniform1iv - " + attribute.getName());
+            GLUtils.handleError(gles, "glUniform1iv - " + attribute.getLocation());
         }
     }
 

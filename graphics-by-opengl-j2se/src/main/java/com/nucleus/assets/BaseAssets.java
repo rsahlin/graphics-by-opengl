@@ -15,7 +15,6 @@ import com.nucleus.GraphicsPipeline;
 import com.nucleus.SimpleLogger;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.io.gson.TextureDeserializer;
-import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderTarget;
@@ -122,8 +121,8 @@ public abstract class BaseAssets implements Assets {
     }
 
     @Override
-    public Texture2D createTexture(NucleusRenderer renderer, RenderTarget renderTarget, AttachementData attachement)
-            throws BackendException {
+    public Texture2D createTexture(NucleusRenderer renderer, RenderTarget renderTarget, AttachementData attachement,
+            int target) throws BackendException {
         if (renderTarget.getId() == null) {
             throw new IllegalArgumentException("RenderTarget must have an id");
         }
@@ -139,7 +138,7 @@ public abstract class BaseAssets implements Assets {
                                 Parameter.CLAMP });
                 ImageFormat format = attachement.getFormat();
                 texture = createTexture(renderer, type, renderTarget.getId(), resolution, size, format,
-                        texParams, GLES20.GL_TEXTURE_2D);
+                        texParams, target);
                 texture.setId(renderTarget.getAttachementId(attachement));
                 textures.put(renderTarget.getAttachementId(attachement), texture);
                 SimpleLogger.d(getClass(), "Created texture: " + texture.toString());
