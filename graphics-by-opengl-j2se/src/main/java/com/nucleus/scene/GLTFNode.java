@@ -184,8 +184,9 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
      * Creates, loads and compiles the needed programs for the primitives
      * 
      * @param glTF
+     * @throws BackendException
      */
-    protected void createPrograms(GLTF glTF) {
+    protected void createPrograms(GLTF glTF) throws BackendException {
         if (glTF.getMeshes() != null) {
             for (Mesh m : glTF.getMeshes()) {
                 for (Primitive p : m.getPrimitives()) {

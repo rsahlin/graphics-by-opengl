@@ -2,9 +2,9 @@ package com.nucleus.opengl.shader;
 
 import java.nio.FloatBuffer;
 
+import com.nucleus.assets.Assets;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.Pass;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
@@ -32,6 +32,14 @@ public class TranslateProgram extends GLShaderProgram {
         }
     }
 
+    /**
+     * Constructor for shader program - the program will be empty - no attached shader source, no shader
+     * compile or linked.
+     * Shall only be used to create a placeholder program that can be used to create a pipeline:
+     * call {@link Assets#getGraphicsPipeline(NucleusRenderer, com.nucleus.shader.Shader)}
+     * 
+     * @param texture
+     */
     public TranslateProgram(Texture2D texture) {
         super(new SharedfragmentCategorizer(null,
                 (texture == null || texture.textureType == TextureType.Untextured) ? Shading.flat
@@ -40,21 +48,17 @@ public class TranslateProgram extends GLShaderProgram {
         setIndexer(new TranslateProgramIndexer());
     }
 
+    /**
+     * Constructor for shader program - the program will be empty - no attached shader source, no shader
+     * compile or linked.
+     * Shall only be used to create a placeholder program that can be used to create a pipeline:
+     * call {@link Assets#getGraphicsPipeline(NucleusRenderer, com.nucleus.shader.Shader)}
+     * 
+     * @param shading
+     */
     public TranslateProgram(Shading shading) {
         super(new SharedfragmentCategorizer(null, shading, "translate"), GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
-    }
-
-    @Override
-    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Shading shading) {
-        switch (pass) {
-            case UNDEFINED:
-            case ALL:
-            case MAIN:
-                return this;
-            default:
-                throw new IllegalArgumentException("Invalid pass " + pass);
-        }
     }
 
     @Override

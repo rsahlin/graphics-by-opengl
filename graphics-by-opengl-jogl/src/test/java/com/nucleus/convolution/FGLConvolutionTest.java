@@ -5,6 +5,7 @@ import java.nio.FloatBuffer;
 import org.junit.Test;
 
 import com.nucleus.Backend.DrawMode;
+import com.nucleus.BackendException;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.GraphicsPipeline;
@@ -44,7 +45,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
      * 
      */
     public enum ClientClasses implements Type<Object> {
-        clientclass(MyClientApplication.class);
+            clientclass(MyClientApplication.class);
 
         private final Class<?> theClass;
 
@@ -148,7 +149,12 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
             MeshBuilder<Mesh> meshBuilder = new GLMesh.Builder<>(renderer);
             meshBuilder.setElementMode(DrawMode.TRIANGLES, 4, 0, 6);
             meshBuilder.setTexture(texture);
-            pipeline = renderer.getAssets().getGraphicsPipeline(renderer, new ConvolutionProgram());
+            try {
+                pipeline = renderer.getAssets().getGraphicsPipeline(renderer, new ConvolutionProgram());
+            } catch (BackendException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
             Material material = new Material();
             meshBuilder.setMaterial(material).setAttributesPerVertex(pipeline.getAttributeSizes());
             meshBuilder.setShapeBuilder(

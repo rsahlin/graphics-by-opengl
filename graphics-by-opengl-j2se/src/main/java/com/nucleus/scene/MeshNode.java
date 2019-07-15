@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.Backend.DrawMode;
+import com.nucleus.BackendException;
 import com.nucleus.SimpleLogger;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
@@ -47,7 +48,7 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
 
     @Override
     public MeshBuilder<Mesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder<Mesh> shapeBuilder)
-            throws IOException {
+            throws IOException, BackendException {
         SimpleLogger.d(getClass(), "Creating MeshBuilder for Node " + getId());
         int count = 1;
         MeshBuilder<Mesh> builder = new GLMesh.Builder<>(renderer);

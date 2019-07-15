@@ -3,9 +3,6 @@ package com.nucleus.opengl.shader;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
-import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.Pass;
-import com.nucleus.shader.Shader.Shading;
 
 public abstract class ShadowPassProgram extends GLShaderProgram {
 
@@ -24,13 +21,8 @@ public abstract class ShadowPassProgram extends GLShaderProgram {
     public ShadowPassProgram(GLShaderProgram objectProgram, Categorizer categorizer,
             GLShaderProgram.ProgramType shaders) {
         super(categorizer, shaders);
-        setIndexer(objectProgram.variableIndexer);
+        // setIndexer(objectProgram.variableIndexer);
         this.objectProgram = objectProgram;
-    }
-
-    @Override
-    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Shading shading) {
-        throw new IllegalArgumentException("Not valid");
     }
 
     @Override

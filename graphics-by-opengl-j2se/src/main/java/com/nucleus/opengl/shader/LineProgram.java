@@ -3,8 +3,6 @@ package com.nucleus.opengl.shader;
 import java.nio.FloatBuffer;
 
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
-import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.Pass;
 import com.nucleus.shader.ShaderVariable.VariableType;
 
 /**
@@ -35,18 +33,6 @@ public class LineProgram extends GLShaderProgram {
     public LineProgram(Shading shading) {
         super(null, shading, CATEGORY, GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new LineProgramIndexer());
-    }
-
-    @Override
-    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Shading shading) {
-        switch (pass) {
-            case UNDEFINED:
-            case ALL:
-            case MAIN:
-                return this;
-            default:
-                throw new IllegalArgumentException("Invalid pass " + pass);
-        }
     }
 
     @Override

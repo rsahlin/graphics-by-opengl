@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.Backend.DrawMode;
+import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
 import com.nucleus.common.Constants;
 import com.nucleus.geometry.AttributeBuffer;
@@ -55,7 +56,7 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
 
     @Override
     public MeshBuilder<Mesh> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder shapeBuilder)
-            throws IOException {
+            throws IOException, BackendException {
         int count = getLineCount();
         MeshBuilder<Mesh> builder = new GLMesh.Builder<>(renderer);
         builder.setShapeBuilder(shapeBuilder);

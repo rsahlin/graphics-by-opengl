@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Constants;
@@ -226,10 +227,11 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
      * @param shapeBuilder
      * @param builder
      * @throws IOException
+     * @throws BackendException
      */
     protected MeshBuilder<T> initMeshBuilder(NucleusRenderer renderer, int count, ShapeBuilder<T> shapeBuilder,
             MeshBuilder<Mesh> builder)
-            throws IOException {
+            throws IOException, BackendException {
         if (builder.getTexture() == null) {
             builder.setTexture(getTextureRef());
         }

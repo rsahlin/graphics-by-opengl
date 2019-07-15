@@ -3,10 +3,10 @@ package com.nucleus;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
-import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Primitive.Attributes;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.shader.VariableIndexer;
 
 /**
@@ -14,7 +14,7 @@ import com.nucleus.shader.VariableIndexer;
  * TODO - remove references to opengl
  *
  */
-public abstract class GraphicsPipeline extends Pipeline {
+public interface GraphicsPipeline extends Pipeline<GraphicsShader> {
 
     /**
      * Sets the vertexAttribPointers for the glTF primitive
@@ -22,7 +22,7 @@ public abstract class GraphicsPipeline extends Pipeline {
      * @param attribs
      * @param accessors
      */
-    public abstract void glVertexAttribPointer(ArrayList<Attributes> attribs,
+    public void glVertexAttribPointer(ArrayList<Attributes> attribs,
             ArrayList<Accessor> accessors) throws BackendException;
 
     /**
@@ -32,7 +32,7 @@ public abstract class GraphicsPipeline extends Pipeline {
      * 
      * @return
      */
-    public abstract int[] getAttributeSizes();
+    public int[] getAttributeSizes();
 
     /**
      * Returns the active shader uniform by name, or null if not found
@@ -40,7 +40,7 @@ public abstract class GraphicsPipeline extends Pipeline {
      * @param uniform Name of uniform to return
      * @return The shader variable for the uniform, or null if not found
      */
-    public abstract NamedShaderVariable getUniformByName(String uniform);
+    public NamedShaderVariable getUniformByName(String uniform);
 
     /**
      * Returns the attribute if defined in shader program.
@@ -48,7 +48,7 @@ public abstract class GraphicsPipeline extends Pipeline {
      * @param attribute
      * @return Shader variable for attribute, or null if not defined in shader
      */
-    public abstract NamedShaderVariable getAttributeByName(String attribute);
+    public NamedShaderVariable getAttributeByName(String attribute);
 
     /**
      * Sets the float values from data at the offset from variable, use this to set more than one value.
@@ -57,23 +57,14 @@ public abstract class GraphicsPipeline extends Pipeline {
      * @param data The uniform data to set
      * @param sourceOffset Offset into data where values are read
      */
-    public abstract void setUniformData(NamedShaderVariable variable, float[] data, int sourceOffset);
-
-    /**
-     * Returns the number of attributes per vertex that are used by the program.
-     * 
-     * @param buffer The buffer to get attributes per vertex for
-     * @return Number of attributes as used by this program, per vertex 0 or -1 if not defined.
-     */
-    @Deprecated
-    public abstract int getAttributesPerVertex(BufferIndex buffer);
+    public void setUniformData(NamedShaderVariable variable, float[] data, int sourceOffset);
 
     /**
      * Returns the uniform data, this shall be mapped to shader
      * 
      * @return The floatbuffer holding uniform data
      */
-    public abstract FloatBuffer getUniformData();
+    public FloatBuffer getUniformData();
 
     /**
      * 
@@ -81,6 +72,6 @@ public abstract class GraphicsPipeline extends Pipeline {
      * 
      * @return
      */
-    public abstract VariableIndexer getLocationMapping();
+    public VariableIndexer getLocationMapping();
 
 }

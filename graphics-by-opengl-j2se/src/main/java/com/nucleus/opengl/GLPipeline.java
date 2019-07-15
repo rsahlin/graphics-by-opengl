@@ -7,7 +7,6 @@ import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
 import com.nucleus.assets.Assets;
 import com.nucleus.common.Environment;
-import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.shader.GLShaderProgram;
@@ -20,7 +19,7 @@ import com.nucleus.scene.gltf.Material.AlphaMode;
 import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
-import com.nucleus.shader.Shader;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.shader.VariableIndexer;
 import com.nucleus.texturing.Texture2D;
 
@@ -29,7 +28,7 @@ import com.nucleus.texturing.Texture2D;
  * Some of this data is immutable, such as shader and blend function
  *
  */
-public class GLPipeline extends GraphicsPipeline {
+public class GLPipeline implements GraphicsPipeline {
 
     protected GLShaderProgram shader;
     protected GLES20Wrapper gles;
@@ -39,13 +38,11 @@ public class GLPipeline extends GraphicsPipeline {
      * {@link Assets#getGraphicsPipeline(NucleusRenderer, GLShaderProgram)}
      * 
      * @param gles
-     * @param shader
      */
-    public GLPipeline(GLES20Wrapper gles, Shader shader) {
-        if (!(shader instanceof GLShaderProgram)) {
-            throw new IllegalArgumentException("Shader must be instance of " + GLShaderProgram.class.getSimpleName());
+    public GLPipeline(GLES20Wrapper gles) {
+        if (gles == null) {
+            throw new IllegalArgumentException("GLES wrapper is null");
         }
-        this.shader = (GLShaderProgram) shader;
         this.gles = gles;
     }
 
@@ -130,11 +127,6 @@ public class GLPipeline extends GraphicsPipeline {
     }
 
     @Override
-    public int getAttributesPerVertex(BufferIndex buffer) {
-        return shader.getAttributesPerVertex(buffer);
-    }
-
-    @Override
     public void destroy(NucleusRenderer renderer) {
         if (shader != null) {
             gles.glDeleteProgram(shader.getProgram());
@@ -155,6 +147,11 @@ public class GLPipeline extends GraphicsPipeline {
     @Override
     public VariableIndexer getLocationMapping() {
         return shader.getIndexer();
+    }
+
+    @Override
+    public void compile(NucleusRenderer renderer, GraphicsShader shader) throws BackendException {
+        this.shader = ((GLShaderProgram) shader).createProgram(renderer);
     }
 
 }

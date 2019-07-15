@@ -22,7 +22,7 @@ import com.nucleus.renderer.RenderTarget.AttachementData;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Image;
-import com.nucleus.shader.Shader;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.BufferImage.ImageFormat;
 import com.nucleus.texturing.ImageFactory;
@@ -64,12 +64,16 @@ public abstract class BaseAssets implements Assets {
     protected abstract int[] createTextureName();
 
     /**
-     * Creates a graphics pipeline from the renderer and shader
+     * Creates a graphics pipeline from the renderer and shader, this will load, compile and linke the shader.
+     * The returned pipeline is ready to be used.
      * 
+     * @param renderer
      * @param shader
-     * @return The pipeline
+     * @return The pipeline, compiled and linked.
+     * @throws BackendException If the shader could not be compiled/linked
      */
-    protected abstract GraphicsPipeline createGraphicsPipeline(Shader shader);
+    protected abstract GraphicsPipeline createGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader)
+            throws BackendException;
 
     @Override
     public Texture2D getTexture(NucleusRenderer renderer, ImageFactory imageFactory, ExternalReference ref)
@@ -351,7 +355,7 @@ public abstract class BaseAssets implements Assets {
     }
 
     @Override
-    public GraphicsPipeline getGraphicsPipeline(NucleusRenderer renderer, Shader shader) {
+    public GraphicsPipeline getGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader) {
         String key = shader.getKey();
         GraphicsPipeline compiled = graphicPipelines.get(key);
         if (compiled != null) {
@@ -359,13 +363,11 @@ public abstract class BaseAssets implements Assets {
         }
         try {
             long start = System.currentTimeMillis();
-            shader.createProgram(renderer);
-            FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, shader.getClass().getSimpleName(),
-                    start,
-                    System.currentTimeMillis());
-            compiled = createGraphicsPipeline(shader);
+            compiled = createGraphicsPipeline(renderer, shader);
             graphicPipelines.put(key, compiled);
             SimpleLogger.d(getClass(), "Stored graphics pipeline with key: " + key);
+            FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, shader.getClass().getSimpleName(),
+                    start, System.currentTimeMillis());
             return compiled;
         } catch (BackendException e) {
             throw new RuntimeException(e);

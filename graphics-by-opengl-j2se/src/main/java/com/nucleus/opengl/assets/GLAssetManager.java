@@ -35,7 +35,7 @@ import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Texture;
 import com.nucleus.scene.gltf.Texture.Swizzle.Component;
 import com.nucleus.scene.gltf.Texture.TextureInfo;
-import com.nucleus.shader.Shader;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.BufferImage.ColorModel;
@@ -426,8 +426,11 @@ public class GLAssetManager extends BaseAssets {
     }
 
     @Override
-    protected GraphicsPipeline createGraphicsPipeline(Shader shader) {
-        return new GLPipeline(gles, shader);
+    protected GraphicsPipeline createGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader)
+            throws BackendException {
+        GraphicsPipeline pipeline = new GLPipeline(gles);
+        pipeline.compile(renderer, shader);
+        return pipeline;
     }
 
 }

@@ -130,7 +130,7 @@ public class GLMesh extends Mesh {
         }
 
         @Override
-        public GraphicsPipeline createPipeline() {
+        public GraphicsPipeline createPipeline() throws BackendException {
             // Default is to create a translate program, this will use an indexer so that creating 2D objects is
             // possible. This is used mainly for ui elements
             return renderer.getAssets().getGraphicsPipeline(renderer, new TranslateProgram(texture));

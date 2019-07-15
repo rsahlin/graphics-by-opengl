@@ -9,7 +9,7 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.Image;
-import com.nucleus.shader.Shader;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
@@ -42,7 +42,7 @@ public class VulkanAssets extends BaseAssets {
     }
 
     @Override
-    public GraphicsPipeline getGraphicsPipeline(NucleusRenderer renderer, Shader shader) {
+    public GraphicsPipeline getGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -84,7 +84,7 @@ public class VulkanAssets extends BaseAssets {
     }
 
     @Override
-    protected GraphicsPipeline createGraphicsPipeline(Shader shader) {
+    protected GraphicsPipeline createGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader) {
         // TODO Auto-generated method stub
         return null;
     }

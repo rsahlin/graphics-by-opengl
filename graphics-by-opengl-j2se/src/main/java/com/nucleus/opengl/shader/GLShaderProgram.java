@@ -122,12 +122,6 @@ public abstract class GLShaderProgram extends ShaderProgram implements Shader {
 
     }
 
-    /**
-     * Read when shader source is created in {@link #createShaderSource(Renderers)}
-     * Subclasses may modify before {@link #createProgram(NucleusRenderer)} is called - or before they call
-     * super.createProgram()
-     */
-    protected GLShaderProgram.ProgramType shaders;
     protected GLShaderProgram shadowPass1;
     protected GLShaderProgram shadowPass2;
 
@@ -159,29 +153,6 @@ public abstract class GLShaderProgram extends ShaderProgram implements Shader {
      * active uniforms
      */
     protected NamedShaderVariable[] activeUniforms;
-    /**
-     * Calculated in create program, created using {@link #attributeBufferCount}
-     * If attributes are dynamically mapped (not using indexer) then only one buffer is used.
-     */
-    protected ShaderVariable[][] attributeVariables;
-
-    protected BufferIndex defaultDynamicAttribBuffer = BufferIndex.ATTRIBUTES_STATIC;
-
-    protected int attributeBufferCount = BufferIndex.values().length;
-
-    /**
-     * The size of each buffer for the attribute variables - as set either from indexer if this is used or taken
-     * from defined attributes.
-     */
-    protected int[] attributesPerVertex;
-    /**
-     * Optional additional storage per vertex, used when attribute buffer is created.
-     */
-    protected int[] paddingPerVertex;
-    /**
-     * If specified then variable offsets will be taken from this.
-     */
-    protected NamedVariableIndexer variableIndexer;
 
     protected HashMap<Integer, NamedShaderVariable> blockVariables = new HashMap<>(); // Active block uniforms, index is
                                                                                       // the
@@ -189,70 +160,9 @@ public abstract class GLShaderProgram extends ShaderProgram implements Shader {
     protected ArrayList<String>[] commonSources = new ArrayList[ShaderType.values().length];
 
     /**
-     * Uniform interface blocks
-     */
-    protected InterfaceBlock[] uniformInterfaceBlocks;
-    protected BlockBuffer[] uniformBlockBuffers;
-    /**
-     * Samplers (texture units) - the texture unit to use for a shadervariable is stored at the intbuffer
-     * position. To fetch texture unit to use for a shadervariable do: samplers.position(shadervariable.position())
-     */
-    transient protected IntBuffer samplers;
-
-    /**
      * Unmapped variable types
      */
     protected List<Integer> unMappedTypes = new ArrayList<>();
-
-    /**
-     * Returns the program for the specified pass and shading, this is used to resolve the correct
-     * program for different passes
-     * 
-     * @param renderer
-     * @param pass
-     * @param shading
-     */
-    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Shading shading) {
-        switch (pass) {
-            case UNDEFINED:
-            case ALL:
-            case MAIN:
-                return this;
-            case SHADOW1:
-                if (shadowPass1 == null) {
-                    // shadowPass1 = renderer.getAssets().getProgram(renderer,
-                    // new ShadowPass1Program(this, new Shadow1Categorizer(Pass.SHADOW1, shading,
-                    // function.getCategory()), shaders));
-                }
-                return shadowPass1;
-            case SHADOW2:
-                if (shadowPass2 == null) {
-                    // shadowPass2 = renderer.getAssets().getProgram(renderer,
-                    // new ShadowPass2Program(this, pass, function.getCategory(), shading, shaders));
-                }
-                return shadowPass2;
-            default:
-                throw new IllegalArgumentException("Invalid pass " + pass);
-        }
-    }
-
-    /**
-     * Returns the offset within an attribute buffer where the data is or -1 if shader variable is not defined.
-     * 
-     * Use {@link Property} to fetch shader variable instead.
-     * 
-     * @param name Name of the shader variable to query
-     * @return Offset into attribute (buffer) where the storage for the specified variable is, or -1 if the variable is
-     * not found.
-     */
-    @Deprecated
-    public int getAttributeOffset(String name) {
-        ShaderVariable v = getAttributeByName(name);
-        if (v != null) {
-            return v.getOffset();
-        }
-        return -1;
-    }
 
     /**
      * Returns the name of the shader source - including relative source path BUT excluding vertex shader + extension.
@@ -270,18 +180,11 @@ public abstract class GLShaderProgram extends ShaderProgram implements Shader {
 
     protected GLShaderProgram(Pass pass, Shading shading, String category,
             GLShaderProgram.ProgramType shaders) {
-        function = new Categorizer(pass, shading, category);
-        this.shaders = shaders;
+        super(pass, shading, category, shaders);
     }
 
     protected GLShaderProgram(Categorizer function, GLShaderProgram.ProgramType shaders) {
-        this.function = function;
-        this.shaders = shaders;
-    }
-
-    @Override
-    public void setIndexer(VariableIndexer variableIndexer) {
-        this.variableIndexer = (NamedVariableIndexer) variableIndexer;
+        super(function, shaders);
     }
 
     /**
@@ -427,13 +330,13 @@ public abstract class GLShaderProgram extends ShaderProgram implements Shader {
         }
     }
 
-    @Override
-    public void createProgram(NucleusRenderer renderer) throws BackendException {
+    public GLShaderProgram createProgram(NucleusRenderer renderer) throws BackendException {
         shaderSources = createShaderSource(GLES20Wrapper.getInfo().getRenderVersion());
         if (shaderSources == null) {
             throw new ShaderProgramException(MUST_SET_FIELDS);
         }
         createProgram(renderer, shaderSources);
+        return this;
     }
 
     /**
@@ -479,7 +382,8 @@ public abstract class GLShaderProgram extends ShaderProgram implements Shader {
             int index) {
         ArrayList<ShaderVariable> result = new ArrayList<>();
         for (NamedShaderVariable v : activeVariables) {
-            BufferIndex bi = variableIndexer.getBufferIndex(variableIndexer.getIndexByName(v.getName()));
+            BufferIndex bi = variableIndexer
+                    .getBufferIndex(((NamedVariableIndexer) variableIndexer).getIndexByName(v.getName()));
             if (bi != null && bi.index == index) {
                 result.add(v);
             }
@@ -514,7 +418,7 @@ public abstract class GLShaderProgram extends ShaderProgram implements Shader {
      * @param buffer The buffer to get attributes per vertex for
      * @return Number of attributes as used by this program, per vertex 0 or -1 if not defined.
      */
-    public int getAttributesPerVertex(BufferIndex buffer) {
+    private int getAttributesPerVertex(BufferIndex buffer) {
         if (attributesPerVertex.length > buffer.index) {
             return attributesPerVertex[buffer.index];
         } else {
@@ -565,7 +469,7 @@ public abstract class GLShaderProgram extends ShaderProgram implements Shader {
      * 
      * @return
      */
-    public FloatBuffer createUniformArray() {
+    protected FloatBuffer createUniformArray() {
         if (activeUniforms == null) {
             throw new IllegalArgumentException(NO_ACTIVE_UNIFORMS);
         }
@@ -583,7 +487,7 @@ public abstract class GLShaderProgram extends ShaderProgram implements Shader {
      * @param renderer
      * @return Uniform variable block buffers, using buffer objects, for this program, or null if not used.
      */
-    public BlockBuffer[] createUniformBlockBuffers(NucleusRenderer renderer) throws BackendException {
+    protected BlockBuffer[] createUniformBlockBuffers(NucleusRenderer renderer) throws BackendException {
         if (uniformInterfaceBlocks == null) {
             return null;
         }
@@ -1122,7 +1026,7 @@ public abstract class GLShaderProgram extends ShaderProgram implements Shader {
             linkProgram(gles, program, shaderNames);
             checkLinkStatus(gles, program);
             fetchProgramInfo(gles);
-            mapAttributeOffsets(gles, variableIndexer);
+            mapAttributeOffsets(gles, (NamedVariableIndexer) variableIndexer);
             setAttributesPerVertex();
             uniforms = createUniformArray();
             if (GLES20Wrapper.getInfo().getRenderVersion().major >= 3) {
@@ -1359,24 +1263,6 @@ public abstract class GLShaderProgram extends ShaderProgram implements Shader {
     }
 
     /**
-     * Initializes the uniform data for this program.
-     * Is called after program is linked and uniform buffers are created, variables and blocks are resolved.
-     * 
-     * @param destinationUniforms
-     */
-    public abstract void initUniformData(FloatBuffer destinationUniforms);
-
-    /**
-     * Updates the shader program specific uniform data, storing in in the uniformData array or
-     * {@link #uniformBlockBuffers}
-     * Subclasses shall set any uniform data needed - but not matrices which is set in
-     * {@link #setUniformMatrices(float[][])}
-     * 
-     * @param destinationUniforms
-     */
-    public abstract void updateUniformData(FloatBuffer destinationUniform);
-
-    /**
      * Sets UV fraction for the tiled texture + number of frames in x.
      * Use this for programs that use tiled texture behavior.
      * 
@@ -1419,11 +1305,6 @@ public abstract class GLShaderProgram extends ShaderProgram implements Shader {
     protected void setEmissive(FloatBuffer uniforms, ShaderVariable uniformEmissive, float[] emissive) {
         uniforms.position(uniformEmissive.getOffset());
         uniforms.put(emissive, 0, 4);
-    }
-
-    @Override
-    public String getKey() {
-        return getClass().getSimpleName() + function.getShadingString() + function.getCategoryString();
     }
 
     /**

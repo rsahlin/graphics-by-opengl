@@ -11,9 +11,6 @@ import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.GenericShaderProgram;
-import com.nucleus.renderer.NucleusRenderer;
-import com.nucleus.renderer.Pass;
-import com.nucleus.shader.Shader.Shading;
 import com.nucleus.vecmath.Matrix;
 
 public class ConvolutionProgram extends GenericShaderProgram {
@@ -35,18 +32,6 @@ public class ConvolutionProgram extends GenericShaderProgram {
                 attributeVariables[BufferIndex.ATTRIBUTES_STATIC.index]);
         GLUtils.handleError(gles, "glVertexAttribPointers ");
 
-    }
-
-    @Override
-    public GLShaderProgram getProgram(NucleusRenderer renderer, Pass pass, Shading shading) {
-        switch (pass) {
-            case UNDEFINED:
-            case ALL:
-            case MAIN:
-                return this;
-            default:
-                throw new IllegalArgumentException("Invalid pass " + pass);
-        }
     }
 
     @Override

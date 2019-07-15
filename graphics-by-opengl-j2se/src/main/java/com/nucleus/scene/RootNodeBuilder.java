@@ -4,6 +4,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import com.nucleus.Backend.DrawMode;
+import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
 import com.nucleus.SimpleLogger;
 import com.nucleus.camera.ViewFrustum;
@@ -63,11 +64,10 @@ public class RootNodeBuilder {
      * @param height Height of window
      * @return
      * @throws NodeException
+     * @throws BackendException
      */
     public RootNode createSplashRoot(NucleusRenderer renderer, String splashImage, RESOLUTION splashResolution,
-            int width,
-            int height)
-            throws NodeException {
+            int width, int height) throws NodeException, BackendException {
         RootNode root = newInstance(NUCLEUS_SCENE, "splashroot");
         NodeBuilder<Node> builder = new NodeBuilder<>();
         builder.setRoot(root);

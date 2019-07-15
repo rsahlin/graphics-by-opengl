@@ -3,13 +3,12 @@ package com.nucleus.shader;
 import java.io.File;
 import java.nio.FloatBuffer;
 
-import com.nucleus.BackendException;
 import com.nucleus.opengl.shader.GLShaderProgram.ShaderType;
-import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 
 /**
- * The resources needed for a programmable stage of the pipeline
+ * The methods needed for a programmable stage of the pipeline - this is for a generic shader, compute/graphics etc.
+ * Pipeline implementations shall take care of loading, compiling and linking of shaders
  *
  */
 public interface Shader {
@@ -136,16 +135,6 @@ public interface Shader {
         shadow1(),
         shadow2();
     }
-
-    /**
-     * Create the programs for the shader program implementation.
-     * This method must be called before the program is used, or the other methods are called.
-     * How the program is cread depends on API backend (GL/Vulkan)
-     * 
-     * @param renderer The render backend to use when compiling and linking program.
-     * @throws BackendException If program could not be compiled and linked, possibly due to IOException
-     */
-    public void createProgram(NucleusRenderer renderer) throws BackendException;
 
     /**
      * Returns the key value for this shader program, this is the classname and possible name of shader used.

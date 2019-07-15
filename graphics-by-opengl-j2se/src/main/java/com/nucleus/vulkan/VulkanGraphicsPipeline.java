@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
-import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.renderer.NucleusRenderer;
@@ -13,16 +12,10 @@ import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.shader.VariableIndexer;
 
-public class VulkanGraphicsPipeline extends GraphicsPipeline {
-
-    @Override
-    public void glVertexAttribPointer(ArrayList<Attributes> attribs, ArrayList<Accessor> accessors)
-            throws BackendException {
-        // TODO Auto-generated method stub
-
-    }
+public class VulkanGraphicsPipeline implements GraphicsPipeline {
 
     @Override
     public int[] getAttributeSizes() {
@@ -46,12 +39,6 @@ public class VulkanGraphicsPipeline extends GraphicsPipeline {
     public void setUniformData(NamedShaderVariable variable, float[] data, int sourceOffset) {
         // TODO Auto-generated method stub
 
-    }
-
-    @Override
-    public int getAttributesPerVertex(BufferIndex buffer) {
-        // TODO Auto-generated method stub
-        return 0;
     }
 
     @Override
@@ -89,6 +76,19 @@ public class VulkanGraphicsPipeline extends GraphicsPipeline {
     public VariableIndexer getLocationMapping() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public void glVertexAttribPointer(ArrayList<Attributes> attribs, ArrayList<Accessor> accessors)
+            throws BackendException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void compile(NucleusRenderer renderer, GraphicsShader shader) throws BackendException {
+        // TODO Auto-generated method stub
+
     }
 
 }

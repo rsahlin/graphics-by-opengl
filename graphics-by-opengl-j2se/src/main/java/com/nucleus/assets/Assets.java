@@ -12,7 +12,7 @@ import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.Image;
-import com.nucleus.shader.Shader;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
@@ -122,16 +122,17 @@ public interface Assets {
 
     /**
      * Returns a loaded and compiled graphics pipeline, if the pipeline has not already been loaded and compiled it will
-     * be added to Assets using shader program.
+     * be loaded/compiled and linked then added to Assets using shader as key.
      * Next time this method is called with the same shader the existing instance of the pipeline is
      * returned.
      * 
      * @param renderer
      * @param shader
      * @return An instance of the pipeline that is loaded and compiled
-     * @throws RuntimeException If the pipeline could not be compiled or linked
+     * @throws BackendException If the pipeline could not be compiled or linked
      */
-    public GraphicsPipeline getGraphicsPipeline(NucleusRenderer renderer, Shader shader);
+    public GraphicsPipeline getGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader)
+            throws BackendException;
 
     /**
      * Deletes loaded gltf assets. This will delete binary buffers and texture images and then remove

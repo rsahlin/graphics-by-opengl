@@ -11,7 +11,6 @@ import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
-import com.nucleus.shader.Shader.Shading;
 import com.nucleus.texturing.ParameterData;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -66,8 +65,8 @@ public class ShadowPass2Program extends ShadowPassProgram {
             Shading shading,
             GLShaderProgram.ProgramType shaders) {
         super(objectProgram, new Shadow2Categorizer(Pass.SHADOW2, shading, category), shaders);
-        setIndexer(
-                objectProgram.variableIndexer != null ? objectProgram.variableIndexer : objectProgram.createIndexer());
+        // setIndexer(
+        // objectProgram.variableIndexer != null ? objectProgram.variableIndexer : objectProgram.createIndexer());
         // This defines the texture parameters for the shadow pass.
         // TODO - this should be from a json definition from the scene.
         shadow = TextureFactory.getInstance().createTexture(TextureType.Texture2D);

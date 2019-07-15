@@ -36,10 +36,11 @@ public interface MeshBuilder<T> {
          * @param renderer
          * @param shapeBuilder
          * @return MeshBuilder that can be used to create Meshes
+         * @throws BackendException
          * @throws ComponentException
          */
         public MeshBuilder<T> createMeshBuilder(NucleusRenderer renderer, ShapeBuilder<T> shapeBuilder)
-                throws IOException;
+                throws IOException, BackendException;
 
     }
 
@@ -90,9 +91,10 @@ public interface MeshBuilder<T> {
      * For instance when loading nodes.
      * 
      * @return Graphics pipline to use for drawing mesh.
+     * @throws BackendException If the pipeline cannot be compiled/linked
      * @throws IllegalArgumentException If Shader has not been set by calling {@link #setShader(Shader)}
      */
-    public GraphicsPipeline createPipeline();
+    public GraphicsPipeline createPipeline() throws BackendException;
 
     /**
      * Calculates the bounds covering this mesh - this may return null.
