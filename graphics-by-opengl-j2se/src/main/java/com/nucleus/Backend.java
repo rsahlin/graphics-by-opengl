@@ -44,6 +44,8 @@ public abstract class Backend {
      * Returns the singleton backend instance - this can be used to check what version/type of backend that is used.
      * This is created when the GLES/GL/Vulkan wrapper is created.
      * 
+     * TODO Maybe this method shall be protected/hidden so that only relevant packeges can access it?
+     * 
      * @return The backend that is running - or null if not created, ie the current render wrapper is not created yet
      */
     public static Backend getInstance() {

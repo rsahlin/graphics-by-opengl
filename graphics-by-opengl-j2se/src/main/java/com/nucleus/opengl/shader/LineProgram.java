@@ -1,15 +1,14 @@
 package com.nucleus.opengl.shader;
 
-import java.nio.FloatBuffer;
-
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
+import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderVariable.VariableType;
 
 /**
  * Program for rendering lines and similar.
  *
  */
-public class LineProgram extends GLShaderProgram {
+public class LineProgram extends GenericShaderProgram {
 
     public static class LineProgramIndexer extends NamedVariableIndexer {
 
@@ -36,11 +35,11 @@ public class LineProgram extends GLShaderProgram {
     }
 
     @Override
-    public void updateUniformData(FloatBuffer destinationUniform) {
+    public void updateUniformData() {
     }
 
     @Override
-    public void initUniformData(FloatBuffer destinationUniforms) {
+    public void initUniformData() {
     }
 
 }

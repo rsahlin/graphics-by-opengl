@@ -6,16 +6,12 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 
 import com.nucleus.common.BufferUtils;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.StreamUtils;
-import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.opengl.shader.NamedShaderVariable;
-import com.nucleus.opengl.shader.ShaderSource;
-import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.scene.gltf.Accessor;
@@ -25,9 +21,10 @@ import com.nucleus.scene.gltf.BufferView;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Image;
 import com.nucleus.scene.gltf.Primitive;
-import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Sampler;
 import com.nucleus.scene.gltf.Texture;
+import com.nucleus.shader.ShaderSource;
+import com.nucleus.shader.ShaderSource.SLVersion;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -397,7 +394,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     }
 
     /**
-     * Disables attrib pointers after
+     * Disables attrib pointers after calls to set vertex attrib pointers.
      * TODO - keep track of needed and already enabled vertex arrays in
      * {@link #glVertexAttribPointer(AttributeBuffer, int, NamedShaderVariable[])}
      * and
@@ -409,26 +406,6 @@ public abstract class GLES20Wrapper extends GLESWrapper {
             if (enabledVertexArrays[i]) {
                 glDisableVertexAttribArray(i);
                 enabledVertexArrays[i] = false;
-            }
-        }
-    }
-
-    /**
-     * Sets the vertexAttribPointers for the glTF primitive
-     * Call {@link #disableAttribPointers()} after drawArrays/elements is called
-     * 
-     * @param attribs
-     * @param accessors
-     */
-    public void glVertexAttribPointer(GLShaderProgram program, ArrayList<Attributes> attribs,
-            ArrayList<Accessor> accessors) throws GLException {
-        for (int i = 0; i < attribs.size(); i++) {
-            Accessor accessor = accessors.get(i);
-            NamedShaderVariable v = program.getAttributeByName(attribs.get(i).name());
-            if (v != null) {
-                glVertexAttribPointer(accessor, v);
-            } else {
-                // TODO - when fully implemented this should not happen.
             }
         }
     }
@@ -948,9 +925,9 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     }
 
     @Override
-    public ESSLVersion replaceShaderVersion(ESSLVersion version) {
+    public SLVersion replaceShaderVersion(SLVersion version) {
         // Make sure version is not too high for es 2
-        if (version.number > ESSLVersion.VERSION100.number) {
+        if (version.number > SLVersion.VERSION100.number) {
             throw new IllegalArgumentException("Illegal shader version " + version);
         }
         return version;

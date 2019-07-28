@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
-import com.nucleus.GraphicsPipeline;
 import com.nucleus.SimpleLogger;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.common.Type;
@@ -25,6 +24,7 @@ import com.nucleus.scene.gltf.Material.ShadingMaps;
 import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.RenderableMesh;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.shader.Shader;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.vecmath.Matrix;
@@ -191,8 +191,8 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
             for (Mesh m : glTF.getMeshes()) {
                 for (Primitive p : m.getPrimitives()) {
                     GLTFShaderProgram program = createProgram(p);
-                    GraphicsPipeline gp = renderer.getAssets().getGraphicsPipeline(renderer, program);
-                    p.setPipeline(gp);
+                    renderer.getAssets().getGraphicsPipeline(renderer, program);
+                    p.setPipeline(program.getPipeline());
                 }
             }
         }
@@ -222,7 +222,7 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     }
 
     @Override
-    public void setPipeline(GraphicsPipeline pipeline) {
+    public void setProgram(GraphicsShader program) {
         /**
          * This does nothing - pipelines are created in #createPrograms(GLTF)
          */
@@ -236,7 +236,7 @@ public class GLTFNode extends AbstractMeshNode<RenderableMesh> implements MeshBu
     }
 
     @Override
-    public GraphicsPipeline createPipeline() {
+    public GraphicsShader createProgram() {
         /**
          * This does nothing - pipelines are created in #createPrograms(GLTF)
          */

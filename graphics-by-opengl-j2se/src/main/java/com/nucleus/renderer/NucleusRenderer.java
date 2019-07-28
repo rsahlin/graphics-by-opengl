@@ -398,7 +398,7 @@ public interface NucleusRenderer {
      * @param pipeline
      * @return true if pipeline was changed, ie previously used a different pipeline
      */
-    public boolean usePipeline(GraphicsPipeline pipeline) throws BackendException;
+    public boolean usePipeline(GraphicsPipeline<?> pipeline) throws BackendException;
 
     /**
      * Deletes the shaders/program used for the pipeline

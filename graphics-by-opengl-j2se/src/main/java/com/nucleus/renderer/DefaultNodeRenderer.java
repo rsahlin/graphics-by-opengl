@@ -21,7 +21,7 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
         return true;
     }
 
-    public void renderMesh(NucleusRenderer renderer, GraphicsPipeline pipeline, Mesh mesh, float[][] matrices)
+    public void renderMesh(NucleusRenderer renderer, GraphicsPipeline<?> pipeline, Mesh mesh, float[][] matrices)
             throws BackendException {
         Consumer updater = mesh.getAttributeConsumer();
         if (updater != null) {
@@ -38,7 +38,7 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
         nodeMeshes.clear();
         node.getMeshes(nodeMeshes);
         if (nodeMeshes.size() > 0) {
-            GraphicsPipeline pipeline = getPipeline(renderer, node, currentPass);
+            GraphicsPipeline<?> pipeline = getPipeline(renderer, node, currentPass);
 
             renderer.usePipeline(pipeline);
             for (Mesh mesh : nodeMeshes) {
@@ -55,8 +55,8 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
      * @param pass The currently defined pass
      * @return
      */
-    protected GraphicsPipeline getPipeline(NucleusRenderer renderer, RenderableNode<Mesh> node, Pass pass) {
-        GraphicsPipeline pipeline = node.getPipeline();
+    protected GraphicsPipeline<?> getPipeline(NucleusRenderer renderer, RenderableNode<Mesh> node, Pass pass) {
+        GraphicsPipeline<?> pipeline = node.getProgram().getPipeline();
         if (pipeline == null) {
             throw new IllegalArgumentException("No pipeline for node " + node.getId());
         }

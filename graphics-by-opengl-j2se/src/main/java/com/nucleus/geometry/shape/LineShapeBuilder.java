@@ -1,7 +1,7 @@
 package com.nucleus.geometry.shape;
 
-import com.nucleus.GraphicsPipeline;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.shader.GraphicsShader;
 
 /**
  * Builder for line shapes - this builder will not set vertice data since lines are primitives.
@@ -17,7 +17,8 @@ public class LineShapeBuilder extends ShapeBuilder<Mesh> {
     private Configuration configuration;
 
     @Override
-    public void build(Mesh mesh, GraphicsPipeline pipeline) {
+    public void build(Mesh mesh, GraphicsShader program) {
+        // TODO Auto-generated method stub
 
     }
 

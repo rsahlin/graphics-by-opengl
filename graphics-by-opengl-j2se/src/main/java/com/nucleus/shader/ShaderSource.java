@@ -1,29 +1,40 @@
-package com.nucleus.opengl.shader;
+package com.nucleus.shader;
 
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import com.nucleus.common.Constants;
-import com.nucleus.opengl.shader.GLShaderProgram.ShaderType;
+import com.nucleus.shader.Shader.Categorizer;
+import com.nucleus.shader.Shader.ShaderType;
 
 /**
- * Holds source and data related to the source for a shader
+ * Holds shader source that is not pre-compiled and must be compiled before being used.
+ * The source files contains text that needs to be compiled and linked.
  *
  */
-public class ShaderSource {
+public abstract class ShaderSource extends ShaderBinary {
 
-    public final static String FILE_SUFFIX_SEPARATOR = ".";
+    public static String VERSION = "#version";
+    public static String ES = "es";
+    public static String SHADING_LANGUAGE_100 = "100";
+    public static String PRECISION = "precision";
+    public static String DEFINE = "#define";
+    public static String UNDEF = "#undef";
 
-    public enum ESSLVersion {
+    /**
+     * Shading Language version
+     */
+    public enum SLVersion {
         VERSION100(100),
         VERSION300(300),
         VERSION310(310),
         VERSION320(320),
-        VERSION430(430);
+        VERSION430(430),
+        VERSION450(450);
 
         public final int number;
 
-        private ESSLVersion(int number) {
+        private SLVersion(int number) {
             this.number = number;
         }
 
@@ -54,10 +65,10 @@ public class ShaderSource {
          * @param version Trimmed version string, including #version
          * @return
          */
-        public static ESSLVersion getVersion(String version) {
+        public static SLVersion getVersion(String version) {
 
             int v = ShaderSource.getVersionNumber(version);
-            for (ESSLVersion essl : values()) {
+            for (SLVersion essl : values()) {
                 if (essl.number == v) {
                     return essl;
                 }
@@ -67,35 +78,6 @@ public class ShaderSource {
 
     }
 
-    public static String VERSION = "#version";
-    public static String ES = "es";
-    public static String SHADING_LANGUAGE_100 = "100";
-    public static String PRECISION = "precision";
-    public static String DEFINE = "#define";
-    public static String UNDEF = "#undef";
-
-    /**
-     * Use for shader source names that are versioned 200
-     */
-    public static final String V200 = "v200";
-    /**
-     * Use for shader source names that are versioned 300
-     */
-    public static final String V300 = "v300";
-    /**
-     * Use for shader source names that are versioned 310
-     */
-    public static final String V310 = "v310";
-    /**
-     * Use for shader source names that are versioned 320
-     */
-    public static final String V320 = "v320";
-
-    /**
-     * The sourcename - excluding source name version
-     */
-    private String sourceName;
-
     /**
      * Shader source without #version
      */
@@ -103,50 +85,26 @@ public class ShaderSource {
 
     /**
      * The full shader version string, including #VERSION and ES as needed - if defined by calling
-     * {@link #setShaderVersion(ESSLVersion)}
+     * {@link #setShaderVersion(SLVersion)}
      */
     private String versionString;
 
-    private String suffix;
+    public ShaderSource(String path, String sourcename, Categorizer function, String suffix, ShaderType type) {
+        super(path, sourcename, function, suffix, type);
+    }
 
     /**
-     * Shader type
-     */
-    protected ShaderType type;
-
-    /**
-     * Creates a shadersource from full sourcename - including any version and file suffix
+     * Optional names of additional library files that needs to be appended to shader (type) source.
+     * This is for shading languages that does not support precompiler include.
      * 
-     * @param sourcename Sourcename including file suffix - otherwise it is taken from type
+     * @param function
      * @param type
+     * @return Optional strings to additional library sources that shall be included, or null
      */
-    public ShaderSource(String sourcename, ShaderType type) {
-        int s = sourcename.indexOf(FILE_SUFFIX_SEPARATOR);
-        if (s > -1) {
-            suffix = sourcename.substring(s);
-            this.sourceName = sourcename.substring(0, s);
-        } else {
-            suffix = type.suffix;
-            this.sourceName = sourcename;
-        }
-        this.type = type;
-    }
-
-    public String getFullSourceName() {
-        return sourceName + suffix;
-    }
+    public abstract String[] getLibSourceName(Categorizer function, ShaderType type);
 
     /**
-     * Returns the unversioned shader source
-     * 
-     * @return
-     */
-    public String getSource() {
-        return shaderSource;
-    }
-
-    /**
-     * Sets the shader source, if source is versioned the {@link #setShaderVersion(ESSLVersion)} method is called
+     * Sets the shader source, if source is versioned the {@link #setShaderVersion(SLVersion)} method is called
      * and the raw source is set.
      * 
      * @param source
@@ -163,47 +121,25 @@ public class ShaderSource {
     }
 
     /**
+     * Returns the unversioned shader source
+     * 
+     * @return
+     */
+    public String getSource() {
+        return shaderSource;
+    }
+
+    /**
      * Sets the version string from the shading language version, next time {@link #getVersionedShaderSource()} is
      * called it will be versioned using this.
      * If null is specified nothing is done.
      * 
      * @param version
      */
-    public void setShaderVersion(ESSLVersion version) {
+    public void setShaderVersion(SLVersion version) {
         if (version != null) {
             versionString = version.getVersionString();
         }
-    }
-
-    /**
-     * Internal method to set the version string
-     * 
-     * @param version Complete version string, with #version and ES if needed, eg '#version 300 es'
-     */
-    protected void setShaderVersion(String version) {
-        this.versionString = version;
-    }
-
-    /**
-     * Returns the shader source versioned for the shading version specified by calling
-     * {@link #setShaderVersion(ESSLVersion)}
-     * 
-     * @return
-     */
-    public String getVersionedShaderSource() {
-        return versionString + "\n" + shaderSource;
-    }
-
-    /**
-     * Returns the shader version, or null if not defined
-     * 
-     * @return
-     */
-    public ESSLVersion getVersion() {
-        if (versionString == null) {
-            return null;
-        }
-        return ESSLVersion.getVersion(versionString);
     }
 
     /**
@@ -290,15 +226,15 @@ public class ShaderSource {
     }
 
     /**
-     * Returns the minimum shader version that must be supported for the sources.
-     * Will return {@link ESSLVersion#VERSION100} if no version info is set in sources.
+     * Returns the minimum shading language version that must be supported for the sources.
+     * Will return {@link SLVersion#VERSION100} if no version info is set in sources.
      * 
      * @param sources
      * @return
      */
-    public static ESSLVersion getMinVersion(ShaderSource[] sources) {
-        ESSLVersion minEssl = ESSLVersion.VERSION100;
-        ESSLVersion essl = null;
+    public static SLVersion getMinVersion(ShaderSource[] sources) {
+        SLVersion minEssl = SLVersion.VERSION100;
+        SLVersion essl = null;
         for (ShaderSource ss : sources) {
             if ((essl = ss.getVersion()).number > minEssl.number) {
                 minEssl = essl;
@@ -326,6 +262,37 @@ public class ShaderSource {
             }
         }
         return -1;
+    }
+
+    /**
+     * Internal method to set the version string
+     * 
+     * @param version Complete version string, with #version and ES if needed, eg '#version 300 es'
+     */
+    protected void setShaderVersion(String version) {
+        this.versionString = version;
+    }
+
+    /**
+     * Returns the shader source versioned for the shading version specified by calling
+     * {@link #setShaderVersion(SLVersion)}
+     * 
+     * @return
+     */
+    public String getVersionedShaderSource() {
+        return versionString + "\n" + shaderSource;
+    }
+
+    /**
+     * Returns the shading language version, or null if not defined
+     * 
+     * @return
+     */
+    public SLVersion getVersion() {
+        if (versionString == null) {
+            return null;
+        }
+        return SLVersion.getVersion(versionString);
     }
 
 }

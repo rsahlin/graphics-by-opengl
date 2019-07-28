@@ -5,7 +5,6 @@ import java.io.IOException;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
-import com.nucleus.GraphicsPipeline;
 import com.nucleus.common.Constants;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
@@ -15,10 +14,10 @@ import com.nucleus.geometry.Mesh;
 import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.opengl.geometry.GLMesh;
-import com.nucleus.opengl.shader.GLShaderProgram.ProgramType;
-import com.nucleus.opengl.shader.GenericShaderProgram;
 import com.nucleus.opengl.shader.LineProgram.LineProgramIndexer;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.shader.GenericShaderProgram;
+import com.nucleus.shader.Shader.ProgramType;
 import com.nucleus.shader.Shader.Shading;
 import com.nucleus.shader.VariableIndexer.Property;
 import com.nucleus.texturing.Texture2D;
@@ -78,13 +77,12 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
         }
         Texture2D tex = TextureFactory.getInstance().createTexture(TextureType.Untextured);
         builder.setTexture(tex);
-        if (getPipeline() == null) {
+        if (getProgram() == null) {
             GenericShaderProgram shader = new GenericShaderProgram(
                     new String[] { VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME }, null,
                     Shading.flat, null, ProgramType.VERTEX_FRAGMENT);
             shader.setIndexer(new LineProgramIndexer());
-            GraphicsPipeline pipeline = renderer.getAssets().getGraphicsPipeline(renderer, shader);
-            setPipeline(pipeline);
+            setProgram(renderer.getAssets().getGraphicsPipeline(renderer, shader));
         }
         return initMeshBuilder(renderer, count, builder.getShapeBuilder(), builder);
     }

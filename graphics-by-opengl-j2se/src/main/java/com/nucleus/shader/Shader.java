@@ -2,8 +2,8 @@ package com.nucleus.shader;
 
 import java.io.File;
 import java.nio.FloatBuffer;
+import java.util.HashMap;
 
-import com.nucleus.opengl.shader.GLShaderProgram.ShaderType;
 import com.nucleus.renderer.Pass;
 
 /**
@@ -20,6 +20,8 @@ public interface Shader {
         protected Pass pass;
         protected Shading shading;
         protected String category;
+        protected HashMap<ShaderType, String[]> libNames = new HashMap<>();
+        protected VariableIndexer indexer;
 
         public Categorizer(Pass pass, Shading shading, String category) {
             this.pass = pass;
@@ -54,6 +56,29 @@ public interface Shader {
          */
         public String getShaderSourceName(ShaderType type) {
             return (getPath(type) + getPassString() + getShadingString());
+        }
+
+        /**
+         * Adds the optional library names to use for shader types.
+         * This is used for shading languages that does not support preprocessor include (or similar)
+         * 
+         * @param type The shader type to set libname(s) for
+         * @param libnames One or more lib filenames to include with shader
+         */
+        public void addLibNames(ShaderType type, String[] libnames) {
+            this.libNames.put(type, libnames);
+        }
+
+        /**
+         * Optional names of additional library files that needs to be appended to shader (type) source.
+         * This is for shading languages that does not support precompiler include.
+         * 
+         * @param backend
+         * @param type
+         * @return Optional strings to additional library sources that shall be included, or null
+         */
+        public String[] getLibSourceName(ShaderType type) {
+            return libNames.get(type);
         }
 
         /**
@@ -92,6 +117,15 @@ public interface Shader {
          */
         public String getPassString() {
             return (pass != null ? pass.name().toLowerCase() : "");
+        }
+
+        /**
+         * Returns the optional variable (location) indexer
+         * 
+         * @return Variable locations or null if not specified
+         */
+        public VariableIndexer getIndexer() {
+            return indexer;
         }
 
         @Override
@@ -158,5 +192,47 @@ public interface Shader {
      * @return The buffer holding uniform data
      */
     public FloatBuffer getUniformData();
+
+    /**
+     * Returns the shader function type, this can be used to determine the shader source (file) names.
+     * 
+     * @return
+     */
+    public Categorizer getFunction();
+
+    /**
+     * Returns the program type, this is what shaders are needed
+     * 
+     * @return
+     */
+    public ProgramType getType();
+
+    /**
+     * The different type of programs that can be linked from different type of shaders.
+     *
+     */
+    public enum ProgramType {
+        VERTEX_FRAGMENT(),
+        COMPUTE(),
+        VERTEX_GEOMETRY_FRAGMENT();
+    }
+
+    /**
+     * The different type of shaders
+     *
+     */
+    public enum ShaderType {
+        VERTEX(0),
+        FRAGMENT(1),
+        GEOMETRY(2),
+        COMPUTE(3);
+
+        public final int index;
+
+        private ShaderType(int index) {
+            this.index = index;
+        }
+
+    }
 
 }

@@ -1,7 +1,5 @@
 package com.nucleus.opengl.shader;
 
-import java.nio.FloatBuffer;
-
 import com.nucleus.BackendException;
 import com.nucleus.common.Constants;
 import com.nucleus.io.ExternalReference;
@@ -10,6 +8,7 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
+import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.renderer.Pass;
 import com.nucleus.texturing.ParameterData;
 import com.nucleus.texturing.Texture2D;
@@ -61,9 +60,9 @@ public class ShadowPass2Program extends ShadowPassProgram {
      * @param shading
      * @param shaders
      */
-    public ShadowPass2Program(GLShaderProgram objectProgram, Pass pass, String category,
+    public ShadowPass2Program(GenericShaderProgram objectProgram, Pass pass, String category,
             Shading shading,
-            GLShaderProgram.ProgramType shaders) {
+            GenericShaderProgram.ProgramType shaders) {
         super(objectProgram, new Shadow2Categorizer(Pass.SHADOW2, shading, category), shaders);
         // setIndexer(
         // objectProgram.variableIndexer != null ? objectProgram.variableIndexer : objectProgram.createIndexer());
@@ -81,7 +80,6 @@ public class ShadowPass2Program extends ShadowPassProgram {
         shadow.set(texParam);
     }
 
-    @Override
     public void setUniformMatrices(float[][] matrices) {
         if (modelUniform == null) {
             modelUniform = getUniformByName(Matrices.Name);
@@ -95,7 +93,6 @@ public class ShadowPass2Program extends ShadowPassProgram {
         uniforms.put(matrices[Matrices.RENDERPASS_1.index], 0, Matrix.MATRIX_ELEMENTS);
     }
 
-    @Override
     public void prepareTexture(NucleusRenderer renderer, Texture2D texture) throws BackendException {
         int textureID = shadow.getName();
         if (textureID == Constants.NO_VALUE) {
@@ -120,12 +117,12 @@ public class ShadowPass2Program extends ShadowPassProgram {
     }
 
     @Override
-    public void updateUniformData(FloatBuffer destinationUniform) {
-        objectProgram.updateUniformData(destinationUniform);
+    public void updateUniformData() {
+        objectProgram.updateUniformData();
     }
 
     @Override
-    public void initUniformData(FloatBuffer destinationUniforms) {
+    public void initUniformData() {
     }
 
 }

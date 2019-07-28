@@ -8,7 +8,6 @@ import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.ClientApplication;
-import com.nucleus.GraphicsPipeline;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
@@ -31,6 +30,7 @@ import com.nucleus.scene.NodeBuilder;
 import com.nucleus.scene.NodeException;
 import com.nucleus.scene.RootNode;
 import com.nucleus.scene.RootNodeBuilder;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.Texture2D;
@@ -110,7 +110,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
     int counter = 0;
     long start = 0;
     private NamedShaderVariable uKernel;
-    private GraphicsPipeline pipeline;
+    private GraphicsShader program;
 
     public FGLConvolutionTest() {
         super(new String[] {}, Renderers.GLES20, ClientClasses.clientclass);
@@ -150,20 +150,20 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
             meshBuilder.setElementMode(DrawMode.TRIANGLES, 4, 0, 6);
             meshBuilder.setTexture(texture);
             try {
-                pipeline = renderer.getAssets().getGraphicsPipeline(renderer, new ConvolutionProgram());
+                program = renderer.getAssets().getGraphicsPipeline(renderer, new ConvolutionProgram());
             } catch (BackendException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }
             Material material = new Material();
-            meshBuilder.setMaterial(material).setAttributesPerVertex(pipeline.getAttributeSizes());
+            meshBuilder.setMaterial(material).setAttributesPerVertex(program.getPipeline().getAttributeSizes());
             meshBuilder.setShapeBuilder(
                     new RectangleShapeBuilder(new RectangleShapeBuilder.RectangleConfiguration(1f, 1f, 0f, 1, 0)));
             builder.setType(com.nucleus.scene.AbstractNode.NodeTypes.layernode).setMeshBuilder(meshBuilder)
                     .setMeshCount(1);
             rootBuilder.setNodeBuilder(builder);
             RootNode root = rootBuilder.create(renderer, "rootnode", RootNodeBuilder.NUCLEUS_SCENE);
-            uKernel = pipeline.getUniformByName("uKernel");
+            uKernel = program.getPipeline().getUniformByName("uKernel");
             renderer.addFrameListener(this);
             coreApp.setRootNode(root);
         } catch (NodeException e) {
@@ -197,9 +197,9 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
             counter = 0;
         }
         Convolution.normalize(kernel[kernelIndex], normalizedKernel, absNormalize[kernelIndex], factor);
-        FloatBuffer fb = pipeline.getUniformData();
+        FloatBuffer fb = program.getUniformData();
         fb.position(uKernel.getOffset());
-        pipeline.getUniformData().put(normalizedKernel, 0, normalizedKernel.length);
+        fb.put(normalizedKernel, 0, normalizedKernel.length);
 
     }
 

@@ -8,13 +8,13 @@ import static com.nucleus.vecmath.Rectangle.INDEX_Y;
 import java.nio.ShortBuffer;
 
 import com.nucleus.Backend.DrawMode;
-import com.nucleus.GraphicsPipeline;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.ElementBuffer.Type;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.renderer.Window;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.TextureParameter.Parameter;
@@ -190,7 +190,7 @@ public class RectangleShapeBuilder extends ElementBuilder<Mesh> {
     }
 
     @Override
-    public void build(Mesh mesh, GraphicsPipeline pipeline) {
+    public void build(Mesh mesh, GraphicsShader program) {
         // TODO - for this shapebuilder to work the offsets of vertex and uv must be set.
         ElementBuffer indices = mesh.getElementBuffer();
         AttributeBuffer attributes = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);

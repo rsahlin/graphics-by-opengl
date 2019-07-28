@@ -16,4 +16,8 @@ public class BackendException extends Throwable {
         super(message);
     }
 
+    public BackendException(Throwable t) {
+        super(t);
+    }
+
 }

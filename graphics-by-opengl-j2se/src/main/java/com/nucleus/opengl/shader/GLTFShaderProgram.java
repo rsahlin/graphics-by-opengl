@@ -3,7 +3,6 @@ package com.nucleus.opengl.shader;
 import java.io.File;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 
 import com.nucleus.BackendException;
 import com.nucleus.common.BufferUtils;
@@ -26,6 +25,9 @@ import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Scene;
 import com.nucleus.scene.gltf.Texture.TextureInfo;
+import com.nucleus.shader.GenericShaderProgram;
+import com.nucleus.shader.ShaderBinary;
+import com.nucleus.shader.ShaderSource;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.vecmath.Matrix;
 
@@ -93,13 +95,13 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     }
 
     @Override
-    protected String[] getCommonShaderName(Renderers version, ShaderType type) {
+    protected String[] getLibName(Renderers version, ShaderType type) {
         switch (type) {
             case VERTEX:
                 if (commonSourceNames[ShaderType.VERTEX.index] != null) {
                     String[] result = new String[commonSourceNames[ShaderType.VERTEX.index].length];
                     for (int i = 0; i < result.length; i++) {
-                        result[i] = PROGRAM_DIRECTORY + getSourceNameVersion(version, type.value)
+                        result[i] = ShaderBinary.PROGRAM_DIRECTORY + function.getShaderSourceName(type)
                                 + function.getCategory()
                                 + File.separatorChar
                                 + commonSourceNames[ShaderType.VERTEX.index][i];
@@ -111,7 +113,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                 if (commonSourceNames[ShaderType.FRAGMENT.index] != null) {
                     String[] result = new String[commonSourceNames[ShaderType.FRAGMENT.index].length];
                     for (int i = 0; i < result.length; i++) {
-                        result[i] = PROGRAM_DIRECTORY + getSourceNameVersion(version, type.value)
+                        result[i] = ShaderBinary.PROGRAM_DIRECTORY + function.getShaderSourceName(type)
                                 + function.getCategory() + File.separatorChar
                                 + commonSourceNames[ShaderType.FRAGMENT.index][i];
                     }
@@ -124,18 +126,12 @@ public class GLTFShaderProgram extends GenericShaderProgram {
         return null;
     }
 
-    @Override
     protected String getDefines(ShaderType type) {
         return getDefines();
     }
 
     @Override
-    protected ShaderSource createCommonSource(String sourceName, ShaderType type) {
-        return new ShaderSource(sourceName, type);
-    }
-
-    @Override
-    public void initUniformData(FloatBuffer destinationUniforms) {
+    public void initUniformData() {
         // Init may be called several times
         if (pbrDataUniform == null) {
             pbrDataUniform = getUniformByName(Attributes._PBRDATA.name());
@@ -149,7 +145,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     }
 
     @Override
-    public void updateUniformData(FloatBuffer destinationUniform) {
+    public void updateUniformData() {
 
     }
 
@@ -187,7 +183,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
             pbr.getPBR(pbrData, 0);
         }
         setUniformData(pbrDataUniform, pbrData, 0);
-        uploadUniform(gles, uniforms, pbrDataUniform);
+        // uploadUniform(gles, uniforms, pbrDataUniform);
     }
 
     /**
@@ -198,24 +194,11 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * @param activeUniforms
      * @throws GLException
      */
-    @Override
     protected void uploadUniforms(GLES20Wrapper gles, FloatBuffer uniformData, ShaderVariable[] activeUniforms)
             throws GLException {
-        uploadUniform(gles, uniformData, modelUniform);
-        uploadUniform(gles, uniformData, light0Uniform);
-        uploadUniform(gles, uniformData, viewPosUniform);
-        // uploadUniform(gles, uniformData, viewUniform);
-        // uploadUniform(gles, uniformData, projectionUniform);
-    }
-
-    @Override
-    public void setSamplers() {
-        ArrayList<ShaderVariable> samplersList = getSamplers(activeUniforms);
-        if (samplersList.size() > 0) {
-            for (int i = 0; i < samplersList.size(); i++) {
-
-            }
-        }
+        // uploadUniform(gles, uniformData, modelUniform);
+        // uploadUniform(gles, uniformData, light0Uniform);
+        // uploadUniform(gles, uniformData, viewPosUniform);
     }
 
     /**

@@ -173,7 +173,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             if (primitives == null) {
                 // primitives = mesh.createDebugTBNPrimitives(gles, mesh.getPrimitives());
             }
-            GraphicsPipeline debugPipeline = renderer.getAssets().getGraphicsPipeline(renderer,
+            renderer.getAssets().getGraphicsPipeline(renderer,
                     mesh.getDebugTBNProgram());
             /*
              * // Set uniforms.

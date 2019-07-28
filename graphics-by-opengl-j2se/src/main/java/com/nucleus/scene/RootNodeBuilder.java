@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
-import com.nucleus.GraphicsPipeline;
 import com.nucleus.SimpleLogger;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.geometry.Material;
@@ -26,6 +25,7 @@ import com.nucleus.renderer.RenderTarget.Target;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.AbstractNode.NodeTypes;
 import com.nucleus.scene.gltf.GLTFRootNode;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.shader.Shader.Shading;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
@@ -71,9 +71,9 @@ public class RootNodeBuilder {
         RootNode root = newInstance(NUCLEUS_SCENE, "splashroot");
         NodeBuilder<Node> builder = new NodeBuilder<>();
         builder.setRoot(root);
-        GraphicsPipeline pipeline = renderer.getAssets().getGraphicsPipeline(renderer,
+        GraphicsShader program = renderer.getAssets().getGraphicsPipeline(renderer,
                 new TranslateProgram(Shading.textured));
-        builder.setPipeline(pipeline);
+        builder.setProgram(program);
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
         Texture2D texture = renderer.getAssets().getTexture(renderer,
                 BaseImageFactory.getInstance(), "texture",
@@ -83,7 +83,7 @@ public class RootNodeBuilder {
         meshBuilder.setTexture(texture);
         Material material = new Material();
         Rectangle rect = texture.calculateRectangle(0);
-        meshBuilder.setMaterial(material).setAttributesPerVertex(pipeline.getAttributeSizes())
+        meshBuilder.setMaterial(material).setAttributesPerVertex(program.getPipeline().getAttributeSizes())
                 .setShapeBuilder(new RectangleShapeBuilder(new RectangleConfiguration(rect, 1f, 1, 0)));
         builder.setType(NodeTypes.meshnode).setMeshBuilder(meshBuilder).setMeshCount(1);
         RenderPass pass = new RenderPass("RenderPass", new RenderTarget(Target.FRAMEBUFFER, null), new RenderState(),

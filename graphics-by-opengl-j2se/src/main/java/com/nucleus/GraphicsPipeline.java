@@ -4,17 +4,22 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import com.nucleus.opengl.shader.NamedShaderVariable;
+import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.shader.GraphicsShader;
-import com.nucleus.shader.VariableIndexer;
+import com.nucleus.shader.ShaderBinary;
+import com.nucleus.shader.ShaderVariable;
+import com.nucleus.shader.ShaderVariable.VariableType;
 
 /**
- * Instance of a programmable graphics pipeline
- * TODO - remove references to opengl
+ * Instance of a programmable graphics pipeline - this holds the program states and immutable properties
+ * for a graphics pipeline.
+ * This does NOT hold any buffers for uniform/attribute data - that is held in {@link GraphicsShader}
+ * TODO - remove references to opengl {@link NamedShaderVariable}
  *
  */
-public interface GraphicsPipeline extends Pipeline<GraphicsShader> {
+public interface GraphicsPipeline<S extends ShaderBinary> extends Pipeline<GraphicsShader, S> {
 
     /**
      * Sets the vertexAttribPointers for the glTF primitive
@@ -51,27 +56,61 @@ public interface GraphicsPipeline extends Pipeline<GraphicsShader> {
     public NamedShaderVariable getAttributeByName(String attribute);
 
     /**
-     * Sets the float values from data at the offset from variable, use this to set more than one value.
+     * Internal method
+     * TODO - Should this be a seperate interface that handles pipeline/program creation?
      * 
-     * @param variable The shader variable to set uniform data to
-     * @param data The uniform data to set
-     * @param sourceOffset Offset into data where values are read
+     * Compile and link the shaders needed to produce the program that can be used.
+     * 
+     * @param renderer
+     * @param sources The shader sources to use
+     * @throws BackendException If program could not be compiled and linked
      */
-    public void setUniformData(NamedShaderVariable variable, float[] data, int sourceOffset);
+    public void createProgram(NucleusRenderer renderer, S[] sources) throws BackendException;
 
     /**
-     * Returns the uniform data, this shall be mapped to shader
+     * Uploads one of more float variables to the render API, supports VEC2, VEC3, VEC4 and MAT2, MAT3,
+     * MAT4 types
      * 
-     * @return The floatbuffer holding uniform data
+     * @param Buffer containing data to be uploaded
+     * @param variable Shader variable to set data for, datatype and size is read. If null then nothing is done
      */
-    public FloatBuffer getUniformData();
+    public void uploadVariable(FloatBuffer data, ShaderVariable variable);
 
     /**
+     * Uploads the specified uniforms to render API, float array data is uploaded.
      * 
-     * Returns the location mapping of the shader program being used
      * 
+     * @param uniformData The uniform source data
+     * @param activeUniforms The active uniforms to upload
+     */
+    public void uploadUniforms(FloatBuffer uniformData, ShaderVariable[] activeUniforms);
+
+    /**
+     * Uploads the specified attributes to render API, float array data is uploaded.
+     * 
+     * @param attributeData The attribute source data
+     * @param activeAttributes The active attributes to upload
+     */
+    public void uploadAttributes(FloatBuffer attributeData, ShaderVariable[] activeAttributes);
+
+    /**
+     * Returns the size of all the shader variables of the specified type, either ATTRIBUTE or UNIFORM
+     * EXCLUDING the size of Sampler2D variables.
+     * For uniforms this corresponds to the total size buffer size needed - the size of Sampler2D variables.
+     * For attributes this corresponds to the total buffer size needed, normally attribute data is put in
+     * dynamic and static buffers.
+     * 
+     * @param type
+     * @return Total size, in floats, of all defined shader variables of the specified type
+     */
+    public int getVariableSize(VariableType type);
+
+    /**
+     * Returns the active (used) shader variables of the specified type
+     * 
+     * @param type
      * @return
      */
-    public VariableIndexer getLocationMapping();
+    public ShaderVariable[] getActiveVariables(VariableType type);
 
 }

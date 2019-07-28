@@ -69,10 +69,9 @@ public abstract class BaseAssets implements Assets {
      * 
      * @param renderer
      * @param shader
-     * @return The pipeline, compiled and linked.
      * @throws BackendException If the shader could not be compiled/linked
      */
-    protected abstract GraphicsPipeline createGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader)
+    protected abstract GraphicsPipeline<?> createGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader)
             throws BackendException;
 
     @Override
@@ -355,23 +354,23 @@ public abstract class BaseAssets implements Assets {
     }
 
     @Override
-    public GraphicsPipeline getGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader) {
+    public GraphicsShader getGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader) {
         String key = shader.getKey();
-        GraphicsPipeline compiled = graphicPipelines.get(key);
-        if (compiled != null) {
-            return compiled;
+        GraphicsPipeline<?> compiled = graphicPipelines.get(key);
+        if (compiled == null) {
+            try {
+                long start = System.currentTimeMillis();
+                compiled = createGraphicsPipeline(renderer, shader);
+                graphicPipelines.put(key, compiled);
+                SimpleLogger.d(getClass(), "Stored graphics pipeline with key: " + key);
+                FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, shader.getClass().getSimpleName(),
+                        start, System.currentTimeMillis());
+            } catch (BackendException e) {
+                throw new RuntimeException(e);
+            }
         }
-        try {
-            long start = System.currentTimeMillis();
-            compiled = createGraphicsPipeline(renderer, shader);
-            graphicPipelines.put(key, compiled);
-            SimpleLogger.d(getClass(), "Stored graphics pipeline with key: " + key);
-            FrameSampler.getInstance().logTag(FrameSampler.Samples.CREATE_SHADER, shader.getClass().getSimpleName(),
-                    start, System.currentTimeMillis());
-            return compiled;
-        } catch (BackendException e) {
-            throw new RuntimeException(e);
-        }
+        shader.initShader(compiled);
+        return shader;
     }
 
 }

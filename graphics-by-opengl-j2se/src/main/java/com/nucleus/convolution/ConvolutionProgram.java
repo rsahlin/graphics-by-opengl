@@ -1,7 +1,5 @@
 package com.nucleus.convolution;
 
-import java.nio.FloatBuffer;
-
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.geometry.AttributeUpdater;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
@@ -10,7 +8,7 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLUtils;
 import com.nucleus.opengl.shader.GLShaderProgram;
-import com.nucleus.opengl.shader.GenericShaderProgram;
+import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.vecmath.Matrix;
 
 public class ConvolutionProgram extends GenericShaderProgram {
@@ -25,7 +23,6 @@ public class ConvolutionProgram extends GenericShaderProgram {
                 GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
     }
 
-    @Override
     public void updateAttributes(GLES20Wrapper gles, AttributeUpdater mesh) throws GLException {
         AttributeBuffer buffer = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
         gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER,
@@ -35,11 +32,11 @@ public class ConvolutionProgram extends GenericShaderProgram {
     }
 
     @Override
-    public void updateUniformData(FloatBuffer destinationUniform) {
+    public void updateUniformData() {
     }
 
     @Override
-    public void initUniformData(FloatBuffer destinationUniforms) {
+    public void initUniformData() {
     }
 
 }
