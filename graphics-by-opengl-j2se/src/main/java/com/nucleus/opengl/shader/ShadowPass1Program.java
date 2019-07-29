@@ -1,8 +1,8 @@
 package com.nucleus.opengl.shader;
 
 import com.nucleus.renderer.NucleusRenderer.Matrices;
-import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.renderer.Pass;
+import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -43,6 +43,7 @@ public class ShadowPass1Program extends ShadowPassProgram {
         super(objectProgram, categorizer, shaders);
     }
 
+    @Override
     public void setUniformMatrices(float[][] matrices) {
         if (modelUniform == null) {
             modelUniform = getUniformByName(Matrices.Name);

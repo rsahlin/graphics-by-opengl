@@ -35,6 +35,15 @@ public interface GraphicsShader extends Shader {
     public void updateUniformData();
 
     /**
+     * 
+     * Sets the data for the uniform matrices needed by the program - the default implementation will set the modelview
+     * and projection matrices. Will NOT set uniforms to backend api, only update the uniform array store
+     * 
+     * @param matrices Source matrices to set to uniform data array.
+     */
+    public void setUniformMatrices(float[][] matrices);
+
+    /**
      * Sets the float values from data at the offset from variable, use this to set more than one value.
      * 
      * @param variable The shader variable to set uniform data to

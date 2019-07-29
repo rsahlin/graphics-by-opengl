@@ -8,6 +8,7 @@ import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.RenderableNode;
+import com.nucleus.shader.GraphicsShader;
 
 public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
 
@@ -38,6 +39,9 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
         nodeMeshes.clear();
         node.getMeshes(nodeMeshes);
         if (nodeMeshes.size() > 0) {
+            GraphicsShader program = node.getProgram();
+            program.setUniformMatrices(matrices);
+            program.updateUniformData();
             GraphicsPipeline<?> pipeline = getPipeline(renderer, node, currentPass);
 
             renderer.usePipeline(pipeline);

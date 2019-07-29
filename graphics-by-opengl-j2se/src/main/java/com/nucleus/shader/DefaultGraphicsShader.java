@@ -163,17 +163,11 @@ public abstract class DefaultGraphicsShader implements GraphicsShader {
         uniforms = BufferUtils.createFloatBuffer(floatSize);
     }
 
-    /**
-     * 
-     * Sets the data for the uniform matrices needed by the program - the default implementation will set the modelview
-     * and projection matrices. Will NOT set uniforms to backend api, only update the uniform array store
-     * 
-     * @param matrices Source matrices to set to uniform data array.
-     */
-    public void setUniformMatrices(float[][] matrices, ShaderVariable modelUniform) {
+    @Override
+    public void setUniformMatrices(float[][] matrices) {
         // Refresh the uniform matrixes - default is model - view and projection
         if (modelUniform == null) {
-            // modelUniform = getUniformByName(Matrices.Name);
+            modelUniform = getUniformByName(Matrices.Name);
         }
         FloatBuffer uniforms = getUniformData();
         uniforms.position(modelUniform.getOffset());

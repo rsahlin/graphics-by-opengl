@@ -165,8 +165,6 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
 
     @Override
     public void update(NucleusRenderer renderer, Mesh mesh, float[][] matrices) throws BackendException {
-        // shader.setUniformMatrices(matrices, getUniformByName(Matrices.Name));
-        // shader.updateUniformData();
 
         uploadAttributes(gles, mesh);
         uploadUniforms(gles);

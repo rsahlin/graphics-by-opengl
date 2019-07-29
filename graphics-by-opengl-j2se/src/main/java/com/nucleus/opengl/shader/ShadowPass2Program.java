@@ -8,8 +8,8 @@ import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
-import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.renderer.Pass;
+import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.texturing.ParameterData;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -80,6 +80,7 @@ public class ShadowPass2Program extends ShadowPassProgram {
         shadow.set(texParam);
     }
 
+    @Override
     public void setUniformMatrices(float[][] matrices) {
         if (modelUniform == null) {
             modelUniform = getUniformByName(Matrices.Name);
