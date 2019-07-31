@@ -7,6 +7,7 @@ import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.Primitive.Attributes;
+import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.GraphicsShader;
 import com.nucleus.shader.ShaderBinary;
 import com.nucleus.shader.ShaderVariable;
@@ -81,15 +82,16 @@ public interface GraphicsPipeline<S extends ShaderBinary> extends Pipeline<Graph
      * 
      * 
      * @param uniformData The uniform source data
-     * @param activeUniforms The active uniforms to upload
+     * @param activeUniforms The active uniforms to upload, null to set all active uniforms.
+     * @throws BackendException
      */
-    public void uploadUniforms(FloatBuffer uniformData, ShaderVariable[] activeUniforms);
+    public void uploadUniforms(FloatBuffer uniformData, ShaderVariable[] activeUniform) throws BackendException;
 
     /**
      * Uploads the specified attributes to render API, float array data is uploaded.
      * 
      * @param attributeData The attribute source data
-     * @param activeAttributes The active attributes to upload
+     * @param activeAttributes The active attributes to upload, null to set all active uniforms
      */
     public void uploadAttributes(FloatBuffer attributeData, ShaderVariable[] activeAttributes);
 
@@ -112,5 +114,20 @@ public interface GraphicsPipeline<S extends ShaderBinary> extends Pipeline<Graph
      * @return
      */
     public ShaderVariable[] getActiveVariables(VariableType type);
+
+    /**
+     * Returns an array of compiled uniform blocks, or null if none declared in the shader
+     * 
+     * @return
+     */
+    public BlockBuffer[] getUniformBlocks();
+
+    /**
+     * Returns the texture unit to use for the declared sampler variable
+     * 
+     * @param sampler
+     * @return The texture unit to use
+     */
+    public int getTextureUnit(ShaderVariable sampler);
 
 }

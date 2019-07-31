@@ -1,9 +1,9 @@
 package com.nucleus.shader;
 
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 import com.nucleus.Backend;
+import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.environment.Lights;
@@ -13,7 +13,6 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.Pass;
-import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.vecmath.Matrix;
 
@@ -59,17 +58,6 @@ public abstract class DefaultGraphicsShader implements GraphicsShader {
      */
     protected GenericShaderProgram.ProgramType shaders;
     protected GraphicsPipeline<?> pipeline;
-
-    /**
-     * Uniform interface blocks
-     */
-    protected InterfaceBlock[] uniformInterfaceBlocks;
-    protected BlockBuffer[] uniformBlockBuffers;
-    /**
-     * Samplers (texture units) - the texture unit to use for a shadervariable is stored at the intbuffer
-     * position. To fetch texture unit to use for a shadervariable do: samplers.position(shadervariable.position())
-     */
-    transient protected IntBuffer samplers;
 
     /**
      * The size of each buffer for the attribute variables - as set either from indexer if this is used or taken
@@ -213,6 +201,19 @@ public abstract class DefaultGraphicsShader implements GraphicsShader {
     @Override
     public GraphicsPipeline<?> getPipeline() {
         return pipeline;
+    }
+
+    @Override
+    public void updateUniformData() {
+    }
+
+    @Override
+    public void initUniformData() {
+    }
+
+    @Override
+    public void uploadUniforms() throws BackendException {
+        pipeline.uploadUniforms(uniforms, null);
     }
 
 }

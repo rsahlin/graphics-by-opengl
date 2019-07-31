@@ -103,7 +103,7 @@ public class ShadowPass2Program extends ShadowPassProgram {
         /**
          * TODO - make texture names into enums
          */
-        int unit = samplers.get(getUniformByName("uShadowTexture").getOffset());
+        int unit = pipeline.getTextureUnit(getUniformByName("uShadowTexture"));
         GLES20Wrapper gles = (GLES20Wrapper) renderer.getBackend();
         renderer.prepareTexture(shadow, unit);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_COMPARE_MODE,
@@ -113,7 +113,7 @@ public class ShadowPass2Program extends ShadowPassProgram {
             /**
              * TODO - make texture names into enums
              */
-            renderer.prepareTexture(texture, samplers.get(getUniformByName("uTexture").getOffset()));
+            renderer.prepareTexture(texture, pipeline.getTextureUnit(getUniformByName("uTexture")));
         }
     }
 

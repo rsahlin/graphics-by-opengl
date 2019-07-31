@@ -167,7 +167,6 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
     public void update(NucleusRenderer renderer, Mesh mesh, float[][] matrices) throws BackendException {
 
         uploadAttributes(gles, mesh);
-        uploadUniforms(gles);
         prepareTexture(renderer, mesh.getTexture(Texture2D.TEXTURE_0));
         mesh.getMaterial().setBlendModeSeparate(gles);
 
@@ -182,7 +181,6 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
         // The program has changed OR the matrices have changed, ie another parent node.
         // shader.setUniformMatrices(matrices, getUniformByName(Matrices.Name));
         // shader.updateUniformData();
-        uploadUniforms(gles);
         com.nucleus.scene.gltf.Material material = primitive.getMaterial();
         if (material != null) {
             PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
@@ -1116,9 +1114,9 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
      * 
      * @param gles
      */
-    public void uploadUniforms(GLES20Wrapper gles)
+    public void uploadUniforms(GLES20Wrapper gles, GraphicsShader shader)
             throws GLException {
-        // uploadUniforms(gles, shader.getUniformData(), activeUniforms);
+        uploadUniforms(gles, shader.getUniformData(), activeUniforms);
     }
 
     /**
@@ -1245,15 +1243,12 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
     }
 
     @Override
-    public void uploadUniforms(FloatBuffer uniformData, ShaderVariable[] activeUniforms) {
-        // TODO Auto-generated method stub
-
+    public void uploadUniforms(FloatBuffer uniformData, ShaderVariable[] activeUniforms) throws BackendException {
+        uploadUniforms(gles, uniformData, activeUniforms != null ? activeUniforms : this.activeUniforms);
     }
 
     @Override
     public void uploadAttributes(FloatBuffer attributeData, ShaderVariable[] activeAttributes) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -1266,6 +1261,16 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
             default:
                 throw new IllegalArgumentException("Not implemented");
         }
+    }
+
+    @Override
+    public BlockBuffer[] getUniformBlocks() {
+        return uniformBlockBuffers;
+    }
+
+    @Override
+    public int getTextureUnit(ShaderVariable sampler) {
+        return samplers.get(sampler.getOffset());
     }
 
 }

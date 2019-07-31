@@ -272,52 +272,6 @@ public abstract class GLShaderProgram extends DefaultGraphicsShader implements S
      */
     public final void uploadUniform(GLES20Wrapper gles, FloatBuffer uniforms, ShaderVariable variable)
             throws GLException {
-        if (variable == null) {
-            return;
-        }
-        int offset = variable.getOffset();
-        uniforms.position(offset);
-        GLUtils.handleError(gles, "Clear error");
-        switch (variable.getDataType()) {
-            case GLES20.GL_FLOAT:
-                gles.glUniform1fv(variable.getLocation(), variable.getSize(), uniforms);
-                break;
-            case GLES20.GL_FLOAT_VEC2:
-                gles.glUniform2fv(variable.getLocation(), variable.getSize(), uniforms);
-                break;
-            case GLES20.GL_FLOAT_VEC3:
-                gles.glUniform3fv(variable.getLocation(), variable.getSize(), uniforms);
-                break;
-            case GLES20.GL_FLOAT_VEC4:
-                gles.glUniform4fv(variable.getLocation(), variable.getSize(), uniforms);
-                break;
-            case GLES20.GL_FLOAT_MAT2:
-                gles.glUniformMatrix2fv(variable.getLocation(), variable.getSize(), false, uniforms);
-                break;
-            case GLES20.GL_FLOAT_MAT3:
-                gles.glUniformMatrix3fv(variable.getLocation(), variable.getSize(), false, uniforms);
-                break;
-            case GLES20.GL_FLOAT_MAT4:
-                gles.glUniformMatrix4fv(variable.getLocation(), variable.getSize(), false, uniforms);
-                break;
-            case GLES20.GL_SAMPLER_2D:
-                samplers.position(offset);
-                gles.glUniform1iv(variable.getLocation(), variable.getSize(), samplers);
-                break;
-            case GLES30.GL_SAMPLER_2D_SHADOW:
-                samplers.position(offset);
-                gles.glUniform1iv(variable.getLocation(), variable.getSize(), samplers);
-                break;
-            default:
-                throw new IllegalArgumentException("Not implemented for dataType: " + variable.getDataType());
-        }
-        if (GLUtils.handleError(gles,
-                "setUniform: " + variable.getLocation() + ", dataType: " + variable.getDataType() +
-                        ", size " + variable.getSize())) {
-            /**
-             * TODO - log the names of the shaders used in this program.
-             */
-        }
 
     }
 
@@ -422,16 +376,6 @@ public abstract class GLShaderProgram extends DefaultGraphicsShader implements S
      */
     public Shading getShading() {
         return function.getShading();
-    }
-
-    /**
-     * Creates the buffer holding samplers to use
-     * 
-     * @param size number of samplers used
-     * 
-     */
-    private void createSamplers(int size) {
-        this.samplers = BufferUtils.createIntBuffer(size);
     }
 
     /**

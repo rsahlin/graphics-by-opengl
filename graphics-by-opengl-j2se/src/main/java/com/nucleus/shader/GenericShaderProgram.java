@@ -50,14 +50,6 @@ public class GenericShaderProgram extends DefaultGraphicsShader {
     }
 
     @Override
-    public void updateUniformData() {
-    }
-
-    @Override
-    public void initUniformData() {
-    }
-
-    @Override
     public String getKey() {
         if (source == null) {
             return super.getKey();

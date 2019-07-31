@@ -2,6 +2,7 @@ package com.nucleus.shader;
 
 import java.nio.FloatBuffer;
 
+import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
 import com.nucleus.opengl.shader.NamedShaderVariable;
 
@@ -33,6 +34,14 @@ public interface GraphicsShader extends Shader {
      * 
      */
     public void updateUniformData();
+
+    /**
+     * Uploads (sets pointers to) the uniforms to backend API - call this after uniform data has been updated and
+     * prior to render.
+     * 
+     * @throws If there is an error setting uniform pointers
+     */
+    public void uploadUniforms() throws BackendException;
 
     /**
      * 

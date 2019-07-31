@@ -13,6 +13,7 @@ import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
+import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.Shader.Categorizer;
 import com.nucleus.shader.Shader.ProgramType;
 import com.nucleus.shader.Shader.ShaderType;
@@ -124,6 +125,18 @@ public class VulkanGraphicsPipeline implements GraphicsPipeline<ShaderBinary> {
     public ShaderVariable[] getActiveVariables(VariableType type) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public BlockBuffer[] getUniformBlocks() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public int getTextureUnit(ShaderVariable sampler) {
+        // TODO Auto-generated method stub
+        return 0;
     }
 
 }

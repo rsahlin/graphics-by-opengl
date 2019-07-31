@@ -39,12 +39,12 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
         nodeMeshes.clear();
         node.getMeshes(nodeMeshes);
         if (nodeMeshes.size() > 0) {
+            GraphicsPipeline<?> pipeline = getPipeline(renderer, node, currentPass);
+            renderer.usePipeline(pipeline);
             GraphicsShader program = node.getProgram();
             program.setUniformMatrices(matrices);
             program.updateUniformData();
-            GraphicsPipeline<?> pipeline = getPipeline(renderer, node, currentPass);
-
-            renderer.usePipeline(pipeline);
+            program.uploadUniforms();
             for (Mesh mesh : nodeMeshes) {
                 renderMesh(renderer, pipeline, mesh, matrices);
             }
