@@ -4,7 +4,6 @@ import java.nio.FloatBuffer;
 
 import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
-import com.nucleus.opengl.shader.NamedShaderVariable;
 
 /**
  * Holds the buffers and methods needed for a specific graphics shader program.
@@ -59,7 +58,7 @@ public interface GraphicsShader extends Shader {
      * @param data The uniform data to set
      * @param sourceOffset Offset into data where values are read
      */
-    public void setUniformData(NamedShaderVariable variable, float[] data, int sourceOffset);
+    public void setUniformData(ShaderVariable variable, float[] data, int sourceOffset);
 
     /**
      * Returns the uniform data, this shall be mapped to shader

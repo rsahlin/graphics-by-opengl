@@ -4,6 +4,7 @@ import com.nucleus.assets.Assets;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.shader.GenericShaderProgram;
+import com.nucleus.shader.Shader;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
@@ -40,10 +41,10 @@ public class TranslateProgram extends GenericShaderProgram {
      * @param texture
      */
     public TranslateProgram(Texture2D texture) {
-        super(new SharedfragmentCategorizer(null,
-                (texture == null || texture.textureType == TextureType.Untextured) ? Shading.flat
-                        : Shading.textured,
-                "translate"), GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
+        init(new SharedfragmentCategorizer(null,
+                (texture == null ||
+                        texture.textureType == TextureType.Untextured) ? Shading.flat : Shading.textured,
+                "translate"), Shader.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
     }
 
@@ -56,7 +57,7 @@ public class TranslateProgram extends GenericShaderProgram {
      * @param shading
      */
     public TranslateProgram(Shading shading) {
-        super(new SharedfragmentCategorizer(null, shading, "translate"), GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
+        init(new SharedfragmentCategorizer(null, shading, "translate"), Shader.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
     }
 

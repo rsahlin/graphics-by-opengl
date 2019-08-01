@@ -2,7 +2,6 @@ package com.nucleus.opengl.shader;
 
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
-import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -13,6 +12,10 @@ import com.nucleus.vecmath.Matrix;
  *
  */
 public class ShadowPass1Program extends ShadowPassProgram {
+
+    public ShadowPass1Program(Pass pass, Shading shading, String category, ProgramType shaders) {
+        super(pass, shading, category, shaders);
+    }
 
     static class Shadow1Categorizer extends Categorizer {
 
@@ -31,16 +34,6 @@ public class ShadowPass1Program extends ShadowPassProgram {
 
             }
         }
-    }
-
-    /**
-     * @param objectProgram The program for rendering the object casting shadow
-     * @param categorizer
-     * @param shaders
-     */
-    public ShadowPass1Program(GenericShaderProgram objectProgram, Categorizer categorizer,
-            GenericShaderProgram.ProgramType shaders) {
-        super(objectProgram, categorizer, shaders);
     }
 
     @Override

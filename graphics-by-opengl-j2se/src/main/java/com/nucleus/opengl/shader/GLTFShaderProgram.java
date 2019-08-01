@@ -14,6 +14,7 @@ import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
+import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.AccessorDictionary;
 import com.nucleus.scene.gltf.GLTF;
@@ -32,6 +33,31 @@ import com.nucleus.shader.ShaderVariable;
 import com.nucleus.vecmath.Matrix;
 
 public class GLTFShaderProgram extends GenericShaderProgram {
+
+    public class GLTFCategorizer extends Categorizer {
+
+        public GLTFCategorizer(Pass pass, Shading shading, String category) {
+            super(pass, shading, category);
+        }
+
+        @Override
+        public String getShaderSourceName(ShaderType type) {
+            switch (type) {
+                case VERTEX:
+                    return (function.getPath(type) + function.getPassString()) + "main";
+                case FRAGMENT:
+                    return (function.getPath(type) + function.getPassString()) + "main";
+                case COMPUTE:
+                    return "";
+                case GEOMETRY:
+                    return "";
+                default:
+                    throw new IllegalArgumentException("Not implemented for type: " + type);
+
+            }
+        }
+
+    }
 
     transient protected String[][] commonSourceNames = new String[][] { { "common_structs.essl", "pbr" },
             { "common_structs.essl", "pbr" } };
@@ -57,7 +83,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * @param pbrShading
      */
     public GLTFShaderProgram(ShadingMaps pbrShading) {
-        super(null, Shading.pbr, "gltf", ProgramType.VERTEX_FRAGMENT);
+        init(new GLTFCategorizer(null, Shading.pbr, "gltf"), ProgramType.VERTEX_FRAGMENT);
         this.pbrShading = pbrShading;
         init();
     }
@@ -65,23 +91,6 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     private void init() {
         renderNormalMap = Environment.getInstance().isProperty(Property.RENDER_NORMALMAP, renderNormalMap);
         renderMRMap = Environment.getInstance().isProperty(Property.RENDER_MRMAP, renderMRMap);
-    }
-
-    @Override
-    protected String getShaderSourceName(ShaderType type) {
-        switch (type) {
-            case VERTEX:
-                return (function.getPath(type) + function.getPassString()) + "main";
-            case FRAGMENT:
-                return (function.getPath(type) + function.getPassString()) + "main";
-            case COMPUTE:
-                return "";
-            case GEOMETRY:
-                return "";
-            default:
-                throw new IllegalArgumentException("Not implemented for type: " + type);
-
-        }
     }
 
     /**

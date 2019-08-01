@@ -78,8 +78,8 @@ public class LineDrawerNode extends AbstractMeshNode<Mesh> implements AttributeU
         Texture2D tex = TextureFactory.getInstance().createTexture(TextureType.Untextured);
         builder.setTexture(tex);
         if (getProgram() == null) {
-            GenericShaderProgram shader = new GenericShaderProgram(
-                    new String[] { VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME }, null,
+            GenericShaderProgram shader = new GenericShaderProgram();
+            shader.init(new String[] { VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME }, null,
                     Shading.flat, null, ProgramType.VERTEX_FRAGMENT);
             shader.setIndexer(new LineProgramIndexer());
             setProgram(renderer.getAssets().getGraphicsPipeline(renderer, shader));

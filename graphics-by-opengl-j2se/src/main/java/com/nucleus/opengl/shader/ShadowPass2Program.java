@@ -63,7 +63,7 @@ public class ShadowPass2Program extends ShadowPassProgram {
     public ShadowPass2Program(GenericShaderProgram objectProgram, Pass pass, String category,
             Shading shading,
             GenericShaderProgram.ProgramType shaders) {
-        super(objectProgram, new Shadow2Categorizer(Pass.SHADOW2, shading, category), shaders);
+        super(pass, shading, category, shaders);
         // setIndexer(
         // objectProgram.variableIndexer != null ? objectProgram.variableIndexer : objectProgram.createIndexer());
         // This defines the texture parameters for the shadow pass.

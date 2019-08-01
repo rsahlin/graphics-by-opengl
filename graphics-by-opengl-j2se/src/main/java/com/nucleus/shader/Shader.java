@@ -16,12 +16,13 @@ public interface Shader {
     /**
      * Used to fetch the sources for the shaders
      */
-    public static class Categorizer {
+    public class Categorizer {
         protected Pass pass;
         protected Shading shading;
         protected String category;
         protected HashMap<ShaderType, String[]> libNames = new HashMap<>();
         protected VariableIndexer indexer;
+        protected String[] sourceNames;
 
         public Categorizer(Pass pass, Shading shading, String category) {
             this.pass = pass;
@@ -55,7 +56,11 @@ public interface Shader {
          * @return
          */
         public String getShaderSourceName(ShaderType type) {
-            return (getPath(type) + getPassString() + getShadingString());
+            if (sourceNames == null) {
+                return (getPath(type) + getPassString() + getShadingString());
+            } else {
+                return getPath(type) + sourceNames[type.index];
+            }
         }
 
         /**

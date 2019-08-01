@@ -1,14 +1,7 @@
 package com.nucleus.convolution;
 
-import com.nucleus.geometry.AttributeBuffer;
-import com.nucleus.geometry.AttributeUpdater;
-import com.nucleus.geometry.AttributeUpdater.BufferIndex;
-import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.GLESWrapper.GLES20;
-import com.nucleus.opengl.GLException;
-import com.nucleus.opengl.GLUtils;
-import com.nucleus.opengl.shader.GLShaderProgram;
 import com.nucleus.shader.GenericShaderProgram;
+import com.nucleus.shader.Shader;
 import com.nucleus.vecmath.Matrix;
 
 public class ConvolutionProgram extends GenericShaderProgram {
@@ -19,16 +12,8 @@ public class ConvolutionProgram extends GenericShaderProgram {
     private static final String FRAGMENT_SHADER_NAME = "convolution";
 
     public ConvolutionProgram() {
-        super(new String[] { VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME }, null, Shading.textured, null,
-                GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
-    }
-
-    public void updateAttributes(GLES20Wrapper gles, AttributeUpdater mesh) throws GLException {
-        AttributeBuffer buffer = mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC);
-        gles.glVertexAttribPointer(buffer, GLES20.GL_ARRAY_BUFFER,
-                attributeVariables[BufferIndex.ATTRIBUTES_STATIC.index]);
-        GLUtils.handleError(gles, "glVertexAttribPointers ");
-
+        super.init(new String[] { VERTEX_SHADER_NAME, FRAGMENT_SHADER_NAME }, null, Shading.textured, null,
+                Shader.ProgramType.VERTEX_FRAGMENT);
     }
 
     @Override

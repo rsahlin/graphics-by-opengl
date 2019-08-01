@@ -2,6 +2,7 @@ package com.nucleus.opengl.shader;
 
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.shader.GenericShaderProgram;
+import com.nucleus.shader.Shader;
 import com.nucleus.shader.ShaderVariable.VariableType;
 
 /**
@@ -30,7 +31,7 @@ public class LineProgram extends GenericShaderProgram {
     public static final String CATEGORY = "line";
 
     public LineProgram(Shading shading) {
-        super(null, shading, CATEGORY, GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
+        init(null, null, shading, CATEGORY, Shader.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new LineProgramIndexer());
     }
 

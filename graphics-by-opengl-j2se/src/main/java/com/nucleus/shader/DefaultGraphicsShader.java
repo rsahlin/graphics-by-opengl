@@ -7,12 +7,10 @@ import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.environment.Lights;
-import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
-import com.nucleus.renderer.Pass;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.vecmath.Matrix;
 
@@ -39,19 +37,6 @@ public abstract class DefaultGraphicsShader implements GraphicsShader {
     transient protected FloatBuffer uniforms;
 
     /**
-     * Calculated in create program, created using {@link #attributeBufferCount}
-     * If attributes are dynamically mapped (not using indexer) then only one buffer is used.
-     */
-    transient protected ShaderVariable[][] attributeVariables;
-
-    protected BufferIndex defaultDynamicAttribBuffer = BufferIndex.ATTRIBUTES_STATIC;
-
-    protected int attributeBufferCount = BufferIndex.values().length;
-    /**
-     * If specified then variable offsets will be taken from this.
-     */
-    protected VariableIndexer variableIndexer;
-    /**
      * Read when shader source is created in {@link #createShaderSource(Renderers)}
      * Subclasses may modify before {@link #createProgram(NucleusRenderer)} is called - or before they call
      * super.createProgram()
@@ -59,25 +44,15 @@ public abstract class DefaultGraphicsShader implements GraphicsShader {
     protected GenericShaderProgram.ProgramType shaders;
     protected GraphicsPipeline<?> pipeline;
 
-    /**
-     * The size of each buffer for the attribute variables - as set either from indexer if this is used or taken
-     * from defined attributes.
-     */
-    protected int[] attributesPerVertex;
-    /**
-     * Optional additional storage per vertex, used when attribute buffer is created.
-     */
-    protected int[] paddingPerVertex;
     protected ShaderVariable modelUniform;
 
-    protected DefaultGraphicsShader(Pass pass, Shading shading, String category,
-            GenericShaderProgram.ProgramType shaders) {
-        function = new Categorizer(pass, shading, category);
-        this.shaders = shaders;
-        setLibNames();
-    }
-
-    protected DefaultGraphicsShader(Categorizer function, GenericShaderProgram.ProgramType shaders) {
+    /**
+     * Must be called before the shader is used.
+     * 
+     * @param function
+     * @param shaders
+     */
+    protected void init(Categorizer function, GenericShaderProgram.ProgramType shaders) {
         this.function = function;
         this.shaders = shaders;
         setLibNames();
@@ -121,7 +96,7 @@ public abstract class DefaultGraphicsShader implements GraphicsShader {
      * @param sourceOffset Offset into data where values are read
      */
     @Override
-    public void setUniformData(NamedShaderVariable variable, float[] data, int sourceOffset) {
+    public void setUniformData(ShaderVariable variable, float[] data, int sourceOffset) {
         uniforms.position(variable.getOffset());
         uniforms.put(data, sourceOffset, variable.getSizeInFloats());
     }
@@ -162,15 +137,6 @@ public abstract class DefaultGraphicsShader implements GraphicsShader {
         uniforms.put(matrices[Matrices.MODEL.index], 0, Matrix.MATRIX_ELEMENTS);
         uniforms.put(matrices[Matrices.VIEW.index], 0, Matrix.MATRIX_ELEMENTS);
         uniforms.put(matrices[Matrices.PROJECTION.index], 0, Matrix.MATRIX_ELEMENTS);
-    }
-
-    /**
-     * Returns the indexer used when creating this program, or null if not set.
-     * 
-     * @return
-     */
-    public VariableIndexer getIndexer() {
-        return variableIndexer;
     }
 
     public NamedShaderVariable getUniformByName(String uniform) {

@@ -8,7 +8,6 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 
 import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
@@ -81,11 +80,6 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
     private final static String NO_ACTIVE_UNIFORMS = "No active uniforms, forgot to call createProgram()?";
     private final static String CREATE_SHADER_ERROR = "Can not create shader object, context not active?";
     private final static String GET_PROGRAM_INFO_ERROR = "Error fetching program info.";
-    /**
-     * TODO - remove?
-     * Unmapped variable types
-     */
-    protected List<Integer> unMappedTypes = new ArrayList<>();
 
     private int[] shaderNames;
     /**
@@ -704,10 +698,6 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
      * or if a variable has no mapping in the code.
      */
     protected void addShaderVariable(NamedShaderVariable variable) {
-        // If variable type is is unMappedTypes then skip, for instance texture
-        if (unMappedTypes.contains(variable.getDataType())) {
-            return;
-        }
         setShaderVariable(variable);
     }
 
