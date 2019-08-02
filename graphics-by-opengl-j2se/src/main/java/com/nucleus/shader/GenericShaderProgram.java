@@ -27,8 +27,8 @@ public class GenericShaderProgram extends DefaultGraphicsShader {
      */
     public void init(String[] source, Pass pass, Shading shading, String category,
             GenericShaderProgram.ProgramType shaders) {
-        function.sourceNames = source;
         super.init(new Categorizer(pass, shading, category), shaders);
+        function.sourceNames = source;
     }
 
     /**
