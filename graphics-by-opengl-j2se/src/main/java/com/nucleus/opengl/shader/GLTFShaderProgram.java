@@ -27,7 +27,6 @@ import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Scene;
 import com.nucleus.scene.gltf.Texture.TextureInfo;
 import com.nucleus.shader.GenericShaderProgram;
-import com.nucleus.shader.ShaderBinary;
 import com.nucleus.shader.ShaderSource;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.vecmath.Matrix;
@@ -110,8 +109,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                 if (commonSourceNames[ShaderType.VERTEX.index] != null) {
                     String[] result = new String[commonSourceNames[ShaderType.VERTEX.index].length];
                     for (int i = 0; i < result.length; i++) {
-                        result[i] = ShaderBinary.PROGRAM_DIRECTORY + function.getShaderSourceName(type)
-                                + function.getCategory()
+                        result[i] = function.getPath(type) + function.getPassString()
                                 + File.separatorChar
                                 + commonSourceNames[ShaderType.VERTEX.index][i];
                     }
@@ -122,8 +120,8 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                 if (commonSourceNames[ShaderType.FRAGMENT.index] != null) {
                     String[] result = new String[commonSourceNames[ShaderType.FRAGMENT.index].length];
                     for (int i = 0; i < result.length; i++) {
-                        result[i] = ShaderBinary.PROGRAM_DIRECTORY + function.getShaderSourceName(type)
-                                + function.getCategory() + File.separatorChar
+                        result[i] = function.getPath(type) + function.getPassString()
+                                + File.separatorChar
                                 + commonSourceNames[ShaderType.FRAGMENT.index][i];
                     }
                     return result;
@@ -180,11 +178,10 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     /**
      * Read uniforms from material for the primitive and upload.
      * 
-     * @param gles
      * @param primitive
      * @throws GLException
      */
-    public void updatePBRUniforms(GLES20Wrapper gles, Primitive primitive) throws GLException {
+    public void updatePBRUniforms(Primitive primitive) throws GLException {
         Material material = primitive.getMaterial();
         if (material != null) {
             PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
@@ -192,7 +189,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
             pbr.getPBR(pbrData, 0);
         }
         setUniformData(pbrDataUniform, pbrData, 0);
-        // uploadUniform(gles, uniforms, pbrDataUniform);
+        pipeline.uploadVariable(uniforms, pbrDataUniform);
     }
 
     /**
@@ -205,6 +202,9 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      */
     protected void uploadUniforms(GLES20Wrapper gles, FloatBuffer uniformData, ShaderVariable[] activeUniforms)
             throws GLException {
+        pipeline.uploadVariable(uniforms, modelUniform);
+        pipeline.uploadVariable(uniforms, light0Uniform);
+        pipeline.uploadVariable(uniforms, viewPosUniform);
         // uploadUniform(gles, uniformData, modelUniform);
         // uploadUniform(gles, uniformData, light0Uniform);
         // uploadUniform(gles, uniformData, viewPosUniform);

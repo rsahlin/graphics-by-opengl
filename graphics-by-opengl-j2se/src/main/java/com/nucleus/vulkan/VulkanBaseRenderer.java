@@ -98,33 +98,33 @@ public class VulkanBaseRenderer extends BaseRenderer {
     }
 
     @Override
-    public void renderMesh(GraphicsPipeline pipeline, Mesh mesh, float[][] matrices) throws BackendException {
+    public void renderMesh(GraphicsPipeline<?> pipeline, Mesh mesh, float[][] matrices) throws BackendException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void renderPrimitive(GraphicsPipeline pipeline, GLTF glTF, Primitive primitive, float[][] matrices)
+    public void renderPrimitive(GraphicsPipeline<?> pipeline, GLTF glTF, Primitive primitive, float[][] matrices)
             throws BackendException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void drawVertices(GraphicsPipeline pipeline, Accessor indices, int vertexCount,
-            ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, DrawMode mode) throws BackendException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public boolean usePipeline(GraphicsPipeline pipeline) throws BackendException {
+    public boolean usePipeline(GraphicsPipeline<?> pipeline) throws BackendException {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public void deletePipeline(Pipeline pipeline) {
+    public void deletePipeline(Pipeline<?, ?> pipeline) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void drawVertices(GraphicsPipeline<?> pipeline, Accessor indices, int vertexCount,
+            ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, DrawMode mode) throws BackendException {
         // TODO Auto-generated method stub
 
     }

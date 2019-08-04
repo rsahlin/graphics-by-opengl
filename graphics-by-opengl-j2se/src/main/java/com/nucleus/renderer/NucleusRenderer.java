@@ -262,7 +262,7 @@ public interface NucleusRenderer {
      * @param matrices
      * @throws BackendException
      */
-    public void renderMesh(GraphicsPipeline pipeline, Mesh mesh, float[][] matrices) throws BackendException;
+    public void renderMesh(GraphicsPipeline<?> pipeline, Mesh mesh, float[][] matrices) throws BackendException;
 
     /**
      * Renders the GLTF primitive
@@ -273,7 +273,7 @@ public interface NucleusRenderer {
      * @param matrices
      * @throws BackendException
      */
-    public void renderPrimitive(GraphicsPipeline pipeline, GLTF glTF, Primitive primitive, float[][] matrices)
+    public void renderPrimitive(GraphicsPipeline<?> pipeline, GLTF glTF, Primitive primitive, float[][] matrices)
             throws BackendException;
 
     /**
@@ -287,7 +287,7 @@ public interface NucleusRenderer {
      * @param mode
      * @throws BackendException
      */
-    public void drawVertices(GraphicsPipeline pipeline, Accessor indices, int vertexCount,
+    public void drawVertices(GraphicsPipeline<?> pipeline, Accessor indices, int vertexCount,
             ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, DrawMode mode) throws BackendException;
 
     /**
@@ -405,7 +405,7 @@ public interface NucleusRenderer {
      * 
      * @param pipeline
      */
-    public void deletePipeline(Pipeline pipeline);
+    public void deletePipeline(Pipeline<?, ?> pipeline);
 
     /**
      * Returns the factory that shall be used to create buffers

@@ -12,6 +12,7 @@ import com.nucleus.shader.GraphicsShader;
 import com.nucleus.shader.ShaderBinary;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.VariableType;
+import com.nucleus.shader.VariableIndexer;
 
 /**
  * Instance of a programmable graphics pipeline - this holds the program states and immutable properties
@@ -129,5 +130,12 @@ public interface GraphicsPipeline<S extends ShaderBinary> extends Pipeline<Graph
      * @return The texture unit to use
      */
     public int getTextureUnit(ShaderVariable sampler);
+
+    /**
+     * Returns the graphics shader location mapping
+     * 
+     * @return
+     */
+    public VariableIndexer getLocationMapping();
 
 }

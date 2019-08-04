@@ -20,6 +20,7 @@ import com.nucleus.shader.Shader.ShaderType;
 import com.nucleus.shader.ShaderBinary;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.VariableType;
+import com.nucleus.shader.VariableIndexer;
 
 public class VulkanGraphicsPipeline implements GraphicsPipeline<ShaderBinary> {
 
@@ -137,6 +138,12 @@ public class VulkanGraphicsPipeline implements GraphicsPipeline<ShaderBinary> {
     public int getTextureUnit(ShaderVariable sampler) {
         // TODO Auto-generated method stub
         return 0;
+    }
+
+    @Override
+    public VariableIndexer getLocationMapping() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

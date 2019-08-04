@@ -43,8 +43,6 @@ public abstract class ShaderBinary {
 
     private String suffix;
 
-    private Categorizer function;
-
     /**
      * Shader type
      */
@@ -56,18 +54,16 @@ public abstract class ShaderBinary {
      * 
      * @param path
      * @param sourcename if sourcename is excluding file suffix then {@link #suffix} is used.
-     * @param function
      * @param suffix Optional file suffix including separator char ('.') - used if sourcename does not include suffix.
      * @param type
      * @throws IllegalArgumentException If any of the parameters other than {@link #suffix} are null, or if sourcename
      * does not include suffix and {@link #suffix} is null
      */
-    public ShaderBinary(String path, String sourcename, Categorizer function, String suffix, ShaderType type) {
-        if (path == null || function == null || type == null) {
+    public ShaderBinary(String path, String sourcename, String suffix, ShaderType type) {
+        if (path == null || type == null) {
             throw new IllegalArgumentException("null parameter");
         }
         this.path = path;
-        this.function = function;
         int s = sourcename.indexOf(FILE_SUFFIX_SEPARATOR);
         if (s > -1) {
             this.suffix = sourcename.substring(s);
@@ -108,5 +104,10 @@ public abstract class ShaderBinary {
      * @throws IOException
      */
     public abstract void loadShader(Backend backend, Categorizer function) throws IOException;
+
+    @Override
+    public String toString() {
+        return "Type: " + type + ", Sourcename: " + getFullSourceName();
+    }
 
 }

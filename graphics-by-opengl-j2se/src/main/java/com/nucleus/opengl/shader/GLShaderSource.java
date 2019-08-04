@@ -19,7 +19,7 @@ public class GLShaderSource extends ShaderSource {
     protected ArrayList<String>[] commonSources = new ArrayList[ShaderType.values().length];
 
     public GLShaderSource(String path, String sourcename, Categorizer function, String suffix, ShaderType type) {
-        super(path, sourcename, function, suffix, type);
+        super(path, sourcename, suffix, type);
     }
 
     @Override

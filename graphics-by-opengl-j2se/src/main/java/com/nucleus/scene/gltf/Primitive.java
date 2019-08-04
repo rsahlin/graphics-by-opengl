@@ -8,7 +8,6 @@ import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.Backend.DrawMode;
-import com.nucleus.GraphicsPipeline;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Environment;
 import com.nucleus.scene.gltf.Accessor.ComponentType;
@@ -16,6 +15,7 @@ import com.nucleus.scene.gltf.Accessor.Type;
 import com.nucleus.scene.gltf.BufferView.Target;
 import com.nucleus.scene.gltf.GLTF.GLTFException;
 import com.nucleus.scene.gltf.GLTF.RuntimeResolver;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.vecmath.Vec2;
 import com.nucleus.vecmath.Vec3;
 
@@ -468,9 +468,9 @@ public class Primitive implements RuntimeResolver {
     transient private ArrayList<Buffer> bufferList;
     transient private Material materialRef;
     /**
-     * pipeline to use when rendering this primitive
+     * program to use when rendering this primitive
      */
-    transient private GraphicsPipeline pipeline;
+    transient private GraphicsShader program;
     transient private Accessor indices;
     transient private DrawMode mode;
 
@@ -749,19 +749,19 @@ public class Primitive implements RuntimeResolver {
     }
 
     /**
-     * @param pipeline
+     * @param program
      */
-    public void setPipeline(GraphicsPipeline pipeline) {
-        this.pipeline = pipeline;
+    public void setProgram(GraphicsShader program) {
+        this.program = program;
     }
 
     /**
-     * Returns the pipeline to be used to render this primitive
+     * Returns the program to be used to render this primitive
      * 
      * @return
      */
-    public GraphicsPipeline getPipeline() {
-        return pipeline;
+    public GraphicsShader getProgram() {
+        return program;
     }
 
     /**

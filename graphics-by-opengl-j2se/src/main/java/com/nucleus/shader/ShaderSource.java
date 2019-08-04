@@ -89,8 +89,8 @@ public abstract class ShaderSource extends ShaderBinary {
      */
     private String versionString;
 
-    public ShaderSource(String path, String sourcename, Categorizer function, String suffix, ShaderType type) {
-        super(path, sourcename, function, suffix, type);
+    public ShaderSource(String path, String sourcename, String suffix, ShaderType type) {
+        super(path, sourcename, suffix, type);
     }
 
     /**

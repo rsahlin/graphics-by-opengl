@@ -34,7 +34,6 @@ import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Material.AlphaMode;
-import com.nucleus.scene.gltf.PBRMetallicRoughness;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.shader.BlockBuffer;
@@ -169,15 +168,12 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
     @Override
     public void update(NucleusRenderer renderer, GLTF gltf, Primitive primitive, float[][] matrices)
             throws BackendException {
-        // ((GLTFShaderProgram) shader).updateEnvironmentUniforms(renderer, gltf.getDefaultScene());
 
         // Can be optimized to update uniforms under the following conditions:
         // The program has changed OR the matrices have changed, ie another parent node.
-        // shader.setUniformMatrices(matrices, getUniformByName(Matrices.Name));
-        // shader.updateUniformData();
         com.nucleus.scene.gltf.Material material = primitive.getMaterial();
         if (material != null) {
-            PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
+            // PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
             // Check for doublesided.
             if (material.isDoubleSided()) {
                 gles.glDisable(GLES20.GL_CULL_FACE);
@@ -189,7 +185,6 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
                 gles.glEnable(GLES20.GL_BLEND);
             }
         }
-        // ((GLTFShaderProgram) shader).updatePBRUniforms(gles, primitive);
     }
 
     @Override
@@ -1261,6 +1256,11 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
     @Override
     public int getTextureUnit(ShaderVariable sampler) {
         return samplers.get(sampler.getOffset());
+    }
+
+    @Override
+    public VariableIndexer getLocationMapping() {
+        return variableIndexer;
     }
 
 }

@@ -591,7 +591,7 @@ public class GLESBaseRenderer extends BaseRenderer {
     }
 
     @Override
-    public void renderMesh(GraphicsPipeline pipeline, Mesh mesh, float[][] matrices) throws BackendException {
+    public void renderMesh(GraphicsPipeline<?> pipeline, Mesh mesh, float[][] matrices) throws BackendException {
         pipeline.update(this, mesh, matrices);
         int mode = gles.getDrawMode(mesh.getMode());
         ElementBuffer indices = mesh.getElementBuffer();
@@ -625,11 +625,9 @@ public class GLESBaseRenderer extends BaseRenderer {
     }
 
     @Override
-    public void renderPrimitive(GraphicsPipeline pipeline, GLTF glTF, Primitive primitive, float[][] matrices)
+    public void renderPrimitive(GraphicsPipeline<?> pipeline, GLTF glTF, Primitive primitive, float[][] matrices)
             throws BackendException {
-        if (usePipeline(pipeline)) {
-            // program.updateEnvironmentUniforms(gles, glTF.getDefaultScene());
-        }
+        pipeline.update(this, glTF, primitive, matrices);
         if (renderState.getCullFace() != Cullface.NONE) {
             cullFace = renderState.getCullFace();
         }
@@ -646,7 +644,7 @@ public class GLESBaseRenderer extends BaseRenderer {
     }
 
     @Override
-    public void drawVertices(GraphicsPipeline pipeline, Accessor indices, int vertexCount,
+    public void drawVertices(GraphicsPipeline<?> pipeline, Accessor indices, int vertexCount,
             ArrayList<Attributes> attribs, ArrayList<Accessor> accessors, DrawMode mode) throws BackendException {
         pipeline.glVertexAttribPointer(attribs, accessors);
         int modeValue = gles.getDrawMode(mode);
