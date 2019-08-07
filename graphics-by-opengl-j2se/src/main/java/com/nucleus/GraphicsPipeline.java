@@ -65,9 +65,10 @@ public interface GraphicsPipeline<S extends ShaderBinary> extends Pipeline<Graph
      * 
      * @param renderer
      * @param sources The shader sources to use
+     * @param shader The shader program the sources shall be used with
      * @throws BackendException If program could not be compiled and linked
      */
-    public void createProgram(NucleusRenderer renderer, S[] sources) throws BackendException;
+    public void createProgram(NucleusRenderer renderer, S[] sources, GraphicsShader shader) throws BackendException;
 
     /**
      * Uploads one of more float variables to the render API, supports VEC2, VEC3, VEC4 and MAT2, MAT3,

@@ -8,7 +8,6 @@ import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.shader.Shader;
 import com.nucleus.shader.Shader.Categorizer;
-import com.nucleus.shader.Shader.ProgramType;
 import com.nucleus.shader.Shader.ShaderType;
 import com.nucleus.shader.ShaderBinary;
 
@@ -33,11 +32,10 @@ public interface Pipeline<T extends Shader, S extends ShaderBinary> {
      * This method shall only be called once, it is an error to re-compile an already compiled pipeline.
      * 
      * @param renderer
-     * @param function
-     * @param type
+     * @param shader
      * @throws BackendException If the pipeline already has been compiled or if there is an error compiling/linking
      */
-    public void compile(NucleusRenderer renderer, Categorizer function, ProgramType type) throws BackendException;
+    public void compile(NucleusRenderer renderer, T shader) throws BackendException;
 
     /**
      * Returns the name of the shader source for the specified type, this is used in the compile/linking

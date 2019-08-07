@@ -429,7 +429,7 @@ public class GLAssetManager extends BaseAssets {
     protected GraphicsPipeline<?> createGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader)
             throws BackendException {
         GraphicsPipeline<?> pipeline = new GLPipeline(gles);
-        pipeline.compile(renderer, shader.getFunction(), shader.getType());
+        pipeline.compile(renderer, shader);
         return pipeline;
     }
 

@@ -133,10 +133,6 @@ public class GLTFShaderProgram extends GenericShaderProgram {
         return null;
     }
 
-    protected String getDefines(ShaderType type) {
-        return getDefines();
-    }
-
     @Override
     public void initUniformData() {
         // Init may be called several times
@@ -274,7 +270,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * 
      * @return
      */
-    public String getDefines() {
+    public String getDefines(ShaderType type) {
         StringBuffer sb = new StringBuffer();
         for (Flags f : Flags.values()) {
             if (pbrShading.isFlag(f)) {

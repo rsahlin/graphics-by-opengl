@@ -26,6 +26,7 @@ import com.nucleus.opengl.GLESWrapper.GLES31;
 import com.nucleus.opengl.GLESWrapper.GLES32;
 import com.nucleus.opengl.GLESWrapper.ProgramInfo;
 import com.nucleus.opengl.shader.GLShaderSource;
+import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.opengl.shader.NamedVariableIndexer;
 import com.nucleus.opengl.shader.ShaderProgramException;
@@ -226,20 +227,21 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
     }
 
     @Override
-    public void compile(NucleusRenderer renderer, Categorizer function, ProgramType type) throws BackendException {
-        variableIndexer = function.getIndexer();
-        GLShaderSource[] shaderSources = createShaderSource(GLES20Wrapper.getInfo().getRenderVersion(), function, type);
+    public void compile(NucleusRenderer renderer, GraphicsShader shader) throws BackendException {
+        variableIndexer = shader.getFunction().getIndexer();
+        GLShaderSource[] shaderSources = createShaderSource(GLES20Wrapper.getInfo().getRenderVersion(),
+                shader.getFunction(), shader.getType());
         if (shaderSources == null) {
             throw new ShaderProgramException(MUST_SET_FIELDS);
         }
         for (ShaderSource ss : shaderSources) {
             try {
-                ss.loadShader(renderer.getBackend(), function);
+                ss.loadShader(renderer.getBackend(), shader.getFunction());
             } catch (IOException e) {
                 throw new BackendException(e);
             }
         }
-        createProgram(renderer, shaderSources);
+        createProgram(renderer, shaderSources, shader);
     }
 
     /**
@@ -249,6 +251,7 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
      * 
      * @param version Backend API version
      * @param function
+     * @param type
      */
     protected GLShaderSource[] createShaderSource(Renderers version, Categorizer function, ProgramType type) {
         GLShaderSource[] sources = null;
@@ -340,7 +343,7 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
     }
 
     @Override
-    public void createProgram(NucleusRenderer renderer, GLShaderSource[] sources)
+    public void createProgram(NucleusRenderer renderer, GLShaderSource[] sources, GraphicsShader shader)
             throws BackendException {
         SimpleLogger.d(getClass(),
                 "Creating program for: " + sources.length + " shaders in program " + getClass().getSimpleName()
@@ -361,7 +364,7 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
 
                 SimpleLogger.d(getClass(),
                         "Compiling " + sources[shaderIndex].getFullSourceName());
-                shaderNames[shaderIndex] = compileShader(gles, sources[shaderIndex]);
+                shaderNames[shaderIndex] = compileShader(gles, sources[shaderIndex], shader);
 
             }
             linkProgram(gles, program, shaderNames);
@@ -394,25 +397,22 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
      * @throws GLException If there is an error setting or calling to compiling shader source.
      * @throws GLCompilerException If compilation failed
      */
-    public int compileShader(GLES20Wrapper gles, GLShaderSource source) throws GLException, GLCompilerException {
+    public int compileShader(GLES20Wrapper gles, GLShaderSource source, GraphicsShader program)
+            throws GLException, GLCompilerException {
         int shader = gles.glCreateShader(getShaderValue(source.type));
         if (shader == 0) {
             throw new GLException(CREATE_SHADER_ERROR, GLES20.GL_NO_ERROR);
         }
         source.appendSource(ShaderSource.PRECISION, source.getCommonSources(source.type));
-        source.insertDefines(ShaderSource.PRECISION, getDefines(source.type));
+        insertDefines(source, program);
         compileShader(gles, source, shader);
         return shader;
     }
 
-    /**
-     * Returns the defines to insert into the shader source
-     * 
-     * @param type
-     * @return
-     */
-    protected String getDefines(ShaderType type) {
-        return null;
+    protected void insertDefines(ShaderSource source, GraphicsShader shader) {
+        if (shader instanceof GLTFShaderProgram) {
+            source.insertDefines(ShaderSource.PRECISION, ((GLTFShaderProgram) shader).getDefines(source.type));
+        }
     }
 
     /**
