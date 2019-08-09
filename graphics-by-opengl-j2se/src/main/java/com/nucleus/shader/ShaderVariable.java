@@ -19,9 +19,9 @@ public abstract class ShaderVariable {
      */
     public enum VariableType {
 
-    UNIFORM(0),
-    ATTRIBUTE(1),
-    UNIFORM_BLOCK(2);
+        UNIFORM(0),
+        ATTRIBUTE(1),
+        UNIFORM_BLOCK(2);
 
         public final int index;
 
@@ -125,7 +125,7 @@ public abstract class ShaderVariable {
     protected int size;
     protected int dataType;
     /**
-     * The ocation of the variable, used when calling setting attrib pointer or uploading uniforms.
+     * The location of the variable, used when calling setting attrib pointer or uploading uniforms.
      */
     protected int location;
     /**
@@ -218,8 +218,10 @@ public abstract class ShaderVariable {
 
     @Override
     public String toString() {
-        return type + ", size " + size + ", sizeinbytes: " + getSizeInBytes() + ", offset " + offset
-                + ", blockIndex " + blockIndex;
+        return type + ", Datatype: " + dataType + ", Location: " + location + ", Size: " + size + ", Sizeinbytes: "
+                + getSizeInBytes()
+                + ", Offset: " + offset
+                + ", BlockIndex: " + blockIndex;
     }
 
 }

@@ -153,8 +153,7 @@ public class NamedShaderVariable extends ShaderVariable {
 
     @Override
     public String toString() {
-        return name + " : " + type + ", size " + size + ", sizeinbytes: " + getSizeInBytes() + ", offset " + offset
-                + ", activeIndex " + activeIndex + ", blockIndex " + blockIndex;
+        return name + " : " + super.toString();
     }
 
 }
