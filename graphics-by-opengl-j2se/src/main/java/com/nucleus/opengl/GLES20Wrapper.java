@@ -610,7 +610,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
 
     public abstract void glUniform1iv(int location, int count, IntBuffer buffer);
 
-    public abstract void glUniform1i(int location, IntBuffer buffer);
+    public abstract void glUniform1i(int location, int unit);
 
     /**
      * Abstraction for glTexParemeterf()

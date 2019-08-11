@@ -77,7 +77,6 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
     private final static String ATTACH_SOURCE_ERROR = "Error attaching shader source";
     private final static String LINK_PROGRAM_ERROR = "Error linking program: ";
     private final static String VARIABLE_LOCATION_ERROR = "Could not get shader variable location: ";
-    private final static String NO_ACTIVE_UNIFORMS = "No active uniforms, forgot to call createProgram()?";
     private final static String CREATE_SHADER_ERROR = "Can not create shader object, context not active?";
     private final static String GET_PROGRAM_INFO_ERROR = "Error fetching program info.";
 
@@ -104,11 +103,6 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
      */
     protected InterfaceBlock[] uniformInterfaceBlocks;
     protected BlockBuffer[] uniformBlockBuffers;
-    /**
-     * Samplers (texture units) - the texture unit to use for a shadervariable is stored at the intbuffer
-     * position. To fetch texture unit to use for a shadervariable do: samplers.position(shadervariable.position())
-     */
-    transient protected IntBuffer samplers;
     /**
      * Block variables used in the compiled program - key is the uniform index from GL
      */
@@ -161,7 +155,8 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
     public void update(NucleusRenderer renderer, Mesh mesh, float[][] matrices) throws BackendException {
 
         uploadAttributes(gles, mesh);
-        prepareTexture(renderer, mesh.getTexture(Texture2D.TEXTURE_0));
+        prepareTexture(renderer, mesh.getTexture(Texture2D.TEXTURE_0),
+                mesh.getAttributeBuffer(BufferIndex.ATTRIBUTES_STATIC.index).getBuffer());
         mesh.getMaterial().setBlendModeSeparate(gles);
 
     }
@@ -375,8 +370,6 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
             if (GLES20Wrapper.getInfo().getRenderVersion().major >= 3) {
                 uniformBlockBuffers = createUniformBlockBuffers(renderer);
             }
-            createSamplerStorage();
-            setSamplers();
         } catch (GLCompilerException e) {
             logNumberedShaderSource(gles, e.shader);
             SimpleLogger.d(getClass(), e.getMessage() + " from source:" + System.lineSeparator());
@@ -780,19 +773,15 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
 
     private void dynamicMapShaderOffset(ShaderVariable[] variables, VariableType type) {
         int offset = 0;
-        int samplerOffset = 0;
+        int unit = 0;
         for (ShaderVariable v : variables) {
             if (v != null && v.getType() == type) {
-                switch (v.getDataType()) {
-                    case GLES20.GL_SAMPLER_2D:
-                    case GLES30.GL_SAMPLER_2D_SHADOW:
-                        v.setOffset(samplerOffset);
-                        samplerOffset += v.getSizeInFloats();
-                        break;
-                    default:
-                        v.setOffset(offset);
-                        offset += v.getSizeInFloats();
-                        break;
+                if (v.isSampler()) {
+                    v.setOffset(unit);
+                    unit += v.getSizeInFloats();
+                } else {
+                    v.setOffset(offset);
+                    offset += v.getSizeInFloats();
                 }
             }
         }
@@ -859,7 +848,7 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
     private int getVariableSize(ShaderVariable[] variables, VariableType type) {
         int size = 0;
         for (ShaderVariable v : variables) {
-            if (v != null && v.getType() == type && v.getDataType() != GLES20.GL_SAMPLER_2D) {
+            if (v != null && v.getType() == type && !v.isSampler()) {
                 size += v.getSizeInFloats();
             }
         }
@@ -894,59 +883,6 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
     }
 
     /**
-     * Internal method, creates the array storage for for uniform samplers, sampler usage is specific to program
-     * and does not need to be stored in mesh.
-     * 
-     */
-    protected void createSamplerStorage() {
-        if (activeUniforms == null) {
-            throw new IllegalArgumentException(NO_ACTIVE_UNIFORMS);
-        }
-        int samplerSize = 0;
-        samplerSize = getSamplerSize(activeUniforms);
-        if (samplerSize > 0) {
-            createSamplers(samplerSize);
-        } else {
-            SimpleLogger.d(getClass(), "No samplers used");
-        }
-    }
-
-    /**
-     * Creates the buffer holding samplers to use
-     * 
-     * @param size number of samplers used
-     * 
-     */
-    private void createSamplers(int size) {
-        this.samplers = BufferUtils.createIntBuffer(size);
-    }
-
-    /**
-     * Returns the size of Sampler2D variables
-     * 
-     * @param variables
-     * @return
-     */
-    protected int getSamplerSize(ShaderVariable[] variables) {
-        int size = 0;
-        for (ShaderVariable v : variables) {
-            if (v != null && v.getType() == VariableType.UNIFORM)
-                switch (v.getDataType()) {
-                    case GLES20.GL_SAMPLER_2D:
-                    case GLES20.GL_SAMPLER_CUBE:
-                    case GLES30.GL_SAMPLER_2D_SHADOW:
-                    case GLES30.GL_SAMPLER_2D_ARRAY:
-                    case GLES30.GL_SAMPLER_2D_ARRAY_SHADOW:
-                    case GLES30.GL_SAMPLER_CUBE_SHADOW:
-                    case GLES30.GL_SAMPLER_3D:
-                        size += v.getSizeInFloats();
-                }
-        }
-        return size;
-
-    }
-
-    /**
      * Returns a list with samplers from array of ShaderVariables
      * 
      * @param variables
@@ -956,36 +892,11 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
         ArrayList<ShaderVariable> samplers = new ArrayList<>();
         for (ShaderVariable v : variables) {
             if (v != null && v.getType() == VariableType.UNIFORM)
-                switch (v.getDataType()) {
-                    case GLES20.GL_SAMPLER_2D:
-                    case GLES20.GL_SAMPLER_CUBE:
-                    case GLES30.GL_SAMPLER_2D_SHADOW:
-                    case GLES30.GL_SAMPLER_2D_ARRAY:
-                    case GLES30.GL_SAMPLER_2D_ARRAY_SHADOW:
-                    case GLES30.GL_SAMPLER_CUBE_SHADOW:
-                    case GLES30.GL_SAMPLER_3D:
-                        samplers.add(v);
+                if (!v.isSampler()) {
+                    samplers.add(v);
                 }
         }
         return samplers;
-    }
-
-    /**
-     * Sets the texture units to use for each sampler, default behavior is to start at unit 0 and increase for each
-     * sampler.
-     * The {@link #samplers} array will contain the texture unit to use for each offset.
-     * To use, position the samplers array using samplers.position(shadervariable.getOffset()) - the index
-     * will contain the texture unit to use
-     */
-    protected void setSamplers() {
-        ArrayList<ShaderVariable> samplersList = getSamplers(activeUniforms);
-        if (samplersList.size() > 0) {
-            for (int i = 0; i < samplersList.size(); i++) {
-                ShaderVariable sampler = samplersList.get(i);
-                samplers.position(sampler.getOffset());
-                samplers.put(i);
-            }
-        }
     }
 
     /**
@@ -1172,12 +1083,10 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
                 gles.glUniformMatrix4fv(variable.getLocation(), size, false, uniforms);
                 break;
             case GLES20.GL_SAMPLER_2D:
-                samplers.position(offset);
-                gles.glUniform1i(variable.getLocation(), samplers);
+                gles.glUniform1i(variable.getLocation(), offset);
                 break;
             case GLES30.GL_SAMPLER_2D_SHADOW:
-                samplers.position(offset);
-                gles.glUniform1i(variable.getLocation(), samplers);
+                gles.glUniform1i(variable.getLocation(), offset);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for dataType: " + variable.getDataType());
@@ -1201,14 +1110,15 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
      * @throws BackendException
      */
     @Deprecated
-    public void prepareTexture(NucleusRenderer renderer, Texture2D texture) throws BackendException {
+    public void prepareTexture(NucleusRenderer renderer, Texture2D texture, FloatBuffer uniformData)
+            throws BackendException {
         if (texture == null || texture.getTextureType() == TextureType.Untextured) {
             return;
         }
         /**
          * TODO - make texture names into enums
          */
-        int unit = samplers.get(getUniformByName("uTexture").getOffset());
+        int unit = getUniformByName("uTexture").getOffset();
         renderer.prepareTexture(texture, unit);
     }
 
@@ -1223,8 +1133,12 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
 
     @Override
     public void uploadVariable(FloatBuffer data, ShaderVariable variable) {
-        // TODO Auto-generated method stub
-
+        switch (variable.getType()) {
+            case ATTRIBUTE:
+            case UNIFORM:
+            case UNIFORM_BLOCK:
+                throw new IllegalArgumentException("Not implemented");
+        }
     }
 
     @Override
@@ -1251,11 +1165,6 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
     @Override
     public BlockBuffer[] getUniformBlocks() {
         return uniformBlockBuffers;
-    }
-
-    @Override
-    public int getTextureUnit(ShaderVariable sampler) {
-        return samplers.get(sampler.getOffset());
     }
 
     @Override

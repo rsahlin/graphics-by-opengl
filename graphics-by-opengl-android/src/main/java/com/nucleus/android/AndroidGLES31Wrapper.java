@@ -240,6 +240,11 @@ public class AndroidGLES31Wrapper extends GLES31Wrapper {
     }
 
     @Override
+    public void glPixelStorei(int pname, int param) {
+        android.opengl.GLES20.glPixelStorei(pname, param);
+    }
+
+    @Override
     public void glDrawElements(int mode, int count, int type, Buffer indices) {
         android.opengl.GLES30.glDrawElements(mode, count, type, indices);
     }
@@ -368,6 +373,11 @@ public class AndroidGLES31Wrapper extends GLES31Wrapper {
     @Override
     public void glUniform1iv(int location, int count, IntBuffer buffer) {
         android.opengl.GLES31.glUniform1iv(location, count, buffer);
+    }
+
+    @Override
+    public void glUniform1i(int location, int unit) {
+        android.opengl.GLES20.glUniform1i(location, unit);
     }
 
     @Override

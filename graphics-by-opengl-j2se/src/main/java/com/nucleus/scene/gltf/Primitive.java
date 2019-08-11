@@ -581,6 +581,11 @@ public class Primitive implements RuntimeResolver {
         return material;
     }
 
+    /**
+     * Returns the material reference or null if no material for this primitive
+     * 
+     * @return
+     */
     public Material getMaterial() {
         return materialRef;
     }

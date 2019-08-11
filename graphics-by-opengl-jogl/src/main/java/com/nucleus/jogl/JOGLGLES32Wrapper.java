@@ -258,6 +258,11 @@ public class JOGLGLES32Wrapper extends GLES32Wrapper {
     }
 
     @Override
+    public void glUniform1i(int location, int unit) {
+        gles.glUniform1i(location, unit);
+    }
+
+    @Override
     public void glTexParameterf(int target, int pname, float param) {
         gles.glTexParameterf(target, pname, param);
 

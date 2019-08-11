@@ -209,6 +209,11 @@ public class JOGLGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
+    public void glUniform1i(int location, int unit) {
+        gles.glUniform1i(location, unit);
+    }
+
+    @Override
     public void glDrawArrays(int mode, int first, int count) {
         gles.glDrawArrays(mode, first, count);
 

@@ -123,12 +123,6 @@ public class VulkanGraphicsPipeline implements GraphicsPipeline<ShaderBinary> {
     }
 
     @Override
-    public int getTextureUnit(ShaderVariable sampler) {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
     public VariableIndexer getLocationMapping() {
         // TODO Auto-generated method stub
         return null;

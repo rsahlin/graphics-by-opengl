@@ -125,14 +125,6 @@ public interface GraphicsPipeline<S extends ShaderBinary> extends Pipeline<Graph
     public BlockBuffer[] getUniformBlocks();
 
     /**
-     * Returns the texture unit to use for the declared sampler variable
-     * 
-     * @param sampler
-     * @return The texture unit to use
-     */
-    public int getTextureUnit(ShaderVariable sampler);
-
-    /**
      * Returns the graphics shader location mapping
      * 
      * @return

@@ -5,8 +5,11 @@ import java.nio.FloatBuffer;
 import com.nucleus.Backend;
 import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
+import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.environment.Lights;
+import com.nucleus.opengl.GLESWrapper.GLES20;
+import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
@@ -19,6 +22,8 @@ import com.nucleus.vecmath.Matrix;
  *
  */
 public abstract class DefaultGraphicsShader implements GraphicsShader {
+
+    private final static String NO_ACTIVE_UNIFORMS = "No active uniforms, forgot to call createProgram()?";
 
     /**
      * The basic function
@@ -158,9 +163,40 @@ public abstract class DefaultGraphicsShader implements GraphicsShader {
     }
 
     @Override
+    public void setSamplers(ShaderVariable[] activeUniforms) {
+        if (activeUniforms == null) {
+            throw new IllegalArgumentException(NO_ACTIVE_UNIFORMS);
+        }
+        int unit = 0;
+        for (ShaderVariable var : activeUniforms) {
+            switch (var.getDataType()) {
+                case GLES20.GL_SAMPLER_2D:
+                case GLES20.GL_SAMPLER_CUBE:
+                case GLES30.GL_SAMPLER_2D_SHADOW:
+                case GLES30.GL_SAMPLER_2D_ARRAY:
+                case GLES30.GL_SAMPLER_2D_ARRAY_SHADOW:
+                case GLES30.GL_SAMPLER_CUBE_SHADOW:
+                case GLES30.GL_SAMPLER_3D:
+                    uniforms.position(var.getOffset());
+                    for (int i = 0; i < var.getSize(); i++) {
+                        uniforms.put(unit++);
+                    }
+                default:
+                    // Do nothing.
+            }
+        }
+        if (unit > 0) {
+            SimpleLogger.d(getClass(), "Stored " + unit + " texture units.");
+        } else {
+            SimpleLogger.d(getClass(), "No texture units.");
+        }
+    }
+
+    @Override
     public void initShader(GraphicsPipeline<?> pipeline) {
         this.pipeline = pipeline;
         createUniformBuffer(pipeline.getVariableSize(VariableType.UNIFORM));
+        setSamplers(pipeline.getActiveVariables(VariableType.UNIFORM));
         initUniformData();
     }
 

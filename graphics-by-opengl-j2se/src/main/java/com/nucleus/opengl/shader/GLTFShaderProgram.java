@@ -1,7 +1,6 @@
 package com.nucleus.opengl.shader;
 
 import java.io.File;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.BackendException;
@@ -10,7 +9,6 @@ import com.nucleus.common.Environment;
 import com.nucleus.common.Environment.Property;
 import com.nucleus.environment.Lights;
 import com.nucleus.light.Light;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
@@ -28,7 +26,6 @@ import com.nucleus.scene.gltf.Scene;
 import com.nucleus.scene.gltf.Texture.TextureInfo;
 import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.shader.ShaderSource;
-import com.nucleus.shader.ShaderVariable;
 import com.nucleus.vecmath.Matrix;
 
 public class GLTFShaderProgram extends GenericShaderProgram {
@@ -185,25 +182,6 @@ public class GLTFShaderProgram extends GenericShaderProgram {
             pbr.getPBR(pbrData, 0);
         }
         setUniformData(pbrDataUniform, pbrData, 0);
-        pipeline.uploadVariable(uniforms, pbrDataUniform);
-    }
-
-    /**
-     * Upload the uniform matrices to GL
-     * 
-     * @param gles
-     * @param uniformData
-     * @param activeUniforms
-     * @throws GLException
-     */
-    protected void uploadUniforms(GLES20Wrapper gles, FloatBuffer uniformData, ShaderVariable[] activeUniforms)
-            throws GLException {
-        pipeline.uploadVariable(uniforms, modelUniform);
-        pipeline.uploadVariable(uniforms, light0Uniform);
-        pipeline.uploadVariable(uniforms, viewPosUniform);
-        // uploadUniform(gles, uniformData, modelUniform);
-        // uploadUniform(gles, uniformData, light0Uniform);
-        // uploadUniform(gles, uniformData, viewPosUniform);
     }
 
     /**
@@ -219,10 +197,11 @@ public class GLTFShaderProgram extends GenericShaderProgram {
         if (texInfo == null || attribute == null || texUniform == null) {
             return;
         }
+        samplerUniformBuffer.position(0);
         samplerUniformBuffer.put(texInfo.getIndex());
         samplerUniformBuffer.rewind();
         Accessor accessor = primitive.getAccessor(Attributes.getTextureCoord(texInfo.getTexCoord()));
-        renderer.prepareTexture(gltf.getTexture(texInfo), texInfo.getIndex(), accessor, attribute, texUniform,
+        renderer.prepareTexture(gltf.getTexture(texInfo), texUniform.getOffset(), accessor, attribute, texUniform,
                 samplerUniformBuffer);
 
     }
@@ -237,6 +216,9 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      */
     public void prepareTextures(NucleusRenderer renderer, GLTF gltf, Primitive primitive, Material material)
             throws BackendException {
+        if (material == null) {
+            return;
+        }
         if (renderNormalMap && material.getNormalTexture() != null
                 && material.getPbrMetallicRoughness().getBaseColorTexture() != null) {
             prepareTexture(renderer, gltf, primitive, getAttributeByName(Attributes._TEXCOORDNORMAL.name()),

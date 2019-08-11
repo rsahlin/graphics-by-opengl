@@ -575,13 +575,13 @@ public class GLESBaseRenderer extends BaseRenderer {
             gles.uploadTexParameters(texture);
             GLUtils.handleError(gles, "glBindTexture()");
             gles.glVertexAttribPointer(accessor, attribute);
-            gles.glUniform1iv(texUniform.getLocation(), texUniform.getSize(), samplerUniformBuffer);
-            GLUtils.handleError(gles, "glUniform1iv - " + attribute.getLocation());
+            // gles.glUniform1iv(texUniform.getLocation(), texUniform.getSize(), samplerUniformBuffer);
+            // GLUtils.handleError(gles, "glUniform1iv - " + attribute.getLocation());
         }
     }
 
     @Override
-    public boolean usePipeline(GraphicsPipeline pipeline) throws BackendException {
+    public boolean usePipeline(GraphicsPipeline<?> pipeline) throws BackendException {
         if (currentPipeline != pipeline) {
             currentPipeline = pipeline;
             pipeline.enable(this);

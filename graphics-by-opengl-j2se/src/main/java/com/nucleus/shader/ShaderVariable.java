@@ -19,9 +19,9 @@ public abstract class ShaderVariable {
      */
     public enum VariableType {
 
-        UNIFORM(0),
-        ATTRIBUTE(1),
-        UNIFORM_BLOCK(2);
+    UNIFORM(0),
+    ATTRIBUTE(1),
+    UNIFORM_BLOCK(2);
 
         public final int index;
 
@@ -110,6 +110,13 @@ public abstract class ShaderVariable {
     }
 
     /**
+     * Returns true if this shader variable is a (uniform) texture sampler.
+     * 
+     * @return
+     */
+    public abstract boolean isSampler();
+
+    /**
      * The data type of the variable, eg GL_FLOAT_VEC4
      * 
      * @return GLES constant for the type.
@@ -121,9 +128,9 @@ public abstract class ShaderVariable {
     /**
      * Type of variable - either attribute or uniform.
      */
-    protected VariableType type;
-    protected int size;
-    protected int dataType;
+    protected final VariableType type;
+    protected final int size;
+    protected final int dataType;
     /**
      * The location of the variable, used when calling setting attrib pointer or uploading uniforms.
      */
@@ -138,6 +145,12 @@ public abstract class ShaderVariable {
      * If this variable belongs to a block
      */
     protected int blockIndex = Constants.NO_VALUE;
+
+    protected ShaderVariable(VariableType type, int dataType, int size) {
+        this.type = type;
+        this.dataType = dataType;
+        this.size = size;
+    }
 
     /**
      * Returns the type of shader variable, ATTRIBUTE or UNIFORM
@@ -177,6 +190,7 @@ public abstract class ShaderVariable {
 
     /**
      * Sets the offset into buffer where the data for this variable is.
+     * In case of a Sampler uniform, the offset is the texture unit to use.
      * 
      * @param offset
      */

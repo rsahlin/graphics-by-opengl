@@ -20,6 +20,13 @@ public interface GraphicsShader extends Shader {
     public void createUniformBuffer(int floatSize);
 
     /**
+     * Sets the texture units used in the sampler uniforms
+     * 
+     * @param activeUniforms The currently active uniforms - including samplers
+     */
+    public void setSamplers(ShaderVariable[] activeUniforms);
+
+    /**
      * Initializes the uniform data for this program - this shall init the buffer create in
      * {@link #createUniformBuffer(int)}
      * Is called after program is linked and uniform buffers are created, variables and blocks are resolved.
