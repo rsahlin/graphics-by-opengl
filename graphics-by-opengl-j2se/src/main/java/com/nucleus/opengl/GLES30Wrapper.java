@@ -5,8 +5,8 @@ import java.nio.IntBuffer;
 
 import com.nucleus.common.BufferUtils;
 import com.nucleus.opengl.shader.NamedShaderVariable;
-import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
+import com.nucleus.shader.ShaderSource.SLVersion;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
 
@@ -113,14 +113,14 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public ESSLVersion replaceShaderVersion(ESSLVersion version) {
+    public SLVersion replaceShaderVersion(SLVersion version) {
         switch (version) {
             case VERSION100:
                 return version;
             case VERSION300:
             case VERSION310:
             case VERSION320:
-                return platform != Platform.GLES ? ESSLVersion.VERSION430 : version;
+                return platform != Platform.GLES ? SLVersion.VERSION430 : version;
             case VERSION430:
                 return version;
             default:

@@ -1,9 +1,7 @@
 package com.nucleus.opengl.shader;
 
 import java.io.File;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 
 import com.nucleus.BackendException;
 import com.nucleus.common.BufferUtils;
@@ -11,10 +9,10 @@ import com.nucleus.common.Environment;
 import com.nucleus.common.Environment.Property;
 import com.nucleus.environment.Lights;
 import com.nucleus.light.Light;
-import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
+import com.nucleus.renderer.Pass;
 import com.nucleus.scene.gltf.Accessor;
 import com.nucleus.scene.gltf.AccessorDictionary;
 import com.nucleus.scene.gltf.GLTF;
@@ -26,10 +24,36 @@ import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.scene.gltf.Scene;
 import com.nucleus.scene.gltf.Texture.TextureInfo;
-import com.nucleus.shader.ShaderVariable;
+import com.nucleus.shader.GenericShaderProgram;
+import com.nucleus.shader.ShaderSource;
 import com.nucleus.vecmath.Matrix;
 
 public class GLTFShaderProgram extends GenericShaderProgram {
+
+    public class GLTFCategorizer extends Categorizer {
+
+        public GLTFCategorizer(Pass pass, Shading shading, String category) {
+            super(pass, shading, category);
+        }
+
+        @Override
+        public String getShaderSourceName(ShaderType type) {
+            switch (type) {
+                case VERTEX:
+                    return (function.getPath(type) + function.getPassString()) + "main";
+                case FRAGMENT:
+                    return (function.getPath(type) + function.getPassString()) + "main";
+                case COMPUTE:
+                    return "";
+                case GEOMETRY:
+                    return "";
+                default:
+                    throw new IllegalArgumentException("Not implemented for type: " + type);
+
+            }
+        }
+
+    }
 
     transient protected String[][] commonSourceNames = new String[][] { { "common_structs.essl", "pbr" },
             { "common_structs.essl", "pbr" } };
@@ -55,7 +79,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * @param pbrShading
      */
     public GLTFShaderProgram(ShadingMaps pbrShading) {
-        super(null, Shading.pbr, "gltf", ProgramType.VERTEX_FRAGMENT);
+        init(new GLTFCategorizer(null, Shading.pbr, "gltf"), ProgramType.VERTEX_FRAGMENT);
         this.pbrShading = pbrShading;
         init();
     }
@@ -63,23 +87,6 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     private void init() {
         renderNormalMap = Environment.getInstance().isProperty(Property.RENDER_NORMALMAP, renderNormalMap);
         renderMRMap = Environment.getInstance().isProperty(Property.RENDER_MRMAP, renderMRMap);
-    }
-
-    @Override
-    protected String getShaderSourceName(ShaderType type) {
-        switch (type) {
-            case VERTEX:
-                return (function.getPath(type) + function.getPassString()) + "main";
-            case FRAGMENT:
-                return (function.getPath(type) + function.getPassString()) + "main";
-            case COMPUTE:
-                return "";
-            case GEOMETRY:
-                return "";
-            default:
-                throw new IllegalArgumentException("Not implemented for type: " + type);
-
-        }
     }
 
     /**
@@ -93,14 +100,13 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     }
 
     @Override
-    protected String[] getCommonShaderName(Renderers version, ShaderType type) {
+    protected String[] getLibName(Renderers version, ShaderType type) {
         switch (type) {
             case VERTEX:
                 if (commonSourceNames[ShaderType.VERTEX.index] != null) {
                     String[] result = new String[commonSourceNames[ShaderType.VERTEX.index].length];
                     for (int i = 0; i < result.length; i++) {
-                        result[i] = PROGRAM_DIRECTORY + getSourceNameVersion(version, type.value)
-                                + function.getCategory()
+                        result[i] = function.getPath(type) + function.getPassString()
                                 + File.separatorChar
                                 + commonSourceNames[ShaderType.VERTEX.index][i];
                     }
@@ -111,8 +117,8 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                 if (commonSourceNames[ShaderType.FRAGMENT.index] != null) {
                     String[] result = new String[commonSourceNames[ShaderType.FRAGMENT.index].length];
                     for (int i = 0; i < result.length; i++) {
-                        result[i] = PROGRAM_DIRECTORY + getSourceNameVersion(version, type.value)
-                                + function.getCategory() + File.separatorChar
+                        result[i] = function.getPath(type) + function.getPassString()
+                                + File.separatorChar
                                 + commonSourceNames[ShaderType.FRAGMENT.index][i];
                     }
                     return result;
@@ -125,17 +131,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     }
 
     @Override
-    protected String getDefines(ShaderType type) {
-        return getDefines();
-    }
-
-    @Override
-    protected ShaderSource createCommonSource(String sourceName, ShaderType type) {
-        return new ShaderSource(sourceName, type);
-    }
-
-    @Override
-    public void initUniformData(FloatBuffer destinationUniforms) {
+    public void initUniformData() {
         // Init may be called several times
         if (pbrDataUniform == null) {
             pbrDataUniform = getUniformByName(Attributes._PBRDATA.name());
@@ -149,7 +145,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     }
 
     @Override
-    public void updateUniformData(FloatBuffer destinationUniform) {
+    public void updateUniformData() {
 
     }
 
@@ -175,11 +171,10 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     /**
      * Read uniforms from material for the primitive and upload.
      * 
-     * @param gles
      * @param primitive
      * @throws GLException
      */
-    public void updatePBRUniforms(GLES20Wrapper gles, Primitive primitive) throws GLException {
+    public void updatePBRUniforms(Primitive primitive) throws GLException {
         Material material = primitive.getMaterial();
         if (material != null) {
             PBRMetallicRoughness pbr = material.getPbrMetallicRoughness();
@@ -187,35 +182,6 @@ public class GLTFShaderProgram extends GenericShaderProgram {
             pbr.getPBR(pbrData, 0);
         }
         setUniformData(pbrDataUniform, pbrData, 0);
-        uploadUniform(gles, uniforms, pbrDataUniform);
-    }
-
-    /**
-     * Upload the uniform matrices to GL
-     * 
-     * @param gles
-     * @param uniformData
-     * @param activeUniforms
-     * @throws GLException
-     */
-    @Override
-    protected void uploadUniforms(GLES20Wrapper gles, FloatBuffer uniformData, ShaderVariable[] activeUniforms)
-            throws GLException {
-        uploadUniform(gles, uniformData, modelUniform);
-        uploadUniform(gles, uniformData, light0Uniform);
-        uploadUniform(gles, uniformData, viewPosUniform);
-        // uploadUniform(gles, uniformData, viewUniform);
-        // uploadUniform(gles, uniformData, projectionUniform);
-    }
-
-    @Override
-    public void setSamplers() {
-        ArrayList<ShaderVariable> samplersList = getSamplers(activeUniforms);
-        if (samplersList.size() > 0) {
-            for (int i = 0; i < samplersList.size(); i++) {
-
-            }
-        }
     }
 
     /**
@@ -231,10 +197,11 @@ public class GLTFShaderProgram extends GenericShaderProgram {
         if (texInfo == null || attribute == null || texUniform == null) {
             return;
         }
+        samplerUniformBuffer.position(0);
         samplerUniformBuffer.put(texInfo.getIndex());
         samplerUniformBuffer.rewind();
         Accessor accessor = primitive.getAccessor(Attributes.getTextureCoord(texInfo.getTexCoord()));
-        renderer.prepareTexture(gltf.getTexture(texInfo), texInfo.getIndex(), accessor, attribute, texUniform,
+        renderer.prepareTexture(gltf.getTexture(texInfo), texUniform.getOffset(), accessor, attribute, texUniform,
                 samplerUniformBuffer);
 
     }
@@ -249,6 +216,9 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      */
     public void prepareTextures(NucleusRenderer renderer, GLTF gltf, Primitive primitive, Material material)
             throws BackendException {
+        if (material == null) {
+            return;
+        }
         if (renderNormalMap && material.getNormalTexture() != null
                 && material.getPbrMetallicRoughness().getBaseColorTexture() != null) {
             prepareTexture(renderer, gltf, primitive, getAttributeByName(Attributes._TEXCOORDNORMAL.name()),
@@ -282,7 +252,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * 
      * @return
      */
-    public String getDefines() {
+    public String getDefines(ShaderType type) {
         StringBuffer sb = new StringBuffer();
         for (Flags f : Flags.values()) {
             if (pbrShading.isFlag(f)) {

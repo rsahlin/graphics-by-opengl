@@ -6,9 +6,9 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.opengl.GLES20Wrapper;
-import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
+import com.nucleus.shader.ShaderSource.SLVersion;
 
 public class AndroidGLES20Wrapper extends GLES20Wrapper {
 
@@ -195,6 +195,11 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
+    public void glUniform1i(int location, int unit) {
+        android.opengl.GLES20.glUniform1i(location, unit);
+    }
+
+    @Override
     public void glUniform2fv(int location, int count, FloatBuffer buffer) {
         android.opengl.GLES20.glUniform2fv(location, count, buffer);
     }
@@ -253,6 +258,11 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     public void glTexImage2D(int target, int level, int internalformat, int width, int height, int border, int format,
             int type, Buffer pixels) {
         android.opengl.GLES20.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
+    }
+
+    @Override
+    public void glPixelStorei(int pname, int param) {
+        android.opengl.GLES20.glPixelStorei(pname, param);
     }
 
     @Override
@@ -376,7 +386,7 @@ public class AndroidGLES20Wrapper extends GLES20Wrapper {
     }
 
     @Override
-    public ESSLVersion replaceShaderVersion(ESSLVersion version) {
+    public SLVersion replaceShaderVersion(SLVersion version) {
         return version;
     }
 

@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
 
 import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
+import com.nucleus.opengl.shader.GLTFShaderProgram;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
@@ -16,6 +17,7 @@ import com.nucleus.scene.gltf.Mesh;
 import com.nucleus.scene.gltf.Node;
 import com.nucleus.scene.gltf.Primitive;
 import com.nucleus.scene.gltf.Scene;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.vecmath.Matrix.MatrixStack;
 
 public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
@@ -52,11 +54,11 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     public boolean renderNode(NucleusRenderer renderer, GLTFNode node, Pass currentPass, float[][] matrices)
             throws BackendException {
         GLTF glTF = node.getGLTF();
-        Scene scene = glTF.getDefaultScene();
         if (glTF == null) {
             // Do nothing
             return false;
         }
+        Scene scene = glTF.getDefaultScene();
         renderState = renderer.getRenderState();
         modelStack.push(matrices[Matrices.MODEL.index], 0);
         viewStack.push(matrices[Matrices.VIEW.index], 0);
@@ -160,10 +162,17 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      */
     protected void renderPrimitive(NucleusRenderer renderer, GLTF glTF, Primitive primitive, float[][] matrices)
             throws BackendException {
-        GraphicsPipeline pipeline = getPipeline(renderer, primitive, currentPass);
+        GraphicsShader program = primitive.getProgram();
+        GraphicsPipeline<?> pipeline = program.getPipeline();
         renderer.usePipeline(pipeline);
-        pipeline.update(renderer, glTF, primitive, matrices);
+        program.setUniformMatrices(matrices);
+        program.updateUniformData();
+        ((GLTFShaderProgram) program).updateEnvironmentUniforms(renderer, glTF.getDefaultScene());
+        ((GLTFShaderProgram) program).updatePBRUniforms(primitive);
+        ((GLTFShaderProgram) program).prepareTextures(renderer, glTF, primitive, primitive.getMaterial());
+        program.uploadUniforms();
         renderer.renderPrimitive(pipeline, glTF, primitive, matrices);
+
     }
 
     private void debugTBN(NucleusRenderer renderer, GLTF gltf, Mesh mesh, float[][] matrices)
@@ -173,8 +182,8 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
             if (primitives == null) {
                 // primitives = mesh.createDebugTBNPrimitives(gles, mesh.getPrimitives());
             }
-            GraphicsPipeline debugPipeline = renderer.getAssets().getGraphicsPipeline(renderer,
-                    mesh.getDebugTBNProgram());
+            // renderer.getAssets().getGraphicsPipeline(renderer,
+            // mesh.getDebugTBNProgram());
             /*
              * // Set uniforms.
              * ShaderVariable var = debugProgram.getUniformByName(Attributes._EMISSIVE.name());
@@ -228,12 +237,12 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
      * @param pass The currently defined pass
      * @return
      */
-    protected GraphicsPipeline getPipeline(NucleusRenderer renderer, Primitive primitive, Pass pass) {
-        GraphicsPipeline pipeline = primitive.getPipeline();
-        if (pipeline == null) {
-            throw new IllegalArgumentException("No pipeline for primitive ");
+    protected GraphicsShader getProgram(NucleusRenderer renderer, Primitive primitive, Pass pass) {
+        GraphicsShader program = primitive.getProgram();
+        if (program == null) {
+            throw new IllegalArgumentException("No program for primitive ");
         }
-        return pipeline;
+        return program;
     }
 
 }

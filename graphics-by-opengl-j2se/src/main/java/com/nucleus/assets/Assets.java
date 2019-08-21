@@ -3,7 +3,6 @@ package com.nucleus.assets;
 import java.io.IOException;
 
 import com.nucleus.BackendException;
-import com.nucleus.GraphicsPipeline;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderTarget;
@@ -121,17 +120,17 @@ public interface Assets {
     public void getIdReference(Texture2D reference);
 
     /**
-     * Returns a loaded and compiled graphics pipeline, if the pipeline has not already been loaded and compiled it will
-     * be loaded/compiled and linked then added to Assets using shader as key.
-     * Next time this method is called with the same shader the existing instance of the pipeline is
-     * returned.
+     * Returns a loaded and compiled graphics program.
+     * If the pipeline shader has not already been loaded and compiled it will be loaded/compiled and linked then added
+     * to Assets using shader as key.
+     * 
      * 
      * @param renderer
      * @param shader
-     * @return An instance of the pipeline that is loaded and compiled
+     * @return The shader, with pipeline
      * @throws BackendException If the pipeline could not be compiled or linked
      */
-    public GraphicsPipeline getGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader)
+    public GraphicsShader getGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader)
             throws BackendException;
 
     /**

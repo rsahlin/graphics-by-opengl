@@ -52,10 +52,8 @@ public class NamedShaderVariable extends ShaderVariable {
      * @throws ArrayIndexOutOfBoundsException If sizeOffset or typeOffset is larger than data length, or negative.
      */
     public NamedShaderVariable(VariableType type, String name, int index, int[] data, int startIndex) {
-        this.type = type;
+        super(type, data[startIndex + TYPE_OFFSET], data[startIndex + SIZE_OFFSET]);
         this.name = name;
-        size = data[startIndex + SIZE_OFFSET];
-        dataType = data[startIndex + TYPE_OFFSET];
         activeIndex = index;
         this.offset = data.length > startIndex + DATA_OFFSET ? data[startIndex + DATA_OFFSET] : this.offset;
         this.blockIndex = data.length > startIndex + BLOCK_INDEX_OFFSET ? data[startIndex + BLOCK_INDEX_OFFSET]
@@ -153,8 +151,26 @@ public class NamedShaderVariable extends ShaderVariable {
 
     @Override
     public String toString() {
-        return name + " : " + type + ", size " + size + ", sizeinbytes: " + getSizeInBytes() + ", offset " + offset
-                + ", activeIndex " + activeIndex + ", blockIndex " + blockIndex;
+        return name + " : " + super.toString();
+    }
+
+    @Override
+    public boolean isSampler() {
+        if (type == VariableType.UNIFORM) {
+            switch (dataType) {
+                case GLES20.GL_SAMPLER_2D:
+                case GLES20.GL_SAMPLER_CUBE:
+                case GLES30.GL_SAMPLER_2D_SHADOW:
+                case GLES30.GL_SAMPLER_2D_ARRAY:
+                case GLES30.GL_SAMPLER_2D_ARRAY_SHADOW:
+                case GLES30.GL_SAMPLER_CUBE_SHADOW:
+                case GLES30.GL_SAMPLER_3D:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        return false;
     }
 
 }

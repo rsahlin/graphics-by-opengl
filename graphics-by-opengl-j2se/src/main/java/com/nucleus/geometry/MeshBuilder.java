@@ -4,13 +4,13 @@ import java.io.IOException;
 
 import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
-import com.nucleus.GraphicsPipeline;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.component.ComponentException;
 import com.nucleus.geometry.shape.ShapeBuilder;
 import com.nucleus.io.ExternalReference;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RenderableNode;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.shader.Shader;
 import com.nucleus.texturing.Texture2D;
 
@@ -79,22 +79,22 @@ public interface MeshBuilder<T> {
     public T create() throws IOException, BackendException;
 
     /**
-     * Sets the shader to be used if {@link #createPipeline()} is called
+     * Sets the shader to be used if {@link #createProgram()} is called
      * 
      * @param shader
      */
     public void setShader(Shader shader);
 
     /**
-     * Returns the graphics pipeline that can be used to draw the mesh. This is normally only used when program to use
+     * Returns the graphics program that can be used to draw the mesh. This is normally only used when program to use
      * is not known.
      * For instance when loading nodes.
      * 
-     * @return Graphics pipline to use for drawing mesh.
+     * @return Graphics program to use for drawing mesh.
      * @throws BackendException If the pipeline cannot be compiled/linked
      * @throws IllegalArgumentException If Shader has not been set by calling {@link #setShader(Shader)}
      */
-    public GraphicsPipeline createPipeline() throws BackendException;
+    public GraphicsShader createProgram() throws BackendException;
 
     /**
      * Calculates the bounds covering this mesh - this may return null.

@@ -1,10 +1,7 @@
 package com.nucleus.opengl.shader;
 
-import java.nio.FloatBuffer;
-
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
-import com.nucleus.shader.Shader.Shading;
 import com.nucleus.vecmath.Matrix;
 
 /**
@@ -15,6 +12,10 @@ import com.nucleus.vecmath.Matrix;
  *
  */
 public class ShadowPass1Program extends ShadowPassProgram {
+
+    public ShadowPass1Program(Pass pass, Shading shading, String category, ProgramType shaders) {
+        super(pass, shading, category, shaders);
+    }
 
     static class Shadow1Categorizer extends Categorizer {
 
@@ -33,16 +34,6 @@ public class ShadowPass1Program extends ShadowPassProgram {
 
             }
         }
-    }
-
-    /**
-     * @param objectProgram The program for rendering the object casting shadow
-     * @param categorizer
-     * @param shaders
-     */
-    public ShadowPass1Program(GLShaderProgram objectProgram, Categorizer categorizer,
-            GLShaderProgram.ProgramType shaders) {
-        super(objectProgram, categorizer, shaders);
     }
 
     @Override
@@ -73,11 +64,11 @@ public class ShadowPass1Program extends ShadowPassProgram {
     }
 
     @Override
-    public void updateUniformData(FloatBuffer destinationUniform) {
+    public void updateUniformData() {
     }
 
     @Override
-    public void initUniformData(FloatBuffer destinationUniforms) {
+    public void initUniformData() {
     }
 
 }

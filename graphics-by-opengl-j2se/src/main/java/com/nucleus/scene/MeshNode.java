@@ -61,7 +61,7 @@ public class MeshNode extends AbstractMeshNode<Mesh> {
         builder.setTexture(tex);
         if (shapeBuilder == null) {
             // We may need program when creating shapeBuilder
-            setPipeline(builder.createPipeline());
+            setProgram(builder.createProgram());
             builder.setArrayMode(DrawMode.TRIANGLE_FAN, 4, 0);
             if (shape == null) {
                 LayerNode layer = getRootNode().getNodeByType(NodeTypes.layernode.name(), LayerNode.class);

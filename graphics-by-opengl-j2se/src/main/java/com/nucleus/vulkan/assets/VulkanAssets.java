@@ -42,12 +42,6 @@ public class VulkanAssets extends BaseAssets {
     }
 
     @Override
-    public GraphicsPipeline getGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public void deleteGLTFAssets(NucleusRenderer renderer, GLTF gltf) throws BackendException {
         // TODO Auto-generated method stub
 
@@ -84,7 +78,8 @@ public class VulkanAssets extends BaseAssets {
     }
 
     @Override
-    protected GraphicsPipeline createGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader) {
+    protected GraphicsPipeline<?> createGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader)
+            throws BackendException {
         // TODO Auto-generated method stub
         return null;
     }

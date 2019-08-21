@@ -1,10 +1,10 @@
 package com.nucleus.opengl.shader;
 
-import java.nio.FloatBuffer;
-
 import com.nucleus.assets.Assets;
 import com.nucleus.geometry.AttributeUpdater.BufferIndex;
 import com.nucleus.renderer.NucleusRenderer;
+import com.nucleus.shader.GenericShaderProgram;
+import com.nucleus.shader.Shader;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureType;
@@ -14,7 +14,7 @@ import com.nucleus.texturing.TextureType;
  * Can be used to draw objects that cannot be independently rotated or scaled, for instance a quad, but it can
  * be positioned using the translate variable.
  */
-public class TranslateProgram extends GLShaderProgram {
+public class TranslateProgram extends GenericShaderProgram {
 
     public static class TranslateProgramIndexer extends NamedVariableIndexer {
         protected final static Property[] PROPERTY = new Property[] { Property.VERTEX,
@@ -41,10 +41,10 @@ public class TranslateProgram extends GLShaderProgram {
      * @param texture
      */
     public TranslateProgram(Texture2D texture) {
-        super(new SharedfragmentCategorizer(null,
-                (texture == null || texture.textureType == TextureType.Untextured) ? Shading.flat
-                        : Shading.textured,
-                "translate"), GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
+        init(new SharedfragmentCategorizer(null,
+                (texture == null ||
+                        texture.textureType == TextureType.Untextured) ? Shading.flat : Shading.textured,
+                "translate"), Shader.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
     }
 
@@ -57,16 +57,16 @@ public class TranslateProgram extends GLShaderProgram {
      * @param shading
      */
     public TranslateProgram(Shading shading) {
-        super(new SharedfragmentCategorizer(null, shading, "translate"), GLShaderProgram.ProgramType.VERTEX_FRAGMENT);
+        init(new SharedfragmentCategorizer(null, shading, "translate"), Shader.ProgramType.VERTEX_FRAGMENT);
         setIndexer(new TranslateProgramIndexer());
     }
 
     @Override
-    public void updateUniformData(FloatBuffer destinationUniform) {
+    public void updateUniformData() {
     }
 
     @Override
-    public void initUniformData(FloatBuffer destinationUniforms) {
+    public void initUniformData() {
     }
 
 }

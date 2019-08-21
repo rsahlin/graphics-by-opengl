@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import com.nucleus.BackendException;
-import com.nucleus.GraphicsPipeline;
-import com.nucleus.Pipeline;
 import com.nucleus.SimpleLogger;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Type;
@@ -14,6 +12,7 @@ import com.nucleus.geometry.MeshBuilder;
 import com.nucleus.io.SceneSerializer.NodeInflaterListener;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.RenderPass;
+import com.nucleus.shader.GraphicsShader;
 
 /**
  * Builder for Nodes, use this when nodes are created programmatically or instantiated from loaded resources.
@@ -26,7 +25,7 @@ public class NodeBuilder<T extends Node> {
     protected RootNode root;
     protected int meshCount = 0;
     protected MeshBuilder<?> meshBuilder;
-    protected Pipeline pipeline;
+    protected GraphicsShader program;
     protected ArrayList<RenderPass> renderPass;
     protected ViewFrustum viewFrustum;
 
@@ -63,13 +62,13 @@ public class NodeBuilder<T extends Node> {
     }
 
     /**
-     * Sets the pipeline to use for this node.
+     * Sets the program to use for this node.
      * 
-     * @param pipeline
+     * @param program
      * @return
      */
-    public NodeBuilder<T> setPipeline(Pipeline pipeline) {
-        this.pipeline = pipeline;
+    public NodeBuilder<T> setProgram(GraphicsShader program) {
+        this.program = program;
         return this;
     }
 
@@ -189,8 +188,8 @@ public class NodeBuilder<T extends Node> {
                 if (viewFrustum != null) {
                     rNode.setViewFrustum(viewFrustum);
                 }
-                if (pipeline != null && pipeline instanceof GraphicsPipeline) {
-                    rNode.setPipeline((GraphicsPipeline) pipeline);
+                if (program != null) {
+                    rNode.setProgram(program);
                 }
             }
             node.createTransient();
@@ -278,8 +277,8 @@ public class NodeBuilder<T extends Node> {
                     }
                 }
             }
-            if (rNode.getPipeline() == null) {
-                rNode.setPipeline(meshBuilder.createPipeline());
+            if (rNode.getProgram() == null) {
+                rNode.setProgram(meshBuilder.createProgram());
             }
         }
     }

@@ -7,7 +7,6 @@ import java.util.Set;
 
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.BackendException;
-import com.nucleus.GraphicsPipeline;
 import com.nucleus.camera.ViewFrustum;
 import com.nucleus.common.Constants;
 import com.nucleus.common.Type;
@@ -23,6 +22,7 @@ import com.nucleus.renderer.NodeRenderer;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.Pass;
 import com.nucleus.renderer.RenderPass;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.vecmath.Matrix;
 import com.nucleus.vecmath.Rectangle;
 import com.nucleus.vecmath.Transform;
@@ -68,7 +68,7 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
      * DO NOT WRITE TO THIS!
      */
     transient float[] modelMatrix = Matrix.createMatrix();
-    transient protected GraphicsPipeline pipeline;
+    transient protected GraphicsShader program;
 
     /**
      * Used by GSON and {@link #createInstance(RootNode)} method - do NOT call directly
@@ -151,16 +151,16 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
     }
 
     @Override
-    public GraphicsPipeline getPipeline() {
-        return pipeline;
+    public GraphicsShader getProgram() {
+        return program;
     }
 
     @Override
-    public void setPipeline(GraphicsPipeline pipeline) {
-        if (pipeline == null) {
+    public void setProgram(GraphicsShader program) {
+        if (program == null) {
             throw new IllegalArgumentException(NULL_PROGRAM_STRING);
         }
-        this.pipeline = pipeline;
+        this.program = program;
     }
 
     @Override
@@ -242,10 +242,10 @@ public abstract class AbstractMeshNode<T> extends AbstractNode implements Render
         if (builder.getShapeBuilder() == null) {
             builder.setShapeBuilder(shapeBuilder);
         }
-        if (getPipeline() == null) {
-            setPipeline(builder.createPipeline());
+        if (getProgram() == null) {
+            setProgram(builder.createProgram());
         }
-        builder.setAttributesPerVertex(getPipeline().getAttributeSizes());
+        builder.setAttributesPerVertex(getProgram().getPipeline().getAttributeSizes());
         return (MeshBuilder<T>) builder;
     }
 

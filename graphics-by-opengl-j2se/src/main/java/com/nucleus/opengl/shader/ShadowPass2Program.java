@@ -1,7 +1,5 @@
 package com.nucleus.opengl.shader;
 
-import java.nio.FloatBuffer;
-
 import com.nucleus.BackendException;
 import com.nucleus.common.Constants;
 import com.nucleus.io.ExternalReference;
@@ -11,6 +9,7 @@ import com.nucleus.opengl.GLESWrapper.GLES30;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Matrices;
 import com.nucleus.renderer.Pass;
+import com.nucleus.shader.GenericShaderProgram;
 import com.nucleus.texturing.ParameterData;
 import com.nucleus.texturing.Texture2D;
 import com.nucleus.texturing.TextureFactory;
@@ -61,10 +60,10 @@ public class ShadowPass2Program extends ShadowPassProgram {
      * @param shading
      * @param shaders
      */
-    public ShadowPass2Program(GLShaderProgram objectProgram, Pass pass, String category,
+    public ShadowPass2Program(GenericShaderProgram objectProgram, Pass pass, String category,
             Shading shading,
-            GLShaderProgram.ProgramType shaders) {
-        super(objectProgram, new Shadow2Categorizer(Pass.SHADOW2, shading, category), shaders);
+            GenericShaderProgram.ProgramType shaders) {
+        super(pass, shading, category, shaders);
         // setIndexer(
         // objectProgram.variableIndexer != null ? objectProgram.variableIndexer : objectProgram.createIndexer());
         // This defines the texture parameters for the shadow pass.
@@ -95,7 +94,6 @@ public class ShadowPass2Program extends ShadowPassProgram {
         uniforms.put(matrices[Matrices.RENDERPASS_1.index], 0, Matrix.MATRIX_ELEMENTS);
     }
 
-    @Override
     public void prepareTexture(NucleusRenderer renderer, Texture2D texture) throws BackendException {
         int textureID = shadow.getName();
         if (textureID == Constants.NO_VALUE) {
@@ -105,7 +103,7 @@ public class ShadowPass2Program extends ShadowPassProgram {
         /**
          * TODO - make texture names into enums
          */
-        int unit = samplers.get(getUniformByName("uShadowTexture").getOffset());
+        int unit = (int) getUniformData().get(getUniformByName("uShadowTexture").getOffset());
         GLES20Wrapper gles = (GLES20Wrapper) renderer.getBackend();
         renderer.prepareTexture(shadow, unit);
         gles.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_COMPARE_MODE,
@@ -115,17 +113,17 @@ public class ShadowPass2Program extends ShadowPassProgram {
             /**
              * TODO - make texture names into enums
              */
-            renderer.prepareTexture(texture, samplers.get(getUniformByName("uTexture").getOffset()));
+            renderer.prepareTexture(texture, getUniformByName("uTexture").getOffset());
         }
     }
 
     @Override
-    public void updateUniformData(FloatBuffer destinationUniform) {
-        objectProgram.updateUniformData(destinationUniform);
+    public void updateUniformData() {
+        objectProgram.updateUniformData();
     }
 
     @Override
-    public void initUniformData(FloatBuffer destinationUniforms) {
+    public void initUniformData() {
     }
 
 }

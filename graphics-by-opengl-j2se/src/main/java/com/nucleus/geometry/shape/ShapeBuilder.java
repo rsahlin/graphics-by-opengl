@@ -1,7 +1,7 @@
 package com.nucleus.geometry.shape;
 
-import com.nucleus.GraphicsPipeline;
 import com.nucleus.geometry.Mesh;
+import com.nucleus.shader.GraphicsShader;
 
 /**
  * Defines methods for building a shape (surface) using a mesh, ie connecting vertices so that a shape is drawn.
@@ -55,8 +55,8 @@ public abstract class ShapeBuilder<T> {
      * Builds the specified shape(s) on the mesh.
      * 
      * @param mesh
-     * @param pipeline
+     * @param program
      */
-    public abstract void build(T mesh, GraphicsPipeline pipeline);
+    public abstract void build(T mesh, GraphicsShader program);
 
 }

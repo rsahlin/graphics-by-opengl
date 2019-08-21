@@ -7,14 +7,14 @@ import com.nucleus.Backend;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.StringUtils;
 import com.nucleus.opengl.shader.NamedShaderVariable;
-import com.nucleus.opengl.shader.ShaderSource;
-import com.nucleus.opengl.shader.ShaderSource.ESSLVersion;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.RenderState.ClearFunc;
 import com.nucleus.renderer.RenderState.Cullface;
 import com.nucleus.renderer.RenderState.DepthFunc;
 import com.nucleus.renderer.RenderTarget.Attachement;
 import com.nucleus.renderer.RendererInfo;
+import com.nucleus.shader.ShaderSource;
+import com.nucleus.shader.ShaderSource.SLVersion;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -1235,7 +1235,7 @@ public abstract class GLESWrapper extends Backend {
      * @return The possibly substituted source version, depending on platform implementation.
      * Mainly used to substitute "310 es" for "430" on desktop platforms/drivers that does not support GLES fully"
      */
-    public abstract ESSLVersion replaceShaderVersion(ESSLVersion version);
+    public abstract SLVersion replaceShaderVersion(SLVersion version);
 
     /**
      * Returns a versioned shader source and puts in the sourceName object - this is the main method that shall be used

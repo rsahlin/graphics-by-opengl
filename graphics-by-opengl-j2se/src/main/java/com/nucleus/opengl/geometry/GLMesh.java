@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
-import com.nucleus.GraphicsPipeline;
 import com.nucleus.bounds.Bounds;
 import com.nucleus.geometry.ElementBuffer;
 import com.nucleus.geometry.ElementBuffer.Type;
@@ -16,6 +15,7 @@ import com.nucleus.io.ExternalReference;
 import com.nucleus.opengl.shader.TranslateProgram;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.scene.RenderableNode;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.shader.Shader;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
@@ -36,7 +36,7 @@ public class GLMesh extends Mesh {
         protected NucleusRenderer renderer;
         protected Texture2D texture;
         protected Material material;
-        protected GraphicsPipeline pipeline;
+        protected GraphicsShader program;
         protected int[] attributesPerVertex;
         protected int vertexCount = -1;
         protected int indiceCount = 0;
@@ -106,7 +106,7 @@ public class GLMesh extends Mesh {
             if (parent == null) {
                 throw new IllegalArgumentException("Parent node may not be null when creating mesh");
             }
-            this.pipeline = parent.getPipeline();
+            this.program = parent.getProgram();
             parent.addMesh(create());
         }
 
@@ -116,7 +116,7 @@ public class GLMesh extends Mesh {
             Mesh mesh = createInstance();
             mesh.createMesh(texture, attributesPerVertex, material, vertexCount, indiceCount, mode);
             if (shapeBuilder != null) {
-                shapeBuilder.build(mesh, pipeline);
+                shapeBuilder.build(mesh, program);
             }
             if (com.nucleus.renderer.Configuration.getInstance().isUseVBO()) {
                 renderer.getBufferFactory().createVBOs(mesh);
@@ -130,7 +130,7 @@ public class GLMesh extends Mesh {
         }
 
         @Override
-        public GraphicsPipeline createPipeline() throws BackendException {
+        public GraphicsShader createProgram() throws BackendException {
             // Default is to create a translate program, this will use an indexer so that creating 2D objects is
             // possible. This is used mainly for ui elements
             return renderer.getAssets().getGraphicsPipeline(renderer, new TranslateProgram(texture));

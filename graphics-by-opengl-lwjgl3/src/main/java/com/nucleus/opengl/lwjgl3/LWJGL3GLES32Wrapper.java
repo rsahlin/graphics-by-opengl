@@ -255,6 +255,11 @@ public class LWJGL3GLES32Wrapper extends GLES32Wrapper {
     }
 
     @Override
+    public void glUniform1i(int location, int unit) {
+        org.lwjgl.opengles.GLES20.glUniform1i(location, unit);
+    }
+
+    @Override
     public void glTexParameterf(int target, int pname, float param) {
         org.lwjgl.opengles.GLES20.glTexParameterf(target, pname, param);
     }

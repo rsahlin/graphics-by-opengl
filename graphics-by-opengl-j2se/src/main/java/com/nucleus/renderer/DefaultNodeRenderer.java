@@ -8,6 +8,7 @@ import com.nucleus.geometry.AttributeUpdater.Consumer;
 import com.nucleus.geometry.Mesh;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.scene.RenderableNode;
+import com.nucleus.shader.GraphicsShader;
 
 public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
 
@@ -21,7 +22,7 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
         return true;
     }
 
-    public void renderMesh(NucleusRenderer renderer, GraphicsPipeline pipeline, Mesh mesh, float[][] matrices)
+    public void renderMesh(NucleusRenderer renderer, GraphicsPipeline<?> pipeline, Mesh mesh, float[][] matrices)
             throws BackendException {
         Consumer updater = mesh.getAttributeConsumer();
         if (updater != null) {
@@ -38,9 +39,12 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
         nodeMeshes.clear();
         node.getMeshes(nodeMeshes);
         if (nodeMeshes.size() > 0) {
-            GraphicsPipeline pipeline = getPipeline(renderer, node, currentPass);
-
+            GraphicsPipeline<?> pipeline = getPipeline(renderer, node, currentPass);
             renderer.usePipeline(pipeline);
+            GraphicsShader program = node.getProgram();
+            program.setUniformMatrices(matrices);
+            program.updateUniformData();
+            program.uploadUniforms();
             for (Mesh mesh : nodeMeshes) {
                 renderMesh(renderer, pipeline, mesh, matrices);
             }
@@ -55,8 +59,8 @@ public class DefaultNodeRenderer implements NodeRenderer<RenderableNode<Mesh>> {
      * @param pass The currently defined pass
      * @return
      */
-    protected GraphicsPipeline getPipeline(NucleusRenderer renderer, RenderableNode<Mesh> node, Pass pass) {
-        GraphicsPipeline pipeline = node.getPipeline();
+    protected GraphicsPipeline<?> getPipeline(NucleusRenderer renderer, RenderableNode<Mesh> node, Pass pass) {
+        GraphicsPipeline<?> pipeline = node.getProgram().getPipeline();
         if (pipeline == null) {
             throw new IllegalArgumentException("No pipeline for node " + node.getId());
         }
