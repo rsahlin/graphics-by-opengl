@@ -81,9 +81,6 @@ public class GLESBaseRenderer extends BaseRenderer {
         gles.createInfo();
         bufferFactory = new GLESBufferFactory(gles);
         assetManager = new GLAssetManager(gles);
-        for (int i = 0; i < matrices.length; i++) {
-            matrices[i] = Matrix.setIdentity(Matrix.createMatrix(), 0);
-        }
     }
 
     /**

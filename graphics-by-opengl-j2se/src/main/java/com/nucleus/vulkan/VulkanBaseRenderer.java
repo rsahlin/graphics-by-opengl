@@ -23,6 +23,7 @@ import com.nucleus.scene.gltf.Texture;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.vulkan.assets.VulkanAssets;
 
 public class VulkanBaseRenderer extends BaseRenderer {
 
@@ -34,6 +35,7 @@ public class VulkanBaseRenderer extends BaseRenderer {
             throw new IllegalArgumentException(INVALID_WRAPPER_ERROR + " : " + backend);
         }
         vulkan = (Vulkan10Wrapper) backend;
+        assetManager = new VulkanAssets(vulkan);
     }
 
     @Override
@@ -87,14 +89,12 @@ public class VulkanBaseRenderer extends BaseRenderer {
 
     @Override
     public BufferFactory getBufferFactory() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new IllegalArgumentException("Not implemented");
     }
 
     @Override
     public Assets getAssets() {
-        // TODO Auto-generated method stub
-        return null;
+        return assetManager;
     }
 
     @Override

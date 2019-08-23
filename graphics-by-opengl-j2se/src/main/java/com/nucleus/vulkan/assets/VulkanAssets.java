@@ -13,6 +13,8 @@ import com.nucleus.shader.GraphicsShader;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.vulkan.Vulkan10Wrapper;
+import com.nucleus.vulkan.VulkanGraphicsPipeline;
 
 /**
  * Implementation of Assets interface for Vulkan - fetch from {@link NucleusRenderer#getAssets()}
@@ -23,6 +25,15 @@ import com.nucleus.texturing.Texture2D;
  */
 public class VulkanAssets extends BaseAssets {
 
+    private Vulkan10Wrapper vulkan;
+
+    public VulkanAssets(Vulkan10Wrapper vulkan) {
+        if (vulkan == null) {
+            throw new IllegalArgumentException("Vulkan wrapper is null");
+        }
+        this.vulkan = vulkan;
+    }
+
     @Override
     public BufferImage[] loadTextureMIPMAP(ImageFactory imageFactory, Texture2D texture) {
         // TODO Auto-generated method stub
@@ -31,57 +42,50 @@ public class VulkanAssets extends BaseAssets {
 
     @Override
     public void loadGLTFAssets(NucleusRenderer renderer, GLTF glTF) throws IOException, BackendException {
-        // TODO Auto-generated method stub
-
+        throw new IllegalArgumentException("Not implemented");
     }
 
     @Override
     public GLTF getGLTFAsset(String fileName) throws IOException, GLTFException {
-        // TODO Auto-generated method stub
-        return null;
+        throw new IllegalArgumentException("Not implemented");
     }
 
     @Override
     public void deleteGLTFAssets(NucleusRenderer renderer, GLTF gltf) throws BackendException {
-        // TODO Auto-generated method stub
-
+        throw new IllegalArgumentException("Not implemented");
     }
 
     @Override
     public void destroy(NucleusRenderer renderer) {
-        // TODO Auto-generated method stub
-
+        throw new IllegalArgumentException("Not implemented");
     }
 
     @Override
     public void createTexture(Texture2D texture, int target) throws BackendException {
-        // TODO Auto-generated method stub
-
+        throw new IllegalArgumentException("Not implemented");
     }
 
     @Override
     public void deleteTexture(Image image) {
-        // TODO Auto-generated method stub
-
+        throw new IllegalArgumentException("Not implemented");
     }
 
     @Override
     public void deleteTextures(Texture2D[] textures) {
-        // TODO Auto-generated method stub
-
+        throw new IllegalArgumentException("Not implemented");
     }
 
     @Override
     protected int[] createTextureName() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new IllegalArgumentException("Not implemented");
     }
 
     @Override
     protected GraphicsPipeline<?> createGraphicsPipeline(NucleusRenderer renderer, GraphicsShader shader)
             throws BackendException {
-        // TODO Auto-generated method stub
-        return null;
+        GraphicsPipeline<?> pipeline = new VulkanGraphicsPipeline(vulkan);
+        pipeline.compile(renderer, shader);
+        return pipeline;
     }
 
 }

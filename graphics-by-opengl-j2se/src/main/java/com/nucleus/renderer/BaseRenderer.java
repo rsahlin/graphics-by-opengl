@@ -117,6 +117,9 @@ public abstract class BaseRenderer implements NucleusRenderer {
             throw new IllegalArgumentException(NULL_APIWRAPPER_ERROR);
         }
         this.backend = backend;
+        for (int i = 0; i < matrices.length; i++) {
+            matrices[i] = Matrix.setIdentity(Matrix.createMatrix(), 0);
+        }
     }
 
     @Override

@@ -24,6 +24,15 @@ import com.nucleus.shader.VariableIndexer;
 
 public class VulkanGraphicsPipeline implements GraphicsPipeline<ShaderBinary> {
 
+    private Vulkan10Wrapper vulkan;
+
+    public VulkanGraphicsPipeline(Vulkan10Wrapper vulkan) {
+        if (vulkan == null) {
+            throw new IllegalArgumentException("Vulkan wrapper is null");
+        }
+        this.vulkan = vulkan;
+    }
+
     @Override
     public int[] getAttributeSizes() {
         // TODO Auto-generated method stub
@@ -130,7 +139,6 @@ public class VulkanGraphicsPipeline implements GraphicsPipeline<ShaderBinary> {
 
     @Override
     public void compile(NucleusRenderer renderer, GraphicsShader shader) throws BackendException {
-        // TODO Auto-generated method stub
 
     }
 
