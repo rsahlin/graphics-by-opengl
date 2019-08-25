@@ -387,7 +387,7 @@ public class AndroidGLES32Wrapper extends GLES32Wrapper {
 
     @Override
     public void glUniform1i(int location, int unit) {
-        android.opengl.GLES20.glUniform1i(location, uni);
+        android.opengl.GLES20.glUniform1i(location, unit);
     }
 
     @Override
