@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -151,6 +152,10 @@ public class StreamUtils {
 	 */
 	public static ByteBuffer readBufferFromName(String name) throws IOException, URISyntaxException {
 		ClassLoader loader = StreamUtils.class.getClassLoader();
+		URL url = loader.getResource(name);
+		if (url == null) {
+			throw new IllegalArgumentException("Could not open " + name);
+		}
 		File file = new File(loader.getResource(name).toURI());
 		ByteBuffer buffer = BufferUtils.createByteBuffer((int) file.length());
 		buffer.position(0);

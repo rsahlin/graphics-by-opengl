@@ -119,19 +119,20 @@ public class VulkanGraphicsPipeline implements GraphicsPipeline<ShaderBinary> {
 
 	@Override
 	public ShaderBinary getShaderSource(Renderers version, Categorizer function, ShaderType type) {
+		String sourceNameVersion = ShaderBinary.getSourceNameVersion(version);
 		switch (type) {
 		case VERTEX:
-			return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY, function.getShaderSourceName(type),
-					VERTEX_TYPE, type);
+			return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
+					function.getShaderSourceName(type), VERTEX_TYPE, type);
 		case FRAGMENT:
-			return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY, function.getShaderSourceName(type),
-					FRAGMENT_TYPE, type);
+			return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
+					function.getShaderSourceName(type), FRAGMENT_TYPE, type);
 		case COMPUTE:
-			return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY, function.getShaderSourceName(type),
-					COMPUTE_TYPE, type);
+			return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
+					function.getShaderSourceName(type), COMPUTE_TYPE, type);
 		case GEOMETRY:
-			return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY, function.getShaderSourceName(type),
-					GEOMETRY_TYPE, type);
+			return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
+					function.getShaderSourceName(type), GEOMETRY_TYPE, type);
 
 		default:
 			throw new IllegalArgumentException("Not implemented for type: " + type);
