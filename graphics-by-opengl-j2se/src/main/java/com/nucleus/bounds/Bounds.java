@@ -19,7 +19,7 @@ public abstract class Bounds {
 
     public static final String BOUNDS = "bounds";
     public static final String TYPE = "type";
-    
+
     /**
      * The type of bounds
      * 
@@ -50,8 +50,7 @@ public abstract class Bounds {
         public String getName() {
             return name();
         }
-        
-        
+
     }
 
     /**

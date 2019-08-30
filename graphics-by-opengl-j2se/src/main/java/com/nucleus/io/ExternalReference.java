@@ -21,12 +21,13 @@ public class ExternalReference {
      * For instance used to locate dynamic textures created using {@link RenderPass}
      */
     public static final String ID_LOOKUP = "@";
-    
+
     /**
      * Name of the source for this external reference, for instance the name of an image for a texture.
      */
     @SerializedName(SOURCE)
     private String source;
+
     /**
      * @param source Name of the external reference, for instance a file.
      */
@@ -55,14 +56,16 @@ public class ExternalReference {
 
     /**
      * Returns true if this ref is an id lookup
+     * 
      * @return
      */
     public boolean isIdReference() {
         return source != null && source.startsWith(ID_LOOKUP);
     }
-    
+
     /**
      * Returns the id reference if this is an id lookup, otherwise null
+     * 
      * @return The id reference or null if this is not an id lookup ref.
      */
     public String getIdReference() {
@@ -71,5 +74,5 @@ public class ExternalReference {
         }
         return null;
     }
-    
+
 }

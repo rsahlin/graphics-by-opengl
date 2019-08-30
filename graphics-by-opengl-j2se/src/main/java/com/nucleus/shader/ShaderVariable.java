@@ -19,9 +19,9 @@ public abstract class ShaderVariable {
      */
     public enum VariableType {
 
-    UNIFORM(0),
-    ATTRIBUTE(1),
-    UNIFORM_BLOCK(2);
+        UNIFORM(0),
+        ATTRIBUTE(1),
+        UNIFORM_BLOCK(2);
 
         public final int index;
 

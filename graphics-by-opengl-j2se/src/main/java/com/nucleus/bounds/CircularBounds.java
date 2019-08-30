@@ -17,7 +17,6 @@ public class CircularBounds extends Bounds {
     public final static int Y_INDEX = 1;
     public final static int RADIUS_INDEX = 2;
 
-
     /**
      * Creates a new circular bounds, with the specified 2D position and radius.
      * 
@@ -82,7 +81,7 @@ public class CircularBounds extends Bounds {
 
     @Override
     public void rotate(int axis, float degrees) {
-        //Rotation of the circular bounds have no meaning.
+        // Rotation of the circular bounds have no meaning.
     }
 
     @Override

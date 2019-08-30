@@ -52,8 +52,7 @@ public interface AttributeUpdater {
         }
 
     }
-    
-    
+
     /**
      * This is for objects that need (consumes) attribute data, can be attached to Mesh to handle updating
      * of attribute data before mesh is rendered.
@@ -94,7 +93,6 @@ public interface AttributeUpdater {
 
     }
 
-    
     /**
      * Sets the attribute updater for this mesh, use this for meshes where the attribute data must be updated each
      * frame.
@@ -111,7 +109,7 @@ public interface AttributeUpdater {
      * @return The attribute consumer or null if none is set.
      */
     public Consumer getAttributeConsumer();
-    
+
     /**
      * Returns the buffer, at the specified index, containing vertices and attribute data
      * If the mesh only has one buffer - it is returned regardless of index.
@@ -128,8 +126,7 @@ public interface AttributeUpdater {
      * @return Buffer holding attribute data.
      */
     public AttributeBuffer getAttributeBuffer(int index);
-    
-    
+
     /**
      * Release all resources allocated by the implementing class, call this when this object shall not be used anymore.
      * 
