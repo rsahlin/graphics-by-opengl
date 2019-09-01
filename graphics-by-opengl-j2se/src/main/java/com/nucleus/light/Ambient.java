@@ -15,5 +15,4 @@ public class Ambient extends Light {
         super(type);
     }
 
-
 }

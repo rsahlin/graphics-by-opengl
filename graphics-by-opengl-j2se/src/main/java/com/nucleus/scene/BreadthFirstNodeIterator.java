@@ -44,7 +44,6 @@ public class BreadthFirstNodeIterator extends NodeIterator {
         return addNode(null, null, start);
     }
 
-
     private ArrayList<Node> addNode(ArrayList<Node> result, ArrayList<Node> children, Node node) {
         if (result == null) {
             result = new ArrayList<>();

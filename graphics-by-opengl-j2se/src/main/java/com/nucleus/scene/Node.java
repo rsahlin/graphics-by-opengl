@@ -20,22 +20,22 @@ public interface Node extends Reference {
      */
     public enum State {
 
-    /**
-     * Node is on, rendered and actors processed
-     */
-    ON(1),
-    /**
-     * Node is off, not rendered and no actors processed
-     */
-    OFF(2),
-    /**
-     * Node is rendered, but no actors processed
-     */
-    RENDER(4),
-    /**
-     * Node is not rendered, but actors processed
-     */
-    ACTOR(8);
+        /**
+         * Node is on, rendered and actors processed
+         */
+        ON(1),
+        /**
+         * Node is off, not rendered and no actors processed
+         */
+        OFF(2),
+        /**
+         * Node is rendered, but no actors processed
+         */
+        RENDER(4),
+        /**
+         * Node is not rendered, but actors processed
+         */
+        ACTOR(8);
 
         public final int value;
 

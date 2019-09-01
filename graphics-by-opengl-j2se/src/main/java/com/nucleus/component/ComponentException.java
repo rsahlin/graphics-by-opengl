@@ -20,5 +20,4 @@ public class ComponentException extends Exception {
         super(cause);
     }
 
-
 }

@@ -7,9 +7,9 @@ package com.nucleus.scene.gltf;
 public class RenderableMesh extends Mesh {
 
     protected GLTF asset;
-    
+
     public RenderableMesh(GLTF asset) {
         this.asset = asset;
     }
-    
+
 }

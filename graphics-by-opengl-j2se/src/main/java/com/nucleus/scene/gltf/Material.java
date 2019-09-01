@@ -271,7 +271,7 @@ public class Material extends GLTFNamedValue implements RuntimeResolver {
             return textures;
         }
     }
-    
+
     /**
      * Returns the pbr object
      * 

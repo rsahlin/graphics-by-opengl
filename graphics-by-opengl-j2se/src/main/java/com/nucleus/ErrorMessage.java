@@ -20,7 +20,7 @@ public enum ErrorMessage {
      * A value/object is invalid format.
      */
     INVALID_FORMAT("Invalid format: ");
-    
+
     /**
      * The error message
      */

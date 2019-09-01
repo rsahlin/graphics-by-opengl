@@ -4,18 +4,17 @@ public class Platform {
 
     public static final String OS_NAME = "os.name";
     public static final String JAVA_VENDOR = "java.vendor";
-    
+
     public enum OS {
         windows(),
         linux(),
         macos(),
         android(),
         unknown();
-        
+
         private OS() {
         }
-        
-        
+
         public static OS getOS(String osName, String vendor) {
             if (osName == null) {
                 return null;
@@ -34,20 +33,21 @@ public class Platform {
             }
             return unknown;
         }
-        
+
     }
 
     private static Platform instance;
     private OS os;
-    
+
     private Platform() {
         String osName = System.getProperty(OS_NAME);
         String vendor = System.getProperty(JAVA_VENDOR, "");
         os = OS.getOS(osName, vendor);
     }
-    
+
     /**
      * Returns the singleton platform instance
+     * 
      * @return
      */
     public static Platform getInstance() {
@@ -60,6 +60,5 @@ public class Platform {
     public OS getOS() {
         return os;
     }
-    
-    
+
 }

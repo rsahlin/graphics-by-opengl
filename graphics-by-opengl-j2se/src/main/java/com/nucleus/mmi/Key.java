@@ -12,8 +12,8 @@ public class Key {
      */
     public enum Action {
 
-    PRESSED(0),
-    RELEASED(1);
+        PRESSED(0),
+        RELEASED(1);
 
         private int action;
 

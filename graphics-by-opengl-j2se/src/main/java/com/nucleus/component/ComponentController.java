@@ -57,7 +57,8 @@ public interface ComponentController {
     public void reset();
 
     /**
-     * Initializes the controller, the state shall be {@value ComponentState#INITIALIZED} after this method has been called
+     * Initializes the controller, the state shall be {@value ComponentState#INITIALIZED} after this method has been
+     * called
      */
     public void init();
 
