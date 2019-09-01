@@ -4,26 +4,6 @@
  */
 precision highp float;
 
-layout(location = 0) in vec3 POSITION;
-layout(location = 1) in vec3 NORMAL;
-layout(location = 2) in vec4 TANGENT;
-layout(location = 3) in vec3 BITANGENT;
-layout(location = 4) in vec2 TEXCOORD_0;
-layout(location = 5) in vec2 _TEXCOORDNORMAL;
-layout(location = 6) in vec2 _TEXCOORDMR;
-layout(location = 7) in vec2 _TEXCOORDOCCLUSION;
-
-layout(location = DIFFUSECOLOR_LOCATION) out vec4 vDiffuseColor;
-layout(location = TEXCOORD0_LOCATION) out vec2 vTexCoord0;
-layout(location = TEXNORMAL_LOCATION) out vec2 vTexNormal;
-layout(location = TEXMR_LOCATION) out vec2 vTexMR;
-layout(location = TEXOCCL_LOCATION) out vec2 vTexOccl;
-
-layout(location = WORLDPOS_LOCATION) out vec4 vWorldPos;
-layout(location = LIGHT_LOCATION) out Light light;
-layout(location = MATERIAL_LOCATION) out Material material;
-layout(location = TANGENTLIGHT_LOCATION) out mat3 mTangentLight;
-
 void setLight() {
     light.eye = normalize(pbrdata._VIEWPOS[0] -vWorldPos.xyz);
     light.direction = normalize(pbrdata._LIGHT_0[1].xyz - vWorldPos.xyz);

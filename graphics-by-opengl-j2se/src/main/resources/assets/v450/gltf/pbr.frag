@@ -3,23 +3,6 @@
  * Functions for gltf PBR model
  */ 
 
-layout(binding = 0) uniform sampler2D uTexture0; //The texture 0 sampler
-layout(binding = 1) uniform sampler2D uTextureNormal; //normal texture sampler
-layout(binding = 2) uniform sampler2D uTextureMR; //Metallic roughness texture sampler
-layout(binding = 3) uniform sampler2D uTextureOcclusion; //Occlusion texture sampler
-
-layout(location = TEXCOORD0_LOCATION) in vec2 vTexCoord0;
-layout(location = TEXNORMAL_LOCATION) in vec2 vTexNormal;
-layout(location = TEXMR_LOCATION) in vec2 vTexMR;
-layout(location = TEXOCCL_LOCATION) in vec2 vTexOccl;
-
-layout(location = WORLDPOS_LOCATION) in vec4 vWorldPos;
-layout(location = TANGENTLIGHT_LOCATION) in mat3 mTangentLight;
-layout(location = MATERIAL_LOCATION) in Material material;
-layout(location = LIGHT_LOCATION) in Light light;
-
-layout(location = FRAGCOLOR_LOCATION) out vec4 fragColor;
-
 /**
  * Returns the BRDF to use for materials that have per vertex properties, ie not normal/metallicrough/occlusion map
  */

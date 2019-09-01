@@ -1,4 +1,3 @@
-
 /**
  * Source for structs shared between vertex and fragment stage (possibly other stages)
  * Currently a naming based locations are used in favour of numbered layouts - this is simply because
