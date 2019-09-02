@@ -1,6 +1,9 @@
 package com.nucleus.vulkan;
 
+import java.util.ArrayList;
+
 import com.nucleus.Backend;
+import com.nucleus.common.FileUtils;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.vulkan.Vulkan10.Result;
 import com.nucleus.vulkan.structs.QueueFamilyProperties;
@@ -69,6 +72,12 @@ public abstract class VulkanWrapper extends Backend {
 
     protected VulkanWrapper(Renderers version) {
         super(version);
+        initVulkanBackend();
+    }
+
+    protected void initVulkanBackend() {
+        String[] folders = FileUtils.getInstance().listResourceFolders("assets");
+        ArrayList<String> filenames = FileUtils.getInstance().listFiles("assets", folders, ".gltf");
     }
 
     /**
