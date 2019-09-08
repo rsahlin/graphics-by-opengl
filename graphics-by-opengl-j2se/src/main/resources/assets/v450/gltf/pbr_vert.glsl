@@ -1,4 +1,3 @@
-#include "defines.h"
 /**
  * Functions for gltf PBR model
  */

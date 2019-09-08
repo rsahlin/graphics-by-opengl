@@ -1,8 +1,9 @@
 #version 450
 precision highp float;
- 
-#include "common_structs.essl"
-#include "pbr.vert"
+
+#include "common_structs.glsl"
+#include "layout_vert.glsl" 
+#include "pbr_vert.glsl"
 
 /* 
  * Vertex shader for textured glTF asset without texture, with normal map and possibly metallicRoughness

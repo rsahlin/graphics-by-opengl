@@ -4,7 +4,8 @@
  */
 precision mediump float;
 precision mediump int;
-#include "defines.h"
+
+#include "layout_frag.glsl"
 
 void main()
 {

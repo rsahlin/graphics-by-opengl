@@ -4,7 +4,7 @@
 */
 precision highp float;
 precision highp int;
-include "defines.h"
+#include "../layout_vert.glsl"
 
 void main() {
     vec4 pos = vec4(aVertex + aTranslate, 1.0) * uModelMatrix[0] * uModelMatrix[1];

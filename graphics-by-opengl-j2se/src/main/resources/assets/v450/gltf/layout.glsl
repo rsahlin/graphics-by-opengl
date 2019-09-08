@@ -1,3 +1,13 @@
+/**
+ * Layouts shared by shader stages - define current stage by, eg:
+ * #define VERTEX_SHADER
+ * before including this file. see 'layout_vert.h'
+ *
+ * This file depends on knowing structs used in shaders - this means
+ * that common_structs is included BEFORE this file.
+ */
+
+
 // Uniforms
 layout(binding = 0) uniform sampler2D uTexture0; //The texture 0 sampler
 layout(binding = 1) uniform sampler2D uTextureNormal; //normal texture sampler
@@ -32,9 +42,9 @@ layout(std140, binding = 4) uniform pbr_matrices {
 #define LAST_LOCATION_IN  TANGENTLIGHT_LOCATION + 3
 
 // out locations
-#define FRAGCOLOR_LOCATION_OUT LAST_LOCATION_IN
+#define FRAGCOLOR_LOCATION_OUT 0
 
-
+#ifdef VERTEX_SHADER
 layout(location = 0) in vec3 POSITION;
 layout(location = 1) in vec3 NORMAL;
 layout(location = 2) in vec4 TANGENT;
@@ -51,9 +61,25 @@ layout(location = TEXMR_LOCATION) out vec2 vTexMR;
 layout(location = TEXOCCL_LOCATION) out vec2 vTexOccl;
 
 layout(location = WORLDPOS_LOCATION) out vec4 vWorldPos;
-layout(location = 14) out Light light;
-layout(location = 17) out Material material;
-layout(location = 24) out mat3 mTangentLight;
+layout(location = LIGHT_LOCATION) out Light light;
+layout(location = MATERIAL_LOCATION) out Material material;
+layout(location = TANGENTLIGHT_LOCATION) out mat3 mTangentLight;
+
+#endif
+
+#ifdef FRAGMENT_SHADER
+
+layout(location = DIFFUSECOLOR_LOCATION) in vec4 vDiffuseColor;
+layout(location = TEXCOORD0_LOCATION) in vec2 vTexCoord0;
+layout(location = TEXNORMAL_LOCATION) in vec2 vTexNormal;
+layout(location = TEXMR_LOCATION) in vec2 vTexMR;
+layout(location = TEXOCCL_LOCATION) in vec2 vTexOccl;
+
+layout(location = WORLDPOS_LOCATION) in vec4 vWorldPos;
+layout(location = LIGHT_LOCATION) in Light light;
+layout(location = MATERIAL_LOCATION) in Material material;
+layout(location = TANGENTLIGHT_LOCATION) in mat3 mTangentLight;
 
 layout(location = FRAGCOLOR_LOCATION_OUT) out vec4 fragColor;
 
+#endif

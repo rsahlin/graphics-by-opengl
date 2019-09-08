@@ -1,32 +1,42 @@
 package com.nucleus.common;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.lang.ProcessBuilder.Redirect;
+
+import com.nucleus.SimpleLogger;
+
 public class Platform {
 
     public static final String OS_NAME = "os.name";
     public static final String JAVA_VENDOR = "java.vendor";
 
     public enum OS {
-        windows(),
-        linux(),
-        macos(),
-        android(),
-        unknown();
+        windows(0),
+        linux(1),
+        macos(2),
+        android(3),
+        unknown(4);
 
-        private OS() {
+        public final int index;
+
+        private OS(int index) {
+            this.index = index;
         }
 
         public static OS getOS(String osName, String vendor) {
             if (osName == null) {
                 return null;
             }
-            if (osName.contains("windows")) {
+            if (osName.toLowerCase().contains("windows")) {
                 return windows;
             }
-            if (osName.contains("mac")) {
+            if (osName.toLowerCase().contains("mac")) {
                 return macos;
             }
-            if (osName.contains("linux")) {
-                if (vendor.contains("android")) {
+            if (osName.toLowerCase().contains("linux")) {
+                if (vendor.toLowerCase().contains("android")) {
                     return android;
                 }
                 return linux;
@@ -35,6 +45,9 @@ public class Platform {
         }
 
     }
+
+    private final String[] COMMAND = new String[] { "cmd.exe", "/bin/bash", "/bin/bash", "/bin/bash",
+            "/bin/bash" };
 
     private static Platform instance;
     private OS os;
@@ -59,6 +72,44 @@ public class Platform {
 
     public OS getOS() {
         return os;
+    }
+
+    /**
+     * Starts a new command process.
+     * Executes the command and returns the process - only call this if a process has not been started before.
+     * 
+     * @param command
+     * @return The process to send more commands to or read input from - must be terminated by caller.
+     */
+    public Process executeCommand(String command, Redirect destination) {
+
+        ProcessBuilder builder = new ProcessBuilder(COMMAND[os.index]);
+        builder.redirectErrorStream(true);
+        try {
+            if (destination != null) {
+                builder.redirectInput(destination);
+            }
+            Process process = builder.start();
+            if (command != null && command.length() > 0) {
+                executeCommand(process, command);
+            }
+            return process;
+        } catch (IOException e) {
+            SimpleLogger.d(getClass(), "Could not start execute process");
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void executeCommand(Process process, String command) {
+        BufferedWriter pWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+        try {
+            pWriter.write(command);
+            pWriter.newLine();
+            pWriter.flush();
+        } catch (IOException e) {
+            System.out.println(e);
+        }
     }
 
 }

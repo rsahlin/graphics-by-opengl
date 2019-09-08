@@ -2,6 +2,9 @@
  * Source for structs shared between vertex and fragment stage (possibly other stages)
  * Currently a naming based locations are used in favour of numbered layouts - this is simply because
  * keeping track of locations is cumbersome as long as number of fields/parameters change.
+ *
+ * DO NOT ADD DEPENDENCY TO defines here - this file shall be included BEFORE defines.
+ *
  */
  
 const float MIN_ROUGHNESS = 0.03;

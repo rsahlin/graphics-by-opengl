@@ -2,8 +2,9 @@
 precision mediump float;
 precision mediump sampler2D;
 
-#include "common_structs.essl"
-#include "pbr.frag"
+#include "common_structs.glsl"
+#include "layout_vert.glsl"
+#include "pbr_frag.glsl"
 /* 
  * Fragment shader for glTF asset
  * @author Richard Sahlin
