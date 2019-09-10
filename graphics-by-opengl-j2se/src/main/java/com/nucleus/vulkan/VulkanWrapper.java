@@ -1,5 +1,6 @@
 package com.nucleus.vulkan;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import com.nucleus.Backend;
@@ -75,10 +76,14 @@ public abstract class VulkanWrapper extends Backend {
 
     protected VulkanWrapper(Renderers version) {
         super(version);
-        initVulkanBackend();
+        try {
+            initVulkanBackend();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    protected void initVulkanBackend() {
+    protected void initVulkanBackend() throws IOException {
         String path = ShaderBinary.PROGRAM_DIRECTORY + ShaderBinary.V450 + "/";
         // Returns subfolders in path - remember to include current dir - ie empty folder name.
         ArrayList<String> folders = FileUtils.getInstance().listResourceFolders(path);

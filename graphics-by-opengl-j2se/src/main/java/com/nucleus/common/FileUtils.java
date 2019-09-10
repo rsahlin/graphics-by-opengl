@@ -1,6 +1,6 @@
 package com.nucleus.common;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
@@ -11,6 +11,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.Platform.CommandResult;
 
 /**
  * Utilities that are related to filesystem/file operations - singleton class to
@@ -134,30 +135,26 @@ public class FileUtils {
     }
 
     /**
-     * Reads string from reader into buffer and returns as String.
+     * Reads byte array from reader into buffer
      * 
      * @param reader
-     * @param buffer Buffer to read data into, String converted from this. If null a buffer with size 1024 will be
-     * created.
-     * @param index
-     * @param length
-     * @return String read from reader. Length of string is number of chars read.
+     * @param result
+     * @param length Min number of bytes to read
      */
-    public String readString(BufferedReader reader, char[] buffer, int index, int length) {
+    public void readBuffer(BufferedInputStream reader, CommandResult result, int length) {
+        result.read = 0;
         try {
-            char[] useBuffer = buffer;
-            if (useBuffer == null) {
-                useBuffer = new char[1024];
-                index = 0;
-                length = useBuffer.length;
+            while (result.read < length) {
+                result.read += reader.read(result.result, result.read, result.result.length - result.read);
+                if (result.read < length) {
+                    try {
+                        Thread.sleep(2);
+                    } catch (InterruptedException e) {
+                    }
+                }
             }
-            int read = 0;
-            read = reader.read(useBuffer, index, length);
-            String str = new String(useBuffer, index, read);
-            return str;
         } catch (IOException e) {
             SimpleLogger.d(getClass(), e.toString());
-            return "";
         }
     }
 

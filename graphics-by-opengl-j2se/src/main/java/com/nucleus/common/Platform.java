@@ -1,5 +1,6 @@
 package com.nucleus.common;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -46,6 +47,15 @@ public class Platform {
 
     }
 
+    public static class CommandResult {
+        public CommandResult(byte[] result) {
+            this.result = result;
+        }
+
+        public final byte[] result;
+        public int read;
+    }
+
     private final String[] COMMAND = new String[] { "cmd.exe", "/bin/bash", "/bin/bash", "/bin/bash",
             "/bin/bash" };
 
@@ -79,10 +89,11 @@ public class Platform {
      * Executes the command and returns the process - only call this if a process has not been started before.
      * 
      * @param command
+     * @param destination
+     * @param result
      * @return The process to send more commands to or read input from - must be terminated by caller.
      */
-    public Process executeCommand(String command, Redirect destination) {
-
+    public Process executeCommand(String command, Redirect destination, CommandResult result) {
         ProcessBuilder builder = new ProcessBuilder(COMMAND[os.index]);
         builder.redirectErrorStream(true);
         try {
@@ -90,8 +101,11 @@ public class Platform {
                 builder.redirectInput(destination);
             }
             Process process = builder.start();
+            FileUtils.getInstance().readBuffer(new BufferedInputStream(process.getInputStream()), result,
+                    10);
+            SimpleLogger.d(getClass(), "Output from starting process:\n" + new String(result.result, 0, result.read));
             if (command != null && command.length() > 0) {
-                executeCommand(process, command);
+                executeCommand(process, command, result);
             }
             return process;
         } catch (IOException e) {
@@ -101,14 +115,20 @@ public class Platform {
         return null;
     }
 
-    public void executeCommand(Process process, String command) {
+    public CommandResult executeCommand(Process process, String command, CommandResult result) {
         BufferedWriter pWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
         try {
             pWriter.write(command);
             pWriter.newLine();
             pWriter.flush();
+            FileUtils.getInstance().readBuffer(new BufferedInputStream(process.getInputStream()), result,
+                    command.length());
+            SimpleLogger.d(getClass(),
+                    "Output from command: " + command + "\n" + new String(result.result, 0, result.read));
+            return result;
         } catch (IOException e) {
             System.out.println(e);
+            throw new RuntimeException(e);
         }
     }
 

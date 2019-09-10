@@ -1,14 +1,14 @@
 package com.nucleus.vulkan;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-import com.nucleus.SimpleLogger;
 import com.nucleus.common.FileUtils;
 import com.nucleus.common.Platform;
+import com.nucleus.common.Platform.CommandResult;
 
 /**
  * Used to compile GLSL to SPIR-V in runtime.
@@ -29,7 +29,7 @@ public class GLSLCompiler {
 
     private static GLSLCompiler compiler = new GLSLCompiler();
     private Process process;
-    private BufferedReader reader;
+    private BufferedInputStream reader;
     private String currentPath = null;
 
     /**
@@ -50,13 +50,12 @@ public class GLSLCompiler {
      * 
      * @param path
      * @param folders
+     * @throws IOException
      */
-    public synchronized void compileShaders(String path, ArrayList<String> folders) {
-        process = Platform.getInstance().executeCommand("cd c:\\", null);
-        reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        char[] buffer = new char[4000];
-        SimpleLogger.d(getClass(), "Output from starting command process:\n"
-                + FileUtils.getInstance().readString(reader, buffer, 0, buffer.length));
+    public synchronized void compileShaders(String path, ArrayList<String> folders) throws IOException {
+        byte[] buffer = new byte[8000];
+        CommandResult result = new CommandResult(buffer);
+        process = Platform.getInstance().executeCommand("cd c:\\", null, result);
         compileStage(path, folders, Stage.vert);
         compileStage(path, folders, Stage.geom);
         compileStage(path, folders, Stage.frag);
@@ -68,12 +67,15 @@ public class GLSLCompiler {
         process.destroy();
     }
 
-    public void compileStage(String path, ArrayList<String> folders, Stage stage) {
+    public void compileStage(String path, ArrayList<String> folders, Stage stage) throws IOException {
+        byte[] buffer = new byte[4000];
+        CommandResult result = new CommandResult(buffer);
         for (String folder : folders) {
             ArrayList<String> currentFolder = new ArrayList<String>();
             currentFolder.add(folder);
+            String stageSuffix = "." + stage.name();
             ArrayList<String> filenames = FileUtils.getInstance().listFilesToString(path, currentFolder,
-                    new String[] { "." + stage.name() });
+                    new String[] { stageSuffix });
 
             String name = null;
             String output = null;
@@ -81,28 +83,30 @@ public class GLSLCompiler {
                 File file = FileUtils.getInstance().getFile(path + filename);
                 String filepath = file.getPath().substring(0,
                         file.getPath().indexOf(folder.length() > 0 ? folder + "\\" + file.getName() : file.getName()));
-                currentPath = setPath(currentPath, filepath, process, reader);
+                currentPath = setPath(currentPath, filepath, process, reader, result);
 
                 name = filename.substring(0, filename.length() - (stage.name().length() + 1));
                 output = name + "_" + stage.name() + ".spv";
-                String cmd = "glslc " + filename + " -o " + output;
-                SimpleLogger.d(getClass(), "Compiling " + filename + " to " + output + ", using: '" + "glslc "
-                        + filename + " -o " + output + "'");
-                Platform.getInstance().executeCommand(process, cmd);
-                String result = FileUtils.getInstance().readString(reader, null, 0, -1);
-                if (result.contains("error:")) {
+                String cmd = "glslc " + filename + " -o -";
+                Platform.getInstance().executeCommand(process, cmd, result);
+                String str = new String(result.result, 0, result.read);
+                if (str.contains("error:")) {
                     throw new IllegalArgumentException("Error compiling shader: \n" + result);
+                } else {
+                    FileOutputStream fos = new FileOutputStream(currentPath + output);
+                    fos.write(result.result, 0, result.read);
+                    fos.flush();
+                    fos.close();
                 }
             }
         }
 
     }
 
-    private String setPath(String currentPath, String filepath, Process process, BufferedReader reader) {
+    private String setPath(String currentPath, String filepath, Process process, BufferedInputStream reader,
+            CommandResult result) {
         if (currentPath == null || !currentPath.contentEquals(filepath)) {
-            SimpleLogger.d(getClass(), "Setting path.");
-            Platform.getInstance().executeCommand(process, "cd " + filepath);
-            SimpleLogger.d(getClass(), FileUtils.getInstance().readString(reader, null, 0, -1));
+            Platform.getInstance().executeCommand(process, "cd " + filepath, result);
             return filepath;
         }
         return currentPath;
