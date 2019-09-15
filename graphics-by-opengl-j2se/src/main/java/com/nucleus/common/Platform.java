@@ -101,6 +101,7 @@ public class Platform {
                 builder.redirectInput(destination);
             }
             Process process = builder.start();
+            result.read = 0;
             FileUtils.getInstance().readBuffer(new BufferedInputStream(process.getInputStream()), result,
                     10);
             SimpleLogger.d(getClass(), "Output from starting process:\n" + new String(result.result, 0, result.read));
@@ -121,6 +122,7 @@ public class Platform {
             pWriter.write(command);
             pWriter.newLine();
             pWriter.flush();
+            result.read = 0;
             FileUtils.getInstance().readBuffer(new BufferedInputStream(process.getInputStream()), result,
                     command.length());
             SimpleLogger.d(getClass(),

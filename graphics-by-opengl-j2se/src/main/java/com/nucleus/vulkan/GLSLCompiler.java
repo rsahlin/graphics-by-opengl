@@ -2,13 +2,14 @@ package com.nucleus.vulkan;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import com.nucleus.common.FileUtils;
 import com.nucleus.common.Platform;
 import com.nucleus.common.Platform.CommandResult;
+import com.nucleus.io.StreamUtils;
+import com.nucleus.spirv.SpirvBinary;
 
 /**
  * Used to compile GLSL to SPIR-V in runtime.
@@ -68,7 +69,7 @@ public class GLSLCompiler {
     }
 
     public void compileStage(String path, ArrayList<String> folders, Stage stage) throws IOException {
-        byte[] buffer = new byte[4000];
+        byte[] buffer = new byte[16000];
         CommandResult result = new CommandResult(buffer);
         for (String folder : folders) {
             ArrayList<String> currentFolder = new ArrayList<String>();
@@ -93,14 +94,20 @@ public class GLSLCompiler {
                 if (str.contains("error:")) {
                     throw new IllegalArgumentException("Error compiling shader: \n" + result);
                 } else {
-                    FileOutputStream fos = new FileOutputStream(currentPath + output);
-                    fos.write(result.result, 0, result.read);
-                    fos.flush();
-                    fos.close();
+                    if (str.trim().length() == cmd.length()) {
+                        // Reset number of bytes read to force read
+                        result.read = 0;
+                    }
+                    // Find spir-v magic number
+                    while (!SpirvBinary.hasSPIRVMagic(result.result, 0, result.read)) {
+                        FileUtils.getInstance().readBuffer(new BufferedInputStream(process.getInputStream()), result,
+                                4);
+                    }
+                    SpirvBinary spirv = new SpirvBinary(result.result);
+                    StreamUtils.writeToStream(currentPath + output, spirv.getSpirv());
                 }
             }
         }
-
     }
 
     private String setPath(String currentPath, String filepath, Process process, BufferedInputStream reader,

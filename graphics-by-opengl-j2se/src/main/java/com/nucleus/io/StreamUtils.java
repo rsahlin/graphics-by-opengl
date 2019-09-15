@@ -2,13 +2,16 @@ package com.nucleus.io;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -181,6 +184,32 @@ public class StreamUtils {
         }
         byteChannel.close();
         return total;
+    }
+
+    /**
+     * Writes the remaining bytes from the buffer to the outputstream
+     * 
+     * @param The filename to write to
+     * @param buffer
+     * @throws IOException
+     */
+    public static void writeToStream(String filename, ByteBuffer buffer) throws IOException {
+        FileOutputStream fos = new FileOutputStream(filename);
+        writeToStream(fos, buffer);
+        fos.close();
+    }
+
+    /**
+     * Writes the remaining bytes from the buffer to the outputstream
+     * 
+     * @param os
+     * @param buffer
+     * @throws IOException
+     */
+    public static void writeToStream(OutputStream os, ByteBuffer buffer) throws IOException {
+        WritableByteChannel byteChannel = Channels.newChannel(os);
+        byteChannel.write(buffer);
+        byteChannel.close();
     }
 
 }

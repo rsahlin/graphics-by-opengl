@@ -135,24 +135,25 @@ public class FileUtils {
     }
 
     /**
-     * Reads byte array from reader into buffer
+     * Reads byte array from reader into buffer, at the position specified by result.read
      * 
      * @param reader
      * @param result
      * @param length Min number of bytes to read
      */
     public void readBuffer(BufferedInputStream reader, CommandResult result, int length) {
-        result.read = 0;
+        int read = 0;
         try {
-            while (result.read < length) {
-                result.read += reader.read(result.result, result.read, result.result.length - result.read);
-                if (result.read < length) {
+            while (read < length) {
+                read += reader.read(result.result, result.read, result.result.length - result.read);
+                if (read < length) {
                     try {
                         Thread.sleep(2);
                     } catch (InterruptedException e) {
                     }
                 }
             }
+            result.read = read;
         } catch (IOException e) {
             SimpleLogger.d(getClass(), e.toString());
         }
