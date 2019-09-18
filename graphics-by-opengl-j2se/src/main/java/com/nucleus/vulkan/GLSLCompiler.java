@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.nucleus.SimpleLogger;
 import com.nucleus.common.FileUtils;
 import com.nucleus.common.Platform;
 import com.nucleus.common.Platform.CommandResult;
@@ -99,11 +100,13 @@ public class GLSLCompiler {
                         result.read = 0;
                     }
                     // Find spir-v magic number
-                    while (!SpirvBinary.hasSPIRVMagic(result.result, 0, result.read)) {
+                    int offset = 0;
+                    while ((offset = SpirvBinary.SPIRVMagic(result.result, 0, result.read)) < 0) {
                         FileUtils.getInstance().readBuffer(new BufferedInputStream(process.getInputStream()), result,
                                 4);
                     }
-                    SpirvBinary spirv = new SpirvBinary(result.result);
+                    SpirvBinary spirv = new SpirvBinary(result.result, offset);
+                    SimpleLogger.d(getClass(), "Created SPIR-V for with total words: " + spirv.totalWords);
                     StreamUtils.writeToStream(currentPath + output, spirv.getSpirv());
                 }
             }
