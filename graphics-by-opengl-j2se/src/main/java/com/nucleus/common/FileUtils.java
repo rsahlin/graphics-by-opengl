@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -157,6 +158,26 @@ public class FileUtils {
         } catch (IOException e) {
             SimpleLogger.d(getClass(), e.toString());
         }
+    }
+
+    /**
+     * Waits for data to become available
+     * 
+     * @param in
+     * @param timeoutMillis
+     * @return Positive number means number of bytes found, 0 means timeout and -1 end of stream.
+     */
+    public int waitForAvailable(InputStream in, int timeoutMillis) {
+        int len = -1;
+        long start = System.currentTimeMillis();
+        try {
+            while ((len = in.available()) == 0 && (System.currentTimeMillis() - start) < timeoutMillis) {
+                Thread.sleep(100);
+            }
+        } catch (InterruptedException | IOException e) {
+            // Nothing to do
+        }
+        return len;
     }
 
 }

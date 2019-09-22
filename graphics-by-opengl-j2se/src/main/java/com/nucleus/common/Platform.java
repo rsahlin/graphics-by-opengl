@@ -1,12 +1,15 @@
 package com.nucleus.common;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.lang.ProcessBuilder.Redirect;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.io.StreamUtils;
 
 public class Platform {
 
@@ -90,10 +93,10 @@ public class Platform {
      * 
      * @param command
      * @param destination
-     * @param result
+     * @param The buffer to store output from executed command, data is stored at beginning of buffer
      * @return The process to send more commands to or read input from - must be terminated by caller.
      */
-    public Process executeCommand(String command, Redirect destination, CommandResult result) {
+    public Process executeCommand(String command, Redirect destination, ByteBuffer buffer) {
         ProcessBuilder builder = new ProcessBuilder(COMMAND[os.index]);
         builder.redirectErrorStream(true);
         try {
@@ -101,12 +104,9 @@ public class Platform {
                 builder.redirectInput(destination);
             }
             Process process = builder.start();
-            result.read = 0;
-            FileUtils.getInstance().readBuffer(new BufferedInputStream(process.getInputStream()), result,
-                    10);
-            SimpleLogger.d(getClass(), "Output from starting process:\n" + new String(result.result, 0, result.read));
+            readCommandFromStream(process.getInputStream(), buffer);
             if (command != null && command.length() > 0) {
-                executeCommand(process, command, result);
+                executeCommand(process, command, buffer);
             }
             return process;
         } catch (IOException e) {
@@ -116,22 +116,32 @@ public class Platform {
         return null;
     }
 
-    public CommandResult executeCommand(Process process, String command, CommandResult result) {
+    public ByteBuffer executeCommand(Process process, String command, ByteBuffer buffer) {
         BufferedWriter pWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
         try {
             pWriter.write(command);
             pWriter.newLine();
             pWriter.flush();
-            result.read = 0;
-            FileUtils.getInstance().readBuffer(new BufferedInputStream(process.getInputStream()), result,
-                    command.length());
-            SimpleLogger.d(getClass(),
-                    "Output from command: " + command + "\n" + new String(result.result, 0, result.read));
-            return result;
+            readCommandFromStream(process.getInputStream(), buffer);
+            return buffer;
         } catch (IOException e) {
             System.out.println(e);
             throw new RuntimeException(e);
         }
+    }
+
+    private int readCommandFromStream(InputStream in, ByteBuffer buffer) throws IOException {
+        buffer.clear();
+        int len = FileUtils.getInstance().waitForAvailable(in, 1000);
+        if (len == -1) {
+            throw new IllegalArgumentException("End of stream");
+        }
+        SimpleLogger.d(getClass(), "Reading " + len + ", bytes from inputstream");
+        int read = StreamUtils.readFromStream(in, buffer, len);
+        buffer.flip();
+        SimpleLogger.d(getClass(), "Output from starting process:\n" + StandardCharsets.ISO_8859_1.decode(buffer));
+        buffer.position(0);
+        return read;
     }
 
 }

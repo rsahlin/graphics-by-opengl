@@ -140,7 +140,7 @@ public class StreamUtils {
     public static int readFromName(String name, ByteBuffer buffer) throws IOException, URISyntaxException {
         ClassLoader loader = StreamUtils.class.getClassLoader();
         InputStream is = loader.getResourceAsStream(name);
-        int loaded = readFromStream(is, buffer);
+        int loaded = readFromStream(is, buffer, -1);
         is.close();
         return loaded;
     }
@@ -167,22 +167,32 @@ public class StreamUtils {
     }
 
     /**
-     * Loads data from the inputstream into the buffer - at the current position
+     * Loads data from the inputstream into the buffer - at the current position.
+     * This will create a ReadableByteChannel using the inputstream. Channel is not closed.
      * 
      * @param is
      * @param buffer
+     * @param Number of bytes to read, or -1 to read to end of stream
      * @return The total number of bytes read
      * @throws IOException
-     * @throws URISyntaxException
      */
-    public static int readFromStream(InputStream is, ByteBuffer buffer) throws IOException, URISyntaxException {
+    public static int readFromStream(InputStream is, ByteBuffer buffer, int length) throws IOException {
         ReadableByteChannel byteChannel = Channels.newChannel(is);
         int read = 0;
         int total = 0;
+        if (length > 0) {
+            buffer.limit(buffer.position() + length);
+        }
+        if (length == 0) {
+            length = is.available();
+        }
+        if (length == 0) {
+            return total;
+        }
         while ((read = byteChannel.read(buffer)) > 0) {
             total += read;
         }
-        byteChannel.close();
+        byteChannel = null;
         return total;
     }
 

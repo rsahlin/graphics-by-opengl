@@ -3,14 +3,16 @@ package com.nucleus.vulkan;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.BufferUtils;
 import com.nucleus.common.FileUtils;
 import com.nucleus.common.Platform;
-import com.nucleus.common.Platform.CommandResult;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.spirv.SpirvBinary;
+import com.nucleus.spirv.SpirvLoader;
 
 /**
  * Used to compile GLSL to SPIR-V in runtime.
@@ -55,12 +57,15 @@ public class GLSLCompiler {
      * @throws IOException
      */
     public synchronized void compileShaders(String path, ArrayList<String> folders) throws IOException {
-        byte[] buffer = new byte[8000];
-        CommandResult result = new CommandResult(buffer);
-        process = Platform.getInstance().executeCommand("cd c:\\", null, result);
-        compileStage(path, folders, Stage.vert);
-        compileStage(path, folders, Stage.geom);
-        compileStage(path, folders, Stage.frag);
+        ByteBuffer buffer = BufferUtils.createByteBuffer(16000);
+        process = Platform.getInstance().executeCommand("cd c:\\", null, buffer);
+        // File file = FileUtils.getInstance().getFile(path + "gltf/main_vert.spv");
+        // SpirvLoader loader = new SpirvLoader();
+        // loader.loadSpirv(new FileInputStream(file), buffer, 1000);
+
+        compileStage(path, folders, buffer, Stage.vert);
+        compileStage(path, folders, buffer, Stage.geom);
+        compileStage(path, folders, buffer, Stage.frag);
         try {
             reader.close();
         } catch (IOException e) {
@@ -69,9 +74,8 @@ public class GLSLCompiler {
         process.destroy();
     }
 
-    public void compileStage(String path, ArrayList<String> folders, Stage stage) throws IOException {
-        byte[] buffer = new byte[16000];
-        CommandResult result = new CommandResult(buffer);
+    public void compileStage(String path, ArrayList<String> folders, ByteBuffer buffer, Stage stage)
+            throws IOException {
         for (String folder : folders) {
             ArrayList<String> currentFolder = new ArrayList<String>();
             currentFolder.add(folder);
@@ -85,28 +89,24 @@ public class GLSLCompiler {
                 File file = FileUtils.getInstance().getFile(path + filename);
                 String filepath = file.getPath().substring(0,
                         file.getPath().indexOf(folder.length() > 0 ? folder + "\\" + file.getName() : file.getName()));
-                currentPath = setPath(currentPath, filepath, process, reader, result);
+                currentPath = setPath(currentPath, filepath, process, reader, buffer);
 
                 name = filename.substring(0, filename.length() - (stage.name().length() + 1));
                 output = name + "_" + stage.name() + ".spv";
                 String cmd = "glslc " + filename + " -o -";
-                Platform.getInstance().executeCommand(process, cmd, result);
-                String str = new String(result.result, 0, result.read);
+                Platform.getInstance().executeCommand(process, cmd, buffer);
+                String str = buffer.asCharBuffer().toString();
                 if (str.contains("error:")) {
-                    throw new IllegalArgumentException("Error compiling shader: \n" + result);
+                    throw new IllegalArgumentException("Error compiling shader: \n" + str);
                 } else {
                     if (str.trim().length() == cmd.length()) {
                         // Reset number of bytes read to force read
-                        result.read = 0;
+                        buffer.clear();
                     }
-                    // Find spir-v magic number
-                    int offset = 0;
-                    while ((offset = SpirvBinary.SPIRVMagic(result.result, 0, result.read)) < 0) {
-                        FileUtils.getInstance().readBuffer(new BufferedInputStream(process.getInputStream()), result,
-                                4);
-                    }
-                    SpirvBinary spirv = new SpirvBinary(result.result, offset);
-                    SimpleLogger.d(getClass(), "Created SPIR-V for with total words: " + spirv.totalWords);
+                    SpirvLoader loader = new SpirvLoader();
+                    loader.loadSpirv(process.getInputStream(), buffer, 1000);
+                    SpirvBinary spirv = new SpirvBinary(buffer, loader.getTotalWords());
+                    SimpleLogger.d(getClass(), "Created SPIR-V with total words: " + spirv.totalWords);
                     StreamUtils.writeToStream(currentPath + output, spirv.getSpirv());
                 }
             }
@@ -114,9 +114,9 @@ public class GLSLCompiler {
     }
 
     private String setPath(String currentPath, String filepath, Process process, BufferedInputStream reader,
-            CommandResult result) {
+            ByteBuffer buffer) {
         if (currentPath == null || !currentPath.contentEquals(filepath)) {
-            Platform.getInstance().executeCommand(process, "cd " + filepath, result);
+            Platform.getInstance().executeCommand(process, "cd " + filepath, buffer);
             return filepath;
         }
         return currentPath;
