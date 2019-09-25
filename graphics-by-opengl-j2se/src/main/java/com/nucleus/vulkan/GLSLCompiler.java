@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import com.nucleus.SimpleLogger;
@@ -95,15 +96,13 @@ public class GLSLCompiler {
                 output = name + "_" + stage.name() + ".spv";
                 String cmd = "glslc " + filename + " -o -";
                 Platform.getInstance().executeCommand(process, cmd, buffer);
-                String str = buffer.asCharBuffer().toString();
-                if (str.contains("error:")) {
+                String str = StandardCharsets.ISO_8859_1.decode(buffer).toString();
+                if (str.contains("error:") || str.contains("not recognized")) {
                     throw new IllegalArgumentException("Error compiling shader: \n" + str);
                 } else {
-                    if (str.trim().length() == cmd.length()) {
-                        // Reset number of bytes read to force read
-                        buffer.clear();
-                    }
                     SpirvLoader loader = new SpirvLoader();
+                    loader.waitForMagic(process.getInputStream(), buffer, 1000);
+                    Platform.getInstance().executeCommand(process, SpirvLoader.SPIRV_END_STR, buffer);
                     loader.loadSpirv(process.getInputStream(), buffer, 1000);
                     SpirvBinary spirv = new SpirvBinary(buffer, loader.getTotalWords());
                     SimpleLogger.d(getClass(), "Created SPIR-V with total words: " + spirv.totalWords);

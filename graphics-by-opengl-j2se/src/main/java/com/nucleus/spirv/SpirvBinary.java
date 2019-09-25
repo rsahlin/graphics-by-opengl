@@ -90,7 +90,7 @@ public class SpirvBinary {
      * @return total number of stream words (32 bits) for the spirv binary (ie total number of 32 bit words in binary),
      * or -1 if not valid spirv
      */
-    public static int validateSpirv(ByteBuffer spirv) {
+    public static int validateSpirv(ByteBuffer spirv, int endMarker) {
         int offset = spirv.position();
         int totalWords = -1;
         if (SPIRVMagic(spirv) == offset) {
@@ -100,7 +100,7 @@ public class SpirvBinary {
                 int bound = spirvInt.get(BOUND_INDEX);
                 SimpleLogger.d(SpirvBinary.class,
                         "Spirv version: " + (version >>> 16) + "." + (version & 0x0ffff) + ", bound: " + bound);
-                int wordCount = getTotalWordCount(spirvInt, INSTRUCTION_STREAM_INDEX);
+                int wordCount = getTotalWordCount(spirvInt, INSTRUCTION_STREAM_INDEX, endMarker);
                 if (wordCount > 0) {
                     totalWords = wordCount + INSTRUCTION_STREAM_INDEX;
                     spirv.limit(totalWords * 4);
@@ -133,13 +133,24 @@ public class SpirvBinary {
     }
 
     /**
+     * Check if offset is end marker
+     * 
+     * @param spirv
+     * @param offset
+     * @return true of offset has end marker
+     */
+    private static boolean isEndMarker(IntBuffer spirv, int offset, int marker) {
+        return (spirv.get(offset) == marker);
+    }
+
+    /**
      * Returns the wordcount beginning at offset, this will add upp all wordcounts to the end.
      * 
      * @param spirv
      * @param offset
      * @return Total number of words found - or -1 if end of array is reached, this means not enough data in array.
      */
-    private static int getTotalWordCount(IntBuffer spirv, int offset) {
+    private static int getTotalWordCount(IntBuffer spirv, int offset, int endMarker) {
         int totalWordCount = 0;
         SpirvStream stream = new SpirvStream(offset);
         SpirvInstruction instruction = null;
@@ -147,16 +158,13 @@ public class SpirvBinary {
             SimpleLogger.d(SpirvBinary.class,
                     "wordCount: " + instruction.wordCount + ", opCode: " + instruction.opCode + ", offset: "
                             + stream.offset);
-            if (instruction.isFunctionEnd()) {
-                instruction = getWordCount(spirv, stream);
+            if (instruction.isFunctionEnd() && isEndMarker(spirv, stream.offset, endMarker)) {
+                // Found end of spirv
+                SimpleLogger.d(SpirvBinary.class, "Found " + totalWordCount + " instruction words.");
+                return totalWordCount;
             }
         }
-        // Check if end of array reached
-        if (instruction == null) {
-            return -1;
-        }
-        SimpleLogger.d(SpirvBinary.class, "Found " + totalWordCount + " instruction words.");
-        return totalWordCount;
+        return instruction == null ? -1 : stream.totalWordCount;
     }
 
     /**
