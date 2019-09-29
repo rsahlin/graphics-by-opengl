@@ -3,6 +3,7 @@ package com.nucleus.vulkan;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ProcessBuilder.Redirect;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import com.nucleus.common.FileUtils;
 import com.nucleus.common.Platform;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.spirv.SpirvBinary;
+import com.nucleus.spirv.SpirvBinary.SpirvStream;
 import com.nucleus.spirv.SpirvLoader;
 
 /**
@@ -35,7 +37,6 @@ public class GLSLCompiler {
     private static GLSLCompiler compiler = new GLSLCompiler();
     private Process process;
     private BufferedInputStream reader;
-    private String currentPath = null;
 
     /**
      * Returns the glsl compiler instance used to compile GLSL into spir-v
@@ -59,7 +60,6 @@ public class GLSLCompiler {
      */
     public synchronized void compileShaders(String path, ArrayList<String> folders) throws IOException {
         ByteBuffer buffer = BufferUtils.createByteBuffer(16000);
-        process = Platform.getInstance().executeCommand("cd c:\\", null, buffer);
         // File file = FileUtils.getInstance().getFile(path + "gltf/main_vert.spv");
         // SpirvLoader loader = new SpirvLoader();
         // loader.loadSpirv(new FileInputStream(file), buffer, 1000);
@@ -88,37 +88,58 @@ public class GLSLCompiler {
             String output = null;
             for (String filename : filenames) {
                 File file = FileUtils.getInstance().getFile(path + filename);
-                String filepath = file.getPath().substring(0,
+                String filePath = file.getPath().substring(0,
                         file.getPath().indexOf(folder.length() > 0 ? folder + "\\" + file.getName() : file.getName()));
-                currentPath = setPath(currentPath, filepath, process, reader, buffer);
-
                 name = filename.substring(0, filename.length() - (stage.name().length() + 1));
                 output = name + "_" + stage.name() + ".spv";
-                String cmd = "glslc " + filename + " -o -";
-                Platform.getInstance().executeCommand(process, cmd, buffer);
-                String str = StandardCharsets.ISO_8859_1.decode(buffer).toString();
-                if (str.contains("error:") || str.contains("not recognized")) {
-                    throw new IllegalArgumentException("Error compiling shader: \n" + str);
-                } else {
-                    SpirvLoader loader = new SpirvLoader();
-                    loader.waitForMagic(process.getInputStream(), buffer, 1000);
-                    Platform.getInstance().executeCommand(process, SpirvLoader.SPIRV_END_STR, buffer);
-                    loader.loadSpirv(process.getInputStream(), buffer, 1000);
-                    SpirvBinary spirv = new SpirvBinary(buffer, loader.getTotalWords());
-                    SimpleLogger.d(getClass(), "Created SPIR-V with total words: " + spirv.totalWords);
-                    StreamUtils.writeToStream(currentPath + output, spirv.getSpirv());
+                String cmd = "glslc " + filename + " -o - & echo " + SpirvBinary.SPIRV_END_MARKER;
+                buffer.clear();
+                SpirvBinary binary = compile(new String[] { "cd " + filePath, cmd }, null, buffer);
+                if (binary == null) {
+                    throw new IllegalArgumentException("Error compiling shader: \n" + filePath);
                 }
+                StreamUtils.writeToStream(filePath + output, binary.getSpirv());
             }
         }
     }
 
-    private String setPath(String currentPath, String filepath, Process process, BufferedInputStream reader,
-            ByteBuffer buffer) {
-        if (currentPath == null || !currentPath.contentEquals(filepath)) {
-            Platform.getInstance().executeCommand(process, "cd " + filepath, buffer);
-            return filepath;
+    /**
+     * Starts a new command process.
+     * Executes the command and returns the process - only call this if a process has not been started before.
+     * 
+     * @param command
+     * @param destination
+     * @param The buffer to store output from executed command, data is stored at beginning of buffer
+     * @return The spirv binary or null if failed
+     */
+    public SpirvBinary compile(String[] commands, Redirect destination, ByteBuffer buffer) {
+        try {
+            Process process = Platform.getInstance().startProcess(null, buffer);
+            for (String cmd : commands) {
+                Platform.getInstance().executeCommand(process, cmd, buffer);
+            }
+            String str = StandardCharsets.ISO_8859_1.decode(buffer).toString();
+            if (str.contains("error:") || str.contains("not recognized")) {
+                throw new IllegalArgumentException("Error compiling shader: \n" + str);
+            }
+            int result = Platform.getInstance().endProcess(process, buffer);
+            // process.destroy();
+            if (result != 0) {
+                throw new IllegalArgumentException("Exception executing command, exitcode " + result);
+            }
+            int read = StreamUtils.readFromStream(process.getInputStream(), buffer, -1);
+            buffer.rewind();
+            SpirvLoader loader = new SpirvLoader();
+            SpirvStream stream = loader.loadSpirv(process.getInputStream(), buffer, 1000);
+            buffer.limit(stream.getOffset());
+            SpirvBinary spirv = new SpirvBinary(buffer, stream.getOffset());
+            SimpleLogger.d(getClass(), "Created SPIR-V with total words: " + spirv.totalWords);
+            return spirv;
+        } catch (IOException e) {
+            SimpleLogger.d(getClass(), "Could not start execute process");
+            e.printStackTrace();
         }
-        return currentPath;
+        return null;
     }
 
 }

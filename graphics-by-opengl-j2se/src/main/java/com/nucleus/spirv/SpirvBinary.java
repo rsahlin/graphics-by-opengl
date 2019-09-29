@@ -11,14 +11,20 @@ import com.nucleus.common.BufferUtils;
  */
 public class SpirvBinary {
 
+    public static final String SPIRV_END_MARKER = "END!";
+    public static final int SPIRV_END_VALUE = (0x45) | (0x4E << 8) | (0x44 << 16) | (0x21 << 24);
+
     private static class SpirvInstruction {
 
         public final static int OpFunctionEnd = 56;
+        public final static int OpFunctionStart = 54;
 
+        int stream;
         int wordCount;
         int opCode;
 
         private SpirvInstruction(int stream) {
+            this.stream = stream;
             wordCount = (stream >>> 16) & 0x0ffff;
             opCode = stream & 0x0ffff;
         }
@@ -26,15 +32,78 @@ public class SpirvBinary {
         boolean isFunctionEnd() {
             return opCode == OpFunctionEnd;
         }
+
+        boolean isFunctionStart() {
+            return opCode == OpFunctionStart;
+        }
+
+        public boolean isEndMarker() {
+            String str = getString();
+            SimpleLogger.d(getClass(), "Stream: " + str);
+            return stream == SPIRV_END_VALUE;
+        }
+
+        public String getString() {
+            return new String(new byte[] { (byte) (stream & 0x0ff),
+                    (byte) (stream >>> 8 & 0x0ff), (byte) (stream >>> 16 & 0x0ff),
+                    (byte) (stream >>> 24 & 0x0ff) });
+
+        }
+
     }
 
-    private static class SpirvStream {
+    public static class SpirvStream {
+
+        public int getOffset() {
+            return offset;
+        }
+
+        public int getTotalWordCount() {
+            return totalWordCount;
+        }
+
+        public int getOpStartCount() {
+            return opStartCount;
+        }
+
+        public int getOpEndCount() {
+            return opEndCount;
+        }
 
         int offset;
         int totalWordCount;
+        int opStartCount = 0;
+        int opEndCount = 0;
+        IntBuffer spirvBuffer;
 
-        private SpirvStream(int offset) {
+        private SpirvStream(IntBuffer spirvBuffer, int offset) {
+            this.spirvBuffer = spirvBuffer;
             this.offset = offset;
+        }
+
+        public boolean isValid() {
+            // TODO: How to know it's really valid?
+            if (totalWordCount + INSTRUCTION_STREAM_INDEX != offset) {
+                throw new IllegalArgumentException("Invalid wordcount and offset");
+            }
+            return (totalWordCount > 0 && opStartCount == opEndCount);
+        }
+
+        /**
+         * Advances the stream for the instruction
+         * 
+         * @param instruction
+         */
+        void advanceStream(SpirvInstruction instruction) {
+            totalWordCount += instruction.wordCount;
+            offset += instruction.wordCount;
+        }
+
+        /**
+         * Set the int buffers limit to the current offset
+         */
+        void setLimit() {
+            spirvBuffer.limit(offset);
         }
 
     }
@@ -87,30 +156,23 @@ public class SpirvBinary {
      * Position is set after last found instruction.
      * 
      * @param Buffer containing spirv, spirv must start at current buffer position
-     * @return total number of stream words (32 bits) for the spirv binary (ie total number of 32 bit words in binary),
-     * or -1 if not valid spirv
+     * @param spirv Stream
      */
-    public static int validateSpirv(ByteBuffer spirv, int endMarker) {
+    public static SpirvStream getStream(ByteBuffer spirv) {
         int offset = spirv.position();
-        int totalWords = -1;
         if (SPIRVMagic(spirv) == offset) {
             IntBuffer spirvInt = spirv.asIntBuffer();
+            SimpleLogger.d(SpirvBinary.class, "Getting spirv stream, offset: " + offset + ", limit: " + spirv.limit()
+                    + ", intbuffer capacity: " + spirvInt.capacity());
             if (spirvInt.get(MAGIC_INDEX) == SPIR_V_MAGIC) {
                 int version = spirvInt.get(VERSION_INDEX);
                 int bound = spirvInt.get(BOUND_INDEX);
                 SimpleLogger.d(SpirvBinary.class,
                         "Spirv version: " + (version >>> 16) + "." + (version & 0x0ffff) + ", bound: " + bound);
-                int wordCount = getTotalWordCount(spirvInt, INSTRUCTION_STREAM_INDEX, endMarker);
-                if (wordCount > 0) {
-                    totalWords = wordCount + INSTRUCTION_STREAM_INDEX;
-                    spirv.limit(totalWords * 4);
-                    spirv.position(offset + totalWords * Integer.BYTES);
-                } else {
-                    spirv.position(offset + spirvInt.capacity() * Integer.BYTES);
-                }
+                return getTotalWordCount(spirvInt, INSTRUCTION_STREAM_INDEX);
             }
         }
-        return totalWords;
+        return null;
     }
 
     /**
@@ -120,27 +182,12 @@ public class SpirvBinary {
      * @param stream
      * @return Wordcount att offset or -1 if offset is outside array
      */
-    private static SpirvInstruction getWordCount(IntBuffer spirv, SpirvStream stream) {
+    private static SpirvInstruction getInstruction(IntBuffer spirv, SpirvStream stream) {
         if (stream.offset >= spirv.capacity()) {
             return null;
         }
         int read = spirv.get(stream.offset);
-        SpirvInstruction instruction = new SpirvInstruction(read);
-        stream.totalWordCount += instruction.wordCount;
-        stream.offset += instruction.wordCount;
-        return instruction;
-
-    }
-
-    /**
-     * Check if offset is end marker
-     * 
-     * @param spirv
-     * @param offset
-     * @return true of offset has end marker
-     */
-    private static boolean isEndMarker(IntBuffer spirv, int offset, int marker) {
-        return (spirv.get(offset) == marker);
+        return new SpirvInstruction(read);
     }
 
     /**
@@ -148,23 +195,32 @@ public class SpirvBinary {
      * 
      * @param spirv
      * @param offset
-     * @return Total number of words found - or -1 if end of array is reached, this means not enough data in array.
+     * @return The found stream
      */
-    private static int getTotalWordCount(IntBuffer spirv, int offset, int endMarker) {
-        int totalWordCount = 0;
-        SpirvStream stream = new SpirvStream(offset);
+    private static SpirvStream getTotalWordCount(IntBuffer spirv, int offset) {
+        SpirvStream stream = new SpirvStream(spirv, offset);
         SpirvInstruction instruction = null;
-        while ((instruction = getWordCount(spirv, stream)) != null) {
-            SimpleLogger.d(SpirvBinary.class,
-                    "wordCount: " + instruction.wordCount + ", opCode: " + instruction.opCode + ", offset: "
-                            + stream.offset);
-            if (instruction.isFunctionEnd() && isEndMarker(spirv, stream.offset, endMarker)) {
-                // Found end of spirv
-                SimpleLogger.d(SpirvBinary.class, "Found " + totalWordCount + " instruction words.");
-                return totalWordCount;
+        while ((instruction = getInstruction(spirv, stream)) != null) {
+            if (instruction.wordCount > 500 | instruction.opCode > 500) {
+                if (instruction.isEndMarker()) {
+                    return stream;
+                } else {
+                    SimpleLogger.d(SpirvBinary.class,
+                            "wordCount: " + instruction.wordCount + ", opCode: " + instruction.opCode + ", offset: "
+                                    + stream.offset + "'" + instruction.getString() + "'");
+                    throw new IllegalArgumentException("Invalid stream");
+                }
+            } else {
+                stream.advanceStream(instruction);
+            }
+            if (instruction.opCode == SpirvInstruction.OpFunctionStart) {
+                stream.opStartCount++;
+            }
+            if (instruction.opCode == SpirvInstruction.OpFunctionEnd) {
+                stream.opEndCount++;
             }
         }
-        return instruction == null ? -1 : stream.totalWordCount;
+        return stream;
     }
 
     /**

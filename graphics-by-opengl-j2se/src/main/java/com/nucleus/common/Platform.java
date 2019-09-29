@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.lang.ProcessBuilder.Redirect;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.io.StreamUtils;
@@ -61,6 +60,7 @@ public class Platform {
 
     private final String[] COMMAND = new String[] { "cmd.exe", "/bin/bash", "/bin/bash", "/bin/bash",
             "/bin/bash" };
+    private final String[] EXIT = new String[] { "exit", "exit", "exit", "exit", };
 
     private static Platform instance;
     private OS os;
@@ -89,25 +89,21 @@ public class Platform {
 
     /**
      * Starts a new command process.
-     * Executes the command and returns the process - only call this if a process has not been started before.
      * 
-     * @param command
      * @param destination
      * @param The buffer to store output from executed command, data is stored at beginning of buffer
      * @return The process to send more commands to or read input from - must be terminated by caller.
      */
-    public Process executeCommand(String command, Redirect destination, ByteBuffer buffer) {
-        ProcessBuilder builder = new ProcessBuilder(COMMAND[os.index]);
+    public Process startProcess(Redirect destination, ByteBuffer buffer) {
+        ProcessBuilder builder = new ProcessBuilder();
+        builder.command(COMMAND[os.index]);
         builder.redirectErrorStream(true);
         try {
             if (destination != null) {
                 builder.redirectInput(destination);
             }
             Process process = builder.start();
-            readCommandFromStream(process.getInputStream(), buffer);
-            if (command != null && command.length() > 0) {
-                executeCommand(process, command, buffer);
-            }
+            readFromStream(process.getInputStream(), buffer);
             return process;
         } catch (IOException e) {
             SimpleLogger.d(getClass(), "Could not start execute process");
@@ -116,13 +112,25 @@ public class Platform {
         return null;
     }
 
+    public int endProcess(Process process, ByteBuffer buffer) {
+        executeCommand(process, EXIT[os.index], buffer);
+        try {
+            return process.waitFor();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return -1;
+
+    }
+
     public ByteBuffer executeCommand(Process process, String command, ByteBuffer buffer) {
         BufferedWriter pWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
         try {
             pWriter.write(command);
             pWriter.newLine();
             pWriter.flush();
-            readCommandFromStream(process.getInputStream(), buffer);
+            readFromStream(process.getInputStream(), buffer);
             return buffer;
         } catch (IOException e) {
             System.out.println(e);
@@ -130,17 +138,13 @@ public class Platform {
         }
     }
 
-    private int readCommandFromStream(InputStream in, ByteBuffer buffer) throws IOException {
-        buffer.clear();
+    private int readFromStream(InputStream in, ByteBuffer buffer) throws IOException {
+        int position = buffer.position();
         int len = FileUtils.getInstance().waitForAvailable(in, 1000);
-        if (len == -1) {
-            throw new IllegalArgumentException("End of stream");
-        }
-        SimpleLogger.d(getClass(), "Reading " + len + ", bytes from inputstream");
         int read = StreamUtils.readFromStream(in, buffer, len);
-        buffer.flip();
-        SimpleLogger.d(getClass(), "Output from starting process:\n" + StandardCharsets.ISO_8859_1.decode(buffer));
-        buffer.position(0);
+        buffer.limit(buffer.position());
+        buffer.position(position);
+        // SimpleLogger.d(getClass(), "Output from starting command:\n" + StandardCharsets.ISO_8859_1.decode(buffer));
         return read;
     }
 
