@@ -180,4 +180,14 @@ public class FileUtils {
         return len;
     }
 
+    public URL getClassLocation(Class<?> theClass) {
+        final String classLocation = theClass.getName().replace('.', '/') + ".class";
+        final ClassLoader loader = theClass.getClassLoader();
+        if (loader == null) {
+            return null;
+        } else {
+            return loader.getResource(classLocation);
+        }
+    }
+
 }

@@ -2,12 +2,14 @@ package com.nucleus.opengl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.nucleus.common.BufferUtils;
+import com.nucleus.common.FileUtils;
 import com.nucleus.geometry.AttributeBuffer;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.opengl.shader.GLTFShaderProgram;
@@ -937,9 +939,12 @@ public abstract class GLES20Wrapper extends GLESWrapper {
 
     @Override
     public void loadVersionedShaderSource(ShaderSource source) throws IOException {
-        InputStream shaderStream = getClass().getClassLoader().getResourceAsStream(source.getFullSourceName());
+        InputStream shaderStream = getClass().getClassLoader()
+                .getResourceAsStream(source.getFullSourceName() + "gurnka");
         if (shaderStream == null) {
-            throw new IllegalArgumentException("Could not open " + source.getFullSourceName());
+            URL classUrl = FileUtils.getInstance().getClassLocation(this.getClass());
+            throw new IllegalArgumentException("Could not open " + source.getFullSourceName() + "\nClass URL: " +
+                    classUrl != null ? classUrl.getFile() : "null");
         }
 
         source.setSource(StreamUtils.readStringFromStream(shaderStream));
