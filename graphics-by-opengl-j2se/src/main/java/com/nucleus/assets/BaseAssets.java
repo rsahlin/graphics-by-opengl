@@ -94,9 +94,10 @@ public abstract class BaseAssets implements Assets {
 
     @Override
     public Texture2D getTexture(NucleusRenderer renderer, ImageFactory imageFactory, String id,
-            ExternalReference externalReference, RESOLUTION resolution, TextureParameter parameter, int mipmap) {
+            ExternalReference externalReference, Format format, RESOLUTION resolution, TextureParameter parameter,
+            int mipmap) {
         Texture2D source = TextureFactory.getInstance().createTexture(TextureType.Texture2D, id, externalReference,
-                resolution, parameter, mipmap, Format.RGBA, Type.UNSIGNED_BYTE);
+                resolution, parameter, mipmap, format, Type.UNSIGNED_BYTE);
         try {
             internalCreateTexture(renderer, imageFactory, source);
         } catch (BackendException e) {

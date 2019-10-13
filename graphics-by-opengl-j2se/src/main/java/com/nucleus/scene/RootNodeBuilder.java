@@ -29,6 +29,7 @@ import com.nucleus.shader.GraphicsShader;
 import com.nucleus.shader.Shader.Shading;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.TextureParameter;
 import com.nucleus.vecmath.Rectangle;
 
@@ -77,7 +78,7 @@ public class RootNodeBuilder {
         TextureParameter texParam = new TextureParameter(TextureParameter.DEFAULT_TEXTURE_PARAMETERS);
         Texture2D texture = renderer.getAssets().getTexture(renderer,
                 BaseImageFactory.getInstance(), "texture",
-                new ExternalReference(splashImage), splashResolution, texParam, 1);
+                new ExternalReference(splashImage), Format.RGBA, splashResolution, texParam, 1);
         MeshBuilder<Mesh> meshBuilder = new GLMesh.Builder<>(renderer);
         meshBuilder.setElementMode(DrawMode.TRIANGLES, 4, 0, 6);
         meshBuilder.setTexture(texture);

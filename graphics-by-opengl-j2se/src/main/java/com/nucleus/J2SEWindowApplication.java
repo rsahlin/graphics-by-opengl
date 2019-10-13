@@ -210,4 +210,14 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         return config;
     }
 
+    protected void tearDown() {
+        if (coreApp != null) {
+            if (j2seWindow != null) {
+                j2seWindow.setVisible(false);
+                j2seWindow.destroy();
+            }
+            coreApp.setDestroyFlag();
+        }
+    }
+
 }

@@ -15,6 +15,7 @@ import com.nucleus.shader.GraphicsShader;
 import com.nucleus.texturing.BufferImage;
 import com.nucleus.texturing.ImageFactory;
 import com.nucleus.texturing.Texture2D;
+import com.nucleus.texturing.Texture2D.Format;
 import com.nucleus.texturing.TextureParameter;
 
 /**
@@ -60,13 +61,15 @@ public interface Assets {
      * @param imageFactory
      * @param id The id of the texture
      * @param externalReference
+     * @param The image format
      * @param resolution
      * @param parameter
      * @param mipmap
      * @return A new texture object containing the texture image.
      */
     public Texture2D getTexture(NucleusRenderer renderer, ImageFactory imageFactory, String id,
-            ExternalReference externalReference, RESOLUTION resolution, TextureParameter parameter, int mipmap);
+            ExternalReference externalReference, Format format, RESOLUTION resolution, TextureParameter parameter,
+            int mipmap);
 
     /**
      * Returns the texture, if the texture has not been loaded it will be loaded and stored in the assetmanager.

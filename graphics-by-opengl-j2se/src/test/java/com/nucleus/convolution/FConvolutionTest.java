@@ -29,7 +29,7 @@ public class FConvolutionTest extends BaseTestCase implements WindowListener {
 
     public static final String WAIT_FOR_USER = "com.nucleus.convolution.waitforuser";
 
-    private static volatile boolean wait = true;
+    private static volatile boolean wait = false;
     AWTImageFactory imageFactory = new AWTImageFactory();
     private final static int ITERATIONS = 10;
     private final static String IMAGE_NAME = "assets/atari.png";

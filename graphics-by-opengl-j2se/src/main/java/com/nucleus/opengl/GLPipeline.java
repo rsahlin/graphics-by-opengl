@@ -914,7 +914,7 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
                 throw new IllegalArgumentException("Active variable array size mismatch - active count from info "
                         + info.getActiveVariables(VariableType.ATTRIBUTE) + ", array size " + activeAttributes.length);
             }
-            resultArray[BufferIndex.ATTRIBUTES.index] = activeAttributes;
+            resultArray[defaultDynamicAttribBuffer.index] = activeAttributes;
         } else {
             for (int index = 0; index < resultArray.length; index++) {
                 resultArray[index] = sortByBuffer(variableIndexer, activeAttributes, index);

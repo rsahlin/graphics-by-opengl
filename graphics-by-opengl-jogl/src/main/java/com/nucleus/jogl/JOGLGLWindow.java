@@ -319,7 +319,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
                         AWTKeycodes.get((int) event.getKeyCode())));
                 switch (event.getKeyCode()) {
                     case KeyEvent.VK_ESCAPE:
-                        backPressed();
+                        exit();
                 }
                 break;
             case KeyEvent.EVENT_KEY_RELEASED:
