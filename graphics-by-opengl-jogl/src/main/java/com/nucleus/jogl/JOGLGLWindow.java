@@ -122,12 +122,18 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     protected GLProfile getProfile(Renderers version) {
         SimpleLogger.d(getClass(), "os.and.arch: " + Platform.os_and_arch);
-        GLProfile defaultProfile = GLProfile.getDefault();
-        if (defaultProfile != null) {
-            SimpleLogger.d(getClass(), "Default profile implName: " + defaultProfile.getImplName() + ", name: "
-                    + defaultProfile.getName());
-        } else {
-            SimpleLogger.d(getClass(), "Default profile is NULL");
+        GLProfile defaultProfile = null;
+        try {
+            defaultProfile = GLProfile.getDefault();
+            if (defaultProfile != null) {
+                SimpleLogger.d(getClass(), "Default profile implName: " + defaultProfile.getImplName() + ", name: "
+                        + defaultProfile.getName());
+            } else {
+                SimpleLogger.d(getClass(), "Default profile is NULL");
+            }
+        } catch (InternalError e) {
+            //Not much to do
+            SimpleLogger.d(getClass(), "Internal error when fetching default profile");
         }
         GLProfile profile = null;
         switch (version) {
