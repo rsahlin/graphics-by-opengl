@@ -1,6 +1,5 @@
 package com.nucleus.scene.gltf;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -309,18 +308,18 @@ public class GLTF {
      * @return
      */
     public String getFilename() {
-        return path + File.separatorChar + filename;
+        return path + "/" + filename;
     }
 
     /**
      * Returns the full path to the uri, ie
-     * path + File.separatorChar + uri
+     * path + "/" + uri
      * 
      * @param uri
      * @return The full path to the uri, with gltf path prepended.
      */
     public String getPath(String uri) {
-        return path + File.separatorChar + uri;
+        return path + "/" + uri;
     }
 
     public Asset getAsset() {

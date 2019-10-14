@@ -14,7 +14,7 @@ import com.nucleus.shader.Shader.ShaderType;
  */
 public abstract class ShaderBinary {
 
-    public static final String PROGRAM_DIRECTORY = "assets\\";
+    public static final String PROGRAM_DIRECTORY = "assets/";
     public final static String FILE_SUFFIX_SEPARATOR = ".";
 
     /**
@@ -127,14 +127,14 @@ public abstract class ShaderBinary {
     public static String getSourceNameVersion(Renderers version) {
         switch (version) {
             case GLES20:
-                return ShaderBinary.V200 + "\\";
+                return ShaderBinary.V200 + "/";
             case GLES30:
             case GLES31:
             case GLES32:
-                return ShaderBinary.V300 + "\\";
+                return ShaderBinary.V300 + "/";
             case VULKAN10:
             case VULKAN11:
-                return ShaderBinary.V450 + "\\";
+                return ShaderBinary.V450 + "/";
             default:
                 throw new IllegalArgumentException("Not implemented for " + version);
         }

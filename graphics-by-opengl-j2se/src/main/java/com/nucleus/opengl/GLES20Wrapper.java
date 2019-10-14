@@ -940,11 +940,12 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     @Override
     public void loadVersionedShaderSource(ShaderSource source) throws IOException {
         InputStream shaderStream = getClass().getClassLoader()
-                .getResourceAsStream(source.getFullSourceName() + "gurnka");
+                .getResourceAsStream(source.getFullSourceName());
         if (shaderStream == null) {
             URL classUrl = FileUtils.getInstance().getClassLocation(this.getClass());
-            throw new IllegalArgumentException("Could not open " + source.getFullSourceName() + "\nClass URL: " +
-                    classUrl != null ? classUrl.getFile() : "null");
+            String classLocation = classUrl != null ? classUrl.getFile() : "null";
+            String error = "Could not open " + source.getFullSourceName() + "\n\rClass URL: " + classLocation;
+            throw new IllegalArgumentException(error);
         }
 
         source.setSource(StreamUtils.readStringFromStream(shaderStream));

@@ -1,6 +1,5 @@
 package com.nucleus.shader;
 
-import java.io.File;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 
@@ -118,7 +117,7 @@ public interface Shader {
          */
         public String getPath(ShaderType type) {
             String path = getCategoryString();
-            return path.length() == 0 ? path : path + File.separator;
+            return path.length() == 0 ? path : path + "/";
         }
 
         /**
@@ -141,7 +140,7 @@ public interface Shader {
 
         @Override
         public String toString() {
-            return (getCategoryString() + File.separatorChar + getPassString() + getShadingString());
+            return (getCategoryString() + "/" + getPassString() + getShadingString());
         }
 
     }

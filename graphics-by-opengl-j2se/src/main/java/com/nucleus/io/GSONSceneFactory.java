@@ -125,7 +125,7 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
     public RootNode importScene(String path, String filename, String type, NodeInflaterListener inflaterLister)
             throws NodeException {
         if (!path.endsWith("/") && !path.endsWith("\\")) {
-            path = path + File.pathSeparator;
+            path = path + "/";
         }
         SimpleLogger.d(getClass(), "Importing scene:" + path + filename);
         ClassLoader loader = getClass().getClassLoader();

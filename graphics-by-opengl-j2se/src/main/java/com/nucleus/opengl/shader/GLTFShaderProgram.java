@@ -1,6 +1,5 @@
 package com.nucleus.opengl.shader;
 
-import java.io.File;
 import java.nio.IntBuffer;
 
 import com.nucleus.BackendException;
@@ -106,8 +105,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                 if (commonSourceNames[ShaderType.VERTEX.index] != null) {
                     String[] result = new String[commonSourceNames[ShaderType.VERTEX.index].length];
                     for (int i = 0; i < result.length; i++) {
-                        result[i] = function.getPath(type) + function.getPassString()
-                                + File.separatorChar
+                        result[i] = function.getPath(type) + function.getPassString() + "/"
                                 + commonSourceNames[ShaderType.VERTEX.index][i];
                     }
                     return result;
@@ -117,8 +115,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
                 if (commonSourceNames[ShaderType.FRAGMENT.index] != null) {
                     String[] result = new String[commonSourceNames[ShaderType.FRAGMENT.index].length];
                     for (int i = 0; i < result.length; i++) {
-                        result[i] = function.getPath(type) + function.getPassString()
-                                + File.separatorChar
+                        result[i] = function.getPath(type) + function.getPassString() + "/"
                                 + commonSourceNames[ShaderType.FRAGMENT.index][i];
                     }
                     return result;
