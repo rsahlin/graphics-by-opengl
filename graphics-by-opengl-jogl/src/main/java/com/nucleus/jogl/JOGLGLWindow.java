@@ -131,7 +131,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
             } else {
                 SimpleLogger.d(getClass(), "Default profile is NULL");
             }
-        } catch (InternalError e) {
+        } catch (Throwable t) {
             //Not much to do
             SimpleLogger.d(getClass(), "Internal error when fetching default profile");
         }
@@ -147,7 +147,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
             case GLES30:
             case GLES31:
             case GLES32:
-                if (defaultProfile.isGLES3() || defaultProfile.isGL4ES3()) {
+                if (defaultProfile != null && (defaultProfile.isGLES3() || defaultProfile.isGL4ES3())) {
                     profile = defaultProfile;
                 } else {
                     profile = GLProfile.get(GLProfile.GL4ES3);
