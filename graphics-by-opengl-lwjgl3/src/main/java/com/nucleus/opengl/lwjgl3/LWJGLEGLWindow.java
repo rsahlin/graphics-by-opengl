@@ -61,9 +61,8 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
     }
 
     @Override
-    protected void init(Renderers version, BackendFactory factory, CoreAppStarter coreAppStarter, int width,
-            int height) {
-        backend = factory.createBackend(LWJGLWrapperFactory.getGLESVersion(gles), window, null);
+    public void init() {
+        backend = factory.createBackend(version, window, null);
     }
 
     /**

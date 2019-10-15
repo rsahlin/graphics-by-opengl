@@ -25,9 +25,7 @@ public class GLFWVulkanWindow extends GLFWWindow {
     }
 
     @Override
-    protected void init(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, int width,
-            int height) {
-        this.factory = factory;
+    public void init() {
         GLFWErrorCallback.createPrint().set();
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize glfw");

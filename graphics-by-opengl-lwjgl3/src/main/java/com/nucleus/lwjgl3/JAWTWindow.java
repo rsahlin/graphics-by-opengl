@@ -37,7 +37,6 @@ public class JAWTWindow extends J2SEWindow
 
     LWJGLCanvas canvas;
     JFrame frame;
-    BackendFactory factory;
 
     public JAWTWindow(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter,
             SurfaceConfiguration config, int width,
@@ -46,9 +45,7 @@ public class JAWTWindow extends J2SEWindow
     }
 
     @Override
-    protected void init(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, int width,
-            int height) {
-        this.factory = factory;
+    public void init() {
         Platform platform = Platform.get();
         SimpleLogger.d(getClass(), "Init windows for platform " + platform);
         switch (platform) {

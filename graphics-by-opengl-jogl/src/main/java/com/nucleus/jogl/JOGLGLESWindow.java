@@ -3,6 +3,7 @@ package com.nucleus.jogl;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp.CoreAppStarter;
+import com.nucleus.J2SEWindowApplication.WindowType;
 import com.nucleus.SimpleLogger;
 import com.nucleus.opengl.GLESWrapper;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
@@ -16,10 +17,9 @@ import com.nucleus.renderer.SurfaceConfiguration;
  */
 public class JOGLGLESWindow extends JOGLGLWindow {
 
-    public JOGLGLESWindow(Renderers version, BackendFactory factory, CoreAppStarter coreAppStarter,
-            SurfaceConfiguration config, int width,
-            int height, boolean undecorated, boolean fullscreen, int swapInterval) {
-        super(version, factory, coreAppStarter, config, width, height, undecorated, fullscreen, swapInterval);
+    public JOGLGLESWindow(Renderers version, WindowType windowType, BackendFactory factory, CoreAppStarter coreAppStarter,
+            SurfaceConfiguration config, int width, int height, boolean undecorated, boolean fullscreen, int swapInterval) {
+        super(version, windowType, factory, coreAppStarter, config, width, height, undecorated, fullscreen, swapInterval);
     }
 
     @Override
@@ -44,11 +44,6 @@ public class JOGLGLESWindow extends JOGLGLWindow {
             backend = factory.createBackend(version, null, drawable.getContext());
         }
         super.init(drawable);
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        glWindow.setVisible(visible);
     }
 
 }

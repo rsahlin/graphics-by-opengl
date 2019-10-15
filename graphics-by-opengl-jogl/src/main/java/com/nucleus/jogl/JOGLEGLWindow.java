@@ -3,21 +3,22 @@ package com.nucleus.jogl;
 import java.nio.IntBuffer;
 import java.util.List;
 
+import com.jogamp.common.nio.PointerBuffer;
 import com.jogamp.nativewindow.AbstractGraphicsDevice;
 import com.jogamp.nativewindow.CapabilitiesImmutable;
-import com.jogamp.nativewindow.DefaultGraphicsScreen;
-import com.jogamp.nativewindow.egl.EGLGraphicsDevice;
 import com.jogamp.nativewindow.windows.WindowsGraphicsDevice;
 import com.jogamp.newt.opengl.GLWindow;
+import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLCapabilitiesChooser;
 import com.jogamp.opengl.GLContext;
+import com.jogamp.opengl.GLDrawable;
+import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.egl.EGL;
 import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp;
-import com.nucleus.CoreApp.CoreAppStarter;
-import com.nucleus.J2SEWindow;
+import com.nucleus.J2SEWindowApplication.WindowType;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.common.Constants;
@@ -27,10 +28,7 @@ import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 
-import jogamp.opengl.egl.EGLDisplayUtil;
-
-public class JOGLEGLWindow extends J2SEWindow implements Runnable,
-        GLCapabilitiesChooser {
+public class JOGLEGLWindow extends JOGLGLWindow implements Runnable, GLCapabilitiesChooser, GLEventListener {
 
     Thread thread;
 
@@ -46,71 +44,71 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
     protected int sleep = 0;
     protected GLContext glContext;
     protected GLWindow nativeWindow;
+    protected boolean visible = false;
+    GLCapabilities glCapabilities;
+    GLDrawable glDrawable;
 
-    public JOGLEGLWindow(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter,
+    public JOGLEGLWindow(Renderers version, WindowType windowType, BackendFactory factory,
+            CoreApp.CoreAppStarter coreAppStarter,
             SurfaceConfiguration config,
             int width, int height) {
-        super(version, factory, coreAppStarter, width, height, config);
+        super(version, windowType, factory, coreAppStarter, config, width, height, false, true, 1);
     }
 
     @Override
-    protected void init(Renderers version, BackendFactory factory, CoreAppStarter coreAppStarter, int width,
-            int height) {
-        this.factory = factory;
+    public void init() {
+        glCapabilities = new GLCapabilities(getProfile(version));
+        glCapabilities.setSampleBuffers(config.getSamples() > 0);
+        glCapabilities.setNumSamples(config.getSamples());
+        glCapabilities.setBackgroundOpaque(true);
+        glCapabilities.setAlphaBits(0);
+        createGLWindow();
         /**
          * Start a thread to rendering using EGL and GL
          */
-        Thread t = new Thread(this);
-        t.start();
+        // Thread t = new Thread(this);
+        // t.start();
     }
 
-    protected void createEglContext() {
+    protected void createGLWindow() {
+        GLCapabilities caps = new GLCapabilities(GLProfile.getGL4ES3());
+        GLCapabilities chosen = new GLCapabilities(GLProfile.getGL4ES3());
+        WindowsGraphicsDevice device = new WindowsGraphicsDevice(AbstractGraphicsDevice.DEFAULT_UNIT);
+
+        // AbstractGraphicsDevice agd = NativeWindowFactory.createDevice(
+        // NativeWindowFactory.getDefaultDisplayConnection(),
+        // true);
+        nativeWindow = GLWindow.create(new GLCapabilities(GLProfile.get(GLProfile.GL4ES3)));
+        nativeWindow.setSize(width, height);
+        // nativeWindow.setUndecorated(undecorated);
+        nativeWindow.setRealized(true);
+        nativeWindow.addGLEventListener(this);
+    }
+
+    protected void createEglContext(GLAutoDrawable drawable) {
         if (EglDisplay == Constants.NO_VALUE) {
-
-            GLCapabilities caps = new GLCapabilities(GLProfile.getGL4ES3());
-            GLCapabilities chosen = new GLCapabilities(GLProfile.getGL4ES3());
-            WindowsGraphicsDevice device = new WindowsGraphicsDevice(AbstractGraphicsDevice.DEFAULT_UNIT);
-
-            // AbstractGraphicsDevice agd = NativeWindowFactory.createDevice(
-            // NativeWindowFactory.getDefaultDisplayConnection(),
-            // true);
-            nativeWindow = GLWindow.create(new GLCapabilities(GLProfile.get(GLProfile.GL4ES3)));
-            nativeWindow.setSize(width, height);
-            nativeWindow.setRealized(true);
-
+            GLProfile.initSingleton();
             IntBuffer major = BufferUtils.createIntBuffer(1);
             major.put(1);
             IntBuffer minor = BufferUtils.createIntBuffer(1);
             minor.put(4);
-            if (!EGL.eglInitialize(nativeWindow.getDisplayHandle(), major, minor)) {
-                throw new IllegalArgumentException("Could not initialize EGL");
-            }
+            jogamp.opengl.egl.EGLContext.getCurrent().makeCurrent();
+            long display = EGL.eglGetDisplay(EGL.EGL_DEFAULT_DISPLAY);
 
-            /*
-             * GLDrawable glDrawable = EGLDrawableFactory.getDesktopFactory().createGLDrawable(nativeWindow);
-             * glDrawable.setRealized(true);
-             * glContext = glDrawable.createContext(null);
-             * GLProfile.initSingleton();
-             * if (glContext.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT) {
-             * throw new IllegalArgumentException("Could not make GL current");
-             * }
-             */
-
+            // EGLContext = jogamp.opengl.egl.EGLContext.getCurrent()
+            // glContext = glDrawable.createContext(null);
             SimpleLogger.d(getClass(), "GLProfile isInitialized " + GLProfile.isInitialized());
-            EGLGraphicsDevice eglDevice = EGLDisplayUtil.eglCreateEGLGraphicsDevice(nativeWindow.getNativeSurface());
-            // GLProfile.initSingleton();
-            // GLProfile.initProfiles(eglDevice);
-            eglDevice.open();
-            SimpleLogger.d(getClass(), "GLProfile isInitialized " + GLProfile.isInitialized());
-            DefaultGraphicsScreen screen = new DefaultGraphicsScreen(eglDevice, AbstractGraphicsDevice.DEFAULT_UNIT);
-
-            // GraphicsConfigurationFactory factory = EGLGraphicsConfigurationFactory.getFactory(device, caps);
+            IntBuffer attribList = createDefaultConfigAttribs();
+            PointerBuffer configs = PointerBuffer.allocateDirect(100);
+            IntBuffer count = BufferUtils.createIntBuffer(1);
+            // EGL.eglChooseConfig(display, attribList, configs, 100, count);
+            // GraphicsConfigurationFactory factory = EGLGraphicsConfigurationFactory.getFactory(drawable,
+            // glCapabilities);
             // WindowsWGLGraphicsConfiguration chosenConfig = (WindowsWGLGraphicsConfiguration) factory
             // .chooseGraphicsConfiguration(chosen, caps, this, screen, AbstractGraphicsDevice.DEFAULT_UNIT);
 
             // EGLGraphicsConfiguration eglConfig = EGLGraphicsConfigurationFactory.chooseGraphicsConfigurationStatic(
-            // chosen, caps, this, screen,
-            // VisualIDHolder.VID_UNDEFINED, true);
+            // chosen, glCapabilities, this, screen, VisualIDHolder.VID_UNDEFINED, true);
 
             // EGL.eglCreateContext(nativeWindow.getDisplayHandle(), chosenConfig. , share_context, attrib_list)
 
@@ -121,16 +119,18 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
 
     }
 
-    protected int[] createDefaultConfigAttribs() {
-        return new int[] {
+    protected IntBuffer createDefaultConfigAttribs() {
+        int[] attribValues = new int[] {
                 EGL.EGL_RENDERABLE_TYPE,
                 EGL.EGL_OPENGL_ES2_BIT,
                 EGL.EGL_RED_SIZE, 8,
                 EGL.EGL_GREEN_SIZE, 8,
                 EGL.EGL_BLUE_SIZE, 8,
                 EGL.EGL_ALPHA_SIZE, 8,
-                EGL.EGL_NONE
-        };
+                EGL.EGL_NONE };
+        IntBuffer attribs = BufferUtils.createIntBuffer(attribValues.length);
+        attribs.put(attribValues);
+        return attribs;
     }
 
     protected void createEglSurface() {
@@ -147,23 +147,6 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
                 throw new IllegalArgumentException("Could not create egl surface.");
             }
         }
-    }
-
-    protected void createEGL() {
-        createEglContext();
-        // createEglSurface();
-        // makeCurrent();
-        // SimpleLogger.d(getClass(), "EGL created and made current");
-        // SimpleLogger.d(getClass(), "Set egl swap interval to 0");
-        // if (surfaceConfig.hasExtensionSupport(EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh)) {
-        // EGL.eglSurfaceAttrib(EglDisplay, EGLSurface, EGL14Constants.EGL_FRONT_BUFFER_AUTO_REFRESH_ANDROID, 1);
-        // SimpleLogger.d(getClass(),
-        // "Set surfaceattrib for: " + EGL14Constants.EGL_ANDROID_front_buffer_auto_refresh);
-        // }
-
-        internalCreateCoreApp(width, height);
-        // glDrawable.swapBuffers();
-        internalContextCreated(width, height);
     }
 
     public void setRenderContextListener(FrameRenderer frameRenderer) {
@@ -227,7 +210,6 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
     @Override
     public void run() {
         SimpleLogger.d(getClass(), "Starting EGL surface thread");
-        createEGL();
         Environment env = Environment.getInstance();
         while (surface != 0) {
             drawFrame();
@@ -267,7 +249,10 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
 
     @Override
     public void setVisible(boolean visible) {
-        nativeWindow.setVisible(visible);
+        this.visible = visible;
+        if (nativeWindow != null) {
+            nativeWindow.setVisible(visible);
+        }
     }
 
     @Override
@@ -285,6 +270,30 @@ public class JOGLEGLWindow extends J2SEWindow implements Runnable,
     @Override
     protected void destroy() {
         throw new IllegalArgumentException("Not implemented");
+    }
+
+    @Override
+    public void init(GLAutoDrawable drawable) {
+        this.glDrawable = drawable;
+        createEglContext(drawable);
+    }
+
+    @Override
+    public void dispose(GLAutoDrawable drawable) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void display(GLAutoDrawable drawable) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
+        // TODO Auto-generated method stub
+
     }
 
 }
