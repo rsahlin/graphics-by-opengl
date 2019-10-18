@@ -20,12 +20,10 @@ import org.lwjgl.system.MemoryUtil;
 
 import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp;
-import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Environment;
 import com.nucleus.egl.EGLUtils;
-import com.nucleus.lwjgl3.LWJGLWrapperFactory;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
@@ -159,6 +157,7 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
         });
 
         // EGL capabilities
+        long display = EGL10.eglGetDisplay(window);
         long dpy = GLFWNativeEGL.glfwGetEGLDisplay();
         if (dpy == EGL10.EGL_NO_DISPLAY) {
             throw new IllegalArgumentException("EGL_NO_DISPLAY");
