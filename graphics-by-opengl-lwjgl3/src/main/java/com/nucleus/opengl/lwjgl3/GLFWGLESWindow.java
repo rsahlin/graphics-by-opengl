@@ -64,27 +64,21 @@ public class GLFWGLESWindow extends GLFWWindow {
         SharedLibrary gles;
         switch (Platform.get()) {
             case LINUX:
-                gles = Library.loadNative(GLES.class, Configuration.OPENGLES_LIBRARY_NAME, "libGLESv2.so.2");
+                gles = Library.loadNative(GLES.class, "com.super2k.opengl", Configuration.OPENGLES_LIBRARY_NAME,
+                        "libGLESv2.so.2");
                 break;
             case MACOSX:
-                gles = Library.loadNative(GLES.class, Configuration.OPENGLES_LIBRARY_NAME, "GLESv2");
+                gles = Library.loadNative(GLES.class, "com.super2k.opengl", Configuration.OPENGLES_LIBRARY_NAME,
+                        "GLESv2");
                 break;
             case WINDOWS:
-                gles = Library.loadNative(GLES.class, Configuration.OPENGLES_LIBRARY_NAME, "libGLESv2", "GLESv2");
+                gles = Library.loadNative(GLES.class, "com.super2k.opengl", Configuration.OPENGLES_LIBRARY_NAME,
+                        "libGLESv2", "GLESv2");
                 break;
             default:
                 throw new IllegalStateException();
         }
         create(gles);
-    }
-
-    /**
-     * Loads the OpenGL ES native library, using the specified library name.
-     *
-     * @param libName the native library name
-     */
-    public void create(String libName) {
-        create(Library.loadNative(GLES.class, libName));
     }
 
     private void create(SharedLibrary gles) {

@@ -25,6 +25,7 @@ import com.jogamp.opengl.util.Animator;
 import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
+import com.nucleus.J2SEWindowApplication.WindowType;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.Key.Action;
@@ -44,7 +45,6 @@ import com.nucleus.renderer.SurfaceConfiguration;
 public abstract class JOGLGLWindow extends J2SEWindow
         implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener, KeyListener, WindowListener {
 
-    protected BackendFactory factory;
     private Dimension windowSize;
     private boolean undecorated = false;
     private boolean alwaysOnTop = false;
@@ -56,6 +56,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
     protected GLCanvas canvas;
     protected Frame frame;
     protected GLWindow glWindow;
+    protected WindowType windowType;
     Animator animator;
     private Hashtable<Integer, Integer> AWTKeycodes;
 
@@ -73,26 +74,33 @@ public abstract class JOGLGLWindow extends J2SEWindow
      * @param swapInterval
      * @throws IllegalArgumentException If coreAppStarter is null
      */
-    public JOGLGLWindow(Renderers version, BackendFactory factory, CoreAppStarter coreAppStarter,
+    public JOGLGLWindow(Renderers version, WindowType windowType, BackendFactory factory, CoreAppStarter coreAppStarter,
             SurfaceConfiguration config, int width, int height, boolean undecorated,
             boolean fullscreen, int swapInterval) {
         super(version, factory, coreAppStarter, width, height, config);
+        this.windowType = windowType;
         this.swapInterval = swapInterval;
         this.undecorated = undecorated;
         this.fullscreen = fullscreen;
     }
 
     @Override
-    public void init(Renderers version, BackendFactory factory, CoreAppStarter coreAppStarter, int width, int height) {
+    public void init() {
         if (coreAppStarter == null) {
             throw new IllegalArgumentException("CoreAppStarter is null");
         }
-        this.factory = factory;
-        this.coreAppStarter = coreAppStarter;
         windowSize = new Dimension(width, height);
         GLProfile profile = getProfile(version);
-        // createAWTWindow(width, height, profile);
-        createNEWTWindow(width, height, profile);
+        switch (windowType) {
+            case NEWT:
+                createNEWTWindow(width, height, profile);
+                break;
+            case JAWT:
+                createAWTWindow(width, height, profile);
+                break;
+                default:
+                    throw new IllegalArgumentException("Invalid windowtype for JOGL: " + windowType);
+        }
 
         /**
          * Fetch jogamp.newt fields that start with VK_ and store keycodes in array to convert to AWT values.
@@ -132,7 +140,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
                 SimpleLogger.d(getClass(), "Default profile is NULL");
             }
         } catch (Throwable t) {
-            //Not much to do
+            // Not much to do
             SimpleLogger.d(getClass(), "Internal error when fetching default profile");
         }
         GLProfile profile = null;
@@ -168,6 +176,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
      * @version
      */
     private void createNEWTWindow(int width, int height, GLProfile profile) {
+        GLProfile.initSingleton();
         GLCapabilities glCapabilities = new GLCapabilities(profile);
         glCapabilities.setSampleBuffers(config.getSamples() > 0);
         glCapabilities.setNumSamples(config.getSamples());
@@ -187,7 +196,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
         glWindow.addKeyListener(this);
         glWindow.addWindowListener(this);
         glWindow.addGLEventListener(this);
-        GLProfile.initSingleton();
         animator = new Animator();
         animator.add(glWindow);
         animator.start();
@@ -195,6 +203,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
     }
 
     private void createAWTWindow(int width, int height, GLProfile glProfile) {
+        GLProfile.initSingleton();
         GLCapabilities caps = new GLCapabilities(glProfile);
         caps.setBackgroundOpaque(true);
         caps.setAlphaBits(0);
@@ -208,7 +217,11 @@ public abstract class JOGLGLWindow extends J2SEWindow
         frame.validate();
         frame.addWindowListener(this);
         // frame.addMouseListener(this);
-        frame.setVisible(true);
+        animator = new Animator();
+        animator.add(canvas);
+        animator.start();
+        canvas.setAutoSwapBufferMode(autoSwapBuffer);
+        
     }
 
     @Override
@@ -278,9 +291,13 @@ public abstract class JOGLGLWindow extends J2SEWindow
     @Override
     public void display(GLAutoDrawable drawable) {
         drawable.getGL().setSwapInterval(swapInterval);
-        coreApp.renderFrame();
-        if (glWindow != null) {
-            glWindow.swapBuffers();
+        if (!autoSwapBuffer) {
+            coreApp.renderFrame();
+            if (glWindow != null) {
+                glWindow.swapBuffers();
+            } else if (canvas != null) {
+                canvas.swapBuffers();
+            }
         }
     }
 

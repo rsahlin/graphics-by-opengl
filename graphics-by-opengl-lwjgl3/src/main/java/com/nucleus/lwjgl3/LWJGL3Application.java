@@ -62,7 +62,6 @@ public class LWJGL3Application extends J2SEWindowApplication {
             default:
                 throw new IllegalArgumentException("Not implemented for " + version);
         }
-        j2seWindow.setVisible(true);
         return j2seWindow;
     }
 
@@ -71,10 +70,14 @@ public class LWJGL3Application extends J2SEWindowApplication {
             case GLFW:
                 j2seWindow = new GLFWGLESWindow(version, new LWJGLWrapperFactory(), this, getConfiguration(),
                         windowWidth, windowHeight);
+                j2seWindow.init();
+                j2seWindow.setVisible(true);
                 break;
             case JAWT:
                 j2seWindow = new JAWTWindow(version, new LWJGLWrapperFactory(), this, getConfiguration(), windowWidth,
                         windowHeight);
+                j2seWindow.init();
+                j2seWindow.setVisible(true);
                 break;
             case EGL:
                 j2seWindow = new LWJGLEGLWindow(version, new LWJGLWrapperFactory(), this, getConfiguration(),

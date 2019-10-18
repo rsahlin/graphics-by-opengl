@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 
 import com.nucleus.Backend.BackendFactory;
-import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.common.Platform;
 import com.nucleus.common.Platform.OS;
 import com.nucleus.mmi.Key;
@@ -27,6 +26,7 @@ public abstract class J2SEWindow implements WindowListener {
 
     protected CoreApp coreApp;
 
+    protected BackendFactory factory;
     protected Renderers version;
     protected Backend backend;
     protected CoreApp.CoreAppStarter coreAppStarter;
@@ -37,8 +37,7 @@ public abstract class J2SEWindow implements WindowListener {
     protected boolean fullscreen = false;
 
     public J2SEWindow(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, int width,
-            int height,
-            SurfaceConfiguration config) {
+            int height, SurfaceConfiguration config) {
         if (coreAppStarter == null) {
             throw new IllegalArgumentException("Appstarter is null");
         }
@@ -46,6 +45,8 @@ public abstract class J2SEWindow implements WindowListener {
         this.width = width;
         this.height = height;
         this.config = config;
+        this.factory = factory;
+        this.version = version;
         OS os = Platform.getInstance().getOS();
         if (os != OS.android) {
             Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
@@ -53,23 +54,15 @@ public abstract class J2SEWindow implements WindowListener {
         } else {
             Window.getInstance().setScreenSize(width, height);
         }
-        init(version, factory, coreAppStarter, width, height);
     }
 
     /**
      * Creates the underlying window system and render backend
      * Subclasses must implement this method to setup the needed window system and render API.
-     * This method is called from the constructor in this class.
      * Implementations may defer creation until window framework is up and running (via async callbacks)
      * 
-     * @param version
-     * @param factory The backend factory, is used to create instance of API backend
-     * @param coreAppStarter
-     * @param width
-     * @param height
      */
-    protected abstract void init(Renderers version, BackendFactory factory, CoreAppStarter coreAppStarter, int width,
-            int height);
+    public abstract void init();
 
     /**
      * Sets callback for {@link WindowListener} events

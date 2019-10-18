@@ -30,8 +30,6 @@ import com.nucleus.renderer.SurfaceConfiguration;
 public abstract class GLFWWindow extends J2SEWindow {
 
     protected static final int MAX_MOUSE_BUTTONS = 3;
-    // The window handle
-    protected BackendFactory factory;
     protected long window;
     protected int[] buttonActions = new int[MAX_MOUSE_BUTTONS];
     protected int[] cursorPosition = new int[2];
@@ -50,9 +48,7 @@ public abstract class GLFWWindow extends J2SEWindow {
     }
 
     @Override
-    protected void init(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, int width,
-            int height) {
-        this.factory = factory;
+    public void init() {
         GLFWErrorCallback.createPrint().set();
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize glfw");
