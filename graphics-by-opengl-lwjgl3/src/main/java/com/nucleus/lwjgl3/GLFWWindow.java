@@ -59,6 +59,9 @@ public abstract class GLFWWindow extends J2SEWindow {
         SimpleLogger.d(getClass(), "GLFW version :" + GLFW.glfwGetVersionString());
         SimpleLogger.d(getClass(), "Initializing GLFW window for requested version " + version);
         GLFW.glfwDefaultWindowHints();
+        if (configuration.nativeGLES) {
+            GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API);
+        }
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
         GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, config.getSamples());
