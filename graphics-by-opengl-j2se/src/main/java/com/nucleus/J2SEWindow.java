@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 
 import com.nucleus.Backend.BackendFactory;
+import com.nucleus.J2SEWindowApplication.WindowType;
 import com.nucleus.common.Platform;
 import com.nucleus.common.Platform.OS;
 import com.nucleus.mmi.Key;
@@ -24,35 +25,58 @@ import com.nucleus.renderer.Window;
  */
 public abstract class J2SEWindow implements WindowListener {
 
+    public static class Configuration {
+
+        Renderers version;
+        public int swapInterval = 1;
+        public int width = 1920;
+        public int height = 1080;
+        public boolean windowUndecorated = false;
+        public boolean fullscreen = false;
+        public WindowType windowType;
+        public boolean nativeGLES = false;
+        public SurfaceConfiguration surfaceConfig;
+
+        public SurfaceConfiguration getSurfaceConfiguration() {
+            return surfaceConfig;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public WindowType getWindowType() {
+            return windowType;
+        }
+
+    }
+
     protected CoreApp coreApp;
 
     protected BackendFactory factory;
     protected Renderers version;
     protected Backend backend;
     protected CoreApp.CoreAppStarter coreAppStarter;
-    protected int width;
-    protected int height;
     protected WindowListener windowListener;
-    protected SurfaceConfiguration config;
-    protected boolean fullscreen = false;
+    protected Configuration configuration;
 
-    public J2SEWindow(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, int width,
-            int height, SurfaceConfiguration config) {
+    public J2SEWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, Configuration configuration) {
         if (coreAppStarter == null) {
             throw new IllegalArgumentException("Appstarter is null");
         }
+        this.configuration = configuration;
         this.coreAppStarter = coreAppStarter;
-        this.width = width;
-        this.height = height;
-        this.config = config;
         this.factory = factory;
-        this.version = version;
         OS os = Platform.getInstance().getOS();
         if (os != OS.android) {
             Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
             Window.getInstance().setScreenSize(d.width, d.height);
         } else {
-            Window.getInstance().setScreenSize(width, height);
+            Window.getInstance().setScreenSize(configuration.width, configuration.height);
         }
     }
 
@@ -192,8 +216,8 @@ public abstract class J2SEWindow implements WindowListener {
 
     protected void exit() {
         SimpleLogger.d(getClass(), "exit");
-        if (fullscreen) {
-            fullscreen = false;
+        if (configuration.fullscreen) {
+            configuration.fullscreen = false;
             setFullscreenMode(false);
         } else {
             if (coreApp.onBackPressed()) {

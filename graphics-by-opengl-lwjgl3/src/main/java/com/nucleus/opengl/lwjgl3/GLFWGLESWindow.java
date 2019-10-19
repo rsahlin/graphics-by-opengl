@@ -32,10 +32,8 @@ public class GLFWGLESWindow extends GLFWWindow {
 
     private GLESCapabilities gles;
 
-    public GLFWGLESWindow(Renderers version, BackendFactory factory, CoreAppStarter coreAppStarter,
-            SurfaceConfiguration config, int width,
-            int height) {
-        super(version, factory, coreAppStarter, config, width, height);
+    public GLFWGLESWindow(BackendFactory factory, CoreAppStarter coreAppStarter, Configuration config) {
+        super( factory, coreAppStarter, config);
     }
 
     @Override
@@ -52,10 +50,14 @@ public class GLFWGLESWindow extends GLFWWindow {
     @Override
     protected Backend initFW(long GLFWWindow) {
         GLFW.glfwMakeContextCurrent(window);
-        Configuration.OPENGLES_EXPLICIT_INIT.set(true);
-        GLES.create(GL.getFunctionProvider());
-
-        gles = GLES.createCapabilities();
+        org.lwjgl.system.Configuration.OPENGLES_EXPLICIT_INIT.set(true);
+        if (configuration.nativeGLES) {
+            GLES.create(GLES.getFunctionProvider());
+            gles = GLES.createCapabilities();
+        } else {
+            GLES.create(GL.getFunctionProvider());
+            gles = GLES.createCapabilities();
+        }
         return factory.createBackend(LWJGLWrapperFactory.getGLESVersion(gles), window, null);
     }
 
@@ -64,15 +66,15 @@ public class GLFWGLESWindow extends GLFWWindow {
         SharedLibrary gles;
         switch (Platform.get()) {
             case LINUX:
-                gles = Library.loadNative(GLES.class, "com.super2k.opengl", Configuration.OPENGLES_LIBRARY_NAME,
+                gles = Library.loadNative(GLES.class, "com.super2k.opengl", org.lwjgl.system.Configuration.OPENGLES_LIBRARY_NAME,
                         "libGLESv2.so.2");
                 break;
             case MACOSX:
-                gles = Library.loadNative(GLES.class, "com.super2k.opengl", Configuration.OPENGLES_LIBRARY_NAME,
+                gles = Library.loadNative(GLES.class, "com.super2k.opengl", org.lwjgl.system.Configuration.OPENGLES_LIBRARY_NAME,
                         "GLESv2");
                 break;
             case WINDOWS:
-                gles = Library.loadNative(GLES.class, "com.super2k.opengl", Configuration.OPENGLES_LIBRARY_NAME,
+                gles = Library.loadNative(GLES.class, "com.super2k.opengl", org.lwjgl.system.Configuration.OPENGLES_LIBRARY_NAME,
                         "libGLESv2", "GLESv2");
                 break;
             default:

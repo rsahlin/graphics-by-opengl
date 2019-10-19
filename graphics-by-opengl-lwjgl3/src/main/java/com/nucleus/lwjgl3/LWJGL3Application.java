@@ -29,11 +29,11 @@ public class LWJGL3Application extends J2SEWindowApplication {
      */
     public LWJGL3Application(String[] args, Renderers version, Type<Object> clientClass) {
         super(args, version, clientClass);
-        switch (windowType) {
+        switch (windowConfiguration.getWindowType()) {
             case GLFW:
-                createCoreApp(windowWidth, windowHeight);
+                createCoreApp(windowConfiguration.getWidth(), windowConfiguration.getHeight());
                 ((GLFWWindow) j2seWindow).swapBuffers();
-                coreApp.contextCreated(windowWidth, windowHeight);
+                coreApp.contextCreated(windowConfiguration.getWidth(), windowConfiguration.getHeight());
                 break;
             default:
                 // Do nothing - create context based on callback
@@ -42,7 +42,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
 
     @Override
     protected void setProperties(String[] args) {
-        this.windowType = DEFAULT_WINDOW_TYPE;
+        windowConfiguration.windowType = DEFAULT_WINDOW_TYPE;
         super.setProperties(args);
     }
 
@@ -66,37 +66,32 @@ public class LWJGL3Application extends J2SEWindowApplication {
     }
 
     protected void createGLESWindow(Renderers version) {
-        switch (windowType) {
+        switch (windowConfiguration.windowType) {
             case GLFW:
-                j2seWindow = new GLFWGLESWindow(version, new LWJGLWrapperFactory(), this, getConfiguration(),
-                        windowWidth, windowHeight);
+                j2seWindow = new GLFWGLESWindow(new LWJGLWrapperFactory(), this, windowConfiguration);
                 j2seWindow.init();
                 j2seWindow.setVisible(true);
                 break;
             case JAWT:
-                j2seWindow = new JAWTWindow(version, new LWJGLWrapperFactory(), this, getConfiguration(), windowWidth,
-                        windowHeight);
+                j2seWindow = new JAWTWindow(new LWJGLWrapperFactory(), this, windowConfiguration);
                 j2seWindow.init();
                 j2seWindow.setVisible(true);
                 break;
             case EGL:
-                j2seWindow = new LWJGLEGLWindow(version, new LWJGLWrapperFactory(), this, getConfiguration(),
-                        windowWidth, windowHeight);
+                j2seWindow = new LWJGLEGLWindow(new LWJGLWrapperFactory(), this, windowConfiguration );
                 break;
             default:
-                throw new IllegalArgumentException("Not implemented for " + windowType);
+                throw new IllegalArgumentException("Not implemented for " + windowConfiguration.windowType);
         }
     }
 
     protected void createVulkanWindow(Renderers version) {
-        switch (windowType) {
+        switch (windowConfiguration.windowType) {
             case GLFW:
-                j2seWindow = new GLFWVulkanWindow(version, new LWJGLWrapperFactory(), this, getConfiguration(),
-                        windowWidth,
-                        windowHeight);
+                j2seWindow = new GLFWVulkanWindow(new LWJGLWrapperFactory(), this, windowConfiguration );
                 break;
             default:
-                throw new IllegalArgumentException("Not implemented for " + windowType);
+                throw new IllegalArgumentException("Not implemented for " + windowConfiguration.windowType);
         }
     }
 
@@ -113,7 +108,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
      */
 
     public void run() {
-        switch (windowType) {
+        switch (windowConfiguration.windowType) {
             case GLFW:
                 running = true;
                 while (running) {

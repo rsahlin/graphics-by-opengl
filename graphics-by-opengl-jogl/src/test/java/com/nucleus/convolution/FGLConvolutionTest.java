@@ -148,9 +148,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
 
     @Override
     public void createCoreWindows(Renderers version) {
-        windowWidth = 1920;
-        windowHeight = 1080;
-        swapInterval = 0;
+        windowConfiguration.swapInterval = 0;
         super.createCoreWindows(version);
     }
 
@@ -211,7 +209,7 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         if (counter > 100) {
             long end = System.currentTimeMillis();
             String fillrateStr = "";
-            int size = windowWidth * windowHeight;
+            int size = windowConfiguration.width * windowConfiguration.height;
             int fillrate = (size * counter) / (int) (end - start);
             fillrateStr = " " + Float.toString(fillrate / 1000) + ", mpixels/s";
             start = System.currentTimeMillis();

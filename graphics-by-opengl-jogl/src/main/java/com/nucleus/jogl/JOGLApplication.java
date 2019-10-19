@@ -33,24 +33,22 @@ public class JOGLApplication extends J2SEWindowApplication {
 
     @Override
     protected void setProperties(String[] args) {
-        this.windowType = DEFAULT_WINDOW_TYPE;
+        windowConfiguration.windowType = DEFAULT_WINDOW_TYPE;
         super.setProperties(args);
     }
 
     @Override
     protected J2SEWindow createWindow(Renderers version) {
-        switch (windowType) {
+        switch (windowConfiguration.windowType) {
             case NEWT:
             case JAWT:
-                j2seWindow = new JOGLGLESWindow(version, windowType, new JOGLWrapperFactory(), this, getConfiguration(),
-                        windowWidth, windowHeight, windowUndecorated, fullscreen, swapInterval);
+                j2seWindow = new JOGLGLESWindow(new JOGLWrapperFactory(), this, windowConfiguration);
                 break;
             case EGL:
-                j2seWindow = new JOGLEGLWindow(version, windowType, new JOGLWrapperFactory(), this, getConfiguration(),
-                        windowWidth, windowHeight);
+                j2seWindow = new JOGLEGLWindow(new JOGLWrapperFactory(), this, windowConfiguration);
                 break;
             default:
-                throw new IllegalArgumentException("Not implemented for " + windowType);
+                throw new IllegalArgumentException("Not implemented for " + windowConfiguration.windowType);
         }
         j2seWindow.init();
         j2seWindow.setVisible(true);

@@ -38,10 +38,8 @@ public class JAWTWindow extends J2SEWindow
     LWJGLCanvas canvas;
     JFrame frame;
 
-    public JAWTWindow(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter,
-            SurfaceConfiguration config, int width,
-            int height) {
-        super(version, factory, coreAppStarter, width, height, config);
+    public JAWTWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, Configuration config) {
+        super(factory, coreAppStarter, config);
     }
 
     @Override
@@ -50,10 +48,12 @@ public class JAWTWindow extends J2SEWindow
         SimpleLogger.d(getClass(), "Init windows for platform " + platform);
         switch (platform) {
             case WINDOWS:
-                canvas = new LWJGLWindowsCanvas(this, config, width, height);
+                canvas = new LWJGLWindowsCanvas(this, configuration.surfaceConfig, configuration.width,
+                        configuration.height);
                 break;
             case LINUX:
-                canvas = new LWJGLLinuxCanvas(this, config, width, height);
+                canvas = new LWJGLLinuxCanvas(this, configuration.surfaceConfig, configuration.width,
+                        configuration.height);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + Platform.get());

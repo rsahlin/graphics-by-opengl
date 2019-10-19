@@ -2,6 +2,7 @@ package com.nucleus;
 
 import com.nucleus.CoreApp.ClientApplication;
 import com.nucleus.CoreApp.CoreAppStarter;
+import com.nucleus.J2SEWindow.Configuration;
 import com.nucleus.common.Environment;
 import com.nucleus.common.Type;
 import com.nucleus.renderer.NucleusRenderer;
@@ -43,27 +44,23 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     public static final String FULLSCREEN_KEY = "FULLSCREEN";
     public static final String SAMPLES = "SAMPLES";
     public static final String ALPHA_BITS = "ALPHA";
+    public static final String NATIVE_GLES = "GLES";
     public static final int DEFAULT_DEPTH_BITS = 32;
     public static final int DEFAULT_SAMPLES = 4;
 
     protected CoreApp coreApp;
-    protected int swapInterval = 1;
-    protected int windowWidth = 1920;
-    protected int windowHeight = 1080;
-    protected boolean windowUndecorated = false;
-    protected boolean fullscreen = false;
-    protected J2SEWindow j2seWindow;
-    protected WindowType windowType;
 
-    protected int depthBits = DEFAULT_DEPTH_BITS;
-    /**
-     * Number of samples for surface
-     */
-    protected int samples = DEFAULT_SAMPLES;
+    protected J2SEWindow j2seWindow;
+    protected Configuration windowConfiguration = new Configuration();
     /**
      * Number of bits of alpha for surface
      */
     protected int alpha = 8;
+    /**
+     * Number of samples for surface
+     */
+    protected int samples = DEFAULT_SAMPLES;
+    protected int depthBits = DEFAULT_DEPTH_BITS;
 
     protected RenderContextListener contextListener;
 
@@ -83,6 +80,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         BaseImageFactory.setFactory(new AWTImageFactory());
         CoreApp.setClientClass(clientClass);
         setProperties(args);
+        windowConfiguration.surfaceConfig = getConfiguration();
         createCoreWindows(version);
     }
 
@@ -104,7 +102,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     protected void setSystemProperties() {
         String swap = Environment.getInstance().getProperty(Environment.Property.EGLSWAPINTERVAL);
         if (swap != null && swap.length() > 0) {
-            swapInterval = Integer.parseInt(swap);
+            windowConfiguration.swapInterval = Integer.parseInt(swap);
         }
     }
 
@@ -115,24 +113,25 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
      */
     protected void setProperty(String str) {
         if (str.toUpperCase().startsWith(WINDOW_WIDTH_KEY)) {
-            windowWidth = Integer.parseInt(str.substring(WINDOW_WIDTH_KEY.length() + 1));
-            SimpleLogger.d(getClass(), WINDOW_WIDTH_KEY + " set to " + windowWidth);
+            windowConfiguration.width = Integer.parseInt(str.substring(WINDOW_WIDTH_KEY.length() + 1));
+            SimpleLogger.d(getClass(), WINDOW_WIDTH_KEY + " set to " + windowConfiguration.width);
         }
         if (str.toUpperCase().startsWith(WINDOW_HEIGHT_KEY)) {
-            windowHeight = Integer.parseInt(str.substring(WINDOW_HEIGHT_KEY.length() + 1));
-            SimpleLogger.d(getClass(), WINDOW_HEIGHT_KEY + " set to " + windowHeight);
+            windowConfiguration.height = Integer.parseInt(str.substring(WINDOW_HEIGHT_KEY.length() + 1));
+            SimpleLogger.d(getClass(), WINDOW_HEIGHT_KEY + " set to " + windowConfiguration.height);
         }
         if (str.toUpperCase().startsWith(WINDOW_UNDECORATED_KEY)) {
-            windowUndecorated = Boolean.parseBoolean(str.substring(WINDOW_UNDECORATED_KEY.length() + 1));
-            SimpleLogger.d(getClass(), WINDOW_UNDECORATED_KEY + " set to " + windowUndecorated);
+            windowConfiguration.windowUndecorated = Boolean
+                    .parseBoolean(str.substring(WINDOW_UNDECORATED_KEY.length() + 1));
+            SimpleLogger.d(getClass(), WINDOW_UNDECORATED_KEY + " set to " + windowConfiguration.windowUndecorated);
         }
         if (str.toUpperCase().startsWith(FULLSCREEN_KEY)) {
-            fullscreen = Boolean.parseBoolean(str.substring(FULLSCREEN_KEY.length() + 1));
-            SimpleLogger.d(getClass(), FULLSCREEN_KEY + " set to " + fullscreen);
+            windowConfiguration.fullscreen = Boolean.parseBoolean(str.substring(FULLSCREEN_KEY.length() + 1));
+            SimpleLogger.d(getClass(), FULLSCREEN_KEY + " set to " + windowConfiguration.fullscreen);
         }
         if (str.toUpperCase().startsWith(WINDOW_TYPE_KEY)) {
-            windowType = WindowType.valueOf(str.substring(WINDOW_TYPE_KEY.length() + 1));
-            SimpleLogger.d(getClass(), WINDOW_TYPE_KEY + " set to " + windowType);
+            windowConfiguration.windowType = WindowType.valueOf(str.substring(WINDOW_TYPE_KEY.length() + 1));
+            SimpleLogger.d(getClass(), WINDOW_TYPE_KEY + " set to " + windowConfiguration.windowType);
         }
         if (str.toUpperCase().startsWith(ALPHA_BITS)) {
             alpha = Integer.parseInt(str.substring(ALPHA_BITS.length() + 1));
@@ -141,6 +140,10 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         if (str.toUpperCase().startsWith(SAMPLES)) {
             samples = Integer.parseInt(str.substring(SAMPLES.length() + 1));
             SimpleLogger.d(getClass(), SAMPLES + " set to " + samples);
+        }
+        if (str.toUpperCase().startsWith(NATIVE_GLES)) {
+            windowConfiguration.nativeGLES = Boolean.parseBoolean(str.substring(NATIVE_GLES.length() + 1));
+            SimpleLogger.d(getClass(), NATIVE_GLES + " set to " + windowConfiguration.nativeGLES);
         }
 
     }
@@ -163,7 +166,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     @Override
     public void createCoreApp(int width, int height) {
         NucleusRenderer renderer = RendererFactory.getRenderer(j2seWindow.getBackend());
-        coreApp = CoreApp.createCoreApp(width, height, renderer, j2seWindow.config);
+        coreApp = CoreApp.createCoreApp(renderer, windowConfiguration);
         j2seWindow.setCoreApp(coreApp);
     }
 

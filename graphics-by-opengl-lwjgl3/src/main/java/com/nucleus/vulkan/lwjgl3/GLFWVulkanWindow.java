@@ -18,10 +18,8 @@ import com.nucleus.renderer.SurfaceConfiguration;
  */
 public class GLFWVulkanWindow extends GLFWWindow {
 
-    public GLFWVulkanWindow(Renderers version, BackendFactory factory, CoreAppStarter coreAppStarter,
-            SurfaceConfiguration config, int width,
-            int height) {
-        super(version, factory, coreAppStarter, config, width, height);
+    public GLFWVulkanWindow(BackendFactory factory, CoreAppStarter coreAppStarter, Configuration config) {
+        super(factory, coreAppStarter, config);
     }
 
     @Override
@@ -33,7 +31,7 @@ public class GLFWVulkanWindow extends GLFWWindow {
         GLFW.glfwDefaultWindowHints();
         GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_NO_API);
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
-        window = GLFW.glfwCreateWindow(width, height, "", MemoryUtil.NULL, MemoryUtil.NULL);
+        window = GLFW.glfwCreateWindow(configuration.width, configuration.height, "", MemoryUtil.NULL, MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }

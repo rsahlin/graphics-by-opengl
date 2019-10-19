@@ -1,5 +1,6 @@
 package com.nucleus;
 
+import com.nucleus.J2SEWindow.Configuration;
 import com.nucleus.common.Type;
 import com.nucleus.component.ComponentProcessorRunnable;
 import com.nucleus.component.J2SEComponentProcessor;
@@ -12,7 +13,6 @@ import com.nucleus.profiling.FrameSampler.Samples;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
-import com.nucleus.renderer.SurfaceConfiguration;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.J2SENodeInputListener;
@@ -352,24 +352,21 @@ public class CoreApp implements FrameRenderer {
      * Window and GL context must be created before calling this method.
      * Will set the name of the window from ClientApplication.
      * 
-     * @param width Width of display window
-     * @param height Height of display window
      * @param renderer The renderer to use
-     * @param surfaceConfig The surface configuration
+     * @param windowConfiguration The window configuration
      * @return Instance of {@link CoreApp} with the specified clientclass {@link ClientApplication}
      */
-    public static CoreApp createCoreApp(int width, int height, NucleusRenderer renderer,
-            SurfaceConfiguration surfaceConfig) {
+    public static CoreApp createCoreApp(NucleusRenderer renderer, Configuration windowConfiguration) {
         if (clientClass == null) {
             throw new IllegalArgumentException("Must call #setClientClass() before calling #createCoreApp()");
         }
-        renderer.init(surfaceConfig, width, height);
+        renderer.init(windowConfiguration.surfaceConfig, windowConfiguration.width, windowConfiguration.height);
         try {
             ClientApplication clientApp = (ClientApplication) clientClass.newInstance();
             Window.getInstance().setTitle(clientApp.getAppName() + " " + clientApp.getVersion());
             CoreApp coreApp = new CoreApp(renderer, clientApp);
             try {
-                coreApp.displaySplash(width, height);
+                coreApp.displaySplash(windowConfiguration.width, windowConfiguration.height);
             } catch (BackendException | NodeException e) {
                 throw new RuntimeException(e);
             }
