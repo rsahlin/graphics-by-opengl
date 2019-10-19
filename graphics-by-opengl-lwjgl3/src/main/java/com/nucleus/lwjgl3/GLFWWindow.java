@@ -9,6 +9,7 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallbackI;
 import org.lwjgl.glfw.GLFWScrollCallbackI;
 import org.lwjgl.glfw.GLFWWindowCloseCallbackI;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryUtil;
 
 import com.nucleus.Backend;
@@ -19,6 +20,7 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.Key.Action;
 import com.nucleus.mmi.Pointer.PointerAction;
 import com.nucleus.mmi.Pointer.Type;
+import com.nucleus.opengl.GLESWrapper.GL10;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 
@@ -54,20 +56,17 @@ public abstract class GLFWWindow extends J2SEWindow {
             throw new IllegalStateException("Unable to initialize glfw");
         }
 
-        SimpleLogger.d(getClass(), "Initializing GLFW window for version " + version);
+        SimpleLogger.d(getClass(), "GLFW version :" + GLFW.glfwGetVersionString());
+        SimpleLogger.d(getClass(), "Initializing GLFW window for requested version " + version);
         GLFW.glfwDefaultWindowHints();
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, version.major);
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, version.minor);
         GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, config.getSamples());
         SimpleLogger.d(getClass(), "Set samples: " + config.getSamples());
         window = GLFW.glfwCreateWindow(width, height, "", MemoryUtil.NULL, MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
-        SimpleLogger.d(getClass(), "Created GLFW window");
-
         backend = initFW(window);
         initInput();
     }
