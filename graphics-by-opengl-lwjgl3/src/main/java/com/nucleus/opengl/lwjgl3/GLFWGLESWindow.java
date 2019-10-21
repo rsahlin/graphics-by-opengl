@@ -58,6 +58,10 @@ public class GLFWGLESWindow extends GLFWWindow {
             GLES.create(GL.getFunctionProvider());
             gles = GLES.createCapabilities();
         }
+        SimpleLogger.d(getClass(), "GLCapabilities with support for: \nGLES20: " + gles.GLES20 
+                + "\nGLES30: " + gles.GLES30
+                + "\nGLES31: " + gles.GLES31
+                + "\nGLES32: " + gles.GLES32);
         return factory.createBackend(LWJGLWrapperFactory.getGLESVersion(gles), window, null);
     }
 
