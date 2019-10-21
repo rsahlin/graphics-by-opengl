@@ -81,6 +81,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         CoreApp.setClientClass(clientClass);
         setProperties(args);
         windowConfiguration.surfaceConfig = getConfiguration();
+        windowConfiguration.version = version;
         createCoreWindows(version);
     }
 

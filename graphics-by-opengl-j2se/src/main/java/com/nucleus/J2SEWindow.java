@@ -27,7 +27,7 @@ public abstract class J2SEWindow implements WindowListener {
 
     public static class Configuration {
 
-        Renderers version;
+        public Renderers version;
         public int swapInterval = 1;
         public int width = 1920;
         public int height = 1080;
@@ -58,7 +58,6 @@ public abstract class J2SEWindow implements WindowListener {
     protected CoreApp coreApp;
 
     protected BackendFactory factory;
-    protected Renderers version;
     protected Backend backend;
     protected CoreApp.CoreAppStarter coreAppStarter;
     protected WindowListener windowListener;

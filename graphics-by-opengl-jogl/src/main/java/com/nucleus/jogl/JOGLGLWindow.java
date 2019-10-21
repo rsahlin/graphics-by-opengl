@@ -72,7 +72,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
             throw new IllegalArgumentException("CoreAppStarter is null");
         }
         windowSize = new Dimension(configuration.width, configuration.height);
-        GLProfile profile = getProfile(version);
+        GLProfile profile = getProfile(configuration.version);
         switch (configuration.windowType) {
             case NEWT:
                 createNEWTWindow(configuration.width, configuration.height, profile);

@@ -40,7 +40,7 @@ public class JOGLGLESWindow extends JOGLGLWindow {
         SimpleLogger.d(getClass(), "init()");
         if (backend == null) {
 
-            backend = factory.createBackend(version, null, drawable.getContext());
+            backend = factory.createBackend(configuration.version, null, drawable.getContext());
         }
         super.init(drawable);
     }

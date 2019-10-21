@@ -54,7 +54,7 @@ public class JOGLEGLWindow extends JOGLGLWindow implements Runnable, GLCapabilit
 
     @Override
     public void init() {
-        glCapabilities = new GLCapabilities(getProfile(version));
+        glCapabilities = new GLCapabilities(getProfile(configuration.version));
         glCapabilities.setSampleBuffers(configuration.surfaceConfig.getSamples() > 0);
         glCapabilities.setNumSamples(configuration.surfaceConfig.getSamples());
         glCapabilities.setBackgroundOpaque(true);
@@ -111,7 +111,7 @@ public class JOGLEGLWindow extends JOGLGLWindow implements Runnable, GLCapabilit
 
             // EGL.eglCreateContext(eglDevice.getNativeDisplayID(), eglC, share_context, attrib_list)
 
-            backend = factory.createBackend(version, null, glContext);
+            backend = factory.createBackend(configuration.version, null, glContext);
         }
 
     }
