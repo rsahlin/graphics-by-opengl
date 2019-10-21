@@ -57,18 +57,26 @@ public abstract class GLFWWindow extends J2SEWindow {
 
         SurfaceConfiguration config = configuration.getSurfaceConfiguration();
         SimpleLogger.d(getClass(), "GLFW version :" + GLFW.glfwGetVersionString());
-        SimpleLogger.d(getClass(), "Initializing GLFW window for requested version " + configuration.version.major + ", Major: " + configuration.version.major + ", Minor: " + configuration.version.minor);
+        SimpleLogger.d(getClass(), "Initializing GLFW window for requested version " + configuration.version);
         GLFW.glfwDefaultWindowHints();
         if (configuration.nativeGLES) {
             GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API);
         }
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, configuration.version.major);
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, configuration.version.minor);
+        if (configuration.forceGLESVersion != null) {
+            SimpleLogger.d(getClass(), "Forcing GLES version to " + configuration.forceGLESVersion);
+            int dotIndex = configuration.forceGLESVersion.indexOf(".");
+            int major = Integer.parseInt(configuration.forceGLESVersion.substring(0, dotIndex));
+            int minor = Integer.parseInt(
+                    configuration.forceGLESVersion.substring(dotIndex + 1, configuration.forceGLESVersion.length()));
+            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, major);
+            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, minor);
+        }
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
         GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, config.getSamples());
         SimpleLogger.d(getClass(), "Set samples: " + config.getSamples());
-        window = GLFW.glfwCreateWindow(configuration.getWidth(), configuration.getHeight(), "", MemoryUtil.NULL, MemoryUtil.NULL);
+        window = GLFW.glfwCreateWindow(configuration.getWidth(), configuration.getHeight(), "", MemoryUtil.NULL,
+                MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }

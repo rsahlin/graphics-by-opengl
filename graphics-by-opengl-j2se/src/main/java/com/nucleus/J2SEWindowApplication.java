@@ -45,6 +45,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     public static final String SAMPLES = "SAMPLES";
     public static final String ALPHA_BITS = "ALPHA";
     public static final String NATIVE_GLES = "GLES";
+    public static final String FORCE_GLES_VERSION = "FORCE_GLES_VERSION";
     public static final int DEFAULT_DEPTH_BITS = 32;
     public static final int DEFAULT_SAMPLES = 4;
 
@@ -145,6 +146,10 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         if (str.toUpperCase().startsWith(NATIVE_GLES)) {
             windowConfiguration.nativeGLES = Boolean.parseBoolean(str.substring(NATIVE_GLES.length() + 1));
             SimpleLogger.d(getClass(), NATIVE_GLES + " set to " + windowConfiguration.nativeGLES);
+        }
+        if (str.toUpperCase().startsWith(FORCE_GLES_VERSION)) {
+            windowConfiguration.forceGLESVersion = str.substring(FORCE_GLES_VERSION.length() + 1);
+            SimpleLogger.d(getClass(), FORCE_GLES_VERSION + " set to " + windowConfiguration.forceGLESVersion);
         }
 
     }

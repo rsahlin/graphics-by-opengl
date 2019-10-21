@@ -35,6 +35,7 @@ public abstract class J2SEWindow implements WindowListener {
         public boolean fullscreen = false;
         public WindowType windowType;
         public boolean nativeGLES = false;
+        public String forceGLESVersion = null;
         public SurfaceConfiguration surfaceConfig;
 
         public SurfaceConfiguration getSurfaceConfiguration() {
