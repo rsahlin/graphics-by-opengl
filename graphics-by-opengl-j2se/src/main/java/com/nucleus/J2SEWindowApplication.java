@@ -77,16 +77,31 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
 
         Integer getInt() {
             if (property.getter instanceof IntGetter) {
-                ((IntGetter) property.getter).getProperty(getValue(), 0);
+                return ((IntGetter) property.getter).getProperty(getValue(), 0);
             }
             throw new IllegalArgumentException("No int value for " + property);
         }
 
         Boolean getBoolean() {
             if (property.getter instanceof BooleanGetter) {
-                ((BooleanGetter) property.getter).getProperty(getValue(), false);
+                return ((BooleanGetter) property.getter).getProperty(getValue(), false);
             }
             throw new IllegalArgumentException("No boolean value for " + property);
+        }
+
+        WindowType getWindowType() {
+            if (property.getter instanceof WindowTypeGetter) {
+                return ((WindowTypeGetter) property.getter).getProperty(getValue(), null);
+            }
+            throw new IllegalArgumentException("No WindowType value for " + property);
+        }
+
+        Renderers getVersion() {
+            if (property.getter instanceof VersionGetter) {
+                return ((VersionGetter) property.getter).getProperty(getValue(), null);
+            }
+            throw new IllegalArgumentException("No Renderers version value for " + property);
+
         }
 
     }
@@ -191,7 +206,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
                     windowConfiguration.fullscreen = property.getBoolean();
                     break;
                 case WINDOW_TYPE_KEY:
-                    throw new IllegalArgumentException("Not implemented");
+                    windowConfiguration.windowType = property.getWindowType();
                 case ALPHA_BITS:
                     alpha = property.getInt();
                     break;
@@ -205,8 +220,8 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
                     windowConfiguration.forceVersion = property.getBoolean();
                     break;
                 case SET_VERSION:
-                    throw new IllegalArgumentException("Not implemented");
-
+                    windowConfiguration.setVersion = property.getVersion();
+                    break;
             }
         }
 
