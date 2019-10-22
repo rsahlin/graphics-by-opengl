@@ -35,7 +35,18 @@ public abstract class J2SEWindow implements WindowListener {
         public boolean fullscreen = false;
         public WindowType windowType;
         public boolean nativeGLES = false;
-        public String forceGLESVersion = null;
+        /**
+         * Force selection of a specific GLES version
+         * This is to override the default setting where framework
+         * may supply a gles version.
+         * Setting this to true will force drivers to ask for the specified version
+         */
+        public Boolean forceVersion = false;
+        /**
+         * Select a specific version to use
+         * This will override the version set when starting the app.
+         */
+        public Renderers setVersion = null;
         public SurfaceConfiguration surfaceConfig;
 
         public SurfaceConfiguration getSurfaceConfiguration() {

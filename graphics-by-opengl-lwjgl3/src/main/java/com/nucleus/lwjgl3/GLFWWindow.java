@@ -9,7 +9,6 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallbackI;
 import org.lwjgl.glfw.GLFWScrollCallbackI;
 import org.lwjgl.glfw.GLFWWindowCloseCallbackI;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryUtil;
 
 import com.nucleus.Backend;
@@ -20,8 +19,6 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.Key.Action;
 import com.nucleus.mmi.Pointer.PointerAction;
 import com.nucleus.mmi.Pointer.Type;
-import com.nucleus.opengl.GLESWrapper.GL10;
-import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 
 /**
@@ -54,7 +51,6 @@ public abstract class GLFWWindow extends J2SEWindow {
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize glfw");
         }
-
         SurfaceConfiguration config = configuration.getSurfaceConfiguration();
         SimpleLogger.d(getClass(), "GLFW version :" + GLFW.glfwGetVersionString());
         SimpleLogger.d(getClass(), "Initializing GLFW window for requested version " + configuration.version);
@@ -62,14 +58,10 @@ public abstract class GLFWWindow extends J2SEWindow {
         if (configuration.nativeGLES) {
             GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API);
         }
-        if (configuration.forceGLESVersion != null) {
-            SimpleLogger.d(getClass(), "Forcing GLES version to " + configuration.forceGLESVersion);
-            int dotIndex = configuration.forceGLESVersion.indexOf(".");
-            int major = Integer.parseInt(configuration.forceGLESVersion.substring(0, dotIndex));
-            int minor = Integer.parseInt(
-                    configuration.forceGLESVersion.substring(dotIndex + 1, configuration.forceGLESVersion.length()));
-            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, major);
-            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, minor);
+        if (configuration.forceVersion == true) {
+            SimpleLogger.d(getClass(), "Forcing GLFW GLES version to " + configuration.version);
+            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, configuration.version.major);
+            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, configuration.version.minor);
         }
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);

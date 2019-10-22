@@ -5,6 +5,11 @@ import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.J2SEWindow.Configuration;
 import com.nucleus.common.Environment;
 import com.nucleus.common.Type;
+import com.nucleus.properties.Property;
+import com.nucleus.properties.Property.BooleanGetter;
+import com.nucleus.properties.Property.Getter;
+import com.nucleus.properties.Property.IntGetter;
+import com.nucleus.properties.Property.VersionGetter;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
@@ -33,19 +38,70 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         EGL();
     }
 
-    /**
-     * To select GLFW or JAWT window
-     */
-    protected static final String WINDOW_TYPE_KEY = "WINDOWTYPE";
+    static class WindowTypeGetter implements Getter<WindowType> {
 
-    public static final String WINDOW_WIDTH_KEY = "WINDOW-WIDTH";
-    public static final String WINDOW_HEIGHT_KEY = "WINDOW-HEIGHT";
-    public static final String WINDOW_UNDECORATED_KEY = "WINDOW-UNDECORATED";
-    public static final String FULLSCREEN_KEY = "FULLSCREEN";
-    public static final String SAMPLES = "SAMPLES";
-    public static final String ALPHA_BITS = "ALPHA";
-    public static final String NATIVE_GLES = "GLES";
-    public static final String FORCE_GLES_VERSION = "FORCE_GLES_VERSION";
+        @Override
+        public WindowType getProperty(String value, WindowType defaultValue) {
+            return defaultValue;
+        }
+    }
+
+    public enum WindowProperties {
+        WINDOW_TYPE_KEY(new WindowTypeGetter()),
+        WINDOW_WIDTH_KEY(new IntGetter()),
+        WINDOW_HEIGHT_KEY(new IntGetter()),
+        WINDOW_UNDECORATED_KEY(new BooleanGetter()),
+        FULLSCREEN_KEY(new BooleanGetter()),
+        SAMPLES(new IntGetter()),
+        ALPHA_BITS(new IntGetter()),
+        NATIVE_GLES(new BooleanGetter()),
+        FORCE_VERSION(new BooleanGetter()),
+        SET_VERSION(new VersionGetter());
+
+        public final Getter<?> getter;
+
+        private WindowProperties(Getter<?> getter) {
+            this.getter = getter;
+        }
+
+    }
+
+    class AppProperty extends Property {
+
+        final WindowProperties property;
+
+        AppProperty(WindowProperties key, String value) {
+            super(key.name(), value);
+            this.property = key;
+        }
+
+        Integer getInt() {
+            if (property.getter instanceof IntGetter) {
+                ((IntGetter) property.getter).getProperty(getValue(), 0);
+            }
+            throw new IllegalArgumentException("No int value for " + property);
+        }
+
+        Boolean getBoolean() {
+            if (property.getter instanceof BooleanGetter) {
+                ((BooleanGetter) property.getter).getProperty(getValue(), false);
+            }
+            throw new IllegalArgumentException("No boolean value for " + property);
+        }
+
+    }
+
+    protected static final Property[] PROPERTIES = new Property[] {
+            new Property(WindowProperties.WINDOW_TYPE_KEY.name(), "WINDOWTYPE"),
+            new Property(WindowProperties.WINDOW_WIDTH_KEY.name(), "WINDOW"),
+            new Property(WindowProperties.WINDOW_HEIGHT_KEY.name(), "WINDOW-HEIGHT"),
+            new Property(WindowProperties.WINDOW_UNDECORATED_KEY.name(), "WINDOW-UNDECORATED"),
+            new Property(WindowProperties.FULLSCREEN_KEY.name(), "FULLSCREEN"),
+            new Property(WindowProperties.SAMPLES.name(), "SAMPLES"),
+            new Property(WindowProperties.NATIVE_GLES.name(), "GLES"),
+            new Property(WindowProperties.FORCE_VERSION.name(), "FORCE_VERSION"),
+            new Property(WindowProperties.SET_VERSION.name(), "SET_VERSION") };
+
     public static final int DEFAULT_DEPTH_BITS = 32;
     public static final int DEFAULT_SAMPLES = 4;
 
@@ -82,8 +138,8 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         CoreApp.setClientClass(clientClass);
         setProperties(args);
         windowConfiguration.surfaceConfig = getConfiguration();
-        windowConfiguration.version = version;
-        createCoreWindows(version);
+        windowConfiguration.version = windowConfiguration.setVersion != null ? windowConfiguration.setVersion : version;
+        createCoreWindows(windowConfiguration.version);
     }
 
     /**
@@ -92,6 +148,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
      * @param args
      */
     protected void setProperties(String[] args) {
+        listProperties();
         setSystemProperties();
         if (args == null) {
             return;
@@ -99,6 +156,10 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         for (String str : args) {
             setProperty(str);
         }
+    }
+
+    protected void listProperties() {
+
     }
 
     protected void setSystemProperties() {
@@ -114,44 +175,55 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
      * @param str
      */
     protected void setProperty(String str) {
-        if (str.toUpperCase().startsWith(WINDOW_WIDTH_KEY)) {
-            windowConfiguration.width = Integer.parseInt(str.substring(WINDOW_WIDTH_KEY.length() + 1));
-            SimpleLogger.d(getClass(), WINDOW_WIDTH_KEY + " set to " + windowConfiguration.width);
-        }
-        if (str.toUpperCase().startsWith(WINDOW_HEIGHT_KEY)) {
-            windowConfiguration.height = Integer.parseInt(str.substring(WINDOW_HEIGHT_KEY.length() + 1));
-            SimpleLogger.d(getClass(), WINDOW_HEIGHT_KEY + " set to " + windowConfiguration.height);
-        }
-        if (str.toUpperCase().startsWith(WINDOW_UNDECORATED_KEY)) {
-            windowConfiguration.windowUndecorated = Boolean
-                    .parseBoolean(str.substring(WINDOW_UNDECORATED_KEY.length() + 1));
-            SimpleLogger.d(getClass(), WINDOW_UNDECORATED_KEY + " set to " + windowConfiguration.windowUndecorated);
-        }
-        if (str.toUpperCase().startsWith(FULLSCREEN_KEY)) {
-            windowConfiguration.fullscreen = Boolean.parseBoolean(str.substring(FULLSCREEN_KEY.length() + 1));
-            SimpleLogger.d(getClass(), FULLSCREEN_KEY + " set to " + windowConfiguration.fullscreen);
-        }
-        if (str.toUpperCase().startsWith(WINDOW_TYPE_KEY)) {
-            windowConfiguration.windowType = WindowType.valueOf(str.substring(WINDOW_TYPE_KEY.length() + 1));
-            SimpleLogger.d(getClass(), WINDOW_TYPE_KEY + " set to " + windowConfiguration.windowType);
-        }
-        if (str.toUpperCase().startsWith(ALPHA_BITS)) {
-            alpha = Integer.parseInt(str.substring(ALPHA_BITS.length() + 1));
-            SimpleLogger.d(getClass(), ALPHA_BITS + " set to " + alpha);
-        }
-        if (str.toUpperCase().startsWith(SAMPLES)) {
-            samples = Integer.parseInt(str.substring(SAMPLES.length() + 1));
-            SimpleLogger.d(getClass(), SAMPLES + " set to " + samples);
-        }
-        if (str.toUpperCase().startsWith(NATIVE_GLES)) {
-            windowConfiguration.nativeGLES = Boolean.parseBoolean(str.substring(NATIVE_GLES.length() + 1));
-            SimpleLogger.d(getClass(), NATIVE_GLES + " set to " + windowConfiguration.nativeGLES);
-        }
-        if (str.toUpperCase().startsWith(FORCE_GLES_VERSION)) {
-            windowConfiguration.forceGLESVersion = str.substring(FORCE_GLES_VERSION.length() + 1);
-            SimpleLogger.d(getClass(), FORCE_GLES_VERSION + " set to " + windowConfiguration.forceGLESVersion);
+        AppProperty property = getProperty(str);
+        if (property != null) {
+            switch (property.property) {
+                case WINDOW_WIDTH_KEY:
+                    windowConfiguration.width = property.getInt();
+                    break;
+                case WINDOW_HEIGHT_KEY:
+                    windowConfiguration.height = property.getInt();
+                    break;
+                case WINDOW_UNDECORATED_KEY:
+                    windowConfiguration.windowUndecorated = property.getBoolean();
+                    break;
+                case FULLSCREEN_KEY:
+                    windowConfiguration.fullscreen = property.getBoolean();
+                    break;
+                case WINDOW_TYPE_KEY:
+                    throw new IllegalArgumentException("Not implemented");
+                case ALPHA_BITS:
+                    alpha = property.getInt();
+                    break;
+                case SAMPLES:
+                    samples = property.getInt();
+                    break;
+                case NATIVE_GLES:
+                    windowConfiguration.nativeGLES = property.getBoolean();
+                    break;
+                case FORCE_VERSION:
+                    windowConfiguration.forceVersion = property.getBoolean();
+                    break;
+                case SET_VERSION:
+                    throw new IllegalArgumentException("Not implemented");
+
+            }
         }
 
+    }
+
+    protected AppProperty getProperty(String str) {
+        for (WindowProperties p : WindowProperties.values()) {
+            if (str.toUpperCase().startsWith(p.name())) {
+                String value = str.substring(p.name().length() + 1);
+                if (p.getter.getProperty(value, null) != null) {
+                    return new AppProperty(p, value);
+                } else {
+                    SimpleLogger.d(getClass(), "Error fetching property value for " + p + ", value: " + value);
+                }
+            }
+        }
+        return null;
     }
 
     /**

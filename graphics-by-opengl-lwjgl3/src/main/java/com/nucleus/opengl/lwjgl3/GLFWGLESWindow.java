@@ -7,7 +7,6 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengles.GLES;
 import org.lwjgl.opengles.GLESCapabilities;
-import org.lwjgl.system.Configuration;
 import org.lwjgl.system.FunctionProvider;
 import org.lwjgl.system.Library;
 import org.lwjgl.system.MemoryUtil;
@@ -20,9 +19,6 @@ import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.SimpleLogger;
 import com.nucleus.lwjgl3.GLFWWindow;
-import com.nucleus.lwjgl3.LWJGLWrapperFactory;
-import com.nucleus.renderer.NucleusRenderer.Renderers;
-import com.nucleus.renderer.SurfaceConfiguration;
 
 /**
  * Window for GLFW GLES support
@@ -33,7 +29,7 @@ public class GLFWGLESWindow extends GLFWWindow {
     private GLESCapabilities gles;
 
     public GLFWGLESWindow(BackendFactory factory, CoreAppStarter coreAppStarter, Configuration config) {
-        super( factory, coreAppStarter, config);
+        super(factory, coreAppStarter, config);
     }
 
     @Override
@@ -58,11 +54,11 @@ public class GLFWGLESWindow extends GLFWWindow {
             GLES.create(GL.getFunctionProvider());
             gles = GLES.createCapabilities();
         }
-        SimpleLogger.d(getClass(), "GLCapabilities with support for: \nGLES20: " + gles.GLES20 
+        SimpleLogger.d(getClass(), "GLCapabilities with support for: \nGLES20: " + gles.GLES20
                 + "\nGLES30: " + gles.GLES30
                 + "\nGLES31: " + gles.GLES31
                 + "\nGLES32: " + gles.GLES32);
-        return factory.createBackend(LWJGLWrapperFactory.getGLESVersion(gles), window, null);
+        return factory.createBackend(configuration.version, window, null);
     }
 
     /** Loads the OpenGL ES native library, using the default library name. */
@@ -70,15 +66,18 @@ public class GLFWGLESWindow extends GLFWWindow {
         SharedLibrary gles;
         switch (Platform.get()) {
             case LINUX:
-                gles = Library.loadNative(GLES.class, "com.super2k.opengl", org.lwjgl.system.Configuration.OPENGLES_LIBRARY_NAME,
+                gles = Library.loadNative(GLES.class, "com.super2k.opengl",
+                        org.lwjgl.system.Configuration.OPENGLES_LIBRARY_NAME,
                         "libGLESv2.so.2");
                 break;
             case MACOSX:
-                gles = Library.loadNative(GLES.class, "com.super2k.opengl", org.lwjgl.system.Configuration.OPENGLES_LIBRARY_NAME,
+                gles = Library.loadNative(GLES.class, "com.super2k.opengl",
+                        org.lwjgl.system.Configuration.OPENGLES_LIBRARY_NAME,
                         "GLESv2");
                 break;
             case WINDOWS:
-                gles = Library.loadNative(GLES.class, "com.super2k.opengl", org.lwjgl.system.Configuration.OPENGLES_LIBRARY_NAME,
+                gles = Library.loadNative(GLES.class, "com.super2k.opengl",
+                        org.lwjgl.system.Configuration.OPENGLES_LIBRARY_NAME,
                         "libGLESv2", "GLESv2");
                 break;
             default:

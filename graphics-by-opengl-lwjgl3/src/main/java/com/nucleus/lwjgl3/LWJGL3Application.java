@@ -53,7 +53,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
             case GLES30:
             case GLES31:
             case GLES32:
-                createGLESWindow(version);
+                createGLESWindow();
                 break;
             case VULKAN10:
             case VULKAN11:
@@ -65,7 +65,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
         return j2seWindow;
     }
 
-    protected void createGLESWindow(Renderers version) {
+    protected void createGLESWindow() {
         switch (windowConfiguration.windowType) {
             case GLFW:
                 j2seWindow = new GLFWGLESWindow(new LWJGLWrapperFactory(), this, windowConfiguration);
@@ -78,7 +78,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
                 j2seWindow.setVisible(true);
                 break;
             case EGL:
-                j2seWindow = new LWJGLEGLWindow(new LWJGLWrapperFactory(), this, windowConfiguration );
+                j2seWindow = new LWJGLEGLWindow(new LWJGLWrapperFactory(), this, windowConfiguration);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + windowConfiguration.windowType);
@@ -88,7 +88,7 @@ public class LWJGL3Application extends J2SEWindowApplication {
     protected void createVulkanWindow(Renderers version) {
         switch (windowConfiguration.windowType) {
             case GLFW:
-                j2seWindow = new GLFWVulkanWindow(new LWJGLWrapperFactory(), this, windowConfiguration );
+                j2seWindow = new GLFWVulkanWindow(new LWJGLWrapperFactory(), this, windowConfiguration);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + windowConfiguration.windowType);
