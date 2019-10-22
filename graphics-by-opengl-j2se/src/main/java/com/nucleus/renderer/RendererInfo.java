@@ -11,9 +11,28 @@ import com.nucleus.renderer.NucleusRenderer.Renderers;
  */
 public abstract class RendererInfo {
 
+    public static class Version {
+        public final int major;
+        public final int minor;
+
+        public Version(String versionStr) {
+            int dotIndex = versionStr.indexOf(".");
+            if (dotIndex < 0) {
+                // No dot
+                major = Integer.parseInt(versionStr);
+                minor = 0;
+            } else {
+                major = Integer.parseInt(versionStr.substring(0, dotIndex));
+                minor = Integer.parseInt(versionStr.substring(dotIndex + 1));
+            }
+        }
+    }
+
     protected String vendor;
     protected String renderer;
     protected String version;
+    protected Version GLVersion;
+    protected Version shadingLanguageVersion;
     protected List<String> extensions;
     protected int maxTextureSize;
     protected Renderers renderVersion;
@@ -62,6 +81,15 @@ public abstract class RendererInfo {
      */
     public Renderers getRenderVersion() {
         return renderVersion;
+    }
+
+    /**
+     * Returns the highest shader language version supported
+     * 
+     * @return
+     */
+    public Version getShaderLanguageVersion() {
+        return shadingLanguageVersion;
     }
 
     /**
