@@ -14,6 +14,10 @@ public class Environment {
 
     public enum Property {
         /**
+         * Optional name of scene to load
+         */
+        SCENE_NAME("com.nucleus.scene_name"),
+        /**
          * Used for runtime switch of debug checks
          */
         DEBUG("com.nucleus.debug"),
