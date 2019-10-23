@@ -67,7 +67,6 @@ public abstract class GLFWWindow extends J2SEWindow {
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
         GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, config.getSamples());
         SimpleLogger.d(getClass(), "Set samples: " + config.getSamples());
-        GLFW.glfwSwapInterval(configuration.swapInterval);
         window = GLFW.glfwCreateWindow(configuration.getWidth(), configuration.getHeight(), "", MemoryUtil.NULL,
                 MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {
@@ -75,6 +74,7 @@ public abstract class GLFWWindow extends J2SEWindow {
         }
         backend = initFW(window);
         initInput();
+        GLFW.glfwSwapInterval(configuration.swapInterval);
     }
 
     /**
@@ -193,7 +193,6 @@ public abstract class GLFWWindow extends J2SEWindow {
 
     public void swapBuffers() {
         GLFW.glfwSwapBuffers(window); // swap the color buffers
-        GLFW.glfwSwapInterval(1);
     }
 
     @Override
