@@ -11,11 +11,24 @@ import com.nucleus.renderer.NucleusRenderer.Renderers;
  */
 public abstract class RendererInfo {
 
+    /**
+     * From gles spec:
+     * The version number uses one of these forms:
+     * major_number.minor_number major_number.minor_number.release_number
+     * Vendor-specific information may follow the version number.
+     * Its format depends on the implementation, but a space always separates the version number and the vendor-specific
+     * information.
+     *
+     */
     public static class Version {
         public final int major;
         public final int minor;
 
         public Version(String versionStr) {
+            int whitespace = versionStr.indexOf(" ");
+            if (whitespace > -1) {
+                versionStr = versionStr.substring(0, whitespace);
+            }
             int dotIndex = versionStr.indexOf(".");
             if (dotIndex < 0) {
                 // No dot
@@ -88,7 +101,7 @@ public abstract class RendererInfo {
      * 
      * @return
      */
-    public Version getShaderLanguageVersion() {
+    public Version getShadingLanguageVersion() {
         return shadingLanguageVersion;
     }
 

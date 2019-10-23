@@ -117,7 +117,7 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
             case VERSION300:
             case VERSION310:
             case VERSION320:
-                Version glslVersion = getInfo().getShaderLanguageVersion();
+                Version glslVersion = getInfo().getShadingLanguageVersion();
                 if (glslVersion.major >= 4 && glslVersion.minor >= 30) {
                     // return SLVersion.VERSION430;
                 }
