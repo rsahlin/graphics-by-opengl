@@ -81,7 +81,7 @@ public class GLSLCompiler {
             ArrayList<String> currentFolder = new ArrayList<String>();
             currentFolder.add(folder);
             String stageSuffix = "." + stage.name();
-            ArrayList<String> filenames = FileUtils.getInstance().listFilesToString(path, currentFolder,
+            ArrayList<String> filenames = FileUtils.getInstance().listFiles(path, currentFolder,
                     new String[] { stageSuffix });
 
             String name = null;

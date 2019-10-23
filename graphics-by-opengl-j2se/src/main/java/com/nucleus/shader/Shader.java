@@ -3,6 +3,7 @@ package com.nucleus.shader;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 
+import com.nucleus.common.FileUtils;
 import com.nucleus.renderer.Pass;
 
 /**
@@ -110,6 +111,7 @@ public interface Shader {
 
         /**
          * Returns the relative path - by default this is the category
+         * The path is ends with directory separator.
          * 
          * @param shaderType The shader type to return source for
          * @return The relative path, if defined it must end with the path separator
@@ -117,7 +119,7 @@ public interface Shader {
          */
         public String getPath(ShaderType type) {
             String path = getCategoryString();
-            return path.length() == 0 ? path : path + "/";
+            return path.length() == 0 ? path : path + FileUtils.DIRECTORY_SEPARATOR;
         }
 
         /**
@@ -140,7 +142,7 @@ public interface Shader {
 
         @Override
         public String toString() {
-            return (getCategoryString() + "/" + getPassString() + getShadingString());
+            return (getCategoryString() + FileUtils.DIRECTORY_SEPARATOR + getPassString() + getShadingString());
         }
 
     }

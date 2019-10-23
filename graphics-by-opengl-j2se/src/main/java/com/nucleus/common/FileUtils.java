@@ -2,14 +2,19 @@ package com.nucleus.common;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Platform.CommandResult;
@@ -22,6 +27,7 @@ import com.nucleus.common.Platform.CommandResult;
 public class FileUtils {
 
     protected static FileUtils fileUtils = null;
+    public static char DIRECTORY_SEPARATOR = '/';
 
     /**
      * Hide the constructor
@@ -36,6 +42,20 @@ public class FileUtils {
         return fileUtils;
     }
 
+    protected Path getFileSystemPath(String path) throws URISyntaxException {
+        ClassLoader loader = getClass().getClassLoader();
+        URL url = loader.getResource(path);
+        String urlPath = url.getPath();
+        if (urlPath.startsWith("file:")) {
+            urlPath = urlPath.substring(5);
+        }
+        if (urlPath.startsWith("" + FileUtils.DIRECTORY_SEPARATOR)) {
+            urlPath = urlPath.substring(1);
+        }
+        FileSystem fs = FileSystems.getFileSystem(new URI("file:///"));
+        return fs.getPath(urlPath);
+    }
+
     /**
      * Utility method to return a list with the folder in the specified resource
      * path
@@ -46,45 +66,28 @@ public class FileUtils {
      */
     public ArrayList<String> listResourceFolders(String path) {
         ArrayList<String> folders = new ArrayList<String>();
-        ClassLoader loader = getClass().getClassLoader();
-        URL url = loader.getResource(path);
-        if (url == null) {
-            return folders;
-        }
-        File[] files = new File(url.getFile()).listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.isDirectory();
+        try {
+            Path listPath = getFileSystemPath(path);
+            SimpleLogger.d(getClass(), "Listing folders in " + listPath.toString());
+            try (Stream<Path> walk = Files.walk(listPath, 1)) {
+                List<Path> result = walk.filter(Files::isDirectory)
+                        .collect(Collectors.toList());
+                int len = listPath.toString().length();
+                for (Path folderPath : result) {
+                    String str = folderPath.toString();
+                    if (str.length() > len) {
+                        folders.add(str.substring(len + 1));
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        });
-        // Truncate name so only include the part after specified path.
-        path = path.replace('/', File.separatorChar);
-        for (File f : files) {
-            int start = f.toString().indexOf(path);
-            folders.add(f.toString().substring(start + path.length()));
+        } catch (URISyntaxException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return null;
         }
         return folders;
-    }
-
-    /**
-     * List the files, based on mime, beginning at path and including the specified folders.
-     * Returned filenames will be relative to path
-     * 
-     * @param path The base path, all returned names will be relative to this.
-     * @param folders Folder to search - folder names will be included in returned name.
-     * @param mime
-     * @return List of folder/filename for files that ends with mime
-     */
-    public ArrayList<String> listFilesToString(String path, ArrayList<String> folders, final String[] mimes) {
-        String comparePath = path.replace('/', File.separatorChar);
-        ArrayList<String> result = new ArrayList<String>();
-        ArrayList<File> files = listFilesToFile(path, folders, mimes);
-        // Truncate name so only include the part after specified path.
-        for (File f : files) {
-            int start = f.toString().indexOf(comparePath);
-            result.add(f.toString().substring(start + comparePath.length()));
-        }
-        return result;
     }
 
     /**
@@ -95,24 +98,40 @@ public class FileUtils {
      * @param mimes File extensions to include
      * @return Matching files
      */
-    public ArrayList<File> listFilesToFile(String path, ArrayList<String> folders, final String[] mimes) {
-        ClassLoader loader = getClass().getClassLoader();
-        ArrayList<File> result = new ArrayList<File>();
+    public ArrayList<String> listFiles(String path, ArrayList<String> folders, final String[] mimes) {
+        ArrayList<String> result = new ArrayList<String>();
         for (String folder : folders) {
-            URL url = loader.getResource(path + folder);
-            File[] files = new File(url.getFile()).listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    for (String mime : mimes) {
-                        if (name.endsWith(mime)) {
-                            return true;
+            try {
+                Path listPath = getFileSystemPath(path + folder);
+                SimpleLogger.d(getClass(), "Listing files in " + listPath.toString());
+                try (Stream<Path> walk = Files.walk(listPath, 1)) {
+                    List<Path> filePathList = walk.filter(Files::isRegularFile)
+                            .collect(Collectors.toList());
+                    String listStr = listPath.toString().replace('\\', FileUtils.DIRECTORY_SEPARATOR);
+                    int len = listStr.length();
+                    int relative = listStr.indexOf(path) + path.length();
+                    if (relative < path.length()) {
+                        throw new IllegalArgumentException("Could not find '" + path + "' in: " + listStr);
+                    }
+                    for (Path folderPath : filePathList) {
+                        String str = folderPath.toString();
+                        if (str.length() > len) {
+                            str = str.substring(relative);
+                            for (String mime : mimes) {
+                                if (str.toLowerCase().endsWith(mime)) {
+                                    result.add(str.replace('\\', FileUtils.DIRECTORY_SEPARATOR));
+                                    break;
+                                }
+                            }
                         }
                     }
-                    return false;
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            });
-            for (File f : files) {
-                result.add(f);
+            } catch (URISyntaxException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return null;
             }
         }
         return result;
@@ -181,7 +200,7 @@ public class FileUtils {
     }
 
     public URL getClassLocation(Class<?> theClass) {
-        final String classLocation = theClass.getName().replace('.', '/') + ".class";
+        final String classLocation = theClass.getName().replace('.', DIRECTORY_SEPARATOR) + ".class";
         final ClassLoader loader = theClass.getClassLoader();
         if (loader == null) {
             return null;

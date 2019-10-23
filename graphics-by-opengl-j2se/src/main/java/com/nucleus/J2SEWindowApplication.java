@@ -47,21 +47,32 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     }
 
     public enum WindowProperties {
-        WINDOW_TYPE_KEY(new WindowTypeGetter()),
-        WINDOW_WIDTH_KEY(new IntGetter()),
-        WINDOW_HEIGHT_KEY(new IntGetter()),
-        WINDOW_UNDECORATED_KEY(new BooleanGetter()),
-        FULLSCREEN_KEY(new BooleanGetter()),
-        SAMPLES(new IntGetter()),
-        ALPHA_BITS(new IntGetter()),
-        NATIVE_GLES(new BooleanGetter()),
-        FORCE_VERSION(new BooleanGetter()),
-        SET_VERSION(new VersionGetter());
+        WINDOW_TYPE("WINDOW-TYPE", new WindowTypeGetter()),
+        WINDOW_WIDTH("WINDOW-WIDTH", new IntGetter()),
+        WINDOW_HEIGHT("WINDOW-HEIGHT", new IntGetter()),
+        WINDOW_UNDECORATED("WINDOW_UNDECORATED", new BooleanGetter()),
+        FULLSCREEN("FULLSCREEN", new BooleanGetter()),
+        SAMPLES("SAMPLES", new IntGetter()),
+        ALPHA_BITS("ALPHA_BITS", new IntGetter()),
+        NATIVE_GLES("GLES", new BooleanGetter()),
+        FORCE_VERSION("FORCE-VERSION", new BooleanGetter()),
+        SET_VERSION("SET-VERSION", new VersionGetter());
 
         public final Getter<?> getter;
+        public final String key;
 
-        private WindowProperties(Getter<?> getter) {
+        private WindowProperties(String key, Getter<?> getter) {
+            this.key = key;
             this.getter = getter;
+        }
+
+        public static WindowProperties get(String key) {
+            for (WindowProperties wp : values()) {
+                if (key.toUpperCase().startsWith(wp.key)) {
+                    return wp;
+                }
+            }
+            return null;
         }
 
     }
@@ -107,11 +118,11 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     }
 
     protected static final Property[] PROPERTIES = new Property[] {
-            new Property(WindowProperties.WINDOW_TYPE_KEY.name(), "WINDOWTYPE"),
-            new Property(WindowProperties.WINDOW_WIDTH_KEY.name(), "WINDOW"),
-            new Property(WindowProperties.WINDOW_HEIGHT_KEY.name(), "WINDOW-HEIGHT"),
-            new Property(WindowProperties.WINDOW_UNDECORATED_KEY.name(), "WINDOW-UNDECORATED"),
-            new Property(WindowProperties.FULLSCREEN_KEY.name(), "FULLSCREEN"),
+            new Property(WindowProperties.WINDOW_TYPE.name(), "WINDOWTYPE"),
+            new Property(WindowProperties.WINDOW_WIDTH.name(), "WINDOW"),
+            new Property(WindowProperties.WINDOW_HEIGHT.name(), "WINDOW-HEIGHT"),
+            new Property(WindowProperties.WINDOW_UNDECORATED.name(), "WINDOW-UNDECORATED"),
+            new Property(WindowProperties.FULLSCREEN.name(), "FULLSCREEN"),
             new Property(WindowProperties.SAMPLES.name(), "SAMPLES"),
             new Property(WindowProperties.NATIVE_GLES.name(), "GLES"),
             new Property(WindowProperties.FORCE_VERSION.name(), "FORCE_VERSION"),
@@ -193,19 +204,19 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         AppProperty property = getProperty(str);
         if (property != null) {
             switch (property.property) {
-                case WINDOW_WIDTH_KEY:
+                case WINDOW_WIDTH:
                     windowConfiguration.width = property.getInt();
                     break;
-                case WINDOW_HEIGHT_KEY:
+                case WINDOW_HEIGHT:
                     windowConfiguration.height = property.getInt();
                     break;
-                case WINDOW_UNDECORATED_KEY:
+                case WINDOW_UNDECORATED:
                     windowConfiguration.windowUndecorated = property.getBoolean();
                     break;
-                case FULLSCREEN_KEY:
+                case FULLSCREEN:
                     windowConfiguration.fullscreen = property.getBoolean();
                     break;
-                case WINDOW_TYPE_KEY:
+                case WINDOW_TYPE:
                     windowConfiguration.windowType = property.getWindowType();
                 case ALPHA_BITS:
                     alpha = property.getInt();
@@ -228,14 +239,13 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     }
 
     protected AppProperty getProperty(String str) {
-        for (WindowProperties p : WindowProperties.values()) {
-            if (str.toUpperCase().startsWith(p.name())) {
-                String value = str.substring(p.name().length() + 1);
-                if (p.getter.getProperty(value, null) != null) {
-                    return new AppProperty(p, value);
-                } else {
-                    SimpleLogger.d(getClass(), "Error fetching property value for " + p + ", value: " + value);
-                }
+        WindowProperties p = WindowProperties.get(str);
+        if (p != null) {
+            String value = str.substring(p.key.length() + 1);
+            if (p.getter.getProperty(value, null) != null) {
+                return new AppProperty(p, value);
+            } else {
+                SimpleLogger.d(getClass(), "Error fetching property value for " + p + ", value: " + value);
             }
         }
         return null;

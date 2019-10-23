@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
+import com.nucleus.common.FileUtils;
 import com.nucleus.scene.gltf.BufferView.Target;
 
 /**
@@ -308,7 +309,7 @@ public class GLTF {
      * @return
      */
     public String getFilename() {
-        return path + "/" + filename;
+        return path + FileUtils.DIRECTORY_SEPARATOR + filename;
     }
 
     /**
@@ -319,7 +320,7 @@ public class GLTF {
      * @return The full path to the uri, with gltf path prepended.
      */
     public String getPath(String uri) {
-        return path + "/" + uri;
+        return path + FileUtils.DIRECTORY_SEPARATOR + uri;
     }
 
     public Asset getAsset() {

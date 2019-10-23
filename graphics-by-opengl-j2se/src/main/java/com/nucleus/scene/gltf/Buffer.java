@@ -8,6 +8,7 @@ import java.nio.FloatBuffer;
 import com.google.gson.annotations.SerializedName;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
+import com.nucleus.common.FileUtils;
 import com.nucleus.io.StreamUtils;
 
 /**
@@ -59,8 +60,13 @@ public class Buffer extends GLTFNamedValue {
         createBuffer();
     }
 
+    /**
+     * Returns the URI as a String - '\\' char will be replaced by FileUtils.DIRECTORY_SEPARATOR
+     * 
+     * @return
+     */
     public String getUri() {
-        return uri;
+        return uri != null ? uri.replace('\\', FileUtils.DIRECTORY_SEPARATOR) : null;
     }
 
     public int getByteLength() {
@@ -183,7 +189,7 @@ public class Buffer extends GLTFNamedValue {
     }
 
     public String toString(int position, int length) {
-        String str = "URI: " + uri + ", name: " + getName() + ", byteLength: " + byteLength
+        String str = "URI: " + getUri() + ", name: " + getName() + ", byteLength: " + byteLength
                 + (bufferName > 0 ? " VBO " + bufferName : " no VBO");
 
         str += "\n" + BufferUtils.getContentAsString(position, length, buffer);
