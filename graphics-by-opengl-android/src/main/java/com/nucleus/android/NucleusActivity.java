@@ -161,7 +161,7 @@ public abstract class NucleusActivity extends Activity
         String waitclientStr = readProperty(Environment.Property.EGLWAITCLIENT.name());
         eglWaitClient = waitclientStr != null && waitclientStr.length() > 0 ? Boolean.parseBoolean(waitclientStr)
                 : eglWaitClient;
-        String swapIntervalStr = readProperty(Environment.Property.EGLSWAPINTERVAL.name());
+        String swapIntervalStr = readProperty(Environment.Property.SWAPINTERVAL.name());
         eglSwapInterval = swapIntervalStr != null && swapIntervalStr.length() > 0 ? Integer.parseInt(swapIntervalStr)
                 : eglSwapInterval;
         String choreographerStr = readProperty(CHOREOGRAPHER_KEY);

@@ -43,9 +43,9 @@ public class Environment {
          */
         EGLWAITCLIENT("com.nucleus.eglwaitclient"),
         /**
-         * EGL swap interval, only works if using eglsurface
+         * swap interval, may not work for all window implementations
          */
-        EGLSWAPINTERVAL("com.nucleus.eglswapinterval"),
+        SWAPINTERVAL("com.nucleus.swapinterval"),
         /**
          * If true then EGL front_buffer_auto_refresh is enabled if present
          */

@@ -67,6 +67,7 @@ public abstract class GLFWWindow extends J2SEWindow {
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
         GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, config.getSamples());
         SimpleLogger.d(getClass(), "Set samples: " + config.getSamples());
+        GLFW.glfwSwapInterval(configuration.swapInterval);
         window = GLFW.glfwCreateWindow(configuration.getWidth(), configuration.getHeight(), "", MemoryUtil.NULL,
                 MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {

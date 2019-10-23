@@ -273,7 +273,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void display(GLAutoDrawable drawable) {
-        drawable.getGL().setSwapInterval(configuration.swapInterval);
         if (!autoSwapBuffer) {
             coreApp.renderFrame();
             if (glWindow != null) {

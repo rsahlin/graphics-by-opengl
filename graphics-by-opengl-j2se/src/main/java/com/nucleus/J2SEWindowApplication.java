@@ -189,7 +189,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     }
 
     protected void setSystemProperties() {
-        String swap = Environment.getInstance().getProperty(Environment.Property.EGLSWAPINTERVAL);
+        String swap = Environment.getInstance().getProperty(Environment.Property.SWAPINTERVAL);
         if (swap != null && swap.length() > 0) {
             windowConfiguration.swapInterval = Integer.parseInt(swap);
         }
