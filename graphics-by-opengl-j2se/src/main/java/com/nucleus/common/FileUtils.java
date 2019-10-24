@@ -11,7 +11,9 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,6 +31,8 @@ public class FileUtils {
     protected static FileUtils fileUtils = null;
     public static char DIRECTORY_SEPARATOR = '/';
 
+    FileSystem fileSystem;
+
     /**
      * Hide the constructor
      */
@@ -42,18 +46,24 @@ public class FileUtils {
         return fileUtils;
     }
 
-    protected Path getFileSystemPath(String path) throws URISyntaxException {
+    protected Path getFileSystemPath(String path) throws URISyntaxException, IOException {
         ClassLoader loader = getClass().getClassLoader();
-        URL url = loader.getResource(path);
-        String urlPath = url.getPath();
-        if (urlPath.startsWith("file:")) {
-            urlPath = urlPath.substring(5);
+        SimpleLogger.d(getClass(), "Getting URI for path: " + path);
+        URI uri = loader.getResource(path).toURI();
+        Path resultPath = null;
+        if (uri.getScheme().contentEquals("jar")) {
+            resultPath = getJarPath(uri, path);
         }
-        if (urlPath.startsWith("" + FileUtils.DIRECTORY_SEPARATOR)) {
-            urlPath = urlPath.substring(1);
+        resultPath = Paths.get(uri);
+        SimpleLogger.d(getClass(), "Path for uri: " + uri + "\n" + resultPath.toString());
+        return resultPath;
+    }
+
+    protected Path getJarPath(URI uri, String path) throws IOException {
+        if (fileSystem == null) {
+            fileSystem = FileSystems.newFileSystem(uri, Collections.<String, Object> emptyMap());
         }
-        FileSystem fs = FileSystems.getFileSystem(new URI("file:///"));
-        return fs.getPath(urlPath);
+        return fileSystem.getPath(path);
     }
 
     /**
@@ -64,28 +74,27 @@ public class FileUtils {
      * @return folders in the specified path (excluding the path in the returned
      * folder names)
      */
-    public ArrayList<String> listResourceFolders(String path) {
+    public ArrayList<String> listResourceFolders(String path) throws IOException, URISyntaxException {
+        String separator = "" + FileUtils.DIRECTORY_SEPARATOR;
         ArrayList<String> folders = new ArrayList<String>();
-        try {
-            Path listPath = getFileSystemPath(path);
-            SimpleLogger.d(getClass(), "Listing folders in " + listPath.toString());
-            try (Stream<Path> walk = Files.walk(listPath, 1)) {
-                List<Path> result = walk.filter(Files::isDirectory)
-                        .collect(Collectors.toList());
-                int len = listPath.toString().length();
-                for (Path folderPath : result) {
-                    String str = folderPath.toString();
-                    if (str.length() > len) {
-                        folders.add(str.substring(len + 1));
-                    }
+        Path listPath = getFileSystemPath(path);
+        String listPathStr = listPath.toString();
+        SimpleLogger.d(getClass(), "Listing folders in " + listPathStr);
+        int offset = listPathStr.endsWith(separator) ? 0 : 1;
+        int len = listPathStr.length();
+        try (Stream<Path> walk = Files.walk(listPath, 1)) {
+            List<Path> result = walk.filter(Files::isDirectory)
+                    .collect(Collectors.toList());
+            for (Path folderPath : result) {
+                String str = folderPath.toString();
+                int strLen = str.length();
+                if (strLen > len) {
+                    int endoffset = str.endsWith(separator) ? 1 : 0;
+                    String folder = str.substring(len + offset, strLen - endoffset);
+                    SimpleLogger.d(getClass(), "Added folder: " + folder + ", fullpath: " + str);
+                    folders.add(folder);
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return null;
         }
         return folders;
     }
@@ -97,45 +106,39 @@ public class FileUtils {
      * @param folders Folders to include in search
      * @param mimes File extensions to include
      * @return Matching files
+     * @throws IOException
+     * @throws URISyntaxException
      */
-    public ArrayList<String> listFiles(String path, ArrayList<String> folders, final String[] mimes) {
+    public ArrayList<String> listFiles(String path, ArrayList<String> folders, final String[] mimes)
+            throws URISyntaxException, IOException {
         ArrayList<String> result = new ArrayList<String>();
         for (String folder : folders) {
-            try {
-                Path listPath = getFileSystemPath(path + folder);
-                SimpleLogger.d(getClass(), "Listing files in " + listPath.toString());
-                try (Stream<Path> walk = Files.walk(listPath, 1)) {
-                    List<Path> filePathList = walk.filter(Files::isRegularFile)
-                            .collect(Collectors.toList());
-                    String listStr = listPath.toString().replace('\\', FileUtils.DIRECTORY_SEPARATOR);
-                    int len = listStr.length();
-                    int relative = listStr.indexOf(path) + path.length();
-                    if (relative < path.length()) {
-                        throw new IllegalArgumentException("Could not find '" + path + "' in: " + listStr);
-                    }
-                    for (Path folderPath : filePathList) {
-                        String str = folderPath.toString();
-                        if (str.length() > len) {
-                            str = str.substring(relative);
-                            for (String mime : mimes) {
-                                if (str.toLowerCase().endsWith(mime)) {
-                                    result.add(str.replace('\\', FileUtils.DIRECTORY_SEPARATOR));
-                                    break;
-                                }
+            Path listPath = getFileSystemPath(path + folder);
+            SimpleLogger.d(getClass(), "Listing files in " + listPath.toString());
+            try (Stream<Path> walk = Files.walk(listPath, 1)) {
+                List<Path> filePathList = walk.filter(Files::isRegularFile)
+                        .collect(Collectors.toList());
+                String listStr = listPath.toString().replace('\\', FileUtils.DIRECTORY_SEPARATOR);
+                int len = listStr.length();
+                int relative = listStr.indexOf(path) + path.length();
+                if (relative < path.length()) {
+                    throw new IllegalArgumentException("Could not find '" + path + "' in: " + listStr);
+                }
+                for (Path folderPath : filePathList) {
+                    String str = folderPath.toString();
+                    if (str.length() > len) {
+                        str = str.substring(relative);
+                        for (String mime : mimes) {
+                            if (str.toLowerCase().endsWith(mime)) {
+                                result.add(str.replace('\\', FileUtils.DIRECTORY_SEPARATOR));
+                                break;
                             }
                         }
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
-            } catch (URISyntaxException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                return null;
             }
         }
         return result;
-
     }
 
     /**

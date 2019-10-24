@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -58,7 +59,8 @@ public class GLSLCompiler {
      * @param folders
      * @throws IOException
      */
-    public synchronized void compileShaders(String path, ArrayList<String> folders) throws IOException {
+    public synchronized void compileShaders(String path, ArrayList<String> folders)
+            throws IOException, URISyntaxException {
         ByteBuffer buffer = BufferUtils.createByteBuffer(16000);
         // File file = FileUtils.getInstance().getFile(path + "gltf/main_vert.spv");
         // SpirvLoader loader = new SpirvLoader();
@@ -76,7 +78,7 @@ public class GLSLCompiler {
     }
 
     public void compileStage(String path, ArrayList<String> folders, ByteBuffer buffer, Stage stage)
-            throws IOException {
+            throws IOException, URISyntaxException {
         for (String folder : folders) {
             ArrayList<String> currentFolder = new ArrayList<String>();
             currentFolder.add(folder);
