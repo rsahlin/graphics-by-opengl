@@ -78,18 +78,16 @@ The Android SDK level is set as property 'android.sdk'
 
 Project structure:  
 
-graphics-by-opengl-j2se contains all APIs and implementation that is not platform specific
-- the majority of functionality and code should be here.  
+graphics-by-opengl-j2se contains all APIs and implementation that is not platform specific - the majority of functionality and code should be here.  
 
 graphics-by-opengl-jogl  
 JOGAMP based implementation - will run on Java platform that has support for JOGAMP (win/linux/macos)  
 
 graphics-by-opengl-android  
-Android implementation  
-- Sometimes m2e will not recognise aar packaging as Android projects when importing into Eclipse.
-If graphics-by-opengl is missing Android dependenciesm which shows up by not finding any Java library classes.
-Change packaging in the graphics-by-opengl\pom.xml to apk (from aar) before importing and then switch back once it builds.
-Select - Maven - update project,or clean build to get rid of any trailing errors.
+Android implementation - Sometimes m2e will not recognise aar packaging as Android projects when importing into Eclipse.  
+If graphics-by-opengl is missing Android dependenciesm which shows up by not finding any Java library classes.  
+Change packaging in the graphics-by-opengl\pom.xml to apk (from aar) before importing and then switch back once it builds.  
+Select - Maven - update project,or clean build to get rid of any trailing errors.  
 
 To use the project in Eclipse, import as Existing Maven project  
 
@@ -97,7 +95,7 @@ MAVEN
 
 Build in root folder using:  
 mvn clean install -DskipTests  
-This will publish to local maven so that project can be imported.  
+This will publish to local maven so that project can be imported.    
 
 GRADLE  
 
