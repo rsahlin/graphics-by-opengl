@@ -7,6 +7,8 @@ import com.nucleus.common.BufferUtils;
 import com.nucleus.opengl.shader.NamedShaderVariable;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.RendererInfo.Version;
+import com.nucleus.scene.gltf.Texture;
+import com.nucleus.scene.gltf.Texture.Swizzle;
 import com.nucleus.shader.ShaderSource.SLVersion;
 import com.nucleus.shader.ShaderVariable.InterfaceBlock;
 import com.nucleus.shader.ShaderVariable.VariableType;
@@ -271,5 +273,17 @@ public abstract class GLES30Wrapper extends GLES20Wrapper {
      * @param height
      */
     public abstract void glTexStorage2D(int target, int levels, int internalformat, int width, int height);
+
+    @Override
+    public void uploadTexParameters(Texture texture) throws GLException {
+        Swizzle swizzle = texture.getSwizzle();
+        if (swizzle != null) {
+            glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_SWIZZLE_R, swizzle.swizzleRed.value);
+            glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_SWIZZLE_G, swizzle.swizzleGreen.value);
+            glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_SWIZZLE_B, swizzle.swizzleBlue.value);
+            glTexParameteri(GLES20.GL_TEXTURE_2D, GLES30.GL_TEXTURE_SWIZZLE_A, swizzle.swizzleAlpha.value);
+        }
+        super.uploadTexParameters(texture);
+    }
 
 }

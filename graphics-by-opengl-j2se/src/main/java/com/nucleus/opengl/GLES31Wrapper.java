@@ -143,16 +143,4 @@ public abstract class GLES31Wrapper extends GLES30Wrapper {
 
     public abstract void glVertexBindingDivisor(int bindingindex, int divisor);
 
-    @Override
-    public void uploadTexParameters(Texture texture) throws GLException {
-        Swizzle swizzle = texture.getSwizzle();
-        if (swizzle != null) {
-            glTexParameteri(GLES20.GL_TEXTURE_2D, GLES31.GL_TEXTURE_SWIZZLE_R, swizzle.swizzleRed.value);
-            glTexParameteri(GLES20.GL_TEXTURE_2D, GLES31.GL_TEXTURE_SWIZZLE_G, swizzle.swizzleGreen.value);
-            glTexParameteri(GLES20.GL_TEXTURE_2D, GLES31.GL_TEXTURE_SWIZZLE_B, swizzle.swizzleBlue.value);
-            glTexParameteri(GLES20.GL_TEXTURE_2D, GLES31.GL_TEXTURE_SWIZZLE_A, swizzle.swizzleAlpha.value);
-        }
-        super.uploadTexParameters(texture);
-    }
-
 }
