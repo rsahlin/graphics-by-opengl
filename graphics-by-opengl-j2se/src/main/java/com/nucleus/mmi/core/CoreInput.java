@@ -7,8 +7,8 @@ import java.util.Set;
 import com.nucleus.SimpleLogger;
 import com.nucleus.geometry.Vertex2D;
 import com.nucleus.mmi.Key;
-import com.nucleus.mmi.MMIPointerInput;
 import com.nucleus.mmi.MMIPointer;
+import com.nucleus.mmi.MMIPointerInput;
 import com.nucleus.mmi.Pointer;
 import com.nucleus.mmi.Pointer.PointerAction;
 import com.nucleus.mmi.Pointer.Type;
@@ -321,6 +321,8 @@ public class CoreInput implements RawPointerInput, KeyInput {
      * @param translateY Offset for y position
      */
     public void setPointerTransform(float scaleX, float scaleY, float translateX, float translateY) {
+        SimpleLogger.d(getClass(),
+                "Pointer transform, scale: " + scaleX + ", " + scaleY + " : Offset " + translateX + ", " + translateY);
         transform[X] = scaleX;
         transform[Y] = scaleY;
         transform[2] = translateX;

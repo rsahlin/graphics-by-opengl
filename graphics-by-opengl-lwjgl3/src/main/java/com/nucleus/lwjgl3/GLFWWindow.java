@@ -3,6 +3,7 @@ package com.nucleus.lwjgl3;
 import java.lang.reflect.Field;
 import java.util.Hashtable;
 
+import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallbackI;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -64,7 +65,7 @@ public abstract class GLFWWindow extends J2SEWindow {
             GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, configuration.version.minor);
         }
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
-        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
+        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, config.getSamples());
         SimpleLogger.d(getClass(), "Set samples: " + config.getSamples());
         window = GLFW.glfwCreateWindow(configuration.getWidth(), configuration.getHeight(), "", MemoryUtil.NULL,
@@ -72,9 +73,21 @@ public abstract class GLFWWindow extends J2SEWindow {
         if (window == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
+        if (configuration.fullscreen) {
+            SimpleLogger.d(getClass(), "Trying to set fullscreen - getting monitors");
+            PointerBuffer monitors = GLFW.glfwGetMonitors();
+            if (monitors.capacity() > 0) {
+                SimpleLogger.d(getClass(), "Found " + monitors.capacity() + " monitors. Choosing the first.");
+                GLFW.glfwSetWindowMonitor(window, monitors.get(0), 0, 0, configuration.width, configuration.height,
+                        GLFW.GLFW_DONT_CARE);
+            } else {
+                SimpleLogger.d(getClass(), "glfwGetMonitors() returns zero monitors.");
+
+            }
+        }
         backend = initFW(window);
-        initInput();
         GLFW.glfwSwapInterval(configuration.swapInterval);
+        initInput();
     }
 
     /**
@@ -214,7 +227,7 @@ public abstract class GLFWWindow extends J2SEWindow {
 
     @Override
     protected void setFullscreenMode(boolean fullscreen) {
-        throw new IllegalArgumentException("Not implemented");
+        SimpleLogger.d(getClass(), "Not implemented setFullscreenMode()");
     }
 
     @Override
