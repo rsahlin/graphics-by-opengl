@@ -1,5 +1,7 @@
 package com.nucleus.properties;
 
+import com.nucleus.renderer.NucleusRenderer.Renderers;
+
 /**
  * Helper class for handling a property containing of key and value
  * 
@@ -7,6 +9,19 @@ package com.nucleus.properties;
  *
  */
 public class Property {
+
+    public interface Getter<T> {
+        /**
+         * If value is not null the string will be converted into the Type class.
+         * Normally by parsing the String value but this is up to the implementation.
+         * If value is null or conversion fails then the defaultValue is returned.
+         * 
+         * @param value
+         * @param defaultValue
+         * @return
+         */
+        T getProperty(String value, T defaultValue);
+    }
 
     private String key;
     private String value;
@@ -56,6 +71,54 @@ public class Property {
         } else {
             return new String[] { value };
         }
+    }
+
+    public static class IntGetter implements Getter<Integer> {
+
+        @Override
+        public Integer getProperty(String value, Integer defaultValue) {
+            if (value == null) {
+                return defaultValue;
+            }
+            try {
+                return Integer.parseInt(value);
+            } catch (Throwable t) {
+                return defaultValue;
+            }
+        }
+
+    }
+
+    public static class BooleanGetter implements Getter<Boolean> {
+
+        @Override
+        public Boolean getProperty(String value, Boolean defaultValue) {
+            if (value == null) {
+                return defaultValue;
+            }
+            try {
+                return Boolean.parseBoolean(value);
+            } catch (Throwable t) {
+                return defaultValue;
+            }
+        }
+
+    }
+
+    public static class VersionGetter implements Getter<Renderers> {
+
+        @Override
+        public Renderers getProperty(String value, Renderers defaultValue) {
+            if (value == null) {
+                return defaultValue;
+            }
+            try {
+                return Renderers.valueOf(value);
+            } catch (Throwable t) {
+                return defaultValue;
+            }
+        }
+
     }
 
 }

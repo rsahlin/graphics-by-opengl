@@ -19,7 +19,6 @@ import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.Key.Action;
 import com.nucleus.mmi.Pointer.PointerAction;
 import com.nucleus.mmi.Pointer.Type;
-import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 
 /**
@@ -41,10 +40,9 @@ public abstract class GLFWWindow extends J2SEWindow {
      * @param width
      * @param height
      */
-    public GLFWWindow(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter,
-            SurfaceConfiguration config, int width,
-            int height) {
-        super(version, factory, coreAppStarter, width, height, config);
+    public GLFWWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter,
+            Configuration windowConfiguration) {
+        super(factory, coreAppStarter, windowConfiguration);
     }
 
     @Override
@@ -53,24 +51,30 @@ public abstract class GLFWWindow extends J2SEWindow {
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize glfw");
         }
-
+        SurfaceConfiguration config = configuration.getSurfaceConfiguration();
+        SimpleLogger.d(getClass(), "GLFW version :" + GLFW.glfwGetVersionString());
+        SimpleLogger.d(getClass(), "Initializing GLFW window for requested version " + configuration.version);
         GLFW.glfwDefaultWindowHints();
+        if (configuration.nativeGLES) {
+            GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API);
+        }
+        if (configuration.forceVersion == true) {
+            SimpleLogger.d(getClass(), "Forcing GLFW GLES version to " + configuration.version);
+            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, configuration.version.major);
+            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, configuration.version.minor);
+        }
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
-        // GLFW setup for EGL & OpenGL ES
-        // GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_CREATION_API, GLFW.GLFW_NATIVE_CONTEXT_API);
-        // GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API);
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 1);
         GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, config.getSamples());
-
-        window = GLFW.glfwCreateWindow(width, height, "", MemoryUtil.NULL, MemoryUtil.NULL);
+        SimpleLogger.d(getClass(), "Set samples: " + config.getSamples());
+        window = GLFW.glfwCreateWindow(configuration.getWidth(), configuration.getHeight(), "", MemoryUtil.NULL,
+                MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
-
         backend = initFW(window);
         initInput();
+        GLFW.glfwSwapInterval(configuration.swapInterval);
     }
 
     /**
@@ -189,7 +193,6 @@ public abstract class GLFWWindow extends J2SEWindow {
 
     public void swapBuffers() {
         GLFW.glfwSwapBuffers(window); // swap the color buffers
-        GLFW.glfwSwapInterval(1);
     }
 
     @Override

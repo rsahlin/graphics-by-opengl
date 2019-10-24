@@ -20,12 +20,10 @@ import org.lwjgl.system.MemoryUtil;
 
 import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp;
-import com.nucleus.CoreApp.CoreAppStarter;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Environment;
 import com.nucleus.egl.EGLUtils;
-import com.nucleus.lwjgl3.LWJGLWrapperFactory;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
@@ -51,10 +49,8 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
      */
     protected int[] surfaceAttribs;
 
-    public LWJGLEGLWindow(Renderers version, BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter,
-            SurfaceConfiguration config,
-            int width, int height) {
-        super(version, factory, coreAppStarter, width, height, config);
+    public LWJGLEGLWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, Configuration configuration) {
+        super(factory, coreAppStarter, configuration);
         env = Environment.getInstance();
         Thread t = new Thread(this);
         t.start();
@@ -62,7 +58,7 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
 
     @Override
     public void init() {
-        backend = factory.createBackend(version, window, null);
+        backend = factory.createBackend(configuration.version, window, null);
     }
 
     /**
@@ -142,7 +138,7 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
         GLFWVidMode vidmode = Objects.requireNonNull(GLFW.glfwGetVideoMode(monitor));
         GLFW.glfwMakeContextCurrent(window);
 
-        Configuration.OPENGLES_EXPLICIT_INIT.set(true);
+        org.lwjgl.system.Configuration.OPENGLES_EXPLICIT_INIT.set(true);
         GLES.create(GL.getFunctionProvider());
         gles = GLES.createCapabilities();
 
@@ -159,6 +155,7 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
         });
 
         // EGL capabilities
+        long display = EGL10.eglGetDisplay(window);
         long dpy = GLFWNativeEGL.glfwGetEGLDisplay();
         if (dpy == EGL10.EGL_NO_DISPLAY) {
             throw new IllegalArgumentException("EGL_NO_DISPLAY");

@@ -46,42 +46,24 @@ public abstract class JOGLGLWindow extends J2SEWindow
         implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener, KeyListener, WindowListener {
 
     private Dimension windowSize;
-    private boolean undecorated = false;
     private boolean alwaysOnTop = false;
     private boolean mouseVisible = true;
     private boolean mouseConfined = false;
-    private int swapInterval = 0;
     private boolean autoSwapBuffer = false;
     protected volatile boolean contextCreated = false;
     protected GLCanvas canvas;
     protected Frame frame;
     protected GLWindow glWindow;
-    protected WindowType windowType;
     Animator animator;
     private Hashtable<Integer, Integer> AWTKeycodes;
 
     /**
      * Creates a new JOGL window with the specified {@link CoreAppStarter} and swapinterval
      * 
-     * @param version
-     * @param factory
-     * @param coreAppStarter
-     * @param config Surface configuration
-     * @param width
-     * @param height
-     * @param undecorated
-     * @param fullscreen
-     * @param swapInterval
      * @throws IllegalArgumentException If coreAppStarter is null
      */
-    public JOGLGLWindow(Renderers version, WindowType windowType, BackendFactory factory, CoreAppStarter coreAppStarter,
-            SurfaceConfiguration config, int width, int height, boolean undecorated,
-            boolean fullscreen, int swapInterval) {
-        super(version, factory, coreAppStarter, width, height, config);
-        this.windowType = windowType;
-        this.swapInterval = swapInterval;
-        this.undecorated = undecorated;
-        this.fullscreen = fullscreen;
+    public JOGLGLWindow(BackendFactory factory, CoreAppStarter coreAppStarter, Configuration configuration) {
+        super(factory, coreAppStarter, configuration);
     }
 
     @Override
@@ -89,17 +71,17 @@ public abstract class JOGLGLWindow extends J2SEWindow
         if (coreAppStarter == null) {
             throw new IllegalArgumentException("CoreAppStarter is null");
         }
-        windowSize = new Dimension(width, height);
-        GLProfile profile = getProfile(version);
-        switch (windowType) {
+        windowSize = new Dimension(configuration.width, configuration.height);
+        GLProfile profile = getProfile(configuration.version);
+        switch (configuration.windowType) {
             case NEWT:
-                createNEWTWindow(width, height, profile);
+                createNEWTWindow(configuration.width, configuration.height, profile);
                 break;
             case JAWT:
-                createAWTWindow(width, height, profile);
+                createAWTWindow(configuration.width, configuration.height, profile);
                 break;
                 default:
-                    throw new IllegalArgumentException("Invalid windowtype for JOGL: " + windowType);
+                    throw new IllegalArgumentException("Invalid windowtype for JOGL: " + configuration.windowType);
         }
 
         /**
@@ -177,18 +159,19 @@ public abstract class JOGLGLWindow extends J2SEWindow
      */
     private void createNEWTWindow(int width, int height, GLProfile profile) {
         GLProfile.initSingleton();
+        SurfaceConfiguration config = configuration.surfaceConfig;
         GLCapabilities glCapabilities = new GLCapabilities(profile);
         glCapabilities.setSampleBuffers(config.getSamples() > 0);
         glCapabilities.setNumSamples(config.getSamples());
         glCapabilities.setBackgroundOpaque(true);
         glCapabilities.setAlphaBits(0);
         glWindow = GLWindow.create(glCapabilities);
-        glWindow.setUndecorated(undecorated);
+        glWindow.setUndecorated(configuration.windowUndecorated);
         InsetsImmutable insets = glWindow.getInsets();
-        glWindow.setSize(undecorated ? windowSize.getWidth() : windowSize.getWidth() + insets.getTotalWidth(),
-                undecorated ? windowSize.getHeight() : windowSize.getHeight() + insets.getTotalHeight());
+        glWindow.setSize(configuration.windowUndecorated ? windowSize.getWidth() : windowSize.getWidth() + insets.getTotalWidth(),
+                configuration.windowUndecorated ? windowSize.getHeight() : windowSize.getHeight() + insets.getTotalHeight());
         glWindow.setAlwaysOnTop(alwaysOnTop);
-        glWindow.setFullscreen(fullscreen);
+        glWindow.setFullscreen(configuration.fullscreen);
         glWindow.setPointerVisible(mouseVisible);
         glWindow.confinePointer(mouseConfined);
         glWindow.addMouseListener(this);
@@ -258,7 +241,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
     public void init(GLAutoDrawable drawable) {
         internalCreateCoreApp(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
         drawable.swapBuffers();
-        drawable.getGL().setSwapInterval(swapInterval);
+        drawable.getGL().setSwapInterval(configuration.swapInterval);
         internalContextCreated(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
     }
 
@@ -290,7 +273,6 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void display(GLAutoDrawable drawable) {
-        drawable.getGL().setSwapInterval(swapInterval);
         if (!autoSwapBuffer) {
             coreApp.renderFrame();
             if (glWindow != null) {
@@ -482,7 +464,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     protected void setFullscreenMode(boolean fullscreen) {
-        this.fullscreen = fullscreen;
+        configuration.fullscreen = fullscreen;
         glWindow.setFullscreen(fullscreen);
         if (!fullscreen) {
             glWindow.setFullscreen(false);

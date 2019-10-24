@@ -14,6 +14,7 @@ import com.nucleus.BackendException;
 import com.nucleus.GraphicsPipeline;
 import com.nucleus.SimpleLogger;
 import com.nucleus.assets.BaseAssets;
+import com.nucleus.common.FileUtils;
 import com.nucleus.opengl.GLES20Wrapper;
 import com.nucleus.opengl.GLException;
 import com.nucleus.opengl.GLPipeline;
@@ -199,6 +200,7 @@ public class GLAssetManager extends BaseAssets {
      */
     private GLTF loadJSONAsset(String path, String fileName, InputStream is)
             throws IOException, GLTFException {
+        path = path.replace('\\', FileUtils.DIRECTORY_SEPARATOR);
         GLTF glTF = null;
         try {
             Reader reader = new InputStreamReader(is, "UTF-8");

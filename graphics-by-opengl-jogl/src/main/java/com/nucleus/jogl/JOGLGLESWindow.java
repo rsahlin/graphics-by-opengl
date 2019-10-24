@@ -17,9 +17,8 @@ import com.nucleus.renderer.SurfaceConfiguration;
  */
 public class JOGLGLESWindow extends JOGLGLWindow {
 
-    public JOGLGLESWindow(Renderers version, WindowType windowType, BackendFactory factory, CoreAppStarter coreAppStarter,
-            SurfaceConfiguration config, int width, int height, boolean undecorated, boolean fullscreen, int swapInterval) {
-        super(version, windowType, factory, coreAppStarter, config, width, height, undecorated, fullscreen, swapInterval);
+    public JOGLGLESWindow(BackendFactory factory, CoreAppStarter coreAppStarter, Configuration config) {
+        super(factory, coreAppStarter, config);
     }
 
     @Override
@@ -41,7 +40,7 @@ public class JOGLGLESWindow extends JOGLGLWindow {
         SimpleLogger.d(getClass(), "init()");
         if (backend == null) {
 
-            backend = factory.createBackend(version, null, drawable.getContext());
+            backend = factory.createBackend(configuration.version, null, drawable.getContext());
         }
         super.init(drawable);
     }

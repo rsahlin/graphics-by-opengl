@@ -2,14 +2,21 @@ package com.nucleus.common;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Platform.CommandResult;
@@ -22,6 +29,9 @@ import com.nucleus.common.Platform.CommandResult;
 public class FileUtils {
 
     protected static FileUtils fileUtils = null;
+    public static char DIRECTORY_SEPARATOR = '/';
+
+    FileSystem fileSystem;
 
     /**
      * Hide the constructor
@@ -36,6 +46,26 @@ public class FileUtils {
         return fileUtils;
     }
 
+    protected Path getFileSystemPath(String path) throws URISyntaxException, IOException {
+        ClassLoader loader = getClass().getClassLoader();
+        SimpleLogger.d(getClass(), "Getting URI for path: " + path);
+        URI uri = loader.getResource(path).toURI();
+        Path resultPath = null;
+        if (uri.getScheme().contentEquals("jar")) {
+            resultPath = getJarPath(uri, path);
+        }
+        resultPath = Paths.get(uri);
+        SimpleLogger.d(getClass(), "Path for uri: " + uri + "\n" + resultPath.toString());
+        return resultPath;
+    }
+
+    protected Path getJarPath(URI uri, String path) throws IOException {
+        if (fileSystem == null) {
+            fileSystem = FileSystems.newFileSystem(uri, Collections.<String, Object> emptyMap());
+        }
+        return fileSystem.getPath(path);
+    }
+
     /**
      * Utility method to return a list with the folder in the specified resource
      * path
@@ -44,47 +74,29 @@ public class FileUtils {
      * @return folders in the specified path (excluding the path in the returned
      * folder names)
      */
-    public ArrayList<String> listResourceFolders(String path) {
+    public ArrayList<String> listResourceFolders(String path) throws IOException, URISyntaxException {
+        String separator = "" + FileUtils.DIRECTORY_SEPARATOR;
         ArrayList<String> folders = new ArrayList<String>();
-        ClassLoader loader = getClass().getClassLoader();
-        URL url = loader.getResource(path);
-        if (url == null) {
-            return folders;
-        }
-        File[] files = new File(url.getFile()).listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.isDirectory();
+        Path listPath = getFileSystemPath(path);
+        String listPathStr = listPath.toString();
+        SimpleLogger.d(getClass(), "Listing folders in " + listPathStr);
+        int offset = listPathStr.endsWith(separator) ? 0 : 1;
+        int len = listPathStr.length();
+        try (Stream<Path> walk = Files.walk(listPath, 1)) {
+            List<Path> result = walk.filter(Files::isDirectory)
+                    .collect(Collectors.toList());
+            for (Path folderPath : result) {
+                String str = folderPath.toString();
+                int strLen = str.length();
+                if (strLen > len) {
+                    int endoffset = str.endsWith(separator) ? 1 : 0;
+                    String folder = str.substring(len + offset, strLen - endoffset);
+                    SimpleLogger.d(getClass(), "Added folder: " + folder + ", fullpath: " + str);
+                    folders.add(folder);
+                }
             }
-        });
-        // Truncate name so only include the part after specified path.
-        path = path.replace('/', File.separatorChar);
-        for (File f : files) {
-            int start = f.toString().indexOf(path);
-            folders.add(f.toString().substring(start + path.length()));
         }
         return folders;
-    }
-
-    /**
-     * List the files, based on mime, beginning at path and including the specified folders.
-     * Returned filenames will be relative to path
-     * 
-     * @param path The base path, all returned names will be relative to this.
-     * @param folders Folder to search - folder names will be included in returned name.
-     * @param mime
-     * @return List of folder/filename for files that ends with mime
-     */
-    public ArrayList<String> listFilesToString(String path, ArrayList<String> folders, final String[] mimes) {
-        String comparePath = path.replace('/', File.separatorChar);
-        ArrayList<String> result = new ArrayList<String>();
-        ArrayList<File> files = listFilesToFile(path, folders, mimes);
-        // Truncate name so only include the part after specified path.
-        for (File f : files) {
-            int start = f.toString().indexOf(comparePath);
-            result.add(f.toString().substring(start + comparePath.length()));
-        }
-        return result;
     }
 
     /**
@@ -94,29 +106,39 @@ public class FileUtils {
      * @param folders Folders to include in search
      * @param mimes File extensions to include
      * @return Matching files
+     * @throws IOException
+     * @throws URISyntaxException
      */
-    public ArrayList<File> listFilesToFile(String path, ArrayList<String> folders, final String[] mimes) {
-        ClassLoader loader = getClass().getClassLoader();
-        ArrayList<File> result = new ArrayList<File>();
+    public ArrayList<String> listFiles(String path, ArrayList<String> folders, final String[] mimes)
+            throws URISyntaxException, IOException {
+        ArrayList<String> result = new ArrayList<String>();
         for (String folder : folders) {
-            URL url = loader.getResource(path + folder);
-            File[] files = new File(url.getFile()).listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    for (String mime : mimes) {
-                        if (name.endsWith(mime)) {
-                            return true;
+            Path listPath = getFileSystemPath(path + folder);
+            SimpleLogger.d(getClass(), "Listing files in " + listPath.toString());
+            try (Stream<Path> walk = Files.walk(listPath, 1)) {
+                List<Path> filePathList = walk.filter(Files::isRegularFile)
+                        .collect(Collectors.toList());
+                String listStr = listPath.toString().replace('\\', FileUtils.DIRECTORY_SEPARATOR);
+                int len = listStr.length();
+                int relative = listStr.indexOf(path) + path.length();
+                if (relative < path.length()) {
+                    throw new IllegalArgumentException("Could not find '" + path + "' in: " + listStr);
+                }
+                for (Path folderPath : filePathList) {
+                    String str = folderPath.toString();
+                    if (str.length() > len) {
+                        str = str.substring(relative);
+                        for (String mime : mimes) {
+                            if (str.toLowerCase().endsWith(mime)) {
+                                result.add(str.replace('\\', FileUtils.DIRECTORY_SEPARATOR));
+                                break;
+                            }
                         }
                     }
-                    return false;
                 }
-            });
-            for (File f : files) {
-                result.add(f);
             }
         }
         return result;
-
     }
 
     /**
@@ -181,7 +203,7 @@ public class FileUtils {
     }
 
     public URL getClassLocation(Class<?> theClass) {
-        final String classLocation = theClass.getName().replace('.', '/') + ".class";
+        final String classLocation = theClass.getName().replace('.', DIRECTORY_SEPARATOR) + ".class";
         final ClassLoader loader = theClass.getClassLoader();
         if (loader == null) {
             return null;

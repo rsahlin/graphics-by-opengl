@@ -48,18 +48,15 @@ public class JOGLEGLWindow extends JOGLGLWindow implements Runnable, GLCapabilit
     GLCapabilities glCapabilities;
     GLDrawable glDrawable;
 
-    public JOGLEGLWindow(Renderers version, WindowType windowType, BackendFactory factory,
-            CoreApp.CoreAppStarter coreAppStarter,
-            SurfaceConfiguration config,
-            int width, int height) {
-        super(version, windowType, factory, coreAppStarter, config, width, height, false, true, 1);
+    public JOGLEGLWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, Configuration configuration ) {
+        super(factory, coreAppStarter, configuration);
     }
 
     @Override
     public void init() {
-        glCapabilities = new GLCapabilities(getProfile(version));
-        glCapabilities.setSampleBuffers(config.getSamples() > 0);
-        glCapabilities.setNumSamples(config.getSamples());
+        glCapabilities = new GLCapabilities(getProfile(configuration.version));
+        glCapabilities.setSampleBuffers(configuration.surfaceConfig.getSamples() > 0);
+        glCapabilities.setNumSamples(configuration.surfaceConfig.getSamples());
         glCapabilities.setBackgroundOpaque(true);
         glCapabilities.setAlphaBits(0);
         createGLWindow();
@@ -79,7 +76,7 @@ public class JOGLEGLWindow extends JOGLGLWindow implements Runnable, GLCapabilit
         // NativeWindowFactory.getDefaultDisplayConnection(),
         // true);
         nativeWindow = GLWindow.create(new GLCapabilities(GLProfile.get(GLProfile.GL4ES3)));
-        nativeWindow.setSize(width, height);
+        nativeWindow.setSize(configuration.width, configuration.height);
         // nativeWindow.setUndecorated(undecorated);
         nativeWindow.setRealized(true);
         nativeWindow.addGLEventListener(this);
@@ -114,7 +111,7 @@ public class JOGLEGLWindow extends JOGLGLWindow implements Runnable, GLCapabilit
 
             // EGL.eglCreateContext(eglDevice.getNativeDisplayID(), eglC, share_context, attrib_list)
 
-            backend = factory.createBackend(version, null, glContext);
+            backend = factory.createBackend(configuration.version, null, glContext);
         }
 
     }

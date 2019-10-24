@@ -1,6 +1,5 @@
 package com.nucleus.io;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -14,6 +13,7 @@ import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.FileUtils;
 import com.nucleus.common.Type;
 import com.nucleus.common.TypeResolver;
 import com.nucleus.exporter.NodeExporter;
@@ -124,8 +124,8 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
     @Override
     public RootNode importScene(String path, String filename, String type, NodeInflaterListener inflaterLister)
             throws NodeException {
-        if (!path.endsWith("/") && !path.endsWith("\\")) {
-            path = path + "/";
+        if (path.lastIndexOf(FileUtils.DIRECTORY_SEPARATOR) != (path.length() - 1)) {
+            path = path + FileUtils.DIRECTORY_SEPARATOR;
         }
         SimpleLogger.d(getClass(), "Importing scene:" + path + filename);
         ClassLoader loader = getClass().getClassLoader();

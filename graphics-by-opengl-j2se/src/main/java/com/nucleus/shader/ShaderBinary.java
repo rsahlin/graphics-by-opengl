@@ -3,6 +3,7 @@ package com.nucleus.shader;
 import java.io.IOException;
 
 import com.nucleus.Backend;
+import com.nucleus.common.FileUtils;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.shader.Shader.Categorizer;
 import com.nucleus.shader.Shader.ShaderType;
@@ -127,14 +128,14 @@ public abstract class ShaderBinary {
     public static String getSourceNameVersion(Renderers version) {
         switch (version) {
             case GLES20:
-                return ShaderBinary.V200 + "/";
+                return ShaderBinary.V200 + FileUtils.DIRECTORY_SEPARATOR;
             case GLES30:
             case GLES31:
             case GLES32:
-                return ShaderBinary.V300 + "/";
+                return ShaderBinary.V300 + FileUtils.DIRECTORY_SEPARATOR;
             case VULKAN10:
             case VULKAN11:
-                return ShaderBinary.V450 + "/";
+                return ShaderBinary.V450 + FileUtils.DIRECTORY_SEPARATOR;
             default:
                 throw new IllegalArgumentException("Not implemented for " + version);
         }
