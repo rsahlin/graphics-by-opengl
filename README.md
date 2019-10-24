@@ -1,15 +1,15 @@
-﻿#graphics-by-opengl
-PBR based renderer in Java using OpenGLES (Vulkan support is being worked on)
+﻿#graphics-by-opengl  
+PBR based renderer in Java using OpenGLES (Vulkan support is being worked on)  
 
-A forward renderer using node hierarchy to render meshes.
-Limits number of passes in order to reach high fps in 4-8K resolution and on mobile devices.
-The renderer is written in pure Java and uses OpenGL ES 3.X - this means it can run on _any_ os / platform that has an OpenGL ES implementation.
+A forward renderer using node hierarchy to render meshes.  
+Limits number of passes in order to reach high fps in 4-8K resolution and on mobile devices.  
+The renderer is written in pure Java and uses OpenGL ES 3.X - this means it can run on _any_ os / platform that has an OpenGL ES implementation.  
 
-Support for glTF is being improved, currently basic model import is working with textures, normal maps and pbr metallicroughenss textures.
-BRDF implementation supports one directional light.
-Support for sRGB textures, gamma correction and (hdr) exposure.
+Support for glTF is being improved, currently basic model import is working with textures, normal maps and pbr metallicroughenss textures.  
+BRDF implementation supports one directional light.  
+Support for sRGB textures, gamma correction and (hdr) exposure.  
 
-List of feature that will be implemented or improved - in no particular order
+List of feature that will be implemented or improved - in no particular order  
 * Vulkan support - however this will somewhat break the name of the repository as it will be graphics-by-opengl-vulkan :-)
 * Support for pbr occlusion map
 * DRACO support, may need to port DRACO decoder to Java?
@@ -18,30 +18,31 @@ List of feature that will be implemented or improved - in no particular order
 * Environment maps
 * Improved lightsource implementation using luminous intensity and attenuation (instead of made up scale-factor) 
 
-see #gltf-viewer for an app that displays gltf models.
+see #gltf-viewer for an app that displays gltf models.  
+https://github.com/rsahlin/gltf-viewer/master/blob/waterbottle.png
 
-Currently there are 3 abstractions for the render backend along with window/surface support.
-- JOGL
-- LWJGL
-- Android
 
-As this is a multi platform project I use Eclipse and import as Maven project.
+Currently there are 3 abstractions for the render backend along with window/surface support.  
+- JOGL  
+- LWJGL  
+- Android  
 
-Core functions for graphics rendering in a platform agnostic way using OpenGLES.
-This API is intended as a low level API, using it requires OpenGL knowledge.
-It is intentionally close to OpenGLES, for instance attribute/vertex data classes are using it's memory model. 
-Although it is possible to extend the functionality to cover for instance Direct3D it is not a design consideration.
-Currently includes simple methods for user input/mmi, these functions may be moved in the future. 
-Uses the simple 'vecmath' library for some matrix and vector functions.
+As this is a multi platform project I use Eclipse and import as Maven project.  
 
-Using #graphics-by-opengl makes it possible to develop on J2SE using JOGL (or any other OpenGL ES Java API) without the need to continously using specific target devices.
-This can greatly reduce development times since starting and debugging a J2SE application is much quicker than for instance deploying on Android.
+Core functions for graphics rendering in a platform agnostic way using OpenGLES.  
+This API is intended as a low level API, using it requires OpenGL knowledge.  
+It is intentionally close to OpenGLES, for instance attribute/vertex data classes are using it's memory model.  
+Although it is possible to extend the functionality to cover for instance Direct3D it is not a design consideration.  
+Currently includes simple methods for user input/mmi, these functions may be moved in the future.  
+Uses the simple 'vecmath' library for some matrix and vector functions.  
+
+Using #graphics-by-opengl makes it possible to develop on J2SE using JOGL (or any other OpenGL ES Java API) without the need to continously using specific target devices.  
+This can greatly reduce development times since starting and debugging a J2SE application is much quicker than for instance deploying on Android.  
 
 Code style and formatting:  
 Follow the Google Java guidelines:  
 https://google.github.io/styleguide/javaguide.html  
 
-https://github.com/rsahlin/gltf-viewer/master/blob/waterbottle.png
 
 Eclipse:  
 Use customformatter.xml  
@@ -53,25 +54,25 @@ New text file delimiter - Unix
 
 ECLIPSE 
 ----------------------------------------------------------------------
-Prerequisites:
-- Maven
-- Eclipse
-- If you are behind a proxy - configure maven proxy settings: https://maven.apache.org/guides/mini/guide-proxies.html
-- Andmore maven plugin from Eclipse Marketplace (https://projects.eclipse.org/projects/tools.andmore)
+Prerequisites:  
+- Maven  
+- Eclipse  
+- If you are behind a proxy - configure maven proxy settings: https://maven.apache.org/guides/mini/guide-proxies.html  
+- Andmore maven plugin from Eclipse Marketplace (https://projects.eclipse.org/projects/tools.andmore)  
 Make sure that you are using Android Andmore and m2e plugins (not the old DDMS/ADT from 'The Android Open Source Project')
-Check by opening 'Help' - 'Install new software' - 'What is already installed?' 
+Check by opening 'Help' - 'Install new software' - 'What is already installed?'   
 Uninstall software from 'The Android Opensource Project' and fetch Andmore from Eclipse marketplace.
 - JDK 1.7 or 1.8 (Not 1.9) - note that compiler level shall be 7 for Android builds to work.
-Check with 'javac -version' 
+Check with 'javac -version'  
 
-For Android:
-- Android standalone SDK for windows:
-https://developer.android.com/studio/index.html#downloads - scroll down to 'Get just the command line tools'
-- android-maven-plugin : Follow instructions at: http://simpligility.github.io/android-maven-plugin/
-- Local maven installation of Android platform SDK to be used, defaults to 24.
+For Android:  
+- Android standalone SDK for windows:  
+https://developer.android.com/studio/index.html#downloads - scroll down to 'Get just the command line tools'  
+- android-maven-plugin : Follow instructions at: http://simpligility.github.io/android-maven-plugin/  
+- Local maven installation of Android platform SDK to be used, defaults to 24.  
 To install execute the following, where $ANDROID_HOME is your android sdk folder (use %ANDROID_HOME% on Windows):
-Execute the following in the base directory for graphics-by-opengl:
-mvn install:install-file -Dfile="%ANDROID_HOME%/platforms/android-25/android.jar" -DgroupId="com.google.android" -DartifactId=android -Dversion="25" -Dpackaging=jar
+Execute the following in the base directory for graphics-by-opengl:  
+mvn install:install-file -Dfile="%ANDROID_HOME%/platforms/android-25/android.jar" -DgroupId="com.google.android" -DartifactId=android -Dversion="25" -Dpackaging=jar  
 
 The Android SDK level is set as property 'android.sdk'  
 
@@ -102,7 +103,7 @@ GRADLE
 
 ----------------------------------------------------------------------
 
-Gradle - to publish as maven local, perform task for each module:
-graphics-by-opengl-j2se>gradle publishToMavenLocal
-graphics-by-opengl-android>gradle publishToMavenLocal
+Gradle - to publish as maven local, perform task for each module:  
+graphics-by-opengl-j2se>gradle publishToMavenLocal  
+graphics-by-opengl-android>gradle publishToMavenLocal  
 
