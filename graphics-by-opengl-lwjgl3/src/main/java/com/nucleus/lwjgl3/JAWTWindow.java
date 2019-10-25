@@ -25,7 +25,6 @@ import com.nucleus.mmi.Pointer.PointerAction;
 import com.nucleus.mmi.Pointer.Type;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
-import com.nucleus.renderer.SurfaceConfiguration;
 
 /**
  * The main AWT window - this uses a Swing frame and a different underlying Canvas implementation depending
@@ -181,12 +180,12 @@ public class JAWTWindow extends J2SEWindow
     }
 
     @Override
-    protected void setFullscreenMode(boolean fullscreen) {
+    public void setFullscreenMode(boolean fullscreen, int monitorIndex) {
         throw new IllegalArgumentException("Not implemented");
     }
 
     @Override
-    protected void destroy() {
+    public void destroy() {
         throw new IllegalArgumentException("Not implemented");
     }
 

@@ -14,7 +14,6 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengles.GLES;
 import org.lwjgl.opengles.GLESCapabilities;
-import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
@@ -27,7 +26,6 @@ import com.nucleus.egl.EGLUtils;
 import com.nucleus.opengl.GLESWrapper.GLES20;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
-import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 
 public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
@@ -297,12 +295,12 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
     }
 
     @Override
-    protected void setFullscreenMode(boolean fullscreen) {
+    public void setFullscreenMode(boolean fullscreen, int monitorIndex) {
         throw new IllegalArgumentException("Not implemented");
     }
 
     @Override
-    protected void destroy() {
+    public void destroy() {
         throw new IllegalArgumentException("Not implemented");
     }
 

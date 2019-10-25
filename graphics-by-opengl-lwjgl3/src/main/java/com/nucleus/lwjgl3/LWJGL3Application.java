@@ -69,13 +69,9 @@ public class LWJGL3Application extends J2SEWindowApplication {
         switch (windowConfiguration.windowType) {
             case GLFW:
                 j2seWindow = new GLFWGLESWindow(new LWJGLWrapperFactory(), this, windowConfiguration);
-                j2seWindow.init();
-                j2seWindow.setVisible(true);
                 break;
             case JAWT:
                 j2seWindow = new JAWTWindow(new LWJGLWrapperFactory(), this, windowConfiguration);
-                j2seWindow.init();
-                j2seWindow.setVisible(true);
                 break;
             case EGL:
                 j2seWindow = new LWJGLEGLWindow(new LWJGLWrapperFactory(), this, windowConfiguration);

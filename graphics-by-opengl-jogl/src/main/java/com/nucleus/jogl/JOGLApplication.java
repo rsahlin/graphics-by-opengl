@@ -50,8 +50,6 @@ public class JOGLApplication extends J2SEWindowApplication {
             default:
                 throw new IllegalArgumentException("Not implemented for " + windowConfiguration.windowType);
         }
-        j2seWindow.init();
-        j2seWindow.setVisible(true);
         return j2seWindow;
     }
 

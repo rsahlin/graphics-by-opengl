@@ -229,7 +229,7 @@ public abstract class J2SEWindow implements WindowListener {
         SimpleLogger.d(getClass(), "exit");
         if (configuration.fullscreen) {
             configuration.fullscreen = false;
-            setFullscreenMode(false);
+            setFullscreenMode(false, 0);
         } else {
             if (coreApp.onBackPressed()) {
                 coreApp.setDestroyFlag();
@@ -237,6 +237,18 @@ public abstract class J2SEWindow implements WindowListener {
                 System.exit(0);
             }
         }
+    }
+
+    /**
+     * Initializes the window, set visibility and fullscreen mode according to configuration.
+     * Call this method to prepare and display the window.
+     * 
+     * @param window
+     */
+    protected void prepareWindow() {
+        init();
+        setVisible(true);
+        setFullscreenMode(configuration.fullscreen, 0);
     }
 
     /**
@@ -257,12 +269,13 @@ public abstract class J2SEWindow implements WindowListener {
      * Switch to and from fullscreen mode.
      * 
      * @param fullscreen
+     * @param Index to monitor to set the fullscreen mode for
      */
-    protected abstract void setFullscreenMode(boolean fullscreen);
+    public abstract void setFullscreenMode(boolean fullscreen, int monitorIndex);
 
     /**
      * Destroy the window(s) and release window resources
      */
-    protected abstract void destroy();
+    public abstract void destroy();
 
 }

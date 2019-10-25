@@ -262,6 +262,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     @Override
     public void createCoreWindows(Renderers version) {
         j2seWindow = createWindow(version);
+        j2seWindow.prepareWindow();
         j2seWindow.setWindowListener(this);
         Window.getInstance().setPlatformWindow(j2seWindow);
     }

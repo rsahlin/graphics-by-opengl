@@ -31,6 +31,7 @@ public abstract class GLFWWindow extends J2SEWindow {
 
     protected static final int MAX_MOUSE_BUTTONS = 3;
     protected long window;
+    protected PointerBuffer monitors;
     protected int[] buttonActions = new int[MAX_MOUSE_BUTTONS];
     protected int[] cursorPosition = new int[2];
     protected Hashtable<Integer, Integer> GLFWKeycodes;
@@ -73,21 +74,21 @@ public abstract class GLFWWindow extends J2SEWindow {
         if (window == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
-        if (configuration.fullscreen) {
-            SimpleLogger.d(getClass(), "Trying to set fullscreen - getting monitors");
-            PointerBuffer monitors = GLFW.glfwGetMonitors();
-            if (monitors.capacity() > 0) {
-                SimpleLogger.d(getClass(), "Found " + monitors.capacity() + " monitors. Choosing the first.");
-                GLFW.glfwSetWindowMonitor(window, monitors.get(0), 0, 0, configuration.width, configuration.height,
-                        GLFW.GLFW_DONT_CARE);
-            } else {
-                SimpleLogger.d(getClass(), "glfwGetMonitors() returns zero monitors.");
-
-            }
-        }
+        monitors = getMonitors();
         backend = initFW(window);
         GLFW.glfwSwapInterval(configuration.swapInterval);
         initInput();
+    }
+
+    private PointerBuffer getMonitors() {
+        PointerBuffer monitors = GLFW.glfwGetMonitors();
+        if (monitors.capacity() > 0) {
+            SimpleLogger.d(getClass(), "Found " + monitors.capacity() + " monitors.");
+        } else {
+            SimpleLogger.d(getClass(), "glfwGetMonitors() returns zero monitors.");
+
+        }
+        return monitors;
     }
 
     /**
@@ -226,12 +227,22 @@ public abstract class GLFWWindow extends J2SEWindow {
     }
 
     @Override
-    protected void setFullscreenMode(boolean fullscreen) {
-        SimpleLogger.d(getClass(), "Not implemented setFullscreenMode()");
+    public void setFullscreenMode(boolean fullscreen, int monitorIndex) {
+        if (monitorIndex < monitors.capacity()) {
+            if (fullscreen) {
+                GLFW.glfwSetWindowMonitor(window, monitors.get(0), 0, 0, configuration.width, configuration.height,
+                        GLFW.GLFW_DONT_CARE);
+            } else {
+                GLFW.glfwSetWindowMonitor(window, MemoryUtil.NULL, 0, 0, configuration.width, configuration.height,
+                        GLFW.GLFW_DONT_CARE);
+            }
+        } else {
+            SimpleLogger.d(getClass(), "Invalid monitor index " + monitorIndex);
+        }
     }
 
     @Override
-    protected void destroy() {
+    public void destroy() {
         SimpleLogger.d(getClass(), "destroy()");
         GLFW.glfwDestroyWindow(window);
         window = 0;

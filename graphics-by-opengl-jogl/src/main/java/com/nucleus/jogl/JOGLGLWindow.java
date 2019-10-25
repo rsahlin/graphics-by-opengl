@@ -25,7 +25,6 @@ import com.jogamp.opengl.util.Animator;
 import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.CoreAppStarter;
-import com.nucleus.J2SEWindowApplication.WindowType;
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.Key.Action;
@@ -80,8 +79,8 @@ public abstract class JOGLGLWindow extends J2SEWindow
             case JAWT:
                 createAWTWindow(configuration.width, configuration.height, profile);
                 break;
-                default:
-                    throw new IllegalArgumentException("Invalid windowtype for JOGL: " + configuration.windowType);
+            default:
+                throw new IllegalArgumentException("Invalid windowtype for JOGL: " + configuration.windowType);
         }
 
         /**
@@ -168,10 +167,12 @@ public abstract class JOGLGLWindow extends J2SEWindow
         glWindow = GLWindow.create(glCapabilities);
         glWindow.setUndecorated(configuration.windowUndecorated);
         InsetsImmutable insets = glWindow.getInsets();
-        glWindow.setSize(configuration.windowUndecorated ? windowSize.getWidth() : windowSize.getWidth() + insets.getTotalWidth(),
-                configuration.windowUndecorated ? windowSize.getHeight() : windowSize.getHeight() + insets.getTotalHeight());
+        glWindow.setSize(
+                configuration.windowUndecorated ? windowSize.getWidth()
+                        : windowSize.getWidth() + insets.getTotalWidth(),
+                configuration.windowUndecorated ? windowSize.getHeight()
+                        : windowSize.getHeight() + insets.getTotalHeight());
         glWindow.setAlwaysOnTop(alwaysOnTop);
-        glWindow.setFullscreen(configuration.fullscreen);
         glWindow.setPointerVisible(mouseVisible);
         glWindow.confinePointer(mouseConfined);
         glWindow.addMouseListener(this);
@@ -204,7 +205,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
         animator.add(canvas);
         animator.start();
         canvas.setAutoSwapBufferMode(autoSwapBuffer);
-        
+
     }
 
     @Override
@@ -463,17 +464,12 @@ public abstract class JOGLGLWindow extends J2SEWindow
     }
 
     @Override
-    protected void setFullscreenMode(boolean fullscreen) {
-        configuration.fullscreen = fullscreen;
+    public void setFullscreenMode(boolean fullscreen, int monitorIndex) {
         glWindow.setFullscreen(fullscreen);
-        if (!fullscreen) {
-            glWindow.setFullscreen(false);
-            glWindow.setPosition(glWindow.getWidth() / 2, glWindow.getHeight() / 2);
-        }
     }
 
     @Override
-    protected void destroy() {
+    public void destroy() {
         if (animator != null) {
             animator.stop();
         }

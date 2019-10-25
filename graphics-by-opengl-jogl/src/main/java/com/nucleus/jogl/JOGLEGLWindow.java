@@ -18,14 +18,12 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.egl.EGL;
 import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp;
-import com.nucleus.J2SEWindowApplication.WindowType;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.common.Constants;
 import com.nucleus.common.Environment;
 import com.nucleus.profiling.FrameSampler;
 import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
-import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 
 public class JOGLEGLWindow extends JOGLGLWindow implements Runnable, GLCapabilitiesChooser, GLEventListener {
@@ -48,7 +46,7 @@ public class JOGLEGLWindow extends JOGLGLWindow implements Runnable, GLCapabilit
     GLCapabilities glCapabilities;
     GLDrawable glDrawable;
 
-    public JOGLEGLWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, Configuration configuration ) {
+    public JOGLEGLWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, Configuration configuration) {
         super(factory, coreAppStarter, configuration);
     }
 
@@ -260,12 +258,12 @@ public class JOGLEGLWindow extends JOGLGLWindow implements Runnable, GLCapabilit
     }
 
     @Override
-    protected void setFullscreenMode(boolean fullscreen) {
+    public void setFullscreenMode(boolean fullscreen, int monitorIndex) {
         throw new IllegalArgumentException("Not implemented");
     }
 
     @Override
-    protected void destroy() {
+    public void destroy() {
         throw new IllegalArgumentException("Not implemented");
     }
 
