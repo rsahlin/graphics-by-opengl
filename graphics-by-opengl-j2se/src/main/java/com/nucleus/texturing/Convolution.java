@@ -226,6 +226,9 @@ public class Convolution {
         int height = destination.getHeight();
         int sourceWidth = source.getWidth();
         int sourceHeight = source.getHeight();
+        if (width > sourceWidth || height > sourceHeight) {
+            throw new IllegalArgumentException("Can only process downscale, source is larger than destination.");
+        }
         ImageFormat format = destination.getFormat();
         switch (kernel) {
             case SIZE_2X2:
@@ -352,14 +355,14 @@ public class Convolution {
         int index;
         int sourceIndex;
         int widthInBytes = sourceWidth * 3;
-        float yScale = sourceHeight / height;
-        float xScale = sourceWidth / width;
+        float yScale = (float) sourceHeight / height;
+        float xScale = (float) sourceWidth / width;
         float acc[] = new float[4];
         for (int y = 0; y < height; y++) {
             index = (y * width) * 3;
             for (int x = 0; x < width; x++) {
                 clearAcc(acc);
-                sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * 3));
+                sourceIndex = ((int) (y * yScale)) * widthInBytes + ((int) (x * xScale)) * 3;
                 if (sourceIndex + 6 < pixels.length) {
                     fetchPixelRow2RGB(pixels, sourceIndex, 0, acc);
                 }
@@ -378,14 +381,14 @@ public class Convolution {
         int index;
         int sourceIndex;
         int widthInBytes = sourceWidth * 4;
-        float yScale = sourceHeight / height;
-        float xScale = sourceWidth / width;
+        float yScale = (float) sourceHeight / height;
+        float xScale = (float) sourceWidth / width;
         float acc[] = new float[4];
         for (int y = 0; y < height - 1; y++) {
             index = (y * width) * 4;
             for (int x = 0; x < width - 1; x++) {
                 clearAcc(acc);
-                sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * 4));
+                sourceIndex = ((int) (y * yScale)) * widthInBytes + ((int) (x * xScale)) * 4;
                 fetchPixelRow2RGBA(pixels, sourceIndex, 0, acc);
                 fetchPixelRow2RGBA(pixels, sourceIndex + widthInBytes, 2, acc);
                 destPixels[index++] = (byte) (acc[0]);
@@ -401,14 +404,14 @@ public class Convolution {
         int index;
         int sourceIndex;
         int widthInBytes = sourceWidth * 4;
-        float yScale = sourceHeight / height;
-        float xScale = sourceWidth / width;
+        float yScale = (float) sourceHeight / height;
+        float xScale = (float) sourceWidth / width;
         float acc[] = new float[4];
         for (int y = 1; y < height - 1; y++) {
             index = (y * width) * 4;
             for (int x = 1; x < width - 1; x++) {
                 clearAcc(acc);
-                sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * 4));
+                sourceIndex = ((int) (y * yScale)) * widthInBytes + ((int) (x * xScale)) * 4;
                 fetchPixelRow3RGBA(pixels, sourceIndex - widthInBytes - 4, 0, acc);
                 fetchPixelRow3RGBA(pixels, sourceIndex - 4, 3, acc);
                 fetchPixelRow3RGBA(pixels, sourceIndex + widthInBytes - 4, 6, acc);
@@ -426,14 +429,14 @@ public class Convolution {
         int index;
         int sourceIndex;
         int widthInBytes = sourceWidth * 3;
-        float yScale = sourceHeight / height;
-        float xScale = sourceWidth / width;
+        float yScale = (float) sourceHeight / height;
+        float xScale = (float) sourceWidth / width;
         float acc[] = new float[4];
         for (int y = 1; y < height - 1; y++) {
             index = (y * width) * 3;
             for (int x = 1; x < width - 1; x++) {
                 clearAcc(acc);
-                sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * 3));
+                sourceIndex = ((int) (y * yScale)) * widthInBytes + ((int) (x * xScale)) * 3;
                 fetchPixelRow3RGB(pixels, sourceIndex - widthInBytes - 3, 0, acc);
                 fetchPixelRow3RGB(pixels, sourceIndex - 3, 3, acc);
                 fetchPixelRow3RGB(pixels, sourceIndex + widthInBytes - 3, 6, acc);
@@ -449,14 +452,14 @@ public class Convolution {
         int index;
         int sourceIndex;
         int widthInBytes = sourceWidth * 4;
-        float yScale = sourceHeight / height;
-        float xScale = sourceWidth / width;
+        float yScale = (float) sourceHeight / height;
+        float xScale = (float) sourceWidth / width;
         float acc[] = new float[4];
         for (int y = 0; y < height; y++) {
             index = (y * width) * 4;
             for (int x = 0; x < width; x++) {
                 clearAcc(acc);
-                sourceIndex = (int) ((((y * yScale) * sourceWidth + (x * xScale)) * 4));
+                sourceIndex = ((int) (y * yScale)) * widthInBytes + ((int) (x * xScale)) * 4;
                 if (sourceIndex < pixels.length) {
                     fetchPixelRow4RGBA(pixels, sourceIndex, 0, acc);
                 }
@@ -482,8 +485,8 @@ public class Convolution {
         int index;
         int sourceIndex;
         int widthInBytes = sourceWidth * 3;
-        float yScale = sourceHeight / height;
-        float xScale = sourceWidth / width;
+        float yScale = (float) sourceHeight / height;
+        float xScale = (float) sourceWidth / width;
         float acc[] = new float[4];
         for (int y = 0; y < height; y++) {
             index = (y * width) * 3;
@@ -514,8 +517,8 @@ public class Convolution {
         int index;
         int sourceIndex;
         int widthInBytes = sourceWidth * 4;
-        float yScale = sourceHeight / height;
-        float xScale = sourceWidth / width;
+        float yScale = (float) sourceHeight / height;
+        float xScale = (float) sourceWidth / width;
         float acc[] = new float[4];
         for (int y = 2; y < height - 2; y++) {
             index = (y * width) * 4;
@@ -540,8 +543,8 @@ public class Convolution {
         int index;
         int sourceIndex;
         int widthInBytes = sourceWidth * 3;
-        float yScale = sourceHeight / height;
-        float xScale = sourceWidth / width;
+        float yScale = (float) sourceHeight / height;
+        float xScale = (float) sourceWidth / width;
         float acc[] = new float[4];
         for (int y = 2; y < height - 2; y++) {
             index = (y * width) * 3;

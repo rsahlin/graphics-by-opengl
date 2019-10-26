@@ -153,6 +153,60 @@ public class FConvolutionTest extends BaseTestCase implements WindowListener {
 
     }
 
+    @Test
+    public void testProcessScale6by4() throws IOException {
+        BufferImage sourceRGBA = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA);
+        float scale = 1.5f;
+        BufferImage destination = new BufferImage((int) (sourceRGBA.getWidth() / scale),
+                (int) (sourceRGBA.getHeight() / scale), sourceRGBA.getFormat());
+        executeTest(sourceRGBA, destination, "Scale 1.5 2X2 - RGBA", Kernel.SIZE_2X2, new float[] { 1, 1, 1, 1 },
+                ITERATIONS);
+
+        BufferImage destination2 = new BufferImage((int) (sourceRGBA.getWidth() / scale),
+                (int) (sourceRGBA.getHeight() / scale), sourceRGBA.getFormat());
+        executeTest(sourceRGBA, destination2, "Scale 1.5 3X3 - RGBA", Kernel.SIZE_3X3,
+                new float[] { 1, 4, 1, 4, 4, 4, 1, 4, 1 }, ITERATIONS);
+
+        BufferImage sourceRGB = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGB);
+        destination = new BufferImage((int) (sourceRGB.getWidth() / scale),
+                (int) (sourceRGB.getHeight() / scale), sourceRGB.getFormat());
+        executeTest(sourceRGB, destination, "Scale 1.5 2X2 - RGB", Kernel.SIZE_2X2, new float[] { 1, 1, 1, 1 },
+                ITERATIONS);
+
+        destination2 = new BufferImage((int) (sourceRGB.getWidth() / scale),
+                (int) (sourceRGB.getHeight() / scale), sourceRGB.getFormat());
+        executeTest(sourceRGB, destination2, "Scale 1.5 3X3 - RGB", Kernel.SIZE_3X3,
+                new float[] { 1, 4, 1, 4, 4, 4, 1, 4, 1 }, ITERATIONS);
+
+    }
+
+    @Test
+    public void testProcessScale2point6() throws IOException {
+        BufferImage sourceRGBA = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGBA);
+        float scale = 2.6f;
+        BufferImage destination = new BufferImage((int) (sourceRGBA.getWidth() / scale),
+                (int) (sourceRGBA.getHeight() / scale), sourceRGBA.getFormat());
+        executeTest(sourceRGBA, destination, "Scale 2.6 2X2 - RGBA", Kernel.SIZE_2X2, new float[] { 1, 1, 1, 1 },
+                ITERATIONS);
+
+        BufferImage destination2 = new BufferImage((int) (sourceRGBA.getWidth() / scale),
+                (int) (sourceRGBA.getHeight() / scale), sourceRGBA.getFormat());
+        executeTest(sourceRGBA, destination2, "Scale 2.6 3X3 - RGBA", Kernel.SIZE_3X3,
+                new float[] { 1, 4, 1, 4, 4, 4, 1, 4, 1 }, ITERATIONS);
+
+        BufferImage sourceRGB = imageFactory.createImage(IMAGE_NAME, ImageFormat.RGB);
+        destination = new BufferImage((int) (sourceRGB.getWidth() / scale),
+                (int) (sourceRGB.getHeight() / scale), sourceRGB.getFormat());
+        executeTest(sourceRGB, destination, "Scale 2.6 2X2 - RGB", Kernel.SIZE_2X2, new float[] { 1, 1, 1, 1 },
+                ITERATIONS);
+
+        destination2 = new BufferImage((int) (sourceRGB.getWidth() / scale),
+                (int) (sourceRGB.getHeight() / scale), sourceRGB.getFormat());
+        executeTest(sourceRGB, destination2, "Scale 2.6 3X3 - RGB", Kernel.SIZE_3X3,
+                new float[] { 1, 4, 1, 4, 4, 4, 1, 4, 1 }, ITERATIONS);
+
+    }
+
     /**
      * @Test
      * public void testProcessScaleHalfRGB() throws IOException {

@@ -57,7 +57,7 @@ public abstract class BaseImageFactory implements ImageFactory {
             throw new IllegalArgumentException(ILLEGAL_PARAMETER + width + ", " + height);
         }
 
-        int scale = (source.getWidth() / width + source.getHeight() / height) / 2;
+        int scale = (int) ((source.getWidth() / width + (float) source.getHeight() / height) / 2);
         Convolution c = null;
         switch (scale) {
             case 1:
