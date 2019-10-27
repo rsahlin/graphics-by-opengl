@@ -901,10 +901,10 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      */
     public void texImage(Texture2D texture, BufferImage image, int level) {
         Format format = texture.getFormat();
+        glPixelStorei(GLES20.GL_UNPACK_ALIGNMENT, format.rowAlignment);
         glTexImage2D(GLES20.GL_TEXTURE_2D, level, TextureUtils.getInternalFormat(texture), texture.getWidth(),
                 texture.getHeight(), 0, format.format,
                 texture.getType().type, image.getBuffer().position(0));
-        glPixelStorei(GLES20.GL_UNPACK_ALIGNMENT, format.rowAlignment);
     }
 
     /**
