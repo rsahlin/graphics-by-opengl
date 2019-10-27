@@ -20,6 +20,7 @@ import org.lwjgl.system.Platform;
 import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
+import com.nucleus.J2SEWindowApplication.PropertySettings;
 import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.Pointer.PointerAction;
 import com.nucleus.mmi.Pointer.Type;
@@ -37,22 +38,22 @@ public class JAWTWindow extends J2SEWindow
     LWJGLCanvas canvas;
     JFrame frame;
 
-    public JAWTWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, Configuration config) {
-        super(factory, coreAppStarter, config);
+    public JAWTWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, PropertySettings appSettings) {
+        super(factory, coreAppStarter, appSettings);
     }
 
     @Override
-    public void init() {
+    public VideoMode init(PropertySettings appSettings) {
         Platform platform = Platform.get();
         SimpleLogger.d(getClass(), "Init windows for platform " + platform);
         switch (platform) {
             case WINDOWS:
-                canvas = new LWJGLWindowsCanvas(this, configuration.surfaceConfig, configuration.width,
-                        configuration.height);
+                canvas = new LWJGLWindowsCanvas(this, appSettings.getConfiguration(), appSettings.width,
+                        appSettings.height);
                 break;
             case LINUX:
-                canvas = new LWJGLLinuxCanvas(this, configuration.surfaceConfig, configuration.width,
-                        configuration.height);
+                canvas = new LWJGLLinuxCanvas(this, appSettings.getConfiguration(), appSettings.width,
+                        appSettings.height);
                 break;
             default:
                 throw new IllegalArgumentException("Not implemented for " + Platform.get());
@@ -85,6 +86,7 @@ public class JAWTWindow extends J2SEWindow
         frame.add(canvas, BorderLayout.CENTER);
         frame.pack();
         // Do not make since callback may happen before this window is created in the j2sewindow
+        return new VideoMode(appSettings.width, appSettings.height, appSettings.fullscreen, appSettings.swapInterval);
     }
 
     @Override
@@ -180,7 +182,7 @@ public class JAWTWindow extends J2SEWindow
     }
 
     @Override
-    public void setFullscreenMode(boolean fullscreen, int monitorIndex) {
+    public VideoMode setVideoMode(VideoMode videoMode, int monitorIndex) {
         throw new IllegalArgumentException("Not implemented");
     }
 

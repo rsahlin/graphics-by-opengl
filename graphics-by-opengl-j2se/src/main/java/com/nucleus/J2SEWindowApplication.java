@@ -38,10 +38,65 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         EGL();
     }
 
+    /**
+     * Property settings that can be changed by user
+     *
+     */
+    public static class PropertySettings {
+        /**
+         * Settings that can be changed
+         * TODO - move to a new settings class?
+         */
+        public int alpha = 8;
+        public int samples = DEFAULT_SAMPLES;
+        public int depthBits = DEFAULT_DEPTH_BITS;
+        public int width = DEFAULT_WINDOW_WIDTH;
+        public int height = DEFAULT_WINDOW_HEIGHT;
+        public boolean fullscreen = DEFAULT_FULLSCREEN;
+        /**
+         * Force selection of a specific GLES version from the underlying platform.
+         * This is to override the default setting where framework may supply a gles version.
+         * Setting this to true will force drivers to ask for the specified version
+         */
+        public Boolean forceVersion = false;
+        /**
+         * Select a specific driver version to use
+         * This will override the version set when starting the app.
+         */
+        public Renderers setDriverVersion = null;
+        /**
+         * The framework renderer version - this decides what version of wrapper class to create.
+         */
+        public Renderers version;
+        public boolean windowUndecorated = false;
+        public WindowType windowType;
+        public boolean nativeGLES = false;
+        public int swapInterval = 1;
+
+        /**
+         * Returns surface configuration
+         * 
+         * @return
+         */
+        public SurfaceConfiguration getConfiguration() {
+            SurfaceConfiguration config = new SurfaceConfiguration();
+            config.setDepthBits(depthBits);
+            config.setAlphaBits(alpha);
+            config.setSamples(samples);
+            return config;
+        }
+
+    }
+
     static class WindowTypeGetter implements Getter<WindowType> {
 
         @Override
         public WindowType getProperty(String value, WindowType defaultValue) {
+            for (WindowType type : WindowType.values()) {
+                if (type.name().contentEquals(value)) {
+                    return type;
+                }
+            }
             return defaultValue;
         }
     }
@@ -54,8 +109,18 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         FULLSCREEN("FULLSCREEN", new BooleanGetter()),
         SAMPLES("SAMPLES", new IntGetter()),
         ALPHA_BITS("ALPHA_BITS", new IntGetter()),
+        /**
+         * Use native gles driver
+         */
         NATIVE_GLES("GLES", new BooleanGetter()),
+        /**
+         * If true then then the exact version of driver is requested.
+         */
         FORCE_VERSION("FORCE-VERSION", new BooleanGetter()),
+        /**
+         * If set this version will override application graphics api version - but only for the
+         * driver.
+         */
         SET_VERSION("SET-VERSION", new VersionGetter());
 
         public final Getter<?> getter;
@@ -130,21 +195,15 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
 
     public static final int DEFAULT_DEPTH_BITS = 32;
     public static final int DEFAULT_SAMPLES = 4;
+    public static final int DEFAULT_WINDOW_WIDTH = 1920;
+    public static final int DEFAULT_WINDOW_HEIGHT = 1080;
+    public static final boolean DEFAULT_FULLSCREEN = false;
 
     protected CoreApp coreApp;
 
     protected J2SEWindow j2seWindow;
-    protected Configuration windowConfiguration = new Configuration();
-    /**
-     * Number of bits of alpha for surface
-     */
-    protected int alpha = 8;
-    /**
-     * Number of samples for surface
-     */
-    protected int samples = DEFAULT_SAMPLES;
-    protected int depthBits = DEFAULT_DEPTH_BITS;
-
+    protected PropertySettings appSettings = new PropertySettings();
+    protected Configuration windowConfiguration;
     protected RenderContextListener contextListener;
 
     /**
@@ -160,12 +219,13 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
      */
     public J2SEWindowApplication(String[] args, Renderers version, Type<Object> clientClass) {
         SimpleLogger.setLogger(new J2SELogger());
+        appSettings.version = version;
         BaseImageFactory.setFactory(new AWTImageFactory());
         CoreApp.setClientClass(clientClass);
         setProperties(args);
-        windowConfiguration.surfaceConfig = getConfiguration();
-        windowConfiguration.version = windowConfiguration.setVersion != null ? windowConfiguration.setVersion : version;
-        createCoreWindows(windowConfiguration.version);
+        windowConfiguration = createCoreWindows(appSettings);
+        j2seWindow.setVisible(true);
+
     }
 
     /**
@@ -191,7 +251,7 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     protected void setSystemProperties() {
         String swap = Environment.getInstance().getProperty(Environment.Property.SWAPINTERVAL);
         if (swap != null && swap.length() > 0) {
-            windowConfiguration.swapInterval = Integer.parseInt(swap);
+            appSettings.swapInterval = Integer.parseInt(swap);
         }
     }
 
@@ -205,33 +265,34 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         if (property != null) {
             switch (property.property) {
                 case WINDOW_WIDTH:
-                    windowConfiguration.width = property.getInt();
+                    appSettings.width = property.getInt();
                     break;
                 case WINDOW_HEIGHT:
-                    windowConfiguration.height = property.getInt();
+                    appSettings.height = property.getInt();
                     break;
                 case WINDOW_UNDECORATED:
-                    windowConfiguration.windowUndecorated = property.getBoolean();
+                    appSettings.windowUndecorated = property.getBoolean();
                     break;
                 case FULLSCREEN:
-                    windowConfiguration.fullscreen = property.getBoolean();
+                    appSettings.fullscreen = property.getBoolean();
                     break;
                 case WINDOW_TYPE:
-                    windowConfiguration.windowType = property.getWindowType();
+                    appSettings.windowType = property.getWindowType();
+                    break;
                 case ALPHA_BITS:
-                    alpha = property.getInt();
+                    appSettings.alpha = property.getInt();
                     break;
                 case SAMPLES:
-                    samples = property.getInt();
+                    appSettings.samples = property.getInt();
                     break;
                 case NATIVE_GLES:
-                    windowConfiguration.nativeGLES = property.getBoolean();
+                    appSettings.nativeGLES = property.getBoolean();
                     break;
                 case FORCE_VERSION:
-                    windowConfiguration.forceVersion = property.getBoolean();
+                    appSettings.forceVersion = property.getBoolean();
                     break;
                 case SET_VERSION:
-                    windowConfiguration.setVersion = property.getVersion();
+                    appSettings.setDriverVersion = property.getVersion();
                     break;
             }
         }
@@ -260,11 +321,12 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
     protected abstract J2SEWindow createWindow(Renderers version);
 
     @Override
-    public void createCoreWindows(Renderers version) {
-        j2seWindow = createWindow(version);
-        j2seWindow.prepareWindow();
+    public Configuration createCoreWindows(PropertySettings appSettings) {
+        j2seWindow = createWindow(appSettings.version);
+        Configuration configuration = j2seWindow.prepareWindow(appSettings);
         j2seWindow.setWindowListener(this);
         Window.getInstance().setPlatformWindow(j2seWindow);
+        return configuration;
     }
 
     @Override
@@ -302,19 +364,6 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
         } else {
             SimpleLogger.d(getClass(), "windowClosed() coreApp is null");
         }
-    }
-
-    /**
-     * Returns surface configuration
-     * 
-     * @return
-     */
-    protected SurfaceConfiguration getConfiguration() {
-        SurfaceConfiguration config = new SurfaceConfiguration();
-        config.setDepthBits(depthBits);
-        config.setAlphaBits(alpha);
-        config.setSamples(samples);
-        return config;
     }
 
     protected void tearDown() {

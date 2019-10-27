@@ -36,7 +36,7 @@ public class GenericShaderProgram extends DefaultGraphicsShader {
      * Use this for programs that use tiled texture behavior.
      * 
      * @param texture
-     * @param uniforms Will store 1 / tilewidth, 1 / tilewidth, tilewidth, beginning at offset
+     * @param uniforms Will store 1 / tilewidth, 1 / tileheight, tilewidth, beginning at offset
      * @param variable The shader variable
      * @param offset Offset into destination where fraction is set
      */
@@ -45,8 +45,10 @@ public class GenericShaderProgram extends DefaultGraphicsShader {
             SimpleLogger.d(getClass(), "ERROR! Texture size is 0: " + texture.getWidth() + ", " + texture.getHeight());
         }
         uniforms.position(variable.getOffset());
-        uniforms.put((((float) texture.getWidth()) / texture.getTileWidth()) / (texture.getWidth()));
-        uniforms.put((((float) texture.getHeight()) / texture.getTileHeight()) / (texture.getHeight()));
+        // uniforms.put((((float) texture.getWidth()) / texture.getTileWidth()) / (texture.getWidth()));
+        // uniforms.put((((float) texture.getHeight()) / texture.getTileHeight()) / (texture.getHeight()));
+        uniforms.put(1.0f / texture.getTileWidth());
+        uniforms.put(1.0f / texture.getTileHeight());
         uniforms.put(texture.getTileWidth());
     }
 

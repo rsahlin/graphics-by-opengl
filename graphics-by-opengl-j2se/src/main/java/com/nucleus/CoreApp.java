@@ -1,6 +1,8 @@
 package com.nucleus;
 
 import com.nucleus.J2SEWindow.Configuration;
+import com.nucleus.J2SEWindow.VideoMode;
+import com.nucleus.J2SEWindowApplication.PropertySettings;
 import com.nucleus.common.Type;
 import com.nucleus.component.ComponentProcessorRunnable;
 import com.nucleus.component.J2SEComponentProcessor;
@@ -12,7 +14,6 @@ import com.nucleus.profiling.FrameSampler.Sample;
 import com.nucleus.profiling.FrameSampler.Samples;
 import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.FrameRenderer;
-import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.Window;
 import com.nucleus.resource.ResourceBias.RESOLUTION;
 import com.nucleus.scene.J2SENodeInputListener;
@@ -42,8 +43,6 @@ public class CoreApp implements FrameRenderer {
     /**
      * Interface for the core app to create the objects needed.
      * Used by the internal implementation and not by clients.
-     * 
-     * @author Richard Sahlin
      *
      */
     public interface CoreAppStarter {
@@ -54,9 +53,10 @@ public class CoreApp implements FrameRenderer {
          * method
          * is called.
          * 
-         * @param version Version of renderer to use, GLES/VULKAN
+         * @return The configuration of the created window
+         * 
          */
-        public void createCoreWindows(Renderers version);
+        public Configuration createCoreWindows(PropertySettings settings);
 
         /**
          * Create the {@link CoreApp} implementation for the platform, the renderer is now created and has a valid GL
@@ -360,13 +360,14 @@ public class CoreApp implements FrameRenderer {
         if (clientClass == null) {
             throw new IllegalArgumentException("Must call #setClientClass() before calling #createCoreApp()");
         }
-        renderer.init(windowConfiguration.surfaceConfig, windowConfiguration.width, windowConfiguration.height);
+        VideoMode videoMode = windowConfiguration.getVideoMode();
+        renderer.init(windowConfiguration.getSurfaceConfiguration(), videoMode.getWidth(), videoMode.getHeight());
         try {
             ClientApplication clientApp = (ClientApplication) clientClass.newInstance();
             Window.getInstance().setTitle(clientApp.getAppName() + " " + clientApp.getVersion());
             CoreApp coreApp = new CoreApp(renderer, clientApp);
             try {
-                coreApp.displaySplash(windowConfiguration.width, windowConfiguration.height);
+                coreApp.displaySplash(videoMode.getWidth(), videoMode.getHeight());
             } catch (BackendException | NodeException e) {
                 throw new RuntimeException(e);
             }

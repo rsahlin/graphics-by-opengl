@@ -20,6 +20,7 @@ import org.lwjgl.system.MemoryUtil;
 import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
+import com.nucleus.J2SEWindowApplication.PropertySettings;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Environment;
 import com.nucleus.egl.EGLUtils;
@@ -47,16 +48,17 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
      */
     protected int[] surfaceAttribs;
 
-    public LWJGLEGLWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, Configuration configuration) {
-        super(factory, coreAppStarter, configuration);
+    public LWJGLEGLWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, PropertySettings appSettings) {
+        super(factory, coreAppStarter, appSettings);
         env = Environment.getInstance();
         Thread t = new Thread(this);
         t.start();
     }
 
     @Override
-    public void init() {
-        backend = factory.createBackend(configuration.version, window, null);
+    public VideoMode init(PropertySettings appSettings) {
+        backend = factory.createBackend(appSettings.version, window, null);
+        return new VideoMode(appSettings.width, appSettings.height, appSettings.fullscreen, appSettings.swapInterval);
     }
 
     /**
@@ -295,7 +297,7 @@ public class LWJGLEGLWindow extends J2SEWindow implements Runnable {
     }
 
     @Override
-    public void setFullscreenMode(boolean fullscreen, int monitorIndex) {
+    public VideoMode setVideoMode(VideoMode videoMode, int monitorIndex) {
         throw new IllegalArgumentException("Not implemented");
     }
 

@@ -20,10 +20,6 @@ public class Window {
     J2SEWindow platformWindow;
 
     /**
-     * The display resolution, ie the full resolution of the display
-     */
-    int[] screenSize;
-    /**
      * Best fit resolution for the display - use this to figure out image scale bias
      */
     RESOLUTION resolution;
@@ -56,19 +52,6 @@ public class Window {
         SimpleLogger.d(getClass(), "setSize() " + width + ", " + height);
         this.width = width;
         this.height = height;
-    }
-
-    /**
-     * Sets the size of the screen, ie total number of pixels on display - may be bigger than window size.
-     * Do not call this method directly, it is initialized by implementations (JOGL, Android, LWJGL)
-     * 
-     * @param width
-     * @param height
-     */
-    public void setScreenSize(int width, int height) {
-        SimpleLogger.d(getClass(), "setScreenSize() " + width + ", " + height);
-        this.screenSize = new int[] { width, height };
-        resolution = RESOLUTION.getResolution(height);
     }
 
     /**
@@ -107,15 +90,6 @@ public class Window {
      */
     public int getHeight() {
         return height;
-    }
-
-    /**
-     * Returns the total display size
-     * 
-     * @return
-     */
-    public int[] getScreenSize() {
-        return screenSize;
     }
 
     /**

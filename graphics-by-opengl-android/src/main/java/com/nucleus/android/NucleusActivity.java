@@ -239,7 +239,6 @@ public abstract class NucleusActivity extends Activity
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
-        com.nucleus.renderer.Window.getInstance().setScreenSize(size.x, size.y);
         androidUptimeDelta = java.lang.System.currentTimeMillis() - android.os.SystemClock.uptimeMillis();
 
     }

@@ -17,6 +17,7 @@ import org.lwjgl.system.ThreadLocalUtil;
 import com.nucleus.Backend;
 import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp.CoreAppStarter;
+import com.nucleus.J2SEWindowApplication.PropertySettings;
 import com.nucleus.SimpleLogger;
 import com.nucleus.lwjgl3.GLFWWindow;
 
@@ -28,8 +29,8 @@ public class GLFWGLESWindow extends GLFWWindow {
 
     private GLESCapabilities gles;
 
-    public GLFWGLESWindow(BackendFactory factory, CoreAppStarter coreAppStarter, Configuration config) {
-        super(factory, coreAppStarter, config);
+    public GLFWGLESWindow(BackendFactory factory, CoreAppStarter coreAppStarter, PropertySettings appSettings) {
+        super(factory, coreAppStarter, appSettings);
     }
 
     @Override
@@ -44,10 +45,10 @@ public class GLFWGLESWindow extends GLFWWindow {
     }
 
     @Override
-    protected Backend initFW(long GLFWWindow) {
+    protected Backend initFW(long GLFWWindow, PropertySettings appSettings) {
         GLFW.glfwMakeContextCurrent(window);
         org.lwjgl.system.Configuration.OPENGLES_EXPLICIT_INIT.set(true);
-        if (configuration.nativeGLES) {
+        if (appSettings.nativeGLES) {
             GLES.create(GLES.getFunctionProvider());
             gles = GLES.createCapabilities();
         } else {
@@ -58,7 +59,7 @@ public class GLFWGLESWindow extends GLFWWindow {
                 + "\nGLES30: " + gles.GLES30
                 + "\nGLES31: " + gles.GLES31
                 + "\nGLES32: " + gles.GLES32);
-        return factory.createBackend(configuration.version, window, null);
+        return factory.createBackend(appSettings.version, window, null);
     }
 
     /** Loads the OpenGL ES native library, using the default library name. */

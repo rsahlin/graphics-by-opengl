@@ -18,6 +18,7 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.egl.EGL;
 import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp;
+import com.nucleus.J2SEWindowApplication.PropertySettings;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.BufferUtils;
 import com.nucleus.common.Constants;
@@ -46,23 +47,20 @@ public class JOGLEGLWindow extends JOGLGLWindow implements Runnable, GLCapabilit
     GLCapabilities glCapabilities;
     GLDrawable glDrawable;
 
-    public JOGLEGLWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, Configuration configuration) {
-        super(factory, coreAppStarter, configuration);
+    public JOGLEGLWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, PropertySettings appSettings) {
+        super(factory, coreAppStarter, appSettings);
     }
 
     @Override
-    public void init() {
-        glCapabilities = new GLCapabilities(getProfile(configuration.version));
-        glCapabilities.setSampleBuffers(configuration.surfaceConfig.getSamples() > 0);
-        glCapabilities.setNumSamples(configuration.surfaceConfig.getSamples());
+    public VideoMode init(PropertySettings appSettings) {
+        glCapabilities = new GLCapabilities(getProfile(appSettings.version));
+        version = appSettings.version;
+        glCapabilities.setSampleBuffers(appSettings.samples > 0);
+        glCapabilities.setNumSamples(appSettings.samples);
         glCapabilities.setBackgroundOpaque(true);
         glCapabilities.setAlphaBits(0);
         createGLWindow();
-        /**
-         * Start a thread to rendering using EGL and GL
-         */
-        // Thread t = new Thread(this);
-        // t.start();
+        return new VideoMode(appSettings.width, appSettings.height, appSettings.fullscreen, appSettings.swapInterval);
     }
 
     protected void createGLWindow() {
@@ -74,7 +72,7 @@ public class JOGLEGLWindow extends JOGLGLWindow implements Runnable, GLCapabilit
         // NativeWindowFactory.getDefaultDisplayConnection(),
         // true);
         nativeWindow = GLWindow.create(new GLCapabilities(GLProfile.get(GLProfile.GL4ES3)));
-        nativeWindow.setSize(configuration.width, configuration.height);
+        nativeWindow.setSize(videoMode.getWidth(), videoMode.getHeight());
         // nativeWindow.setUndecorated(undecorated);
         nativeWindow.setRealized(true);
         nativeWindow.addGLEventListener(this);
@@ -109,7 +107,7 @@ public class JOGLEGLWindow extends JOGLGLWindow implements Runnable, GLCapabilit
 
             // EGL.eglCreateContext(eglDevice.getNativeDisplayID(), eglC, share_context, attrib_list)
 
-            backend = factory.createBackend(configuration.version, null, glContext);
+            backend = factory.createBackend(version, null, glContext);
         }
 
     }
@@ -258,7 +256,7 @@ public class JOGLEGLWindow extends JOGLGLWindow implements Runnable, GLCapabilit
     }
 
     @Override
-    public void setFullscreenMode(boolean fullscreen, int monitorIndex) {
+    public VideoMode setVideoMode(VideoMode videoMode, int monitorIndex) {
         throw new IllegalArgumentException("Not implemented");
     }
 

@@ -3,11 +3,9 @@ package com.nucleus.jogl;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp.CoreAppStarter;
-import com.nucleus.J2SEWindowApplication.WindowType;
+import com.nucleus.J2SEWindowApplication.PropertySettings;
 import com.nucleus.SimpleLogger;
 import com.nucleus.opengl.GLESWrapper;
-import com.nucleus.renderer.NucleusRenderer.Renderers;
-import com.nucleus.renderer.SurfaceConfiguration;
 
 /**
  * Window for a GLES 2/3 renderer, this class must create the correct {@link GLESWrapper}
@@ -17,8 +15,8 @@ import com.nucleus.renderer.SurfaceConfiguration;
  */
 public class JOGLGLESWindow extends JOGLGLWindow {
 
-    public JOGLGLESWindow(BackendFactory factory, CoreAppStarter coreAppStarter, Configuration config) {
-        super(factory, coreAppStarter, config);
+    public JOGLGLESWindow(BackendFactory factory, CoreAppStarter coreAppStarter, PropertySettings appSettings) {
+        super(factory, coreAppStarter, appSettings);
     }
 
     @Override
@@ -40,7 +38,7 @@ public class JOGLGLESWindow extends JOGLGLWindow {
         SimpleLogger.d(getClass(), "init()");
         if (backend == null) {
 
-            backend = factory.createBackend(configuration.version, null, drawable.getContext());
+            backend = factory.createBackend(version, null, drawable.getContext());
         }
         super.init(drawable);
     }

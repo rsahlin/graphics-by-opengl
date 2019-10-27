@@ -4,12 +4,12 @@ import java.nio.FloatBuffer;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
-
 import com.nucleus.Backend.DrawMode;
 import com.nucleus.BackendException;
 import com.nucleus.CoreApp;
 import com.nucleus.CoreApp.ClientApplication;
+import com.nucleus.J2SEWindow.Configuration;
+import com.nucleus.J2SEWindow.VideoMode;
 import com.nucleus.common.Type;
 import com.nucleus.geometry.Material;
 import com.nucleus.geometry.Mesh;
@@ -36,24 +36,23 @@ import com.nucleus.shader.GraphicsShader;
 import com.nucleus.texturing.BaseImageFactory;
 import com.nucleus.texturing.Convolution;
 import com.nucleus.texturing.Texture2D;
-import com.nucleus.texturing.TextureParameter;
 import com.nucleus.texturing.Texture2D.Format;
+import com.nucleus.texturing.TextureParameter;
 
 import junit.framework.Assert;
 
 public class FGLConvolutionTest extends JOGLApplication implements FrameListener,
         MMIPointerInput {
 
-    
     private Semaphore updateCalls = new Semaphore(0);
-    
+
     /**
      * The types that can be used to represent classes when importing/exporting
      * This is used as a means to decouple serialized name from implementing class.
      * 
      */
     public enum ClientClasses implements Type<Object> {
-            clientclass(MyClientApplication.class);
+        clientclass(MyClientApplication.class);
 
         private final Class<?> theClass;
 
@@ -134,9 +133,9 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
     /**
      * When running as unit test the classloader points to wrong folder
      */
-//    @Test
+    // @Test
     public void testGLConvolution() throws GLException {
-        
+
         try {
             Assert.assertEquals(updateCalls.tryAcquire(100, 2000000, TimeUnit.MILLISECONDS), true);
         } catch (InterruptedException e) {
@@ -147,9 +146,9 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
     }
 
     @Override
-    public void createCoreWindows(Renderers version) {
-        windowConfiguration.swapInterval = 0;
-        super.createCoreWindows(version);
+    public Configuration createCoreWindows(PropertySettings appSettings) {
+        appSettings.swapInterval = 0;
+        return super.createCoreWindows(appSettings);
     }
 
     @Override
@@ -209,7 +208,8 @@ public class FGLConvolutionTest extends JOGLApplication implements FrameListener
         if (counter > 100) {
             long end = System.currentTimeMillis();
             String fillrateStr = "";
-            int size = windowConfiguration.width * windowConfiguration.height;
+            VideoMode videoMode = windowConfiguration.getVideoMode();
+            int size = videoMode.getWidth() * videoMode.getHeight();
             int fillrate = (size * counter) / (int) (end - start);
             fillrateStr = " " + Float.toString(fillrate / 1000) + ", mpixels/s";
             start = System.currentTimeMillis();

@@ -1,12 +1,8 @@
 package com.nucleus;
 
-import java.awt.Dimension;
-import java.awt.Toolkit;
-
 import com.nucleus.Backend.BackendFactory;
+import com.nucleus.J2SEWindowApplication.PropertySettings;
 import com.nucleus.J2SEWindowApplication.WindowType;
-import com.nucleus.common.Platform;
-import com.nucleus.common.Platform.OS;
 import com.nucleus.mmi.Key;
 import com.nucleus.mmi.Pointer;
 import com.nucleus.mmi.Pointer.PointerAction;
@@ -15,7 +11,6 @@ import com.nucleus.mmi.core.CoreInput;
 import com.nucleus.renderer.NucleusRenderer.RenderContextListener;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
-import com.nucleus.renderer.Window;
 
 /**
  * Window that connects to the underlying GL.
@@ -25,32 +20,17 @@ import com.nucleus.renderer.Window;
  */
 public abstract class J2SEWindow implements WindowListener {
 
-    public static class Configuration {
+    public static class VideoMode {
+        private boolean fullscreen = false;
+        private int width;
+        private int height;
+        private int refresh;
+        private int swapInterval;
 
-        public Renderers version;
-        public int swapInterval = 1;
-        public int width = 1920;
-        public int height = 1080;
-        public boolean windowUndecorated = false;
-        public boolean fullscreen = false;
-        public WindowType windowType;
-        public boolean nativeGLES = false;
-        /**
-         * Force selection of a specific GLES version
-         * This is to override the default setting where framework
-         * may supply a gles version.
-         * Setting this to true will force drivers to ask for the specified version
-         */
-        public Boolean forceVersion = false;
-        /**
-         * Select a specific version to use
-         * This will override the version set when starting the app.
-         */
-        public Renderers setVersion = null;
-        public SurfaceConfiguration surfaceConfig;
-
-        public SurfaceConfiguration getSurfaceConfiguration() {
-            return surfaceConfig;
+        public VideoMode(int width, int height, boolean fullscreen, int swapInterval) {
+            this.fullscreen = fullscreen;
+            this.width = width;
+            this.height = height;
         }
 
         public int getWidth() {
@@ -61,8 +41,39 @@ public abstract class J2SEWindow implements WindowListener {
             return height;
         }
 
-        public WindowType getWindowType() {
-            return windowType;
+        public boolean isFullScreen() {
+            return fullscreen;
+        }
+
+        public int getSwapInterval() {
+            return swapInterval;
+        }
+
+    }
+
+    public static class Configuration {
+
+        private Renderers version;
+        private int swapInterval = 1;
+        private VideoMode videoMode = new VideoMode(1920, 1080, false, 1);
+        private SurfaceConfiguration surfaceConfig;
+
+        public Configuration(Renderers version, SurfaceConfiguration surfaceConfig, VideoMode videoMode) {
+            this.version = version;
+            this.surfaceConfig = surfaceConfig;
+            this.videoMode = videoMode;
+        }
+
+        public SurfaceConfiguration getSurfaceConfiguration() {
+            return surfaceConfig;
+        }
+
+        public VideoMode getVideoMode() {
+            return videoMode;
+        }
+
+        public Renderers getRenderVersion() {
+            return version;
         }
 
     }
@@ -73,22 +84,17 @@ public abstract class J2SEWindow implements WindowListener {
     protected Backend backend;
     protected CoreApp.CoreAppStarter coreAppStarter;
     protected WindowListener windowListener;
-    protected Configuration configuration;
+    protected VideoMode videoMode;
+    protected Renderers version;
+    protected WindowType windowType;
 
-    public J2SEWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, Configuration configuration) {
+    public J2SEWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, PropertySettings appSettings) {
         if (coreAppStarter == null) {
             throw new IllegalArgumentException("Appstarter is null");
         }
-        this.configuration = configuration;
+        windowType = appSettings.windowType;
         this.coreAppStarter = coreAppStarter;
         this.factory = factory;
-        OS os = Platform.getInstance().getOS();
-        if (os != OS.android) {
-            Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-            Window.getInstance().setScreenSize(d.width, d.height);
-        } else {
-            Window.getInstance().setScreenSize(configuration.width, configuration.height);
-        }
     }
 
     /**
@@ -96,8 +102,10 @@ public abstract class J2SEWindow implements WindowListener {
      * Subclasses must implement this method to setup the needed window system and render API.
      * Implementations may defer creation until window framework is up and running (via async callbacks)
      * 
+     * @return The set video mode for window or fullscreen.
+     * 
      */
-    public abstract void init();
+    public abstract VideoMode init(PropertySettings appSettings);
 
     /**
      * Sets callback for {@link WindowListener} events
@@ -227,9 +235,9 @@ public abstract class J2SEWindow implements WindowListener {
 
     protected void exit() {
         SimpleLogger.d(getClass(), "exit");
-        if (configuration.fullscreen) {
-            configuration.fullscreen = false;
-            setFullscreenMode(false, 0);
+        if (videoMode.fullscreen) {
+            videoMode.fullscreen = false;
+            videoMode = setVideoMode(videoMode, 0);
         } else {
             if (coreApp.onBackPressed()) {
                 coreApp.setDestroyFlag();
@@ -243,12 +251,13 @@ public abstract class J2SEWindow implements WindowListener {
      * Initializes the window, set visibility and fullscreen mode according to configuration.
      * Call this method to prepare and display the window.
      * 
-     * @param window
      */
-    protected void prepareWindow() {
-        init();
-        setVisible(true);
-        setFullscreenMode(configuration.fullscreen, 0);
+    protected Configuration prepareWindow(PropertySettings appSettings) {
+        videoMode = init(appSettings);
+        Configuration configuration = new Configuration(appSettings.version, appSettings.getConfiguration(),
+                videoMode);
+        videoMode = setVideoMode(videoMode, 0);
+        return configuration;
     }
 
     /**
@@ -266,12 +275,13 @@ public abstract class J2SEWindow implements WindowListener {
     public abstract void setWindowTitle(String title);
 
     /**
-     * Switch to and from fullscreen mode.
+     * Set the video mode, fullscreen or windowed and resolution
      * 
-     * @param fullscreen
+     * @param The video mode to set
      * @param Index to monitor to set the fullscreen mode for
+     * @return
      */
-    public abstract void setFullscreenMode(boolean fullscreen, int monitorIndex);
+    public abstract VideoMode setVideoMode(VideoMode videoMode, int monitorIndex);
 
     /**
      * Destroy the window(s) and release window resources

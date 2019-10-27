@@ -9,17 +9,21 @@ import org.lwjgl.glfw.GLFWCursorPosCallbackI;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallbackI;
 import org.lwjgl.glfw.GLFWScrollCallbackI;
+import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWWindowCloseCallbackI;
+import org.lwjgl.glfw.GLFWWindowIconifyCallbackI;
 import org.lwjgl.system.MemoryUtil;
 
 import com.nucleus.Backend;
 import com.nucleus.Backend.BackendFactory;
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
+import com.nucleus.J2SEWindowApplication.PropertySettings;
 import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.Key.Action;
 import com.nucleus.mmi.Pointer.PointerAction;
 import com.nucleus.mmi.Pointer.Type;
+import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.renderer.SurfaceConfiguration;
 
 /**
@@ -27,7 +31,7 @@ import com.nucleus.renderer.SurfaceConfiguration;
  * 
  *
  */
-public abstract class GLFWWindow extends J2SEWindow {
+public abstract class GLFWWindow extends J2SEWindow implements GLFWWindowIconifyCallbackI {
 
     protected static final int MAX_MOUSE_BUTTONS = 3;
     protected long window;
@@ -42,42 +46,44 @@ public abstract class GLFWWindow extends J2SEWindow {
      * @param width
      * @param height
      */
-    public GLFWWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter,
-            Configuration windowConfiguration) {
-        super(factory, coreAppStarter, windowConfiguration);
+    public GLFWWindow(BackendFactory factory, CoreApp.CoreAppStarter coreAppStarter, PropertySettings appSettings) {
+        super(factory, coreAppStarter, appSettings);
     }
 
     @Override
-    public void init() {
+    public VideoMode init(PropertySettings appSettings) {
         GLFWErrorCallback.createPrint().set();
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize glfw");
         }
-        SurfaceConfiguration config = configuration.getSurfaceConfiguration();
+        SurfaceConfiguration config = appSettings.getConfiguration();
         SimpleLogger.d(getClass(), "GLFW version :" + GLFW.glfwGetVersionString());
-        SimpleLogger.d(getClass(), "Initializing GLFW window for requested version " + configuration.version);
+        SimpleLogger.d(getClass(),
+                "Initializing GLFW window for requested version " + appSettings.version);
         GLFW.glfwDefaultWindowHints();
-        if (configuration.nativeGLES) {
+        if (appSettings.nativeGLES) {
             GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API);
         }
-        if (configuration.forceVersion == true) {
-            SimpleLogger.d(getClass(), "Forcing GLFW GLES version to " + configuration.version);
-            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, configuration.version.major);
-            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, configuration.version.minor);
+        if (appSettings.forceVersion == true) {
+            Renderers version = appSettings.setDriverVersion != null ? appSettings.setDriverVersion
+                    : appSettings.version;
+            SimpleLogger.d(getClass(), "Forcing GLFW GLES version to " + version);
+            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, version.major);
+            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, version.minor);
         }
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, config.getSamples());
         SimpleLogger.d(getClass(), "Set samples: " + config.getSamples());
-        window = GLFW.glfwCreateWindow(configuration.getWidth(), configuration.getHeight(), "", MemoryUtil.NULL,
-                MemoryUtil.NULL);
+        window = GLFW.glfwCreateWindow(appSettings.width, appSettings.height, "", MemoryUtil.NULL, MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
         monitors = getMonitors();
-        backend = initFW(window);
-        GLFW.glfwSwapInterval(configuration.swapInterval);
+        backend = initFW(window, appSettings);
+        GLFW.glfwSwapInterval(appSettings.swapInterval);
         initInput();
+        return new VideoMode(appSettings.width, appSettings.height, appSettings.fullscreen, appSettings.swapInterval);
     }
 
     private PointerBuffer getMonitors() {
@@ -97,7 +103,7 @@ public abstract class GLFWWindow extends J2SEWindow {
      * 
      * @param GLFWWindow
      */
-    protected abstract Backend initFW(long GLFWWindow);
+    protected abstract Backend initFW(long GLFWWindow, PropertySettings appSettings);
 
     protected void initInput() {
         /**
@@ -227,18 +233,34 @@ public abstract class GLFWWindow extends J2SEWindow {
     }
 
     @Override
-    public void setFullscreenMode(boolean fullscreen, int monitorIndex) {
+    public VideoMode setVideoMode(VideoMode videoMode, int monitorIndex) {
+        long monitor = monitors.get(monitorIndex);
+        VideoMode result = videoMode;
         if (monitorIndex < monitors.capacity()) {
-            if (fullscreen) {
-                GLFW.glfwSetWindowMonitor(window, monitors.get(0), 0, 0, configuration.width, configuration.height,
+            if (videoMode.isFullScreen()) {
+                GLFWVidMode.Buffer buffer = GLFW.glfwGetVideoModes(monitor);
+                while (buffer.hasRemaining()) {
+                    GLFWVidMode mode = buffer.get();
+                    SimpleLogger.d(getClass(), "Found videomode " + mode.width() + ", " + mode.height() + ", " +
+                            mode.redBits() + "." + mode.greenBits() + "." + mode.blueBits() + ", refresh: "
+                            + mode.refreshRate());
+                }
+
+                GLFW.glfwSetWindowMonitor(window, monitor, 0, 0, videoMode.getWidth(), videoMode.getHeight(),
                         GLFW.GLFW_DONT_CARE);
+                GLFWVidMode vidMode = GLFW.glfwGetVideoMode(monitor);
+                SimpleLogger.d(getClass(), "Set monitor resolution to " + vidMode.width() + ", " + vidMode.height());
+                // GLFW.glfwSetWindowIconifyCallback(monitor, this);
+                result = new VideoMode(vidMode.width(), vidMode.height(), true, videoMode.getSwapInterval());
             } else {
-                GLFW.glfwSetWindowMonitor(window, MemoryUtil.NULL, 0, 0, configuration.width, configuration.height,
+                GLFW.glfwSetWindowMonitor(window, MemoryUtil.NULL, 100, 100, videoMode.getWidth(),
+                        videoMode.getHeight(),
                         GLFW.GLFW_DONT_CARE);
             }
         } else {
             SimpleLogger.d(getClass(), "Invalid monitor index " + monitorIndex);
         }
+        return result;
     }
 
     @Override
@@ -246,6 +268,11 @@ public abstract class GLFWWindow extends J2SEWindow {
         SimpleLogger.d(getClass(), "destroy()");
         GLFW.glfwDestroyWindow(window);
         window = 0;
+    }
+
+    @Override
+    public void invoke(long window, boolean iconified) {
+        SimpleLogger.d(getClass(), "Window iconified: " + iconified);
     }
 
 }
