@@ -2,7 +2,6 @@ package com.nucleus.renderer;
 
 import com.nucleus.J2SEWindow;
 import com.nucleus.SimpleLogger;
-import com.nucleus.resource.ResourceBias.RESOLUTION;
 
 /**
  * The size of the renderable area, this is a singleton class since only one instance of GL is supported.
@@ -18,11 +17,6 @@ public class Window {
     int width;
     int height;
     J2SEWindow platformWindow;
-
-    /**
-     * Best fit resolution for the display - use this to figure out image scale bias
-     */
-    RESOLUTION resolution;
 
     /**
      * Hide instantiation from clients.
@@ -90,15 +84,6 @@ public class Window {
      */
     public int getHeight() {
         return height;
-    }
-
-    /**
-     * Returns the resolution of display, use this for image scale bias
-     * 
-     * @return
-     */
-    public RESOLUTION getResolution() {
-        return resolution;
     }
 
 }

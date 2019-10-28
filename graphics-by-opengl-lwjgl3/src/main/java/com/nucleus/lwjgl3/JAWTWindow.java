@@ -183,7 +183,8 @@ public class JAWTWindow extends J2SEWindow
 
     @Override
     public VideoMode setVideoMode(VideoMode videoMode, int monitorIndex) {
-        throw new IllegalArgumentException("Not implemented");
+        // JAWT cannot change to fullscreen.
+        return videoMode;
     }
 
     @Override
