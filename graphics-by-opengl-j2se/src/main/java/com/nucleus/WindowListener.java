@@ -19,7 +19,8 @@ public interface WindowListener {
     public void resize(int x, int y, int width, int height);
 
     /**
-     * The window has been closed
+     * The window has been closed - this shall be called when user has invoked an action to close the window.
+     * App / renderer and window must be destroyed and freed.
      */
     public void windowClosed();
 

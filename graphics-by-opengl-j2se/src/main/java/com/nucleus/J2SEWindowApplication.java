@@ -359,8 +359,8 @@ public abstract class J2SEWindowApplication implements CoreAppStarter, WindowLis
 
     @Override
     public void windowClosed() {
-        if (coreApp != null) {
-            coreApp.setDestroyFlag();
+        if (coreApp != null && j2seWindow != null) {
+            j2seWindow.exit();
         } else {
             SimpleLogger.d(getClass(), "windowClosed() coreApp is null");
         }

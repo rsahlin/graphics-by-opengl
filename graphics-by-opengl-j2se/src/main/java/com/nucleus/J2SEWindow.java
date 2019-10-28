@@ -233,17 +233,24 @@ public abstract class J2SEWindow implements WindowListener {
                 0);
     }
 
-    protected void exit() {
-        SimpleLogger.d(getClass(), "exit");
+    /**
+     * If fullscreen mode then switch to windowed mode, if window mode then exit.
+     */
+    protected void onBackPressed() {
+        SimpleLogger.d(getClass(), "onBackPressed()");
         if (videoMode.fullscreen) {
             videoMode.fullscreen = false;
             videoMode = setVideoMode(videoMode, 0);
         } else {
-            if (coreApp.onBackPressed()) {
-                coreApp.setDestroyFlag();
-                destroy();
-                System.exit(0);
-            }
+            exit();
+        }
+    }
+
+    protected void exit() {
+        if (coreApp != null && coreApp.onBackPressed()) {
+            coreApp.setDestroyFlag();
+            destroy();
+            System.exit(0);
         }
     }
 

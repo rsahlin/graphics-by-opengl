@@ -1,6 +1,7 @@
 package com.nucleus.jogl;
 
 import java.awt.Frame;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowListener;
 import java.lang.reflect.Field;
 import java.util.Hashtable;
@@ -28,6 +29,7 @@ import com.nucleus.J2SEWindow;
 import com.nucleus.J2SEWindowApplication.PropertySettings;
 import com.nucleus.SimpleLogger;
 import com.nucleus.mmi.Key.Action;
+import com.nucleus.mmi.Pointer;
 import com.nucleus.mmi.Pointer.PointerAction;
 import com.nucleus.mmi.Pointer.Type;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
@@ -42,7 +44,9 @@ import com.nucleus.renderer.SurfaceConfiguration;
  *
  */
 public abstract class JOGLGLWindow extends J2SEWindow
-        implements GLEventListener, MouseListener, com.jogamp.newt.event.WindowListener, KeyListener, WindowListener {
+        implements GLEventListener, MouseListener, MouseMotionListener, java.awt.event.MouseListener,
+        com.jogamp.newt.event.WindowListener,
+        KeyListener, WindowListener {
 
     private boolean alwaysOnTop = false;
     private boolean mouseVisible = true;
@@ -201,12 +205,12 @@ public abstract class JOGLGLWindow extends J2SEWindow
         frame.add(canvas, java.awt.BorderLayout.CENTER);
         frame.validate();
         frame.addWindowListener(this);
-        // frame.addMouseListener(this);
         animator = new Animator();
         animator.add(canvas);
         animator.start();
         canvas.setAutoSwapBufferMode(autoSwapBuffer);
-
+        canvas.addMouseListener(this);
+        canvas.addMouseMotionListener(this);
     }
 
     @Override
@@ -305,7 +309,7 @@ public abstract class JOGLGLWindow extends J2SEWindow
                         AWTKeycodes.get((int) event.getKeyCode())));
                 switch (event.getKeyCode()) {
                     case KeyEvent.VK_ESCAPE:
-                        exit();
+                        onBackPressed();
                 }
                 break;
             case KeyEvent.EVENT_KEY_RELEASED:
@@ -360,6 +364,40 @@ public abstract class JOGLGLWindow extends J2SEWindow
     }
 
     @Override
+    public void mouseDragged(java.awt.event.MouseEvent e) {
+        handleMouseEvent(PointerAction.MOVE, Type.MOUSE, e.getX(), e.getX(), Pointer.POINTER_1, e.getWhen());
+    }
+
+    @Override
+    public void mouseMoved(java.awt.event.MouseEvent e) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void mouseClicked(java.awt.event.MouseEvent e) {
+
+    }
+
+    @Override
+    public void mousePressed(java.awt.event.MouseEvent e) {
+        handleMouseEvent(PointerAction.DOWN, Type.MOUSE, e.getX(), e.getX(), Pointer.POINTER_1, e.getWhen());
+    }
+
+    @Override
+    public void mouseReleased(java.awt.event.MouseEvent e) {
+        handleMouseEvent(PointerAction.UP, Type.MOUSE, e.getX(), e.getX(), Pointer.POINTER_1, e.getWhen());
+    }
+
+    @Override
+    public void mouseEntered(java.awt.event.MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(java.awt.event.MouseEvent e) {
+    }
+
+    @Override
     public void windowResized(WindowEvent e) {
     }
 
@@ -397,12 +435,13 @@ public abstract class JOGLGLWindow extends J2SEWindow
 
     @Override
     public void windowClosing(java.awt.event.WindowEvent e) {
-        // TODO Auto-generated method stub
-
+        SimpleLogger.d(getClass(), "Window closing");
+        windowClosed();
     }
 
     @Override
     public void windowClosed(java.awt.event.WindowEvent e) {
+        SimpleLogger.d(getClass(), "Window closed");
     }
 
     @Override

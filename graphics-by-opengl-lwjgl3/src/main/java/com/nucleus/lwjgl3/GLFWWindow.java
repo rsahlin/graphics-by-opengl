@@ -118,7 +118,7 @@ public abstract class GLFWWindow extends J2SEWindow implements GLFWWindowIconify
                     case GLFW.GLFW_RELEASE:
                         super.handleKeyEvent(new com.nucleus.mmi.Key(Action.RELEASED, key));
                         if (key == GLFW.GLFW_KEY_ESCAPE) {
-                            exit();
+                            onBackPressed();
                         }
                         break;
                     case GLFW.GLFW_PRESS:
