@@ -30,6 +30,21 @@ public class J2SENodeInputListener implements MMIPointerInput {
     public class ActiveEvent {
         private MMIPointer event;
         private Node activeNode;
+
+        protected void set(Node node, MMIPointer event) {
+            activeNode = node;
+            this.event = event;
+        }
+
+        protected void clear() {
+            event = null;
+            activeNode = null;
+        }
+
+        protected boolean isSameNode(Node node) {
+            return activeNode != null ? activeNode.getId().equals(node.getId()) : false;
+        }
+
     }
 
     /**
@@ -153,12 +168,11 @@ public class J2SENodeInputListener implements MMIPointerInput {
                 if (activeEvents[finger] == null) {
                     activeEvents[finger] = new ActiveEvent();
                 }
-                activeEvents[finger].event = event;
-                activeEvents[finger].activeNode = node;
+                activeEvents[finger].set(node, event);
                 break;
             case INACTIVE:
                 MMIPointer firstEvent = activeEvents[finger].event;
-                if (activeEvents[finger].activeNode.getId().equals(node.getId())) {
+                if (listener != null && activeEvents[finger].isSameNode(node)) {
                     EventConfiguration config = listener.getConfiguration();
                     int delta = (int) (event.getPointerData().getCurrent().timeStamp
                             - firstEvent.getPointerData().getFirst().timeStamp);
@@ -178,6 +192,7 @@ public class J2SENodeInputListener implements MMIPointerInput {
                     SimpleLogger.d(getClass(), "Pointer released on different Node: "
                             + activeEvents[finger].activeNode.getId() + " -> " + node.getId());
                 }
+                activeEvents[finger].clear();
                 break;
             default:
                 // Do nothing
