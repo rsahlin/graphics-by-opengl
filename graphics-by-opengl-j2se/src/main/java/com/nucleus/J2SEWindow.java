@@ -263,7 +263,6 @@ public abstract class J2SEWindow implements WindowListener {
         videoMode = init(appSettings);
         Configuration configuration = new Configuration(appSettings.version, appSettings.getConfiguration(),
                 videoMode);
-        videoMode = setVideoMode(videoMode, 0);
         return configuration;
     }
 

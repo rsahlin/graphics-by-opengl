@@ -184,10 +184,12 @@ public abstract class JOGLGLWindow extends J2SEWindow
         glWindow.addKeyListener(this);
         glWindow.addWindowListener(this);
         glWindow.addGLEventListener(this);
+        glWindow.setFullscreen(appSettings.fullscreen);
         animator = new Animator();
         animator.add(glWindow);
         animator.start();
         glWindow.setAutoSwapBufferMode(autoSwapBuffer);
+
     }
 
     private void createAWTWindow(PropertySettings appSettings) {
