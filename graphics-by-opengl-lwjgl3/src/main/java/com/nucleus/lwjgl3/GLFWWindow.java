@@ -21,6 +21,8 @@ import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow;
 import com.nucleus.J2SEWindowApplication.PropertySettings;
 import com.nucleus.SimpleLogger;
+import com.nucleus.common.Environment;
+import com.nucleus.common.Environment.Property;
 import com.nucleus.mmi.Key.Action;
 import com.nucleus.mmi.Pointer.PointerAction;
 import com.nucleus.mmi.Pointer.Type;
@@ -60,11 +62,9 @@ public abstract class GLFWWindow extends J2SEWindow {
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize glfw");
         }
-        SurfaceConfiguration config = appSettings.getConfiguration();
         SimpleLogger.d(getClass(), "GLFW version :" + GLFW.glfwGetVersionString());
         monitors = getMonitors();
         long monitor = monitors.get(monitorIndex);
-        listVideoModes(monitor);
         Size size = createGLFWWindow(appSettings, monitor);
         SimpleLogger.d(getClass(),
                 "Initializing GLFW window for requested version " + appSettings.version);
@@ -78,19 +78,26 @@ public abstract class GLFWWindow extends J2SEWindow {
             GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, version.major);
             GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, version.minor);
         }
-        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
-        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE);
-        GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, config.getSamples());
-        GLFW.glfwWindowHint(GLFW.GLFW_SCALE_TO_MONITOR, GLFW.GLFW_FALSE);
-        GLFW.glfwWindowHint(GLFW.GLFW_TRANSPARENT_FRAMEBUFFER, GLFW.GLFW_FALSE);
-        SimpleLogger.d(getClass(), "Set samples: " + config.getSamples());
         backend = initFW(window, appSettings);
         GLFW.glfwSwapInterval(appSettings.swapInterval);
         initInput();
         return new VideoMode(size, appSettings.fullscreen, appSettings.swapInterval);
     }
 
+    private void setWindowHints(SurfaceConfiguration config) {
+        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
+        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE);
+        GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, config.getSamples());
+        GLFW.glfwWindowHint(GLFW.GLFW_SCALE_TO_MONITOR, GLFW.GLFW_FALSE);
+        GLFW.glfwWindowHint(GLFW.GLFW_TRANSPARENT_FRAMEBUFFER, GLFW.GLFW_FALSE);
+        GLFW.glfwWindowHint(GLFW.GLFW_AUTO_ICONIFY, GLFW.GLFW_FALSE);
+        SimpleLogger.d(getClass(), "Set samples: " + config.getSamples());
+    }
+
     protected Size createGLFWWindow(PropertySettings appSettings, long monitor) {
+        SurfaceConfiguration config = appSettings.getConfiguration();
+        setWindowHints(config);
+        listVideoModes(monitor);
         if (appSettings.fullscreen) {
             VideoMode requested = new VideoMode(appSettings.width, appSettings.height, appSettings.fullscreen,
                     appSettings.swapInterval);
@@ -120,6 +127,7 @@ public abstract class GLFWWindow extends J2SEWindow {
             SimpleLogger.d(getClass(), "Setting current monitor to fullscreen");
             setVideoMode(requested, monitorIndex);
         } else {
+            GLFW.glfwWindowHint(GLFW.GLFW_ICONIFIED, GLFW.GLFW_FALSE);
             SimpleLogger.d(getClass(), "Creating new window");
             window = createWindow(requested.getWidth(), requested.getHeight(), monitor);
             GLFWVidMode m = GLFW.glfwGetVideoMode(monitor);
@@ -166,6 +174,27 @@ public abstract class GLFWWindow extends J2SEWindow {
             Size s = new Size(mode.width(), mode.height());
             if (!sizes.contains(s)) {
                 sizes.add(s);
+            }
+        }
+        if (Environment.getInstance().isProperty(Property.TEST_FULLSCREEN_MODES, false)) {
+            // Test if fullscreen modes are created properly.
+            SimpleLogger.d(getClass(), "Testing " + sizes.size() + " monitor modes.");
+            int[] width = new int[1];
+            int[] height = new int[1];
+            for (Size s : sizes) {
+                SimpleLogger.d(getClass(), "Creating window with size " + s.toString() + " for monitor " + monitor);
+                long win = GLFW.glfwCreateWindow(s.getWidth(), s.getHeight(), "", monitor, MemoryUtil.NULL);
+                GLFW.glfwGetFramebufferSize(win, width, height);
+                Size framebuffer = new Size(width[0], height[0]);
+                GLFW.glfwGetWindowSize(win, width, height);
+                Size windowSize = new Size(width[0], height[0]);
+                if (framebuffer.equals(s)) {
+                    SimpleLogger.d(getClass(), "SUCCESS for monitor mode " + s.toString());
+                } else {
+                    SimpleLogger.d(getClass(),
+                            "FAILED for monitor mode " + s.toString() + ", real size " + framebuffer);
+                }
+                GLFW.glfwDestroyWindow(win);
             }
         }
         return sizes;

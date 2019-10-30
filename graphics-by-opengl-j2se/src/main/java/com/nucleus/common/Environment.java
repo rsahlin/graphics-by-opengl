@@ -22,6 +22,10 @@ public class Environment {
          */
         DEBUG("com.nucleus.debug"),
         /**
+         * If true then test monitor (fullscreen modes) (only for glfw)
+         */
+        TEST_FULLSCREEN_MODES("com.nucleus.glfw.monitormodes"),
+        /**
          * Key for setting if EGL14 surface should be used - hint to subclasses
          * true / false
          */
