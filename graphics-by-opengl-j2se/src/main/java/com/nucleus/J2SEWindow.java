@@ -20,15 +20,16 @@ import com.nucleus.renderer.SurfaceConfiguration;
  */
 public abstract class J2SEWindow implements WindowListener {
 
-    public static class VideoMode {
-        private boolean fullscreen = false;
-        private int width;
-        private int height;
-        private int refresh;
-        private int swapInterval;
+    public static class Size {
+        private final int width;
+        private final int height;
 
-        public VideoMode(int width, int height, boolean fullscreen, int swapInterval) {
-            this.fullscreen = fullscreen;
+        public Size(Size source) {
+            width = source.width;
+            height = source.height;
+        }
+
+        public Size(int width, int height) {
             this.width = width;
             this.height = height;
         }
@@ -41,6 +42,48 @@ public abstract class J2SEWindow implements WindowListener {
             return height;
         }
 
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || !(obj instanceof Size)) {
+                return false;
+            }
+            Size s = (Size) obj;
+            return s.width == width && s.height == height;
+        }
+
+        @Override
+        public String toString() {
+            return "Size " + width + ", " + height;
+        }
+
+    }
+
+    public static class VideoMode extends Size {
+        private boolean fullscreen = false;
+        private int swapInterval = 1;
+
+        public VideoMode(VideoMode source) {
+            super(source.getWidth(), source.getHeight());
+            fullscreen = source.fullscreen;
+            swapInterval = source.swapInterval;
+        }
+
+        public VideoMode(Size size, boolean fullscreen, int swapInterval) {
+            super(size);
+            this.fullscreen = fullscreen;
+            this.swapInterval = swapInterval;
+        }
+
+        public VideoMode(int width, int height) {
+            super(width, height);
+        }
+
+        public VideoMode(int width, int height, boolean fullscreen, int swapInterval) {
+            super(width, height);
+            this.fullscreen = fullscreen;
+            this.swapInterval = swapInterval;
+        }
+
         public boolean isFullScreen() {
             return fullscreen;
         }
@@ -49,13 +92,18 @@ public abstract class J2SEWindow implements WindowListener {
             return swapInterval;
         }
 
+        @Override
+        public String toString() {
+            return super.toString() + ", fullscreen=" + fullscreen;
+        }
+
     }
 
     public static class Configuration {
 
         private Renderers version;
         private int swapInterval = 1;
-        private VideoMode videoMode = new VideoMode(1920, 1080, false, 1);
+        private VideoMode videoMode;
         private SurfaceConfiguration surfaceConfig;
 
         public Configuration(Renderers version, SurfaceConfiguration surfaceConfig, VideoMode videoMode) {
@@ -102,7 +150,7 @@ public abstract class J2SEWindow implements WindowListener {
      * Subclasses must implement this method to setup the needed window system and render API.
      * Implementations may defer creation until window framework is up and running (via async callbacks)
      * 
-     * @return The set video mode for window or fullscreen.
+     * @return The set video mode for window or fullscreen. This may differ from the requested size
      * 
      */
     public abstract VideoMode init(PropertySettings appSettings);
@@ -261,6 +309,7 @@ public abstract class J2SEWindow implements WindowListener {
      */
     protected Configuration prepareWindow(PropertySettings appSettings) {
         videoMode = init(appSettings);
+        SimpleLogger.d(getClass(), "Created window: " + videoMode.toString());
         Configuration configuration = new Configuration(appSettings.version, appSettings.getConfiguration(),
                 videoMode);
         return configuration;

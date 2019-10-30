@@ -1,7 +1,9 @@
 package com.nucleus.lwjgl3;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
@@ -11,7 +13,6 @@ import org.lwjgl.glfw.GLFWMouseButtonCallbackI;
 import org.lwjgl.glfw.GLFWScrollCallbackI;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWWindowCloseCallbackI;
-import org.lwjgl.glfw.GLFWWindowIconifyCallbackI;
 import org.lwjgl.system.MemoryUtil;
 
 import com.nucleus.Backend;
@@ -31,7 +32,7 @@ import com.nucleus.renderer.SurfaceConfiguration;
  * 
  *
  */
-public abstract class GLFWWindow extends J2SEWindow implements GLFWWindowIconifyCallbackI {
+public abstract class GLFWWindow extends J2SEWindow {
 
     public static final int DEFAULT_MONITOR_INDEX = 0;
 
@@ -59,13 +60,14 @@ public abstract class GLFWWindow extends J2SEWindow implements GLFWWindowIconify
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize glfw");
         }
-        monitors = getMonitors();
-        listVideoModes(monitors.get(monitorIndex));
         SurfaceConfiguration config = appSettings.getConfiguration();
         SimpleLogger.d(getClass(), "GLFW version :" + GLFW.glfwGetVersionString());
+        monitors = getMonitors();
+        long monitor = monitors.get(monitorIndex);
+        listVideoModes(monitor);
+        Size size = createGLFWWindow(appSettings, monitor);
         SimpleLogger.d(getClass(),
                 "Initializing GLFW window for requested version " + appSettings.version);
-        GLFW.glfwDefaultWindowHints();
         if (appSettings.nativeGLES) {
             GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API);
         }
@@ -79,20 +81,67 @@ public abstract class GLFWWindow extends J2SEWindow implements GLFWWindowIconify
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, config.getSamples());
+        GLFW.glfwWindowHint(GLFW.GLFW_SCALE_TO_MONITOR, GLFW.GLFW_FALSE);
+        GLFW.glfwWindowHint(GLFW.GLFW_TRANSPARENT_FRAMEBUFFER, GLFW.GLFW_FALSE);
         SimpleLogger.d(getClass(), "Set samples: " + config.getSamples());
+        backend = initFW(window, appSettings);
+        GLFW.glfwSwapInterval(appSettings.swapInterval);
+        initInput();
+        return new VideoMode(size, appSettings.fullscreen, appSettings.swapInterval);
+    }
+
+    protected Size createGLFWWindow(PropertySettings appSettings, long monitor) {
         if (appSettings.fullscreen) {
-            window = GLFW.glfwCreateWindow(appSettings.width, appSettings.height, "", monitors.get(monitorIndex),
-                    MemoryUtil.NULL);
+            VideoMode requested = new VideoMode(appSettings.width, appSettings.height, appSettings.fullscreen,
+                    appSettings.swapInterval);
+            createFullscreen(monitor, requested);
         } else {
+            SimpleLogger.d(getClass(),
+                    "Creating window with size " + appSettings.width + ", " + appSettings.height);
             window = GLFW.glfwCreateWindow(appSettings.width, appSettings.height, "", MemoryUtil.NULL, MemoryUtil.NULL);
         }
         if (window == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
-        backend = initFW(window, appSettings);
-        GLFW.glfwSwapInterval(appSettings.swapInterval);
-        initInput();
-        return new VideoMode(appSettings.width, appSettings.height, appSettings.fullscreen, appSettings.swapInterval);
+        Size size = getFrameBufferSize(window);
+        SimpleLogger.d(getClass(), size.toString());
+        return size;
+    }
+
+    protected void createFullscreen(long monitor, VideoMode requested) {
+        SimpleLogger.d(getClass(), "Fullscreen resolution " + requested.getWidth() + ", " + requested.getHeight());
+        GLFWVidMode vidMode = GLFW.glfwGetVideoMode(monitor);
+        float[] x = new float[1];
+        float[] y = new float[1];
+        GLFW.glfwGetWindowContentScale(monitor, x, y);
+        SimpleLogger.d(getClass(), "Current monitor resolution " + vidMode.width() + ", " + vidMode.height()
+                + " and scale: " + x[0] + ", " + y[0]);
+        if (requested.getWidth() == vidMode.width() && requested.getHeight() == vidMode.height()) {
+            SimpleLogger.d(getClass(), "Setting current monitor to fullscreen");
+            setVideoMode(requested, monitorIndex);
+        } else {
+            SimpleLogger.d(getClass(), "Creating new window");
+            window = createWindow(requested.getWidth(), requested.getHeight(), monitor);
+            GLFWVidMode m = GLFW.glfwGetVideoMode(monitor);
+            if (m.width() != requested.getWidth() || m.height() != requested.getHeight()) {
+                throw new IllegalArgumentException("Could not create videomode");
+            }
+        }
+    }
+
+    private Size getFrameBufferSize(long window) {
+        int[] width = new int[1];
+        int[] height = new int[1];
+        GLFW.glfwGetFramebufferSize(window, width, height);
+        return new Size(width[0], height[0]);
+    }
+
+    private long createWindow(int width, int height, long monitor) {
+        SimpleLogger.d(getClass(),
+                "Creating fullscreen window with size " + width + ", " + height);
+        long window = GLFW.glfwCreateWindow(width, height, "", monitor,
+                MemoryUtil.NULL);
+        return window;
     }
 
     private PointerBuffer getMonitors() {
@@ -106,14 +155,20 @@ public abstract class GLFWWindow extends J2SEWindow implements GLFWWindowIconify
         return monitors;
     }
 
-    private void listVideoModes(long monitor) {
+    private List<Size> listVideoModes(long monitor) {
         GLFWVidMode.Buffer buffer = GLFW.glfwGetVideoModes(monitor);
+        ArrayList<Size> sizes = new ArrayList<Size>();
         while (buffer.hasRemaining()) {
             GLFWVidMode mode = buffer.get();
             SimpleLogger.d(getClass(), "Found videomode " + mode.width() + ", " + mode.height() + ", " +
                     mode.redBits() + "." + mode.greenBits() + "." + mode.blueBits() + ", refresh: "
                     + mode.refreshRate());
+            Size s = new Size(mode.width(), mode.height());
+            if (!sizes.contains(s)) {
+                sizes.add(s);
+            }
         }
+        return sizes;
     }
 
     /**
@@ -279,11 +334,6 @@ public abstract class GLFWWindow extends J2SEWindow implements GLFWWindowIconify
         SimpleLogger.d(getClass(), "destroy()");
         GLFW.glfwDestroyWindow(window);
         window = 0;
-    }
-
-    @Override
-    public void invoke(long window, boolean iconified) {
-        SimpleLogger.d(getClass(), "Window iconified: " + iconified);
     }
 
 }
