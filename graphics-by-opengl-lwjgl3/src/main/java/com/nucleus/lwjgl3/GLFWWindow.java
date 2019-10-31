@@ -118,23 +118,35 @@ public abstract class GLFWWindow extends J2SEWindow {
     protected void createFullscreen(long monitor, VideoMode requested) {
         SimpleLogger.d(getClass(), "Fullscreen resolution " + requested.getWidth() + ", " + requested.getHeight());
         GLFWVidMode vidMode = GLFW.glfwGetVideoMode(monitor);
-        float[] x = new float[1];
-        float[] y = new float[1];
-        GLFW.glfwGetWindowContentScale(monitor, x, y);
+
+        float[] xscale = new float[1];
+        float[] yscale = new float[1];
+        GLFW.glfwGetMonitorContentScale(monitor, xscale, yscale);
         SimpleLogger.d(getClass(), "Current monitor resolution " + vidMode.width() + ", " + vidMode.height()
-                + " and scale: " + x[0] + ", " + y[0]);
+                + " and scale: " + xscale[0] + ", " + yscale[0]);
         if (requested.getWidth() == vidMode.width() && requested.getHeight() == vidMode.height()) {
             SimpleLogger.d(getClass(), "Setting current monitor to fullscreen");
             setVideoMode(requested, monitorIndex);
         } else {
-            GLFW.glfwWindowHint(GLFW.GLFW_ICONIFIED, GLFW.GLFW_FALSE);
-            SimpleLogger.d(getClass(), "Creating new window");
-            window = createWindow(requested.getWidth(), requested.getHeight(), monitor);
-            GLFWVidMode m = GLFW.glfwGetVideoMode(monitor);
-            if (m.width() != requested.getWidth() || m.height() != requested.getHeight()) {
-                throw new IllegalArgumentException("Could not create videomode");
+            // Check monitor content scale
+            if (xscale[0] != 1.0 || yscale[0] != 1.0) {
+                VideoMode current = new VideoMode(vidMode.width(), vidMode.height(), true, requested.getSwapInterval());
+                SimpleLogger.d(getClass(), "-------------------------------------------------------------------");
+                SimpleLogger.d(getClass(), "Monitor scaling is set to " + (xscale[0]) * 100
+                        + "%, this will affect chosen fullscreen windows.");
+                SimpleLogger.d(getClass(), "Setting mode to current monitor resolution " + vidMode.toString());
+                SimpleLogger.d(getClass(), "To resolve this issue, turn off or set DPI scaling to 100%");
+                SimpleLogger.d(getClass(), "-------------------------------------------------------------------");
+                requested = current;
             }
         }
+        window = createWindow(requested.getWidth(), requested.getHeight(), monitor);
+        GLFWVidMode m = GLFW.glfwGetVideoMode(monitor);
+        if (m.width() != requested.getWidth() || m.height() != requested.getHeight()) {
+            throw new IllegalArgumentException("Could not create videomode, requested " + requested.toString()
+                    + ", but is " + m.width() + ", " + m.height());
+        }
+
     }
 
     private Size getFrameBufferSize(long window) {
@@ -177,22 +189,31 @@ public abstract class GLFWWindow extends J2SEWindow {
             }
         }
         if (Environment.getInstance().isProperty(Property.TEST_FULLSCREEN_MODES, false)) {
+            float[] xscale = new float[1];
+            float[] yscale = new float[1];
+            GLFW.glfwGetMonitorContentScale(monitor, xscale, yscale);
             // Test if fullscreen modes are created properly.
-            SimpleLogger.d(getClass(), "Testing " + sizes.size() + " monitor modes.");
+            SimpleLogger.d(getClass(),
+                    "Testing " + sizes.size() + " monitor modes. Content scale: " + xscale[0] + ", " + yscale[0]);
             int[] width = new int[1];
             int[] height = new int[1];
             for (Size s : sizes) {
                 SimpleLogger.d(getClass(), "Creating window with size " + s.toString() + " for monitor " + monitor);
                 long win = GLFW.glfwCreateWindow(s.getWidth(), s.getHeight(), "", monitor, MemoryUtil.NULL);
+                GLFWVidMode mode = GLFW.glfwGetVideoMode(monitor);
                 GLFW.glfwGetFramebufferSize(win, width, height);
                 Size framebuffer = new Size(width[0], height[0]);
                 GLFW.glfwGetWindowSize(win, width, height);
                 Size windowSize = new Size(width[0], height[0]);
                 if (framebuffer.equals(s)) {
-                    SimpleLogger.d(getClass(), "SUCCESS for monitor mode " + s.toString());
+                    SimpleLogger.d(getClass(), "SUCCESS for monitor mode " + s.toString() + ", vidMode " + mode.width()
+                            + ", " + mode.height());
                 } else {
+
                     SimpleLogger.d(getClass(),
-                            "FAILED for monitor mode " + s.toString() + ", real size " + framebuffer);
+                            "FAILED for monitor mode " + s.toString() + ", framebuffer: " + framebuffer + ", window: "
+                                    + windowSize + ", vidMode " + mode.width()
+                                    + ", " + mode.height());
                 }
                 GLFW.glfwDestroyWindow(win);
             }
