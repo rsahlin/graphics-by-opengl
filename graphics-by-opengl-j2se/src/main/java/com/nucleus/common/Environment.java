@@ -26,6 +26,10 @@ public class Environment {
          */
         TEST_FULLSCREEN_MODES("com.nucleus.glfw.monitormodes"),
         /**
+         * If true then allow fullscreen modes to scale
+         */
+        DPISCALE("com.nucleus.glfw.dpiscale"),
+        /**
          * Key for setting if EGL14 surface should be used - hint to subclasses
          * true / false
          */
