@@ -94,7 +94,7 @@ public class GLSLCompiler {
                         file.getPath().indexOf(folder.length() > 0 ? folder + "\\" + file.getName() : file.getName()));
                 name = filename.substring(0, filename.length() - (stage.name().length() + 1));
                 output = name + "_" + stage.name() + ".spv";
-                String cmd = "glslc " + filename + " -o - & echo " + SpirvBinary.SPIRV_END_MARKER;
+                String cmd = "glslc " + filename + " -o - && echo " + SpirvBinary.SPIRV_END_MARKER;
                 buffer.clear();
                 SpirvBinary binary = compile(new String[] { "cd " + filePath, cmd }, null, buffer);
                 if (binary == null) {

@@ -102,7 +102,7 @@ public class FileUtils {
     /**
      * List the files, based on mime, beginning at path and including the specified folders.
      * 
-     * @param path Base path to start file list
+     * @param path Base path to start file list - shall end with '/'
      * @param folders Folders to include in search
      * @param mimes File extensions to include
      * @return Matching files
@@ -120,6 +120,13 @@ public class FileUtils {
                         .collect(Collectors.toList());
                 String listStr = listPath.toString().replace('\\', FileUtils.DIRECTORY_SEPARATOR);
                 int len = listStr.length();
+                if (path.endsWith("/")) {
+                    if (!listStr.endsWith("/")) {
+                        listStr = listStr + "/";
+                    }
+                } else if (listStr.endsWith("/")) {
+                    path = path + "/";
+                }
                 int relative = listStr.indexOf(path) + path.length();
                 if (relative < path.length()) {
                     throw new IllegalArgumentException("Could not find '" + path + "' in: " + listStr);
