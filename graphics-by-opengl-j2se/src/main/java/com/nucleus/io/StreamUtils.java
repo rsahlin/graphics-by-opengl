@@ -189,7 +189,7 @@ public class StreamUtils {
         if (length == 0) {
             return total;
         }
-        while ((read = byteChannel.read(buffer)) > 0) {
+        while ((read = byteChannel.read(buffer)) > -1) {
             total += read;
         }
         byteChannel = null;

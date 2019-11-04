@@ -16,7 +16,6 @@ import com.nucleus.common.Platform;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.spirv.SpirvBinary;
 import com.nucleus.spirv.SpirvBinary.SpirvStream;
-import com.nucleus.spirv.SpirvLoader;
 
 /**
  * Used to compile GLSL to SPIR-V in runtime.
@@ -36,7 +35,6 @@ public class GLSLCompiler {
     }
 
     private static GLSLCompiler compiler = new GLSLCompiler();
-    private Process process;
     private BufferedInputStream reader;
 
     /**
@@ -74,7 +72,6 @@ public class GLSLCompiler {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        process.destroy();
     }
 
     public void compileStage(String path, ArrayList<String> folders, ByteBuffer buffer, Stage stage)
@@ -115,33 +112,17 @@ public class GLSLCompiler {
      * @return The spirv binary or null if failed
      */
     public SpirvBinary compile(String[] commands, Redirect destination, ByteBuffer buffer) {
-        try {
-            Process process = Platform.getInstance().startProcess(null, buffer);
-            for (String cmd : commands) {
-                Platform.getInstance().executeCommand(process, cmd, buffer);
-            }
-            String str = StandardCharsets.ISO_8859_1.decode(buffer).toString();
-            if (str.contains("error:") || str.contains("not recognized")) {
-                throw new IllegalArgumentException("Error compiling shader: \n" + str);
-            }
-            int result = Platform.getInstance().endProcess(process, buffer);
-            // process.destroy();
-            if (result != 0) {
-                throw new IllegalArgumentException("Exception executing command, exitcode " + result);
-            }
-            int read = StreamUtils.readFromStream(process.getInputStream(), buffer, -1);
-            buffer.rewind();
-            SpirvLoader loader = new SpirvLoader();
-            SpirvStream stream = loader.loadSpirv(process.getInputStream(), buffer, 1000);
-            buffer.limit(stream.getOffset());
-            SpirvBinary spirv = new SpirvBinary(buffer, stream.getOffset());
-            SimpleLogger.d(getClass(), "Created SPIR-V with total words: " + spirv.totalWords);
-            return spirv;
-        } catch (IOException e) {
-            SimpleLogger.d(getClass(), "Could not start execute process");
-            e.printStackTrace();
+        Platform.getInstance().executeCommands(commands, buffer);
+        String str = StandardCharsets.ISO_8859_1.decode(buffer).toString();
+        if (str.contains("error:") || str.contains("not recognized")) {
+            throw new IllegalArgumentException("Error compiling shader: \n" + str);
         }
-        return null;
+        buffer.rewind();
+        SpirvStream stream = SpirvBinary.getStream(buffer);
+        buffer.limit(stream.getOffset());
+        SpirvBinary spirv = new SpirvBinary(buffer, stream.getOffset());
+        SimpleLogger.d(getClass(), "Created SPIR-V with total words: " + spirv.totalWords);
+        return spirv;
     }
 
 }

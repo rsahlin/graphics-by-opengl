@@ -201,10 +201,16 @@ public class FileUtils {
         long start = System.currentTimeMillis();
         try {
             while ((len = in.available()) == 0 && (System.currentTimeMillis() - start) < timeoutMillis) {
-                Thread.sleep(100);
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // Nothing to do
+                    SimpleLogger.d(getClass(), e.toString());
+                }
             }
-        } catch (InterruptedException | IOException e) {
-            // Nothing to do
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+
         }
         return len;
     }

@@ -1,11 +1,10 @@
 package com.nucleus.common;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.lang.ProcessBuilder.Redirect;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.io.StreamUtils;
@@ -112,24 +111,19 @@ public class Platform {
         return null;
     }
 
-    public int endProcess(Process process, ByteBuffer buffer) {
-        executeCommand(process, EXIT[os.index], buffer);
-        try {
-            return process.waitFor();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+    public ByteBuffer executeCommands(String[] commands, ByteBuffer buffer) {
+        ProcessBuilder builder = new ProcessBuilder();
+        ArrayList<String> builderCommands = new ArrayList<String>();
+        builderCommands.add(COMMAND[os.index]);
+        builderCommands.add("/C");
+        for (String c : commands) {
+            builderCommands.add(c);
         }
-        return -1;
-
-    }
-
-    public ByteBuffer executeCommand(Process process, String command, ByteBuffer buffer) {
-        BufferedWriter pWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+        builderCommands.add(EXIT[os.index]);
         try {
-            pWriter.write(command);
-            pWriter.newLine();
-            pWriter.flush();
+            builder.command(builderCommands);
+            Process process = builder.start();
+            process.destroy();
             readFromStream(process.getInputStream(), buffer);
             return buffer;
         } catch (IOException e) {
