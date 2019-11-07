@@ -194,7 +194,7 @@ public class FileUtils {
      * 
      * @param in
      * @param timeoutMillis
-     * @return Positive number means number of bytes found, 0 means timeout and -1 end of stream.
+     * @return Positive number means number of bytes found, 0 means timeout
      */
     public int waitForAvailable(InputStream in, int timeoutMillis) {
         int len = -1;

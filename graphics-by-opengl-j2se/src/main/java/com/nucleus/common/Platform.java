@@ -1,9 +1,12 @@
 package com.nucleus.common;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.lang.ProcessBuilder.Redirect;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import com.nucleus.SimpleLogger;
@@ -114,17 +117,25 @@ public class Platform {
     public ByteBuffer executeCommands(String[] commands, ByteBuffer buffer) {
         ProcessBuilder builder = new ProcessBuilder();
         ArrayList<String> builderCommands = new ArrayList<String>();
-        builderCommands.add(COMMAND[os.index]);
-        builderCommands.add("/C");
-        for (String c : commands) {
-            builderCommands.add(c);
-        }
-        builderCommands.add(EXIT[os.index]);
         try {
-            builder.command(builderCommands);
+            builder.command(COMMAND[os.index]);
+            // C:/source/graphics-by-opengl/graphics-by-opengl-j2se/target/classes/assets/v450/gltf/main.vert",
             Process process = builder.start();
-            process.destroy();
-            readFromStream(process.getInputStream(), buffer);
+            int read = readFromStream(process.getInputStream(), buffer);
+            String str = StandardCharsets.ISO_8859_1.decode(buffer).toString();
+            SimpleLogger.d(getClass(), "Read:\n" + str);
+            BufferedWriter pWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+            for (String c : commands) {
+                pWriter.write(c);
+                pWriter.newLine();
+                pWriter.flush();
+                read = readFromStream(process.getInputStream(), buffer);
+                str = StandardCharsets.ISO_8859_1.decode(buffer).toString();
+                SimpleLogger.d(getClass(), "Read:\n" + str);
+            }
+            if (read == 0) {
+                throw new IllegalArgumentException("Nothing to read");
+            }
             return buffer;
         } catch (IOException e) {
             System.out.println(e);
@@ -138,7 +149,6 @@ public class Platform {
         int read = StreamUtils.readFromStream(in, buffer, len);
         buffer.limit(buffer.position());
         buffer.position(position);
-        // SimpleLogger.d(getClass(), "Output from starting command:\n" + StandardCharsets.ISO_8859_1.decode(buffer));
         return read;
     }
 
