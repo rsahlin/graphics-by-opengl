@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import com.nucleus.SimpleLogger;
@@ -91,13 +90,15 @@ public class GLSLCompiler {
                         file.getPath().indexOf(folder.length() > 0 ? folder + "\\" + file.getName() : file.getName()));
                 name = filename.substring(0, filename.length() - (stage.name().length() + 1));
                 output = name + "_" + stage.name() + ".spv";
-                String cmd = "glslc " + filename + " -o - && echo " + SpirvBinary.SPIRV_END_MARKER;
+                String cmd = "glslc " + filename + " -o -";
                 buffer.clear();
-                SpirvBinary binary = compile(new String[] { "cd " + filePath, cmd }, null, buffer);
+                SpirvBinary binary = compile(
+                        new String[] { filePath, cmd }, null, buffer);
                 if (binary == null) {
                     throw new IllegalArgumentException("Error compiling shader: \n" + filePath);
                 }
                 StreamUtils.writeToStream(filePath + output, binary.getSpirv());
+                SimpleLogger.d(getClass(), "Written spirv to: " + filePath + output);
             }
         }
     }
@@ -113,11 +114,6 @@ public class GLSLCompiler {
      */
     public SpirvBinary compile(String[] commands, Redirect destination, ByteBuffer buffer) {
         Platform.getInstance().executeCommands(commands, buffer);
-        String str = StandardCharsets.ISO_8859_1.decode(buffer).toString();
-        if (str.contains("error:") || str.contains("not recognized")) {
-            throw new IllegalArgumentException("Error compiling shader: \n" + str);
-        }
-        buffer.rewind();
         SpirvStream stream = SpirvBinary.getStream(buffer);
         buffer.limit(stream.getOffset());
         SpirvBinary spirv = new SpirvBinary(buffer, stream.getOffset());

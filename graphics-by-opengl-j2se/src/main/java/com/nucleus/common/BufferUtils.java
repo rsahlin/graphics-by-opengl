@@ -27,6 +27,35 @@ public class BufferUtils {
     }
 
     /**
+     * Look for the byte array within the buffer - returns -1 if not found
+     * Searches from current position to the limit.
+     * Position is set to the offset of marker if found otherwise the original position is restored.
+     * 
+     * @param buffer
+     * @param marker
+     * @return Offset where marker array is found or -1
+     */
+    public static int findByteOffset(ByteBuffer buffer, byte[] marker) {
+        int position = buffer.position();
+        int loop = (buffer.limit() - position) / marker.length;
+        while (loop > 0) {
+            int index = 0;
+            while (buffer.get() == marker[index++]) {
+                if (index == marker.length) {
+                    buffer.position(position);
+                    return position;
+                }
+            }
+            loop--;
+            position++;
+            buffer.position(position);
+        }
+
+        buffer.position(position);
+        return -1;
+    }
+
+    /**
      * Outputs count number of values from the buffer to log - use this for debugging
      * 
      * @param buffer

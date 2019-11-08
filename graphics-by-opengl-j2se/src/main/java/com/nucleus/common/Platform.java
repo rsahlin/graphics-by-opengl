@@ -1,16 +1,15 @@
 package com.nucleus.common;
 
-import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.lang.ProcessBuilder.Redirect;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.io.StreamUtils;
+import com.nucleus.spirv.SpirvBinary;
 
 public class Platform {
 
@@ -105,7 +104,7 @@ public class Platform {
                 builder.redirectInput(destination);
             }
             Process process = builder.start();
-            readFromStream(process.getInputStream(), buffer);
+            readFromStream(process.getInputStream(), buffer, 1);
             return process;
         } catch (IOException e) {
             SimpleLogger.d(getClass(), "Could not start execute process");
@@ -116,37 +115,45 @@ public class Platform {
 
     public ByteBuffer executeCommands(String[] commands, ByteBuffer buffer) {
         ProcessBuilder builder = new ProcessBuilder();
-        ArrayList<String> builderCommands = new ArrayList<String>();
         try {
-            builder.command(COMMAND[os.index]);
-            // C:/source/graphics-by-opengl/graphics-by-opengl-j2se/target/classes/assets/v450/gltf/main.vert",
+            SimpleLogger.d(getClass(), "Compiling using: " + commands[1]);
+            builder.command(COMMAND[os.index], "/C", commands[1]);
+            builder.directory(new File(commands[0]));
+            builder.redirectErrorStream(true);
             Process process = builder.start();
-            int read = readFromStream(process.getInputStream(), buffer);
+            int read = readFromStream(process.getInputStream(), buffer, 1);
+            SimpleLogger.d(getClass(), "Read " + read + " bytes from stream.");
             String str = StandardCharsets.ISO_8859_1.decode(buffer).toString();
-            SimpleLogger.d(getClass(), "Read:\n" + str);
-            BufferedWriter pWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-            for (String c : commands) {
-                pWriter.write(c);
-                pWriter.newLine();
-                pWriter.flush();
-                read = readFromStream(process.getInputStream(), buffer);
-                str = StandardCharsets.ISO_8859_1.decode(buffer).toString();
-                SimpleLogger.d(getClass(), "Read:\n" + str);
+            str = StandardCharsets.ISO_8859_1.decode(buffer).toString();
+            if (str.contains("error:")) {
+                throw new IllegalArgumentException("Error compiling shader: \n" + str);
             }
-            if (read == 0) {
-                throw new IllegalArgumentException("Nothing to read");
+            if (str.contains("not recognized")) {
+                throw new IllegalArgumentException("Error, did not recognize: " + commands[1] + "\nOutput:\n" + str);
             }
+            buffer.position(0);
+            int offset = SpirvBinary.SPIRVMagic(buffer);
+            if (offset < 0) {
+                SimpleLogger.d(getClass(), str);
+                throw new IllegalArgumentException("Could not find Spirv magic");
+            }
+            SimpleLogger.d(getClass(), "Found SPIRV magic at " + offset);
             return buffer;
-        } catch (IOException e) {
+        } catch (
+
+        IOException e) {
             System.out.println(e);
             throw new RuntimeException(e);
         }
     }
 
-    private int readFromStream(InputStream in, ByteBuffer buffer) throws IOException {
+    private int readFromStream(InputStream in, ByteBuffer buffer, int minToRead) throws IOException {
         int position = buffer.position();
-        int len = FileUtils.getInstance().waitForAvailable(in, 1000);
-        int read = StreamUtils.readFromStream(in, buffer, len);
+        int len = 0;
+        while ((len += FileUtils.getInstance().waitForAvailable(in, 1000)) < minToRead) {
+
+        }
+        int read = StreamUtils.readFromStream(in, buffer, -1);
         buffer.limit(buffer.position());
         buffer.position(position);
         return read;
