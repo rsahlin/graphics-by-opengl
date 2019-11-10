@@ -23,16 +23,9 @@ import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.shader.VariableIndexer;
 import com.nucleus.vulkan.structs.ShaderModuleCreateInfo;
+import com.nucleus.vulkan.structs.ShaderModuleCreateInfo.Type;
 
 public class VulkanGraphicsPipeline implements GraphicsPipeline<ShaderBinary> {
-
-    /**
-     * Shader type sourcename
-     */
-    public static final String FRAGMENT_TYPE = "_fs";
-    public static final String VERTEX_TYPE = "_vs";
-    public static final String GEOMETRY_TYPE = "_gs";
-    public static final String COMPUTE_TYPE = "_cs";
 
     private Vulkan10Wrapper vulkan;
 
@@ -123,16 +116,20 @@ public class VulkanGraphicsPipeline implements GraphicsPipeline<ShaderBinary> {
         switch (type) {
             case VERTEX:
                 return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
-                        function.getShaderSourceName(type), VERTEX_TYPE, type);
+                        function.getShaderSourceName(type), Type.VERTEX.fileName,
+                        type);
             case FRAGMENT:
                 return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
-                        function.getShaderSourceName(type), FRAGMENT_TYPE, type);
+                        function.getShaderSourceName(type), Type.FRAGMENT.fileName,
+                        type);
             case COMPUTE:
                 return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
-                        function.getShaderSourceName(type), COMPUTE_TYPE, type);
+                        function.getShaderSourceName(type), Type.COMPUTE.fileName,
+                        type);
             case GEOMETRY:
                 return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
-                        function.getShaderSourceName(type), GEOMETRY_TYPE, type);
+                        function.getShaderSourceName(type), Type.GEOMETRY.fileName,
+                        type);
 
             default:
                 throw new IllegalArgumentException("Not implemented for type: " + type);

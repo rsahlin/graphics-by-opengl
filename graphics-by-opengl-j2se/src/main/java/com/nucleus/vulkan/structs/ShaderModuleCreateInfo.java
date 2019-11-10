@@ -17,11 +17,20 @@ import com.nucleus.shader.ShaderBinary;
 public class ShaderModuleCreateInfo extends ShaderBinary {
 
     public enum Type {
-        VERTEX(),
-        FRAGMENT(),
-        GEOMETRY(),
-        TESSELATION(),
-        COMPUTE();
+        VERTEX("vert", "_vert.spv"),
+        TESSELATION_CONTROL("tesc", "_tesc.spv"),
+        TESSELATION("tese", "_tese.spv"),
+        GEOMETRY("geom", "_geom.spv"),
+        FRAGMENT("frag", "_frag.spv"),
+        COMPUTE("comp", "_comp.spv");
+
+        public final String stage;
+        public final String fileName;
+
+        Type(String stage, String fileName) {
+            this.stage = stage;
+            this.fileName = fileName;
+        }
     }
 
     /**

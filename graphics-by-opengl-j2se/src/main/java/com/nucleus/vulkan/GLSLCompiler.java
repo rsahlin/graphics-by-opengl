@@ -13,6 +13,7 @@ import com.nucleus.common.Platform;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.spirv.SpirvBinary;
 import com.nucleus.spirv.SpirvBinary.SpirvStream;
+import com.nucleus.vulkan.structs.ShaderModuleCreateInfo.Type;
 
 /**
  * Used to compile GLSL to SPIR-V in runtime.
@@ -23,16 +24,6 @@ public class GLSLCompiler {
 
     private static final String TARGET_CLASSES = "target/classes/";
     private static final String DESTINATION_RESOURCES = "src/main/resources/";
-
-    public enum Stage {
-        vert(),
-        tesc(),
-        tese(),
-        geom(),
-        frag(),
-        comp();
-
-    }
 
     private static GLSLCompiler compiler = new GLSLCompiler();
 
@@ -59,17 +50,18 @@ public class GLSLCompiler {
     public synchronized void compileShaders(String path, ArrayList<String> folders)
             throws IOException, URISyntaxException {
         ByteBuffer buffer = BufferUtils.createByteBuffer(16000);
-        compileStage(path, folders, buffer, Stage.vert);
-        compileStage(path, folders, buffer, Stage.geom);
-        compileStage(path, folders, buffer, Stage.frag);
+        compileStage(path, folders, buffer, Type.VERTEX);
+        compileStage(path, folders, buffer, Type.GEOMETRY);
+        compileStage(path, folders, buffer, Type.FRAGMENT);
     }
 
-    public void compileStage(String path, ArrayList<String> folders, ByteBuffer buffer, Stage stage)
+    public void compileStage(String path, ArrayList<String> folders, ByteBuffer buffer, Type type)
             throws IOException, URISyntaxException {
         for (String folder : folders) {
             ArrayList<String> currentFolder = new ArrayList<String>();
             currentFolder.add(folder);
-            String stageSuffix = "." + stage.name();
+            // Get the mime for the shader type/stage - ie the glsl sourcefiles to compile
+            String stageSuffix = "." + type.stage;
             ArrayList<String> filenames = FileUtils.getInstance().listFiles(path, currentFolder,
                     new String[] { stageSuffix });
 
@@ -77,8 +69,8 @@ public class GLSLCompiler {
             String output = null;
             for (String filename : filenames) {
                 String filePath = FileUtils.getInstance().getFilePath(path + filename, folder);
-                name = filename.substring(0, filename.length() - (stage.name().length() + 1));
-                output = name + "_" + stage.name() + ".spv";
+                name = filename.substring(0, filename.length() - (type.fileName.length() + 1));
+                output = name + type.fileName;
                 String cmd = "glslc " + filename + " -o -";
                 buffer.clear();
                 SpirvBinary binary = compile(
