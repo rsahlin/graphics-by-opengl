@@ -8,7 +8,7 @@
         <android.maven.version>4.5.0</android.maven.version>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <lwjgl.version>3.2.4-SNAPSHOT</lwjgl.version>
+        <lwjgl.version>3.2.3</lwjgl.version>
     </properties>
     
     <repositories>

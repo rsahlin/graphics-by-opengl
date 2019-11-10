@@ -2,6 +2,7 @@ package com.nucleus.vulkan.lwjgl3;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryUtil;
 
 import com.nucleus.Backend;
@@ -24,8 +25,12 @@ public class GLFWVulkanWindow extends GLFWWindow {
     @Override
     public VideoMode init(PropertySettings appSettings) {
         GLFWErrorCallback.createPrint().set();
+        GLFWErrorCallback.createPrint().set();
         if (!GLFW.glfwInit()) {
-            throw new IllegalStateException("Unable to initialize glfw");
+            throw new IllegalStateException("Unable to initialize GLFW");
+        }
+        if (!GLFWVulkan.glfwVulkanSupported()) {
+            throw new IllegalStateException("Cannot find a compatible Vulkan installable client driver (ICD)");
         }
         GLFW.glfwDefaultWindowHints();
         GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_NO_API);

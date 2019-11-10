@@ -90,7 +90,7 @@ public class FileUtils {
                 int strLen = str.length();
                 if (strLen > len) {
                     int endoffset = str.endsWith(separator) ? 1 : 0;
-                    String folder = str.substring(len + offset, strLen - endoffset);
+                    String folder = str.substring(len + offset, strLen - endoffset).replace('\\', DIRECTORY_SEPARATOR);
                     SimpleLogger.d(getClass(), "Added folder: " + folder + ", fullpath: " + str);
                     folders.add(folder);
                 }
@@ -149,15 +149,19 @@ public class FileUtils {
     }
 
     /**
-     * Returns the File for the filename - or null if not found
+     * Returns the path to the filename, excluding folder and filename, or null if not found
      * 
      * @param filename
+     * @param folder
      * @return
      */
-    public File getFile(String filename) {
+    public String getFilePath(String filename, String folder) {
         ClassLoader loader = getClass().getClassLoader();
         try {
-            return new File(new URI(loader.getResource(filename).toString()));
+            File file = new File(new URI(loader.getResource(filename).toString()));
+            String filePath = file.getPath().substring(0,
+                    file.getPath().indexOf(folder.length() > 0 ? folder + "\\" + file.getName() : file.getName()));
+            return filePath.replace('\\', DIRECTORY_SEPARATOR);
         } catch (URISyntaxException e) {
             e.printStackTrace();
             return null;
@@ -194,17 +198,23 @@ public class FileUtils {
      * 
      * @param in
      * @param timeoutMillis
-     * @return Positive number means number of bytes found, 0 means timeout and -1 end of stream.
+     * @return Positive number means number of bytes found, 0 means timeout
      */
     public int waitForAvailable(InputStream in, int timeoutMillis) {
         int len = -1;
         long start = System.currentTimeMillis();
         try {
             while ((len = in.available()) == 0 && (System.currentTimeMillis() - start) < timeoutMillis) {
-                Thread.sleep(100);
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // Nothing to do
+                    SimpleLogger.d(getClass(), e.toString());
+                }
             }
-        } catch (InterruptedException | IOException e) {
-            // Nothing to do
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+
         }
         return len;
     }

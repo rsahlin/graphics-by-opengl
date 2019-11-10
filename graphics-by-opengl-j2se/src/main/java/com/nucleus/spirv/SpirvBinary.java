@@ -12,6 +12,7 @@ import com.nucleus.common.BufferUtils;
 public class SpirvBinary {
 
     public static final String SPIRV_END_MARKER = "END!";
+    public static final byte[] SPRIRV_END_ARRAY = new byte[] { 69, 78, 68, 33 };
     public static final int SPIRV_END_VALUE = (0x45) | (0x4E << 8) | (0x44 << 16) | (0x21 << 24);
 
     private static class SpirvInstruction {

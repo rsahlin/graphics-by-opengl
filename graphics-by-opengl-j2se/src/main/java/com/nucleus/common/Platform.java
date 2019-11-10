@@ -1,14 +1,15 @@
 package com.nucleus.common;
 
-import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.lang.ProcessBuilder.Redirect;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 import com.nucleus.SimpleLogger;
 import com.nucleus.io.StreamUtils;
+import com.nucleus.spirv.SpirvBinary;
 
 public class Platform {
 
@@ -103,7 +104,7 @@ public class Platform {
                 builder.redirectInput(destination);
             }
             Process process = builder.start();
-            readFromStream(process.getInputStream(), buffer);
+            readFromStream(process.getInputStream(), buffer, 1);
             return process;
         } catch (IOException e) {
             SimpleLogger.d(getClass(), "Could not start execute process");
@@ -112,39 +113,48 @@ public class Platform {
         return null;
     }
 
-    public int endProcess(Process process, ByteBuffer buffer) {
-        executeCommand(process, EXIT[os.index], buffer);
+    public ByteBuffer executeCommands(String[] commands, ByteBuffer buffer) {
+        ProcessBuilder builder = new ProcessBuilder();
         try {
-            return process.waitFor();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return -1;
-
-    }
-
-    public ByteBuffer executeCommand(Process process, String command, ByteBuffer buffer) {
-        BufferedWriter pWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-        try {
-            pWriter.write(command);
-            pWriter.newLine();
-            pWriter.flush();
-            readFromStream(process.getInputStream(), buffer);
+            SimpleLogger.d(getClass(), "Compiling using: " + commands[1]);
+            builder.command(COMMAND[os.index], "/C", commands[1]);
+            builder.directory(new File(commands[0]));
+            builder.redirectErrorStream(true);
+            Process process = builder.start();
+            int read = readFromStream(process.getInputStream(), buffer, 1);
+            SimpleLogger.d(getClass(), "Read " + read + " bytes from stream.");
+            String str = StandardCharsets.ISO_8859_1.decode(buffer).toString();
+            if (str.contains("error:")) {
+                throw new IllegalArgumentException("Error compiling shader: \n" + str);
+            }
+            if (str.contains("not recognized")) {
+                throw new IllegalArgumentException("Error, did not recognize: " + commands[1] + "\nOutput:\n" + str);
+            }
+            buffer.position(0);
+            int offset = SpirvBinary.SPIRVMagic(buffer);
+            if (offset < 0) {
+                SimpleLogger.d(getClass(), str);
+                throw new IllegalArgumentException("Could not find Spirv magic");
+            }
+            SimpleLogger.d(getClass(), "Found SPIRV magic at " + offset);
             return buffer;
-        } catch (IOException e) {
+        } catch (
+
+        IOException e) {
             System.out.println(e);
             throw new RuntimeException(e);
         }
     }
 
-    private int readFromStream(InputStream in, ByteBuffer buffer) throws IOException {
+    private int readFromStream(InputStream in, ByteBuffer buffer, int minToRead) throws IOException {
         int position = buffer.position();
-        int len = FileUtils.getInstance().waitForAvailable(in, 1000);
-        int read = StreamUtils.readFromStream(in, buffer, len);
+        int len = 0;
+        while ((len += FileUtils.getInstance().waitForAvailable(in, 1000)) < minToRead) {
+
+        }
+        int read = StreamUtils.readFromStream(in, buffer, -1);
         buffer.limit(buffer.position());
         buffer.position(position);
-        // SimpleLogger.d(getClass(), "Output from starting command:\n" + StandardCharsets.ISO_8859_1.decode(buffer));
         return read;
     }
 
