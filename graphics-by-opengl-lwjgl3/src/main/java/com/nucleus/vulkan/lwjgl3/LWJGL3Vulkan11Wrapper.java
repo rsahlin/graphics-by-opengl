@@ -237,7 +237,7 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
 
     protected void init(long window) {
         if (!GLFWVulkan.glfwVulkanSupported()) {
-            throw new AssertionError("GLFW failed to find the Vulkan loader");
+            // throw new AssertionError("GLFW failed to find the Vulkan loader");
         }
 
         /* Look for instance extensions */

@@ -127,8 +127,10 @@ public class GSONSceneFactory implements SceneSerializer<RootNode> {
         if (path.lastIndexOf(FileUtils.DIRECTORY_SEPARATOR) != (path.length() - 1)) {
             path = path + FileUtils.DIRECTORY_SEPARATOR;
         }
-        SimpleLogger.d(getClass(), "Importing scene:" + path + filename);
         ClassLoader loader = getClass().getClassLoader();
+        loader.getResource(path + filename);
+        SimpleLogger.d(getClass(),
+                "Importing scene:" + path + filename + ", fullpath: " + loader.getResource(path + filename).toString());
         InputStream is = loader.getResourceAsStream(path + filename);
         try {
             RootNode root = importScene(path, is, type, inflaterLister);

@@ -1,7 +1,5 @@
 package com.nucleus.vulkan;
 
-import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 import java.net.URISyntaxException;
@@ -23,6 +21,9 @@ import com.nucleus.spirv.SpirvBinary.SpirvStream;
  */
 public class GLSLCompiler {
 
+    private static final String TARGET_CLASSES = "target/classes/";
+    private static final String DESTINATION_RESOURCES = "src/main/resources/";
+
     public enum Stage {
         vert(),
         tesc(),
@@ -34,7 +35,6 @@ public class GLSLCompiler {
     }
 
     private static GLSLCompiler compiler = new GLSLCompiler();
-    private BufferedInputStream reader;
 
     /**
      * Returns the glsl compiler instance used to compile GLSL into spir-v
@@ -59,18 +59,9 @@ public class GLSLCompiler {
     public synchronized void compileShaders(String path, ArrayList<String> folders)
             throws IOException, URISyntaxException {
         ByteBuffer buffer = BufferUtils.createByteBuffer(16000);
-        // File file = FileUtils.getInstance().getFile(path + "gltf/main_vert.spv");
-        // SpirvLoader loader = new SpirvLoader();
-        // loader.loadSpirv(new FileInputStream(file), buffer, 1000);
-
         compileStage(path, folders, buffer, Stage.vert);
         compileStage(path, folders, buffer, Stage.geom);
         compileStage(path, folders, buffer, Stage.frag);
-        try {
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public void compileStage(String path, ArrayList<String> folders, ByteBuffer buffer, Stage stage)
@@ -85,9 +76,7 @@ public class GLSLCompiler {
             String name = null;
             String output = null;
             for (String filename : filenames) {
-                File file = FileUtils.getInstance().getFile(path + filename);
-                String filePath = file.getPath().substring(0,
-                        file.getPath().indexOf(folder.length() > 0 ? folder + "\\" + file.getName() : file.getName()));
+                String filePath = FileUtils.getInstance().getFilePath(path + filename, folder);
                 name = filename.substring(0, filename.length() - (stage.name().length() + 1));
                 output = name + "_" + stage.name() + ".spv";
                 String cmd = "glslc " + filename + " -o -";
@@ -97,8 +86,9 @@ public class GLSLCompiler {
                 if (binary == null) {
                     throw new IllegalArgumentException("Error compiling shader: \n" + filePath);
                 }
-                StreamUtils.writeToStream(filePath + output, binary.getSpirv());
-                SimpleLogger.d(getClass(), "Written spirv to: " + filePath + output);
+                String outPath = filePath.replace(TARGET_CLASSES, DESTINATION_RESOURCES);
+                StreamUtils.writeToStream(outPath + output, binary.getSpirv());
+                SimpleLogger.d(getClass(), "Written spirv to: " + outPath + output);
             }
         }
     }

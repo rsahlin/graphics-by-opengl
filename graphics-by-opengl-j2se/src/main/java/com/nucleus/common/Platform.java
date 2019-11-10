@@ -124,7 +124,6 @@ public class Platform {
             int read = readFromStream(process.getInputStream(), buffer, 1);
             SimpleLogger.d(getClass(), "Read " + read + " bytes from stream.");
             String str = StandardCharsets.ISO_8859_1.decode(buffer).toString();
-            str = StandardCharsets.ISO_8859_1.decode(buffer).toString();
             if (str.contains("error:")) {
                 throw new IllegalArgumentException("Error compiling shader: \n" + str);
             }

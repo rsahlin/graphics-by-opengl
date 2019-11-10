@@ -90,7 +90,7 @@ public class FileUtils {
                 int strLen = str.length();
                 if (strLen > len) {
                     int endoffset = str.endsWith(separator) ? 1 : 0;
-                    String folder = str.substring(len + offset, strLen - endoffset);
+                    String folder = str.substring(len + offset, strLen - endoffset).replace('\\', DIRECTORY_SEPARATOR);
                     SimpleLogger.d(getClass(), "Added folder: " + folder + ", fullpath: " + str);
                     folders.add(folder);
                 }
@@ -149,15 +149,19 @@ public class FileUtils {
     }
 
     /**
-     * Returns the File for the filename - or null if not found
+     * Returns the path to the filename, excluding folder and filename, or null if not found
      * 
      * @param filename
+     * @param folder
      * @return
      */
-    public File getFile(String filename) {
+    public String getFilePath(String filename, String folder) {
         ClassLoader loader = getClass().getClassLoader();
         try {
-            return new File(new URI(loader.getResource(filename).toString()));
+            File file = new File(new URI(loader.getResource(filename).toString()));
+            String filePath = file.getPath().substring(0,
+                    file.getPath().indexOf(folder.length() > 0 ? folder + "\\" + file.getName() : file.getName()));
+            return filePath.replace('\\', DIRECTORY_SEPARATOR);
         } catch (URISyntaxException e) {
             e.printStackTrace();
             return null;
