@@ -140,7 +140,7 @@ public class StreamUtils {
     public static int readFromName(String name, ByteBuffer buffer) throws IOException, URISyntaxException {
         ClassLoader loader = StreamUtils.class.getClassLoader();
         InputStream is = loader.getResourceAsStream(name);
-        int loaded = readFromStream(is, buffer, -1);
+        int loaded = readFromStream(is, buffer, buffer.limit() - buffer.position());
         is.close();
         return loaded;
     }

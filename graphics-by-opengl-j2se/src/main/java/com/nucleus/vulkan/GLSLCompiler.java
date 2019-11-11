@@ -69,7 +69,7 @@ public class GLSLCompiler {
             String output = null;
             for (String filename : filenames) {
                 String filePath = FileUtils.getInstance().getFilePath(path + filename, folder);
-                name = filename.substring(0, filename.length() - (type.fileName.length() + 1));
+                name = filename.substring(0, filename.length() - (stageSuffix.length()));
                 output = name + type.fileName;
                 String cmd = "glslc " + filename + " -o -";
                 buffer.clear();
