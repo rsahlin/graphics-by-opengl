@@ -26,6 +26,7 @@ import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
 import org.lwjgl.vulkan.VkPhysicalDeviceMemoryProperties;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 import org.lwjgl.vulkan.VkQueue;
+import org.lwjgl.vulkan.VkShaderModuleCreateInfo;
 import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
 import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
@@ -50,6 +51,7 @@ import com.nucleus.vulkan.Vulkan10.ImageViewType;
 import com.nucleus.vulkan.Vulkan10.PresentModeKHR;
 import com.nucleus.vulkan.Vulkan10.SurfaceFormat;
 import com.nucleus.vulkan.Vulkan11Wrapper;
+import com.nucleus.vulkan.shader.VulkanShaderBinary;
 import com.nucleus.vulkan.structs.DeviceLimits;
 import com.nucleus.vulkan.structs.ExtensionProperties;
 import com.nucleus.vulkan.structs.Extent2D;
@@ -60,6 +62,8 @@ import com.nucleus.vulkan.structs.PhysicalDeviceFeatures;
 import com.nucleus.vulkan.structs.PhysicalDeviceMemoryProperties;
 import com.nucleus.vulkan.structs.PhysicalDeviceProperties;
 import com.nucleus.vulkan.structs.QueueFamilyProperties;
+import com.nucleus.vulkan.structs.ShaderModule;
+import com.nucleus.vulkan.structs.ShaderModuleCreateInfo;
 import com.nucleus.vulkan.structs.SwapChain;
 
 public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
@@ -547,6 +551,20 @@ public class LWJGL3Vulkan11Wrapper extends Vulkan11Wrapper {
         assertResult(VK10.vkCreateImageView(deviceInstance, color_attachment_view, null, lb));
         long view = lb.get(0);
         return new ImageView(createInfo.image, view);
+    }
+
+    @Override
+    protected ShaderModule createShaderModule(VulkanShaderBinary binary) {
+        binary.getBuffer().rewind();
+        VkShaderModuleCreateInfo info = VkShaderModuleCreateInfo.calloc()
+                .sType(VK10.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO)
+                .pNext(0)
+                .pCode(binary.getBuffer())
+                .flags(0);
+        long codesize = info.codeSize();
+        SimpleLogger.d(getClass(), "Codesize=" + codesize);
+        assertResult(VK10.vkCreateShaderModule(deviceInstance, info, null, lb));
+        return new ShaderModule(new ShaderModuleCreateInfo(binary), lb.get(0));
     }
 
 }

@@ -6,4 +6,12 @@ package com.nucleus.vulkan.structs;
  */
 public class ShaderModule {
 
+    private ShaderModuleCreateInfo info;
+    private long shaderModule;
+
+    public ShaderModule(ShaderModuleCreateInfo info, long shaderModule) {
+        this.info = info;
+        this.shaderModule = shaderModule;
+    }
+
 }

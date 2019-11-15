@@ -10,14 +10,16 @@ import com.nucleus.vulkan.Vulkan10.Format;
 import com.nucleus.vulkan.Vulkan10.PresentModeKHR;
 import com.nucleus.vulkan.Vulkan10.SurfaceFormat;
 import com.nucleus.vulkan.VulkanWrapper.VulkanDeviceSelector;
+import com.nucleus.vulkan.shader.VulkanShaderBinary;
 import com.nucleus.vulkan.structs.Extent2D;
 import com.nucleus.vulkan.structs.ImageView;
 import com.nucleus.vulkan.structs.ImageViewCreateInfo;
 import com.nucleus.vulkan.structs.PhysicalDeviceMemoryProperties;
+import com.nucleus.vulkan.structs.PhysicalDeviceProperties.PhysicalDeviceType;
 import com.nucleus.vulkan.structs.QueueFamilyProperties;
 import com.nucleus.vulkan.structs.QueueFamilyProperties.QueueFlagBits;
+import com.nucleus.vulkan.structs.ShaderModule;
 import com.nucleus.vulkan.structs.SwapChain;
-import com.nucleus.vulkan.structs.PhysicalDeviceProperties.PhysicalDeviceType;
 
 /**
  * Wrapper for Vulkan version 1.0 funtionality
@@ -167,6 +169,14 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
      * @return
      */
     protected abstract PhysicalDeviceMemoryProperties getMemoryProperties(PhysicalDevice device);
+
+    /**
+     * Creates the shadermodule
+     * 
+     * @param binary
+     * @return
+     */
+    protected abstract ShaderModule createShaderModule(VulkanShaderBinary binary);
 
     @Override
     public PhysicalDevice selectDevice(PhysicalDevice[] devices) {

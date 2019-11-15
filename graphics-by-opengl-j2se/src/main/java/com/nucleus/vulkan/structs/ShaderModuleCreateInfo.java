@@ -1,72 +1,17 @@
 package com.nucleus.vulkan.structs;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
-
-import com.nucleus.Backend;
-import com.nucleus.io.StreamUtils;
-import com.nucleus.shader.Shader.Categorizer;
-import com.nucleus.shader.Shader.ShaderType;
-import com.nucleus.shader.ShaderBinary;
+import com.nucleus.vulkan.shader.VulkanShaderBinary;
 
 /**
  * Wrapper for VkShaderModuleCreateInfo
  *
  */
-public class ShaderModuleCreateInfo extends ShaderBinary {
+public class ShaderModuleCreateInfo {
 
-    public enum Type {
-        VERTEX("vert", "_vert.spv"),
-        TESSELATION_CONTROL("tesc", "_tesc.spv"),
-        TESSELATION("tese", "_tese.spv"),
-        GEOMETRY("geom", "_geom.spv"),
-        FRAGMENT("frag", "_frag.spv"),
-        COMPUTE("comp", "_comp.spv");
+    private VulkanShaderBinary binary;
 
-        public final String stage;
-        public final String fileName;
-
-        Type(String stage, String fileName) {
-            this.stage = stage;
-            this.fileName = fileName;
-        }
-    }
-
-    /**
-     * Not used
-     */
-    private int flags = 0;
-
-    private int size;
-
-    private int position;
-
-    private ByteBuffer data;
-
-    public ShaderModuleCreateInfo(String path, String sourcename, String suffix, ShaderType type) {
-        super(path, sourcename, suffix, type);
-    }
-
-    /**
-     * Returns the bytebuffer containing shader binary data, with the position of
-     * the buffer set to point to the first data.
-     * 
-     * @return The buffer containing data with the proper position, reading data at
-     * current position will get the correct data.
-     */
-    public ByteBuffer getBuffer() {
-        data.position(position);
-        return data;
-    }
-
-    @Override
-    public void loadShader(Backend backend, Categorizer function) throws IOException {
-        try {
-            data = StreamUtils.readBufferFromName(getFullSourceName());
-        } catch (URISyntaxException e) {
-            throw new IOException(e);
-        }
+    public ShaderModuleCreateInfo(VulkanShaderBinary code) {
+        binary = code;
     }
 
 }

@@ -17,17 +17,23 @@ import com.nucleus.scene.gltf.Primitive.Attributes;
 import com.nucleus.shader.BlockBuffer;
 import com.nucleus.shader.GraphicsShader;
 import com.nucleus.shader.Shader.Categorizer;
+import com.nucleus.shader.Shader.ProgramType;
 import com.nucleus.shader.Shader.ShaderType;
 import com.nucleus.shader.ShaderBinary;
 import com.nucleus.shader.ShaderVariable;
 import com.nucleus.shader.ShaderVariable.VariableType;
 import com.nucleus.shader.VariableIndexer;
-import com.nucleus.vulkan.structs.ShaderModuleCreateInfo;
-import com.nucleus.vulkan.structs.ShaderModuleCreateInfo.Type;
+import com.nucleus.vulkan.shader.VulkanShaderBinary;
+import com.nucleus.vulkan.shader.VulkanShaderBinary.Type;
+import com.nucleus.vulkan.structs.ShaderModule;
 
 public class VulkanGraphicsPipeline implements GraphicsPipeline<ShaderBinary> {
 
     private Vulkan10Wrapper vulkan;
+    private VulkanShaderBinary vertex;
+    private VulkanShaderBinary fragment;
+    private ShaderModule vertexModule;
+    private ShaderModule fragmentModule;
 
     public VulkanGraphicsPipeline(Vulkan10Wrapper vulkan) {
         if (vulkan == null) {
@@ -113,27 +119,32 @@ public class VulkanGraphicsPipeline implements GraphicsPipeline<ShaderBinary> {
     @Override
     public ShaderBinary getShaderSource(Renderers version, Categorizer function, ShaderType type) {
         String sourceNameVersion = ShaderBinary.getSourceNameVersion(version);
+        VulkanShaderBinary spirv = null;
         switch (type) {
             case VERTEX:
-                return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
+                spirv = new VulkanShaderBinary(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
                         function.getShaderSourceName(type), Type.VERTEX.fileName,
                         type);
+                break;
             case FRAGMENT:
-                return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
+                spirv = new VulkanShaderBinary(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
                         function.getShaderSourceName(type), Type.FRAGMENT.fileName,
                         type);
+                break;
             case COMPUTE:
-                return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
+                spirv = new VulkanShaderBinary(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
                         function.getShaderSourceName(type), Type.COMPUTE.fileName,
                         type);
+                break;
             case GEOMETRY:
-                return new ShaderModuleCreateInfo(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
+                spirv = new VulkanShaderBinary(ShaderBinary.PROGRAM_DIRECTORY + sourceNameVersion,
                         function.getShaderSourceName(type), Type.GEOMETRY.fileName,
                         type);
-
+                break;
             default:
                 throw new IllegalArgumentException("Not implemented for type: " + type);
         }
+        return spirv;
     }
 
     @Override
@@ -162,11 +173,19 @@ public class VulkanGraphicsPipeline implements GraphicsPipeline<ShaderBinary> {
 
     @Override
     public void compile(NucleusRenderer renderer, GraphicsShader shader) throws BackendException {
-
-        ShaderBinary vertex = getShaderSource(renderer.getBackend().getVersion(), shader.getFunction(),
+        if (shader.getType() != ProgramType.VERTEX_FRAGMENT) {
+            throw new IllegalArgumentException("Not implemented for " + shader.getType());
+        }
+        // TODO - use generics for getShaderSource()
+        vertex = (VulkanShaderBinary) getShaderSource(renderer.getBackend().getVersion(), shader.getFunction(),
                 ShaderType.VERTEX);
+        fragment = (VulkanShaderBinary) getShaderSource(renderer.getBackend().getVersion(), shader.getFunction(),
+                ShaderType.FRAGMENT);
         try {
             vertex.loadShader(renderer.getBackend(), shader.getFunction());
+            fragment.loadShader(renderer.getBackend(), shader.getFunction());
+            vertexModule = vulkan.createShaderModule(vertex);
+            fragmentModule = vulkan.createShaderModule(fragment);
         } catch (IOException e) {
             throw new BackendException(e);
         }

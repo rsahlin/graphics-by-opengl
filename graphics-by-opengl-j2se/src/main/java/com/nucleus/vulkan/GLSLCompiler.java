@@ -13,7 +13,7 @@ import com.nucleus.common.Platform;
 import com.nucleus.io.StreamUtils;
 import com.nucleus.spirv.SpirvBinary;
 import com.nucleus.spirv.SpirvBinary.SpirvStream;
-import com.nucleus.vulkan.structs.ShaderModuleCreateInfo.Type;
+import com.nucleus.vulkan.shader.VulkanShaderBinary.Type;
 
 /**
  * Used to compile GLSL to SPIR-V in runtime.
