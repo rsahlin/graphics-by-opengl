@@ -7,15 +7,21 @@ import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.vulkan.Vulkan10.ColorSpaceKHR;
 import com.nucleus.vulkan.Vulkan10.Extensions;
 import com.nucleus.vulkan.Vulkan10.Format;
+import com.nucleus.vulkan.Vulkan10.PipelineCreateFlagBits;
 import com.nucleus.vulkan.Vulkan10.PresentModeKHR;
+import com.nucleus.vulkan.Vulkan10.ShaderStageFlagBits;
 import com.nucleus.vulkan.Vulkan10.SurfaceFormat;
 import com.nucleus.vulkan.VulkanWrapper.VulkanDeviceSelector;
 import com.nucleus.vulkan.shader.VulkanShaderBinary;
 import com.nucleus.vulkan.structs.Extent2D;
+import com.nucleus.vulkan.structs.GraphicsPipelineCreateInfo;
+import com.nucleus.vulkan.structs.GraphicsPipelines;
 import com.nucleus.vulkan.structs.ImageView;
 import com.nucleus.vulkan.structs.ImageViewCreateInfo;
 import com.nucleus.vulkan.structs.PhysicalDeviceMemoryProperties;
 import com.nucleus.vulkan.structs.PhysicalDeviceProperties.PhysicalDeviceType;
+import com.nucleus.vulkan.structs.PipelineShaderStageCreateInfo;
+import com.nucleus.vulkan.structs.PipelineShaderStageCreateInfo.SpecializationInfo;
 import com.nucleus.vulkan.structs.QueueFamilyProperties;
 import com.nucleus.vulkan.structs.QueueFamilyProperties.QueueFlagBits;
 import com.nucleus.vulkan.structs.ShaderModule;
@@ -177,6 +183,11 @@ public abstract class Vulkan10Wrapper extends VulkanWrapper implements VulkanDev
      * @return
      */
     protected abstract ShaderModule createShaderModule(VulkanShaderBinary binary);
+
+    protected abstract PipelineShaderStageCreateInfo createShaderStageInfo(PipelineCreateFlagBits[] flags,
+            ShaderStageFlagBits stage, ShaderModule module, String name, SpecializationInfo specializationInfo);
+
+    protected abstract GraphicsPipelines createGraphicsPipelines(GraphicsPipelineCreateInfo info);
 
     @Override
     public PhysicalDevice selectDevice(PhysicalDevice[] devices) {
