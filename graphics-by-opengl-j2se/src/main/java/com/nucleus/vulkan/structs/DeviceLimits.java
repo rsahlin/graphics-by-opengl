@@ -1,7 +1,5 @@
 package com.nucleus.vulkan.structs;
 
-import com.nucleus.vulkan.Vulkan10.SampleCountFlagBits;
-
 /**
  * Agnostic abstraction of DeviceLimits
  *
@@ -92,16 +90,16 @@ public abstract class DeviceLimits {
     protected int maxFramebufferWidth;
     protected int maxFramebufferHeight;
     protected int maxFramebufferLayers;
-    protected SampleCountFlagBits framebufferColorSampleCounts;
-    protected SampleCountFlagBits framebufferDepthSampleCounts;
-    protected SampleCountFlagBits framebufferStencilSampleCounts;
-    protected SampleCountFlagBits framebufferNoAttachmentsSampleCounts;
+    protected SampleCountFlags framebufferColorSampleCounts;
+    protected SampleCountFlags framebufferDepthSampleCounts;
+    protected SampleCountFlags framebufferStencilSampleCounts;
+    protected SampleCountFlags framebufferNoAttachmentsSampleCounts;
     protected int maxColorAttachments;
-    protected SampleCountFlagBits sampledImageColorSampleCounts;
-    protected SampleCountFlagBits sampledImageIntegerSampleCounts;
-    protected SampleCountFlagBits sampledImageDepthSampleCounts;
-    protected SampleCountFlagBits sampledImageStencilSampleCounts;
-    protected SampleCountFlagBits storageImageSampleCounts;
+    protected SampleCountFlags sampledImageColorSampleCounts;
+    protected SampleCountFlags sampledImageIntegerSampleCounts;
+    protected SampleCountFlags sampledImageDepthSampleCounts;
+    protected SampleCountFlags sampledImageStencilSampleCounts;
+    protected SampleCountFlags storageImageSampleCounts;
     protected int maxSampleMaskWords;
     protected boolean timestampComputeAndGraphics;
     protected float timestampPeriod;
