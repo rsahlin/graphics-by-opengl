@@ -20,11 +20,12 @@ public class GraphicsPipelineCreateInfo {
     PipelineDepthStencilStateCreateInfo depthStencilState;
     PipelineColorBlendStateCreateInfo colorBlendState;
     PipelineDynamicStateCreateInfo dynamicState;
+    PipelineLayoutCreateInfo layoutInfo;
     // VkPipelineLayout layout;
+    RenderPassCreateInfo renderPassInfo;
     // VkRenderPass renderPass;
     int subpass;
     // VkPipeline basePipelineHandle;
     int basePipelineIndex;
-    // } VkGraphicsPipelineCreateInfo;
 
 }
