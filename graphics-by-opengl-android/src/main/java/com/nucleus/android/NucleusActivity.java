@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import com.nucleus.CoreApp;
+import com.nucleus.J2SEWindow.Configuration;
+import com.nucleus.J2SEWindow.VideoMode;
 import com.nucleus.SimpleLogger;
 import com.nucleus.common.Constants;
 import com.nucleus.common.Environment;
@@ -101,6 +103,7 @@ public abstract class NucleusActivity extends Activity
     protected boolean backgroundTaskOnBackPressed = true;
 
     protected SurfaceConfiguration surfaceConfig;
+    protected Configuration configuration;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -375,7 +378,10 @@ public abstract class NucleusActivity extends Activity
         }
         NucleusRenderer renderer = RendererFactory.getRenderer(gles);
         if (coreApp == null) {
-            coreApp = CoreApp.createCoreApp(width, height, renderer, surfaceConfig);
+            if (configuration == null) {
+                configuration = new Configuration(minVersion, surfaceConfig, new VideoMode(width, height));
+            }
+            coreApp = CoreApp.createCoreApp(renderer, configuration);
             return true;
         }
         return false;
