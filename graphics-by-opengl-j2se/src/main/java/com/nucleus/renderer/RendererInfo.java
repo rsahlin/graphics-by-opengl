@@ -25,10 +25,12 @@ public abstract class RendererInfo {
         public final int minor;
 
         public Version(String versionStr) {
-            int whitespace = versionStr.indexOf(" ");
-            if (whitespace > -1) {
-                versionStr = versionStr.substring(0, whitespace);
+            int offset = 0;
+            int whitespace = 0;
+            while ((whitespace = versionStr.indexOf(" ", offset)) != -1) {
+                offset = whitespace + 1;
             }
+            versionStr = versionStr.substring(offset);
             int dotIndex = versionStr.indexOf(".");
             if (dotIndex < 0) {
                 // No dot
