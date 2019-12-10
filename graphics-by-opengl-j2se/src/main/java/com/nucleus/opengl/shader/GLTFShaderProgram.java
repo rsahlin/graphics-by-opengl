@@ -184,7 +184,11 @@ public class GLTFShaderProgram extends GenericShaderProgram {
      * This shall set texture parameters to used textures, ie activate texture, bind texture then set parameters.
      * 
      * @param renderer
-     * @param texture
+     * @param gltf
+     * @param primitive
+     * @param attribute
+     * @param texUniform
+     * @param texInfo
      * @throws BackendException
      */
     public void prepareTexture(NucleusRenderer renderer, GLTF gltf, Primitive primitive, NamedShaderVariable attribute,
@@ -204,7 +208,7 @@ public class GLTFShaderProgram extends GenericShaderProgram {
     /**
      * Prepares the textures needed for this primitive
      * 
-     * @param gles
+     * @param renderer
      * @param gltf
      * @param material
      * @throws BackendException

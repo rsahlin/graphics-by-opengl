@@ -74,7 +74,7 @@ public interface GraphicsPipeline<S extends ShaderBinary> extends Pipeline<Graph
      * Uploads one of more float variables to the render API, supports VEC2, VEC3, VEC4 and MAT2, MAT3,
      * MAT4 types
      * 
-     * @param Buffer containing data to be uploaded
+     * @param data containing data to be uploaded
      * @param variable Shader variable to set data for, datatype and size is read. If null then nothing is done
      */
     public void uploadVariable(FloatBuffer data, ShaderVariable variable);
@@ -84,7 +84,7 @@ public interface GraphicsPipeline<S extends ShaderBinary> extends Pipeline<Graph
      * 
      * 
      * @param uniformData The uniform source data
-     * @param activeUniforms The active uniforms to upload, null to set all active uniforms.
+     * @param activeUniform The active uniforms to upload, null to set all active uniforms.
      * @throws BackendException
      */
     public void uploadUniforms(FloatBuffer uniformData, ShaderVariable[] activeUniform) throws BackendException;

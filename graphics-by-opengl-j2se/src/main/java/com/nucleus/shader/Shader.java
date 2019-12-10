@@ -55,7 +55,7 @@ public interface Shader {
          * (vertex/fragment/compute) Default behavior is to return getPath() /
          * getPassString() + getShadingString()
          * 
-         * @param shaderType The shader type to return source for
+         * @param type The shader type to return source for
          * @return
          */
         public String getShaderSourceName(ShaderType type) {
@@ -82,7 +82,6 @@ public interface Shader {
          * shader (type) source. This is for shading languages that does not support
          * precompiler include.
          * 
-         * @param backend
          * @param type
          * @return Optional strings to additional library sources that shall be
          * included, or null
@@ -113,7 +112,7 @@ public interface Shader {
          * Returns the relative path - by default this is the category
          * The path is ends with directory separator.
          * 
-         * @param shaderType The shader type to return source for
+         * @param type The shader type to return source for
          * @return The relative path, if defined it must end with the path separator
          * char
          */

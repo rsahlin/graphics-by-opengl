@@ -6,6 +6,7 @@ import com.nucleus.renderer.NucleusRenderer;
 import com.nucleus.renderer.NucleusRenderer.Renderers;
 import com.nucleus.scene.gltf.GLTF;
 import com.nucleus.scene.gltf.Primitive;
+import com.nucleus.shader.GraphicsShader;
 import com.nucleus.shader.Shader;
 import com.nucleus.shader.Shader.Categorizer;
 import com.nucleus.shader.Shader.ShaderType;
@@ -26,7 +27,7 @@ import com.nucleus.shader.ShaderBinary;
 public interface Pipeline<T extends Shader, S extends ShaderBinary> {
 
     /**
-     * Internal method - do not use directly - call {@link Assets#getGraphicsPipeline(NucleusRenderer, Shader)} instead
+     * Internal method - do not use directly - call {@link Assets#getGraphicsPipeline(NucleusRenderer, GraphicsShader)} instead
      * 
      * Compile and links the pipeline.
      * This method shall only be called once, it is an error to re-compile an already compiled pipeline.
