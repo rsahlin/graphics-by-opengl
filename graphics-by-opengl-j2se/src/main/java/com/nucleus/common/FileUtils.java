@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,15 +47,15 @@ public class FileUtils {
         return fileUtils;
     }
 
-    protected Path getFileSystemPath(String path) throws URISyntaxException, IOException {
+    protected Path getFileSystemPath(String path) throws URISyntaxException, IOException{
         ClassLoader loader = getClass().getClassLoader();
         SimpleLogger.d(getClass(), "Getting URI for path: " + path);
-        URI uri = loader.getResource(path).toURI();
-        Path resultPath = null;
-        if (uri.getScheme().contentEquals("jar")) {
-            resultPath = getJarPath(uri, path);
+        URL url = loader.getResource(path);
+        if (url == null) {
+            return null;
         }
-        resultPath = Paths.get(uri);
+        URI uri = url.toURI();
+        Path resultPath = Paths.get(uri);
         SimpleLogger.d(getClass(), "Path for uri: " + uri + "\n" + resultPath.toString());
         return resultPath;
     }
@@ -78,6 +79,9 @@ public class FileUtils {
         String separator = "" + FileUtils.DIRECTORY_SEPARATOR;
         ArrayList<String> folders = new ArrayList<String>();
         Path listPath = getFileSystemPath(path);
+        if (listPath == null) {
+            return folders;
+        }
         String listPathStr = listPath.toString();
         SimpleLogger.d(getClass(), "Listing folders in " + listPathStr);
         int offset = listPathStr.endsWith(separator) ? 0 : 1;
