@@ -27,19 +27,22 @@ public abstract class RendererInfo {
         public Version(String versionStr) {
             int offset = 0;
             int whitespace = 0;
+            String result = null;
             while ((whitespace = versionStr.indexOf(" ", offset)) != -1) {
+                result = versionStr.substring(offset, whitespace);
+                if (result.contains(".")) {
+                    break;
+                }
                 offset = whitespace + 1;
             }
-            versionStr = versionStr.substring(offset);
-            int dotIndex = versionStr.indexOf(".");
-            if (dotIndex < 0) {
-                // No dot
-                major = Integer.parseInt(versionStr);
-                minor = 0;
-            } else {
-                major = Integer.parseInt(versionStr.substring(0, dotIndex));
-                minor = Integer.parseInt(versionStr.substring(dotIndex + 1));
+            if (whitespace == -1) {
+                result = versionStr.substring(offset);
             }
+            int dotIndex = result.indexOf(".");
+            major = Integer.parseInt(result.substring(0, dotIndex));
+            // Check for release number
+            StringTokenizer st = new StringTokenizer(result.substring(dotIndex + 1));
+            minor = Integer.parseInt(st.nextToken());
         }
     }
 
