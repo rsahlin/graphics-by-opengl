@@ -282,6 +282,7 @@ public class GLAssetManager extends BaseAssets {
             // Material has both metallicroughness and occlusion in the same texture
             loadTexture(renderer, gltf, mrInfo, ImageFormat.RGB, ColorModel.LINEAR);
         } else {
+            //TODO ImageFormat.RG actually means picking GB pixels and putting into RG (2 pixels)
             Texture mr = loadTexture(renderer, gltf, mrInfo, ImageFormat.RG,
                     ColorModel.LINEAR);
             if (mr != null) {
@@ -302,7 +303,7 @@ public class GLAssetManager extends BaseAssets {
      * @param gltf
      * @param texInfo
      * @param destFormat Optional destination image format, if null then same as source
-     * @param colorMode If model is linear or srgb
+     * @param colorModel If model is linear or srgb
      * @return The loaded texture object
      * @throws IOException
      */

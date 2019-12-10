@@ -197,7 +197,7 @@ public abstract class BaseImageFactory implements ImageFactory {
                         break;
                     case RG:
                     case LUMINANCE_ALPHA:
-                        copyPixels_4BYTE_ABGR_TO_RG(source, buffer, destination.getWidth(), destination.getHeight());
+                        copyPixels_4BYTE_ABGR_TO_GB(source, buffer, destination.getWidth(), destination.getHeight());
                         break;
 
                     default:
@@ -219,6 +219,10 @@ public abstract class BaseImageFactory implements ImageFactory {
                     case RGB5_A1:
                         copyPixels_4BYTE_RGBA_TO_RGB5551(source, buffer);
                         break;
+                    case RG:
+                    case LUMINANCE_ALPHA:
+                        copyPixels_4BYTE_ARGB_TO_GB(source, buffer, destination.getWidth(), destination.getHeight());
+                        break;
                     default:
                         throw new IllegalArgumentException(
                                 ErrorMessage.NOT_IMPLEMENTED.message + destination.getFormat());
@@ -231,7 +235,7 @@ public abstract class BaseImageFactory implements ImageFactory {
                         break;
                     case RG:
                     case LUMINANCE_ALPHA:
-                        copyPixels_3BYTE_BGR_TO_RG(source, buffer, destination.getWidth(),
+                        copyPixels_3BYTE_BGR_TO_GB(source, buffer, destination.getWidth(),
                                 destination.getHeight());
                         break;
                     case RGBA:
@@ -263,7 +267,7 @@ public abstract class BaseImageFactory implements ImageFactory {
                         break;
                     case RG:
                     case LUMINANCE_ALPHA:
-                        copyPixels_3BYTE_BGR_TO_RG(source, buffer, destination.getWidth(),
+                        copyPixels_3BYTE_BGR_TO_GB(source, buffer, destination.getWidth(),
                                 destination.getHeight());
                         break;
                     default:
@@ -419,24 +423,24 @@ public abstract class BaseImageFactory implements ImageFactory {
     }
 
     /**
-     * Copies the 3 byte BGR to 16 bit 2 elements, RG, GB or LA depending on destination format
+     * Copies the 3 byte BGR to 16 bit 2 elements GB format
      * 
      * @param source
      * @param destination
      * @param width
      * @param height
      */
-    protected void copyPixels_3BYTE_BGR_TO_RG(byte[] source, ByteBuffer destination, int width, int height) {
+    protected void copyPixels_3BYTE_BGR_TO_GB(byte[] source, ByteBuffer destination, int width, int height) {
         int count = width * height;
-        byte[] rg = new byte[count * 2];
-        int length = rg.length;
+        byte[] gb = new byte[count * 2];
+        int length = gb.length;
         int sourceIndex = 0;
         for (int destIndex = 0; destIndex < length;) {
-            rg[destIndex++] = source[sourceIndex + 1];
-            rg[destIndex++] = source[sourceIndex];
+            gb[destIndex++] = source[sourceIndex + 1];
+            gb[destIndex++] = source[sourceIndex];
             sourceIndex += 3;
         }
-        destination.put(rg, 0, rg.length);
+        destination.put(gb, 0, gb.length);
     }
 
     /**
@@ -480,24 +484,45 @@ public abstract class BaseImageFactory implements ImageFactory {
     }
 
     /**
-     * Copies the 4 byte ABGR to 16 bit 2 ELEMENTS, RG, GB or LA depending on destination texture format.
+     * Copies the 4 byte ABGR to 16 bit 2 ELEMENTS GB format.
      * 
      * @param source
      * @param destination
      * @param width
      * @param height
      */
-    protected void copyPixels_4BYTE_ABGR_TO_RG(byte[] source, ByteBuffer destination, int width, int height) {
+    protected void copyPixels_4BYTE_ABGR_TO_GB(byte[] source, ByteBuffer destination, int width, int height) {
         int count = width * height;
-        byte[] rg = new byte[count * 2];
-        int length = rg.length;
+        byte[] gb = new byte[count * 2];
+        int length = gb.length;
         int sourceIndex = 0;
         for (int destIndex = 0; destIndex < length;) {
-            rg[destIndex++] = source[sourceIndex + 2];
-            rg[destIndex++] = source[sourceIndex + 1];
+            gb[destIndex++] = source[sourceIndex + 1];
+            gb[destIndex++] = source[sourceIndex + 2];
             sourceIndex += 4;
         }
-        destination.put(rg, 0, rg.length);
+        destination.put(gb, 0, gb.length);
+    }
+
+    /**
+     * Copies the 4 byte ARGB to 16 bit 2 ELEMENTS GB format.
+     *
+     * @param source
+     * @param destination
+     * @param width
+     * @param height
+     */
+    protected void copyPixels_4BYTE_ARGB_TO_GB(byte[] source, ByteBuffer destination, int width, int height) {
+        int count = width * height;
+        byte[] gb = new byte[count * 2];
+        int length = gb.length;
+        int sourceIndex = 0;
+        for (int destIndex = 0; destIndex < length;) {
+            gb[destIndex++] = source[sourceIndex + 2];
+            gb[destIndex++] = source[sourceIndex + 3];
+            sourceIndex += 4;
+        }
+        destination.put(gb, 0, gb.length);
     }
 
 }
