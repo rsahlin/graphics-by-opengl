@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import android.content.Intent;
 import com.nucleus.CoreApp;
 import com.nucleus.J2SEWindow.Configuration;
 import com.nucleus.J2SEWindow.VideoMode;
@@ -109,11 +110,32 @@ public abstract class NucleusActivity extends Activity
     public void onCreate(Bundle savedInstanceState) {
         SimpleLogger.setLogger(new AndroidLogger());
         SimpleLogger.d(getClass(), "onCreate()");
+        fetchIntentExtra();
         BaseImageFactory.setFactory(new AndroidImageFactory());
         activity = this;
         checkProperties();
         setup(getRenderVersion(), GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         super.onCreate(savedInstanceState);
+    }
+
+    private void fetchIntentExtra() {
+        Intent intent = getIntent();
+        if (intent != null) {
+            Bundle bundle = intent.getExtras();
+            if (bundle != null) {
+                fetchProperties(bundle);
+            }
+        }
+    }
+
+    private void fetchProperties(Bundle bundle) {
+        for (Environment.Property p : Environment.Property.values()) {
+            String value = bundle.getString(p.key);
+            if (value != null) {
+                SimpleLogger.d(getClass(), "Setting property " + p + " to " + value);
+                System.setProperty(p.key, value);
+            }
+        }
     }
 
     @Override
@@ -324,7 +346,7 @@ public abstract class NucleusActivity extends Activity
      * MUST be called from the UI thread!
      * 
      * @param title
-     * @param messag
+     * @param message
      */
     protected void showAlert(final String title, final String message) {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
