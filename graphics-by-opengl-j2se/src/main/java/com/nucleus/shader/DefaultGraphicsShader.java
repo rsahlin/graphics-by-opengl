@@ -41,11 +41,6 @@ public abstract class DefaultGraphicsShader implements GraphicsShader {
      */
     transient protected FloatBuffer uniforms;
 
-    /**
-     * Read when shader source is created in {@link #createShaderSource(Renderers)}
-     * Subclasses may modify before {@link #createProgram(NucleusRenderer)} is called - or before they call
-     * super.createProgram()
-     */
     protected GenericShaderProgram.ProgramType shaders;
     protected GraphicsPipeline<?> pipeline;
 

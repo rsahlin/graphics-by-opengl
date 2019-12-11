@@ -45,7 +45,7 @@ public interface GraphicsShader extends Shader {
      * Uploads (sets pointers to) the uniforms to backend API - call this after uniform data has been updated and
      * prior to render.
      * 
-     * @throws If there is an error setting uniform pointers
+     * @throws BackendException If there is an error setting uniform pointers
      */
     public void uploadUniforms() throws BackendException;
 

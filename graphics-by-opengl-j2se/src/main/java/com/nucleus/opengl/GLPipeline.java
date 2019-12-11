@@ -7,6 +7,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import com.nucleus.BackendException;
@@ -85,6 +86,7 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
      * The GL program object
      */
     private int program = Constants.NO_VALUE;
+    private HashSet<Integer> validatedPrograms = new HashSet<>();
     /**
      * Available after {@link #fetchProgramInfo(GLES20Wrapper)} has been called
      */
@@ -149,10 +151,9 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
         GLUtils.handleError(gles, "glUseProgram " + program);
         // TODO - is this the best place for this check - remember, this should only be
         // done in debug cases.
-        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
+        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false) && !validatedPrograms.contains(program)) {
             validateProgram(gles);
         }
-
     }
 
     @Override
@@ -362,7 +363,7 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
      * 
      * @param gles
      * @param source
-     * @param library true if this is not the main shader
+     * @param program The shader program
      * @return The created shader
      * @throws GLException If there is an error setting or calling to
      * compiling shader source.
@@ -388,7 +389,7 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
 
     /**
      * Compiles the shader from the shader source. The GL version will be appended
-     * to the source, calling {@link GLESWrapper#getShaderVersion()}
+     * to the source.
      * 
      * @param gles GLES20 platform specific wrapper.
      * @param source The shader source
@@ -404,6 +405,12 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
             throw new IllegalArgumentException("Shader source is null for " + source.getFullSourceName());
         }
         sourceStr = source.getVersionedShaderSource();
+        //If debug is true then log shader source before compilation.
+        if (Environment.getInstance().isProperty(com.nucleus.common.Environment.Property.DEBUG, false)) {
+            SimpleLogger.d(getClass(), "\n\rSetting shader source for " + source.getFullSourceName());
+            SimpleLogger.d(getClass(), "\n\r" + sourceStr);
+        }
+
         // These calls only return an error if there is an error in the parameters,
         // invalid shader etc.
         // ie it does not mean compilation is successful - check compile status to know.
@@ -494,6 +501,7 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
             throw new IllegalArgumentException("Could not validate program:\n" + result);
         } else {
             SimpleLogger.d(getClass(), "Program " + program + " validated OK.");
+            validatedPrograms.add(program);
         }
     }
 
@@ -969,9 +977,8 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
      * updated.
      * 
      * @param gles
-     * @param block
+     * @param blockBuffer
      * @param variable
-     * @param offset
      * @throws GLException
      */
     protected void setUniformBlock(GLES30Wrapper gles, BlockBuffer blockBuffer, ShaderVariable variable)
@@ -1041,7 +1048,6 @@ public class GLPipeline implements GraphicsPipeline<GLShaderSource> {
      * @param uniforms The uniform data
      * @param variable Shader variable to set uniform data for, datatype and size is
      * read. If null then nothing is done
-     * @param offset Offset into uniform array where data starts.
      * @throws GLException If there is an error setting a uniform to GL
      */
     public final void uploadUniform(GLES20Wrapper gles, FloatBuffer uniforms, ShaderVariable variable)

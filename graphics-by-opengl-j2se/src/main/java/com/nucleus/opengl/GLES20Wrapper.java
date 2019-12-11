@@ -200,7 +200,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * Abstraction for glDeleteBuffers()
      * 
      * @param n
-     * @param names
+     * @param buffers
      * @param offset
      */
     public abstract void glDeleteBuffers(int n, int[] buffers, int offset);
@@ -355,8 +355,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * 
      * @param buffer
      * @param target
-     * @param position Position in buffer where the data for this attribute is.
-     * @param attrib Array of attributes to set
+     * @param attribs Array of attributes to set
      */
     public void glVertexAttribPointer(AttributeBuffer buffer, int target, ShaderVariable[] attribs) {
         int location = 0;
@@ -398,9 +397,9 @@ public abstract class GLES20Wrapper extends GLESWrapper {
     /**
      * Disables attrib pointers after calls to set vertex attrib pointers.
      * TODO - keep track of needed and already enabled vertex arrays in
-     * {@link #glVertexAttribPointer(AttributeBuffer, int, NamedShaderVariable[])}
+     * {@link #glVertexAttribPointer(AttributeBuffer, int, ShaderVariable[])}
      * and
-     * {@link #glVertexAttribPointer(GLTF, GLTFShaderProgram, Primitive)}
+     * {@link #glVertexAttribPointer(Accessor, ShaderVariable)}
      * 
      */
     public void disableAttribPointers() {
@@ -463,7 +462,6 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param location
      * @param count
      * @param transpose
-     * @param transform
      * @param buffer
      */
     public abstract void glUniformMatrix4fv(int location, int count, boolean transpose, FloatBuffer buffer);
@@ -474,7 +472,6 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param location
      * @param count
      * @param transpose
-     * @param transform
      * @param buffer
      */
     public abstract void glUniformMatrix3fv(int location, int count, boolean transpose, FloatBuffer buffer);
@@ -485,7 +482,6 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param location
      * @param count
      * @param transpose
-     * @param transform
      * @param buffer
      */
     public abstract void glUniformMatrix2fv(int location, int count, boolean transpose, FloatBuffer buffer);
@@ -599,8 +595,7 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * 
      * @param location
      * @param count
-     * @param v
-     * @param offset
+     * @param buffer
      */
     public abstract void glUniform4fv(int location, int count, FloatBuffer buffer);
 
@@ -862,7 +857,6 @@ public abstract class GLES20Wrapper extends GLESWrapper {
      * @param texture
      * @param fbName
      * @param attachement
-     * @param textureName
      * @throws GLException
      */
     public void bindFramebufferTexture(Texture2D texture, int fbName, Attachement attachement) throws GLException {

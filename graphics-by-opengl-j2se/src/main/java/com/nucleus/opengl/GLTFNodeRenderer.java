@@ -213,7 +213,7 @@ public class GLTFNodeRenderer implements NodeRenderer<GLTFNode> {
     }
 
     /**
-     * Renders an array of nodes - each node will be rendered by calling {@link #renderNode(GLTF, Node)}
+     * Renders an array of nodes - each node will be rendered by calling {@link #renderNode(NucleusRenderer, GLTF, Node, float[][])}
      * This means rendering will be depth first.
      * 
      * @param renderer
